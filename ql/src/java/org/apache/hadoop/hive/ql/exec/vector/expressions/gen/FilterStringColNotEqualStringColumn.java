@@ -27,11 +27,11 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * Filter the rows in a batch by comparing one string column to another. 
  * This code is generated from a template.
  */
-public class FilterStringColLessEqualStringCol extends VectorExpression {
+public class FilterStringColNotEqualStringColumn extends VectorExpression {
   private int colNum1;
   private int colNum2;
 
-  public FilterStringColLessEqualStringCol(int colNum1, int colNum2) { 
+  public FilterStringColNotEqualStringColumn(int colNum1, int colNum2) { 
     this.colNum1 = colNum1;
     this.colNum2 = colNum2;
   }
@@ -69,7 +69,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
          * Repeating property will not change.
          */
         if (!(StringExpr.compare(vector1[0], start1[0], length1[0], 
-                                 vector2[0], start2[0], length2[0]) <= 0)) {
+                                 vector2[0], start2[0], length2[0]) != 0)) {
           batch.size = 0;
         }      
       } else if (inputColVector1.isRepeating) {
@@ -78,7 +78,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
             if (StringExpr.compare(vector1[0], start1[0], length1[0], 
-                                   vector2[i], start2[i], length2[i]) <= 0) {
+                                   vector2[i], start2[i], length2[i]) != 0) {
               sel[newSize++] = i;
             }
           }
@@ -87,7 +87,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
           int newSize = 0;
           for(int i = 0; i != n; i++) {
             if (StringExpr.compare(vector1[0], start1[0], length1[0], 
-                                   vector2[i], start2[i], length2[i]) <= 0) {
+                                   vector2[i], start2[i], length2[i]) != 0) {
               sel[newSize++] = i;
             }
           }
@@ -102,7 +102,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
             if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                   vector2[0], start2[0], length2[0]) <= 0) {
+                                   vector2[0], start2[0], length2[0]) != 0) {
               sel[newSize++] = i;
             }
           }
@@ -111,7 +111,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
           int newSize = 0;
           for(int i = 0; i != n; i++) {
             if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                   vector2[0], start2[0], length2[0]) <= 0) {
+                                   vector2[0], start2[0], length2[0]) != 0) {
               sel[newSize++] = i;
             }
           }
@@ -125,7 +125,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                 vector2[i], start2[i], length2[i]) <= 0) {
+                                 vector2[i], start2[i], length2[i]) != 0) {
             sel[newSize++] = i;
           }
         }
@@ -134,7 +134,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
         int newSize = 0;
         for(int i = 0; i != n; i++) {
           if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                 vector2[i], start2[i], length2[i]) <= 0) {
+                                 vector2[i], start2[i], length2[i]) != 0) {
             sel[newSize++] = i;
           }
         }
@@ -149,7 +149,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
       if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
         if (nullPos2[0] ||
             !(StringExpr.compare(vector1[0], start1[0], length1[0], 
-                               vector2[0], start2[0], length2[0]) <= 0)) {
+                               vector2[0], start2[0], length2[0]) != 0)) {
           batch.size = 0; 
         } 
       } else if (inputColVector1.isRepeating) {
@@ -161,7 +161,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
             int i = sel[j];
             if (!nullPos2[i]) {
               if (StringExpr.compare(vector1[0], start1[0], length1[0], 
-                                     vector2[i], start2[i], length2[i]) <= 0) {
+                                     vector2[i], start2[i], length2[i]) != 0) {
                 sel[newSize++] = i;
               }
             }
@@ -172,7 +172,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
           for(int i = 0; i != n; i++) {
             if (!nullPos2[i]) {
               if (StringExpr.compare(vector1[0], start1[0], length1[0], 
-                                     vector2[i], start2[i], length2[i]) <= 0) {
+                                     vector2[i], start2[i], length2[i]) != 0) {
                 sel[newSize++] = i;
               }
             }
@@ -194,7 +194,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
             if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                   vector2[0], start2[0], length2[0]) <= 0) {
+                                   vector2[0], start2[0], length2[0]) != 0) {
               sel[newSize++] = i;
             }
           }
@@ -203,7 +203,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
           int newSize = 0;
           for(int i = 0; i != n; i++) {
             if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                   vector2[0], start2[0], length2[0]) <= 0) {
+                                   vector2[0], start2[0], length2[0]) != 0) {
               sel[newSize++] = i;
             }
           }
@@ -219,7 +219,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
             int i = sel[j];
             if (!nullPos2[i]) {
               if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                     vector2[i], start2[i], length2[i]) <= 0) {
+                                     vector2[i], start2[i], length2[i]) != 0) {
                 sel[newSize++] = i;
               }
             }
@@ -230,7 +230,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
           for(int i = 0; i != n; i++) {
             if (!nullPos2[i]) {
               if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                     vector2[i], start2[i], length2[i]) <= 0) {
+                                     vector2[i], start2[i], length2[i]) != 0) {
                 sel[newSize++] = i;
               }
             }
@@ -247,7 +247,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
       if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
         if (nullPos1[0] ||
             !(StringExpr.compare(vector1[0], start1[0], length1[0], 
-                               vector2[0], start2[0], length2[0]) <= 0)) {
+                               vector2[0], start2[0], length2[0]) != 0)) {
           batch.size = 0; 
           return;
         } 
@@ -263,7 +263,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
           for(int j = 0; j != n; j++) {
             int i = sel[j];
             if (StringExpr.compare(vector1[0], start1[0], length1[0], 
-                                   vector2[i], start2[i], length2[i]) <= 0) {
+                                   vector2[i], start2[i], length2[i]) != 0) {
               sel[newSize++] = i;
             }
           }
@@ -272,7 +272,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
           int newSize = 0;
           for(int i = 0; i != n; i++) {
             if (StringExpr.compare(vector1[0], start1[0], length1[0], 
-                                   vector2[i], start2[i], length2[i]) <= 0) {
+                                   vector2[i], start2[i], length2[i]) != 0) {
               sel[newSize++] = i;
             }
           }
@@ -288,7 +288,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
             int i = sel[j];
             if (!nullPos1[i]) {
               if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                     vector2[0], start2[0], length2[0]) <= 0) {
+                                     vector2[0], start2[0], length2[0]) != 0) {
                 sel[newSize++] = i;
               }
             }
@@ -299,7 +299,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
           for(int i = 0; i != n; i++) {
             if (!nullPos2[i]) {
               if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                     vector2[0], start2[0], length2[0]) <= 0) {
+                                     vector2[0], start2[0], length2[0]) != 0) {
                 sel[newSize++] = i;
               }
             }
@@ -316,7 +316,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
             int i = sel[j];
             if (!nullPos1[i]) {
               if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                     vector2[i], start2[i], length2[i]) <= 0) {
+                                     vector2[i], start2[i], length2[i]) != 0) {
                 sel[newSize++] = i;
               }
             }
@@ -327,7 +327,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
           for(int i = 0; i != n; i++) {
             if (!nullPos1[i]) {
               if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                     vector2[i], start2[i], length2[i]) <= 0) {
+                                     vector2[i], start2[i], length2[i]) != 0) {
                 sel[newSize++] = i;
               }
             }
@@ -344,7 +344,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
       if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
         if (nullPos1[0] || nullPos2[0] ||
             !(StringExpr.compare(vector1[0], start1[0], length1[0], 
-                               vector2[0], start2[0], length2[0]) <= 0)) {
+                               vector2[0], start2[0], length2[0]) != 0)) {
           batch.size = 0; 
         } 
       } else if (inputColVector1.isRepeating) {
@@ -358,7 +358,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
             int i = sel[j];
             if (!nullPos2[i]) {
               if (StringExpr.compare(vector1[0], start1[0], length1[0], 
-                                     vector2[i], start2[i], length2[i]) <= 0) {
+                                     vector2[i], start2[i], length2[i]) != 0) {
                 sel[newSize++] = i;
               }
             }
@@ -369,7 +369,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
           for(int i = 0; i != n; i++) {
             if (!nullPos2[i]) {
               if (StringExpr.compare(vector1[0], start1[0], length1[0], 
-                                     vector2[i], start2[i], length2[i]) <= 0) {
+                                     vector2[i], start2[i], length2[i]) != 0) {
                 sel[newSize++] = i;
               }
             }
@@ -390,7 +390,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
             int i = sel[j];
             if (!nullPos1[i]) {
               if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                     vector2[0], start2[0], length2[0]) <= 0) {
+                                     vector2[0], start2[0], length2[0]) != 0) {
                 sel[newSize++] = i;
               }
             }
@@ -401,7 +401,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
           for(int i = 0; i != n; i++) {
             if (!nullPos1[i]) {
               if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                     vector2[0], start2[0], length2[0]) <= 0) {
+                                     vector2[0], start2[0], length2[0]) != 0) {
                 sel[newSize++] = i;
               }
             }
@@ -418,7 +418,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
             int i = sel[j];
             if (!nullPos1[i] && !nullPos2[i]) {
               if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                     vector2[i], start2[i], length2[i]) <= 0) {
+                                     vector2[i], start2[i], length2[i]) != 0) {
                 sel[newSize++] = i;
               }
             }
@@ -429,7 +429,7 @@ public class FilterStringColLessEqualStringCol extends VectorExpression {
           for(int i = 0; i != n; i++) {
             if (!nullPos1[i] && !nullPos2[i]) {
               if (StringExpr.compare(vector1[i], start1[i], length1[i], 
-                                     vector2[i], start2[i], length2[i]) <= 0) {
+                                     vector2[i], start2[i], length2[i]) != 0) {
                 sel[newSize++] = i;
               }
             }

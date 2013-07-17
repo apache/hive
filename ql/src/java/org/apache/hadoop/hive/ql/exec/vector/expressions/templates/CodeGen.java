@@ -405,7 +405,7 @@ public class CodeGen {
 
   private void generateFilterStringColumnCompareColumn(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
-    String className = "FilterStringCol" + operatorName + "StringCol";
+    String className = "FilterStringCol" + operatorName + "StringColumn";
     generateFilterStringColumnCompareScalar(tdesc,className);
   }
 

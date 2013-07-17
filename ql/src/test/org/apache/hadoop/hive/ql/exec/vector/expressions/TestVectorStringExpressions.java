@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColEqualStringScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColGreaterEqualStringScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColLessStringCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColLessStringColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColLessStringScalar;
 import org.apache.hadoop.io.Text;
 import org.junit.Test;
@@ -184,7 +184,7 @@ public class TestVectorStringExpressions {
 
     // nulls possible on left, right
     batch = makeStringBatchForColColCompare();
-    expr = new FilterStringColLessStringCol(0,1);
+    expr = new FilterStringColLessStringColumn(0,1);
     expr.evaluate(batch);
     Assert.assertEquals(1, batch.size);
     Assert.assertEquals(0, batch.selected[0]);
