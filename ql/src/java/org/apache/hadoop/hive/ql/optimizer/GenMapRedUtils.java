@@ -33,6 +33,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
+import org.apache.hadoop.hive.ql.exec.DemuxOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
@@ -113,7 +114,8 @@ public final class GenMapRedUtils {
             || currTask.getParentTasks().isEmpty())) {
       rootTasks.add(currTask);
     }
-    if (reducer.getClass() == JoinOperator.class) {
+    if (reducer.getClass() == JoinOperator.class ||
+        reducer.getClass() == DemuxOperator.class) {
       plan.setNeedsTagging(true);
     }
 
@@ -158,7 +160,8 @@ public final class GenMapRedUtils {
 
     plan.setNumReduceTasks(desc.getNumReducers());
 
-    if (reducer.getClass() == JoinOperator.class) {
+    if (reducer.getClass() == JoinOperator.class ||
+        reducer.getClass() == DemuxOperator.class) {
       plan.setNeedsTagging(true);
     }
 
@@ -946,7 +949,8 @@ public final class GenMapRedUtils {
 
       // TODO: Allocate work to remove the temporary files and make that
       // dependent on the redTask
-      if (reducer.getClass() == JoinOperator.class) {
+      if (reducer.getClass() == JoinOperator.class ||
+          reducer.getClass() == DemuxOperator.class) {
         cplan.setNeedsTagging(true);
       }
     }

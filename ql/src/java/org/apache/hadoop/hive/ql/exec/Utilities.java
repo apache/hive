@@ -168,12 +168,22 @@ public final class Utilities {
   public static String HADOOP_LOCAL_FS = "file:///";
 
   /**
-   * ReduceField.
-   *
+   * ReduceField:
+   * KEY: record key
+   * VALUE: record value
+   * ALIAS: the tag identifying the source of a record
    */
   public static enum ReduceField {
     KEY, VALUE, ALIAS
   };
+
+  public static List<String> fieldNameList;
+  static {
+    fieldNameList = new ArrayList<String>();
+    for (ReduceField r : ReduceField.values()) {
+      fieldNameList.add(r.toString());
+    }
+  }
 
   private Utilities() {
     // prevent instantiation
@@ -236,15 +246,18 @@ public final class Utilities {
   public static void setWorkflowAdjacencies(Configuration conf, QueryPlan plan) {
     try {
       Graph stageGraph = plan.getQueryPlan().getStageGraph();
-      if (stageGraph == null)
+      if (stageGraph == null) {
         return;
+      }
       List<Adjacency> adjList = stageGraph.getAdjacencyList();
-      if (adjList == null)
+      if (adjList == null) {
         return;
+      }
       for (Adjacency adj : adjList) {
         List<String> children = adj.getChildren();
-        if (children == null || children.isEmpty())
+        if (children == null || children.isEmpty()) {
           return;
+        }
         conf.setStrings("mapreduce.workflow.adjacency."+adj.getNode(),
             children.toArray(new String[children.size()]));
       }

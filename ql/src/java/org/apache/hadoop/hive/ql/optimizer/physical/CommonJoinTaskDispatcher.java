@@ -416,6 +416,22 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     copyReducerConf(mapJoinTask, childTask);
   }
 
+  public static boolean cannotConvert(String bigTableAlias,
+      Map<String, Long> aliasToSize, long aliasTotalKnownInputSize,
+      long ThresholdOfSmallTblSizeSum) {
+    boolean ret = false;
+    Long aliasKnownSize = aliasToSize.get(bigTableAlias);
+    if (aliasKnownSize != null && aliasKnownSize.longValue() > 0) {
+      long smallTblTotalKnownSize = aliasTotalKnownInputSize
+          - aliasKnownSize.longValue();
+      if (smallTblTotalKnownSize > ThresholdOfSmallTblSizeSum) {
+        //this table is not good to be a big table.
+        ret = true;
+      }
+    }
+    return ret;
+  }
+
   @Override
   public Task<? extends Serializable> processCurrentTask(MapRedTask currTask,
       ConditionalTask conditionalTask, Context context)
@@ -564,14 +580,9 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
         MapRedTask newTask = newTaskAlias.getFirst();
         bigTableAlias = newTaskAlias.getSecond();
 
-        Long aliasKnownSize = aliasToSize.get(bigTableAlias);
-        if (aliasKnownSize != null && aliasKnownSize.longValue() > 0) {
-          long smallTblTotalKnownSize = aliasTotalKnownInputSize
-              - aliasKnownSize.longValue();
-          if (smallTblTotalKnownSize > ThresholdOfSmallTblSizeSum) {
-            // this table is not good to be a big table.
-            continue;
-          }
+        if (cannotConvert(bigTableAlias, aliasToSize,
+            aliasTotalKnownInputSize, ThresholdOfSmallTblSizeSum)) {
+          continue;
         }
 
         // add into conditional task

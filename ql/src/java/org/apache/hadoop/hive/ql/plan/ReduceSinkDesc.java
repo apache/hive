@@ -71,13 +71,13 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
   public ReduceSinkDesc() {
   }
 
-  public ReduceSinkDesc(java.util.ArrayList<ExprNodeDesc> keyCols,
+  public ReduceSinkDesc(ArrayList<ExprNodeDesc> keyCols,
       int numDistributionKeys,
-      java.util.ArrayList<ExprNodeDesc> valueCols,
-      java.util.ArrayList<java.lang.String> outputKeyColumnNames,
+      ArrayList<ExprNodeDesc> valueCols,
+      ArrayList<String> outputKeyColumnNames,
       List<List<Integer>> distinctColumnIndices,
-      java.util.ArrayList<java.lang.String> outputValueColumnNames, int tag,
-      java.util.ArrayList<ExprNodeDesc> partitionCols, int numReducers,
+      ArrayList<String> outputValueColumnNames, int tag,
+      ArrayList<ExprNodeDesc> partitionCols, int numReducers,
       final TableDesc keySerializeInfo, final TableDesc valueSerializeInfo) {
     this.keyCols = keyCols;
     this.numDistributionKeys = numDistributionKeys;
