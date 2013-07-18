@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.exec;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -72,6 +74,8 @@ public class UDFArgumentException extends SemanticException {
     StringBuilder sb = new StringBuilder();
     sb.append(message);
     if (methods != null) {
+      // Sort the methods before omitting them.
+      sortMethods(methods);
       sb.append(". Possible choices: ");
       for (Method m: methods) {
         Type[] types = m.getGenericParameterTypes();
@@ -87,6 +91,28 @@ public class UDFArgumentException extends SemanticException {
       }
     }
     return sb.toString();
+  }
+  
+  private static void sortMethods(List<Method> methods) {
+    Collections.sort( methods, new Comparator<Method>(){
+
+      @Override
+      public int compare(Method m1, Method m2) {
+        int result = m1.getName().compareTo(m2.getName());
+        if (result != 0)
+          return result;
+        Type[] types1 = m1.getGenericParameterTypes();
+        Type[] types2 = m2.getGenericParameterTypes();
+        for (int i = 0; i < types1.length && i < types2.length; i++) {
+          String type1 = ObjectInspectorUtils.getTypeNameFromJavaClass(types1[i]);
+          String type2 = ObjectInspectorUtils.getTypeNameFromJavaClass(types2[i]);
+          if ((result = type1.compareTo(type2)) != 0)
+            return result;
+        }
+        return types1.length - types2.length;
+      }
+
+    });
   }
   
   /**
