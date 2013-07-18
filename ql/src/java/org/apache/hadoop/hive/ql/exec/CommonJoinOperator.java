@@ -331,6 +331,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     for (AbstractRowContainer<ArrayList<Object>> alw : storage) {
       alw.clear();
     }
+    super.startGroup();
   }
 
   protected int getNextSize(int sz) {

@@ -25,6 +25,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -74,7 +75,6 @@ public class ExecReducer extends MapReduceBase implements Reducer {
   private long cntr = 0;
   private long nextCntr = 1;
 
-  private static String[] fieldNames;
   public static final Log l4j = LogFactory.getLog("ExecReducer");
   private boolean isLogInfoEnabled = false;
 
@@ -86,13 +86,6 @@ public class ExecReducer extends MapReduceBase implements Reducer {
   // Input value serde needs to be an array to support different SerDe
   // for different tags
   private final SerDe[] inputValueDeserializer = new SerDe[Byte.MAX_VALUE];
-  static {
-    ArrayList<String> fieldNameArray = new ArrayList<String>();
-    for (Utilities.ReduceField r : Utilities.ReduceField.values()) {
-      fieldNameArray.add(r.toString());
-    }
-    fieldNames = fieldNameArray.toArray(new String[0]);
-  }
 
   TableDesc keyTableDesc;
   TableDesc[] valueTableDesc;
@@ -148,7 +141,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
         ois.add(valueObjectInspector[tag]);
         ois.add(PrimitiveObjectInspectorFactory.writableByteObjectInspector);
         rowObjectInspector[tag] = ObjectInspectorFactory
-            .getStandardStructObjectInspector(Arrays.asList(fieldNames), ois);
+            .getStandardStructObjectInspector(Utilities.fieldNameList, ois);
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -176,7 +169,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
 
   private BytesWritable groupKey;
 
-  ArrayList<Object> row = new ArrayList<Object>(3);
+  List<Object> row = new ArrayList<Object>(3);
   ByteWritable tag = new ByteWritable();
 
   public void reduce(Object key, Iterator values, OutputCollector output,

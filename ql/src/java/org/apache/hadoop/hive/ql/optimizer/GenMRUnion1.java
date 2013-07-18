@@ -226,6 +226,15 @@ public class GenMRUnion1 implements NodeProcessor {
     // future
     Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx.getMapCurrCtx();
 
+    if (union.getConf().isAllInputsInSameReducer()) {
+      // All inputs of this UnionOperator are in the same Reducer.
+      // We do not need to break the operator tree.
+      mapCurrCtx.put((Operator<? extends OperatorDesc>) nd,
+          new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(),
+              ctx.getCurrAliasId()));
+      return null;
+    }
+
     UnionParseContext uPrsCtx = uCtx.getUnionParseContext(union);
 
     ctx.setCurrUnionOp(union);

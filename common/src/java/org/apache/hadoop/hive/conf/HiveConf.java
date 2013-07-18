@@ -569,6 +569,7 @@ public class HiveConf extends Configuration {
     // It creates sub-directories in the final output, so should not be turned on in systems
     // where MAPREDUCE-1501 is not present
     HIVE_OPTIMIZE_UNION_REMOVE("hive.optimize.union.remove", false),
+    HIVEOPTCORRELATION("hive.optimize.correlation", false), // exploit intra-query correlations
 
     // whether hadoop map-reduce supports sub-directories. It was added by MAPREDUCE-1501.
     // Some optimizations can only be performed if the version of hadoop being used supports

@@ -1121,6 +1121,12 @@
 </property>
 
 <property>
+  <name>hive.optimize.correlation</name>
+  <value>false</value>
+  <description>exploit intra-query correlations.</description>
+</property>
+
+<property>
   <name>hive.optimize.reducededuplication.min.reducer</name>
   <value>4</value>
   <description>Reduce deduplication merges two RSs by moving key/parts/reducer-num of the child RS to parent RS.

@@ -436,7 +436,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    *          parent operator id
    * @throws HiveException
    */
-  private void initialize(Configuration hconf, ObjectInspector inputOI,
+  protected void initialize(Configuration hconf, ObjectInspector inputOI,
       int parentId) throws HiveException {
     LOG.info("Initializing child " + id + " " + getName());
     // Double the size of the array if needed
@@ -524,7 +524,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     LOG.debug("Start group Done");
   }
 
-  // If a operator wants to do some work at the end of a group
+  // If an operator wants to do some work at the end of a group
   public void endGroup() throws HiveException {
     LOG.debug("Ending group");
 
@@ -542,6 +542,20 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     }
 
     LOG.debug("End group Done");
+  }
+
+  // an blocking operator (e.g. GroupByOperator and JoinOperator) can
+  // override this method to forward its outputs
+  public void flush() throws HiveException {
+  }
+
+  public void processGroup(int tag) throws HiveException {
+    if (childOperators == null) {
+      return;
+    }
+    for (int i = 0; i < childOperatorsArray.length; i++) {
+      childOperatorsArray[i].processGroup(childOperatorsTag[i]);
+    }
   }
 
   protected boolean allInitializedParentsAreClosed() {
@@ -1481,6 +1495,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     return true;
   }
 
+  @Override
   public String toString() {
     return getName() + "[" + getIdentifier() + "]";
   }
