@@ -1,0 +1,82 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -e
+set -x
+if [[ -n "/usr/java/jdk1.7" ]]
+then
+  export JAVA_HOME=/usr/java/jdk1.7
+  export PATH=$JAVA_HOME/bin/:$PATH
+fi
+export ANT_OPTS="-Xmx1g -XX:MaxPermSize=256m -Dhttp.proxyHost=somehost -Dhttp.proxyPort=3128"
+cd /some/working/dir/
+(
+  mkdir -p {maven,ivy}
+  if [[ "git" = "svn" ]]
+  then
+    if [[ -n "branch-1" ]]
+    then
+      echo "Illegal argument for svn: branch 'branch-1'."
+      exit 1
+    fi
+    if [[ -d apache-source ]] && [[ ! -d apache-source/.svn ]]
+    then
+      rm -rf apache-source
+    fi
+    if [[ ! -d apache-source ]]
+    then
+      svn co git:///repo1 apache-source
+    fi
+    cd apache-source
+    svn revert -R .
+    rm -rf $(svn status --no-ignore)
+    svn update
+  elif [[ "git" = "git" ]]
+  then
+     if [[ -z "branch-1" ]]
+    then
+      echo "Illegal argument for git: branch name is required."
+      exit 1
+    fi
+    if [[ -d apache-source ]] && [[ ! -d apache-source/.git ]]
+    then
+      rm -rf apache-source	  
+    fi
+    if [[ ! -d apache-source ]]
+    then
+      git clone git:///repo1 apache-source
+    fi
+    cd apache-source
+    git fetch origin
+    git reset --hard HEAD && git clean -f -d
+    git checkout branch-1 || git checkout -b branch-1 origin/branch-1
+    git reset --hard origin/branch-1
+    git merge --ff-only origin/branch-1
+    git gc
+  else
+    echo "Unknown repository type 'git'"
+    exit 1
+  fi
+  patchCommandPath=/some/working/dir/scratch/smart-apply-patch.sh
+  patchFilePath=/some/working/dir/scratch/build.patch
+  if [[ -f $patchFilePath ]]
+  then
+    chmod +x $patchCommandPath
+    $patchCommandPath $patchFilePath
+  fi
+  ant -Dant=arg1 -Divy.default.ivy.user.dir=/some/working/dir/ivy -Dmvn.local.repo=/some/working/dir/maven clean package
+  ant -Dant=arg1 -Divy.default.ivy.user.dir=/some/working/dir/ivy -Dmvn.local.repo=/some/working/dir/maven -Dtestcase=nothing test
+) 2>&1 | tee /some/log/dir/source-prep.txt
+exit ${PIPESTATUS[0]}

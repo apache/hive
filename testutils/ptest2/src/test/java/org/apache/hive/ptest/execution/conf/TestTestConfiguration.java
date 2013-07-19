@@ -1,0 +1,85 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+package org.apache.hive.ptest.execution.conf;
+
+import java.util.Properties;
+import java.util.Set;
+
+import junit.framework.Assert;
+
+import org.apache.hive.ptest.execution.context.ExecutionContext;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.google.common.io.Resources;
+
+public class TestTestConfiguration {
+
+  private static final Logger LOG = LoggerFactory
+      .getLogger(TestTestConfiguration.class);
+
+  @Test
+  public void testGettersSetters() throws Exception {
+    ExecutionContextConfiguration execConf = ExecutionContextConfiguration.fromInputStream(
+        Resources.getResource("test-configuration.properties").openStream());
+    TestConfiguration conf = TestConfiguration.fromInputStream(
+        Resources.getResource("test-configuration.properties").openStream(), LOG);
+    Set<Host> expectedHosts = Sets.newHashSet(new Host("localhost", "hiveptest", new String[]{"/home/hiveptest"}, 2));
+    ExecutionContext executionContext = execConf.getExecutionContextProvider().createExecutionContext();
+    Assert.assertEquals(expectedHosts, executionContext.getHosts());
+    Assert.assertEquals("/tmp/hive-ptest-units/working/dir", execConf.getWorkingDirectory());
+    Assert.assertEquals("/etc/hiveptest/conf", execConf.getProfileDirectory());
+    Assert.assertEquals("/tmp/hive-ptest-units/working/dir/logs", execConf.getGlobalLogDirectory());
+    Assert.assertEquals("/home/brock/.ssh/id_rsa", executionContext.getPrivateKey());
+    Assert.assertEquals("git://github.com/apache/hive.git", conf.getRepository());
+    Assert.assertEquals("apache-github", conf.getRepositoryName());
+    Assert.assertEquals("trunk", conf.getBranch());
+    Assert.assertEquals("/tmp/hive-ptest-units/working/dir/working", executionContext.getLocalWorkingDirectory());
+    Assert.assertEquals("-Dtest.continue.on.failure=true -Dtest.silent=false", conf.getAntArgs());
+    Assert.assertNotNull(conf.toString());
+
+    Assert.assertEquals("", conf.getPatch());
+    conf.setPatch("Patch");
+    Assert.assertEquals("Patch", conf.getPatch());
+
+    conf.setRepository("Repository");
+    Assert.assertEquals("Repository", conf.getRepository());
+
+    conf.setRepositoryName("RepositoryName");
+    Assert.assertEquals("RepositoryName", conf.getRepositoryName());
+
+    conf.setBranch("Branch");
+    Assert.assertEquals("Branch", conf.getBranch());
+
+    conf.setAntArgs("AntArgs");
+    Assert.assertEquals("AntArgs", conf.getAntArgs());
+
+  }
+  @Test
+  public void testContext() throws Exception {
+    Properties properties = new Properties();
+    properties.load(Resources.getResource("test-configuration.properties").openStream());
+    Context context = new Context(Maps.fromProperties(properties));
+    Assert.assertEquals(context.getParameters(), (new TestConfiguration(context, LOG)).getContext().getParameters());
+
+  }
+}

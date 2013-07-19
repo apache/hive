@@ -1,0 +1,3 @@
+/tmp/hive-ptest-units/TestExecutionPhase/logs/failed/driver /some/local/dir/somehost-someuser-0/logs/
+/tmp/hive-ptest-units/TestExecutionPhase/scratch/hiveptest-driver.sh /some/local/dir/somehost-someuser-0/scratch/hiveptest-driver.sh
+bash /some/local/dir/somehost-someuser-0/scratch/hiveptest-driver.sh
