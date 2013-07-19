@@ -1,0 +1,10 @@
+
+BUILD FAILED
+/data/6/hive-local/p0415.mtv.cloudera.com-hiveptest-15/source/build.xml:349: Keepgoing execution: 1 of 13 iterations failed.
+
+Total time: 12 minutes 39 seconds
+'
+	at com.cloudera.hive.ptest.PTest.run(PTest.java:220)
+	at com.cloudera.hive.ptest.PTest.runAllTests(PTest.java:138)
+	at com.cloudera.hive.ptest.PTest.run(PTest.java:72)
+	at com.cloudera.hive.ptest.PTest.main(PTest.java:345)
