@@ -27,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -77,7 +78,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   private transient ExecMapperContext execContext;
 
-  private static int seqId;
+  private static AtomicInteger seqId;
 
   // It can be optimized later so that an operator operator (init/close) is performed
   // only after that operation has been performed on all the parents. This will require
@@ -104,17 +105,17 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   // all operators
 
   static {
-    seqId = 0;
+    seqId = new AtomicInteger(0);
   }
 
   private boolean useBucketizedHiveInputFormat;
 
   public Operator() {
-    id = String.valueOf(seqId++);
+    id = String.valueOf(seqId.getAndIncrement());
   }
 
   public static void resetId() {
-    seqId = 0;
+    seqId.set(0);
   }
 
   /**
@@ -124,8 +125,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    *          Used to report progress of certain operators.
    */
   public Operator(Reporter reporter) {
+    this();
     this.reporter = reporter;
-    id = String.valueOf(seqId++);
   }
 
   public void setChildOperators(
