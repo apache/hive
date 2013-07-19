@@ -65,7 +65,7 @@ public class MapJoinRowContainer<Row> extends AbstractRowContainer<Row> {
    * @return number of elements in the RowContainer
    */
   @Override
-  public int size() {
+  public long size() {
     return list.size();
   }
 
