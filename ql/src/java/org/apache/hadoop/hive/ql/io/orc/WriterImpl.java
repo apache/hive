@@ -1484,7 +1484,10 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     OrcProto.PostScript.Builder builder =
       OrcProto.PostScript.newBuilder()
         .setCompression(writeCompressionKind(compress))
-        .setFooterLength(footerLength);
+        .setFooterLength(footerLength)
+        .setMagic(OrcFile.MAGIC)
+        .addVersion(OrcFile.MAJOR_VERSION)
+        .addVersion(OrcFile.MINOR_VERSION);
     if (compress != CompressionKind.NONE) {
       builder.setCompressionBlockSize(bufferSize);
     }
