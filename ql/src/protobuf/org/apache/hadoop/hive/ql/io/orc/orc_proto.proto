@@ -135,4 +135,7 @@ message PostScript {
   optional uint64 footerLength = 1;
   optional CompressionKind compression = 2;
   optional uint64 compressionBlockSize = 3;
+  repeated uint32 version = 4 [packed = true];
+  // Leave this last in the record
+  optional string magic = 8000;
 }
