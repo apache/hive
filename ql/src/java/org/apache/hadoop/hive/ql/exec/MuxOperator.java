@@ -31,10 +31,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MuxDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 
 /**
  * MuxOperator is used in the Reduce side of MapReduce jobs optimized by Correlation Optimizer.
@@ -75,12 +73,14 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
   protected static final Log LOG = LogFactory.getLog(MuxOperator.class.getName());
 
   /**
-   * Handler is used to construct key-value-tag structure and assign original tag to a row.
+   * Handler is used to construct the key-value structure.
+   * This structure is needed by child JoinOperators and GroupByOperators of
+   * a MuxOperator to function correctly.
    */
   protected static class Handler {
     private final ObjectInspector outputObjInspector;
     private final int tag;
-    private final ByteWritable tagByteWritable;
+
     /**
      * The evaluators for the key columns. Key columns decide the sort order on
      * the reducer side. Key columns are passed to the reducer in the "key".
@@ -117,7 +117,6 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
       outputValue = new Object[valueEval.length];
 
       this.tag = tag;
-      this.tagByteWritable = new ByteWritable((byte)tag.intValue());
 
       ObjectInspector keyObjectInspector = initEvaluatorsAndReturnStruct(keyEval,
           outputKeyColumnNames, inputObjInspector);
@@ -126,10 +125,9 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
       List<ObjectInspector> ois = new ArrayList<ObjectInspector>();
       ois.add(keyObjectInspector);
       ois.add(valueObjectInspector);
-      ois.add(PrimitiveObjectInspectorFactory.writableByteObjectInspector);
       this.outputObjInspector = ObjectInspectorFactory.getStandardStructObjectInspector(
-              Utilities.fieldNameList, ois);
-      this.forwardedRow = new ArrayList<Object>(3);
+              Utilities.reduceFieldNameList, ois);
+      this.forwardedRow = new ArrayList<Object>(Utilities.reduceFieldNameList.size());
     }
 
     public ObjectInspector getOutputObjInspector() {
@@ -155,7 +153,6 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
       // to a list.
       forwardedRow.add(Arrays.asList(outputKey));
       forwardedRow.add(Arrays.asList(outputValue));
-      forwardedRow.add(tagByteWritable);
       return forwardedRow;
     }
   }
@@ -166,23 +163,14 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
   private transient boolean[] processGroupCalled;
   private Handler[] handlers;
 
-  //counters for debugging
-  private transient long[] cntr;
-  private transient long[] nextCntr;
-
-  private long getNextCntr(long cntr) {
-    // A very simple counter to keep track of number of rows processed by an
-    // operator. It dumps
-    // every 1 million times, and quickly before that
-    if (cntr >= 1000000) {
-      return cntr + 1000000;
-    }
-    return 10 * cntr;
-  }
+  // Counters for debugging, we cannot use existing counters (cntr and nextCntr)
+  // in Operator since we want to individually track the number of rows from different inputs.
+  private transient long[] cntrs;
+  private transient long[] nextCntrs;
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
-    // A MuxOperator should only has a single child
+    // A MuxOperator should only have a single child
     if (childOperatorsArray.length != 1) {
       throw new HiveException(
           "Expected number of children is 1. Found : " + childOperatorsArray.length);
@@ -192,8 +180,8 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
     processGroupCalled = new boolean[numParents];
     outputObjectInspectors = new ObjectInspector[numParents];
     handlers = new Handler[numParents];
-    cntr = new long[numParents];
-    nextCntr = new long[numParents];
+    cntrs = new long[numParents];
+    nextCntrs = new long[numParents];
     for (int i = 0; i < numParents; i++) {
       processGroupCalled[i] = false;
       if (conf.getParentToKeyCols().get(i) == null) {
@@ -213,8 +201,8 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
         forward[i] = false;
         outputObjectInspectors[i] = handlers[i].getOutputObjInspector();
       }
-      cntr[i] = 0;
-      nextCntr[i] = 1;
+      cntrs[i] = 0;
+      nextCntrs[i] = 1;
     }
     initializeChildren(hconf);
   }
@@ -239,43 +227,28 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
 
   @Override
   public void processOp(Object row, int tag) throws HiveException {
-    forward(row, tag);
-  }
-
-  protected void forward(Object row, int tag)
-      throws HiveException {
-
-    if (childOperatorsArray == null && childOperators != null) {
-      throw new HiveException(
-          "Internal Hive error during operator initialization.");
-    }
-
-    if ((childOperatorsArray == null) || (getDone())) {
-      return;
+    if (isLogInfoEnabled) {
+      cntrs[tag]++;
+      if (cntrs[tag] == nextCntrs[tag]) {
+        LOG.info(id + ", tag=" + tag + ", forwarding " + cntrs[tag] + " rows");
+        nextCntrs[tag] = getNextCntr(cntrs[tag]);
+      }
     }
 
     int childrenDone = 0;
     for (int i = 0; i < childOperatorsArray.length; i++) {
-      Operator<? extends OperatorDesc> o = childOperatorsArray[i];
-      if (o.getDone()) {
+      Operator<? extends OperatorDesc> child = childOperatorsArray[i];
+      if (child.getDone()) {
         childrenDone++;
       } else {
         if (forward[tag]) {
           // No need to evaluate, just forward it.
-          o.process(row, tag);
+          child.process(row, tag);
         } else {
           // Call the corresponding handler to evaluate this row and
           // forward the result
-          o.process(handlers[tag].process(row), handlers[tag].getTag());
+          child.process(handlers[tag].process(row), handlers[tag].getTag());
         }
-      }
-    }
-
-    if (isLogInfoEnabled) {
-      cntr[tag]++;
-      if (cntr[tag] == nextCntr[tag]) {
-        LOG.info(id + ", tag=" + tag + ", forwarding " + cntr[tag] + " rows");
-        nextCntr[tag] = getNextCntr(cntr[tag]);
       }
     }
 
@@ -283,6 +256,16 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
     if (childrenDone == childOperatorsArray.length) {
       setDone(true);
     }
+  }
+
+  @Override
+  public void forward(Object row, ObjectInspector rowInspector)
+      throws HiveException {
+    // Because we need to revert the tag of a row to its old tag and
+    // we cannot pass new tag to this method which is used to get
+    // the old tag from the mapping of newTagToOldTag, we bypass
+    // this method in MuxOperator and directly call process on children
+    // in processOp() method..
   }
 
   @Override
@@ -320,7 +303,7 @@ public class MuxOperator extends Operator<MuxDesc> implements Serializable{
   @Override
   protected void closeOp(boolean abort) throws HiveException {
     for (int i = 0; i < numParents; i++) {
-      LOG.info(id + ", tag=" + i + ", forwarded " + cntr[i] + " rows");
+      LOG.info(id + ", tag=" + i + ", forwarded " + cntrs[i] + " rows");
     }
   }
 

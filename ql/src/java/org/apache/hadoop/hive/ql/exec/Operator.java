@@ -795,7 +795,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     parentOperators.set(parentIndex, newParent);
   }
 
-  private long getNextCntr(long cntr) {
+  protected long getNextCntr(long cntr) {
     // A very simple counter to keep track of number of rows processed by an
     // operator. It dumps
     // every 1 million times, and quickly before that
