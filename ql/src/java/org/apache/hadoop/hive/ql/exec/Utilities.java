@@ -123,9 +123,9 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.Adjacency;
 import org.apache.hadoop.hive.ql.plan.api.Graph;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
@@ -171,17 +171,16 @@ public final class Utilities {
    * ReduceField:
    * KEY: record key
    * VALUE: record value
-   * ALIAS: the tag identifying the source of a record
    */
   public static enum ReduceField {
-    KEY, VALUE, ALIAS
+    KEY, VALUE
   };
 
-  public static List<String> fieldNameList;
+  public static List<String> reduceFieldNameList;
   static {
-    fieldNameList = new ArrayList<String>();
+    reduceFieldNameList = new ArrayList<String>();
     for (ReduceField r : ReduceField.values()) {
-      fieldNameList.add(r.toString());
+      reduceFieldNameList.add(r.toString());
     }
   }
 

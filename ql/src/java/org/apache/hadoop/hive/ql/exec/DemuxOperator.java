@@ -35,10 +35,8 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDe;
-import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.util.ReflectionUtils;
 
 /**
@@ -53,98 +51,29 @@ public class DemuxOperator extends Operator<DemuxDesc>
   private static final long serialVersionUID = 1L;
   protected static final Log LOG = LogFactory.getLog(DemuxOperator.class.getName());
 
-  /**
-   * Handler is used to assign original tag (oldTag) to a row and
-   * track how many rows are forwarded to every child of DemuxOperator.
-   */
-  protected static class Handler {
-    // oldTag is the tag assigned to ReduceSinkOperators BEFORE Correlation Optimizer
-    // optimizes the operator tree. newTag is the tag assigned to ReduceSinkOperators
-    // AFTER Correlation Optimizer optimizes the operator tree.
-    // Example: we have an operator tree shown below ...
-    //        JOIN2
-    //       /     \
-    //   GBY1       JOIN1
-    //    |         /    \
-    //   RS1       RS2   RS3
-    // If GBY1, JOIN1, and JOIN2 are executed in the same Reducer
-    // (optimized by Correlation Optimizer), we will have ...
-    // oldTag: RS1:0, RS2:0, RS3:1
-    // newTag: RS1:0, RS2:1, RS3:2
-    // We need to know the mapping from the newTag to oldTag and revert
-    // the newTag to oldTag to make operators in the operator tree
-    // function correctly.
-    private final byte newTag;
-    private final byte oldTag;
-    private final byte childIndex;
-    private final ByteWritable oldTagByteWritable;
-    private final List<Object> forwardedRow;
+  // Counters for debugging, we cannot use existing counters (cntr and nextCntr)
+  // in Operator since we want to individually track the number of rows from
+  // different paths.
+  private transient long[] cntrs;
+  private transient long[] nextCntrs;
 
-    // counters for debugging
-    private transient long cntr = 0;
-    private transient long nextCntr = 1;
-
-    private long getNextCntr(long cntr) {
-      // A very simple counter to keep track of number of rows processed by an
-      // operator. It dumps
-      // every 1 million times, and quickly before that
-      if (cntr >= 1000000) {
-        return cntr + 1000000;
-      }
-      return 10 * cntr;
-    }
-
-    public long getCntr() {
-      return this.cntr;
-    }
-
-    private final Log log;
-    private final boolean isLogInfoEnabled;
-    private final String id;
-
-    public Handler(byte newTag, byte childIndex, byte oldTag, Log LOG, String id)
-            throws HiveException {
-      this.newTag = newTag;
-      this.oldTag = oldTag;
-      this.childIndex = childIndex;
-      this.oldTagByteWritable = new ByteWritable(oldTag);
-      this.log = LOG;
-      this.isLogInfoEnabled = LOG.isInfoEnabled();
-      this.id = id;
-      this.forwardedRow = new ArrayList<Object>(3);
-    }
-
-    public byte getOldTag() {
-      return oldTag;
-    }
-
-    public Object process(Object row) throws HiveException {
-      forwardedRow.clear();
-      List<Object> thisRow = (List<Object>) row;
-      forwardedRow.add(thisRow.get(0));
-      forwardedRow.add(thisRow.get(1));
-      forwardedRow.add(oldTagByteWritable);
-
-      if (isLogInfoEnabled) {
-        cntr++;
-        if (cntr == nextCntr) {
-          log.info(id + " (newTag, childIndex, oldTag)=(" + newTag + ", " + childIndex + ", "
-              + oldTag + "), forwarding " + cntr + " rows");
-          nextCntr = getNextCntr(cntr);
-        }
-      }
-
-      return forwardedRow;
-    }
-
-    public void printCloseOpLog() {
-      log.info(id + " (newTag, childIndex, oldTag)=(" + newTag + ", " + childIndex + ", "
-          + oldTag + "),  forwarded " + cntr + " rows");
-    }
-  }
-
-  // The mapping from a newTag to its corresponding oldTag. Please see comments in
-  // DemuxOperator.Handler for explanations of newTag and oldTag.
+  // The mapping from a newTag to its corresponding oldTag.
+  // oldTag is the tag assigned to ReduceSinkOperators BEFORE Correlation Optimizer
+  // optimizes the operator tree. newTag is the tag assigned to ReduceSinkOperators
+  // AFTER Correlation Optimizer optimizes the operator tree.
+  // Example: we have an operator tree shown below ...
+  //        JOIN2
+  //       /     \
+  //   GBY1       JOIN1
+  //    |         /    \
+  //   RS1       RS2   RS3
+  // If GBY1, JOIN1, and JOIN2 are executed in the same Reducer
+  // (optimized by Correlation Optimizer), we will have ...
+  // oldTag: RS1:0, RS2:0, RS3:1
+  // newTag: RS1:0, RS2:1, RS3:2
+  // We need to know the mapping from the newTag to oldTag and revert
+  // the newTag to oldTag to make operators in the operator tree
+  // function correctly.
   private Map<Integer, Integer> newTagToOldTag =
       new HashMap<Integer, Integer>();
 
@@ -152,10 +81,6 @@ public class DemuxOperator extends Operator<DemuxDesc>
   // of this operator.
   private Map<Integer, Integer> newTagToChildIndex =
       new HashMap<Integer, Integer>();
-
-  // The mapping from a newTag to its corresponding handler
-  private Map<Integer, Handler> newTagToDispatchHandler =
-      new HashMap<Integer, Handler>();
 
   // The mapping from the index of a child operator to its corresponding
   // inputObjectInspectors
@@ -183,23 +108,17 @@ public class DemuxOperator extends Operator<DemuxDesc>
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
-    this.newTagToOldTag = conf.getNewTagToOldTag();
-    this.newTagToChildIndex = conf.getNewTagToChildIndex();
-    this.newTagToDispatchHandler = new HashMap<Integer, Handler>();
-    this.childInputObjInspectors = new HashMap<Integer, ObjectInspector[]>();
-
-    // For every newTag (every newTag corresponds to a ReduceSinkOperator),
-    // create a handler. Also, we initialize childInputObjInspectors at here.
-    for (Entry<Integer, Integer> entry: newTagToOldTag.entrySet()) {
-      int newTag = entry.getKey();
-      int oldTag = entry.getValue();
-      int childIndex = newTagToChildIndex.get(newTag);
-      Handler handler =
-          new Handler((byte)newTag, (byte)childIndex, (byte)oldTag, LOG, id);
-      newTagToDispatchHandler.put(newTag, handler);
-      int childParentsCount = conf.getChildIndexToOriginalNumParents().get(childIndex);
-      childInputObjInspectors.put(childIndex, new ObjectInspector[childParentsCount]);
+    // A DemuxOperator should have at least one child
+    if (childOperatorsArray.length == 0) {
+      throw new HiveException(
+          "Expected number of children is at least 1. Found : " + childOperatorsArray.length);
     }
+
+    newTagToOldTag = conf.getNewTagToOldTag();
+    newTagToChildIndex = conf.getNewTagToChildIndex();
+    childInputObjInspectors = new HashMap<Integer, ObjectInspector[]>();
+    cntrs = new long[newTagToOldTag.size()];
+    nextCntrs = new long[newTagToOldTag.size()];
 
     try {
       // We populate inputInspectors for all children of this DemuxOperator.
@@ -208,6 +127,8 @@ public class DemuxOperator extends Operator<DemuxDesc>
         int newTag = e1.getKey();
         int oldTag = e1.getValue();
         int childIndex = newTagToChildIndex.get(newTag);
+        cntrs[newTag] = 0;
+        nextCntrs[newTag] = 0;
         TableDesc keyTableDesc = conf.getKeysSerializeInfos().get(newTag);
         Deserializer inputKeyDeserializer = (SerDe) ReflectionUtils.newInstance(keyTableDesc
             .getDeserializerClass(), null);
@@ -221,10 +142,15 @@ public class DemuxOperator extends Operator<DemuxDesc>
         List<ObjectInspector> oi = new ArrayList<ObjectInspector>();
         oi.add(inputKeyDeserializer.getObjectInspector());
         oi.add(inputValueDeserializer.getObjectInspector());
-        oi.add(PrimitiveObjectInspectorFactory.writableByteObjectInspector);
+        int childParentsCount = conf.getChildIndexToOriginalNumParents().get(childIndex);
+        // Multiple newTags can point to the same child (e.g. when the child is a JoinOperator).
+        // So, we first check if childInputObjInspectors contains the key of childIndex.
+        if (!childInputObjInspectors.containsKey(childIndex)) {
+          childInputObjInspectors.put(childIndex, new ObjectInspector[childParentsCount]);
+        }
         ObjectInspector[] ois = childInputObjInspectors.get(childIndex);
         ois[oldTag] = ObjectInspectorFactory
-            .getStandardStructObjectInspector(Utilities.fieldNameList, oi);
+            .getStandardStructObjectInspector(Utilities.reduceFieldNameList, oi);
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
@@ -257,9 +183,6 @@ public class DemuxOperator extends Operator<DemuxDesc>
   protected void initializeChildren(Configuration hconf) throws HiveException {
     state = State.INIT;
     LOG.info("Operator " + id + " " + getName() + " initialized");
-    if (childOperators == null) {
-      return;
-    }
     LOG.info("Initializing children of " + id + " " + getName());
     for (int i = 0; i < childOperatorsArray.length; i++) {
       LOG.info("Initializing child " + i + " " + childOperatorsArray[i].getIdentifier() + " " +
@@ -304,52 +227,46 @@ public class DemuxOperator extends Operator<DemuxDesc>
 
   @Override
   public void processOp(Object row, int tag) throws HiveException {
-    int newTag = tag;
-    forward(row, inputObjInspectors[newTag]);
-  }
-
-  @Override
-  public void forward(Object row, ObjectInspector rowInspector)
-      throws HiveException {
-    if ((++outputRows % 1000) == 0) {
-      if (counterNameToEnum != null) {
-        incrCounter(numOutputRowsCntr, outputRows);
-        outputRows = 0;
+    int childIndex = newTagToChildIndex.get(tag);
+    int oldTag = newTagToOldTag.get(tag);
+    if (isLogInfoEnabled) {
+      cntrs[tag]++;
+      if (cntrs[tag] == nextCntrs[tag]) {
+        LOG.info(id + " (newTag, childIndex, oldTag)=(" + tag + ", " + childIndex + ", "
+            + oldTag + "), forwarding " + cntrs[tag] + " rows");
+        nextCntrs[tag] = getNextCntr(cntrs[tag]);
       }
     }
 
-    if (childOperatorsArray == null && childOperators != null) {
-      throw new HiveException("Internal Hive error during operator initialization.");
-    }
-
-    if ((childOperatorsArray == null) || (getDone())) {
-      return;
-    }
-
-    List<Object> thisRow = (List<Object>) row;
-    assert thisRow.size() == 3;
-    int newTag = ((ByteWritable) thisRow.get(2)).get();
-    Handler handler = newTagToDispatchHandler.get(newTag);
-    int childIndex = newTagToChildIndex.get(newTag);
-    Operator<? extends OperatorDesc> o = childOperatorsArray[childIndex];
-    if (o.getDone()) {
+    Operator<? extends OperatorDesc> child = childOperatorsArray[childIndex];
+    if (child.getDone()) {
       childrenDone++;
     } else {
-      o.process(handler.process(row), handler.getOldTag());
+      child.process(row, oldTag);
     }
 
     // if all children are done, this operator is also done
     if (childrenDone == childOperatorsArray.length) {
       setDone(true);
     }
+  }
 
+  @Override
+  public void forward(Object row, ObjectInspector rowInspector)
+      throws HiveException {
+    // DemuxOperator forwards a row to exactly one child in its children list
+    // based on the tag and newTagToChildIndex in processOp() method.
+    // So we need not to do anything in here.
   }
 
   @Override
   protected void closeOp(boolean abort) throws HiveException {
-    // log the number of rows forwarded from each dispatcherHandler
-    for (Handler handler: newTagToDispatchHandler.values()) {
-      handler.printCloseOpLog();
+    for (Entry<Integer, Integer> entry: newTagToOldTag.entrySet()) {
+      int newTag = entry.getKey();
+      int oldTag = entry.getValue();
+      int childIndex = newTagToChildIndex.get(newTag);
+      LOG.info(id + " (newTag, childIndex, oldTag)=(" + newTag + ", " + childIndex + ", "
+          + oldTag + "),  forwarded " + cntrs[newTag] + " rows");
     }
   }
 
