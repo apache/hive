@@ -508,6 +508,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             null, null, null, null);
         if (users != null && users.size() > 0) {
           boolean first = true;
+          sortPrivileges(users);
           for (HiveObjectPrivilege usr : users) {
             if (!first) {
               outStream.write(terminator);
@@ -563,6 +564,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
               principalDesc.getType(), dbName, null, null, null);
           if (dbs != null && dbs.size() > 0) {
             boolean first = true;
+            sortPrivileges(dbs);
             for (HiveObjectPrivilege db : dbs) {
               if (!first) {
                 outStream.write(terminator);
@@ -586,6 +588,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
                   columnName);
               if (columnss != null && columnss.size() > 0) {
                 boolean first = true;
+                sortPrivileges(columnss);
                 for (HiveObjectPrivilege col : columnss) {
                   if (!first) {
                     outStream.write(terminator);
@@ -606,6 +609,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
                     .getType(), dbName, tableName, partValues, null);
             if (parts != null && parts.size() > 0) {
               boolean first = true;
+              sortPrivileges(parts);
               for (HiveObjectPrivilege part : parts) {
                 if (!first) {
                   outStream.write(terminator);
@@ -625,6 +629,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
                 dbName, tableName, null, null);
             if (tbls != null && tbls.size() > 0) {
               boolean first = true;
+              sortPrivileges(tbls);
               for (HiveObjectPrivilege tbl : tbls) {
                 if (!first) {
                   outStream.write(terminator);
@@ -655,6 +660,18 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       IOUtils.closeStream((FSDataOutputStream) outStream);
     }
     return 0;
+  }
+
+  private static void sortPrivileges(List<HiveObjectPrivilege> privileges) {
+    Collections.sort(privileges, new Comparator<HiveObjectPrivilege>() {
+
+      @Override
+      public int compare(HiveObjectPrivilege one, HiveObjectPrivilege other) {
+        return one.getGrantInfo().getPrivilege().compareTo(other.getGrantInfo().getPrivilege());
+      }
+
+    });
+
   }
 
   private int grantOrRevokePrivileges(List<PrincipalDesc> principals,
