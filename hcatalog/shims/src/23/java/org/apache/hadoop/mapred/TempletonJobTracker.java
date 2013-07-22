@@ -32,8 +32,7 @@ public class TempletonJobTracker {
     /**
      * Create a connection to the Job Tracker.
      */
-    public TempletonJobTracker(InetSocketAddress addr,
-                               Configuration conf)
+    public TempletonJobTracker(Configuration conf)
         throws IOException {
         
         jc = new JobClient(conf);

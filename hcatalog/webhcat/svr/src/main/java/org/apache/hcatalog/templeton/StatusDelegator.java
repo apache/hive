@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.JobProfile;
 import org.apache.hadoop.mapred.JobStatus;
+import org.apache.hcatalog.shims.HCatHadoopShims;
 import org.apache.hadoop.mapred.TempletonJobTracker;
 import org.apache.hcatalog.templeton.tool.JobState;
 
@@ -44,8 +45,7 @@ public class StatusDelegator extends TempletonDelegator {
         TempletonJobTracker tracker = null;
         JobState state = null;
         try {
-            tracker = new TempletonJobTracker(getAddress(appConf),
-                                              appConf);
+            tracker = new TempletonJobTracker(appConf);
             JobID jobid = StatusDelegator.StringToJobID(id);
             if (jobid == null)
                 throw new BadParam("Invalid jobid: " + id);
