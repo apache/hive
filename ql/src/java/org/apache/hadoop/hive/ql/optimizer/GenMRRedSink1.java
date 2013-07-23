@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
 
@@ -64,19 +63,20 @@ public class GenMRRedSink1 implements NodeProcessor {
     GenMapRedCtx mapredCtx = mapCurrCtx.get(stack.get(stack.size() - 2));
     Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
     MapredWork currPlan = (MapredWork) currTask.getWork();
-    Operator<? extends OperatorDesc> currTopOp = mapredCtx.getCurrTopOp();
     String currAliasId = mapredCtx.getCurrAliasId();
-    Operator<? extends OperatorDesc> reducer = op.getChildOperators().get(0);
-    HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap = ctx
-        .getOpTaskMap();
-    Task<? extends Serializable> opMapTask = opTaskMap.get(reducer);
 
-    ctx.setCurrTopOp(currTopOp);
+    if (op.getNumChild() != 1) {
+      throw new IllegalStateException("Expecting operator " + op + " to have one child. " +
+          "But found multiple children : " + op.getChildOperators());
+    }
+    Operator<? extends OperatorDesc> reducer = op.getChildOperators().get(0);
+    Task<? extends Serializable> oldTask = ctx.getOpTaskMap().get(reducer);
+
     ctx.setCurrAliasId(currAliasId);
     ctx.setCurrTask(currTask);
 
     // If the plan for this reducer does not exist, initialize the plan
-    if (opMapTask == null) {
+    if (oldTask == null) {
       if (currPlan.getReducer() == null) {
         GenMapRedUtils.initPlan(op, ctx);
       } else {
@@ -85,14 +85,18 @@ public class GenMRRedSink1 implements NodeProcessor {
     } else {
       // This will happen in case of joins. The current plan can be thrown away
       // after being merged with the original plan
-      GenMapRedUtils.joinPlan(op, null, opMapTask, ctx, -1, false);
-      currTask = opMapTask;
+      GenMapRedUtils.joinPlan(currTask, oldTask, ctx);
+      currTask = oldTask;
       ctx.setCurrTask(currTask);
     }
 
-    mapCurrCtx.put(op, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(),
-        ctx.getCurrAliasId()));
-    return null;
-  }
+    mapCurrCtx.put(op, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrAliasId()));
 
+    if (GenMapRedUtils.hasBranchFinished(nodeOutputs)) {
+      ctx.addRootIfPossible(currTask);
+      return false;
+    }
+
+    return true;
+  }
 }

@@ -61,7 +61,7 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-0 depends on stages: Stage-1
-  Stage-2 depends on stages: Stage-0
+  Stage-3 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -198,7 +198,7 @@ STAGE PLANS:
               name: default.test_table3
 #### A masked pattern was here ####
 
-  Stage: Stage-2
+  Stage: Stage-3
     Stats-Aggr Operator
 #### A masked pattern was here ####
 

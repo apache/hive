@@ -75,6 +75,13 @@ public class DefaultGraphWalker implements GraphWalker {
    * @throws SemanticException
    */
   public void dispatch(Node nd, Stack<Node> ndStack) throws SemanticException {
+    dispatchAndReturn(nd, ndStack);
+  }
+
+  /**
+   * Returns dispatch result
+   */
+  public <T> T dispatchAndReturn(Node nd, Stack<Node> ndStack) throws SemanticException {
     Object[] nodeOutputs = null;
     if (nd.getChildren() != null) {
       nodeOutputs = new Object[nd.getChildren().size()];
@@ -86,6 +93,7 @@ public class DefaultGraphWalker implements GraphWalker {
 
     Object retVal = dispatcher.dispatch(nd, ndStack, nodeOutputs);
     retMap.put(nd, retVal);
+    return (T) retVal;
   }
 
   /**

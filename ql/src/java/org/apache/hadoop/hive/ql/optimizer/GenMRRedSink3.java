@@ -101,11 +101,11 @@ public class GenMRRedSink3 implements NodeProcessor {
       ctx.setCurrTask(reducerTask);
     }
 
-    mapCurrCtx.put(op, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(),
+    mapCurrCtx.put(op, new GenMapRedCtx(ctx.getCurrTask(),
         ctx.getCurrAliasId()));
 
     // the union operator has been processed
     ctx.setCurrUnionOp(null);
-    return null;
+    return true;
   }
 }

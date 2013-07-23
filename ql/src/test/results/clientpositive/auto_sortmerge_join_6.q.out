@@ -71,9 +71,21 @@ POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:stri
 POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- A SMB join is being followed by a regular join on a non-bucketed table on a different key
+
+-- Three tests below are all the same query with different alias, which changes dispatch order of GenMapRedWalker
+-- This is dependent to iteration order of HashMap, so can be meaningless in non-sun jdk
+-- b = TS[0]-OP[13]-MAPJOIN[11]-RS[6]-JOIN[8]-SEL[9]-FS[10]
+-- c = TS[1]-RS[7]-JOIN[8]
+-- a = TS[2]-MAPJOIN[11]
 explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.value = a.value
 PREHOOK: type: QUERY
 POSTHOOK: query: -- A SMB join is being followed by a regular join on a non-bucketed table on a different key
+
+-- Three tests below are all the same query with different alias, which changes dispatch order of GenMapRedWalker
+-- This is dependent to iteration order of HashMap, so can be meaningless in non-sun jdk
+-- b = TS[0]-OP[13]-MAPJOIN[11]-RS[6]-JOIN[8]-SEL[9]-FS[10]
+-- c = TS[1]-RS[7]-JOIN[8]
+-- a = TS[2]-MAPJOIN[11]
 explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.value = a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -86,6 +98,149 @@ POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME tbl1) a) (TOK_TABREF (TOK_TABNAME tbl2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME src) c) (= (. (TOK_TABLE_OR_COL c) value) (. (TOK_TABLE_OR_COL a) value)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
+
+STAGE DEPENDENCIES:
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Sorted Merge Bucket Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {value}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col1
+              Position of Big Table: 0
+              Reduce Output Operator
+                key expressions:
+                      expr: _col1
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: _col1
+                      type: string
+                tag: 0
+        c 
+          TableScan
+            alias: c
+            Reduce Output Operator
+              key expressions:
+                    expr: value
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: value
+                    type: string
+              tag: 1
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 
+            1 
+          handleSkewJoin: false
+          Select Operator
+            Group By Operator
+              aggregations:
+                    expr: count()
+              bucketGroup: false
+              mode: hash
+              outputColumnNames: _col0
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              sort order: 
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.value = a.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.value = a.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+2654
+PREHOOK: query: -- d = TS[0]-RS[7]-JOIN[8]-SEL[9]-FS[10]
+-- b = TS[1]-OP[13]-MAPJOIN[11]-RS[6]-JOIN[8]
+-- a = TS[2]-MAPJOIN[11]
+explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src d on d.value = a.value
+PREHOOK: type: QUERY
+POSTHOOK: query: -- d = TS[0]-RS[7]-JOIN[8]-SEL[9]-FS[10]
+-- b = TS[1]-OP[13]-MAPJOIN[11]-RS[6]-JOIN[8]
+-- a = TS[2]-MAPJOIN[11]
+explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src d on d.value = a.value
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME tbl1) a) (TOK_TABREF (TOK_TABNAME tbl2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME src) d) (= (. (TOK_TABLE_OR_COL d) value) (. (TOK_TABLE_OR_COL a) value)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -120,9 +275,9 @@ STAGE PLANS:
                       expr: _col1
                       type: string
                 tag: 0
-        c 
+        d 
           TableScan
-            alias: c
+            alias: d
             Reduce Output Operator
               key expressions:
                     expr: value
@@ -188,13 +343,156 @@ STAGE PLANS:
       limit: -1
 
 
-PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.value = a.value
+PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src d on d.value = a.value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Input: default@tbl1
 PREHOOK: Input: default@tbl2
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src c on c.value = a.value
+POSTHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src d on d.value = a.value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@tbl1
+POSTHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+2654
+PREHOOK: query: -- b = TS[0]-OP[13]-MAPJOIN[11]-RS[6]-JOIN[8]-SEL[9]-FS[10]
+-- a = TS[1]-MAPJOIN[11]
+-- h = TS[2]-RS[7]-JOIN[8]
+explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src h on h.value = a.value
+PREHOOK: type: QUERY
+POSTHOOK: query: -- b = TS[0]-OP[13]-MAPJOIN[11]-RS[6]-JOIN[8]-SEL[9]-FS[10]
+-- a = TS[1]-MAPJOIN[11]
+-- h = TS[2]-RS[7]-JOIN[8]
+explain select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src h on h.value = a.value
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: tbl1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl2.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl3.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl3.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl4.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tbl4.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME tbl1) a) (TOK_TABREF (TOK_TABNAME tbl2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME src) h) (= (. (TOK_TABLE_OR_COL h) value) (. (TOK_TABLE_OR_COL a) value)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-3 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Sorted Merge Bucket Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {value}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col1
+              Position of Big Table: 0
+              Reduce Output Operator
+                key expressions:
+                      expr: _col1
+                      type: string
+                sort order: +
+                Map-reduce partition columns:
+                      expr: _col1
+                      type: string
+                tag: 0
+        h 
+          TableScan
+            alias: h
+            Reduce Output Operator
+              key expressions:
+                    expr: value
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: value
+                    type: string
+              tag: 1
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 
+            1 
+          handleSkewJoin: false
+          Select Operator
+            Group By Operator
+              aggregations:
+                    expr: count()
+              bucketGroup: false
+              mode: hash
+              outputColumnNames: _col0
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              sort order: 
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src h on h.value = a.value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@tbl1
+PREHOOK: Input: default@tbl2
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) FROM tbl1 a JOIN tbl2 b ON a.key = b.key join src h on h.value = a.value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Input: default@tbl1
@@ -703,12 +1001,12 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME tbl1) a) (TOK_TABREF (TOK_TABNAME tbl2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME tbl4) c) (= (. (TOK_TABLE_OR_COL c) value) (. (TOK_TABLE_OR_COL a) value)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
         a 
@@ -769,7 +1067,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
-  Stage: Stage-2
+  Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
@@ -842,12 +1140,12 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME tbl1) a) (TOK_TABREF (TOK_TABNAME tbl2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME src) c) (= (. (TOK_TABLE_OR_COL c) value) (. (TOK_TABLE_OR_COL a) value)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
         a 
@@ -908,7 +1206,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
-  Stage: Stage-2
+  Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
@@ -1746,12 +2044,12 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_JOIN (TOK_TABREF (TOK_TABNAME tbl1) a) (TOK_TABREF (TOK_TABNAME tbl2) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key))) (TOK_TABREF (TOK_TABNAME tbl4) c) (= (. (TOK_TABLE_OR_COL c) value) (. (TOK_TABLE_OR_COL a) value)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
+  Stage-2 is a root stage
+  Stage-3 depends on stages: Stage-2
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
         a 
@@ -1812,7 +2110,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
-  Stage: Stage-2
+  Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####

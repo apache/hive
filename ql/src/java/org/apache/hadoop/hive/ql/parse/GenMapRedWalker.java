@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -52,12 +51,11 @@ public class GenMapRedWalker extends DefaultGraphWalker {
 
     // maintain the stack of operators encountered
     opStack.push(nd);
-    dispatch(nd, opStack);
+    Boolean result = dispatchAndReturn(nd, opStack);
 
-    // kids of reduce sink operator need not be traversed again
-    if ((children == null)
-        || ((nd instanceof ReduceSinkOperator) && (getDispatchedList()
-        .containsAll(children)))) {
+    // kids of reduce sink operator or mapjoin operators merged into root task
+    // need not be traversed again
+    if (children == null || result == Boolean.FALSE) {
       opStack.pop();
       return;
     }

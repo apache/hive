@@ -263,7 +263,8 @@ public class MapJoinProcessor implements Transform {
 
     } catch (Exception e) {
       e.printStackTrace();
-      throw new SemanticException("Generate New MapJoin Opertor Exeception " + e.getMessage());
+      throw new SemanticException("Failed to generate new mapJoin operator " +
+          "by exception : " + e.getMessage());
     }
   }
 
