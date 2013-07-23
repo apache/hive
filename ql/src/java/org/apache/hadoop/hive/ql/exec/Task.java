@@ -86,6 +86,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   protected String id;
   protected T work;
+
   public static enum FeedType {
     DYNAMIC_PARTITIONS, // list of dynamic partitions
   };

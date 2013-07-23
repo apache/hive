@@ -82,14 +82,13 @@ public class GenMRUnion1 implements NodeProcessor {
     UnionParseContext uPrsCtx = uCtx.getUnionParseContext(union);
     ctx.getMapCurrCtx().put(
         (Operator<? extends OperatorDesc>) union,
-        new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(),
+        new GenMapRedCtx(ctx.getCurrTask(),
             ctx.getCurrAliasId()));
 
     // if the union is the first time seen, set current task to GenMRUnionCtx
     uCtxTask = ctx.getUnionTask(union);
     if (uCtxTask == null) {
-      uCtxTask = new GenMRUnionCtx();
-      uCtxTask.setUTask(ctx.getCurrTask());
+      uCtxTask = new GenMRUnionCtx(ctx.getCurrTask());
       ctx.setUnionTask(union, uCtxTask);
     }
 
@@ -101,7 +100,7 @@ public class GenMRUnion1 implements NodeProcessor {
       }
     }
 
-    return null;
+    return true;
   }
 
   /**
@@ -192,14 +191,11 @@ public class GenMRUnion1 implements NodeProcessor {
     // The current plan can be thrown away after being merged with the union
     // plan
     Task<? extends Serializable> uTask = uCtxTask.getUTask();
-    MapredWork plan = (MapredWork) uTask.getWork();
     ctx.setCurrTask(uTask);
-    List<Operator<? extends OperatorDesc>> seenOps = ctx.getSeenOps();
     Operator<? extends OperatorDesc> topOp = ctx.getCurrTopOp();
-    if (!seenOps.contains(topOp) && topOp != null) {
-      seenOps.add(topOp);
+    if (topOp != null && !ctx.isSeenOp(uTask, topOp)) {
       GenMapRedUtils.setTaskPlan(ctx.getCurrAliasId(), ctx
-          .getCurrTopOp(), plan, false, ctx);
+          .getCurrTopOp(), uTask, false, ctx);
     }
   }
 
@@ -230,8 +226,7 @@ public class GenMRUnion1 implements NodeProcessor {
       // All inputs of this UnionOperator are in the same Reducer.
       // We do not need to break the operator tree.
       mapCurrCtx.put((Operator<? extends OperatorDesc>) nd,
-          new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(),
-              ctx.getCurrAliasId()));
+        new GenMapRedCtx(ctx.getCurrTask(),ctx.getCurrAliasId()));
       return null;
     }
 
@@ -255,10 +250,9 @@ public class GenMRUnion1 implements NodeProcessor {
     // union is encountered for the first time
     GenMRUnionCtx uCtxTask = ctx.getUnionTask(union);
     if (uCtxTask == null) {
-      uCtxTask = new GenMRUnionCtx();
       uPlan = GenMapRedUtils.getMapRedWork(parseCtx);
       uTask = TaskFactory.get(uPlan, parseCtx.getConf());
-      uCtxTask.setUTask(uTask);
+      uCtxTask = new GenMRUnionCtx(uTask);
       ctx.setUnionTask(union, uCtxTask);
     }
     else {
@@ -293,9 +287,9 @@ public class GenMRUnion1 implements NodeProcessor {
     ctx.setCurrTask(uTask);
 
     mapCurrCtx.put((Operator<? extends OperatorDesc>) nd,
-        new GenMapRedCtx(ctx.getCurrTask(), null, null));
+        new GenMapRedCtx(ctx.getCurrTask(), null));
 
-    return null;
+    return true;
   }
 
   private boolean shouldBeRootTask(

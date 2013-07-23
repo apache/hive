@@ -670,7 +670,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+        $INTNAME 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -683,7 +683,7 @@ STAGE PLANS:
               value expressions:
                     expr: _col1
                     type: bigint
-#### A masked pattern was here ####
+        $INTNAME1 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1547,7 +1547,7 @@ STAGE PLANS:
   Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
-#### A masked pattern was here ####
+        $INTNAME 
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1560,7 +1560,7 @@ STAGE PLANS:
               value expressions:
                     expr: _col1
                     type: string
-#### A masked pattern was here ####
+        $INTNAME1 
             Reduce Output Operator
               key expressions:
                     expr: _col0
