@@ -25,7 +25,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.JobProfile;
 import org.apache.hadoop.mapred.JobStatus;
-import org.apache.hcatalog.shims.HCatHadoopShims;
 import org.apache.hadoop.mapred.TempletonJobTracker;
 import org.apache.hcatalog.templeton.tool.JobState;
 

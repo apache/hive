@@ -22,7 +22,6 @@ import java.io.IOException;
 import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.TempletonJobTracker;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hcatalog.shims.HCatHadoopShims;
 import org.apache.hcatalog.templeton.tool.JobState;
 
 /**
