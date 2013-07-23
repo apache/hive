@@ -809,12 +809,19 @@ class RecordReaderImpl implements RecordReader {
       // Non repeating values preset in the vector. Iterate thru the vector and populate the time
       for (int i = 0; i < batchSize; i++) {
         if (!result.isNull[i]) {
-          result.vector[i] = (result.vector[result.isRepeating ? 0 : i] + WriterImpl.BASE_TIMESTAMP)
+          long ms = (result.vector[result.isRepeating ? 0 : i] + WriterImpl.BASE_TIMESTAMP)
               * WriterImpl.MILLIS_PER_SECOND;
-          nanoVector.vector[i] = parseNanos(nanoVector.vector[nanoVector.isRepeating ? 0 : i]);
+          long ns = parseNanos(nanoVector.vector[nanoVector.isRepeating ? 0 : i]);
+          // the rounding error exists because java always rounds up when dividing integers
+          // -42001/1000 = -42; and -42001 % 1000 = -1 (+ 1000)
+          // to get the correct value we need
+          // (-42 - 1)*1000 + 999 = -42001
+          // (42)*1000 + 1 = 42001
+          if(ms < 0 && ns != 0) {
+            ms -= 1000;
+          }
           // Convert millis into nanos and add the nano vector value to it
-          // since we don't use sql.Timestamp, rounding errors don't apply here
-          result.vector[i] = (result.vector[i] * 1000000) + nanoVector.vector[i];
+          result.vector[i] = (ms * 1000000) + ns;
         }
       }
 
