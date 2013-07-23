@@ -64,6 +64,7 @@ class BitFieldReader {
 
   void nextVector(LongColumnVector previous, long previousLen)
       throws IOException {
+
     previous.isRepeating = true;
     for (int i = 0; i < previousLen; i++) {
       if (!previous.isNull[i]) {
@@ -73,7 +74,13 @@ class BitFieldReader {
         // processing is 1, so set that if the value is null
         previous.vector[i] = 1;
       }
-      if (previous.isRepeating && i > 0 && (previous.vector[i-1] != previous.vector[i])) {
+
+      // The default value for nulls in Vectorization for int types is 1
+      // and given that non null value can also be 1, we need to check for isNull also
+      // when determining the isRepeating flag.
+      if (previous.isRepeating
+          && i > 0
+          && ((previous.vector[i - 1] != previous.vector[i]) || (previous.isNull[i - 1] != previous.isNull[i]))) {
         previous.isRepeating = false;
       }
     }
