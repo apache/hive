@@ -293,7 +293,7 @@
   <name>hive.metastore.disallow.incompatible.col.type.change</name>
   <value></value>
   <description>If true (default is false), ALTER TABLE operations which change the type of 
-    a column (say STRING) to an incompatible type (say MAP<STRING, STRING>) are disallowed.  
+    a column (say STRING) to an incompatible type (say MAP&lt;STRING, STRING&gt;) are disallowed.  
     RCFile default serde (ColumnarSerde) serializes the values in such a way that the
     datatypes can be converted from string to any type. The map is also serialized as
     a string, which can be read as a string as well. However, with any binary 
