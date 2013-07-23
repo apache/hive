@@ -14,6 +14,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColUnaryMinus;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColLessDoubleScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongScalarGreaterLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColGreaterStringColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColGreaterStringScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumn;
@@ -353,5 +354,30 @@ public class TestVectorizationContext {
     VectorExpression ve = vc.getVectorExpression(negExprDesc);
 
     assertTrue( ve instanceof DoubleColUnaryMinus);
+  }
+
+  @Test
+  public void testFilterScalarCompareColumn() throws HiveException {
+    ExprNodeGenericFuncDesc scalarGreaterColExpr = new ExprNodeGenericFuncDesc();
+    GenericUDFOPGreaterThan gudf = new GenericUDFOPGreaterThan();
+    scalarGreaterColExpr.setGenericUDF(gudf);
+    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(2);
+    ExprNodeConstantDesc constDesc =
+        new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo, 20);
+    ExprNodeColumnDesc colDesc =
+        new ExprNodeColumnDesc(Long.class, "a", "table", false);
+
+    children.add(constDesc);
+    children.add(colDesc);
+
+    scalarGreaterColExpr.setChildExprs(children);
+
+    Map<String, Integer> columnMap = new HashMap<String, Integer>();
+    columnMap.put("a", 0);
+
+    VectorizationContext vc = new VectorizationContext(columnMap, 2);
+    vc.setOperatorType(OperatorType.FILTER);
+    VectorExpression ve = vc.getVectorExpression(scalarGreaterColExpr);
+    assertEquals(FilterLongScalarGreaterLongColumn.class, ve.getClass());
   }
 }
