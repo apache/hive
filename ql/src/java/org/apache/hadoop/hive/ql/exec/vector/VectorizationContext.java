@@ -709,8 +709,8 @@ public class VectorizationContext {
           scalarType, method);
       try {
         expr = (VectorExpression) Class.forName(className).
-            getDeclaredConstructors()[0].newInstance(inputCol2,
-            getScalarValue(constDesc), outputCol);
+            getDeclaredConstructors()[0].newInstance(getScalarValue(constDesc), 
+                inputCol2, outputCol);
       } catch (Exception ex) {
         throw new HiveException(ex);
       }
@@ -870,14 +870,14 @@ public class VectorizationContext {
       } catch (Exception ex) {
         throw new HiveException(ex);
       }
-    } else if ( (rightExpr instanceof ExprNodeColumnDesc) &&
-        (leftExpr instanceof ExprNodeConstantDesc) ) {
-      ExprNodeColumnDesc rightColDesc = (ExprNodeColumnDesc) rightExpr;
+    } else if ((leftExpr instanceof ExprNodeConstantDesc) && 
+        (rightExpr instanceof ExprNodeColumnDesc)) {
       ExprNodeConstantDesc constDesc = (ExprNodeConstantDesc) leftExpr;
+      ExprNodeColumnDesc rightColDesc = (ExprNodeColumnDesc) rightExpr;
       int inputCol = getInputColumnIndex(rightColDesc.getColumn());
       String colType = rightColDesc.getTypeString();
       String scalarType = constDesc.getTypeString();
-      String className = getFilterColumnScalarExpressionClassName(colType,
+      String className = getFilterScalarColumnExpressionClassName(colType,
           scalarType, opName);
       try {
         expr = (VectorExpression) Class.forName(className).

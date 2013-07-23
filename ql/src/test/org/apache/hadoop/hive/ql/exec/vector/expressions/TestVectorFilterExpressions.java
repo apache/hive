@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -26,8 +28,10 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColEqualL
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColLessLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongScalarGreaterLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongScalarLessLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.util.*;
+import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -167,5 +171,109 @@ public class TestVectorFilterExpressions {
 
     assertEquals(1, vrg.size);
     assertEquals(2, vrg.selected[0]);
+  }
+
+  @Test
+  public void testFilterLongScalarLessLongColumn() {
+    int seed = 17;
+    VectorizedRowBatch vrb = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        5, 2, seed);
+    LongColumnVector lcv0 = (LongColumnVector) vrb.cols[0];
+    FilterLongScalarLessLongColumn expr1 = new FilterLongScalarLessLongColumn(0, 15);
+
+    //Basic case
+    lcv0.vector[0] = 5;
+    lcv0.vector[1] = 20;
+    lcv0.vector[2] = 17;
+    lcv0.vector[3] = 15;
+    lcv0.vector[4] = 10;
+
+    expr1.evaluate(vrb);
+
+    assertEquals(2, vrb.size);
+    assertTrue(vrb.selectedInUse);
+    assertEquals(1, vrb.selected[0]);
+    assertEquals(2, vrb.selected[1]);
+
+    FilterLongScalarGreaterLongColumn expr2 = new FilterLongScalarGreaterLongColumn(0, 18);
+    expr2.evaluate(vrb);
+    assertEquals(1, vrb.size);
+    assertTrue(vrb.selectedInUse);
+    assertEquals(2, vrb.selected[0]);
+
+    //With nulls
+    VectorizedRowBatch vrb1 = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        5, 2, seed);
+
+    lcv0 = (LongColumnVector) vrb1.cols[0];
+
+    lcv0.vector[0] = 5;
+    lcv0.vector[1] = 20;
+    lcv0.vector[2] = 17;
+    lcv0.vector[3] = 15;
+    lcv0.vector[4] = 10;
+
+    lcv0.noNulls = false;
+    lcv0.isNull[0] = true;
+    lcv0.isNull[2] = true;
+
+    expr1.evaluate(vrb1);
+    assertEquals(1, vrb1.size);
+    assertTrue(vrb1.selectedInUse);
+    assertEquals(1, vrb1.selected[0]);
+
+    //With nulls and selected
+    VectorizedRowBatch vrb2 = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        7, 2, seed);
+    vrb2.selectedInUse = true;
+    vrb2.selected[0] = 1;
+    vrb2.selected[1] = 2;
+    vrb2.selected[2] = 4;
+    vrb2.size = 3;
+
+    lcv0 = (LongColumnVector) vrb2.cols[0];
+
+    lcv0.vector[0] = 5;
+    lcv0.vector[1] = 20;
+    lcv0.vector[2] = 17;
+    lcv0.vector[3] = 15;
+    lcv0.vector[4] = 10;
+    lcv0.vector[5] = 19;
+    lcv0.vector[6] = 21;
+
+    lcv0.noNulls = false;
+    lcv0.isNull[0] = true;
+    lcv0.isNull[2] = true;
+    lcv0.isNull[5] = true;
+
+    expr1.evaluate(vrb2);
+    assertEquals(1, vrb2.size);
+    assertTrue(vrb2.selectedInUse);
+    assertEquals(1, vrb2.selected[0]);
+
+    //Repeating non null
+    VectorizedRowBatch vrb3 = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        7, 2, seed);
+    lcv0 = (LongColumnVector) vrb3.cols[0];
+
+    lcv0.isRepeating = true;
+    lcv0.vector[0] = 17;
+    lcv0.vector[1] = 20;
+    lcv0.vector[2] = 17;
+    lcv0.vector[3] = 15;
+    lcv0.vector[4] = 10;
+
+    expr1.evaluate(vrb3);
+    assertEquals(7, vrb3.size);
+    assertFalse(vrb3.selectedInUse);
+    assertTrue(lcv0.isRepeating);
+
+    //Repeating null
+    lcv0.noNulls = false;
+    lcv0.vector[0] = 17;
+    lcv0.isNull[0] = true;
+
+    expr1.evaluate(vrb3);
+    assertEquals(0, vrb3.size);
   }
 }
