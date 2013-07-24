@@ -91,9 +91,12 @@
           <embedded>
             <field name="name">
               <column name="FIELD_NAME" length="128" jdbc-type="VARCHAR"/>
-              </field>
+            </field>
             <field name="type">
               <column name="FIELD_TYPE" length="767" jdbc-type="VARCHAR"  allows-null="false"/>
+            </field>
+            <field name="comment" >
+              <column name="COMMENT" length="256" jdbc-type="VARCHAR" allows-null="true"/>
             </field>
           </embedded>
         </element>
@@ -228,6 +231,9 @@
             <field name="type">
               <column name="TYPE_NAME" length="4000" jdbc-type="VARCHAR"  allows-null="false"/>
             </field>
+            <field name="comment">
+              <column name="COMMENT" length="256" jdbc-type="VARCHAR" allows-null="true"/>
+            </field>
           </embedded>
         </element>
       </field>
@@ -262,7 +268,9 @@
       <field name="outputFormat">
         <column name="OUTPUT_FORMAT" length="4000" jdbc-type="VARCHAR"/>
       </field>
-      <field name="isCompressed"/>
+      <field name="isCompressed">
+        <column name="IS_COMPRESSED"/>
+      </field>
       <field name="isStoredAsSubDirectories">
         <column name="IS_STOREDASSUBDIRECTORIES"/>
       </field>
