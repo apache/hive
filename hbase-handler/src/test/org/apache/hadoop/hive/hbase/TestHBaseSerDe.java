@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.hbase;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,6 +33,7 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -687,5 +689,124 @@ public class TestHBaseSerDe extends TestCase {
     // Serialize
     Put serializedPut = (Put) hbaseSerDe.serialize(row, soi);
     assertEquals("Serialized data: ", p.toString(), serializedPut.toString());
+  }
+
+  public void testHBaseSerDeWithColumnPrefixes()
+      throws Exception {
+    byte[] cfa = "cola".getBytes();
+
+    byte[] qualA = "prefixA_col1".getBytes();
+    byte[] qualB = "prefixB_col2".getBytes();
+    byte[] qualC = "prefixB_col3".getBytes();
+    byte[] qualD = "unwanted_col".getBytes();
+
+    List<Object> qualifiers = new ArrayList<Object>();
+    qualifiers.add(new Text("prefixA_col1"));
+    qualifiers.add(new Text("prefixB_col2"));
+    qualifiers.add(new Text("prefixB_col3"));
+    qualifiers.add(new Text("unwanted_col"));
+
+    List<Object> expectedQualifiers = new ArrayList<Object>();
+    expectedQualifiers.add(new Text("prefixA_col1"));
+    expectedQualifiers.add(new Text("prefixB_col2"));
+    expectedQualifiers.add(new Text("prefixB_col3"));
+
+    byte[] rowKey = Bytes.toBytes("test-row1");
+
+    // Data
+    List<KeyValue> kvs = new ArrayList<KeyValue>();
+
+    byte[] dataA = "This is first test data".getBytes();
+    byte[] dataB = "This is second test data".getBytes();
+    byte[] dataC = "This is third test data".getBytes();
+    byte[] dataD = "Unwanted data".getBytes();
+
+    kvs.add(new KeyValue(rowKey, cfa, qualA, dataA));
+    kvs.add(new KeyValue(rowKey, cfa, qualB, dataB));
+    kvs.add(new KeyValue(rowKey, cfa, qualC, dataC));
+    kvs.add(new KeyValue(rowKey, cfa, qualD, dataD));
+
+    Result r = new Result(kvs);
+
+    Put p = new Put(rowKey);
+
+    p.add(new KeyValue(rowKey, cfa, qualA, dataA));
+    p.add(new KeyValue(rowKey, cfa, qualB, dataB));
+    p.add(new KeyValue(rowKey, cfa, qualC, dataC));
+
+    Object[] expectedFieldsData = {
+        new Text("test-row1"),
+        new String("This is first test data"),
+        new String("This is second test data"),
+        new String("This is third test data")};
+
+    int[] expectedMapSize = new int[] {1, 2};
+
+    // Create, initialize, and test the SerDe
+    HBaseSerDe serDe = new HBaseSerDe();
+    Configuration conf = new Configuration();
+    Properties tbl = createPropertiesForColumnPrefixes();
+    serDe.initialize(conf, tbl);
+
+    Object notPresentKey = new Text("unwanted_col");
+
+    deserializeAndSerializeHivePrefixColumnFamily(serDe, r, p, expectedFieldsData, expectedMapSize,
+        expectedQualifiers,
+        notPresentKey);
+  }
+
+  private Properties createPropertiesForColumnPrefixes() {
+    Properties tbl = new Properties();
+    tbl.setProperty(serdeConstants.LIST_COLUMNS,
+        "key,astring,along");
+    tbl.setProperty(serdeConstants.LIST_COLUMN_TYPES,
+        "string:map<string,string>:map<string,string>");
+    tbl.setProperty(HBaseSerDe.HBASE_COLUMNS_MAPPING,
+        ":key,cola:prefixA_.*,cola:prefixB_.*");
+
+    return tbl;
+  }
+
+  private void deserializeAndSerializeHivePrefixColumnFamily(HBaseSerDe serDe, Result r, Put p,
+      Object[] expectedFieldsData, int[] expectedMapSize, List<Object> expectedQualifiers,
+      Object notPresentKey)
+      throws SerDeException, IOException {
+    StructObjectInspector soi = (StructObjectInspector) serDe.getObjectInspector();
+
+    List<? extends StructField> fieldRefs = soi.getAllStructFieldRefs();
+
+    Object row = serDe.deserialize(r);
+
+    int j = 0;
+
+    for (int i = 0; i < fieldRefs.size(); i++) {
+      Object fieldData = soi.getStructFieldData(row, fieldRefs.get(i));
+      assertNotNull(fieldData);
+
+      if (fieldData instanceof LazyPrimitive<?, ?>) {
+        assertEquals(expectedFieldsData[i], ((LazyPrimitive<?, ?>) fieldData).getWritableObject());
+      } else if (fieldData instanceof LazyHBaseCellMap) {
+        assertEquals(expectedFieldsData[i], ((LazyHBaseCellMap) fieldData)
+            .getMapValueElement(expectedQualifiers.get(j)).toString().trim());
+
+        assertEquals(expectedMapSize[j], ((LazyHBaseCellMap) fieldData).getMapSize());
+        // Make sure that the unwanted key is not present in the map
+        assertNull(((LazyHBaseCellMap) fieldData).getMapValueElement(notPresentKey));
+
+        j++;
+
+      } else {
+        fail("Error: field data not an instance of LazyPrimitive<?, ?> or LazyHBaseCellMap");
+      }
+    }
+
+    SerDeUtils.getJSONString(row, soi);
+
+    // Now serialize
+    Put put = (Put) serDe.serialize(row, soi);
+
+    if (p != null) {
+      assertEquals("Serialized put:", p.toString(), put.toString());
+    }
   }
 }
