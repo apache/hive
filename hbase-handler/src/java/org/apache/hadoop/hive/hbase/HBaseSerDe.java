@@ -33,7 +33,6 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ByteStream;
-import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
@@ -69,11 +68,16 @@ public class HBaseSerDe extends AbstractSerDe {
   public static final String HBASE_SCAN_CACHE = "hbase.scan.cache";
   public static final String HBASE_SCAN_CACHEBLOCKS = "hbase.scan.cacheblock";
   public static final String HBASE_SCAN_BATCH = "hbase.scan.batch";
+  
+  /** Determines whether a regex matching should be done on the columns or not. Defaults to true. 
+   *  <strong>WARNING: Note that currently this only supports the suffix wildcard .*</strong> **/
+  public static final String HBASE_COLUMNS_REGEX_MATCHING = "hbase.columns.mapping.regex.matching";
 
   public static final Log LOG = LogFactory.getLog(HBaseSerDe.class);
 
   private ObjectInspector cachedObjectInspector;
   private String hbaseColumnsMapping;
+  private boolean doColumnRegexMatching;
   private List<ColumnMapping> columnsMapping;
   private SerDeParameters serdeParams;
   private boolean useJSONSerialize;
@@ -148,6 +152,21 @@ public class HBaseSerDe extends AbstractSerDe {
    */
   public static List<ColumnMapping> parseColumnsMapping(String columnsMappingSpec)
       throws SerDeException {
+    return parseColumnsMapping(columnsMappingSpec, true);
+  }
+
+  /**
+   * Parses the HBase columns mapping specifier to identify the column families, qualifiers
+   * and also caches the byte arrays corresponding to them. One of the Hive table
+   * columns maps to the HBase row key, by default the first column.
+   *
+   * @param columnsMappingSpec string hbase.columns.mapping specified when creating table
+   * @param doColumnRegexMatching whether to do a regex matching on the columns or not
+   * @return List<ColumnMapping> which contains the column mapping information by position
+   * @throws SerDeException
+   */
+  public static List<ColumnMapping> parseColumnsMapping(String columnsMappingSpec, boolean doColumnRegexMatching)
+      throws SerDeException {
 
     if (columnsMappingSpec == null) {
       throw new SerDeException("Error: hbase.columns.mapping missing for this HBase table.");
@@ -193,8 +212,21 @@ public class HBaseSerDe extends AbstractSerDe {
         columnMapping.hbaseRowKey = false;
 
         if (parts.length == 2) {
-          columnMapping.qualifierName = parts[1];
-          columnMapping.qualifierNameBytes = Bytes.toBytes(parts[1]);
+
+          if (doColumnRegexMatching && parts[1].endsWith(".*")) {
+            // we have a prefix with a wildcard
+            columnMapping.qualifierPrefix = parts[1].substring(0, parts[1].length() - 2);
+            columnMapping.qualifierPrefixBytes = Bytes.toBytes(columnMapping.qualifierPrefix);
+            // we weren't provided any actual qualifier name. Set these to
+            // null.
+            columnMapping.qualifierName = null;
+            columnMapping.qualifierNameBytes = null;
+          } else {
+            // set the regular provided qualifier names
+            columnMapping.qualifierName = parts[1];
+            columnMapping.qualifierNameBytes = Bytes.toBytes(parts[1]);
+            ;
+          }
         } else {
           columnMapping.qualifierName = null;
           columnMapping.qualifierNameBytes = null;
@@ -413,6 +445,8 @@ public class HBaseSerDe extends AbstractSerDe {
     List<Boolean> binaryStorage;
     boolean hbaseRowKey;
     String mappingSpec;
+    String qualifierPrefix;
+    byte[] qualifierPrefixBytes;
   }
 
   private void initHBaseSerDeParameters(
@@ -424,8 +458,10 @@ public class HBaseSerDe extends AbstractSerDe {
     String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
     putTimestamp = Long.valueOf(tbl.getProperty(HBaseSerDe.HBASE_PUT_TIMESTAMP,"-1"));
 
+    doColumnRegexMatching = Boolean.valueOf(tbl.getProperty(HBASE_COLUMNS_REGEX_MATCHING, "true"));
+
     // Parse and initialize the HBase columns mapping
-    columnsMapping = parseColumnsMapping(hbaseColumnsMapping);
+    columnsMapping = parseColumnsMapping(hbaseColumnsMapping, doColumnRegexMatching);
 
     // Build the type property string if not supplied
     if (columnTypeProperty == null) {
@@ -798,6 +834,7 @@ public class HBaseSerDe extends AbstractSerDe {
     return columnsMapping.get(colPos).binaryStorage;
   }
 
+  @Override
   public SerDeStats getSerDeStats() {
     // no support for statistics
     return null;

@@ -91,11 +91,12 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     String hbaseTableName = jobConf.get(HBaseSerDe.HBASE_TABLE_NAME);
     setHTable(new HTable(HBaseConfiguration.create(jobConf), Bytes.toBytes(hbaseTableName)));
     String hbaseColumnsMapping = jobConf.get(HBaseSerDe.HBASE_COLUMNS_MAPPING);
+    boolean doColumnRegexMatching = jobConf.getBoolean(HBaseSerDe.HBASE_COLUMNS_REGEX_MATCHING, true);
     List<Integer> readColIDs = ColumnProjectionUtils.getReadColumnIDs(jobConf);
     List<ColumnMapping> columnsMapping = null;
 
     try {
-      columnsMapping = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping);
+      columnsMapping = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping, doColumnRegexMatching);
     } catch (SerDeException e) {
       throw new IOException(e);
     }
@@ -434,6 +435,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     String hbaseTableName = jobConf.get(HBaseSerDe.HBASE_TABLE_NAME);
     setHTable(new HTable(HBaseConfiguration.create(jobConf), Bytes.toBytes(hbaseTableName)));
     String hbaseColumnsMapping = jobConf.get(HBaseSerDe.HBASE_COLUMNS_MAPPING);
+    boolean doColumnRegexMatching = jobConf.getBoolean(HBaseSerDe.HBASE_COLUMNS_REGEX_MATCHING, true);
 
     if (hbaseColumnsMapping == null) {
       throw new IOException("hbase.columns.mapping required for HBase Table.");
@@ -441,7 +443,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
 
     List<ColumnMapping> columnsMapping = null;
     try {
-      columnsMapping = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping);
+      columnsMapping = HBaseSerDe.parseColumnsMapping(hbaseColumnsMapping,doColumnRegexMatching);
     } catch (SerDeException e) {
       throw new IOException(e);
     }
