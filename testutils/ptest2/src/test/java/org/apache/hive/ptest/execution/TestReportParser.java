@@ -22,19 +22,41 @@ import java.io.File;
 
 import junit.framework.Assert;
 
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Sets;
+import com.google.common.io.Files;
 
 public class TestReportParser {
   private static final Logger LOG = LoggerFactory
       .getLogger(TestReportParser.class);
+  private File baseDir;
+  @Before
+  public void setup() {
+    baseDir = Files.createTempDir();
+  }
+  @After
+  public void teardown() {
+    if(baseDir != null) {
+      FileUtils.deleteQuietly(baseDir);
+    }
+  }
   @Test
   public void test() throws Exception {
     File reportDir = new File("src/test/resources/test-outputs");
-    JUnitReportParser parser = new JUnitReportParser(LOG, reportDir);
+    for(File file : reportDir.listFiles()) {
+      if(file.getName().endsWith(".xml")) {
+        Files.copy(file, new File(baseDir, "TEST-" + file.getName()));
+      } else {
+        Files.copy(file, new File(baseDir, file.getName()));
+      }
+    }
+    JUnitReportParser parser = new JUnitReportParser(LOG, baseDir);
     Assert.assertEquals(3, parser.getFailedTests().size());
     Assert.assertEquals(Sets.
         newHashSet("org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_skewjoin_union_remove_1",

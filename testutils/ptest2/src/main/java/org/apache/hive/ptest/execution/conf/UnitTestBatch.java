@@ -44,4 +44,30 @@ public class UnitTestBatch implements TestBatch {
   public boolean isParallel() {
     return isParallel;
   }
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + (isParallel ? 1231 : 1237);
+    result = prime * result + ((testName == null) ? 0 : testName.hashCode());
+    return result;
+  }
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    UnitTestBatch other = (UnitTestBatch) obj;
+    if (isParallel != other.isParallel)
+      return false;
+    if (testName == null) {
+      if (other.testName != null)
+        return false;
+    } else if (!testName.equals(other.testName))
+      return false;
+    return true;
+  }
 }

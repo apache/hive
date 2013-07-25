@@ -67,7 +67,9 @@ public class TestScripts  {
     templateVariables.put("logDir", "/some/log/dir");
     templateVariables.put("instanceName", "instance-1");
     templateVariables.put("batchName","batch-1");
+    templateVariables.put("numOfFailedTests", "20");
     templateVariables.put("testArguments", "-Dtest=arg1");
+    templateVariables.put("clearLibraryCache", "true");
     templateVariables.put("javaHome", "/usr/java/jdk1.7");
     templateVariables.put("antEnvOpts", "-Dhttp.proxyHost=somehost -Dhttp.proxyPort=3128");
     String template = readResource("batch-exec.vm");
@@ -86,6 +88,7 @@ public class TestScripts  {
     templateVariables.put("buildTag", "build-1");
     templateVariables.put("logDir", "/some/log/dir");
     templateVariables.put("testArguments", "-Dtest=arg1");
+    templateVariables.put("clearLibraryCache", "false");
     templateVariables.put("javaHome", "/usr/java/jdk1.7");
     templateVariables.put("antEnvOpts", "-Dhttp.proxyHost=somehost -Dhttp.proxyPort=3128");
     String template = readResource("source-prep.vm");
@@ -104,6 +107,7 @@ public class TestScripts  {
     templateVariables.put("buildTag", "build-1");
     templateVariables.put("logDir", "/some/log/dir");
     templateVariables.put("testArguments", "-Dtest=arg1");
+    templateVariables.put("clearLibraryCache", "true");
     templateVariables.put("javaHome", "/usr/java/jdk1.7");
     templateVariables.put("antEnvOpts", "-Dhttp.proxyHost=somehost -Dhttp.proxyPort=3128");
     templateVariables.put("repositoryType", "git");
@@ -123,6 +127,7 @@ public class TestScripts  {
     templateVariables.put("buildTag", "build-1");
     templateVariables.put("logDir", "/some/log/dir");
     templateVariables.put("testArguments", "-Dtest=arg1");
+    templateVariables.put("clearLibraryCache", "true");
     templateVariables.put("javaHome", "/usr/java/jdk1.7");
     templateVariables.put("antEnvOpts", "-Dhttp.proxyHost=somehost -Dhttp.proxyPort=3128");
     templateVariables.put("repositoryType", "svn");

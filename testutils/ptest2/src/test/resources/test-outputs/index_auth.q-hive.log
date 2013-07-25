@@ -1,0 +1,10 @@
+2013-01-27 17:22:57,540 INFO  server.NIOServerCnxnFactory (NIOServerCnxnFactory.java:run(224)) - NIOServerCnxn factory exited run method
+2013-01-27 17:22:57,540 INFO  zookeeper.ClientCnxn (ClientCnxn.java:run(1085)) - Unable to read additional data from server sessionid 0x13c7eb59be60001, likely server has closed socket, closing socket connection and attempting reconnect
+2013-01-27 17:22:57,541 INFO  server.ZooKeeperServer (ZooKeeperServer.java:shutdown(419)) - shutting down
+2013-01-27 17:22:57,541 INFO  server.SessionTrackerImpl (SessionTrackerImpl.java:shutdown(225)) - Shutting down
+2013-01-27 17:22:57,541 INFO  server.PrepRequestProcessor (PrepRequestProcessor.java:shutdown(743)) - Shutting down
+2013-01-27 17:22:57,541 INFO  server.SyncRequestProcessor (SyncRequestProcessor.java:shutdown(175)) - Shutting down
+2013-01-27 17:22:57,541 INFO  server.PrepRequestProcessor (PrepRequestProcessor.java:run(143)) - PrepRequestProcessor exited loop!
+2013-01-27 17:22:57,541 INFO  server.SyncRequestProcessor (SyncRequestProcessor.java:run(155)) - SyncRequestProcessor exited!
+2013-01-27 17:22:57,542 INFO  server.FinalRequestProcessor (FinalRequestProcessor.java:shutdown(415)) - shutdown of request processor complete
+2013-01-27 17:22:57,543 INFO  zookeeper.MiniZooKeeperCluster (MiniZooKeeperCluster.java:shutdown(235)) - Shutdown MiniZK cluster with all ZK servers

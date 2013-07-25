@@ -60,6 +60,7 @@ public class TestConfiguration {
   private final String jiraUser;
   private final String jiraPassword;
   private String jiraName;
+  private boolean clearLibraryCache;
 
   @VisibleForTesting
   public TestConfiguration(Context context, Logger logger)
@@ -98,7 +99,12 @@ public class TestConfiguration {
   public void setJiraName(String jiraName) {
     this.jiraName = Strings.nullToEmpty(jiraName);
   }
-
+  public boolean isClearLibraryCache() {
+    return clearLibraryCache; 
+   }
+  public void setClearLibraryCache(boolean clearLibraryCache) {
+    this.clearLibraryCache = clearLibraryCache;
+  }
   public String getJiraUrl() {
     return jiraUrl;
   }
