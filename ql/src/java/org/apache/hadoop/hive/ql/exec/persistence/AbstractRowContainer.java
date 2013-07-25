@@ -38,7 +38,7 @@ public abstract class AbstractRowContainer<Row> {
    * @return number of elements in the RowContainer
    */
 
-  public abstract int size();
+  public abstract long size();
 
   /**
    * Remove all elements in the RowContainer.

@@ -47,6 +47,9 @@
         <sysproperty key="hive.metastore.warehouse.dir" value="${test.warehouse.dir}"/>
         <sysproperty key="java.security.krb5.realm" value=""/> <!-- HADOOP-7489 -->
         <sysproperty key="java.security.krb5.kdc" value=""/> <!-- HADOOP-7489 -->
+        <!--HCAT_PREFIX, HIVE_HOME are needed by WebHCat tests-->
+        <env key="HCAT_PREFIX" value="${env.HCAT_PREFIX}"/>
+        <env key="HIVE_HOME" value="${env.HIVE_HOME}"/>
         <classpath>
           <path refid="test.class.path"/>
           <pathelement location="${clover.jar}"/>

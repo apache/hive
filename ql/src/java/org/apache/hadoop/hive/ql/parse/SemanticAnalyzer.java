@@ -53,13 +53,11 @@ import org.apache.hadoop.hive.ql.QueryProperties;
 import org.apache.hadoop.hive.ql.exec.AbstractMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.ArchiveUtils;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
-import org.apache.hadoop.hive.ql.exec.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.RecordReader;
@@ -74,6 +72,8 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.WindowFunctionInfo;
+import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
+import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
@@ -3499,7 +3499,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     List<List<Integer>> distinctColIndices = getDistinctColIndicesForReduceSink(parseInfo, dest,
-        reduceKeys, reduceSinkInputRowResolver, reduceSinkOutputRowResolver, outputKeyColumnNames);
+        reduceKeys, reduceSinkInputRowResolver, reduceSinkOutputRowResolver, outputKeyColumnNames,
+        colExprMap);
 
     ArrayList<ExprNodeDesc> reduceValues = new ArrayList<ExprNodeDesc>();
     HashMap<String, ASTNode> aggregationTrees = parseInfo
@@ -3572,7 +3573,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private List<List<Integer>> getDistinctColIndicesForReduceSink(QBParseInfo parseInfo,
       String dest,
       List<ExprNodeDesc> reduceKeys, RowResolver reduceSinkInputRowResolver,
-      RowResolver reduceSinkOutputRowResolver, List<String> outputKeyColumnNames)
+      RowResolver reduceSinkOutputRowResolver, List<String> outputKeyColumnNames,
+      Map<String, ExprNodeDesc> colExprMap)
       throws SemanticException {
 
     List<List<Integer>> distinctColIndices = new ArrayList<List<Integer>>();
@@ -3611,6 +3613,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           ColumnInfo colInfo = new ColumnInfo(field, expr.getTypeInfo(), null, false);
           reduceSinkOutputRowResolver.putExpression(parameter, colInfo);
           numExprs++;
+          colExprMap.put(colInfo.getInternalName(), expr);
         }
         distinctColIndices.add(distinctIndices);
       }
@@ -3672,7 +3675,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         colExprMap);
 
     List<List<Integer>> distinctColIndices = getDistinctColIndicesForReduceSink(parseInfo, dest,
-        reduceKeys, reduceSinkInputRowResolver, reduceSinkOutputRowResolver, outputKeyColumnNames);
+        reduceKeys, reduceSinkInputRowResolver, reduceSinkOutputRowResolver, outputKeyColumnNames,
+        colExprMap);
 
     ArrayList<ExprNodeDesc> reduceValues = new ArrayList<ExprNodeDesc>();
 
@@ -6952,6 +6956,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               reduceValues.size() - 1).getTypeInfo(), "", false);
           reduceSinkOutputRowResolver.putExpression(grpbyExpr, colInfo);
           outputColumnNames.add(getColumnInternalName(reduceValues.size() - 1));
+          colExprMap.put(colInfo.getInternalName(), grpByExprNode);
         }
       }
 

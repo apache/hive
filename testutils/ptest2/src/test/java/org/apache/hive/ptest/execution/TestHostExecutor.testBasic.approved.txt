@@ -1,0 +1,12 @@
+/tmp/hive-ptest-units/TestHostExecutor/logs/succeeded/driver-isolated-1 /some/local/dir/somehost-someuser-0/logs/
+/tmp/hive-ptest-units/TestHostExecutor/logs/succeeded/driver-isolated-2 /some/local/dir/somehost-someuser-0/logs/
+/tmp/hive-ptest-units/TestHostExecutor/logs/succeeded/driver-parallel-1 /some/local/dir/somehost-someuser-0/logs/
+/tmp/hive-ptest-units/TestHostExecutor/logs/succeeded/driver-parallel-2 /some/local/dir/somehost-someuser-0/logs/
+/tmp/hive-ptest-units/TestHostExecutor/scratch/hiveptest-driver-isolated-1.sh /some/local/dir/somehost-someuser-0/scratch/hiveptest-driver-isolated-1.sh
+/tmp/hive-ptest-units/TestHostExecutor/scratch/hiveptest-driver-isolated-2.sh /some/local/dir/somehost-someuser-0/scratch/hiveptest-driver-isolated-2.sh
+/tmp/hive-ptest-units/TestHostExecutor/scratch/hiveptest-driver-parallel-1.sh /some/local/dir/somehost-someuser-0/scratch/hiveptest-driver-parallel-1.sh
+/tmp/hive-ptest-units/TestHostExecutor/scratch/hiveptest-driver-parallel-2.sh /some/local/dir/somehost-someuser-0/scratch/hiveptest-driver-parallel-2.sh
+bash /some/local/dir/somehost-someuser-0/scratch/hiveptest-driver-isolated-1.sh
+bash /some/local/dir/somehost-someuser-0/scratch/hiveptest-driver-isolated-2.sh
+bash /some/local/dir/somehost-someuser-0/scratch/hiveptest-driver-parallel-1.sh
+bash /some/local/dir/somehost-someuser-0/scratch/hiveptest-driver-parallel-2.sh

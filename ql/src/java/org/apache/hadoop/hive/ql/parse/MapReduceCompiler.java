@@ -50,8 +50,8 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.ExecDriver;
-import org.apache.hadoop.hive.ql.exec.MapRedTask;
+import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
+import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -217,8 +217,7 @@ public class MapReduceCompiler {
     GenMRProcContext procCtx = new GenMRProcContext(
         conf,
         new HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>>(),
-        new ArrayList<Operator<? extends OperatorDesc>>(), tempParseContext,
-        mvTask, rootTasks,
+        tempParseContext, mvTask, rootTasks,
         new LinkedHashMap<Operator<? extends OperatorDesc>, GenMapRedCtx>(),
         inputs, outputs);
 
@@ -599,8 +598,7 @@ public class MapReduceCompiler {
     boolean hasNonLocalJob = false;
     for (ExecDriver mrtask : mrtasks) {
       try {
-        ContentSummary inputSummary = Utilities.getInputSummary
-            (ctx, (MapredWork) mrtask.getWork(), p);
+        ContentSummary inputSummary = Utilities.getInputSummary(ctx, mrtask.getWork(), p);
         int numReducers = getNumberOfReducers(mrtask.getWork(), conf);
 
         long estimatedInput;

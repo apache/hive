@@ -57,28 +57,32 @@ public class GenMRRedSink2 implements NodeProcessor {
         .getMapCurrCtx();
     GenMapRedCtx mapredCtx = mapCurrCtx.get(op.getParentOperators().get(0));
     Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
-    Operator<? extends OperatorDesc> currTopOp = mapredCtx.getCurrTopOp();
     String currAliasId = mapredCtx.getCurrAliasId();
     Operator<? extends OperatorDesc> reducer = op.getChildOperators().get(0);
     Map<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap = ctx
         .getOpTaskMap();
-    Task<? extends Serializable> opMapTask = opTaskMap.get(reducer);
+    Task<? extends Serializable> oldTask = opTaskMap.get(reducer);
 
-    ctx.setCurrTopOp(currTopOp);
     ctx.setCurrAliasId(currAliasId);
     ctx.setCurrTask(currTask);
 
-    if (opMapTask == null) {
+    if (oldTask == null) {
       GenMapRedUtils.splitPlan(op, ctx);
     } else {
-      GenMapRedUtils.joinPlan(op, currTask, opMapTask, ctx, -1, true);
-      currTask = opMapTask;
+      GenMapRedUtils.splitPlan(op, currTask, oldTask, ctx);
+      currTask = oldTask;
       ctx.setCurrTask(currTask);
     }
 
-    mapCurrCtx.put(op, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrTopOp(),
+    mapCurrCtx.put(op, new GenMapRedCtx(ctx.getCurrTask(),
         ctx.getCurrAliasId()));
-    return null;
+
+    if (GenMapRedUtils.hasBranchFinished(nodeOutputs)) {
+      ctx.addRootIfPossible(currTask);
+      return false;
+    }
+
+    return true;
   }
 
 }

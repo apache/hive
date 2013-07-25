@@ -34,12 +34,12 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
-import org.apache.hadoop.hive.ql.exec.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.MapJoinProcessor;
@@ -416,6 +416,22 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     copyReducerConf(mapJoinTask, childTask);
   }
 
+  public static boolean cannotConvert(String bigTableAlias,
+      Map<String, Long> aliasToSize, long aliasTotalKnownInputSize,
+      long ThresholdOfSmallTblSizeSum) {
+    boolean ret = false;
+    Long aliasKnownSize = aliasToSize.get(bigTableAlias);
+    if (aliasKnownSize != null && aliasKnownSize.longValue() > 0) {
+      long smallTblTotalKnownSize = aliasTotalKnownInputSize
+          - aliasKnownSize.longValue();
+      if (smallTblTotalKnownSize > ThresholdOfSmallTblSizeSum) {
+        //this table is not good to be a big table.
+        ret = true;
+      }
+    }
+    return ret;
+  }
+
   @Override
   public Task<? extends Serializable> processCurrentTask(MapRedTask currTask,
       ConditionalTask conditionalTask, Context context)
@@ -564,14 +580,9 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
         MapRedTask newTask = newTaskAlias.getFirst();
         bigTableAlias = newTaskAlias.getSecond();
 
-        Long aliasKnownSize = aliasToSize.get(bigTableAlias);
-        if (aliasKnownSize != null && aliasKnownSize.longValue() > 0) {
-          long smallTblTotalKnownSize = aliasTotalKnownInputSize
-              - aliasKnownSize.longValue();
-          if (smallTblTotalKnownSize > ThresholdOfSmallTblSizeSum) {
-            // this table is not good to be a big table.
-            continue;
-          }
+        if (cannotConvert(bigTableAlias, aliasToSize,
+            aliasTotalKnownInputSize, ThresholdOfSmallTblSizeSum)) {
+          continue;
         }
 
         // add into conditional task

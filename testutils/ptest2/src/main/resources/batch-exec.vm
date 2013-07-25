@@ -1,0 +1,60 @@
+#!/bin/bash
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+##### Remember, this is a velocity template 
+set -x
+umask 0022
+find $localDir/$instanceName/${repositoryName}-source/build -name 'TEST-*.xml' -delete
+find $localDir/$instanceName/${repositoryName}-source/build -name 'hive.log' -delete
+chmod -R u+w $logDir
+rm -rf $logDir
+# makes $logDir and $logDir/tmp
+mkdir -p $logDir/tmp
+if [[ -n "${javaHome}" ]]
+then
+  export JAVA_HOME=$javaHome
+  export PATH=$JAVA_HOME/bin/:$PATH
+fi
+export ANT_OPTS="-Xmx1g -XX:MaxPermSize=256m -Djava.io.tmpdir=$logDir/tmp ${antEnvOpts}"
+export HADOOP_ROOT_LOGGER=INFO,console
+export HADOOP_OPTS="-Dhive.log.dir=$logDir -Dhive.query.id=hadoop -Djava.io.tmpdir=$logDir/tmp"
+cd $localDir/$instanceName/${repositoryName}-source && \
+  timeout 2h ant -Divy.cache.ttl.default=eternal $antArgs \
+   -Divy.default.ivy.user.dir=$localDir/$instanceName/ivy \
+   -Dmvn.local.repo=$localDir/$instanceName/maven \
+   -Dtest.junit.output.format=xml test \
+   $testArguments 1>$logDir/ant-test.txt 2>&1
+ret=$?
+if [[ $ret -ne 0 ]]
+then
+  cp -R $localDir/$instanceName/${repositoryName}-source $logDir/source
+fi
+if [[ -f $localDir/$instanceName/${repositoryName}-source/build/ql/tmp/hive.log ]]
+then
+  mv $localDir/$instanceName/${repositoryName}-source/build/ql/tmp/hive.log $logDir/hive.log
+fi
+batchName=$batchName
+for testOutputFile in $(find $localDir/$instanceName/${repositoryName}-source/ -name 'TEST-*.xml')
+do
+  mv "$testOutputFile" "$logDir/TEST-$batchName-$(basename $testOutputFile)"
+done
+if [[ -f $logDir/.log ]]
+then
+  mv $logDir/.log $logDir/dot.log
+else
+  echo "$logDir/.log does not exist"
+fi
+exit $ret

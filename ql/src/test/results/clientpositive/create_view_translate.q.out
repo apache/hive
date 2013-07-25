@@ -1,0 +1,101 @@
+PREHOOK: query: drop view if exists v
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view if exists v
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: drop view if exists w
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view if exists w
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: create view v as select cast(key as string) from src
+PREHOOK: type: CREATEVIEW
+POSTHOOK: query: create view v as select cast(key as string) from src
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@v
+PREHOOK: query: describe formatted v
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted v
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	select cast(key as string) from src	 
+View Expanded Text: 	select `src`.`key` from `default`.`src`	 
+PREHOOK: query: create view w as select key, value from (
+  select key, value from src
+) a
+PREHOOK: type: CREATEVIEW
+POSTHOOK: query: create view w as select key, value from (
+  select key, value from src
+) a
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@w
+PREHOOK: query: describe formatted w
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe formatted w
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+Table Type:         	VIRTUAL_VIEW        	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	null                	 
+InputFormat:        	org.apache.hadoop.mapred.SequenceFileInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+	 	 
+# View Information	 	 
+View Original Text: 	select key, value from (	 
+  select key, value from src	 	 
+) a	 	 
+View Expanded Text: 	select key, value from (	 
+  select `src`.`key`, `src`.`value` from `default`.`src`	 	 
+) `a`	 	 
+PREHOOK: query: drop view v
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@v
+PREHOOK: Output: default@v
+POSTHOOK: query: drop view v
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@v
+POSTHOOK: Output: default@v
+PREHOOK: query: drop view w
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@w
+PREHOOK: Output: default@w
+POSTHOOK: query: drop view w
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@w
+POSTHOOK: Output: default@w

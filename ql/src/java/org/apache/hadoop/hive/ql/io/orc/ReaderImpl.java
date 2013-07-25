@@ -19,10 +19,13 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import com.google.protobuf.CodedInputStream;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.io.Text;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,6 +35,8 @@ import java.util.Iterator;
 import java.util.List;
 
 final class ReaderImpl implements Reader {
+
+  private static final Log LOG = LogFactory.getLog(ReaderImpl.class);
 
   private static final int DIRECTORY_SIZE_GUESS = 16 * 1024;
 
@@ -176,6 +181,81 @@ final class ReaderImpl implements Reader {
     return result;
   }
 
+  /**
+   * Ensure this is an ORC file to prevent users from trying to read text
+   * files or RC files as ORC files.
+   * @param in the file being read
+   * @param path the filename for error messages
+   * @param psLen the postscript length
+   * @param buffer the tail of the file
+   * @throws IOException
+   */
+  static void ensureOrcFooter(FSDataInputStream in,
+                                      Path path,
+                                      int psLen,
+                                      ByteBuffer buffer) throws IOException {
+    int len = OrcFile.MAGIC.length();
+    if (psLen < len + 1) {
+      throw new IOException("Malformed ORC file " + path +
+          ". Invalid postscript length " + psLen);
+    }
+    int offset = buffer.arrayOffset() + buffer.position() + buffer.limit() - 1
+        - len;
+    byte[] array = buffer.array();
+    // now look for the magic string at the end of the postscript.
+    if (!Text.decode(array, offset, len).equals(OrcFile.MAGIC)) {
+      // If it isn't there, this may be the 0.11.0 version of ORC.
+      // Read the first 3 bytes of the file to check for the header
+      in.seek(0);
+      byte[] header = new byte[len];
+      in.readFully(header, 0, len);
+      // if it isn't there, this isn't an ORC file
+      if (!Text.decode(header, 0 , len).equals(OrcFile.MAGIC)) {
+        throw new IOException("Malformed ORC file " + path +
+            ". Invalid postscript.");
+      }
+    }
+  }
+
+  /**
+   * Build a version string out of an array.
+   * @param version the version number as a list
+   * @return the human readable form of the version string
+   */
+  private static String versionString(List<Integer> version) {
+    StringBuilder buffer = new StringBuilder();
+    for(int i=0; i < version.size(); ++i) {
+      if (i != 0) {
+        buffer.append('.');
+      }
+      buffer.append(version.get(i));
+    }
+    return buffer.toString();
+  }
+
+  /**
+   * Check to see if this ORC file is from a future version and if so,
+   * warn the user that we may not be able to read all of the column encodings.
+   * @param log the logger to write any error message to
+   * @param path the filename for error messages
+   * @param version the version of hive that wrote the file.
+   */
+  static void checkOrcVersion(Log log, Path path, List<Integer> version) {
+    if (version.size() >= 1) {
+      int major = version.get(0);
+      int minor = 0;
+      if (version.size() >= 2) {
+        minor = version.get(1);
+      }
+      if (major > OrcFile.MAJOR_VERSION ||
+          (major == OrcFile.MAJOR_VERSION && minor > OrcFile.MINOR_VERSION)) {
+        log.warn("ORC file " + path + " was written by a future Hive version " +
+            versionString(version) + ". This file may not be readable by " +
+            "this version of Hive.");
+      }
+    }
+  }
+
   ReaderImpl(FileSystem fs, Path path) throws IOException {
     this.fileSystem = fs;
     this.path = path;
@@ -187,10 +267,12 @@ final class ReaderImpl implements Reader {
     file.readFully(buffer.array(), buffer.arrayOffset() + buffer.position(),
       buffer.remaining());
     int psLen = buffer.get(readSize - 1);
+    ensureOrcFooter(file, path, psLen, buffer);
     int psOffset = readSize - 1 - psLen;
     CodedInputStream in = CodedInputStream.newInstance(buffer.array(),
       buffer.arrayOffset() + psOffset, psLen);
     OrcProto.PostScript ps = OrcProto.PostScript.parseFrom(in);
+    checkOrcVersion(LOG, path, ps.getVersionList());
     int footerSize = (int) ps.getFooterLength();
     bufferSize = (int) ps.getCompressionBlockSize();
     switch (ps.getCompression()) {

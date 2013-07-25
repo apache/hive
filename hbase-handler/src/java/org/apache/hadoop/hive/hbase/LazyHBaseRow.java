@@ -142,9 +142,11 @@ public class LazyHBaseRow extends LazyStruct {
       } else {
         if (colMap.qualifierName == null) {
           // it is a column family
-          // primitive type for Map<Key, Value> can be stored in binary format
+          // primitive type for Map<Key, Value> can be stored in binary format. Pass in the
+          // qualifier prefix to cherry pick the qualifiers that match the prefix instead of picking
+          // up everything
           ((LazyHBaseCellMap) fields[fieldID]).init(
-              result, colMap.familyNameBytes, colMap.binaryStorage);
+              result, colMap.familyNameBytes, colMap.binaryStorage, colMap.qualifierPrefixBytes);
         } else {
           // it is a column i.e. a column-family with column-qualifier
           byte [] res = result.getValue(colMap.familyNameBytes, colMap.qualifierNameBytes);

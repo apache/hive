@@ -36,8 +36,8 @@ Task ID:
 Logs:
 
 #### A masked pattern was here ####
-FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.MapredLocalTask
-ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.MapRedTask
+FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
+ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
 [MapJoinCounter PostHook] CONVERTED_LOCAL_MAPJOIN: 1 CONVERTED_MAPJOIN: 0 LOCAL_MAPJOIN: 0 COMMON_JOIN: 0 BACKUP_COMMON_JOIN: 1
 PREHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key + src2.key = src3.key)
 INSERT OVERWRITE TABLE dest1 SELECT src1.key, src3.value
@@ -54,8 +54,8 @@ Task ID:
 Logs:
 
 #### A masked pattern was here ####
-FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.MapredLocalTask
-ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.MapRedTask
+FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
+ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
 Execution failed with exit status: 3
 Obtaining error information
 
@@ -66,6 +66,6 @@ Task ID:
 Logs:
 
 #### A masked pattern was here ####
-FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.MapredLocalTask
-ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.MapRedTask
+FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
+ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
 [MapJoinCounter PostHook] CONVERTED_LOCAL_MAPJOIN: 2 CONVERTED_MAPJOIN: 0 LOCAL_MAPJOIN: 0 COMMON_JOIN: 0 BACKUP_COMMON_JOIN: 2

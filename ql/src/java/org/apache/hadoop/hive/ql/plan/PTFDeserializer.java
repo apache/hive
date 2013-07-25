@@ -80,21 +80,19 @@ public class PTFDeserializer {
   public void initializePTFChain(PartitionedTableFunctionDef tblFnDef) throws HiveException {
     Stack<PTFInputDef> ptfChain = new Stack<PTFInputDef>();
     PTFInputDef currentDef = tblFnDef;
-    while (currentDef != null ) {
+    while (currentDef != null) {
       ptfChain.push(currentDef);
       currentDef = currentDef.getInput();
     }
 
-    while ( !ptfChain.isEmpty() ) {
+    while (!ptfChain.isEmpty()) {
       currentDef = ptfChain.pop();
-      if ( currentDef instanceof PTFQueryInputDef) {
-        initialize((PTFQueryInputDef)currentDef, inputOI);
-      }
-      else if ( currentDef instanceof WindowTableFunctionDef) {
-        initializeWindowing((WindowTableFunctionDef)currentDef);
-      }
-      else {
-        initialize((PartitionedTableFunctionDef)currentDef);
+      if (currentDef instanceof PTFQueryInputDef) {
+        initialize((PTFQueryInputDef) currentDef, inputOI);
+      } else if (currentDef instanceof WindowTableFunctionDef) {
+        initializeWindowing((WindowTableFunctionDef) currentDef);
+      } else {
+        initialize((PartitionedTableFunctionDef) currentDef);
       }
     }
   }
@@ -114,16 +112,16 @@ public class PTFDeserializer {
     /*
      * 2. initialize WFns.
      */
-    if ( def.getWindowFunctions() != null ) {
-      for(WindowFunctionDef wFnDef : def.getWindowFunctions() ) {
+    if (def.getWindowFunctions() != null) {
+      for (WindowFunctionDef wFnDef : def.getWindowFunctions()) {
 
-        if ( wFnDef.getArgs() != null ) {
-          for(PTFExpressionDef arg : wFnDef.getArgs()) {
+        if (wFnDef.getArgs() != null) {
+          for (PTFExpressionDef arg : wFnDef.getArgs()) {
             initialize(arg, inpShape);
           }
         }
 
-        if ( wFnDef.getWindowFrame() != null ) {
+        if (wFnDef.getWindowFrame() != null) {
           WindowFrameDef wFrmDef = wFnDef.getWindowFrame();
           initialize(wFrmDef.getStart(), inpShape);
           initialize(wFrmDef.getEnd(), inpShape);
@@ -132,10 +130,10 @@ public class PTFDeserializer {
       }
       ArrayList<String> aliases = new ArrayList<String>();
       ArrayList<ObjectInspector> fieldOIs = new ArrayList<ObjectInspector>();
-      for(WindowFunctionDef wFnDef : def.getWindowFunctions()) {
+      for (WindowFunctionDef wFnDef : def.getWindowFunctions()) {
         aliases.add(wFnDef.getAlias());
-        if ( wFnDef.isPivotResult() ) {
-          fieldOIs.add(((ListObjectInspector)wFnDef.getOI()).getListElementObjectInspector());
+        if (wFnDef.isPivotResult()) {
+          fieldOIs.add(((ListObjectInspector) wFnDef.getOI()).getListElementObjectInspector());
         } else {
           fieldOIs.add(wFnDef.getOI());
         }
@@ -145,8 +143,7 @@ public class PTFDeserializer {
           aliases, fieldOIs);
       tResolver.setWdwProcessingOutputOI(wdwOutOI);
       initialize(def.getOutputFromWdwFnProcessing(), wdwOutOI);
-    }
-    else {
+    } else {
       def.setOutputFromWdwFnProcessing(inpShape);
     }
 
@@ -155,8 +152,8 @@ public class PTFDeserializer {
     /*
      * 3. initialize WExprs. + having clause
      */
-    if ( def.getWindowExpressions() != null ) {
-      for(WindowExpressionDef wEDef : def.getWindowExpressions()) {
+    if (def.getWindowExpressions() != null) {
+      for (WindowExpressionDef wEDef : def.getWindowExpressions()) {
         initialize(wEDef, inpShape);
       }
     }
@@ -171,7 +168,7 @@ public class PTFDeserializer {
      * If we have windowExpressions then we convert to Std. Object to process;
      * we just stream these rows; no need to put in an output Partition.
      */
-    if ( def.getWindowExpressions().size() > 0  ) {
+    if (def.getWindowExpressions().size() > 0) {
       StructObjectInspector oi = (StructObjectInspector)
           ObjectInspectorUtils.getStandardObjectInspector(def.getOutputShape().getOI());
       def.getOutputShape().setOI(oi);
@@ -189,8 +186,8 @@ public class PTFDeserializer {
     /*
      * 1. initialize args
      */
-    if (def.getArgs() != null ) {
-      for(PTFExpressionDef arg : def.getArgs()) {
+    if (def.getArgs() != null) {
+      for (PTFExpressionDef arg : def.getArgs()) {
         initialize(arg, inpShape);
       }
     }
@@ -199,19 +196,17 @@ public class PTFDeserializer {
      * 2. setup resolve, make connections
      */
     TableFunctionEvaluator tEval = def.getTFunction();
-    //TableFunctionResolver tResolver = FunctionRegistry.getTableFunctionResolver(def.getName());
+    // TableFunctionResolver tResolver = FunctionRegistry.getTableFunctionResolver(def.getName());
     TableFunctionResolver tResolver = constructResolver(def.getResolverClassName());
     tResolver.initialize(ptfDesc, def, tEval);
 
     /*
      * 3. give Evaluator chance to setup for RawInput execution; setup RawInput shape
      */
-    if (tEval.isTransformsRawInput())
-    {
+    if (tEval.isTransformsRawInput()) {
       tResolver.initializeRawInputOI();
       initialize(def.getRawInputShape(), tEval.getRawInputOI());
-    }
-    else {
+    } else {
       def.setRawInputShape(inpShape);
     }
 
@@ -224,8 +219,7 @@ public class PTFDeserializer {
     initialize(def.getOutputShape(), tEval.getOutputOI());
   }
 
-  static void setupWdwFnEvaluator(WindowFunctionDef def) throws HiveException
-  {
+  static void setupWdwFnEvaluator(WindowFunctionDef def) throws HiveException {
     ArrayList<PTFExpressionDef> args = def.getArgs();
     ArrayList<ObjectInspector> argOIs = new ArrayList<ObjectInspector>();
     ObjectInspector[] funcArgOIs = null;
@@ -245,7 +239,7 @@ public class PTFDeserializer {
   }
 
   protected void initialize(BoundaryDef def, ShapeDetails inpShape) throws HiveException {
-    if ( def instanceof ValueBoundaryDef ) {
+    if (def instanceof ValueBoundaryDef) {
       ValueBoundaryDef vDef = (ValueBoundaryDef) def;
       initialize(vDef.getExpressionDef(), inpShape);
     }
@@ -262,8 +256,7 @@ public class PTFDeserializer {
   private ObjectInspector initExprNodeEvaluator(ExprNodeEvaluator exprEval,
       ExprNodeDesc exprNode,
       ShapeDetails inpShape)
-      throws HiveException
-  {
+      throws HiveException {
     ObjectInspector outOI;
     outOI = exprEval.initialize(inpShape.getOI());
 
@@ -274,10 +267,8 @@ public class PTFDeserializer {
      * evaluator on the LLUDF instance.
      */
     List<ExprNodeGenericFuncDesc> llFuncExprs = llInfo.getLLFuncExprsInTopExpr(exprNode);
-    if (llFuncExprs != null)
-    {
-      for (ExprNodeGenericFuncDesc llFuncExpr : llFuncExprs)
-      {
+    if (llFuncExprs != null) {
+      for (ExprNodeGenericFuncDesc llFuncExpr : llFuncExprs) {
         ExprNodeDesc firstArg = llFuncExpr.getChildren().get(0);
         ExprNodeEvaluator dupExprEval = WindowingExprNodeEvaluatorFactory.get(llInfo, firstArg);
         dupExprEval.initialize(inpShape.getOI());
@@ -302,8 +293,7 @@ public class PTFDeserializer {
       serDe.initialize(hConf, serDeProps);
       shp.setSerde(serDe);
       shp.setOI((StructObjectInspector) serDe.getObjectInspector());
-    }
-    catch (SerDeException se)
+    } catch (SerDeException se)
     {
       throw new HiveException(se);
     }
@@ -324,19 +314,18 @@ public class PTFDeserializer {
     try {
       @SuppressWarnings("unchecked")
       Class<? extends TableFunctionResolver> rCls = (Class<? extends TableFunctionResolver>)
-        Class.forName(className);
+          Class.forName(className);
       return (TableFunctionResolver) ReflectionUtils.newInstance(rCls, null);
-    }
-    catch(Exception e) {
+    } catch (Exception e) {
       throw new HiveException(e);
     }
   }
 
   @SuppressWarnings({"unchecked"})
   public static void addOIPropertiestoSerDePropsMap(StructObjectInspector OI,
-      Map<String,String> serdePropsMap) {
+      Map<String, String> serdePropsMap) {
 
-    if ( serdePropsMap == null ) {
+    if (serdePropsMap == null) {
       return;
     }
 
@@ -368,7 +357,7 @@ public class PTFDeserializer {
     ArrayList<String> fnames = t.getAllStructFieldNames();
     ArrayList<TypeInfo> fields = t.getAllStructFieldTypeInfos();
     return new ArrayList<?>[]
-    { fnames, fields };
+    {fnames, fields};
   }
 
 }

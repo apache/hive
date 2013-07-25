@@ -9791,6 +9791,15 @@ public final class OrcProto {
     // optional uint64 compressionBlockSize = 3;
     boolean hasCompressionBlockSize();
     long getCompressionBlockSize();
+    
+    // repeated uint32 version = 4 [packed = true];
+    java.util.List<java.lang.Integer> getVersionList();
+    int getVersionCount();
+    int getVersion(int index);
+    
+    // optional string magic = 8000;
+    boolean hasMagic();
+    String getMagic();
   }
   public static final class PostScript extends
       com.google.protobuf.GeneratedMessage
@@ -9851,10 +9860,59 @@ public final class OrcProto {
       return compressionBlockSize_;
     }
     
+    // repeated uint32 version = 4 [packed = true];
+    public static final int VERSION_FIELD_NUMBER = 4;
+    private java.util.List<java.lang.Integer> version_;
+    public java.util.List<java.lang.Integer>
+        getVersionList() {
+      return version_;
+    }
+    public int getVersionCount() {
+      return version_.size();
+    }
+    public int getVersion(int index) {
+      return version_.get(index);
+    }
+    private int versionMemoizedSerializedSize = -1;
+    
+    // optional string magic = 8000;
+    public static final int MAGIC_FIELD_NUMBER = 8000;
+    private java.lang.Object magic_;
+    public boolean hasMagic() {
+      return ((bitField0_ & 0x00000008) == 0x00000008);
+    }
+    public String getMagic() {
+      java.lang.Object ref = magic_;
+      if (ref instanceof String) {
+        return (String) ref;
+      } else {
+        com.google.protobuf.ByteString bs = 
+            (com.google.protobuf.ByteString) ref;
+        String s = bs.toStringUtf8();
+        if (com.google.protobuf.Internal.isValidUtf8(bs)) {
+          magic_ = s;
+        }
+        return s;
+      }
+    }
+    private com.google.protobuf.ByteString getMagicBytes() {
+      java.lang.Object ref = magic_;
+      if (ref instanceof String) {
+        com.google.protobuf.ByteString b = 
+            com.google.protobuf.ByteString.copyFromUtf8((String) ref);
+        magic_ = b;
+        return b;
+      } else {
+        return (com.google.protobuf.ByteString) ref;
+      }
+    }
+    
     private void initFields() {
       footerLength_ = 0L;
       compression_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.CompressionKind.NONE;
       compressionBlockSize_ = 0L;
+      version_ = java.util.Collections.emptyList();;
+      magic_ = "";
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -9877,6 +9935,16 @@ public final class OrcProto {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         output.writeUInt64(3, compressionBlockSize_);
       }
+      if (getVersionList().size() > 0) {
+        output.writeRawVarint32(34);
+        output.writeRawVarint32(versionMemoizedSerializedSize);
+      }
+      for (int i = 0; i < version_.size(); i++) {
+        output.writeUInt32NoTag(version_.get(i));
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        output.writeBytes(8000, getMagicBytes());
+      }
       getUnknownFields().writeTo(output);
     }
     
@@ -9897,6 +9965,24 @@ public final class OrcProto {
       if (((bitField0_ & 0x00000004) == 0x00000004)) {
         size += com.google.protobuf.CodedOutputStream
           .computeUInt64Size(3, compressionBlockSize_);
+      }
+      {
+        int dataSize = 0;
+        for (int i = 0; i < version_.size(); i++) {
+          dataSize += com.google.protobuf.CodedOutputStream
+            .computeUInt32SizeNoTag(version_.get(i));
+        }
+        size += dataSize;
+        if (!getVersionList().isEmpty()) {
+          size += 1;
+          size += com.google.protobuf.CodedOutputStream
+              .computeInt32SizeNoTag(dataSize);
+        }
+        versionMemoizedSerializedSize = dataSize;
+      }
+      if (((bitField0_ & 0x00000008) == 0x00000008)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBytesSize(8000, getMagicBytes());
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -10028,6 +10114,10 @@ public final class OrcProto {
         bitField0_ = (bitField0_ & ~0x00000002);
         compressionBlockSize_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000004);
+        version_ = java.util.Collections.emptyList();;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        magic_ = "";
+        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
       
@@ -10078,6 +10168,15 @@ public final class OrcProto {
           to_bitField0_ |= 0x00000004;
         }
         result.compressionBlockSize_ = compressionBlockSize_;
+        if (((bitField0_ & 0x00000008) == 0x00000008)) {
+          version_ = java.util.Collections.unmodifiableList(version_);
+          bitField0_ = (bitField0_ & ~0x00000008);
+        }
+        result.version_ = version_;
+        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
+          to_bitField0_ |= 0x00000008;
+        }
+        result.magic_ = magic_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -10102,6 +10201,19 @@ public final class OrcProto {
         }
         if (other.hasCompressionBlockSize()) {
           setCompressionBlockSize(other.getCompressionBlockSize());
+        }
+        if (!other.version_.isEmpty()) {
+          if (version_.isEmpty()) {
+            version_ = other.version_;
+            bitField0_ = (bitField0_ & ~0x00000008);
+          } else {
+            ensureVersionIsMutable();
+            version_.addAll(other.version_);
+          }
+          onChanged();
+        }
+        if (other.hasMagic()) {
+          setMagic(other.getMagic());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -10153,6 +10265,25 @@ public final class OrcProto {
             case 24: {
               bitField0_ |= 0x00000004;
               compressionBlockSize_ = input.readUInt64();
+              break;
+            }
+            case 32: {
+              ensureVersionIsMutable();
+              version_.add(input.readUInt32());
+              break;
+            }
+            case 34: {
+              int length = input.readRawVarint32();
+              int limit = input.pushLimit(length);
+              while (input.getBytesUntilLimit() > 0) {
+                addVersion(input.readUInt32());
+              }
+              input.popLimit(limit);
+              break;
+            }
+            case 64002: {
+              bitField0_ |= 0x00000010;
+              magic_ = input.readBytes();
               break;
             }
           }
@@ -10225,6 +10356,87 @@ public final class OrcProto {
         compressionBlockSize_ = 0L;
         onChanged();
         return this;
+      }
+      
+      // repeated uint32 version = 4 [packed = true];
+      private java.util.List<java.lang.Integer> version_ = java.util.Collections.emptyList();;
+      private void ensureVersionIsMutable() {
+        if (!((bitField0_ & 0x00000008) == 0x00000008)) {
+          version_ = new java.util.ArrayList<java.lang.Integer>(version_);
+          bitField0_ |= 0x00000008;
+         }
+      }
+      public java.util.List<java.lang.Integer>
+          getVersionList() {
+        return java.util.Collections.unmodifiableList(version_);
+      }
+      public int getVersionCount() {
+        return version_.size();
+      }
+      public int getVersion(int index) {
+        return version_.get(index);
+      }
+      public Builder setVersion(
+          int index, int value) {
+        ensureVersionIsMutable();
+        version_.set(index, value);
+        onChanged();
+        return this;
+      }
+      public Builder addVersion(int value) {
+        ensureVersionIsMutable();
+        version_.add(value);
+        onChanged();
+        return this;
+      }
+      public Builder addAllVersion(
+          java.lang.Iterable<? extends java.lang.Integer> values) {
+        ensureVersionIsMutable();
+        super.addAll(values, version_);
+        onChanged();
+        return this;
+      }
+      public Builder clearVersion() {
+        version_ = java.util.Collections.emptyList();;
+        bitField0_ = (bitField0_ & ~0x00000008);
+        onChanged();
+        return this;
+      }
+      
+      // optional string magic = 8000;
+      private java.lang.Object magic_ = "";
+      public boolean hasMagic() {
+        return ((bitField0_ & 0x00000010) == 0x00000010);
+      }
+      public String getMagic() {
+        java.lang.Object ref = magic_;
+        if (!(ref instanceof String)) {
+          String s = ((com.google.protobuf.ByteString) ref).toStringUtf8();
+          magic_ = s;
+          return s;
+        } else {
+          return (String) ref;
+        }
+      }
+      public Builder setMagic(String value) {
+        if (value == null) {
+    throw new NullPointerException();
+  }
+  bitField0_ |= 0x00000010;
+        magic_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearMagic() {
+        bitField0_ = (bitField0_ & ~0x00000010);
+        magic_ = getDefaultInstance().getMagic();
+        onChanged();
+        return this;
+      }
+      void setMagic(com.google.protobuf.ByteString value) {
+        bitField0_ |= 0x00000010;
+        magic_ = value;
+        onChanged();
       }
       
       // @@protoc_insertion_point(builder_scope:org.apache.hadoop.hive.ql.io.orc.PostScript)
@@ -10384,12 +10596,13 @@ public final class OrcProto {
       ".hive.ql.io.orc.UserMetadataItem\022\024\n\014numb" +
       "erOfRows\030\006 \001(\004\022F\n\nstatistics\030\007 \003(\01322.org" +
       ".apache.hadoop.hive.ql.io.orc.ColumnStat" +
-      "istics\022\026\n\016rowIndexStride\030\010 \001(\r\"\210\001\n\nPostS" +
+      "istics\022\026\n\016rowIndexStride\030\010 \001(\r\"\255\001\n\nPostS" +
       "cript\022\024\n\014footerLength\030\001 \001(\004\022F\n\013compressi" +
       "on\030\002 \001(\01621.org.apache.hadoop.hive.ql.io.",
       "orc.CompressionKind\022\034\n\024compressionBlockS" +
-      "ize\030\003 \001(\004*:\n\017CompressionKind\022\010\n\004NONE\020\000\022\010" +
-      "\n\004ZLIB\020\001\022\n\n\006SNAPPY\020\002\022\007\n\003LZO\020\003"
+      "ize\030\003 \001(\004\022\023\n\007version\030\004 \003(\rB\002\020\001\022\016\n\005magic\030" +
+      "\300> \001(\t*:\n\017CompressionKind\022\010\n\004NONE\020\000\022\010\n\004Z" +
+      "LIB\020\001\022\n\n\006SNAPPY\020\002\022\007\n\003LZO\020\003"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -10521,7 +10734,7 @@ public final class OrcProto {
           internal_static_org_apache_hadoop_hive_ql_io_orc_PostScript_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_PostScript_descriptor,
-              new java.lang.String[] { "FooterLength", "Compression", "CompressionBlockSize", },
+              new java.lang.String[] { "FooterLength", "Compression", "CompressionBlockSize", "Version", "Magic", },
               org.apache.hadoop.hive.ql.io.orc.OrcProto.PostScript.class,
               org.apache.hadoop.hive.ql.io.orc.OrcProto.PostScript.Builder.class);
           return null;

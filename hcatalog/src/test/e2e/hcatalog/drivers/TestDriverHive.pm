@@ -57,14 +57,16 @@ sub new
 sub globalSetup
 {
     my ($self, $globalHash, $log) = @_;
-    my $subName = (caller(0))[3];
 
     # Setup the output path
     my $me = `whoami`;
     chomp $me;
-    $globalHash->{'runid'} = $me . "." . time;
+    my $jobId = $globalHash->{'job-id'};
+    my $timeId = time;
+    $globalHash->{'runid'} = $me . "-" . $timeId . "-" . $jobId;
 
     $globalHash->{'localpath'} = $globalHash->{'localpathbase'} . "/" . $globalHash->{'runid'} . "/";
+    $globalHash->{'tmpPath'} = $globalHash->{'tmpPath'} . "/" . $globalHash->{'runid'} . "/";
 
     IPC::Run::run(['mkdir', '-p', $globalHash->{'localpath'}], \undef, $log, $log) or 
         die "Cannot create localpath directory " . $globalHash->{'localpath'} .

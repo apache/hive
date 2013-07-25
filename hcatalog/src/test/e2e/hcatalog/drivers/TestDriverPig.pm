@@ -56,13 +56,13 @@ sub new
 sub globalSetup
 {
     my ($self, $globalHash, $log) = @_;
-    my $subName = (caller(0))[3];
-
 
     # Setup the output path
     my $me = `whoami`;
     chomp $me;
-    $globalHash->{'runid'} = $me . "." . time;
+    my $jobId = $globalHash->{'job-id'};
+    my $timeId = time;
+    $globalHash->{'runid'} = $me . "-" . $timeId . "-" . $jobId;
 
     # if "-ignore false" was provided on the command line,
     # it means do run tests even when marked as 'ignore'
@@ -73,6 +73,12 @@ sub globalSetup
 
     $globalHash->{'outpath'} = $globalHash->{'outpathbase'} . "/" . $globalHash->{'runid'} . "/";
     $globalHash->{'localpath'} = $globalHash->{'localpathbase'} . "/" . $globalHash->{'runid'} . "/";
+    $globalHash->{'tmpPath'} = $globalHash->{'tmpPath'} . "/" . $globalHash->{'runid'} . "/";
+}
+
+sub globalSetupConditional
+{
+    my ($self, $globalHash, $log) = @_;
 
     # add libexec location to the path
     if (defined($ENV{'PATH'})) {
@@ -108,6 +114,12 @@ sub globalSetup
 }
 
 sub globalCleanup
+{
+    # noop there because the removal of temp directories, which are created in #globalSetupConditional(), is to be
+    # performed in method #globalCleanupConditional().
+}
+
+sub globalCleanupConditional
 {
     my ($self, $globalHash, $log) = @_;
 

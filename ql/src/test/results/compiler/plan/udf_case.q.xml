@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?> 
 #### A masked pattern was here #### 
- <object class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
+ <object class="org.apache.hadoop.hive.ql.exec.mr.MapRedTask"> 
   <void property="id"> 
    <string>Stage-1</string> 
   </void> 

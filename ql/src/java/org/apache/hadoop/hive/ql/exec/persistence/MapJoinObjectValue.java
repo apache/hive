@@ -140,7 +140,7 @@ public class MapJoinObjectValue implements Externalizable {
 
       // Different processing for key and value
       MapJoinRowContainer<Object[]> v = obj;
-      out.writeInt(v.size());
+      out.writeInt((int)v.size());
       if (v.size() > 0) {
         Object[] row = v.first();
         out.writeInt(row.length);

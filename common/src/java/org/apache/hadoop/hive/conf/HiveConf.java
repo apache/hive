@@ -314,7 +314,7 @@ public class HiveConf extends Configuration {
     METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_ZK_ACL(
         "hive.cluster.delegation.token.store.zookeeper.acl", ""),
     METASTORE_CACHE_PINOBJTYPES("hive.metastore.cache.pinobjtypes", "Table,StorageDescriptor,SerDeInfo,Partition,Database,Type,FieldSchema,Order"),
-    METASTORE_CONNECTION_POOLING_TYPE("datanucleus.connectionPoolingType", "DBCP"),
+    METASTORE_CONNECTION_POOLING_TYPE("datanucleus.connectionPoolingType", "BONECP"),
     METASTORE_VALIDATE_TABLES("datanucleus.validateTables", false),
     METASTORE_VALIDATE_COLUMNS("datanucleus.validateColumns", false),
     METASTORE_VALIDATE_CONSTRAINTS("datanucleus.validateConstraints", false),
@@ -569,6 +569,7 @@ public class HiveConf extends Configuration {
     // It creates sub-directories in the final output, so should not be turned on in systems
     // where MAPREDUCE-1501 is not present
     HIVE_OPTIMIZE_UNION_REMOVE("hive.optimize.union.remove", false),
+    HIVEOPTCORRELATION("hive.optimize.correlation", false), // exploit intra-query correlations
 
     // whether hadoop map-reduce supports sub-directories. It was added by MAPREDUCE-1501.
     // Some optimizations can only be performed if the version of hadoop being used supports
