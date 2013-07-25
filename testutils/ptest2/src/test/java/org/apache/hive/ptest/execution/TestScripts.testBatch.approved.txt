@@ -39,7 +39,12 @@ cd /some/local/dir/instance-1/apache-source && \
 ret=$?
 if [[ $ret -ne 0 ]]
 then
-  cp -R /some/local/dir/instance-1/apache-source /some/log/dir/source
+  if [[ 20 -lt 5 ]]
+  then
+    cp -R /some/local/dir/instance-1/apache-source /some/log/dir/source
+  else
+    echo "Number of failed tests 20 exceeded threshold, not copying source"
+  fi
 fi
 if [[ -f /some/local/dir/instance-1/apache-source/build/ql/tmp/hive.log ]]
 then

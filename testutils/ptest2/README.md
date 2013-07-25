@@ -25,10 +25,10 @@ On all slaves add the following to /etc/ssh/sshd_config:
     MaxSessions 100
     MaxStartups 100
 
-# Install git, java, ant, and maven
+# Install git, svn, make, patch, java, ant, and maven
 
-Recent version os java, ant and maven should be installed. Additionally environment variables
-such as MAVEN_OPTS and ANT_OPTS should be configured with large leap sizes:
+Recent version of git, svn, make, patch, java, ant and maven should be installed. Additionally
+environment variables such as MAVEN_OPTS and ANT_OPTS should be configured with large leap sizes:
 
     $ for item in java maven ant; do echo $item; cat /etc/profile.d/${item}.sh;done
     java
@@ -73,7 +73,8 @@ Ensure the user running the tests has strict host/key checking disabled:
 
    $ cat ~/.ssh/config
    StrictHostKeyChecking no
-
+   ConnectTimeout 20
+   ServerAliveInterval 1
 
 # Configure properties file
 
@@ -82,4 +83,4 @@ See conf/example-apache-trunk.properties
 # Execute
 
     mvn dependency:copy-dependencies
-    java -Xms4g -Xmx4g -cp "conf/:/home/hiveptest/hive-ptest/target/hive-test-1.0.jar:target/dependency/*" org.apache.hive.ptest.RunTests --properties apache-trunk.properties
+    java -Xms4g -Xmx4g -cp "target/hive-ptest-1.0-classes.jar:target/dependency/*" org.apache.hive.ptest.execution.PTest --properties apache-trunk.properties

@@ -36,9 +36,15 @@ import com.google.common.collect.Sets;
 public class JUnitReportParser {
   private final File directory;
   private final Logger logger;
+  private final Set<String> executedTests;
+  private final Set<String> failedTests;
+  private boolean parsed;
   public JUnitReportParser(Logger logger, File directory) throws Exception {
     this.logger = logger;
     this.directory = directory;
+    executedTests = Sets.newHashSet();
+    failedTests =  Sets.newHashSet();
+    parsed = false;
   }
 
   private Set<File> getFiles(File directory) {
@@ -51,15 +57,26 @@ public class JUnitReportParser {
           if(name.startsWith("TEST-") && name.endsWith(".xml")) {
             result.add(file);
           }
-        } else if(file.isDirectory()) {
-          result.addAll(getFiles(file));
         }
       }
     }
     return result;
   }
+  public Set<String> getExecutedTests() {
+    if(!parsed) {
+      parse();
+      parsed = true;
+    }
+    return executedTests;
+  }
   public Set<String> getFailedTests() {
-    final Set<String> failedTests = Sets.newHashSet();
+    if(!parsed) {
+      parse();
+      parsed = true;
+    }
+    return failedTests;
+  }
+  private void parse() {
     for(File file : getFiles(directory)) {
       FileInputStream stream = null;
       try {
@@ -86,8 +103,11 @@ public class JUnitReportParser {
           @Override
         public void endElement(String uri, String localName, String qName)  {
             if ("testcase".equals(qName)) {
-              if(failedOrErrored && name != null) {
-                failedTests.add(name);
+              if(name != null) {
+                executedTests.add(name);
+                if(failedOrErrored) {
+                  failedTests.add(name);
+                }
               }
             }
           }
@@ -104,6 +124,5 @@ public class JUnitReportParser {
         }
       }
     }
-    return failedTests;
   }
 }

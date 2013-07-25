@@ -41,7 +41,7 @@ cd /some/working/dir/
     fi
     cd apache-source
     svn revert -R .
-    rm -rf $(svn status --no-ignore)
+    rm -rf $(svn status --no-ignore | egrep -v '^X|^Performing status on external' | awk '{print $2}')
     svn update
   elif [[ "${repositoryType}" = "git" ]]
   then
@@ -75,6 +75,11 @@ cd /some/working/dir/
   then
     chmod +x $patchCommandPath
     $patchCommandPath $patchFilePath
+  fi
+  if [[ "false" == "true" ]]
+  then
+  	rm -rf /some/working/dir/ivy /some/working/dir/maven
+  	mkdir /some/working/dir/ivy /some/working/dir/maven
   fi
   ant -Dant=arg1 -Divy.default.ivy.user.dir=/some/working/dir/ivy -Dmvn.local.repo=/some/working/dir/maven clean package
   ant -Dant=arg1 -Divy.default.ivy.user.dir=/some/working/dir/ivy -Dmvn.local.repo=/some/working/dir/maven -Dtestcase=nothing test

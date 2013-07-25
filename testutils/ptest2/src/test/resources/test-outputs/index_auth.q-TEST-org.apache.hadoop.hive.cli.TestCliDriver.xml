@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="0" hostname="p0416.mtv.cloudera.com" name="org.apache.hadoop.hive.cli.TestCliDriver" tests="14" time="567.873" timestamp="2013-01-28T01:13:29">
+  <properties>
+    <property name="hadoop.bin.path" value="/data/6/hive-local/p0416.mtv.cloudera.com-hiveptest-8/source/testutils/hadoop" />
+    <property name="commons-cli.version" value="1.2" />
+    <property name="ivy_repo_url" value="http://repo2.maven.org/maven2/org/apache/ivy/ivy/2.1.0/ivy-2.1.0.jar" />
+    <property name="snapshots.cloudera.com.ql.ivy.settings" value="https://repository.cloudera.com/artifactory/libs-snapshot-local/" />
+    <property name="is-offline" value="false" />
+  </properties>
+  <testcase classname="org.apache.hadoop.hive.cli.TestCliDriver" name="testCliDriver_authorization_2" time="252.494" />
+  <testcase classname="org.apache.hadoop.hive.cli.TestCliDriver" name="testCliDriver_auto_join17" time="21.234" />
+  <testcase classname="org.apache.hadoop.hive.cli.TestCliDriver" name="testCliDriver_binary_constant" time="5.314" />
+  <testcase classname="org.apache.hadoop.hive.cli.TestCliDriver" name="testCliDriver_bucketcontext_3" time="34.151" />
+  <testcase classname="org.apache.hadoop.hive.cli.TestCliDriver" name="testCliDriver_groupby_rollup1" time="74.646" />
+  <testcase classname="org.apache.hadoop.hive.cli.TestCliDriver" name="testCliDriver_index_auth" time="10.633" />
+  <testcase classname="org.apache.hadoop.hive.cli.TestCliDriver" name="testCliDriver_index_bitmap2" time="46.858" />
+  <testcase classname="org.apache.hadoop.hive.cli.TestCliDriver" name="testCliDriver_load_dyn_part3" time="11.091" />
+  <testcase classname="org.apache.hadoop.hive.cli.TestCliDriver" name="testCliDriver_multi_insert_gby" time="39.365" />
+  <testcase classname="org.apache.hadoop.hive.cli.TestCliDriver" name="testCliDriver_notable_alias1" time="8.025" />
+  <testcase classname="org.apache.hadoop.hive.cli.TestCliDriver" name="testCliDriver_ppd_join" time="14.558" />
+  <testcase classname="org.apache.hadoop.hive.cli.TestCliDriver" name="testCliDriver_rcfile_lazydecompress" time="47.846" />
+  <testcase classname="org.apache.hadoop.hive.cli.TestCliDriver" name="testCliDriver_udf_regexp_extract" time="0.392" />
+  <testcase classname="org.apache.hadoop.hive.cli.TestCliDriver" name="testCliDriver_shutdown" time="0.792" />
+  <system-out><![CDATA[Begin query: authorization_2.q
+diff -a /data/6/hive-local/p0416.mtv.cloudera.com-hiveptest-8/source/build/ql/test/logs/clientpositive/authorization_2.q.out /data/6/hive-local/p0416.mtv.cloudera.com-hiveptest-8/source/ql/src/test/results/clientpositive/authorization_2.q.out
+Done query: authorization_2.q elapsedTime=241s
+Begin query: auto_join17.q
+rmr: DEPRECATED: Please use 'rm -r' instead.
+WARNING: org.apache.hadoop.metrics.jvm.EventCounter is deprecated. Please use org.apache.hadoop.log.metrics.EventCounter in all the log4j.properties files.
+WARNING: org.apache.hadoop.metrics.jvm.EventCounter is deprecated. Please use org.apache.hadoop.log.metrics.EventCounter in all the log4j.properties files.
+WARNING: org.apache.hadoop.metrics.jvm.EventCounter is deprecated. Please use org.apache.hadoop.log.metrics.EventCounter in all the log4j.properties files.
+WARNING: org.apache.hadoop.metrics.jvm.EventCounter is deprecated. Please use org.apache.hadoop.log.metrics.EventCounter in all the log4j.properties files.
+]]></system-out>
+</testsuite>
