@@ -1,0 +1,4 @@
+killall -q -9 -f java || true
+rm -rf /some/local/dir/somehost-someuser-0/scratch /some/local/dir/somehost-someuser-0/logs
+rm -rf /some/local/dir/somehost-someuser-1/scratch /some/local/dir/somehost-someuser-1/logs
+rm -rf /some/working/dir/scratch

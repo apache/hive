@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="1" hostname="localhost" name="SomeTest" tests="1" time="0" timestamp="2013-01-28T01:14:46">
+  <properties></properties>
+  <testcase classname="SomeTest" name="sometest" time="434.688">
+    <failure message="sample" type="junit.framework.AssertionFailedError">sample</failure>
+  </testcase>
+</testsuite>

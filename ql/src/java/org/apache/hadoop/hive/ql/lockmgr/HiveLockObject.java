@@ -36,17 +36,29 @@ public class HiveLockObject {
     private String queryStr;
     private String clientIp;
 
+    /**
+     * Constructor
+     *
+     * Note: The parameters are used to uniquely identify a HiveLockObject. 
+     * The parameters will be stripped off any ':' characters in order not 
+     * to interfere with the way the data is serialized (':' delimited string).
+     */
     public HiveLockObjectData(String queryId,
         String lockTime,
         String lockMode,
         String queryStr) {
-      this.queryId = queryId;
-      this.lockTime = lockTime;
-      this.lockMode = lockMode;
-      this.queryStr = queryStr.trim();
+      this.queryId = removeDelimiter(queryId);
+      this.lockTime = removeDelimiter(lockTime);
+      this.lockMode = removeDelimiter(lockMode);
+      this.queryStr = removeDelimiter(queryStr.trim());
     }
 
-
+    /**
+     * Constructor
+     * 
+     * @param data String of the form "queryId:lockTime:lockMode:queryStr". 
+     * No ':' characters are allowed in any of the components.
+     */
     public HiveLockObjectData(String data) {
       if (data == null) {
         return;
@@ -202,5 +214,12 @@ public class HiveLockObject {
     return Arrays.equals(pathNames, tgt.pathNames) &&
         data == null ? tgt.getData() == null :
         tgt.getData() != null && data.equals(tgt.getData());
+  }
+
+  private static String removeDelimiter(String in) {
+    if (in == null) {
+      return null;
+    }
+    return in.replaceAll(":","");
   }
 }

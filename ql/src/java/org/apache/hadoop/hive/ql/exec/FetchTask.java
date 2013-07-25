@@ -65,7 +65,7 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
 
     try {
       // Create a file system handle
-      JobConf job = new JobConf(conf, ExecDriver.class);
+      JobConf job = new JobConf(conf);
 
       Operator<?> source = work.getSource();
       if (source instanceof TableScanOperator) {

@@ -27,10 +27,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -76,7 +78,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   private transient ExecMapperContext execContext;
 
-  private static int seqId;
+  private static AtomicInteger seqId;
 
   // It can be optimized later so that an operator operator (init/close) is performed
   // only after that operation has been performed on all the parents. This will require
@@ -103,17 +105,17 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   // all operators
 
   static {
-    seqId = 0;
+    seqId = new AtomicInteger(0);
   }
 
   private boolean useBucketizedHiveInputFormat;
 
   public Operator() {
-    id = String.valueOf(seqId++);
+    id = String.valueOf(seqId.getAndIncrement());
   }
 
   public static void resetId() {
-    seqId = 0;
+    seqId.set(0);
   }
 
   /**
@@ -123,8 +125,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    *          Used to report progress of certain operators.
    */
   public Operator(Reporter reporter) {
+    this();
     this.reporter = reporter;
-    id = String.valueOf(seqId++);
   }
 
   public void setChildOperators(
@@ -435,7 +437,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    *          parent operator id
    * @throws HiveException
    */
-  private void initialize(Configuration hconf, ObjectInspector inputOI,
+  protected void initialize(Configuration hconf, ObjectInspector inputOI,
       int parentId) throws HiveException {
     LOG.info("Initializing child " + id + " " + getName());
     // Double the size of the array if needed
@@ -523,7 +525,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     LOG.debug("Start group Done");
   }
 
-  // If a operator wants to do some work at the end of a group
+  // If an operator wants to do some work at the end of a group
   public void endGroup() throws HiveException {
     LOG.debug("Ending group");
 
@@ -541,6 +543,20 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     }
 
     LOG.debug("End group Done");
+  }
+
+  // an blocking operator (e.g. GroupByOperator and JoinOperator) can
+  // override this method to forward its outputs
+  public void flush() throws HiveException {
+  }
+
+  public void processGroup(int tag) throws HiveException {
+    if (childOperators == null) {
+      return;
+    }
+    for (int i = 0; i < childOperatorsArray.length; i++) {
+      childOperatorsArray[i].processGroup(childOperatorsTag[i]);
+    }
   }
 
   protected boolean allInitializedParentsAreClosed() {
@@ -779,7 +795,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     parentOperators.set(parentIndex, newParent);
   }
 
-  private long getNextCntr(long cntr) {
+  protected long getNextCntr(long cntr) {
     // A very simple counter to keep track of number of rows processed by an
     // operator. It dumps
     // every 1 million times, and quickly before that

@@ -18,11 +18,6 @@
  */
 package org.apache.hcatalog.templeton;
 
-import java.net.InetSocketAddress;
-
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.net.NetUtils;
-
 /**
  * The helper class for all the Templeton delegator classes. A
  * delegator will call the underlying Templeton service such as hcat
@@ -33,11 +28,5 @@ public class TempletonDelegator {
 
     public TempletonDelegator(AppConfig appConf) {
         this.appConf = appConf;
-    }
-    
-    public static InetSocketAddress getAddress(Configuration conf) {
-        String jobTrackerStr =
-                conf.get("mapred.job.tracker", "localhost:8012");
-        return NetUtils.createSocketAddr(jobTrackerStr);
     }
 }

@@ -67,13 +67,13 @@
   <classpathentry kind="lib" path="build/ivy/lib/default/antlr-@antlr.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/antlr-runtime-@antlr-runtime.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/junit-@junit.version@.jar"/>
-  <classpathentry kind="lib" path="build/ivy/lib/default/jdo2-api-@jdo-api.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/jdo-api-@jdo-api.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/datanucleus-core-@datanucleus-core.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/datanucleus-enhancer-@datanucleus-enhancer.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/datanucleus-rdbms-@datanucleus-rdbms.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/commons-cli-@commons-cli.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/commons-collections-@commons-collections.version@.jar"/>
-  <classpathentry kind="lib" path="build/ivy/lib/default/commons-dbcp-@commons-dbcp.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/bonecp-@BoneCP.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/datanucleus-connectionpool-@datanucleus-connectionpool.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/commons-pool-@commons-pool.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/slf4j-api-@slf4j-api.version@.jar"/>

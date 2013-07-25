@@ -97,6 +97,8 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
+import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
+import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
@@ -121,9 +123,9 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.Adjacency;
 import org.apache.hadoop.hive.ql.plan.api.Graph;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
@@ -166,12 +168,21 @@ public final class Utilities {
   public static String HADOOP_LOCAL_FS = "file:///";
 
   /**
-   * ReduceField.
-   *
+   * ReduceField:
+   * KEY: record key
+   * VALUE: record value
    */
   public static enum ReduceField {
-    KEY, VALUE, ALIAS
+    KEY, VALUE
   };
+
+  public static List<String> reduceFieldNameList;
+  static {
+    reduceFieldNameList = new ArrayList<String>();
+    for (ReduceField r : ReduceField.values()) {
+      reduceFieldNameList.add(r.toString());
+    }
+  }
 
   private Utilities() {
     // prevent instantiation
@@ -234,15 +245,18 @@ public final class Utilities {
   public static void setWorkflowAdjacencies(Configuration conf, QueryPlan plan) {
     try {
       Graph stageGraph = plan.getQueryPlan().getStageGraph();
-      if (stageGraph == null)
+      if (stageGraph == null) {
         return;
+      }
       List<Adjacency> adjList = stageGraph.getAdjacencyList();
-      if (adjList == null)
+      if (adjList == null) {
         return;
+      }
       for (Adjacency adj : adjList) {
         List<String> children = adj.getChildren();
-        if (children == null || children.isEmpty())
+        if (children == null || children.isEmpty()) {
           return;
+        }
         conf.setStrings("mapreduce.workflow.adjacency."+adj.getNode(),
             children.toArray(new String[children.size()]));
       }
@@ -1404,7 +1418,7 @@ public final class Utilities {
       jc = new JobConf(hconf);
     } else {
       // test code path
-      jc = new JobConf(hconf, ExecDriver.class);
+      jc = new JobConf(hconf);
     }
     HiveOutputFormat<?, ?> hiveOutputFormat = null;
     Class<? extends Writable> outputClass = null;

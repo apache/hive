@@ -707,6 +707,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   @Override
   public void startGroup() throws HiveException {
     firstRowInGroup = true;
+    super.startGroup();
   }
 
   @Override
@@ -750,7 +751,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
               + " #total = " + numRowsInput + " reduction = " + 1.0
               * (numRowsHashTbl / numRowsInput) + " minReduction = "
               + minReductionHashAggr);
-          flush(true);
+          flushHashTable(true);
           hashAggr = false;
         } else {
           LOG.trace("Hash Aggr Enabled: #hash table = " + numRowsHashTbl
@@ -835,7 +836,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     // happen at boundaries
     if ((!groupKeyIsNotReduceKey || firstRowInGroup)
         && shouldBeFlushed(newKeys)) {
-      flush(false);
+      flushHashTable(false);
     }
   }
 
@@ -983,7 +984,12 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     return length;
   }
 
-  private void flush(boolean complete) throws HiveException {
+  /**
+   * Flush hash table. This method is used by hash-based aggregations
+   * @param complete
+   * @throws HiveException
+   */
+  private void flushHashTable(boolean complete) throws HiveException {
 
     countAfterReport = 0;
 
@@ -1048,6 +1054,42 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   }
 
   /**
+   * Forward all aggregations to children. It is only used by DemuxOperator.
+   * @throws HiveException
+   */
+  @Override
+  public void flush() throws HiveException{
+    try {
+      if (hashAggregations != null) {
+        LOG.info("Begin Hash Table flush: size = "
+            + hashAggregations.size());
+        Iterator iter = hashAggregations.entrySet().iterator();
+        while (iter.hasNext()) {
+          Map.Entry<KeyWrapper, AggregationBuffer[]> m = (Map.Entry) iter
+              .next();
+
+          forward(m.getKey().getKeyArray(), m.getValue());
+          iter.remove();
+        }
+        hashAggregations.clear();
+      } else if (aggregations != null) {
+        // sort-based aggregations
+        if (currentKeys != null) {
+          forward(currentKeys.getKeyArray(), aggregations);
+        }
+        currentKeys = null;
+      } else {
+        // The GroupByOperator is not initialized, which means there is no
+        // data
+        // (since we initialize the operators when we see the first record).
+        // Just do nothing here.
+      }
+    } catch (Exception e) {
+      throw new HiveException(e);
+    }
+  }
+
+  /**
    * We need to forward all the aggregations to children.
    *
    */
@@ -1088,33 +1130,9 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
           // create dummy keys - size 0
           forward(new Object[0], aggregations);
         } else {
-          if (hashAggregations != null) {
-            LOG.info("Begin Hash Table flush at close: size = "
-                + hashAggregations.size());
-            Iterator iter = hashAggregations.entrySet().iterator();
-            while (iter.hasNext()) {
-              Map.Entry<KeyWrapper, AggregationBuffer[]> m = (Map.Entry) iter
-                  .next();
-
-              forward(m.getKey().getKeyArray(), m.getValue());
-              iter.remove();
-            }
-            hashAggregations.clear();
-          } else if (aggregations != null) {
-            // sort-based aggregations
-            if (currentKeys != null) {
-              forward(currentKeys.getKeyArray(), aggregations);
-            }
-            currentKeys = null;
-          } else {
-            // The GroupByOperator is not initialized, which means there is no
-            // data
-            // (since we initialize the operators when we see the first record).
-            // Just do nothing here.
-          }
+          flush();
         }
       } catch (Exception e) {
-        e.printStackTrace();
         throw new HiveException(e);
       }
     }

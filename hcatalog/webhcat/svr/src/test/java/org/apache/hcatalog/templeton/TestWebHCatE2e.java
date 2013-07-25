@@ -63,8 +63,7 @@ public class TestWebHCatE2e {
     private static final String ERROR_CODE = "errorCode";
     private static Main templetonServer;
     private static final String charSet = "UTF-8";
-    //  "not ready due to HIVE-4820"
-    //@BeforeClass
+    @BeforeClass
     public static void startHebHcatInMem() {
         templetonServer = new Main(new String[] {"-D" + AppConfig.UNIT_TEST_MODE + "=true"});
         LOG.info("Starting Main");
@@ -79,7 +78,6 @@ public class TestWebHCatE2e {
             LOG.info("Main stopped");
         }
     }
-    @Ignore("not ready due to HIVE-4820")
     @Test
     public void getStatus() throws IOException {
         LOG.debug("+getStatus()");
@@ -101,7 +99,6 @@ public class TestWebHCatE2e {
      * Check that we return correct status code when the URL doesn't map to any method
      * in {@link Server}
      */
-    @Ignore("not ready due to HIVE-4820")
     @Test
     public void invalidPath() throws IOException {
         MethodCallRetVal p = doHttpCall(templetonBaseUrl + "/no_such_mapping/database", HTTP_METHOD_TYPE.GET);

@@ -35,7 +35,6 @@ import junit.framework.TestCase;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStore;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -59,6 +58,12 @@ import org.apache.thrift.transport.TTransportFactory;
 
 public class TestHadoop20SAuthBridge extends TestCase {
 
+  /**
+   * set to true when metastore token manager has intitialized token manager
+   * through call to HadoopThriftAuthBridge20S.Server.startDelegationTokenSecretManager
+   */
+  static volatile boolean isMetastoreTokenManagerInited;
+
   private static class MyHadoopThriftAuthBridge20S extends HadoopThriftAuthBridge20S {
     @Override
     public Server createServer(String keytabFile, String principalConf)
@@ -66,6 +71,8 @@ public class TestHadoop20SAuthBridge extends TestCase {
       //Create a Server that doesn't interpret any Kerberos stuff
       return new Server();
     }
+
+
 
     static class Server extends HadoopThriftAuthBridge20S.Server {
       public Server() throws TTransportException {
@@ -89,6 +96,14 @@ public class TestHadoop20SAuthBridge extends TestCase {
       protected DelegationTokenStore getTokenStore(Configuration conf) throws IOException {
         return TOKEN_STORE;
       }
+
+      @Override
+      public void startDelegationTokenSecretManager(Configuration conf)
+      throws IOException{
+        super.startDelegationTokenSecretManager(conf);
+        isMetastoreTokenManagerInited = true;
+      }
+
     }
   }
 
@@ -120,6 +135,7 @@ public class TestHadoop20SAuthBridge extends TestCase {
   }
 
   public void setup() throws Exception {
+    isMetastoreTokenManagerInited = false;
     int port = findFreePort();
     System.setProperty(HiveConf.ConfVars.METASTORE_USE_THRIFT_SASL.varname,
         "true");
@@ -292,12 +308,29 @@ public class TestHadoop20SAuthBridge extends TestCase {
     //metastore checks whether the authentication method is KERBEROS or not
     //for getDelegationToken, and the testcases don't use
     //kerberos, this needs to be done
+
+    waitForMetastoreTokenInit();
+
     HadoopThriftAuthBridge20S.Server.authenticationMethod
                              .set(AuthenticationMethod.KERBEROS);
     HadoopThriftAuthBridge20S.Server.remoteAddress.set(InetAddress.getLocalHost());
     return
         HiveMetaStore.getDelegationToken(ownerUgi.getShortUserName(),
             realUgi.getShortUserName());
+  }
+
+  /**
+   * Wait for metastore to have initialized token manager
+   * This does not have to be done in other metastore test cases as they
+   * use metastore client which will retry few times on failure
+   * @throws InterruptedException
+   */
+  private void waitForMetastoreTokenInit() throws InterruptedException {
+    int waitAttempts = 30;
+    while(waitAttempts > 0 && !isMetastoreTokenManagerInited){
+      Thread.sleep(1000);
+      waitAttempts--;
+    }
   }
 
   private void obtainTokenAndAddIntoUGI(UserGroupInformation clientUgi,

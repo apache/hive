@@ -30,7 +30,9 @@ public enum OperatorType implements org.apache.thrift.TEnum {
   LATERALVIEWFORWARD(15),
   HASHTABLESINK(16),
   HASHTABLEDUMMY(17),
-  PTF(18);
+  PTF(18),
+  MUX(19),
+  DEMUX(20);
 
   private final int value;
 
@@ -49,7 +51,7 @@ public enum OperatorType implements org.apache.thrift.TEnum {
    * Find a the enum type by its integer value, as defined in the Thrift IDL.
    * @return null if the value is not found.
    */
-  public static OperatorType findByValue(int value) { 
+  public static OperatorType findByValue(int value) {
     switch (value) {
       case 0:
         return JOIN;
@@ -89,6 +91,10 @@ public enum OperatorType implements org.apache.thrift.TEnum {
         return HASHTABLEDUMMY;
       case 18:
         return PTF;
+      case 19:
+        return MUX;
+      case 20:
+        return DEMUX;
       default:
         return null;
     }

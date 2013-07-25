@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?> 
 #### A masked pattern was here #### 
- <object id="MapRedTask0" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
+ <object id="MapRedTask0" class="org.apache.hadoop.hive.ql.exec.mr.MapRedTask"> 
   <void property="childTasks"> 
    <object class="java.util.ArrayList"> 
     <void method="add"> 
-     <object id="MapRedTask1" class="org.apache.hadoop.hive.ql.exec.MapRedTask"> 
+     <object id="MapRedTask1" class="org.apache.hadoop.hive.ql.exec.mr.MapRedTask"> 
       <void property="childTasks"> 
        <object class="java.util.ArrayList"> 
         <void method="add"> 

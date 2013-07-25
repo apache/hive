@@ -50,45 +50,44 @@ public class MapJoinDoubleKeys extends AbstractMapJoinKey {
     this.obj2 = obj2;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (o instanceof MapJoinDoubleKeys) {
-      MapJoinDoubleKeys mObj = (MapJoinDoubleKeys) o;
-      Object key1 = mObj.getObj1();
-      Object key2 = mObj.getObj2();
 
-      if ((obj1 == null) && (key1 == null)) {
-        if ((obj2 == null) && (key2 == null)) {
-          return true;
-        }
-      }
-      if ((obj1 != null) && (key1 != null)) {
-        if (obj1.equals(key1)) {
-          if ((obj2 != null) && (key2 != null)) {
-            if (obj2.equals(key2)) {
-              return true;
-            }
-          }
-        }
-      }
-    }
-    return false;
-  }
 
   @Override
   public int hashCode() {
-    int hashCode = 1;
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((obj1 == null) ? 0 : obj1.hashCode());
+    result = prime * result + ((obj2 == null) ? 0 : obj2.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
+    }
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    MapJoinDoubleKeys other = (MapJoinDoubleKeys) obj;
     if (obj1 == null) {
-      hashCode = metadataTag;
-    } else {
-      hashCode += (31 + obj1.hashCode());
+      if (other.obj1 != null) {
+        return false;
+      }
+    } else if (!obj1.equals(other.obj1)) {
+      return false;
     }
     if (obj2 == null) {
-      hashCode += metadataTag;
-    } else {
-      hashCode += (31 + obj2.hashCode());
+      if (other.obj2 != null) {
+        return false;
+      }
+    } else if (!obj2.equals(other.obj2)) {
+      return false;
     }
-    return hashCode;
+    return true;
   }
 
   @Override

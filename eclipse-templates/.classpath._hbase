@@ -32,7 +32,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/commons-logging-@commons-logging.version@.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-logging-api-@commons-logging-api.version@.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/derby.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/jdo2-api-@jdo2-api.version@.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jdo-api-@jdo-api.version@.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/datanucleus-core-@datanucleus-core.version@.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/datanucleus-enhancer-@datanucleus-enhancer.version@.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/datanucleus-rdbms-@datanucleus-rdbms.version@.jar"/>
