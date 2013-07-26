@@ -247,12 +247,6 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
       return partSpec.toString().replaceAll("[:/#\\?]", "_");
     }
 
-    private void convertToMetadataOnlyQuery(MapredWork work,
-        TableScanOperator tso) {
-      String alias = getAliasForTableScanOperator(work, tso);
-      processAlias(work, alias);
-    }
-
     @Override
     public Object dispatch(Node nd, Stack<Node> stack, Object... nodeOutputs)
         throws SemanticException {
@@ -305,8 +299,10 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
 
       while (iterator.hasNext()) {
         TableScanOperator tso = iterator.next();
-        LOG.info("Metadata only table scan for " + tso.getConf().getAlias());
-        convertToMetadataOnlyQuery((MapredWork) task.getWork(), tso);
+        MapredWork work = (MapredWork) task.getWork();
+        String alias = getAliasForTableScanOperator(work, tso);
+        LOG.info("Metadata only table scan for " + alias);
+        processAlias(work, alias);
       }
 
       return null;
