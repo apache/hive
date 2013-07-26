@@ -112,37 +112,37 @@ STAGE PLANS:
                     1 [Column[_col0]]
                   outputColumnNames: _col0, _col2, _col3
                   Position of Big Table: 1
-                    Map Join Operator
-                      condition map:
-                           Inner Join 0 to 1
-                      condition expressions:
-                        0 {_col3} {_col0}
-                        1 
-                      handleSkewJoin: false
-                      keys:
-                        0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[_col0], Column[_col2]()]
-                        1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[_col0]()]
-                      outputColumnNames: _col1, _col2
-                      Position of Big Table: 0
-                      Select Operator
-                        expressions:
-                              expr: _col2
-                              type: string
-                              expr: _col1
-                              type: string
-                        outputColumnNames: _col2, _col1
-                        Group By Operator
-                          aggregations:
-                                expr: sum(hash(_col2,_col1))
-                          bucketGroup: false
-                          mode: hash
-                          outputColumnNames: _col0
-                          File Output Operator
-                            compressed: false
-                            GlobalTableId: 0
-                            table:
-                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  Map Join Operator
+                    condition map:
+                         Inner Join 0 to 1
+                    condition expressions:
+                      0 {_col3} {_col0}
+                      1 
+                    handleSkewJoin: false
+                    keys:
+                      0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[_col0], Column[_col2]()]
+                      1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[_col0]()]
+                    outputColumnNames: _col1, _col2
+                    Position of Big Table: 0
+                    Select Operator
+                      expressions:
+                            expr: _col2
+                            type: string
+                            expr: _col1
+                            type: string
+                      outputColumnNames: _col2, _col1
+                      Group By Operator
+                        aggregations:
+                              expr: sum(hash(_col2,_col1))
+                        bucketGroup: false
+                        mode: hash
+                        outputColumnNames: _col0
+                        File Output Operator
+                          compressed: false
+                          GlobalTableId: 0
+                          table:
+                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
       Local Work:
         Map Reduce Local Work
 
