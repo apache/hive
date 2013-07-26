@@ -151,6 +151,13 @@ public class CodeGen {
       {"FilterStringColumnCompareScalar", "LessEqual", "<="},
       {"FilterStringColumnCompareScalar", "Greater", ">"},
       {"FilterStringColumnCompareScalar", "GreaterEqual", ">="},
+      
+      {"FilterStringScalarCompareColumn", "Equal", "=="},
+      {"FilterStringScalarCompareColumn", "NotEqual", "!="},
+      {"FilterStringScalarCompareColumn", "Less", "<"},
+      {"FilterStringScalarCompareColumn", "LessEqual", "<="},
+      {"FilterStringScalarCompareColumn", "Greater", ">"},
+      {"FilterStringScalarCompareColumn", "GreaterEqual", ">="},
 
       {"FilterStringColumnCompareColumn", "Equal", "=="},
       {"FilterStringColumnCompareColumn", "NotEqual", "!="},
@@ -289,6 +296,8 @@ public class CodeGen {
         generateVectorUDAFVar(tdesc);
       } else if (tdesc[0].equals("FilterStringColumnCompareScalar")) {
         generateFilterStringColumnCompareScalar(tdesc);
+      } else if (tdesc[0].equals("FilterStringScalarCompareColumn")) {
+        generateFilterStringScalarCompareColumn(tdesc);
       } else if (tdesc[0].equals("FilterStringColumnCompareColumn")) {
         generateFilterStringColumnCompareColumn(tdesc);
       } else {
@@ -398,6 +407,13 @@ public class CodeGen {
     writeFile(outputFile, templateString);
   }
 
+  private void generateFilterStringScalarCompareColumn(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "FilterStringScalar" + operatorName + "StringColumn";
+    
+    // Template expansion logic is the same for both column-scalar and scalar-column cases.
+    generateFilterStringColumnCompareScalar(tdesc, className);
+  } 
 
   private void generateFilterStringColumnCompareScalar(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
