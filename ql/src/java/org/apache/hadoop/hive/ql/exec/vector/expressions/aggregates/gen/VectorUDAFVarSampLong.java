@@ -310,7 +310,7 @@ public class VectorUDAFVarSampLong extends VectorAggregateExpression {
       long[] vector = inputVector.vector;
       
       if (inputVector.isRepeating) {
-        if (inputVector.noNulls || !inputVector.isNull[0]) {
+        if (inputVector.noNulls) {
           iterateRepeatingNoNulls(myagg, vector[0], batchSize);
         }
       } 
