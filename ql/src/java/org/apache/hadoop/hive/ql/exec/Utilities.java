@@ -126,9 +126,9 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.Adjacency;
 import org.apache.hadoop.hive.ql.plan.api.Graph;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
@@ -549,8 +549,8 @@ public final class Utilities {
     e.setPersistenceDelegate(java.sql.Date.class, new DatePersistenceDelegate());
     e.setPersistenceDelegate(Timestamp.class, new TimestampPersistenceDelegate());
 
-    e.setPersistenceDelegate(org.datanucleus.sco.backed.Map.class, new MapDelegate());
-    e.setPersistenceDelegate(org.datanucleus.sco.backed.List.class, new ListDelegate());
+    e.setPersistenceDelegate(org.datanucleus.store.types.backed.Map.class, new MapDelegate());
+    e.setPersistenceDelegate(org.datanucleus.store.types.backed.List.class, new ListDelegate());
 
     e.writeObject(plan);
     e.close();
