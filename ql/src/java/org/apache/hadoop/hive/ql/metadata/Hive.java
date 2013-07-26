@@ -2114,12 +2114,75 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return false;
   }
 
+  //it is assumed that parent directory of the destf should already exist when this
+  //method is called. when the replace value is true, this method works a little different
+  //from mv command if the destf is a directory, it replaces the destf instead of moving under
+  //the destf. in this case, the replaced destf still preserves the original destf's permission
+  static protected boolean renameFile(HiveConf conf, Path srcf, Path destf, FileSystem fs,
+      boolean replace) throws HiveException {
+    boolean success = false;
+    boolean inheritPerms = HiveConf.getBoolVar(conf,
+        HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
+    String group = null;
+    String permission = null;
+
+    try {
+      if (inheritPerms || replace) {
+        try{
+          FileStatus deststatus = fs.getFileStatus(destf);
+          if (inheritPerms) {
+            group = deststatus.getGroup();
+            permission= Integer.toString(deststatus.getPermission().toShort(), 8);
+          }
+          //if destf is an existing directory:
+          //if replace is true, delete followed by rename(mv) is equivalent to replace
+          //if replace is false, rename (mv) actually move the src under dest dir
+          //if destf is an existing file, rename is actually a replace, and do not need
+          // to delete the file first
+          if (replace && deststatus.isDir()) {
+            fs.delete(destf, true);
+          }
+        } catch (FileNotFoundException ignore) {
+          //if dest dir does not exist, any re
+          if (inheritPerms) {
+            FileStatus deststatus = fs.getFileStatus(destf.getParent());
+            group = deststatus.getGroup();
+            permission= Integer.toString(deststatus.getPermission().toShort(), 8);
+          }
+        }
+      }
+      success = fs.rename(srcf, destf);
+      LOG.debug((replace ? "Replacing src:" : "Renaming src:") + srcf.toString()
+          + ";dest: " + destf.toString()  + ";Status:" + success);
+    } catch (IOException ioe) {
+      throw new HiveException("Unable to move source" + srcf + " to destination " + destf, ioe);
+    }
+
+    if (success && inheritPerms) {
+      //use FsShell to change group and permissions recursively
+      try {
+        FsShell fshell = new FsShell();
+        fshell.setConf(conf);
+        fshell.run(new String[]{"-chgrp", "-R", group, destf.toString()});
+        fshell.run(new String[]{"-chmod", "-R", permission, destf.toString()});
+      } catch (Exception e) {
+        throw new HiveException("Unable to set permissions of " + destf, e);
+      }
+    }
+    return success;
+  }
+
   static protected void copyFiles(HiveConf conf, Path srcf, Path destf, FileSystem fs)
       throws HiveException {
+    boolean inheritPerms = HiveConf.getBoolVar(conf,
+        HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
     try {
       // create the destination if it does not exist
       if (!fs.exists(destf)) {
         fs.mkdirs(destf);
+        if (inheritPerms) {
+          fs.setPermission(destf, fs.getFileStatus(destf.getParent()).getPermission());
+        }
       }
     } catch (IOException e) {
       throw new HiveException(
@@ -2146,7 +2209,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     try {
       for (List<Path[]> sdpairs : result) {
         for (Path[] sdpair : sdpairs) {
-          if (!fs.rename(sdpair[0], sdpair[1])) {
+          if (!renameFile(conf, sdpair[0], sdpair[1], fs, false)) {
             throw new IOException("Cannot move " + sdpair[0] + " to " + sdpair[1]);
           }
         }
@@ -2175,6 +2238,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
       throws HiveException {
     try {
       FileSystem fs = srcf.getFileSystem(conf);
+      boolean inheritPerms = HiveConf.getBoolVar(conf,
+          HiveConf.ConfVars.HIVE_WAREHOUSE_SUBDIR_INHERIT_PERMS);
 
       // check if srcf contains nested sub-directories
       FileStatus[] srcs;
@@ -2189,8 +2254,10 @@ private void constructOneLBLocationMap(FileStatus fSta,
       }
       List<List<Path[]>> result = checkPaths(conf, fs, srcs, destf, true);
 
-      // point of no return -- delete oldPath
-      if (oldPath != null) {
+      // point of no return -- delete oldPath only if it is not same as destf,
+      // otherwise, the oldPath/destf will be cleaned later just before move
+      if (oldPath != null && (!destf.getFileSystem(conf).equals(oldPath.getFileSystem(conf))
+          || !destf.equals(oldPath))) {
         try {
           FileSystem fs2 = oldPath.getFileSystem(conf);
           if (fs2.exists(oldPath)) {
@@ -2208,27 +2275,30 @@ private void constructOneLBLocationMap(FileStatus fSta,
       // rename src directory to destf
       if (srcs.length == 1 && srcs[0].isDir()) {
         // rename can fail if the parent doesn't exist
-        if (!fs.exists(destf.getParent())) {
-          fs.mkdirs(destf.getParent());
-        }
-        if (fs.exists(destf)) {
-          fs.delete(destf, true);
+        Path destfp = destf.getParent();
+        if (!fs.exists(destfp)) {
+          boolean success = fs.mkdirs(destfp);
+          if (inheritPerms && success) {
+            fs.setPermission(destfp, fs.getFileStatus(destfp.getParent()).getPermission());
+          }
         }
 
-        boolean b = fs.rename(srcs[0].getPath(), destf);
+        boolean b = renameFile(conf, srcs[0].getPath(), destf, fs, true);
         if (!b) {
           throw new HiveException("Unable to move results from " + srcs[0].getPath()
               + " to destination directory: " + destf);
         }
-        LOG.debug("Renaming:" + srcf.toString() + " to " + destf.toString()  + ",Status:" + b);
       } else { // srcf is a file or pattern containing wildcards
         if (!fs.exists(destf)) {
-          fs.mkdirs(destf);
+          boolean success = fs.mkdirs(destf);
+          if (inheritPerms && success) {
+            fs.setPermission(destf, fs.getFileStatus(destf.getParent()).getPermission());
+          }
         }
         // srcs must be a list of files -- ensured by LoadSemanticAnalyzer
         for (List<Path[]> sdpairs : result) {
           for (Path[] sdpair : sdpairs) {
-            if (!fs.rename(sdpair[0], sdpair[1])) {
+            if (!renameFile(conf, sdpair[0], sdpair[1], fs, true)) {
               throw new IOException("Error moving: " + sdpair[0] + " into: " + sdpair[1]);
             }
           }
