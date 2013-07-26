@@ -324,7 +324,8 @@ public class HiveConf extends Configuration {
     METASTORE_TRANSACTION_ISOLATION("datanucleus.transactionIsolation", "read-committed"),
     METASTORE_CACHE_LEVEL2("datanucleus.cache.level2", false),
     METASTORE_CACHE_LEVEL2_TYPE("datanucleus.cache.level2.type", "none"),
-    METASTORE_IDENTIFIER_FACTORY("datanucleus.identifierFactory", "datanucleus"),
+    METASTORE_IDENTIFIER_FACTORY("datanucleus.identifierFactory", "datanucleus1"),
+    METASTORE_USE_LEGACY_VALUE_STRATEGY("datanucleus.rdbms.useLegacyNativeValueStrategy", true),
     METASTORE_PLUGIN_REGISTRY_BUNDLE_CHECK("datanucleus.plugin.pluginRegistryBundleCheck", "LOG"),
     METASTORE_BATCH_RETRIEVE_MAX("hive.metastore.batch.retrieve.max", 300),
     METASTORE_BATCH_RETRIEVE_TABLE_PARTITION_MAX(
@@ -353,7 +354,7 @@ public class HiveConf extends Configuration {
     METASTORE_CONNECTION_DRIVER("javax.jdo.option.ConnectionDriverName",
         "org.apache.derby.jdbc.EmbeddedDriver"),
     METASTORE_MANAGER_FACTORY_CLASS("javax.jdo.PersistenceManagerFactoryClass",
-        "org.datanucleus.jdo.JDOPersistenceManagerFactory"),
+        "org.datanucleus.api.jdo.JDOPersistenceManagerFactory"),
     METASTORE_DETACH_ALL_ON_COMMIT("javax.jdo.option.DetachAllOnCommit", true),
     METASTORE_NON_TRANSACTIONAL_READ("javax.jdo.option.NonTransactionalRead", true),
     METASTORE_CONNECTION_USER_NAME("javax.jdo.option.ConnectionUserName", "APP"),

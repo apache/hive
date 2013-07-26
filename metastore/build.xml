@@ -81,7 +81,7 @@
   <target name="model-enhance" depends="model-compile" unless="enhanceModel.notRequired" >
     <echo message="Project: ${ant.project.name}"/>
     <taskdef name="datanucleusenhancer"
-                classname="org.datanucleus.enhancer.tools.EnhancerTask">
+                classname="org.datanucleus.enhancer.EnhancerTask">
        <classpath refid="classpath"/>
    </taskdef>
 
