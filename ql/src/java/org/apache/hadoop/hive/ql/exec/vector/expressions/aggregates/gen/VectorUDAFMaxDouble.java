@@ -97,7 +97,7 @@ public class VectorUDAFMaxDouble extends VectorAggregateExpression {
       return myagg;
     }
     
-@Override
+    @Override
     public void aggregateInputSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
       int aggregrateIndex, 
@@ -297,8 +297,8 @@ public class VectorUDAFMaxDouble extends VectorAggregateExpression {
         double[] vector = inputVector.vector;
         
         if (inputVector.isRepeating) {
-          if ((inputVector.noNulls || !inputVector.isNull[0]) &&
-            myagg.isNull || vector[0] < myagg.value) {
+          if (inputVector.noNulls &&
+            (myagg.isNull || (vector[0] > myagg.value))) {
             myagg.isNull = false;
             myagg.value = vector[0];
           }

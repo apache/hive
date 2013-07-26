@@ -290,7 +290,7 @@ public class VectorUDAFSumLong extends VectorAggregateExpression {
       long[] vector = inputVector.vector;
       
       if (inputVector.isRepeating) {
-        if (inputVector.noNulls || !inputVector.isNull[0]) {
+        if (inputVector.noNulls) {
         if (myagg.isNull) {
           myagg.isNull = false;
           myagg.sum = 0;
