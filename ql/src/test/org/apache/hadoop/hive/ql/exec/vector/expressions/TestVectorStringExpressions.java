@@ -30,6 +30,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColEqua
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColGreaterEqualStringScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColLessStringColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColLessStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringScalarEqualStringColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringScalarGreaterStringColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringScalarLessEqualStringColumn;
 import org.apache.hadoop.io.Text;
 import org.junit.Test;
 
@@ -167,6 +170,36 @@ public class TestVectorStringExpressions {
     Assert.assertTrue(batch.selected[1] == 1);
   }
 
+  @Test
+  // Test string literal to string column comparison
+  public void testStringScalarCompareStringCol() {
+    VectorizedRowBatch batch = makeStringBatch();
+    VectorExpression expr;
+    expr = new FilterStringScalarEqualStringColumn(0, red2);
+    expr.evaluate(batch);
+
+    // only red qualifies, and it's in entry 0
+    Assert.assertTrue(batch.size == 1);
+    Assert.assertTrue(batch.selected[0] == 0);
+
+    batch = makeStringBatch();
+    expr = new FilterStringScalarGreaterStringColumn(0, red2);
+    expr.evaluate(batch);
+
+    // only green qualifies, and it's in entry 1
+    Assert.assertTrue(batch.size == 1);
+    Assert.assertTrue(batch.selected[0] == 1);
+
+    batch = makeStringBatch();
+    expr = new FilterStringScalarLessEqualStringColumn(0, green);
+    expr.evaluate(batch);
+
+    // green and red qualify
+    Assert.assertTrue(batch.size == 2);
+    Assert.assertTrue(batch.selected[0] == 0);
+    Assert.assertTrue(batch.selected[1] == 1);
+  }
+  
   @Test
   public void testStringColCompareStringColFilter() {
     VectorizedRowBatch batch;
