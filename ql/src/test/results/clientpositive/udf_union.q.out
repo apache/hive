@@ -39,7 +39,7 @@ STAGE PLANS:
               expressions:
                     expr: create_union(0,key)
                     type: uniontype<string>
-                    expr: create_union(if((key < 100.0), 0, 1),2.0,value)
+                    expr: create_union(if((key < 100), 0, 1),2.0,value)
                     type: uniontype<double,string>
                     expr: create_union(1,'a',struct(2,'b'))
                     type: uniontype<string,struct<col1:int,col2:string>>

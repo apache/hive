@@ -8081,7 +8081,7 @@ STAGE PLANS:
             alias: t2
             Filter Operator
               predicate:
-                  expr: (key = 8.0)
+                  expr: (key = 8)
                   type: boolean
               Select Operator
                 expressions:

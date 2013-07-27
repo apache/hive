@@ -53,7 +53,7 @@ STAGE PLANS:
                 Filter Operator
                   isSamplingPred: false
                   predicate:
-                      expr: ((_col1 < 100.0) and (_col0 = '2008-04-08'))
+                      expr: ((_col1 < 100) and (_col0 = '2008-04-08'))
                       type: boolean
                   Reduce Output Operator
                     key expressions:

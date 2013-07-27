@@ -2336,12 +2336,12 @@
                     <void property="typeInfo"> 
                      <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                       <void property="typeName"> 
-                       <string>double</string> 
+                       <string>int</string>
                       </void> 
                      </object> 
                     </void> 
                     <void property="value"> 
-                     <double>100.0</double> 
+                     <int>100</int>
                     </void> 
                    </object> 
                   </void> 
@@ -2649,7 +2649,7 @@
                          <object idref="PrimitiveTypeInfo1"/> 
                         </void> 
                         <void property="value"> 
-                         <double>100.0</double> 
+                         <int>100</int>
                         </void> 
                        </object> 
                       </void> 
@@ -2686,7 +2686,7 @@
                          <object idref="PrimitiveTypeInfo1"/> 
                         </void> 
                         <void property="value"> 
-                         <double>200.0</double> 
+                         <int>200</int>
                         </void> 
                        </object> 
                       </void> 
@@ -2840,11 +2840,7 @@
                    <string>_col1</string> 
                    <object id="ExprNodeConstantDesc0" class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
-                     <object id="PrimitiveTypeInfo3" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                      <void property="typeName"> 
-                       <string>int</string> 
-                      </void> 
-                     </object> 
+                     <object idref="PrimitiveTypeInfo1"/>
                     </void> 
                     <void property="value"> 
                      <int>2</int> 
@@ -2940,7 +2936,7 @@
                        <string>_col1</string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="PrimitiveTypeInfo3"/> 
+                       <object idref="PrimitiveTypeInfo1"/>
                       </void> 
                      </object> 
                     </void> 
@@ -2981,7 +2977,7 @@
                          <object idref="PrimitiveTypeInfo1"/> 
                         </void> 
                         <void property="value"> 
-                         <double>200.0</double> 
+                         <int>200</int>
                         </void> 
                        </object> 
                       </void> 
@@ -3018,7 +3014,7 @@
                          <object idref="PrimitiveTypeInfo1"/> 
                         </void> 
                         <void property="value"> 
-                         <double>300.0</double> 
+                         <int>300</int>
                         </void> 
                        </object> 
                       </void> 
@@ -3266,7 +3262,7 @@
                      <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
                     <void property="value"> 
-                     <double>300.0</double> 
+                     <int>300</int>
                     </void> 
                    </object> 
                   </void> 

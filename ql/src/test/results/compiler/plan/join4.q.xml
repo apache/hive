@@ -675,12 +675,12 @@
                         <void property="typeInfo"> 
                          <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                           <void property="typeName"> 
-                           <string>double</string> 
+                           <string>int</string>
                           </void> 
                          </object> 
                         </void> 
                         <void property="value"> 
-                         <double>10.0</double> 
+                         <int>10</int>
                         </void> 
                        </object> 
                       </void> 
@@ -721,7 +721,7 @@
                          <object idref="PrimitiveTypeInfo1"/> 
                         </void> 
                         <void property="value"> 
-                         <double>20.0</double> 
+                         <int>20</int>
                         </void> 
                        </object> 
                       </void> 
@@ -1271,7 +1271,7 @@
                          <object idref="PrimitiveTypeInfo1"/> 
                         </void> 
                         <void property="value"> 
-                         <double>15.0</double> 
+                         <int>15</int>
                         </void> 
                        </object> 
                       </void> 
@@ -1308,7 +1308,7 @@
                          <object idref="PrimitiveTypeInfo1"/> 
                         </void> 
                         <void property="value"> 
-                         <double>25.0</double> 
+                         <int>25</int>
                         </void> 
                        </object> 
                       </void> 

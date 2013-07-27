@@ -55,7 +55,7 @@ STAGE PLANS:
                 Filter Operator
                   isSamplingPred: false
                   predicate:
-                      expr: (_col1 < 100.0)
+                      expr: (_col1 < 100)
                       type: boolean
                   Reduce Output Operator
                     key expressions:

@@ -456,7 +456,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: ((ts = 3.0) and (dt = 10.0))
+                  expr: ((ts = 3.0) and (dt = 10))
                   type: boolean
               Select Operator
                 Group By Operator

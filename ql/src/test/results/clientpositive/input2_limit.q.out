@@ -20,7 +20,7 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (key < 300.0)
+                  expr: (key < 300)
                   type: boolean
               Select Operator
                 expressions:
