@@ -21,9 +21,10 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.BooleanWritable;
@@ -164,6 +165,11 @@ public class UDFToBoolean extends UDF {
       booleanWritable.set(i.getLength() != 0);
       return booleanWritable;
     }
+  }
+
+  public BooleanWritable evaluate(DateWritable d) {
+    // date value to boolean doesn't make any sense.
+    return null;
   }
 
   public BooleanWritable evaluate(TimestampWritable i) {

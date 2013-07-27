@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
@@ -131,6 +132,15 @@ public class UDFToString extends UDF {
       }
       i.set(i.toString());
       return i;
+  }
+
+  public Text evaluate(DateWritable d) {
+    if (d == null) {
+      return null;
+    } else {
+      t.set(d.toString());
+      return t;
+    }
   }
 
   public Text evaluate(TimestampWritable i) {

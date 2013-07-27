@@ -1,0 +1,54 @@
+PREHOOK: query: drop table date_3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table date_3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table date_3 (
+  c1 int
+)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table date_3 (
+  c1 int
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@date_3
+PREHOOK: query: alter table date_3 add columns (c2 date)
+PREHOOK: type: ALTERTABLE_ADDCOLS
+PREHOOK: Input: default@date_3
+PREHOOK: Output: default@date_3
+POSTHOOK: query: alter table date_3 add columns (c2 date)
+POSTHOOK: type: ALTERTABLE_ADDCOLS
+POSTHOOK: Input: default@date_3
+POSTHOOK: Output: default@date_3
+PREHOOK: query: insert overwrite table date_3
+  select 1, cast(cast('2011-01-01 00:00:00' as timestamp) as date) from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@date_3
+POSTHOOK: query: insert overwrite table date_3
+  select 1, cast(cast('2011-01-01 00:00:00' as timestamp) as date) from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@date_3
+POSTHOOK: Lineage: date_3.c1 SIMPLE []
+POSTHOOK: Lineage: date_3.c2 EXPRESSION []
+PREHOOK: query: select * from date_3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from date_3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_3
+#### A masked pattern was here ####
+POSTHOOK: Lineage: date_3.c1 SIMPLE []
+POSTHOOK: Lineage: date_3.c2 EXPRESSION []
+1	2011-01-01
+PREHOOK: query: drop table date_3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@date_3
+PREHOOK: Output: default@date_3
+POSTHOOK: query: drop table date_3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@date_3
+POSTHOOK: Output: default@date_3
+POSTHOOK: Lineage: date_3.c1 SIMPLE []
+POSTHOOK: Lineage: date_3.c2 EXPRESSION []

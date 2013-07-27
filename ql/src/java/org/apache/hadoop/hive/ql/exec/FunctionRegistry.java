@@ -343,6 +343,8 @@ public final class FunctionRegistry {
     registerUDF(serdeConstants.STRING_TYPE_NAME, UDFToString.class, false,
         UDFToString.class.getSimpleName());
 
+    registerGenericUDF(serdeConstants.DATE_TYPE_NAME,
+        GenericUDFToDate.class);
     registerGenericUDF(serdeConstants.TIMESTAMP_TYPE_NAME,
         GenericUDFTimestamp.class);
     registerGenericUDF(serdeConstants.BINARY_TYPE_NAME,
@@ -705,6 +707,11 @@ public final class FunctionRegistry {
     }
     // Void can be converted to any type
     if (from.equals(TypeInfoFactory.voidTypeInfo)) {
+      return true;
+    }
+    // Allow implicit String to Date conversion
+    if (from.equals(TypeInfoFactory.dateTypeInfo)
+        && to.equals(TypeInfoFactory.stringTypeInfo)) {
       return true;
     }
 
@@ -1267,7 +1274,8 @@ public final class FunctionRegistry {
         udfClass == UDFToDouble.class || udfClass == UDFToFloat.class ||
         udfClass == UDFToInteger.class || udfClass == UDFToLong.class ||
         udfClass == UDFToShort.class || udfClass == UDFToString.class ||
-        udfClass == GenericUDFTimestamp.class || udfClass == GenericUDFToBinary.class;
+        udfClass == GenericUDFTimestamp.class || udfClass == GenericUDFToBinary.class ||
+        udfClass == GenericUDFToDate.class;
   }
 
   /**

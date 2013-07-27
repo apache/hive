@@ -27,6 +27,12 @@ message DecimalStatistics {
   optional string sum = 3;
 }
 
+message DateStatistics {
+  // min,max values saved as days since epoch
+  optional sint32 minimum = 1;
+  optional sint32 maximum = 2;
+}
+
 message ColumnStatistics {
   optional uint64 numberOfValues = 1;
   optional IntegerStatistics intStatistics = 2;
@@ -34,6 +40,7 @@ message ColumnStatistics {
   optional StringStatistics stringStatistics = 4;
   optional BucketStatistics bucketStatistics = 5;
   optional DecimalStatistics decimalStatistics = 6;
+  optional DateStatistics dateStatistics = 7;
 }
 
 message RowIndexEntry {
@@ -93,6 +100,7 @@ message Type {
     STRUCT = 12;
     UNION = 13;
     DECIMAL = 14;
+    DATE = 15;
   }
   required Kind kind = 1;
   repeated uint32 subtypes = 2 [packed=true];

@@ -20,6 +20,7 @@ PRIMITIVE_TYPES = Set.new([
     9,
     15,
     16,
+    17,
 ])
 
 COMPLEX_TYPES = Set.new([
@@ -52,5 +53,6 @@ TYPE_NAMES = {
     13 => %q"UNIONTYPE",
     15 => %q"DECIMAL",
     16 => %q"NULL",
+    17 => %q"DATE",
 }
 

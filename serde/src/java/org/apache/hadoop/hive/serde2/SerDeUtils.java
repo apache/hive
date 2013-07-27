@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
@@ -280,6 +281,13 @@ public final class SerDeUtils {
           sb.append('"');
           sb.append(escapeString(((StringObjectInspector) poi)
               .getPrimitiveJavaObject(o)));
+          sb.append('"');
+          break;
+        }
+        case DATE: {
+          sb.append('"');
+          sb.append(((DateObjectInspector) poi)
+              .getPrimitiveWritableObject(o));
           sb.append('"');
           break;
         }

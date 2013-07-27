@@ -196,6 +196,10 @@ public final class LazyBinaryUtils {
         recordInfo.elementOffset = vInt.length;
         recordInfo.elementSize = vInt.value;
         break;
+      case DATE:
+        recordInfo.elementOffset = 0;
+        recordInfo.elementSize = WritableUtils.decodeVIntSize(bytes[offset]);
+        break;
       case TIMESTAMP:
         recordInfo.elementOffset = 0;
         recordInfo.elementSize = 4;

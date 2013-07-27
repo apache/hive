@@ -80,6 +80,7 @@ public class GenericUDAFCovarianceSample extends GenericUDAFCovariance {
         return new GenericUDAFCovarianceSampleEvaluator();
       case STRING:
       case BOOLEAN:
+      case DATE:
       default:
         throw new UDFArgumentTypeException(1,
             "Only numeric or string type arguments are accepted but "
@@ -87,6 +88,7 @@ public class GenericUDAFCovarianceSample extends GenericUDAFCovariance {
       }
     case STRING:
     case BOOLEAN:
+    case DATE:
     default:
       throw new UDFArgumentTypeException(0,
           "Only numeric or string type arguments are accepted but "
