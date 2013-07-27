@@ -312,7 +312,7 @@ STAGE PLANS:
           Filter Operator
             isSamplingPred: false
             predicate:
-                expr: ((((_col4 > 15.0) and (_col4 < 25.0)) and (_col0 > 10.0)) and (_col0 < 20.0))
+                expr: ((((_col4 > 15) and (_col4 < 25)) and (_col0 > 10)) and (_col0 < 20))
                 type: boolean
             Select Operator
               expressions:
@@ -706,7 +706,7 @@ STAGE PLANS:
           Filter Operator
             isSamplingPred: false
             predicate:
-                expr: (((((_col4 > 15.0) and (_col4 < 25.0)) and (_col6 = '2008-04-08')) and (_col0 > 10.0)) and (_col0 < 20.0))
+                expr: (((((_col4 > 15) and (_col4 < 25)) and (_col6 = '2008-04-08')) and (_col0 > 10)) and (_col0 < 20))
                 type: boolean
             Select Operator
               expressions:

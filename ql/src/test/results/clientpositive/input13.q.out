@@ -69,7 +69,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key < 100.0)
+                  expr: (key < 100)
                   type: boolean
               Select Operator
                 expressions:
@@ -88,7 +88,7 @@ STAGE PLANS:
                       name: default.dest1
             Filter Operator
               predicate:
-                  expr: ((key >= 100.0) and (key < 200.0))
+                  expr: ((key >= 100) and (key < 200))
                   type: boolean
               Select Operator
                 expressions:
@@ -107,7 +107,7 @@ STAGE PLANS:
                       name: default.dest2
             Filter Operator
               predicate:
-                  expr: ((key >= 200.0) and (key < 300.0))
+                  expr: ((key >= 200) and (key < 300))
                   type: boolean
               Select Operator
                 expressions:
@@ -124,7 +124,7 @@ STAGE PLANS:
                       name: default.dest3
             Filter Operator
               predicate:
-                  expr: (key >= 300.0)
+                  expr: (key >= 300)
                   type: boolean
               Select Operator
                 expressions:

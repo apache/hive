@@ -1741,12 +1741,12 @@
                     <void property="typeInfo"> 
                      <object class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                       <void property="typeName"> 
-                       <string>double</string> 
+                       <string>int</string>
                       </void> 
                      </object> 
                     </void> 
                     <void property="value"> 
-                     <double>86.0</double> 
+                     <int>86</int>
                     </void> 
                    </object> 
                   </void> 

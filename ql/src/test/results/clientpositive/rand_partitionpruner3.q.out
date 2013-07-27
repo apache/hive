@@ -24,7 +24,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: ((rand(1) < 0.1) and (not ((key > 50.0) or (key < 10.0))))
+                  expr: ((rand(1) < 0.1) and (not ((key > 50) or (key < 10))))
                   type: boolean
               Select Operator
                 expressions:
@@ -152,7 +152,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (not ((key > 50.0) or (key < 10.0)))
+                  expr: (not ((key > 50) or (key < 10)))
                   type: boolean
               Select Operator
                 expressions:

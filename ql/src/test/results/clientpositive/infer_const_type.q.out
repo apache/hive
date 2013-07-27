@@ -58,7 +58,7 @@ STAGE PLANS:
             alias: infertypes
             Filter Operator
               predicate:
-                  expr: (((((((ti = 127) and (si = 32767)) and (i = 12345)) and (bi = -12345)) and (fl = 906.0)) and (db = -307.0)) and (str = 1234.0))
+                  expr: (((((((ti = 127) and (si = 32767)) and (i = 12345)) and (bi = -12345)) and (fl = 906.0)) and (db = -307.0)) and (str = 1234))
                   type: boolean
               Select Operator
                 expressions:

@@ -617,7 +617,7 @@ STAGE PLANS:
             alias: t1
             Filter Operator
               predicate:
-                  expr: (val = 3.0)
+                  expr: (val = 3)
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -638,7 +638,7 @@ STAGE PLANS:
             alias: t2
             Filter Operator
               predicate:
-                  expr: (val = 3.0)
+                  expr: (val = 3)
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -760,7 +760,7 @@ STAGE PLANS:
             alias: t1
             Filter Operator
               predicate:
-                  expr: (key = 5.0)
+                  expr: (key = 5)
                   type: boolean
               Select Operator
                 expressions:
@@ -784,7 +784,7 @@ STAGE PLANS:
             alias: t2
             Filter Operator
               predicate:
-                  expr: (key = 6.0)
+                  expr: (key = 6)
                   type: boolean
               Select Operator
                 expressions:

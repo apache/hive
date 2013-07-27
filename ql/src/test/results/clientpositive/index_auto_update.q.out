@@ -291,11 +291,11 @@ STAGE PLANS:
           TableScan
             alias: default__temp_temp_index__
             filterExpr:
-                expr: (key = 86.0)
+                expr: (key = 86)
                 type: boolean
             Filter Operator
               predicate:
-                  expr: (key = 86.0)
+                  expr: (key = 86)
                   type: boolean
               Select Operator
                 expressions:
@@ -333,11 +333,11 @@ STAGE PLANS:
           TableScan
             alias: temp
             filterExpr:
-                expr: (key = 86.0)
+                expr: (key = 86)
                 type: boolean
             Filter Operator
               predicate:
-                  expr: (key = 86.0)
+                  expr: (key = 86)
                   type: boolean
               Select Operator
                 expressions:

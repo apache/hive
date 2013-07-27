@@ -19,7 +19,7 @@ STAGE PLANS:
           alias: x
           Filter Operator
             predicate:
-                expr: ((ds = '2008-04-08') and (hr = 15.0))
+                expr: ((ds = '2008-04-08') and (hr = 15))
                 type: boolean
             Select Operator
               expressions:

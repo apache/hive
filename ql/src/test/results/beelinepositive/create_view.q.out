@@ -113,7 +113,7 @@ SELECT * from view2 where key=18;
 '            alias: src'
 '            Filter Operator'
 '              predicate:'
-'                  expr: (key = 18.0)'
+'                  expr: (key = 18)'
 '                  type: boolean'
 '              Select Operator'
 '                expressions:'

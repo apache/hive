@@ -49,7 +49,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: ((key < 100.0) and (ds = '2008-04-08'))
+                  expr: ((key < 100) and (ds = '2008-04-08'))
                   type: boolean
               Select Operator
                 expressions:
@@ -89,7 +89,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: ((key < 100.0) and (ds = '2008-04-09'))
+                  expr: ((key < 100) and (ds = '2008-04-09'))
                   type: boolean
               Select Operator
                 expressions:

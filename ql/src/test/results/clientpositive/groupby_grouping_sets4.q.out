@@ -48,7 +48,7 @@ STAGE PLANS:
             alias: t1
             Filter Operator
               predicate:
-                  expr: (a < 3.0)
+                  expr: (a < 3)
                   type: boolean
               Select Operator
                 expressions:
@@ -234,7 +234,7 @@ STAGE PLANS:
             alias: t1
             Filter Operator
               predicate:
-                  expr: (a < 3.0)
+                  expr: (a < 3)
                   type: boolean
               Select Operator
                 expressions:
@@ -379,7 +379,7 @@ STAGE PLANS:
             alias: t1
             Filter Operator
               predicate:
-                  expr: (a < 3.0)
+                  expr: (a < 3)
                   type: boolean
               Select Operator
                 expressions:
@@ -604,7 +604,7 @@ STAGE PLANS:
             alias: t1
             Filter Operator
               predicate:
-                  expr: (a < 3.0)
+                  expr: (a < 3)
                   type: boolean
               Select Operator
                 expressions:

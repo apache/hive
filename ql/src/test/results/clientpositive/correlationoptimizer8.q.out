@@ -47,7 +47,7 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (key < 20.0)
+                  expr: (key < 20)
                   type: boolean
               Select Operator
                 expressions:
@@ -212,7 +212,7 @@ STAGE PLANS:
             alias: x1
             Filter Operator
               predicate:
-                  expr: (key > 100.0)
+                  expr: (key > 100)
                   type: boolean
               Select Operator
                 expressions:
@@ -339,7 +339,7 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (key < 20.0)
+                  expr: (key < 20)
                   type: boolean
               Select Operator
                 expressions:
@@ -372,7 +372,7 @@ STAGE PLANS:
             alias: x1
             Filter Operator
               predicate:
-                  expr: (key > 100.0)
+                  expr: (key > 100)
                   type: boolean
               Select Operator
                 expressions:
@@ -645,7 +645,7 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (key < 20.0)
+                  expr: (key < 20)
                   type: boolean
               Select Operator
                 expressions:
@@ -820,7 +820,7 @@ STAGE PLANS:
             alias: x1
             Filter Operator
               predicate:
-                  expr: (key > 100.0)
+                  expr: (key > 100)
                   type: boolean
               Select Operator
                 expressions:
@@ -967,7 +967,7 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (key < 20.0)
+                  expr: (key < 20)
                   type: boolean
               Select Operator
                 expressions:
@@ -1000,7 +1000,7 @@ STAGE PLANS:
             alias: x1
             Filter Operator
               predicate:
-                  expr: (key > 100.0)
+                  expr: (key > 100)
                   type: boolean
               Select Operator
                 expressions:
@@ -1297,7 +1297,7 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (key < 20.0)
+                  expr: (key < 20)
                   type: boolean
               Select Operator
                 expressions:
@@ -1462,7 +1462,7 @@ STAGE PLANS:
             alias: x1
             Filter Operator
               predicate:
-                  expr: (key > 100.0)
+                  expr: (key > 100)
                   type: boolean
               Select Operator
                 expressions:
@@ -1572,7 +1572,7 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: (key < 20.0)
+                  expr: (key < 20)
                   type: boolean
               Select Operator
                 expressions:
@@ -1747,7 +1747,7 @@ STAGE PLANS:
             alias: x1
             Filter Operator
               predicate:
-                  expr: (key > 100.0)
+                  expr: (key > 100)
                   type: boolean
               Select Operator
                 expressions:
