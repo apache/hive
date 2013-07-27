@@ -150,7 +150,9 @@ public class TestJdbcDriver extends TestCase {
         + " c15 struct<r:int,s:struct<a:int,b:string>>,"
         + " c16 array<struct<m:map<string,string>,n:int>>,"
         + " c17 timestamp, "
-        + " c18 decimal) comment'" + dataTypeTableComment
+        + " c18 decimal,"
+        + " c19 binary,"
+        + " c20 date) comment'" + dataTypeTableComment
             +"' partitioned by (dt STRING)");
     assertFalse(res.next());
 
@@ -226,6 +228,7 @@ public class TestJdbcDriver extends TestCase {
         + tableName
         + " where   'not?param?not?param' <> 'not_param??not_param' and ?=? "
         + " and 1=? and 2=? and 3.0=? and 4.0=? and 'test\\'string\"'=? and 5=? and ?=? "
+        + " and date '2012-01-01' = date ?"
         + " ) t  select '2011-03-25' ddate,'China',true bv, 10 num limit 10";
 
      ///////////////////////////////////////////////
@@ -296,7 +299,7 @@ public class TestJdbcDriver extends TestCase {
     assertNotNull(
         "Execute the invalid setted sql statement should throw exception",
         expectedException);
-    
+
     // setObject to the yet unknown type java.util.Date
     expectedException = null;
     try {
@@ -326,6 +329,7 @@ public class TestJdbcDriver extends TestCase {
     ps.setObject(8, 5L); //setLong
     ps.setObject(9, (byte) 1); //setByte
     ps.setObject(10, (byte) 1); //setByte
+    ps.setString(11, "2012-01-01"); //setString
 
     ps.setMaxRows(2);
     return ps;
@@ -345,6 +349,7 @@ public class TestJdbcDriver extends TestCase {
     ps.setLong(8, 5L); //setLong
     ps.setByte(9, (byte) 1); //setByte
     ps.setByte(10, (byte) 1); //setByte
+    ps.setString(11, "2012-01-01"); //setString
 
     ps.setMaxRows(2);
     return ps;
@@ -438,6 +443,8 @@ public class TestJdbcDriver extends TestCase {
     assertEquals(null, res.getString(17));
     assertEquals(null, res.getTimestamp(17));
     assertEquals(null, res.getBigDecimal(18));
+    assertEquals(null, res.getString(20));
+    assertEquals(null, res.getDate(20));
 
     // row 3
     assertTrue(res.next());
@@ -460,6 +467,8 @@ public class TestJdbcDriver extends TestCase {
     assertEquals("2012-04-22 09:00:00.123456789", res.getString(17));
     assertEquals("2012-04-22 09:00:00.123456789", res.getTimestamp(17).toString());
     assertEquals("123456789.0123456", res.getBigDecimal(18).toString());
+    assertEquals("2013-01-01", res.getString(20));
+    assertEquals("2013-01-01", res.getDate(20).toString());
 
     // test getBoolean rules on non-boolean columns
     assertEquals(true, res.getBoolean(1));
@@ -850,13 +859,14 @@ public class TestJdbcDriver extends TestCase {
 
     ResultSet res = stmt.executeQuery(
         "select c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, " +
-        "c1*2, sentences(null, null, null) as b, c17, c18 from " + dataTypeTableName + " limit 1");
+        "c1*2, sentences(null, null, null) as b, c17, c18, c20 from " + dataTypeTableName +
+        " limit 1");
     ResultSetMetaData meta = res.getMetaData();
 
     ResultSet colRS = con.getMetaData().getColumns(null, null,
         dataTypeTableName.toLowerCase(), null);
 
-    assertEquals(16, meta.getColumnCount());
+    assertEquals(17, meta.getColumnCount());
 
     assertTrue(colRS.next());
 
@@ -1065,6 +1075,13 @@ public class TestJdbcDriver extends TestCase {
     assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(16));
     assertEquals(Integer.MAX_VALUE, meta.getPrecision(16));
     assertEquals(Integer.MAX_VALUE, meta.getScale(16));
+
+    assertEquals("c20", meta.getColumnName(17));
+    assertEquals(Types.DATE, meta.getColumnType(17));
+    assertEquals("date", meta.getColumnTypeName(17));
+    assertEquals(10, meta.getColumnDisplaySize(17));
+    assertEquals(10, meta.getPrecision(17));
+    assertEquals(0, meta.getScale(17));
 
     for (int i = 1; i <= meta.getColumnCount(); i++) {
       assertFalse(meta.isAutoIncrement(i));

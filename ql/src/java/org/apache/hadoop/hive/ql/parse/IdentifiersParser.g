@@ -222,6 +222,7 @@ constant
 @after { gParent.msgs.pop(); }
     :
     Number
+    | dateLiteral
     | StringLiteral
     | stringLiteralSequence
     | BigintLiteral
@@ -244,6 +245,11 @@ charSetStringLiteral
     csName=CharSetName csLiteral=CharSetLiteral -> ^(TOK_CHARSETLITERAL $csName $csLiteral)
     ;
 
+dateLiteral
+    :
+    KW_DATE StringLiteral -> ^(TOK_DATELITERAL StringLiteral)
+    ;
+
 expression
 @init { gParent.msgs.push("expression specification"); }
 @after { gParent.msgs.pop(); }
@@ -254,6 +260,7 @@ expression
 atomExpression
     :
     KW_NULL -> TOK_NULL
+    | dateLiteral
     | constant
     | function
     | castExpression

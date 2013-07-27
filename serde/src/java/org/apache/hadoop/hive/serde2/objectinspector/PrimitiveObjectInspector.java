@@ -27,7 +27,8 @@ public interface PrimitiveObjectInspector extends ObjectInspector {
    * The primitive types supported by Hive.
    */
   public static enum PrimitiveCategory {
-    VOID, BOOLEAN, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, STRING, TIMESTAMP, BINARY, DECIMAL, UNKNOWN
+    VOID, BOOLEAN, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, STRING,
+    DATE, TIMESTAMP, BINARY, DECIMAL, UNKNOWN
   };
 
   /**

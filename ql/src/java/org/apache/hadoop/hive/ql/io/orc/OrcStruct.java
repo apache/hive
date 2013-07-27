@@ -475,6 +475,8 @@ final class OrcStruct implements Writable {
             return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
           case TIMESTAMP:
             return PrimitiveObjectInspectorFactory.javaTimestampObjectInspector;
+          case DATE:
+            return PrimitiveObjectInspectorFactory.javaDateObjectInspector;
           case DECIMAL:
             return PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector;
           default:
@@ -519,6 +521,8 @@ final class OrcStruct implements Writable {
         return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
       case TIMESTAMP:
         return PrimitiveObjectInspectorFactory.javaTimestampObjectInspector;
+      case DATE:
+        return PrimitiveObjectInspectorFactory.javaDateObjectInspector;
       case DECIMAL:
         return PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector;
       case STRUCT:

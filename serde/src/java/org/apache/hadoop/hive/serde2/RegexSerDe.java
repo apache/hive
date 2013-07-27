@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.serde2;
 
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -134,6 +136,10 @@ public class RegexSerDe extends AbstractSerDe {
        columnOIs.add(PrimitiveObjectInspectorFactory.javaDoubleObjectInspector);
       } else if (typeName.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
         columnOIs.add(PrimitiveObjectInspectorFactory.javaBooleanObjectInspector);
+      } else if (typeName.equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
+        columnOIs.add(PrimitiveObjectInspectorFactory.javaTimestampObjectInspector);
+      } else if (typeName.equals(serdeConstants.DATE_TYPE_NAME)) {
+        columnOIs.add(PrimitiveObjectInspectorFactory.javaDateObjectInspector);
       } else if (typeName.equals(serdeConstants.DECIMAL_TYPE_NAME)) {
         columnOIs.add(PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector);
       } else {
@@ -229,6 +235,14 @@ public class RegexSerDe extends AbstractSerDe {
           Boolean b;
           b = Boolean.valueOf(t);
           row.set(c, b);
+        } else if (typeName.equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
+          Timestamp ts;
+          ts = Timestamp.valueOf(t);
+          row.set(c, ts);
+        } else if (typeName.equals(serdeConstants.DATE_TYPE_NAME)) {
+          Date d;
+          d = Date.valueOf(t);
+          row.set(c, d);
         } else if (typeName.equals(serdeConstants.DECIMAL_TYPE_NAME)) {
           HiveDecimal bd;
           bd = new HiveDecimal(t);

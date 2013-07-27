@@ -30,6 +30,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitive
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
@@ -488,6 +490,8 @@ public final class ObjectInspectorUtils {
       case BINARY:
         return ((BinaryObjectInspector) poi).getPrimitiveWritableObject(o).hashCode();
 
+      case DATE:
+        return ((DateObjectInspector) poi).getPrimitiveWritableObject(o).hashCode();
       case TIMESTAMP:
         TimestampWritable t = ((TimestampObjectInspector) poi)
             .getPrimitiveWritableObject(o);
@@ -684,6 +688,13 @@ public final class ObjectInspectorUtils {
         return bw1.compareTo(bw2);
       }
 
+      case DATE: {
+        DateWritable d1 = ((DateObjectInspector) poi1)
+            .getPrimitiveWritableObject(o1);
+        DateWritable d2 = ((DateObjectInspector) poi2)
+            .getPrimitiveWritableObject(o2);
+        return d1.compareTo(d2);
+      }
       case TIMESTAMP: {
         TimestampWritable t1 = ((TimestampObjectInspector) poi1)
             .getPrimitiveWritableObject(o1);

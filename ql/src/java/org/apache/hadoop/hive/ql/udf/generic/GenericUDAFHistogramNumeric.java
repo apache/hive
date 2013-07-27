@@ -85,6 +85,7 @@ public class GenericUDAFHistogramNumeric extends AbstractGenericUDAFResolver {
       break;
     case STRING:
     case BOOLEAN:
+    case DATE:
     default:
       throw new UDFArgumentTypeException(0,
           "Only numeric type arguments are accepted but "

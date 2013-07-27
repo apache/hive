@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 
@@ -543,6 +544,97 @@ class ColumnStatisticsImpl implements ColumnStatistics {
     }
   }
 
+  private static final class DateStatisticsImpl extends ColumnStatisticsImpl
+      implements DateColumnStatistics {
+    private DateWritable minimum = null;
+    private DateWritable maximum = null;
+
+    DateStatisticsImpl() {
+    }
+
+    DateStatisticsImpl(OrcProto.ColumnStatistics stats) {
+      super(stats);
+      OrcProto.DateStatistics dateStats = stats.getDateStatistics();
+      // min,max values serialized/deserialized as int (days since epoch)
+      if (dateStats.hasMaximum()) {
+        maximum = new DateWritable(dateStats.getMaximum());
+      }
+      if (dateStats.hasMinimum()) {
+        minimum = new DateWritable(dateStats.getMinimum());
+      }
+    }
+
+    @Override
+    void reset() {
+      super.reset();
+      minimum = null;
+      maximum = null;
+    }
+
+    @Override
+    void updateDate(DateWritable value) {
+      if (minimum == null) {
+        minimum = value;
+        maximum = value;
+      } else if (minimum.compareTo(value) > 0) {
+        minimum = value;
+      } else if (maximum.compareTo(value) < 0) {
+        maximum = value;
+      }
+    }
+
+    @Override
+    void merge(ColumnStatisticsImpl other) {
+      super.merge(other);
+      DateStatisticsImpl dateStats = (DateStatisticsImpl) other;
+      if (minimum == null) {
+        minimum = dateStats.minimum;
+        maximum = dateStats.maximum;
+      } else if (dateStats.minimum != null) {
+        if (minimum.compareTo(dateStats.minimum) > 0) {
+          minimum = dateStats.minimum;
+        } else if (maximum.compareTo(dateStats.maximum) < 0) {
+          maximum = dateStats.maximum;
+        }
+      }
+    }
+
+    @Override
+    OrcProto.ColumnStatistics.Builder serialize() {
+      OrcProto.ColumnStatistics.Builder result = super.serialize();
+      OrcProto.DateStatistics.Builder dateStats =
+          OrcProto.DateStatistics.newBuilder();
+      if (getNumberOfValues() != 0) {
+        dateStats.setMinimum(minimum.getDays());
+        dateStats.setMaximum(maximum.getDays());
+      }
+      result.setDateStatistics(dateStats);
+      return result;
+    }
+
+    @Override
+    public DateWritable getMinimum() {
+      return minimum;
+    }
+
+    @Override
+    public DateWritable getMaximum() {
+      return maximum;
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder buf = new StringBuilder(super.toString());
+      if (getNumberOfValues() != 0) {
+        buf.append(" min: ");
+        buf.append(minimum);
+        buf.append(" max: ");
+        buf.append(maximum);
+      }
+      return buf.toString();
+    }
+  }
+
   private long count = 0;
 
   ColumnStatisticsImpl(OrcProto.ColumnStatistics stats) {
@@ -576,6 +668,10 @@ class ColumnStatisticsImpl implements ColumnStatistics {
 
   void updateDecimal(HiveDecimal value) {
     throw new UnsupportedOperationException("Can't update decimal");
+  }
+
+  void updateDate(DateWritable value) {
+    throw new UnsupportedOperationException("Can't update date");
   }
 
   void merge(ColumnStatisticsImpl stats) {
@@ -621,6 +717,8 @@ class ColumnStatisticsImpl implements ColumnStatistics {
             return new StringStatisticsImpl();
           case DECIMAL:
             return new DecimalStatisticsImpl();
+          case DATE:
+            return new DateStatisticsImpl();
           default:
             return new ColumnStatisticsImpl();
         }
@@ -640,6 +738,8 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       return new StringStatisticsImpl(stats);
     } else if (stats.hasDecimalStatistics()) {
       return new DecimalStatisticsImpl(stats);
+    } else if (stats.hasDateStatistics()) {
+      return new DateStatisticsImpl(stats);
     } else {
       return new ColumnStatisticsImpl(stats);
     }

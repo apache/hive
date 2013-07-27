@@ -90,6 +90,7 @@ public class GenericUDAFPercentileApprox extends AbstractGenericUDAFResolver {
     case TIMESTAMP:
     case DECIMAL:
       break;
+    case DATE:
     default:
       throw new UDFArgumentTypeException(0,
           "Only numeric type arguments are accepted but "

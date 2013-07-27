@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
@@ -230,6 +231,11 @@ public final class LazyUtils {
       System.arraycopy(bw.getBytes(), 0,toEncode, 0, bw.getLength());
       byte[] toWrite = Base64.encodeBase64(toEncode);
       out.write(toWrite, 0, toWrite.length);
+      break;
+    }
+    case DATE: {
+      LazyDate.writeUTF8(out,
+          ((DateObjectInspector) oi).getPrimitiveWritableObject(o));
       break;
     }
     case TIMESTAMP: {

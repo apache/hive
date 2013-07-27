@@ -496,8 +496,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public void setDate(int parameterIndex, Date x) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    this.parameters.put(parameterIndex, x.toString());
   }
 
   /*
