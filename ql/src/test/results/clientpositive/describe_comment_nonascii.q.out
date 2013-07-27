@@ -1,0 +1,63 @@
+PREHOOK: query: -- HIVE-2905 showing non-ascii comments
+
+create table dummy (col1 string, col2 string, col3 string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- HIVE-2905 showing non-ascii comments
+
+create table dummy (col1 string, col2 string, col3 string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dummy
+PREHOOK: query: alter table dummy change col1 col1 string comment '한글_col1'
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@dummy
+PREHOOK: Output: default@dummy
+POSTHOOK: query: alter table dummy change col1 col1 string comment '한글_col1'
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@dummy
+POSTHOOK: Output: default@dummy
+PREHOOK: query: alter table dummy change col2 col2 string comment '漢字_col2'
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@dummy
+PREHOOK: Output: default@dummy
+POSTHOOK: query: alter table dummy change col2 col2 string comment '漢字_col2'
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@dummy
+POSTHOOK: Output: default@dummy
+PREHOOK: query: alter table dummy change col3 col3 string comment 'わご_col3'
+PREHOOK: type: ALTERTABLE_RENAMECOL
+PREHOOK: Input: default@dummy
+PREHOOK: Output: default@dummy
+POSTHOOK: query: alter table dummy change col3 col3 string comment 'わご_col3'
+POSTHOOK: type: ALTERTABLE_RENAMECOL
+POSTHOOK: Input: default@dummy
+POSTHOOK: Output: default@dummy
+PREHOOK: query: DESCRIBE FORMATTED dummy
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE FORMATTED dummy
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+col1                	string              	한글_col1             
+col2                	string              	漢字_col2             
+col3                	string              	わご_col3             
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
