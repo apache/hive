@@ -106,6 +106,8 @@ public interface DelegationTokenStore extends Configurable, Closeable {
    * and a potential scalability improvement would be to partition by master key id
    * @return
    */
-  List<DelegationTokenIdentifier> getAllDelegationTokenIdentifiers();
+  List<DelegationTokenIdentifier> getAllDelegationTokenIdentifiers() throws TokenStoreException;
+
+  void setStore(Object hmsHandler) throws TokenStoreException;
 
 }

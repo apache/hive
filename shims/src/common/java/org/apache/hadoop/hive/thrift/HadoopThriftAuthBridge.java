@@ -26,6 +26,7 @@ import org.apache.thrift.TProcessor;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
+
  /**
   * This class is only overridden by the secure hadoop shim. It allows
   * the Thrift SASL support to bridge to Hadoop's UserGroupInformation
@@ -74,8 +75,9 @@ import org.apache.thrift.transport.TTransportFactory;
      public abstract TProcessor wrapProcessor(TProcessor processor);
      public abstract TProcessor wrapNonAssumingProcessor(TProcessor processor);
      public abstract InetAddress getRemoteAddress();
+     public abstract void startDelegationTokenSecretManager(Configuration conf,
+       Object hmsHandler) throws IOException;
      public abstract String getRemoteUser();
-     public abstract void startDelegationTokenSecretManager(Configuration conf) throws IOException;
      public abstract String getDelegationToken(String owner, String renewer) 
      throws IOException, InterruptedException;
      public abstract long renewDelegationToken(String tokenStrForm) throws IOException;
