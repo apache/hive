@@ -762,6 +762,30 @@
       </field>
 
     </class>
+    
+    <class name="MMasterKey" table="MASTER_KEYS" identity-type="application" detachable="true">
+
+      <field name="keyId" primary-key="true" value-strategy="identity">
+        <column name="KEY_ID" jdbc-type="integer" />
+      </field>
+        
+      <field name="masterKey">
+        <column name="MASTER_KEY" length="767" jdbc-type="VARCHAR" />
+      </field>  
+      
+    </class>
+
+    <class name="MDelegationToken" table="DELEGATION_TOKENS" identity-type="application" detachable="true">
+
+      <field name="tokenIdentifier" primary-key="true">
+        <column name="TOKEN_IDENT" length="767" jdbc-type="VARCHAR" />
+      </field>  
+
+      <field name="tokenStr">
+        <column name="TOKEN" length="767" jdbc-type="VARCHAR" />
+      </field>
+            
+    </class>    
 
     <class name="MTableColumnStatistics" table="TAB_COL_STATS" identity-type="datastore" detachable="true">
       <datastore-identity>
@@ -878,3 +902,4 @@
 
   </package>
 </jdo>
+
