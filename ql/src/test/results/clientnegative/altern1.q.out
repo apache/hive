@@ -7,5 +7,4 @@ PREHOOK: query: alter table altern1 replace columns(a int, b int, ds string)
 PREHOOK: type: ALTERTABLE_REPLACECOLS
 PREHOOK: Input: default@altern1
 PREHOOK: Output: default@altern1
-Invalid table columns : Partition column name ds conflicts with table columns.
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Partition column name ds conflicts with table columns.

@@ -18,11 +18,13 @@
  */
 package org.apache.hcatalog.templeton;
 
+import org.eclipse.jetty.http.HttpStatus;
+
 /**
  * The callback failed when it tried to reach the callback URL.
  */
 public class CallbackFailedException extends SimpleWebException {
     public CallbackFailedException(String msg) {
-        super(400, msg);
+        super(HttpStatus.BAD_REQUEST_400, msg);
     }
 }

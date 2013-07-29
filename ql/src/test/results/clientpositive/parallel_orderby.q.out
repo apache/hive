@@ -1,0 +1,297 @@
+PREHOOK: query: create table src5 (key string, value string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table src5 (key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@src5
+PREHOOK: query: load data local inpath '../data/files/kv5.txt' into table src5
+PREHOOK: type: LOAD
+PREHOOK: Output: default@src5
+POSTHOOK: query: load data local inpath '../data/files/kv5.txt' into table src5
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@src5
+PREHOOK: query: load data local inpath '../data/files/kv5.txt' into table src5
+PREHOOK: type: LOAD
+PREHOOK: Output: default@src5
+POSTHOOK: query: load data local inpath '../data/files/kv5.txt' into table src5
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@src5
+PREHOOK: query: explain
+create table total_ordered as select * from src5 order by key, value
+PREHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: query: explain
+create table total_ordered as select * from src5 order by key, value
+POSTHOOK: type: CREATETABLE_AS_SELECT
+ABSTRACT SYNTAX TREE:
+  (TOK_CREATETABLE (TOK_TABNAME total_ordered) TOK_LIKETABLE (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src5))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 depends on stages: Stage-1
+  Stage-3 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-3
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src5 
+          TableScan
+            alias: src5
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+              outputColumnNames: _col0, _col1
+              Reduce Output Operator
+                key expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col1
+                      type: string
+                sort order: ++
+                tag: -1
+                value expressions:
+                      expr: _col0
+                      type: string
+                      expr: _col1
+                      type: string
+      Sampling: SAMPLING_ON_START
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 1
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                name: default.total_ordered
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-3
+      Create Table Operator:
+        Create Table
+          columns: key string, value string
+          if not exists: false
+          input format: org.apache.hadoop.mapred.TextInputFormat
+          # buckets: -1
+          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          name: total_ordered
+          isExternal: false
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+
+PREHOOK: query: create table total_ordered as select * from src5 order by key, value
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src5
+POSTHOOK: query: create table total_ordered as select * from src5 order by key, value
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src5
+POSTHOOK: Output: default@total_ordered
+PREHOOK: query: desc formatted total_ordered
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc formatted total_ordered
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	4                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	560                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from total_ordered
+PREHOOK: type: QUERY
+PREHOOK: Input: default@total_ordered
+#### A masked pattern was here ####
+POSTHOOK: query: select * from total_ordered
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@total_ordered
+#### A masked pattern was here ####
+128	val_128
+128	val_128
+150	val_150
+150	val_150
+165	val_165
+165	val_165
+193	val_193
+193	val_193
+213	val_213
+213	val_213
+213	val_213
+213	val_213
+213	val_214
+213	val_214
+224	val_224
+224	val_224
+238	val_238
+238	val_238
+238	val_239
+238	val_239
+238	val_240
+238	val_240
+255	val_255
+255	val_255
+265	val_265
+265	val_265
+27	val_27
+27	val_27
+273	val_273
+273	val_273
+278	val_278
+278	val_278
+311	val_311
+311	val_311
+369	val_369
+369	val_369
+401	val_401
+401	val_401
+409	val_409
+409	val_409
+484	val_484
+484	val_484
+66	val_66
+66	val_66
+86	val_86
+86	val_86
+98	val_98
+98	val_98
+PREHOOK: query: -- rolling back to single task in case that the number of sample is not enough
+
+drop table total_ordered
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@total_ordered
+PREHOOK: Output: default@total_ordered
+POSTHOOK: query: -- rolling back to single task in case that the number of sample is not enough
+
+drop table total_ordered
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@total_ordered
+POSTHOOK: Output: default@total_ordered
+PREHOOK: query: create table total_ordered as select * from src5 order by key, value
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@src5
+POSTHOOK: query: create table total_ordered as select * from src5 order by key, value
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@src5
+POSTHOOK: Output: default@total_ordered
+PREHOOK: query: desc formatted total_ordered
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc formatted total_ordered
+POSTHOOK: type: DESCTABLE
+# col_name            	data_type           	comment             
+	 	 
+key                 	string              	None                
+value               	string              	None                
+	 	 
+# Detailed Table Information	 	 
+Database:           	default             	 
+#### A masked pattern was here ####
+Protect Mode:       	None                	 
+Retention:          	0                   	 
+#### A masked pattern was here ####
+Table Type:         	MANAGED_TABLE       	 
+Table Parameters:	 	 
+	numFiles            	1                   
+	numPartitions       	0                   
+	numRows             	0                   
+	rawDataSize         	0                   
+	totalSize           	560                 
+#### A masked pattern was here ####
+	 	 
+# Storage Information	 	 
+SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
+InputFormat:        	org.apache.hadoop.mapred.TextInputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat	 
+Compressed:         	No                  	 
+Num Buckets:        	-1                  	 
+Bucket Columns:     	[]                  	 
+Sort Columns:       	[]                  	 
+Storage Desc Params:	 	 
+	serialization.format	1                   
+PREHOOK: query: select * from total_ordered
+PREHOOK: type: QUERY
+PREHOOK: Input: default@total_ordered
+#### A masked pattern was here ####
+POSTHOOK: query: select * from total_ordered
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@total_ordered
+#### A masked pattern was here ####
+128	val_128
+128	val_128
+150	val_150
+150	val_150
+165	val_165
+165	val_165
+193	val_193
+193	val_193
+213	val_213
+213	val_213
+213	val_213
+213	val_213
+213	val_214
+213	val_214
+224	val_224
+224	val_224
+238	val_238
+238	val_238
+238	val_239
+238	val_239
+238	val_240
+238	val_240
+255	val_255
+255	val_255
+265	val_265
+265	val_265
+27	val_27
+27	val_27
+273	val_273
+273	val_273
+278	val_278
+278	val_278
+311	val_311
+311	val_311
+369	val_369
+369	val_369
+401	val_401
+401	val_401
+409	val_409
+409	val_409
+484	val_484
+484	val_484
+66	val_66
+66	val_66
+86	val_86
+86	val_86
+98	val_98
+98	val_98

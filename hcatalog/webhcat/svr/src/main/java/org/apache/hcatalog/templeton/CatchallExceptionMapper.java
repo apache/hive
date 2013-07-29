@@ -24,6 +24,7 @@ import javax.ws.rs.ext.Provider;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.eclipse.jetty.http.HttpStatus;
 
 /**
  * Map all exceptions to the Jersey response.  This lets us have nice
@@ -36,6 +37,6 @@ public class CatchallExceptionMapper
 
     public Response toResponse(Exception e) {
         LOG.error(e.getMessage(), e);
-        return SimpleWebException.buildMessage(500, null, e.getMessage());
+        return SimpleWebException.buildMessage(HttpStatus.INTERNAL_SERVER_ERROR_500, null, e.getMessage());
     }
 }

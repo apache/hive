@@ -217,7 +217,7 @@ public class PartitionPruner implements Transform {
               LOG.info(ErrorMsg.INVALID_JDO_FILTER_EXPRESSION.getMsg("by condition '"
                   + message + "'"));
               pruneBySequentialScan(tab, true_parts, unkn_parts, denied_parts,
-                  prunerExpr, rowObjectInspector);
+                  prunerExpr, rowObjectInspector, conf);
             }
           }
         }
@@ -300,10 +300,11 @@ public class PartitionPruner implements Transform {
    * @param denied_parts pruned out partitions.
    * @param prunerExpr the SQL predicate that involves partition columns.
    * @param rowObjectInspector object inspector used by the evaluator
+   * @param conf Hive Configuration object, can not be NULL.
    * @throws Exception
    */
   static private void pruneBySequentialScan(Table tab, Set<Partition> true_parts, Set<Partition> unkn_parts,
-      Set<Partition> denied_parts, ExprNodeDesc prunerExpr, StructObjectInspector rowObjectInspector)
+      Set<Partition> denied_parts, ExprNodeDesc prunerExpr, StructObjectInspector rowObjectInspector, HiveConf conf)
       throws Exception {
 
     List<String> trueNames = null;
@@ -320,6 +321,7 @@ public class PartitionPruner implements Transform {
     List<String> partCols = new ArrayList<String>(pCols.size());
     List<String> values = new ArrayList<String>(pCols.size());
     Object[] objectWithPart = new Object[2];
+    String defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
 
     for (FieldSchema pCol : pCols) {
       partCols.add(pCol.getName());
@@ -344,11 +346,17 @@ public class PartitionPruner implements Transform {
       Boolean r = (Boolean) PartExprEvalUtils.evaluateExprOnPart(handle, objectWithPart);
 
       if (r == null) {
-        if (unknNames == null) {
-          unknNames = new LinkedList<String>();
+        // Reject default partitions if we couldn't determine whether we should include it or not.
+        // Note that predicate would only contains partition column parts of original predicate.
+        if (values.contains(defaultPartitionName)) {
+          LOG.debug("skipping default/bad partition: " + partName);
+        }else {
+          if (unknNames == null) {
+            unknNames = new LinkedList<String>();
+          }
+          unknNames.add(partName);
+          LOG.debug("retained unknown partition: " + partName);
         }
-        unknNames.add(partName);
-        LOG.debug("retained unknown partition: " + partName);
       } else if (Boolean.TRUE.equals(r)) {
         if (trueNames == null) {
           trueNames = new LinkedList<String>();

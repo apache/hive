@@ -101,4 +101,6 @@ public interface HCatHadoopShims {
      */
     public boolean isFileInHDFS(FileSystem fs, Path path) throws IOException;
 
+    public InetSocketAddress getAddress(Configuration conf);
+
 }

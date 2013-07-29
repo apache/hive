@@ -50,7 +50,7 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 Filter Operator
                   predicate:
-                      expr: (_col0 < 100.0)
+                      expr: (_col0 < 100)
                       type: boolean
                   Reduce Output Operator
                     key expressions:

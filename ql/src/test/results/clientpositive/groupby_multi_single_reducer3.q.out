@@ -260,7 +260,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (((((key + key) = 200) or ((key - 100) = 100)) or ((key = 300.0) and value is not null)) or (((key + key) = 400) or (((key - 100) = 500) and value is not null)))
+                  expr: (((((key + key) = 200) or ((key - 100) = 100)) or ((key = 300) and value is not null)) or (((key + key) = 400) or (((key - 100) = 500) and value is not null)))
                   type: boolean
               Select Operator
                 expressions:
@@ -285,7 +285,7 @@ STAGE PLANS:
         Forward
           Filter Operator
             predicate:
-                expr: ((((VALUE._col0 + VALUE._col0) = 200) or ((VALUE._col0 - 100) = 100)) or ((VALUE._col0 = 300.0) and KEY._col0 is not null))
+                expr: ((((VALUE._col0 + VALUE._col0) = 200) or ((VALUE._col0 - 100) = 100)) or ((VALUE._col0 = 300) and KEY._col0 is not null))
                 type: boolean
             Group By Operator
               aggregations:
@@ -726,7 +726,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (((((key + key) = 200) or ((key - 100) = 100)) or ((key = 300.0) and value is not null)) or (((key + key) = 400) or (((key - 100) = 500) and value is not null)))
+                  expr: (((((key + key) = 200) or ((key - 100) = 100)) or ((key = 300) and value is not null)) or (((key + key) = 400) or (((key - 100) = 500) and value is not null)))
                   type: boolean
               Select Operator
                 expressions:
@@ -751,7 +751,7 @@ STAGE PLANS:
         Forward
           Filter Operator
             predicate:
-                expr: ((((VALUE._col0 + VALUE._col0) = 200) or ((VALUE._col0 - 100) = 100)) or ((VALUE._col0 = 300.0) and KEY._col0 is not null))
+                expr: ((((VALUE._col0 + VALUE._col0) = 200) or ((VALUE._col0 - 100) = 100)) or ((VALUE._col0 = 300) and KEY._col0 is not null))
                 type: boolean
             Group By Operator
               aggregations:

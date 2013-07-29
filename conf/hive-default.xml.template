@@ -141,7 +141,7 @@
 
 <property>
   <name>javax.jdo.PersistenceManagerFactoryClass</name>
-  <value>org.datanucleus.jdo.JDOPersistenceManagerFactory</value>
+  <value>org.datanucleus.api.jdo.JDOPersistenceManagerFactory</value>
   <description>class implementing the jdo persistence</description>
 </property>
 
@@ -237,8 +237,8 @@
 
 <property>
   <name>datanucleus.identifierFactory</name>
-  <value>datanucleus</value>
-  <description>Name of the identifier factory to use when generating table/column names etc. 'datanucleus' is used for backward compatibility</description>
+  <value>datanucleus1</value>
+  <description>Name of the identifier factory to use when generating table/column names etc. 'datanucleus1' is used for backward compatibility with DataNucleus v1</description>
 </property>
 
 <property>
@@ -293,7 +293,7 @@
   <name>hive.metastore.disallow.incompatible.col.type.change</name>
   <value></value>
   <description>If true (default is false), ALTER TABLE operations which change the type of 
-    a column (say STRING) to an incompatible type (say MAP<STRING, STRING>) are disallowed.  
+    a column (say STRING) to an incompatible type (say MAP&lt;STRING, STRING&gt;) are disallowed.  
     RCFile default serde (ColumnarSerde) serializes the values in such a way that the
     datatypes can be converted from string to any type. The map is also serialized as
     a string, which can be read as a string as well. However, with any binary 
@@ -896,6 +896,18 @@
 </property>
 
 <property>
+  <name>stream.stderr.reporter.prefix</name>
+  <value>reporter:</value>
+  <description>Streaming jobs that log to stardard error with this prefix can log counter or status information.</description>
+</property>
+
+<property>
+  <name>stream.stderr.reporter.enabled</name>
+  <value>true</value>
+  <description>Enable consumption of status and counter messages for streaming jobs.</description>
+</property>
+
+<property>
   <name>hive.script.recordwriter</name>
   <value>org.apache.hadoop.hive.ql.exec.TextRecordWriter</value>
   <description>The default record writer for writing data to the user scripts. </description>
@@ -1118,6 +1130,12 @@
   <name>hive.optimize.reducededuplication</name>
   <value>true</value>
   <description>Remove extra map-reduce jobs if the data is already clustered by the same key which needs to be used again. This should always be set to true. Since it is a new feature, it has been made configurable.</description>
+</property>
+
+<property>
+  <name>hive.optimize.correlation</name>
+  <value>false</value>
+  <description>exploit intra-query correlations.</description>
 </property>
 
 <property>

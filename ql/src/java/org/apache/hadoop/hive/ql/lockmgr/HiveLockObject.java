@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.lockmgr;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -34,17 +36,29 @@ public class HiveLockObject {
     private String queryStr;
     private String clientIp;
 
+    /**
+     * Constructor
+     *
+     * Note: The parameters are used to uniquely identify a HiveLockObject. 
+     * The parameters will be stripped off any ':' characters in order not 
+     * to interfere with the way the data is serialized (':' delimited string).
+     */
     public HiveLockObjectData(String queryId,
         String lockTime,
         String lockMode,
         String queryStr) {
-      this.queryId = queryId;
-      this.lockTime = lockTime;
-      this.lockMode = lockMode;
-      this.queryStr = queryStr.trim();
+      this.queryId = removeDelimiter(queryId);
+      this.lockTime = removeDelimiter(lockTime);
+      this.lockMode = removeDelimiter(lockMode);
+      this.queryStr = removeDelimiter(queryStr.trim());
     }
 
-
+    /**
+     * Constructor
+     * 
+     * @param data String of the form "queryId:lockTime:lockMode:queryStr". 
+     * No ':' characters are allowed in any of the components.
+     */
     public HiveLockObjectData(String data) {
       if (data == null) {
         return;
@@ -94,16 +108,16 @@ public class HiveLockObject {
       }
 
       HiveLockObjectData target = (HiveLockObjectData) o;
-      boolean ret = (queryId == null) ? target.getQueryId() == null :
-          queryId.equals(target.getQueryId());
-      ret = ret && (lockTime == null) ? target.getLockTime() == null :
-          queryId.equals(target.getLockTime());
-      ret = ret && (lockMode == null) ? target.getLockMode() == null :
-          queryId.equals(target.getLockMode());
-      ret = ret && (queryStr == null) ? target.getQueryStr() == null :
-          queryStr.equals(target.getQueryStr());
-      ret = ret && (clientIp == null) ? target.getClientIp() == null :
-          clientIp.equals(target.getClientIp());
+      boolean ret = (queryId == null ? target.queryId == null :
+          target.queryId != null && queryId.equals(target.queryId));
+      ret = ret && (lockTime == null ? target.lockTime == null :
+          target.lockTime != null && lockTime.equals(target.lockTime));
+      ret = ret && (lockMode == null ? target.lockMode == null :
+          target.lockMode != null && lockMode.equals(target.lockMode));
+      ret = ret && (queryStr == null ? target.queryStr == null :
+          target.queryStr != null && queryStr.equals(target.queryStr));
+      ret = ret && (clientIp == null ? target.clientIp == null :
+          target.clientIp != null && clientIp.equals(target.clientIp));
 
       return ret;
     }
@@ -145,20 +159,17 @@ public class HiveLockObject {
   }
 
   public String getName() {
-    if (this.pathNames == null) {
+    if (pathNames == null) {
       return null;
     }
-    String ret = "";
-    boolean first = true;
+    StringBuilder builder = new StringBuilder();
     for (int i = 0; i < pathNames.length; i++) {
-      if (!first) {
-        ret = ret + "/";
-      } else {
-        first = false;
+      if (i > 0) {
+        builder.append('/');
       }
-      ret = ret + pathNames[i];
+      builder.append(pathNames[i]);
     }
-    return ret;
+    return builder.toString();
   }
 
   public String getDisplayName() {
@@ -200,7 +211,15 @@ public class HiveLockObject {
     }
 
     HiveLockObject tgt = (HiveLockObject) o;
-    return getName().equals(tgt.getName()) &&
-        data == null ? tgt.getData() == null : data.equals(tgt.getData());
+    return Arrays.equals(pathNames, tgt.pathNames) &&
+        data == null ? tgt.getData() == null :
+        tgt.getData() != null && data.equals(tgt.getData());
+  }
+
+  private static String removeDelimiter(String in) {
+    if (in == null) {
+      return null;
+    }
+    return in.replaceAll(":","");
   }
 }

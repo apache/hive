@@ -18,6 +18,7 @@
 
 package org.apache.hive.service.cli;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -35,6 +36,12 @@ import org.apache.hive.service.cli.thrift.TStringValue;
  *
  */
 public class ColumnValue {
+
+  public static final TColumnValue NULL = new TColumnValue();
+
+  static {
+    NULL.setStringVal(new TStringValue());
+  }
 
   // TODO: replace this with a non-Thrift implementation
   private final TColumnValue tColumnValue;
@@ -111,6 +118,14 @@ public class ColumnValue {
     return new ColumnValue(TColumnValue.stringVal(tStringValue));
   }
 
+  public static ColumnValue dateValue(Date value) {
+    TStringValue tStringValue = new TStringValue();
+    if (value != null) {
+      tStringValue.setValue(value.toString());
+    }
+    return new ColumnValue(TColumnValue.stringVal(tStringValue));
+  }
+
   public static ColumnValue timestampValue(Timestamp value) {
     TStringValue tStringValue = new TStringValue();
     if (value != null) {
@@ -145,6 +160,8 @@ public class ColumnValue {
       return doubleValue((Double)value);
     case STRING_TYPE:
       return stringValue((String)value);
+    case DATE_TYPE:
+      return dateValue((Date)value);
     case TIMESTAMP_TYPE:
       return timestampValue((Timestamp)value);
     case DECIMAL_TYPE:

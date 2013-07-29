@@ -18,6 +18,12 @@
 # under the License.
 
 
+# Print an error message and exit
+function die() {
+        echo "${this}: $@" 1>&2
+        exit 1
+}
+
 #====================================
 #Default config param values
 #====================================
@@ -46,7 +52,7 @@ SLEEP_TIME_AFTER_START=10
 #================================================
 
 #These parameters can be overriden by webhcat-env.sh
-# the root of the WEBHCAT installation
+# the root of the WEBHCAT installation  ('this' is defined in webhcat_server.sh)
 export WEBHCAT_PREFIX=`dirname "$this"`/..
 
 #check to see if the conf dir is given as an optional argument
@@ -62,14 +68,31 @@ then
 fi
 
 # Allow alternate conf dir location.
-if [ -e "${WEBHCAT_PREFIX}/etc/webhcat/webhcat-env.sh" ]; then
+if [ -e "${WEBHCAT_PREFIX}/etc/webhcat/webhcat-env.sh" -o -e "${WEBHCAT_PREFIX}/etc/webhcat/webhcat-site.xml" ]; then
   DEFAULT_CONF_DIR=${WEBHCAT_PREFIX}/"etc/webhcat"
-elif [ -e "${WEBHCAT_PREFIX}/conf/webhcat-env.sh" ]; then
+elif [ -e "${WEBHCAT_PREFIX}/conf/webhcat-env.sh" -o -e "${WEBHCAT_PREFIX}/etc/webhcat/webhcat-site.xml" ]; then
   DEFAULT_CONF_DIR=${WEBHCAT_PREFIX}/"conf"
 else
   DEFAULT_CONF_DIR="/etc/webhcat"
 fi
 WEBHCAT_CONF_DIR="${WEBHCAT_CONF_DIR:-$DEFAULT_CONF_DIR}"
+
+#set defaults for HCAT_PREFIX, HIVE_HOME, TEMPLETON_HOME that work for default directory structure
+DEFAULT_HCAT_PREFIX="${WEBHCAT_PREFIX}"
+export HCAT_PREFIX="${HCAT_PREFIX:-$DEFAULT_HCAT_PREFIX}"
+if [ ! -f ${HCAT_PREFIX}/bin/hcat ]; then
+    die "HCAT_PREFIX=${HCAT_PREFIX} is invalid";
+fi
+DEFAULT_HIVE_HOME="${WEBHCAT_PREFIX}/.."
+export HIVE_HOME="${HIVE_HOME:-$DEFAULT_HIVE_HOME}"
+if [ ! -f ${HIVE_HOME}/bin/hive ]; then
+    die "HIVE_HOME=${HIVE_HOME} is invalid";
+fi
+DEFAULT_TEMPLETON_HOME="${WEBHCAT_PREFIX}"
+export TEMPLETON_HOME="${TEMPLETON_HOME:-$DEFAULT_TEMPLETON_HOME}"
+if [ ! -d ${TEMPLETON_HOME}/share/webhcat ]; then
+    die "TEMPLETON_HOME=${TEMPLETON_HOME} is invalid";
+fi
 
 #users can add various env vars to webhcat-env.sh in the conf
 #rather than having to export them before running the command
@@ -89,6 +112,6 @@ elif [ -f ${WEBHCAT_PREFIX}/bin/hadoop ]; then
   HADOOP_PREFIX=$WEBHCAT_PREFIX
 #otherwise see if HADOOP_PREFIX is defined
 elif [ ! -f ${HADOOP_PREFIX}/bin/hadoop ]; then
-  echo "Hadoop not found."
+  echo "${this}: Hadoop not found."
   exit 1
 fi

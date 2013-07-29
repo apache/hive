@@ -18,5 +18,4 @@ PREHOOK: query: -- should fail:  LOCATION clause is illegal
 PREHOOK: type: ALTERTABLE_ADDPARTS
 PREHOOK: Input: default@src
 PREHOOK: Input: default@xxx5
-FAILED: Error in metadata: LOCATION clause illegal for view partition
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. LOCATION clause illegal for view partition

@@ -37,7 +37,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key > 100.0)
+                  expr: (key > 100)
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -57,7 +57,7 @@ STAGE PLANS:
             alias: srcpart
             Filter Operator
               predicate:
-                  expr: (key > 100.0)
+                  expr: (key > 100)
                   type: boolean
               Map Join Operator
                 condition map:

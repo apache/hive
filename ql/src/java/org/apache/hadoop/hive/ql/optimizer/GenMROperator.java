@@ -53,8 +53,7 @@ public class GenMROperator implements NodeProcessor {
         .getMapCurrCtx();
     GenMapRedCtx mapredCtx = mapCurrCtx.get(stack.get(stack.size() - 2));
     mapCurrCtx.put((Operator<? extends OperatorDesc>) nd, new GenMapRedCtx(
-        mapredCtx.getCurrTask(), mapredCtx.getCurrTopOp(), mapredCtx
-        .getCurrAliasId()));
-    return null;
+        mapredCtx.getCurrTask(), mapredCtx.getCurrAliasId()));
+    return true;
   }
 }

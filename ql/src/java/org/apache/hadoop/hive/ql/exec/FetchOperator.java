@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.io.HiveContextAwareRecordReader;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveRecordReader;
@@ -487,9 +488,13 @@ public class FetchOperator implements Serializable {
   public boolean pushRow() throws IOException, HiveException {
     InspectableObject row = getNextRow();
     if (row != null) {
-      operator.process(row.o, 0);
+      pushRow(row);
     }
     return row != null;
+  }
+
+  protected void pushRow(InspectableObject row) throws HiveException {
+    operator.process(row.o, 0);
   }
 
   private transient final InspectableObject inspectable = new InspectableObject();

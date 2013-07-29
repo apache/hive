@@ -200,7 +200,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       jc = (JobConf) hconf;
     } else {
       // test code path
-      jc = new JobConf(hconf, ExecDriver.class);
+      jc = new JobConf(hconf);
     }
 
     currentStat = null;

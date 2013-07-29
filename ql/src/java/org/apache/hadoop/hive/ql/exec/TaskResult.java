@@ -20,11 +20,13 @@ package org.apache.hadoop.hive.ql.exec;
 
 /**
  * TaskResult implementation.
+ * Note that different threads may be reading/writing this object
  **/
 
 public class TaskResult {
-  protected int exitVal;
-  protected boolean runStatus;
+  protected volatile int exitVal;
+  protected volatile boolean runStatus;
+  private volatile Throwable taskError;
 
   public TaskResult() {
     exitVal = -1;
@@ -35,11 +37,21 @@ public class TaskResult {
     this.exitVal = exitVal;
     setRunning(false);
   }
+  public void setExitVal(int exitVal, Throwable taskError) {
+    this.setExitVal(exitVal);
+    this.taskError = taskError;
+  }
 
   public int getExitVal() {
     return exitVal;
   }
 
+  /**
+   * @return may contain details of the error which caused the task to fail or null
+   */
+  public Throwable getTaskError() {
+    return taskError;
+  }
   public boolean isRunning() {
     return runStatus;
   }

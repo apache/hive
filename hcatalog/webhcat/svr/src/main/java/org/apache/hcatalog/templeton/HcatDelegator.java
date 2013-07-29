@@ -33,7 +33,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hcatalog.templeton.tool.TempletonUtils;
+import org.eclipse.jetty.http.HttpStatus;
 
 
 /**
@@ -95,7 +97,15 @@ public class HcatDelegator extends LauncherDelegator {
             args.add("-D");
             args.add("hive.format=json");
         }
-
+        LOG.info("Main.getAppConfigInstance().get(AppConfig.UNIT_TEST_MODE)=" +
+                Main.getAppConfigInstance().get(AppConfig.UNIT_TEST_MODE));
+        if(System.getProperty("hive.metastore.warehouse.dir") != null) {
+            /*when running in unit test mode, pass this property to HCat,
+            which will in turn pass it to Hive to make sure that Hive
+            tries to write to a directory that exists.*/
+            args.add("-D");
+            args.add("hive.metastore.warehouse.dir=" + System.getProperty("hive.metastore.warehouse.dir"));
+        }
         return args;
     }
 
@@ -113,12 +123,6 @@ public class HcatDelegator extends LauncherDelegator {
             String res = jsonRun(user, exec);
             return JsonBuilder.create(res).build();
         } catch (HcatException e) {
-            if (e.execBean.stderr.contains("SemanticException")) {
-                return JsonBuilder.create().
-                    put("error", "Database " + db + " does not exist")
-                    .put("errorCode", "404")
-                    .put("database", db).build();
-            }
             throw new HcatException("unable to describe database: " + db,
                 e.execBean, exec);
         }
@@ -256,14 +260,6 @@ public class HcatDelegator extends LauncherDelegator {
                 .put("table", table)
                 .build();
         } catch (HcatException e) {
-            if (e.execBean.stderr.contains("SemanticException") &&
-                e.execBean.stderr.contains("Table not found")) {
-                return JsonBuilder.create().
-                    put("error", "Table" + db + "." + table + " does not exist" )
-                    .put("errorCode", "404")
-                    .put("table", table)
-                    .put("database", db).build();
-            }
             throw new HcatException("unable to describe database: " + db,
                 e.execBean, exec);
         }
@@ -470,8 +466,8 @@ public class HcatDelegator extends LauncherDelegator {
             return JsonBuilder.mapToJson(tables.get(0));
         else {
             return JsonBuilder
-                .createError(String.format("Table %s does not exist", table),
-                    JsonBuilder.MISSING).
+                .createError(ErrorMsg.INVALID_TABLE.format(table),
+                        ErrorMsg.INVALID_TABLE.getErrorCode()).
                     buildJson();
         }
     }
@@ -530,7 +526,7 @@ public class HcatDelegator extends LauncherDelegator {
         throws HcatException, NotAuthorizedException, BusyException,
         ExecuteException, IOException {
         Response res = descTable(user, db, table, true);
-        if (res.getStatus() != JsonBuilder.OK)
+        if (res.getStatus() != HttpStatus.OK_200)
             return res;
         Map props = tableProperties(res.getEntity());
         Map found = null;
@@ -556,7 +552,7 @@ public class HcatDelegator extends LauncherDelegator {
         throws HcatException, NotAuthorizedException, BusyException,
         ExecuteException, IOException {
         Response res = descTable(user, db, table, true);
-        if (res.getStatus() != JsonBuilder.OK)
+        if (res.getStatus() != HttpStatus.OK_200)
             return res;
         Map props = tableProperties(res.getEntity());
         return JsonBuilder.create()
@@ -645,7 +641,8 @@ public class HcatDelegator extends LauncherDelegator {
                     + table + " does not exist" + db + "." + table + " does not exist";
                 return JsonBuilder.create()
                     .put("error", emsg)
-                    .put("errorCode", "404")
+                     //this error should really be produced by Hive (DDLTask)
+                    .put("errorCode", ErrorMsg.INVALID_PARTITION.getErrorCode())
                     .put("database", db)
                     .put("table", table)
                     .put("partition", partition)
@@ -678,7 +675,8 @@ public class HcatDelegator extends LauncherDelegator {
             if (res.indexOf("AlreadyExistsException") > -1) {
                 return JsonBuilder.create().
                     put("error", "Partition already exists")
-                    .put("errorCode", "409")
+                     //This error code should really be produced by Hive
+                    .put("errorCode", ErrorMsg.PARTITION_EXISTS.getErrorCode())
                     .put("database", db)
                     .put("table", table)
                     .put("partition", desc.partition).build();
@@ -742,13 +740,13 @@ public class HcatDelegator extends LauncherDelegator {
         throws SimpleWebException, NotAuthorizedException, BusyException,
         ExecuteException, IOException {
         Response res = listColumns(user, db, table);
-        if (res.getStatus() != JsonBuilder.OK)
+        if (res.getStatus() != HttpStatus.OK_200)
             return res;
 
         Object o = res.getEntity();
         final Map fields = (o != null && (o instanceof Map)) ? (Map) o : null;
         if (fields == null)
-            throw new SimpleWebException(500, "Internal error, unable to find column "
+            throw new SimpleWebException(HttpStatus.INTERNAL_SERVER_ERROR_500, "Internal error, unable to find column "
                 + column);
 
 
@@ -763,7 +761,7 @@ public class HcatDelegator extends LauncherDelegator {
             }
         }
         if (found == null)
-            throw new SimpleWebException(500, "unable to find column " + column,
+            throw new SimpleWebException(HttpStatus.INTERNAL_SERVER_ERROR_500, "unable to find column " + column,
                 new HashMap<String, Object>() {
                     {
                         put("description", fields);

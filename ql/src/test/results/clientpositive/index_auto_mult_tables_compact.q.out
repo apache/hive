@@ -25,7 +25,7 @@ STAGE PLANS:
             alias: a
             Filter Operator
               predicate:
-                  expr: ((((key > 80.0) and (key < 100.0)) and (key > 70.0)) and (key < 90.0))
+                  expr: ((((key > 80) and (key < 100)) and (key > 70)) and (key < 90))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -46,7 +46,7 @@ STAGE PLANS:
             alias: b
             Filter Operator
               predicate:
-                  expr: ((((key > 70.0) and (key < 90.0)) and (key > 80.0)) and (key < 100.0))
+                  expr: ((((key > 70) and (key < 90)) and (key > 80)) and (key < 100))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -268,11 +268,11 @@ STAGE PLANS:
           TableScan
             alias: default__srcpart_srcpart_index__
             filterExpr:
-                expr: ((((key > 70.0) and (key < 90.0)) and (key > 80.0)) and (key < 100.0))
+                expr: ((((key > 70) and (key < 90)) and (key > 80)) and (key < 100))
                 type: boolean
             Filter Operator
               predicate:
-                  expr: ((((key > 70.0) and (key < 90.0)) and (key > 80.0)) and (key < 100.0))
+                  expr: ((((key > 70) and (key < 90)) and (key > 80)) and (key < 100))
                   type: boolean
               Select Operator
                 expressions:
@@ -310,11 +310,11 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr:
-                expr: ((((key > 80.0) and (key < 100.0)) and (key > 70.0)) and (key < 90.0))
+                expr: ((((key > 80) and (key < 100)) and (key > 70)) and (key < 90))
                 type: boolean
             Filter Operator
               predicate:
-                  expr: ((((key > 80.0) and (key < 100.0)) and (key > 70.0)) and (key < 90.0))
+                  expr: ((((key > 80) and (key < 100)) and (key > 70)) and (key < 90))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -334,11 +334,11 @@ STAGE PLANS:
           TableScan
             alias: b
             filterExpr:
-                expr: ((((key > 70.0) and (key < 90.0)) and (key > 80.0)) and (key < 100.0))
+                expr: ((((key > 70) and (key < 90)) and (key > 80)) and (key < 100))
                 type: boolean
             Filter Operator
               predicate:
-                  expr: ((((key > 70.0) and (key < 90.0)) and (key > 80.0)) and (key < 100.0))
+                  expr: ((((key > 70) and (key < 90)) and (key > 80)) and (key < 100))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -431,11 +431,11 @@ STAGE PLANS:
           TableScan
             alias: default__src_src_index__
             filterExpr:
-                expr: ((((key > 80.0) and (key < 100.0)) and (key > 70.0)) and (key < 90.0))
+                expr: ((((key > 80) and (key < 100)) and (key > 70)) and (key < 90))
                 type: boolean
             Filter Operator
               predicate:
-                  expr: ((((key > 80.0) and (key < 100.0)) and (key > 70.0)) and (key < 90.0))
+                  expr: ((((key > 80) and (key < 100)) and (key > 70)) and (key < 90))
                   type: boolean
               Select Operator
                 expressions:

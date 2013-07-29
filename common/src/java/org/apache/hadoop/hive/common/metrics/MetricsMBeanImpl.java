@@ -36,15 +36,15 @@ import javax.management.ReflectionException;
 
 public class MetricsMBeanImpl implements  MetricsMBean {
 
-    Map<String,Object> metricsMap = new HashMap<String,Object>();
+    private final Map<String,Object> metricsMap = new HashMap<String,Object>();
 
-    MBeanAttributeInfo[] attributeInfos;
-    boolean dirtyAttributeInfoCache = true;
+    private MBeanAttributeInfo[] attributeInfos;
+    private boolean dirtyAttributeInfoCache = true;
 
-    MBeanConstructorInfo[] ctors = null;
-    MBeanOperationInfo[] ops = {new MBeanOperationInfo("reset",
+    private static final MBeanConstructorInfo[] ctors = null;
+    private static final MBeanOperationInfo[] ops = {new MBeanOperationInfo("reset",
         "Sets the values of all Attributes to 0", null, "void", MBeanOperationInfo.ACTION)};
-    MBeanNotificationInfo[] notifs = null;
+    private static final MBeanNotificationInfo[] notifs = null;
 
     @Override
     public Object getAttribute(String arg0) throws AttributeNotFoundException,
@@ -77,7 +77,7 @@ public class MetricsMBeanImpl implements  MetricsMBean {
             int i = 0;
             for (String key : metricsMap.keySet()) {
               attributeInfos[i] = new MBeanAttributeInfo(
-                  key, metricsMap.get(key).getClass().getName(), key, true, false, false);
+                  key, metricsMap.get(key).getClass().getName(), key, true, true/*writable*/, false);
               i++;
             }
             dirtyAttributeInfoCache = false;
@@ -129,12 +129,14 @@ public class MetricsMBeanImpl implements  MetricsMBean {
         return attributesSet;
     }
 
+    @Override
     public boolean hasKey(String name) {
       synchronized(metricsMap) {
         return metricsMap.containsKey(name);
       }
     }
 
+    @Override
     public void put(String name, Object value) throws IOException {
       synchronized(metricsMap) {
         if (!metricsMap.containsKey(name)) {
@@ -144,6 +146,7 @@ public class MetricsMBeanImpl implements  MetricsMBean {
       }
     }
 
+    @Override
     public Object get(String name) throws IOException {
         try {
           return getAttribute(name);
@@ -161,6 +164,15 @@ public class MetricsMBeanImpl implements  MetricsMBean {
         for (String key : metricsMap.keySet()) {
           metricsMap.put(key, Long.valueOf(0));
         }
+      }
+    }
+    
+    @Override
+    public void clear() {
+      synchronized(metricsMap) {
+        attributeInfos = null;
+        dirtyAttributeInfoCache = true;
+        metricsMap.clear();
       }
     }
 }

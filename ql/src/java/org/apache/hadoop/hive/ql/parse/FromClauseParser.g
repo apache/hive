@@ -112,13 +112,13 @@ joinToken
 @init { gParent.msgs.push("join type specifier"); }
 @after { gParent.msgs.pop(); }
     :
-      KW_JOIN                     -> TOK_JOIN
-    | KW_INNER  KW_JOIN            -> TOK_JOIN
-    | KW_CROSS KW_JOIN            -> TOK_CROSSJOIN
-    | KW_LEFT  KW_OUTER KW_JOIN   -> TOK_LEFTOUTERJOIN
-    | KW_RIGHT KW_OUTER KW_JOIN   -> TOK_RIGHTOUTERJOIN
-    | KW_FULL  KW_OUTER KW_JOIN   -> TOK_FULLOUTERJOIN
-    | KW_LEFT  KW_SEMI  KW_JOIN   -> TOK_LEFTSEMIJOIN
+      KW_JOIN                      -> TOK_JOIN
+    | KW_INNER KW_JOIN             -> TOK_JOIN
+    | KW_CROSS KW_JOIN             -> TOK_CROSSJOIN
+    | KW_LEFT  (KW_OUTER)? KW_JOIN -> TOK_LEFTOUTERJOIN
+    | KW_RIGHT (KW_OUTER)? KW_JOIN -> TOK_RIGHTOUTERJOIN
+    | KW_FULL  (KW_OUTER)? KW_JOIN -> TOK_FULLOUTERJOIN
+    | KW_LEFT KW_SEMI KW_JOIN      -> TOK_LEFTSEMIJOIN
     ;
 
 lateralView
@@ -176,8 +176,8 @@ tableSample
 tableSource
 @init { gParent.msgs.push("table source"); }
 @after { gParent.msgs.pop(); }
-    : tabname=tableName (ts=tableSample)? (KW_AS? alias=identifier)?
-    -> ^(TOK_TABREF $tabname $ts? $alias?)
+    : tabname=tableName (props=tableProperties)? (ts=tableSample)? (KW_AS? alias=Identifier)?
+    -> ^(TOK_TABREF $tabname $props? $ts? $alias?)
     ;
 
 tableName

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="1" hostname="p0416.mtv.cloudera.com" name="org.apache.hadoop.hive.cli.TestCliDriver" tests="2" time="91.132" timestamp="2013-01-28T01:02:54">
+  <properties>
+    <property name="hadoop.bin.path" value="/data/6/hive-local/p0416.mtv.cloudera.com-hiveptest-2/source/testutils/hadoop" />
+    <property name="hadoop.mirror2" value="http://archive.cloudera.com/hive-deps" />
+    <property name="basedir.ql.ivy.settings" value="/data/6/hive-local/p0416.mtv.cloudera.com-hiveptest-2/source/ql" />
+    <property name="ivy_repo_url" value="http://repo2.maven.org/maven2/org/apache/ivy/ivy/2.1.0/ivy-2.1.0.jar" />
+    <property name="snapshots.cloudera.com.ql.ivy.settings" value="https://repository.cloudera.com/artifactory/libs-snapshot-local/" />
+    <property name="is-offline" value="false" />
+  </properties>
+  <testcase classname="org.apache.hadoop.hive.cli.TestCliDriver" name="testCliDriver_union_remove_9" time="58.55">
+    <failure message="Unexpected exception&#xa;See build/ql/tmp/hive.log, or try &quot;ant test ... -Dtest.silent=false&quot; to get more logs." type="junit.framework.AssertionFailedError">junit.framework.AssertionFailedError: Unexpected exception
+See build/ql/tmp/hive.log, or try &quot;ant test ... -Dtest.silent=false&quot; to get more logs.
+	at junit.framework.Assert.fail(Assert.java:50)
+	at org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_union_remove_9(TestCliDriver.java:156)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:39)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:25)
+	at java.lang.reflect.Method.invoke(Method.java:597)
+	at junit.framework.TestCase.runTest(TestCase.java:168)
+	at junit.framework.TestCase.runBare(TestCase.java:134)
+	at junit.framework.TestResult$1.protect(TestResult.java:110)
+	at junit.framework.TestResult.runProtected(TestResult.java:128)
+	at junit.framework.TestResult.run(TestResult.java:113)
+	at junit.framework.TestCase.run(TestCase.java:124)
+	at junit.framework.TestSuite.runTest(TestSuite.java:243)
+	at junit.framework.TestSuite.run(TestSuite.java:238)
+	at org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner.run(JUnitTestRunner.java:520)
+	at org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner.launch(JUnitTestRunner.java:1060)
+	at org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner.main(JUnitTestRunner.java:911)
+</failure>
+  </testcase>
+  <testcase classname="org.apache.hadoop.hive.cli.TestCliDriver" name="testCliDriver_shutdown" time="32.562" />
+  <system-out><![CDATA[Begin query: union_remove_9.q
+Deleted /data/6/hive-local/p0416.mtv.cloudera.com-hiveptest-2/source/build/ql/test/data/warehouse/outputtbl1
+Exception: Client Execution failed with error code = 1
+See build/ql/tmp/hive.log, or try "ant test ... -Dtest.silent=false" to get more logs.
+Failed query: union_remove_9.q
+Cleaning up TestCliDriver
+]]></system-out>
+  <system-err><![CDATA[WARNING: org.apache.hadoop.metrics.jvm.EventCounter is deprecated. Please use org.apache.hadoop.log.metrics.EventCounter in all the log4j.properties files.
+Hive history file=/data/6/hive-local/p0416.mtv.cloudera.com-hiveptest-2/source/build/ql/tmp/hive_job_log_hiveptest_201301271659_834844307.txt
+	at junit.framework.TestResult$1.protect(TestResult.java:110)
+	at junit.framework.TestResult.runProtected(TestResult.java:128)
+	at junit.framework.TestResult.run(TestResult.java:113)
+	at junit.framework.TestCase.run(TestCase.java:124)
+	at junit.framework.TestSuite.runTest(TestSuite.java:243)
+	at junit.framework.TestSuite.run(TestSuite.java:238)
+	at org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner.run(JUnitTestRunner.java:520)
+	at org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner.launch(JUnitTestRunner.java:1060)
+	at org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner.main(JUnitTestRunner.java:911)
+]]></system-err>
+</testsuite>

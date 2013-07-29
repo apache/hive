@@ -112,11 +112,11 @@ STAGE PLANS:
                         columns _col0,_col1,_col2
                         columns.types string:string:string
                         escape.delim \
+                        hive.serialization.extend.nesting.levels true
                         serialization.format 1
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -234,11 +234,11 @@ STAGE PLANS:
                         columns _col0,_col1,_col2
                         columns.types string:string:string
                         escape.delim \
+                        hive.serialization.extend.nesting.levels true
                         serialization.format 1
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

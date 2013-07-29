@@ -1,0 +1,3 @@
+cd /tmp/hive-ptest-units/TestReportingPhase/logs/ && tar -zvcf test-results.tar.gz test-results/
+find /tmp/hive-ptest-units/TestReportingPhase/logs/{failed,succeeded} -maxdepth 2 -name 'TEST*.xml' -exec cp {} /tmp/hive-ptest-units/TestReportingPhase/logs/test-results \; 2>/dev/null
+mkdir /tmp/hive-ptest-units/TestReportingPhase/logs/test-results

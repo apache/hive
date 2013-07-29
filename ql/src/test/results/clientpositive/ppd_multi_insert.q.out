@@ -84,7 +84,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Filter Operator
             predicate:
-                expr: (_col0 < 100.0)
+                expr: (_col0 < 100)
                 type: boolean
             Select Operator
               expressions:
@@ -103,7 +103,7 @@ STAGE PLANS:
                     name: default.mi1
           Filter Operator
             predicate:
-                expr: ((_col0 >= 100.0) and (_col0 < 200.0))
+                expr: ((_col0 >= 100) and (_col0 < 200))
                 type: boolean
             Select Operator
               expressions:
@@ -122,7 +122,7 @@ STAGE PLANS:
                     name: default.mi2
           Filter Operator
             predicate:
-                expr: ((_col0 >= 200.0) and (_col0 < 300.0))
+                expr: ((_col0 >= 200) and (_col0 < 300))
                 type: boolean
             Select Operator
               expressions:
@@ -139,7 +139,7 @@ STAGE PLANS:
                     name: default.mi3
           Filter Operator
             predicate:
-                expr: (_col0 >= 300.0)
+                expr: (_col0 >= 300)
                 type: boolean
             Select Operator
               expressions:
@@ -1374,7 +1374,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Filter Operator
             predicate:
-                expr: (_col0 < 100.0)
+                expr: (_col0 < 100)
                 type: boolean
             Select Operator
               expressions:
@@ -1393,7 +1393,7 @@ STAGE PLANS:
                     name: default.mi1
           Filter Operator
             predicate:
-                expr: ((_col0 >= 100.0) and (_col0 < 200.0))
+                expr: ((_col0 >= 100) and (_col0 < 200))
                 type: boolean
             Select Operator
               expressions:
@@ -1412,7 +1412,7 @@ STAGE PLANS:
                     name: default.mi2
           Filter Operator
             predicate:
-                expr: ((_col0 >= 200.0) and (_col0 < 300.0))
+                expr: ((_col0 >= 200) and (_col0 < 300))
                 type: boolean
             Select Operator
               expressions:
@@ -1429,7 +1429,7 @@ STAGE PLANS:
                     name: default.mi3
           Filter Operator
             predicate:
-                expr: (_col0 >= 300.0)
+                expr: (_col0 >= 300)
                 type: boolean
             Select Operator
               expressions:

@@ -21,7 +21,7 @@ package org.apache.hadoop.hive.ql.io;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.exec.ExecMapper;
+import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat.CombineHiveInputSplit;
 import org.apache.hadoop.hive.shims.HadoopShims.InputSplitShim;
 import org.apache.hadoop.io.Writable;

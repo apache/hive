@@ -168,7 +168,7 @@ STAGE PLANS:
             alias: default__src_src1_index__
             Filter Operator
               predicate:
-                  expr: (key = 0.0)
+                  expr: (key = 0)
                   type: boolean
               Select Operator
                 expressions:

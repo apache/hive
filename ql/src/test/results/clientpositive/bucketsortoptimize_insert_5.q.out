@@ -75,7 +75,7 @@ STAGE DEPENDENCIES:
   Stage-7 has a backup stage: Stage-1
   Stage-4 depends on stages: Stage-7
   Stage-0 depends on stages: Stage-1, Stage-4, Stage-5
-  Stage-2 depends on stages: Stage-0
+  Stage-3 depends on stages: Stage-0
   Stage-8 has a backup stage: Stage-1
   Stage-5 depends on stages: Stage-8
   Stage-1
@@ -168,7 +168,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test_table3
 
-  Stage: Stage-2
+  Stage: Stage-3
     Stats-Aggr Operator
 
   Stage: Stage-8

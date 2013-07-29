@@ -26,8 +26,8 @@ Task ID:
 Logs:
 
 #### A masked pattern was here ####
-FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.MapredLocalTask
-ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.MapRedTask
+FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
+ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
 POSTHOOK: query: FROM srcpart src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest1 SELECT src1.key, src2.value 
 where (src1.ds = '2008-04-08' or src1.ds = '2008-04-09' )and (src1.hr = '12' or src1.hr = '11')
@@ -74,8 +74,8 @@ Task ID:
 Logs:
 
 #### A masked pattern was here ####
-FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.MapredLocalTask
-ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.MapRedTask
+FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
+ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
 Execution failed with exit status: 3
 Obtaining error information
 
@@ -86,8 +86,8 @@ Task ID:
 Logs:
 
 #### A masked pattern was here ####
-FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.MapredLocalTask
-ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.MapRedTask
+FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
+ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
 POSTHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key) JOIN src src3 ON (src1.key + src2.key = src3.key)
 INSERT OVERWRITE TABLE dest_j2 SELECT src1.key, src3.value
 POSTHOOK: type: QUERY
@@ -134,8 +134,8 @@ Task ID:
 Logs:
 
 #### A masked pattern was here ####
-FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.MapredLocalTask
-ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.MapRedTask
+FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
+ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
 POSTHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
 POSTHOOK: type: QUERY

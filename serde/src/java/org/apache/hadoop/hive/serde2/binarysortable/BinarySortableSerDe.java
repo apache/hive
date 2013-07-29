@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -52,6 +53,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
@@ -225,11 +227,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
       }
       case INT: {
         IntWritable r = reuse == null ? new IntWritable() : (IntWritable) reuse;
-        int v = buffer.read(invert) ^ 0x80;
-        for (int i = 0; i < 3; i++) {
-          v = (v << 8) + (buffer.read(invert) & 0xff);
-        }
-        r.set(v);
+        r.set(deserializeInt(buffer, invert));
         return r;
       }
       case LONG: {
@@ -366,6 +364,13 @@ public class BinarySortableSerDe extends AbstractSerDe {
           assert (b == 0);
         }
         return bw;
+      }
+
+      case DATE: {
+        DateWritable d = reuse == null ? new DateWritable()
+            : (DateWritable) reuse;
+        d.set(deserializeInt(buffer, invert));
+        return d;
       }
 
       case TIMESTAMP:
@@ -539,6 +544,14 @@ public class BinarySortableSerDe extends AbstractSerDe {
     }
   }
 
+  private static int deserializeInt(InputByteBuffer buffer, boolean invert) throws IOException {
+    int v = buffer.read(invert) ^ 0x80;
+    for (int i = 0; i < 3; i++) {
+      v = (v << 8) + (buffer.read(invert) & 0xff);
+    }
+    return v;
+  }
+
   BytesWritable serializeBytesWritable = new BytesWritable();
   OutputByteBuffer outputByteBuffer = new OutputByteBuffer();
 
@@ -596,10 +609,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
       case INT: {
         IntObjectInspector ioi = (IntObjectInspector) poi;
         int v = ioi.get(o);
-        buffer.write((byte) ((v >> 24) ^ 0x80), invert);
-        buffer.write((byte) (v >> 16), invert);
-        buffer.write((byte) (v >> 8), invert);
-        buffer.write((byte) v, invert);
+        serializeInt(buffer, v, invert);
         return;
       }
       case LONG: {
@@ -664,6 +674,12 @@ public class BinarySortableSerDe extends AbstractSerDe {
         byte[] toSer = new byte[ba.getLength()];
         System.arraycopy(ba.getBytes(), 0, toSer, 0, ba.getLength());
         serializeBytes(buffer, toSer, ba.getLength(), invert);
+        return;
+      }
+      case  DATE: {
+        DateObjectInspector doi = (DateObjectInspector) poi;
+        int v = doi.getPrimitiveWritableObject(o).getDays();
+        serializeInt(buffer, v, invert);
         return;
       }
       case TIMESTAMP: {
@@ -788,6 +804,14 @@ public class BinarySortableSerDe extends AbstractSerDe {
     }
     buffer.write((byte) 0, invert);
   }
+
+  private static void serializeInt(OutputByteBuffer buffer, int v, boolean invert) {
+    buffer.write((byte) ((v >> 24) ^ 0x80), invert);
+    buffer.write((byte) (v >> 16), invert);
+    buffer.write((byte) (v >> 8), invert);
+    buffer.write((byte) v, invert);
+  }
+
   @Override
   public SerDeStats getSerDeStats() {
     // no support for statistics

@@ -1,0 +1,64 @@
+#!/bin/bash
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+set -x
+umask 0022
+find /some/local/dir/instance-1/apache-source/build -name 'TEST-*.xml' -delete
+find /some/local/dir/instance-1/apache-source/build -name 'hive.log' -delete
+chmod -R u+w /some/log/dir
+rm -rf /some/log/dir
+# makes /some/log/dir and /some/log/dir/tmp
+mkdir -p /some/log/dir/tmp
+if [[ -n "/usr/java/jdk1.7" ]]
+then
+  export JAVA_HOME=/usr/java/jdk1.7
+  export PATH=$JAVA_HOME/bin/:$PATH
+fi
+export ANT_OPTS="-Xmx1g -XX:MaxPermSize=256m -Djava.io.tmpdir=/some/log/dir/tmp -Dhttp.proxyHost=somehost -Dhttp.proxyPort=3128"
+export HADOOP_ROOT_LOGGER=INFO,console
+export HADOOP_OPTS="-Dhive.log.dir=/some/log/dir -Dhive.query.id=hadoop -Djava.io.tmpdir=/some/log/dir/tmp"
+cd /some/local/dir/instance-1/apache-source && \
+  timeout 2h ant -Divy.cache.ttl.default=eternal -Dant=arg1 \
+   -Divy.default.ivy.user.dir=/some/local/dir/instance-1/ivy \
+   -Dmvn.local.repo=/some/local/dir/instance-1/maven \
+   -Dtest.junit.output.format=xml test \
+   -Dtest=arg1 1>/some/log/dir/ant-test.txt 2>&1
+ret=$?
+if [[ $ret -ne 0 ]]
+then
+  if [[ 20 -lt 5 ]]
+  then
+    cp -R /some/local/dir/instance-1/apache-source /some/log/dir/source
+  else
+    echo "Number of failed tests 20 exceeded threshold, not copying source"
+  fi
+fi
+if [[ -f /some/local/dir/instance-1/apache-source/build/ql/tmp/hive.log ]]
+then
+  mv /some/local/dir/instance-1/apache-source/build/ql/tmp/hive.log /some/log/dir/hive.log
+fi
+batchName=batch-1
+for testOutputFile in $(find /some/local/dir/instance-1/apache-source/ -name 'TEST-*.xml')
+do
+  mv "$testOutputFile" "/some/log/dir/TEST-$batchName-$(basename $testOutputFile)"
+done
+if [[ -f /some/log/dir/.log ]]
+then
+  mv /some/log/dir/.log /some/log/dir/dot.log
+else
+  echo "/some/log/dir/.log does not exist"
+fi
+exit $ret

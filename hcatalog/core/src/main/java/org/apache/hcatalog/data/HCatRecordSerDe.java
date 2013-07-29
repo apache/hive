@@ -266,28 +266,29 @@ public class HCatRecordSerDe implements SerDe {
     private static Object serializePrimitiveField(Object field,
             ObjectInspector fieldObjectInspector) {
 
-        if (field != null && HCatContext.INSTANCE.getConf().isPresent()) {
+        Object f = ((PrimitiveObjectInspector) fieldObjectInspector).getPrimitiveJavaObject(field);
+        if (f != null && HCatContext.INSTANCE.getConf().isPresent()) {
             Configuration conf = HCatContext.INSTANCE.getConf().get();
 
-            if (field instanceof Boolean &&
+            if (f instanceof Boolean &&
                 conf.getBoolean(
                     HCatConstants.HCAT_DATA_CONVERT_BOOLEAN_TO_INTEGER,
                     HCatConstants.HCAT_DATA_CONVERT_BOOLEAN_TO_INTEGER_DEFAULT)) {
-                return ((Boolean) field) ? 1 : 0;
-            } else if (field instanceof Short &&
+                return ((Boolean) f) ? 1 : 0;
+            } else if (f instanceof Short &&
                 conf.getBoolean(
                     HCatConstants.HCAT_DATA_TINY_SMALL_INT_PROMOTION,
                     HCatConstants.HCAT_DATA_TINY_SMALL_INT_PROMOTION_DEFAULT)) {
-                return new Integer((Short) field);
-            } else if (field instanceof Byte &&
+                return new Integer((Short) f);
+            } else if (f instanceof Byte &&
                 conf.getBoolean(
                     HCatConstants.HCAT_DATA_TINY_SMALL_INT_PROMOTION,
                     HCatConstants.HCAT_DATA_TINY_SMALL_INT_PROMOTION_DEFAULT)) {
-                return new Integer((Byte) field);
+                return new Integer((Byte) f);
             }
         }
 
-        return ((PrimitiveObjectInspector) fieldObjectInspector).getPrimitiveJavaObject(field);
+        return f;
     }
 
     /**

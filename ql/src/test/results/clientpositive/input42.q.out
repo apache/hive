@@ -47,7 +47,6 @@ STAGE PLANS:
                       type: string
                       expr: _col3
                       type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -143,6 +142,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [a]
+        /srcpart/ds=2008-04-08/hr=12 [a]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -158,13 +161,11 @@ STAGE PLANS:
                   columns _col0,_col1,_col2,_col3
                   columns.types string:string:string:string
                   escape.delim \
+                  hive.serialization.extend.nesting.levels true
                   serialization.format 1
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /srcpart/ds=2008-04-08/hr=11 [a]
-        /srcpart/ds=2008-04-08/hr=12 [a]
 
   Stage: Stage-0
     Fetch Operator
@@ -1207,7 +1208,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (key < 200.0)
+                  expr: (key < 200)
                   type: boolean
               Select Operator
                 expressions:
@@ -1237,7 +1238,6 @@ STAGE PLANS:
                         type: string
                         expr: _col3
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1333,6 +1333,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [a]
+        /srcpart/ds=2008-04-08/hr=12 [a]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -1348,13 +1352,11 @@ STAGE PLANS:
                   columns _col0,_col1,_col2,_col3
                   columns.types string:string:string:string
                   escape.delim \
+                  hive.serialization.extend.nesting.levels true
                   serialization.format 1
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /srcpart/ds=2008-04-08/hr=11 [a]
-        /srcpart/ds=2008-04-08/hr=12 [a]
 
   Stage: Stage-0
     Fetch Operator
@@ -1805,7 +1807,6 @@ STAGE PLANS:
                         type: string
                         expr: _col3
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1901,6 +1902,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [a]
+        /srcpart/ds=2008-04-08/hr=12 [a]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -1916,13 +1921,11 @@ STAGE PLANS:
                   columns _col0,_col1,_col2,_col3
                   columns.types string:string:string:string
                   escape.delim \
+                  hive.serialization.extend.nesting.levels true
                   serialization.format 1
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /srcpart/ds=2008-04-08/hr=11 [a]
-        /srcpart/ds=2008-04-08/hr=12 [a]
 
   Stage: Stage-0
     Fetch Operator

@@ -60,6 +60,7 @@ public class DefaultRuleDispatcher implements Dispatcher {
    *          the operators encountered so far
    * @throws SemanticException
    */
+  @Override
   public Object dispatch(Node nd, Stack<Node> ndStack, Object... nodeOutputs)
       throws SemanticException {
 

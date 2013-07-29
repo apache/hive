@@ -322,7 +322,7 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
+  Stage-3 depends on stages: Stage-1
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -394,7 +394,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
-  Stage: Stage-2
+  Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
@@ -506,13 +506,13 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-9 depends on stages: Stage-1, Stage-5 , consists of Stage-10, Stage-11, Stage-2
-  Stage-10 has a backup stage: Stage-2
+  Stage-9 depends on stages: Stage-1, Stage-5 , consists of Stage-10, Stage-11, Stage-3
+  Stage-10 has a backup stage: Stage-3
   Stage-7 depends on stages: Stage-10
-  Stage-3 depends on stages: Stage-2, Stage-7, Stage-8
-  Stage-11 has a backup stage: Stage-2
+  Stage-4 depends on stages: Stage-3, Stage-7, Stage-8
+  Stage-11 has a backup stage: Stage-3
   Stage-8 depends on stages: Stage-11
-  Stage-2
+  Stage-3
   Stage-5 is a root stage
   Stage-0 is a root stage
 
@@ -640,7 +640,7 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-3
+  Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
@@ -722,7 +722,7 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-2
+  Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
@@ -2695,7 +2695,7 @@ STAGE DEPENDENCIES:
   Stage-6 is a root stage , consists of Stage-7, Stage-8, Stage-1
   Stage-7 has a backup stage: Stage-1
   Stage-4 depends on stages: Stage-7
-  Stage-2 depends on stages: Stage-1, Stage-4, Stage-5
+  Stage-3 depends on stages: Stage-1, Stage-4, Stage-5
   Stage-8 has a backup stage: Stage-1
   Stage-5 depends on stages: Stage-8
   Stage-1
@@ -2795,7 +2795,7 @@ STAGE PLANS:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
 
-  Stage: Stage-2
+  Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
@@ -3067,13 +3067,13 @@ STAGE DEPENDENCIES:
   Stage-12 is a root stage , consists of Stage-18, Stage-19, Stage-1
   Stage-18 has a backup stage: Stage-1
   Stage-10 depends on stages: Stage-18
-  Stage-9 depends on stages: Stage-1, Stage-5, Stage-10, Stage-11, Stage-13, Stage-14 , consists of Stage-16, Stage-17, Stage-2
-  Stage-16 has a backup stage: Stage-2
+  Stage-9 depends on stages: Stage-1, Stage-5, Stage-10, Stage-11, Stage-13, Stage-14 , consists of Stage-16, Stage-17, Stage-3
+  Stage-16 has a backup stage: Stage-3
   Stage-7 depends on stages: Stage-16
-  Stage-3 depends on stages: Stage-2, Stage-7, Stage-8
-  Stage-17 has a backup stage: Stage-2
+  Stage-4 depends on stages: Stage-3, Stage-7, Stage-8
+  Stage-17 has a backup stage: Stage-3
   Stage-8 depends on stages: Stage-17
-  Stage-2
+  Stage-3
   Stage-19 has a backup stage: Stage-1
   Stage-11 depends on stages: Stage-19
   Stage-1
@@ -3234,7 +3234,7 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-3
+  Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
@@ -3316,7 +3316,7 @@ STAGE PLANS:
       Local Work:
         Map Reduce Local Work
 
-  Stage: Stage-2
+  Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 

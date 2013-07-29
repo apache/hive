@@ -48,7 +48,6 @@ STAGE PLANS:
                       type: string
                       expr: _col1
                       type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -94,6 +93,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
             name: default.src
+      Truncated Path -> Alias:
+        /src [src]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           Select Operator
@@ -129,8 +131,6 @@ STAGE PLANS:
               TotalFiles: 2
               GatherStats: true
               MultiFileSpray: true
-      Truncated Path -> Alias:
-        /src [src]
 
   Stage: Stage-0
     Move Operator

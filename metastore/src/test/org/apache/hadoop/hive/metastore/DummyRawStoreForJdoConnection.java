@@ -515,6 +515,45 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   }
 
   @Override
+  public boolean addToken(String tokenIdentifier, String delegationToken) {
+    return false;
+  }
+
+  @Override
+  public boolean removeToken(String tokenIdentifier) {
+    return false;
+  }
+
+  @Override
+  public String getToken(String tokenIdentifier) {
+    return null;
+  }
+
+  @Override
+  public List<String> getAllTokenIdentifiers() {
+    return null;
+  }
+
+  @Override
+  public int addMasterKey(String key) {
+    return 0;
+  }
+
+  @Override
+  public void updateMasterKey(Integer seqNo, String key) {
+  }
+
+  @Override
+  public boolean removeMasterKey(Integer keySeq) {
+    return false;
+  }
+
+  @Override
+  public String[] getMasterKeys() {
+    return null;
+  }
+
+  @Override
   public ColumnStatistics getTableColumnStatistics(String dbName, String tableName, String colName)
       throws MetaException, NoSuchObjectException {
     return null;

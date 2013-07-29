@@ -12,5 +12,5 @@ POSTHOOK: Output: default@authorization_fail_1
 PREHOOK: query: grant Create on table authorization_fail_1 to user hive_test_user
 PREHOOK: type: GRANT_PRIVILEGE
 PREHOOK: Output: default@authorization_fail_1
-#### A masked pattern was here ####
+Error: java.lang.RuntimeException: InvalidObjectException(message:Create is already granted on table [default,authorization_fail_1] by hive_test_user)
 FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

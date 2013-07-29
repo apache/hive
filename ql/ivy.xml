@@ -34,6 +34,12 @@
                 conf="test->default" transitive="false"/>
     <dependency org="org.apache.hive" name="hive-testutils" rev="${version}"
                 conf="test->default" transitive="false"/>
+    <dependency org="org.apache.hbase" name="hbase" rev="${hbase.version}"
+                conf="test->default" transitive="false">
+      <artifact name="hbase" type="jar"/>
+      <artifact name="hbase" type="test-jar" ext="jar"
+                m:classifier="tests"/>
+    </dependency>
     <dependency org="com.google.protobuf" name="protobuf-java" 
                 rev="${protobuf.version}" transitive="false"/>
     <dependency org="org.iq80.snappy" name="snappy" 

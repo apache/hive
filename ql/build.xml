@@ -82,19 +82,24 @@
               logDirectory="${test.log.dir}/clientpositive"
               hadoopVersion="${hadoopVersion}"/>
 
-    <qtestgen hiveRootDirectory="${hive.root}"
-              outputDirectory="${test.build.src}/org/apache/hive/beeline/util" 
-              templatePath="${ql.test.template.dir}" template="TestBeeLineDriver.vm" 
-              queryDirectory="${ql.test.query.clientpositive.dir}" 
-              queryFile="${qfile}"
-              excludeQueryFile="${ql.test.beelinepositive.exclude}"
-              queryFileRegex="${qfile_regex}"
-              clusterMode="${clustermode}"
-              runDisabled="${run_disabled}"
-              resultsDirectory="${ql.test.results.beelinepositive.dir}" className="TestBeeLineDriver"
-              logFile="${test.log.dir}/testbeelinedrivergen.log"
-              logDirectory="${test.log.dir}/beelinepositive"
-              hadoopVersion="${hadoopVersion}" />
+    <if>
+      <matches string="${iterate.hive.all}" pattern="beeline"/>
+      <then>
+        <qtestgen hiveRootDirectory="${hive.root}"
+                  outputDirectory="${test.build.src}/org/apache/hive/beeline/util" 
+                  templatePath="${ql.test.template.dir}" template="TestBeeLineDriver.vm" 
+                  queryDirectory="${ql.test.query.clientpositive.dir}" 
+                  queryFile="${qfile}"
+                  excludeQueryFile="${ql.test.beelinepositive.exclude}"
+                  queryFileRegex="${qfile_regex}"
+                  clusterMode="${clustermode}"
+                  runDisabled="${run_disabled}"
+                  resultsDirectory="${ql.test.results.beelinepositive.dir}" className="TestBeeLineDriver"
+                  logFile="${test.log.dir}/testbeelinedrivergen.log"
+                  logDirectory="${test.log.dir}/beelinepositive"
+                  hadoopVersion="${hadoopVersion}" />
+      </then>
+    </if>
 
     <if>
       <not>

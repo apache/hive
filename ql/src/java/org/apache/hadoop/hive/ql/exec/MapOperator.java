@@ -33,9 +33,10 @@ import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -62,7 +63,7 @@ import org.apache.hadoop.util.StringUtils;
  * different from regular operators in that it starts off by processing a
  * Writable data structure from a Table (instead of a Hive Object).
  **/
-public class MapOperator extends Operator<MapredWork> implements Serializable, Cloneable {
+public class MapOperator extends Operator<MapWork> implements Serializable, Cloneable {
 
   private static final long serialVersionUID = 1L;
 
@@ -228,24 +229,26 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
    * @param mrwork
    * @throws HiveException
    */
-  public void initializeAsRoot(Configuration hconf, MapredWork mrwork)
+  public void initializeAsRoot(Configuration hconf, MapWork mapWork)
       throws HiveException {
-    setConf(mrwork);
+    setConf(mapWork);
     setChildren(hconf);
     initialize(hconf, null);
   }
 
-  private MapOpCtx initObjectInspector(MapredWork conf,
+  private MapOpCtx initObjectInspector(MapWork conf,
       Configuration hconf, String onefile, Map<TableDesc, StructObjectInspector> convertedOI)
           throws HiveException,
       ClassNotFoundException, InstantiationException, IllegalAccessException,
       SerDeException {
     PartitionDesc pd = conf.getPathToPartitionInfo().get(onefile);
     LinkedHashMap<String, String> partSpec = pd.getPartSpec();
-    // Use tblProps in case of unpartitioned tables
+    // Use table properties in case of unpartitioned tables,
+    // and the union of table properties and partition properties, with partition
+    // taking precedence
     Properties partProps =
         (pd.getPartSpec() == null || pd.getPartSpec().isEmpty()) ?
-            pd.getTableDesc().getProperties() : pd.getProperties();
+            pd.getTableDesc().getProperties() : pd.getOverlayedProperties();
 
     Class serdeclass = pd.getDeserializerClass();
     if (serdeclass == null) {
@@ -409,7 +412,7 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
         // If the partition does not exist, use table properties
         Properties partProps =
             (pd.getPartSpec() == null || pd.getPartSpec().isEmpty()) ?
-                tblProps : pd.getProperties();
+                tblProps : pd.getOverlayedProperties();
 
         Class sdclass = pd.getDeserializerClass();
         if (sdclass == null) {

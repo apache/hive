@@ -1081,7 +1081,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key < 9.0)
+                  expr: (key < 9)
                   type: boolean
               Select Operator
                 expressions:
@@ -1223,7 +1223,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key < 9.0)
+                  expr: (key < 9)
                   type: boolean
               Select Operator
                 expressions:
@@ -1265,7 +1265,7 @@ STAGE PLANS:
           outputColumnNames: _col0, _col1
           Filter Operator
             predicate:
-                expr: ((_col0 < 9.0) and _col1 is not null)
+                expr: ((_col0 < 9) and _col1 is not null)
                 type: boolean
             Select Operator
               expressions:

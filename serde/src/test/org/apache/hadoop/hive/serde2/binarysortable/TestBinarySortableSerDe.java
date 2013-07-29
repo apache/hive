@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.binarysortable;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -153,6 +154,15 @@ public class TestBinarySortableSerDe extends TestCase {
     return bd;
   }
 
+  public static Date getRandDate(Random r) {
+    String dateStr = String.format("%d-%02d-%02d",
+        Integer.valueOf(1800 + r.nextInt(500)),  // year
+        Integer.valueOf(1 + r.nextInt(12)),      // month
+        Integer.valueOf(1 + r.nextInt(28)));     // day
+    Date dateVal = Date.valueOf(dateStr);
+    return dateVal;
+  }
+
   public static String getRandString(Random r) {
     return getRandString(r, null, r.nextInt(10));
   }
@@ -196,7 +206,7 @@ public class TestBinarySortableSerDe extends TestCase {
       MyTestClass rows[] = new MyTestClass[num];
 
       for (int i = 0; i < num; i++) {
-        int randField = r.nextInt(10);
+        int randField = r.nextInt(11);
         MyTestClass t = new MyTestClass();
         t.myByte = randField > 0 ? null : Byte.valueOf((byte) r.nextInt());
         t.myShort = randField > 1 ? null : Short.valueOf((short) r.nextInt());
@@ -208,9 +218,10 @@ public class TestBinarySortableSerDe extends TestCase {
             .valueOf(r.nextDouble() * 10 - 5);
         t.myString = randField > 6 ? null : getRandString(r);
         t.myDecimal = randField > 7 ? null : getRandHiveDecimal(r);
-        t.myStruct = randField > 8 ? null : new MyTestInnerStruct(
+        t.myDate = randField > 8 ? null : getRandDate(r);
+        t.myStruct = randField > 9 ? null : new MyTestInnerStruct(
             r.nextInt(5) - 2, r.nextInt(5) - 2);
-        t.myList = randField > 9 ? null : getRandIntegerArray(r);
+        t.myList = randField > 10 ? null : getRandIntegerArray(r);
         t.myBA = getRandBA(r, i);
         rows[i] = t;
       }
@@ -224,9 +235,9 @@ public class TestBinarySortableSerDe extends TestCase {
       String fieldTypes = ObjectInspectorUtils.getFieldTypes(rowOI);
 
       testBinarySortableSerDe(rows, rowOI, getSerDe(fieldNames, fieldTypes,
-          "+++++++++++"), true);
+          "++++++++++++"), true);
       testBinarySortableSerDe(rows, rowOI, getSerDe(fieldNames, fieldTypes,
-          "-----------"), false);
+          "------------"), false);
 
       System.out.println("Test testTBinarySortableProtocol passed!");
     } catch (Throwable e) {

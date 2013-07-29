@@ -75,7 +75,7 @@ PREHOOK: query: -- 2. Npath on 1 partition
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from npath(on 
         flights_tiny 
-        sort by year, month, day_of_month  
+        sort by fl_num, year, month, day_of_month  
       arg1('LATE.LATE+'), 
       arg2('LATE'), arg3(arr_delay > 15), 
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
@@ -88,7 +88,7 @@ POSTHOOK: query: -- 2. Npath on 1 partition
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
 from npath(on 
         flights_tiny 
-        sort by year, month, day_of_month  
+        sort by fl_num, year, month, day_of_month  
       arg1('LATE.LATE+'), 
       arg2('LATE'), arg3(arr_delay > 15), 
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
@@ -97,6 +97,8 @@ where fl_num = 1142
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@flights_tiny
 #### A masked pattern was here ####
-Baltimore	1142	2010	10	21	2	21
-Baltimore	1142	2010	10	22	2	22
+Baltimore	1142	2010	10	20	6	20
+Baltimore	1142	2010	10	21	5	21
+Baltimore	1142	2010	10	22	4	22
 Baltimore	1142	2010	10	25	3	25
+Baltimore	1142	2010	10	26	2	26

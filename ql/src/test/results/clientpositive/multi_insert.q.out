@@ -37,7 +37,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key < 10.0)
+                  expr: (key < 10)
                   type: boolean
               Select Operator
                 expressions:
@@ -56,7 +56,7 @@ STAGE PLANS:
                       name: default.src_multi1
             Filter Operator
               predicate:
-                  expr: ((key > 10.0) and (key < 20.0))
+                  expr: ((key > 10) and (key < 20))
                   type: boolean
               Select Operator
                 expressions:
@@ -205,7 +205,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key < 10.0)
+                  expr: (key < 10)
                   type: boolean
               Select Operator
                 expressions:
@@ -224,7 +224,7 @@ STAGE PLANS:
                       name: default.src_multi1
             Filter Operator
               predicate:
-                  expr: ((key > 10.0) and (key < 20.0))
+                  expr: ((key > 10) and (key < 20))
                   type: boolean
               Select Operator
                 expressions:
@@ -461,7 +461,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key < 10.0)
+                  expr: (key < 10)
                   type: boolean
               Select Operator
                 expressions:
@@ -480,7 +480,7 @@ STAGE PLANS:
                       name: default.src_multi1
             Filter Operator
               predicate:
-                  expr: ((key > 10.0) and (key < 20.0))
+                  expr: ((key > 10) and (key < 20))
                   type: boolean
               Select Operator
                 expressions:
@@ -661,7 +661,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key < 10.0)
+                  expr: (key < 10)
                   type: boolean
               Select Operator
                 expressions:
@@ -680,7 +680,7 @@ STAGE PLANS:
                       name: default.src_multi1
             Filter Operator
               predicate:
-                  expr: ((key > 10.0) and (key < 20.0))
+                  expr: ((key > 10) and (key < 20))
                   type: boolean
               Select Operator
                 expressions:
@@ -949,7 +949,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) or ((key > 10.0) and (key < 20.0)))
+                  expr: ((key < 10) or ((key > 10) and (key < 20)))
                   type: boolean
               Select Operator
                 expressions:
@@ -975,7 +975,7 @@ STAGE PLANS:
         Forward
           Filter Operator
             predicate:
-                expr: (KEY._col0 < 10.0)
+                expr: (KEY._col0 < 10)
                 type: boolean
             Group By Operator
               bucketGroup: false
@@ -1003,7 +1003,7 @@ STAGE PLANS:
                       name: default.src_multi1
           Filter Operator
             predicate:
-                expr: ((KEY._col0 > 10.0) and (KEY._col0 < 20.0))
+                expr: ((KEY._col0 > 10) and (KEY._col0 < 20))
                 type: boolean
             Group By Operator
               bucketGroup: false
@@ -1202,7 +1202,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) or ((key > 10.0) and (key < 20.0)))
+                  expr: ((key < 10) or ((key > 10) and (key < 20)))
                   type: boolean
               Select Operator
                 expressions:
@@ -1228,7 +1228,7 @@ STAGE PLANS:
         Forward
           Filter Operator
             predicate:
-                expr: (KEY._col0 < 10.0)
+                expr: (KEY._col0 < 10)
                 type: boolean
             Group By Operator
               bucketGroup: false
@@ -1256,7 +1256,7 @@ STAGE PLANS:
                       name: default.src_multi1
           Filter Operator
             predicate:
-                expr: ((KEY._col0 > 10.0) and (KEY._col0 < 20.0))
+                expr: ((KEY._col0 > 10) and (KEY._col0 < 20))
                 type: boolean
             Group By Operator
               bucketGroup: false
@@ -1527,7 +1527,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) or ((key > 10.0) and (key < 20.0)))
+                  expr: ((key < 10) or ((key > 10) and (key < 20)))
                   type: boolean
               Select Operator
                 expressions:
@@ -1553,7 +1553,7 @@ STAGE PLANS:
         Forward
           Filter Operator
             predicate:
-                expr: (KEY._col0 < 10.0)
+                expr: (KEY._col0 < 10)
                 type: boolean
             Group By Operator
               bucketGroup: false
@@ -1581,7 +1581,7 @@ STAGE PLANS:
                       name: default.src_multi1
           Filter Operator
             predicate:
-                expr: ((KEY._col0 > 10.0) and (KEY._col0 < 20.0))
+                expr: ((KEY._col0 > 10) and (KEY._col0 < 20))
                 type: boolean
             Group By Operator
               bucketGroup: false
@@ -1780,7 +1780,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key < 10.0) or ((key > 10.0) and (key < 20.0)))
+                  expr: ((key < 10) or ((key > 10) and (key < 20)))
                   type: boolean
               Select Operator
                 expressions:
@@ -1806,7 +1806,7 @@ STAGE PLANS:
         Forward
           Filter Operator
             predicate:
-                expr: (KEY._col0 < 10.0)
+                expr: (KEY._col0 < 10)
                 type: boolean
             Group By Operator
               bucketGroup: false
@@ -1834,7 +1834,7 @@ STAGE PLANS:
                       name: default.src_multi1
           Filter Operator
             predicate:
-                expr: ((KEY._col0 > 10.0) and (KEY._col0 < 20.0))
+                expr: ((KEY._col0 > 10) and (KEY._col0 < 20))
                 type: boolean
             Group By Operator
               bucketGroup: false
@@ -2113,7 +2113,7 @@ STAGE PLANS:
               Union
                 Filter Operator
                   predicate:
-                      expr: (_col0 < 10.0)
+                      expr: (_col0 < 10)
                       type: boolean
                   Select Operator
                     expressions:
@@ -2132,7 +2132,7 @@ STAGE PLANS:
                           name: default.src_multi1
                 Filter Operator
                   predicate:
-                      expr: ((_col0 > 10.0) and (_col0 < 20.0))
+                      expr: ((_col0 > 10) and (_col0 < 20))
                       type: boolean
                   Select Operator
                     expressions:
@@ -2162,7 +2162,7 @@ STAGE PLANS:
               Union
                 Filter Operator
                   predicate:
-                      expr: (_col0 < 10.0)
+                      expr: (_col0 < 10)
                       type: boolean
                   Select Operator
                     expressions:
@@ -2181,7 +2181,7 @@ STAGE PLANS:
                           name: default.src_multi1
                 Filter Operator
                   predicate:
-                      expr: ((_col0 > 10.0) and (_col0 < 20.0))
+                      expr: ((_col0 > 10) and (_col0 < 20))
                       type: boolean
                   Select Operator
                     expressions:
@@ -2421,7 +2421,7 @@ STAGE PLANS:
               Union
                 Filter Operator
                   predicate:
-                      expr: (_col0 < 10.0)
+                      expr: (_col0 < 10)
                       type: boolean
                   Select Operator
                     expressions:
@@ -2440,7 +2440,7 @@ STAGE PLANS:
                           name: default.src_multi1
                 Filter Operator
                   predicate:
-                      expr: ((_col0 > 10.0) and (_col0 < 20.0))
+                      expr: ((_col0 > 10) and (_col0 < 20))
                       type: boolean
                   Select Operator
                     expressions:
@@ -2470,7 +2470,7 @@ STAGE PLANS:
               Union
                 Filter Operator
                   predicate:
-                      expr: (_col0 < 10.0)
+                      expr: (_col0 < 10)
                       type: boolean
                   Select Operator
                     expressions:
@@ -2489,7 +2489,7 @@ STAGE PLANS:
                           name: default.src_multi1
                 Filter Operator
                   predicate:
-                      expr: ((_col0 > 10.0) and (_col0 < 20.0))
+                      expr: ((_col0 > 10) and (_col0 < 20))
                       type: boolean
                   Select Operator
                     expressions:
@@ -2817,7 +2817,7 @@ STAGE PLANS:
               Union
                 Filter Operator
                   predicate:
-                      expr: (_col0 < 10.0)
+                      expr: (_col0 < 10)
                       type: boolean
                   Select Operator
                     expressions:
@@ -2836,7 +2836,7 @@ STAGE PLANS:
                           name: default.src_multi1
                 Filter Operator
                   predicate:
-                      expr: ((_col0 > 10.0) and (_col0 < 20.0))
+                      expr: ((_col0 > 10) and (_col0 < 20))
                       type: boolean
                   Select Operator
                     expressions:
@@ -2866,7 +2866,7 @@ STAGE PLANS:
               Union
                 Filter Operator
                   predicate:
-                      expr: (_col0 < 10.0)
+                      expr: (_col0 < 10)
                       type: boolean
                   Select Operator
                     expressions:
@@ -2885,7 +2885,7 @@ STAGE PLANS:
                           name: default.src_multi1
                 Filter Operator
                   predicate:
-                      expr: ((_col0 > 10.0) and (_col0 < 20.0))
+                      expr: ((_col0 > 10) and (_col0 < 20))
                       type: boolean
                   Select Operator
                     expressions:
@@ -3157,7 +3157,7 @@ STAGE PLANS:
               Union
                 Filter Operator
                   predicate:
-                      expr: (_col0 < 10.0)
+                      expr: (_col0 < 10)
                       type: boolean
                   Select Operator
                     expressions:
@@ -3176,7 +3176,7 @@ STAGE PLANS:
                           name: default.src_multi1
                 Filter Operator
                   predicate:
-                      expr: ((_col0 > 10.0) and (_col0 < 20.0))
+                      expr: ((_col0 > 10) and (_col0 < 20))
                       type: boolean
                   Select Operator
                     expressions:
@@ -3206,7 +3206,7 @@ STAGE PLANS:
               Union
                 Filter Operator
                   predicate:
-                      expr: (_col0 < 10.0)
+                      expr: (_col0 < 10)
                       type: boolean
                   Select Operator
                     expressions:
@@ -3225,7 +3225,7 @@ STAGE PLANS:
                           name: default.src_multi1
                 Filter Operator
                   predicate:
-                      expr: ((_col0 > 10.0) and (_col0 < 20.0))
+                      expr: ((_col0 > 10) and (_col0 < 20))
                       type: boolean
                   Select Operator
                     expressions:
@@ -3575,7 +3575,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key = 0.0)
+                  expr: (key = 0)
                   type: boolean
               Select Operator
                 expressions:
@@ -3592,7 +3592,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             Filter Operator
               predicate:
-                  expr: (key = 2.0)
+                  expr: (key = 2)
                   type: boolean
               Select Operator
                 expressions:
@@ -3609,7 +3609,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             Filter Operator
               predicate:
-                  expr: (key = 4.0)
+                  expr: (key = 4)
                   type: boolean
               Select Operator
                 expressions:
@@ -3746,7 +3746,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key = 0.0)
+                  expr: (key = 0)
                   type: boolean
               Select Operator
                 expressions:
@@ -3763,7 +3763,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             Filter Operator
               predicate:
-                  expr: (key = 2.0)
+                  expr: (key = 2)
                   type: boolean
               Select Operator
                 expressions:
@@ -3780,7 +3780,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             Filter Operator
               predicate:
-                  expr: (key = 4.0)
+                  expr: (key = 4)
                   type: boolean
               Select Operator
                 expressions:
@@ -3917,7 +3917,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key = 0.0)
+                  expr: (key = 0)
                   type: boolean
               Select Operator
                 expressions:
@@ -3934,7 +3934,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             Filter Operator
               predicate:
-                  expr: (key = 2.0)
+                  expr: (key = 2)
                   type: boolean
               Select Operator
                 expressions:
@@ -3951,7 +3951,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             Filter Operator
               predicate:
-                  expr: (key = 4.0)
+                  expr: (key = 4)
                   type: boolean
               Select Operator
                 expressions:
@@ -4088,7 +4088,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key = 0.0)
+                  expr: (key = 0)
                   type: boolean
               Select Operator
                 expressions:
@@ -4105,7 +4105,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             Filter Operator
               predicate:
-                  expr: (key = 2.0)
+                  expr: (key = 2)
                   type: boolean
               Select Operator
                 expressions:
@@ -4122,7 +4122,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             Filter Operator
               predicate:
-                  expr: (key = 4.0)
+                  expr: (key = 4)
                   type: boolean
               Select Operator
                 expressions:

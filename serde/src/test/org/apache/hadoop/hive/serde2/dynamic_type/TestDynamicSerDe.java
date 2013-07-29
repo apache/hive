@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.serde2.dynamic_type;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -408,7 +409,7 @@ public class TestDynamicSerDe extends TestCase {
       ArrayList<String> bye = new ArrayList<String>();
       bye.add("firstString");
       bye.add("secondString");
-      HashMap<String, Integer> another = new HashMap<String, Integer>();
+      LinkedHashMap<String, Integer> another = new LinkedHashMap<String, Integer>();
       another.put("firstKey", 1);
       another.put("secondKey", 2);
       ArrayList<Object> struct = new ArrayList<Object>();
@@ -781,7 +782,7 @@ public class TestDynamicSerDe extends TestCase {
       ArrayList<String> bye = new ArrayList<String>();
       bye.add("firstString");
       bye.add("secondString");
-      HashMap<String, Integer> another = new HashMap<String, Integer>();
+      LinkedHashMap<String, Integer> another = new LinkedHashMap<String, Integer>();
       another.put("firstKey", 1);
       another.put("secondKey", 2);
       ArrayList<Object> struct = new ArrayList<Object>();

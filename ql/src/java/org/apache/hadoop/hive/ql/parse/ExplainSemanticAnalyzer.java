@@ -40,25 +40,30 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
     super(conf);
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public void analyzeInternal(ASTNode ast) throws SemanticException {
+
+    boolean extended = false;
+    boolean formatted = false;
+    boolean dependency = false;
+    boolean logical = false;
+    if (ast.getChildCount() == 2) {
+      int explainOptions = ast.getChild(1).getType();
+      formatted = (explainOptions == HiveParser.KW_FORMATTED);
+      extended = (explainOptions == HiveParser.KW_EXTENDED);
+      dependency = (explainOptions == HiveParser.KW_DEPENDENCY);
+      logical = (explainOptions == HiveParser.KW_LOGICAL);
+    }
+
     ctx.setExplain(true);
+    ctx.setExplainLogical(logical);
 
     // Create a semantic analyzer for the query
     BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, (ASTNode) ast
         .getChild(0));
     sem.analyze((ASTNode) ast.getChild(0), ctx);
     sem.validate();
-
-    boolean extended = false;
-    boolean formatted = false;
-    boolean dependency = false;
-    if (ast.getChildCount() == 2) {
-      int explainOptions = ast.getChild(1).getType();
-      formatted = (explainOptions == HiveParser.KW_FORMATTED);
-      extended = (explainOptions == HiveParser.KW_EXTENDED);
-      dependency = (explainOptions == HiveParser.KW_DEPENDENCY);
-    }
 
     ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
     List<Task<? extends Serializable>> tasks = sem.getRootTasks();
@@ -72,14 +77,21 @@ public class ExplainSemanticAnalyzer extends BaseSemanticAnalyzer {
       tasks.add(fetchTask);
     }
 
+    ParseContext pCtx = null;
+    if (sem instanceof SemanticAnalyzer) {
+      pCtx = ((SemanticAnalyzer)sem).getParseContext();
+    }
+
     Task<? extends Serializable> explTask =
         TaskFactory.get(new ExplainWork(ctx.getResFile().toString(),
+        pCtx,
         tasks,
         ((ASTNode) ast.getChild(0)).toStringTree(),
         sem.getInputs(),
         extended,
         formatted,
-        dependency),
+        dependency,
+        logical),
       conf);
 
     fieldList = explTask.getResultSchema();

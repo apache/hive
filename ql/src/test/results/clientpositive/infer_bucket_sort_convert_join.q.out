@@ -83,8 +83,8 @@ Task ID:
 Logs:
 
 #### A masked pattern was here ####
-FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.MapredLocalTask
-ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.MapRedTask
+FAILED: Execution Error, return code 3 from org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask
+ATTEMPT: Execute BackupTask: org.apache.hadoop.hive.ql.exec.mr.MapRedTask
 POSTHOOK: query: -- This test tests the scenario when the mapper dies. So, create a conditional task for the mapjoin.
 -- Tests a join which is not converted to a map join, the output should be bucketed and sorted.
 

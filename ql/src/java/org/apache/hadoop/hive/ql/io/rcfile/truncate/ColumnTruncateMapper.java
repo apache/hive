@@ -76,7 +76,7 @@ public class ColumnTruncateMapper extends MapReduceBase implements
   @Override
   public void configure(JobConf job) {
     jc = job;
-    work = (ColumnTruncateWork) Utilities.getMapRedWork(job);
+    work = (ColumnTruncateWork) Utilities.getMapWork(job);
 
     String specPath = work.getOutputDir();
     Path tmpPath = Utilities.toTempPath(specPath);

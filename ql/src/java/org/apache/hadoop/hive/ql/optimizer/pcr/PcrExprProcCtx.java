@@ -28,32 +28,22 @@ import org.apache.hadoop.hive.ql.metadata.Partition;
  * partition pruned for the table scan and table alias.
  */
 public class PcrExprProcCtx implements NodeProcessorCtx {
-
-  public PcrExprProcCtx(String tabAlias, List<Partition> partList) {
-    super();
-    this.tabAlias = tabAlias;
-    this.partList = partList;
-  }
-
   /**
    * The table alias that is being currently processed.
    */
-  String tabAlias;
-  List<Partition> partList;
+  private final String tabAlias;
+  private final List<Partition> partList;
+
+  public PcrExprProcCtx(String tabAlias, List<Partition> partList) {
+    this.tabAlias = tabAlias;
+    this.partList = partList;
+  }
 
   public String getTabAlias() {
     return tabAlias;
   }
 
-  public void setTabAlias(String tabAlias) {
-    this.tabAlias = tabAlias;
-  }
-
   public List<Partition> getPartList() {
     return partList;
-  }
-
-  public void setPartList(List<Partition> partList) {
-    this.partList = partList;
   }
 }

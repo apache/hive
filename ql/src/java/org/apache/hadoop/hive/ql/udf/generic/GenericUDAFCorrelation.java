@@ -116,6 +116,7 @@ public class GenericUDAFCorrelation extends AbstractGenericUDAFResolver {
         return new GenericUDAFCorrelationEvaluator();
       case STRING:
       case BOOLEAN:
+      case DATE:
       default:
         throw new UDFArgumentTypeException(1,
             "Only numeric type arguments are accepted but "
@@ -123,6 +124,7 @@ public class GenericUDAFCorrelation extends AbstractGenericUDAFResolver {
       }
     case STRING:
     case BOOLEAN:
+    case DATE:
     default:
       throw new UDFArgumentTypeException(0,
           "Only numeric type arguments are accepted but "

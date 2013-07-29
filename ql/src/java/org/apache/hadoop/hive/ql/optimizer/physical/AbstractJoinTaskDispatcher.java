@@ -27,14 +27,15 @@ import java.util.Stack;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
-import org.apache.hadoop.hive.ql.exec.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker.TaskGraphWalkerContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 
 /**
  * Common iteration methods for converting joins and sort-merge joins.
@@ -119,7 +120,7 @@ public abstract class AbstractJoinTaskDispatcher implements Dispatcher {
     }
   }
 
-  public long getTotalKnownInputSize(Context context, MapredWork currWork,
+  public long getTotalKnownInputSize(Context context, MapWork currWork,
       Map<String, ArrayList<String>> pathToAliases,
       HashMap<String, Long> aliasToSize) throws SemanticException {
     try {

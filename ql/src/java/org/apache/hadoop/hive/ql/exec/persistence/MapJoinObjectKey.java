@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator;
 import org.apache.hadoop.hive.ql.exec.HashTableSinkOperator.HashTableSinkObjectCtx;
@@ -34,7 +35,7 @@ import org.apache.hadoop.io.Writable;
 /**
  * Map Join Object used for both key.
  */
-public class MapJoinObjectKey  extends AbstractMapJoinKey {
+public class MapJoinObjectKey extends AbstractMapJoinKey {
 
 
   protected transient Object[] obj;
@@ -49,46 +50,29 @@ public class MapJoinObjectKey  extends AbstractMapJoinKey {
     this.obj = obj;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (o instanceof MapJoinObjectKey) {
-      MapJoinObjectKey mObj = (MapJoinObjectKey) o;
-      Object[] mObjArray = mObj.getObj();
-      if ((obj == null) && (mObjArray == null)) {
-        return true;
-      }
-      if ((obj != null) && (mObjArray != null)) {
-        if (obj.length == mObjArray.length) {
-          for (int i = 0; i < obj.length; i++) {
-            if (obj[i] == null) {
-              return mObjArray[i] == null;
-            }
-            if (!obj[i].equals(mObjArray[i])) {
-              return false;
-            }
-          }
-          return true;
-        }
-      }
-    }
-    return false;
-  }
+
 
   @Override
   public int hashCode() {
-    int hashCode;
-    if (obj == null) {
-      hashCode = metadataTag;
-    } else {
-      hashCode = 1;
+    return Arrays.hashCode(obj);
+  }
 
-      for (int i = 0; i < obj.length; i++) {
-        Object o = obj[i];
-        hashCode = 31 * hashCode + (o == null ? 0 : o.hashCode());
-      }
-
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+      return true;
     }
-    return hashCode;
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    MapJoinObjectKey other = (MapJoinObjectKey) obj;
+    if (!Arrays.equals(this.obj, other.obj)) {
+      return false;
+    }
+    return true;
   }
 
   @Override
@@ -104,9 +88,9 @@ public class MapJoinObjectKey  extends AbstractMapJoinKey {
       ArrayList<Object> list = (ArrayList<Object>) ObjectInspectorUtils.copyToStandardObject(ctx
           .getSerDe().deserialize(val), ctx.getSerDe().getObjectInspector(),
           ObjectInspectorCopyOption.WRITABLE);
-      if(list == null){
+      if (list == null) {
         obj = new ArrayList(0).toArray();
-      }else{
+      } else {
         obj = list.toArray();
       }
 
@@ -148,8 +132,8 @@ public class MapJoinObjectKey  extends AbstractMapJoinKey {
   }
 
   @Override
-  public boolean hasAnyNulls(boolean[] nullsafes){
-    if (obj != null && obj.length> 0) {
+  public boolean hasAnyNulls(boolean[] nullsafes) {
+    if (obj != null && obj.length > 0) {
       for (int i = 0; i < obj.length; i++) {
         if (obj[i] == null && (nullsafes == null || !nullsafes[i])) {
           return true;

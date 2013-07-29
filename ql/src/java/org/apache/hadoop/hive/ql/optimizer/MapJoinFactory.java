@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -77,7 +78,7 @@ public final class MapJoinFactory {
    */
   private static class TableScanMapJoinProcessor implements NodeProcessor {
 
-    public static void setupBucketMapJoinInfo(MapredWork plan,
+    public static void setupBucketMapJoinInfo(MapWork plan,
         AbstractMapJoinOperator<? extends MapJoinDesc> currMapJoinOp) {
       if (currMapJoinOp != null) {
         Map<String, Map<String, List<String>>> aliasBucketFileNameMapping =
@@ -144,38 +145,16 @@ public final class MapJoinFactory {
      *          position of the parent
      */
     private static void initMapJoinPlan(AbstractMapJoinOperator<? extends MapJoinDesc> op,
-        GenMRProcContext opProcCtx, int pos)
+        Task<? extends Serializable> currTask,
+        GenMRProcContext opProcCtx, boolean local)
         throws SemanticException {
-      Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx =
-          opProcCtx.getMapCurrCtx();
-      int parentPos = (pos == -1) ? 0 : pos;
-      GenMapRedCtx mapredCtx = mapCurrCtx.get(op.getParentOperators().get(
-          parentPos));
-      Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
-      MapredWork plan = (MapredWork) currTask.getWork();
-      HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap =
-          opProcCtx.getOpTaskMap();
-      Operator<? extends OperatorDesc> currTopOp = opProcCtx.getCurrTopOp();
-
-      MapJoinDesc desc = (MapJoinDesc) op.getConf();
 
       // The map is overloaded to keep track of mapjoins also
-      opTaskMap.put(op, currTask);
+      opProcCtx.getOpTaskMap().put(op, currTask);
 
-      List<Task<? extends Serializable>> rootTasks = opProcCtx.getRootTasks();
-      if(!rootTasks.contains(currTask)
-         && (currTask.getParentTasks() == null
-             || currTask.getParentTasks().isEmpty())) {
-        rootTasks.add(currTask);
-      }
-
-      assert currTopOp != null;
-      opProcCtx.getSeenOps().add(currTopOp);
-
+      Operator<? extends OperatorDesc> currTopOp = opProcCtx.getCurrTopOp();
       String currAliasId = opProcCtx.getCurrAliasId();
-      boolean local = (pos == desc.getPosBigTable()) ? false : true;
-      GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, plan, local, opProcCtx);
-      setupBucketMapJoinInfo(plan, op);
+      GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, currTask, local, opProcCtx);
     }
 
     /**
@@ -191,29 +170,12 @@ public final class MapJoinFactory {
      * @param pos
      *          position of the parent in the stack
      */
-    public static void joinMapJoinPlan(AbstractMapJoinOperator<? extends OperatorDesc> op,
+    private static void joinMapJoinPlan(AbstractMapJoinOperator<? extends MapJoinDesc> op,
         Task<? extends Serializable> oldTask,
-        GenMRProcContext opProcCtx, int pos)
+        GenMRProcContext opProcCtx, boolean local)
         throws SemanticException {
-      MapredWork plan = (MapredWork) oldTask.getWork();
       Operator<? extends OperatorDesc> currTopOp = opProcCtx.getCurrTopOp();
-
-      List<Operator<? extends OperatorDesc>> seenOps = opProcCtx.getSeenOps();
-      String currAliasId = opProcCtx.getCurrAliasId();
-
-      if (!seenOps.contains(currTopOp)) {
-        seenOps.add(currTopOp);
-        boolean local = false;
-        if (pos != -1) {
-          local = (pos == ((MapJoinDesc) op.getConf()).getPosBigTable()) ? false
-              : true;
-        }
-        GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, plan, local, opProcCtx);
-        setupBucketMapJoinInfo(plan, op);
-      }
-      currTopOp = null;
-      opProcCtx.setCurrTopOp(currTopOp);
-      opProcCtx.setCurrTask(oldTask);
+      GenMapRedUtils.mergeInput(currTopOp, opProcCtx, oldTask, local);
     }
 
     /*
@@ -236,17 +198,14 @@ public final class MapJoinFactory {
 
       Map<Operator<? extends OperatorDesc>, GenMapRedCtx> mapCurrCtx = ctx
           .getMapCurrCtx();
-      GenMapRedCtx mapredCtx = mapCurrCtx.get(mapJoin.getParentOperators().get(
-          pos));
+      GenMapRedCtx mapredCtx = mapCurrCtx.get(mapJoin.getParentOperators().get(pos));
       Task<? extends Serializable> currTask = mapredCtx.getCurrTask();
       MapredWork currPlan = (MapredWork) currTask.getWork();
-      Operator<? extends OperatorDesc> currTopOp = mapredCtx.getCurrTopOp();
       String currAliasId = mapredCtx.getCurrAliasId();
       HashMap<Operator<? extends OperatorDesc>, Task<? extends Serializable>> opTaskMap =
           ctx.getOpTaskMap();
-      Task<? extends Serializable> opMapTask = opTaskMap.get(mapJoin);
+      Task<? extends Serializable> oldTask = opTaskMap.get(mapJoin);
 
-      ctx.setCurrTopOp(currTopOp);
       ctx.setCurrAliasId(currAliasId);
       ctx.setCurrTask(currTask);
 
@@ -254,20 +213,23 @@ public final class MapJoinFactory {
       // If we are seeing this mapjoin for the second or later time then atleast one of the
       // branches for this mapjoin have been encounered. Join the plan with the plan created
       // the first time.
-      if (opMapTask == null) {
-        assert currPlan.getReducer() == null;
-        initMapJoinPlan(mapJoin, ctx, pos);
+      boolean local = pos != mapJoin.getConf().getPosBigTable();
+      if (oldTask == null) {
+        assert currPlan.getReduceWork() == null;
+        initMapJoinPlan(mapJoin, currTask, ctx, local);
       } else {
         // The current plan can be thrown away after being merged with the
         // original plan
-        joinMapJoinPlan(mapJoin, opMapTask, ctx, pos);
-        currTask = opMapTask;
-        ctx.setCurrTask(currTask);
+        joinMapJoinPlan(mapJoin, oldTask, ctx, local);
+        ctx.setCurrTask(currTask = oldTask);
       }
+      MapredWork plan = (MapredWork) currTask.getWork();
+      setupBucketMapJoinInfo(plan.getMapWork(), mapJoin);
 
-      mapCurrCtx.put(mapJoin, new GenMapRedCtx(ctx.getCurrTask(), ctx
-          .getCurrTopOp(), ctx.getCurrAliasId()));
-      return null;
+      mapCurrCtx.put(mapJoin, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrAliasId()));
+
+      // local aliases need not to hand over context further
+      return !local;
     }
   }
 

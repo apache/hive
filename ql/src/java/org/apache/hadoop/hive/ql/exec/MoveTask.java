@@ -40,6 +40,8 @@ import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
+import org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask;
 import org.apache.hadoop.hive.ql.hooks.LineageInfo.DataContainer;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -57,6 +59,7 @@ import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadMultiFilesDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
@@ -304,9 +307,13 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
             // the directory this move task is moving
             if (task instanceof MapRedTask) {
               MapredWork work = (MapredWork)task.getWork();
-              bucketCols = work.getBucketedColsByDirectory().get(path);
-              sortCols = work.getSortedColsByDirectory().get(path);
-              numBuckets = work.getNumReduceTasks();
+              MapWork mapWork = work.getMapWork();
+              bucketCols = mapWork.getBucketedColsByDirectory().get(path);
+              sortCols = mapWork.getSortedColsByDirectory().get(path);
+              if (work.getReduceWork() != null) {
+                numBuckets = work.getReduceWork().getNumReduceTasks();
+              }
+
               if (bucketCols != null || sortCols != null) {
                 // This must be a final map reduce task (the task containing the file sink
                 // operator that writes the final output)

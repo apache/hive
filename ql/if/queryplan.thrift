@@ -54,6 +54,8 @@ enum OperatorType {
   HASHTABLESINK,
   HASHTABLEDUMMY,
   PTF,
+  MUX,
+  DEMUX,
 }
 
 struct Operator {

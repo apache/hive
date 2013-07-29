@@ -18,11 +18,13 @@
  */
 package org.apache.hcatalog.templeton;
 
+import org.eclipse.jetty.http.HttpStatus;
+
 /**
  * Missing required or badly configured paramater.
  */
 public class BadParam extends SimpleWebException {
     public BadParam(String msg) {
-        super(400, msg);
+        super(HttpStatus.BAD_REQUEST_400, msg);
     }
 }

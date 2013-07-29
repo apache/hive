@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
@@ -200,7 +201,7 @@ public class Partition implements Serializable {
           }
         }
         // set default if columns are not set
-        if (tPartition.getSd().getCols() == null || tPartition.getSd().getCols().size() == 0) {
+        if (tPartition.getSd().getCols() == null) {
           if (table.getCols() != null) {
             tPartition.getSd().setCols(table.getCols());
           }
@@ -519,7 +520,19 @@ public class Partition implements Serializable {
   }
 
   public List<FieldSchema> getCols() {
-    return tPartition.getSd().getCols();
+    if (!SerDeUtils.shouldGetColsFromSerDe(
+        tPartition.getSd().getSerdeInfo().getSerializationLib())) {
+      return tPartition.getSd().getCols();
+    }
+
+    try {
+      return Hive.getFieldsFromDeserializer(table.getTableName(), getDeserializer());
+    } catch (HiveException e) {
+      LOG.error("Unable to get cols from serde: " +
+          tPartition.getSd().getSerdeInfo().getSerializationLib(), e);
+    }
+
+    return new ArrayList<FieldSchema>();
   }
 
   public String getLocation() {

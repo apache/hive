@@ -39,8 +39,7 @@ public class DeleteDelegator extends TempletonDelegator {
         TempletonJobTracker tracker = null;
         JobState state = null;
         try {
-            tracker = new TempletonJobTracker(getAddress(appConf),
-                                              appConf);
+            tracker = new TempletonJobTracker(appConf);
             JobID jobid = StatusDelegator.StringToJobID(id);
             if (jobid == null)
                 throw new BadParam("Invalid jobid: " + id);

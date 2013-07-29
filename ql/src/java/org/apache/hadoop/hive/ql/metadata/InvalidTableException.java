@@ -18,31 +18,17 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
+import org.apache.hadoop.hive.ql.ErrorMsg;
+
 /**
  * Generic exception class for Hive.
- * 
  */
 
 public class InvalidTableException extends HiveException {
   String tableName;
 
   public InvalidTableException(String tableName) {
-    super();
-    this.tableName = tableName;
-  }
-
-  public InvalidTableException(String message, String tableName) {
-    super(message);
-    this.tableName = tableName;
-  }
-
-  public InvalidTableException(Throwable cause, String tableName) {
-    super(cause);
-    this.tableName = tableName;
-  }
-
-  public InvalidTableException(String message, Throwable cause, String tableName) {
-    super(message, cause);
+    super(ErrorMsg.INVALID_TABLE, tableName);
     this.tableName = tableName;
   }
 
