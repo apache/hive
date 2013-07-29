@@ -83,7 +83,6 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: false
                     MultiFileSpray: false
-      Needs Tagging: false
 
   Stage: Stage-0
     Fetch Operator
@@ -179,7 +178,6 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: false
                     MultiFileSpray: false
-      Needs Tagging: false
 
   Stage: Stage-0
     Fetch Operator

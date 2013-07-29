@@ -37,10 +37,10 @@ import org.apache.hadoop.mapred.TextInputFormat;
 public class SymbolicInputFormat implements ReworkMapredInputFormat {
 
   public void rework(HiveConf job, MapredWork work) throws IOException {
-    Map<String, PartitionDesc> pathToParts = work.getPathToPartitionInfo();
+    Map<String, PartitionDesc> pathToParts = work.getMapWork().getPathToPartitionInfo();
     List<String> toRemovePaths = new ArrayList<String>();
     Map<String, PartitionDesc> toAddPathToPart = new HashMap<String, PartitionDesc>();
-    Map<String, ArrayList<String>> pathToAliases = work.getPathToAliases();
+    Map<String, ArrayList<String>> pathToAliases = work.getMapWork().getPathToAliases();
 
     for (Map.Entry<String, PartitionDesc> pathPartEntry : pathToParts
         .entrySet()) {

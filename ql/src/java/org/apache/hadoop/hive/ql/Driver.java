@@ -460,12 +460,12 @@ public class Driver implements CommandProcessor {
 
         // serialize the queryPlan
         FileOutputStream fos = new FileOutputStream(queryPlanFileName);
-        Utilities.serializeQueryPlan(plan, fos);
+        Utilities.serializeObject(plan, fos);
         fos.close();
 
         // deserialize the queryPlan
         FileInputStream fis = new FileInputStream(queryPlanFileName);
-        QueryPlan newPlan = Utilities.deserializeQueryPlan(fis, conf);
+        QueryPlan newPlan = Utilities.deserializeObject(fis);
         fis.close();
 
         // Use the deserialized plan
@@ -878,14 +878,17 @@ public class Driver implements CommandProcessor {
 
   public CommandProcessorResponse run(String command) throws CommandNeedRetryException {
     CommandProcessorResponse cpr = runInternal(command);
-    if(cpr.getResponseCode() == 0) 
+    if(cpr.getResponseCode() == 0) {
       return cpr;
+    }
     SessionState ss = SessionState.get();
-    if(ss == null) 
+    if(ss == null) {
       return cpr;
+    }
     MetaDataFormatter mdf = MetaDataFormatUtils.getFormatter(ss.getConf());
-    if(!(mdf instanceof JsonMetaDataFormatter)) 
+    if(!(mdf instanceof JsonMetaDataFormatter)) {
       return cpr;
+    }
     /*Here we want to encode the error in machine readable way (e.g. JSON)
      * Ideally, errorCode would always be set to a canonical error defined in ErrorMsg.
      * In practice that is rarely the case, so the messy logic below tries to tease

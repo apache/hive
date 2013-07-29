@@ -34,7 +34,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.reportStats;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDe;
@@ -112,7 +112,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
       l4j.info("cannot get classpath: " + e.getMessage());
     }
     jc = job;
-    MapredWork gWork = Utilities.getMapRedWork(job);
+    ReduceWork gWork = Utilities.getReduceWork(job);
     reducer = gWork.getReducer();
     reducer.setParentOperators(null); // clear out any parents as reducer is the
     // root

@@ -84,6 +84,7 @@ import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -349,7 +350,7 @@ public class MapReduceCompiler {
     }
   }
 
-  private void setInputFormat(MapredWork work, Operator<? extends OperatorDesc> op) {
+  private void setInputFormat(MapWork work, Operator<? extends OperatorDesc> op) {
     if (op.isUseBucketizedHiveInputFormat()) {
       work.setUseBucketizedHiveInputFormat(true);
       return;
@@ -365,7 +366,7 @@ public class MapReduceCompiler {
   // loop over all the tasks recursively
   private void setInputFormat(Task<? extends Serializable> task) {
     if (task instanceof ExecDriver) {
-      MapredWork work = (MapredWork) task.getWork();
+      MapWork work = ((MapredWork) task.getWork()).getMapWork();
       HashMap<String, Operator<? extends OperatorDesc>> opMap = work.getAliasToWork();
       if (!opMap.isEmpty()) {
         for (Operator<? extends OperatorDesc> op : opMap.values()) {
@@ -391,16 +392,16 @@ public class MapReduceCompiler {
   private void generateCountersTask(Task<? extends Serializable> task) {
     if (task instanceof ExecDriver) {
       HashMap<String, Operator<? extends OperatorDesc>> opMap = ((MapredWork) task
-          .getWork()).getAliasToWork();
+          .getWork()).getMapWork().getAliasToWork();
       if (!opMap.isEmpty()) {
         for (Operator<? extends OperatorDesc> op : opMap.values()) {
           generateCountersOperator(op);
         }
       }
 
-      Operator<? extends OperatorDesc> reducer = ((MapredWork) task.getWork())
-          .getReducer();
-      if (reducer != null) {
+      if (((MapredWork)task.getWork()).getReduceWork() != null) {
+        Operator<? extends OperatorDesc> reducer = ((MapredWork) task.getWork()).getReduceWork()
+            .getReducer();
         LOG.info("Generating counters for operator " + reducer);
         generateCountersOperator(reducer);
       }
@@ -457,7 +458,7 @@ public class MapReduceCompiler {
 
     if (task instanceof ExecDriver) {
       HashMap<String, Operator<? extends OperatorDesc>> opMap = ((MapredWork) task
-          .getWork()).getAliasToWork();
+          .getWork()).getMapWork().getAliasToWork();
       if (!opMap.isEmpty()) {
         for (Operator<? extends OperatorDesc> op : opMap.values()) {
           breakOperatorTree(op);
@@ -560,12 +561,12 @@ public class MapReduceCompiler {
    * Make a best guess at trying to find the number of reducers
    */
   private static int getNumberOfReducers(MapredWork mrwork, HiveConf conf) {
-    if (mrwork.getReducer() == null) {
+    if (mrwork.getReduceWork() == null) {
       return 0;
     }
 
-    if (mrwork.getNumReduceTasks() >= 0) {
-      return mrwork.getNumReduceTasks();
+    if (mrwork.getReduceWork().getNumReduceTasks() >= 0) {
+      return mrwork.getReduceWork().getNumReduceTasks();
     }
 
     return conf.getIntVar(HiveConf.ConfVars.HADOOPNUMREDUCERS);
@@ -599,7 +600,8 @@ public class MapReduceCompiler {
     boolean hasNonLocalJob = false;
     for (ExecDriver mrtask : mrtasks) {
       try {
-        ContentSummary inputSummary = Utilities.getInputSummary(ctx, mrtask.getWork(), p);
+        ContentSummary inputSummary = Utilities.getInputSummary
+            (ctx, ((MapredWork) mrtask.getWork()).getMapWork(), p);
         int numReducers = getNumberOfReducers(mrtask.getWork(), conf);
 
         long estimatedInput;

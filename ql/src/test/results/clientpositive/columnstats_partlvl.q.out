@@ -126,7 +126,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col0
                         type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -177,6 +176,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.employee_part
             name: default.employee_part
+      Truncated Path -> Alias:
+        /employee_part/employeesalary=2000.0 [employee_part]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -207,8 +209,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /employee_part/employeesalary=2000.0 [employee_part]
 
   Stage: Stage-1
     Column Stats Work
@@ -333,7 +333,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col0
                         type: struct<columntype:string,min:bigint,max:bigint,countnulls:bigint,bitvector:string,numbitvectors:int>
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -384,6 +383,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.employee_part
             name: default.employee_part
+      Truncated Path -> Alias:
+        /employee_part/employeesalary=4000.0 [employee_part]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -414,8 +416,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /employee_part/employeesalary=4000.0 [employee_part]
 
   Stage: Stage-1
     Column Stats Work

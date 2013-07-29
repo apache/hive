@@ -81,7 +81,6 @@ STAGE PLANS:
                 value expressions:
                       expr: value
                       type: string
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -130,6 +129,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.filter_join_breaktask
             name: default.filter_join_breaktask
+      Truncated Path -> Alias:
+        /filter_join_breaktask/ds=2008-04-08 [f, m]
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -154,8 +156,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /filter_join_breaktask/ds=2008-04-08 [f, m]
 
   Stage: Stage-2
     Map Reduce
@@ -194,7 +194,6 @@ STAGE PLANS:
                 value expressions:
                       expr: value
                       type: string
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -259,6 +258,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.filter_join_breaktask
             name: default.filter_join_breaktask
+      Truncated Path -> Alias:
+        /filter_join_breaktask/ds=2008-04-08 [g]
+#### A masked pattern was here ####
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -293,9 +296,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /filter_join_breaktask/ds=2008-04-08 [g]
-#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator

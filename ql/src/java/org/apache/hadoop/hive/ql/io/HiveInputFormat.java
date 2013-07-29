@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -249,10 +249,10 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   }
 
   protected Map<String, PartitionDesc> pathToPartitionInfo;
-  MapredWork mrwork = null;
+  MapWork mrwork = null;
 
   protected void init(JobConf job) {
-    mrwork = Utilities.getMapRedWork(job);
+    mrwork = Utilities.getMapWork(job);
     pathToPartitionInfo = mrwork.getPathToPartitionInfo();
   }
 

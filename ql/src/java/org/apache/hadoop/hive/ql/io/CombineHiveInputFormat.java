@@ -95,7 +95,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       this.inputSplitShim = inputSplitShim;
       if (job != null) {
         Map<String, PartitionDesc> pathToPartitionInfo = Utilities
-            .getMapRedWork(job).getPathToPartitionInfo();
+            .getMapWork(job).getPathToPartitionInfo();
 
         // extract all the inputFormatClass names for each chunk in the
         // CombinedSplit.
@@ -200,7 +200,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
       if (inputFormatClassName == null) {
         Map<String, PartitionDesc> pathToPartitionInfo = Utilities
-            .getMapRedWork(getJob()).getPathToPartitionInfo();
+            .getMapWork(getJob()).getPathToPartitionInfo();
 
         // extract all the inputFormatClass names for each chunk in the
         // CombinedSplit.

@@ -38,7 +38,7 @@ public class VerifyHiveSortedInputFormatUsedHook implements ExecuteWithHookConte
       for (Task<? extends Serializable> rootTask : rootTasks) {
         if (rootTask.getWork() instanceof MapredWork) {
           Assert.assertTrue("The root map reduce task's input was not marked as sorted.",
-              ((MapredWork)rootTask.getWork()).isInputFormatSorted());
+              ((MapredWork)rootTask.getWork()).getMapWork().isInputFormatSorted());
         }
       }
     }

@@ -66,7 +66,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -112,6 +111,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
             name: default.src
+      Truncated Path -> Alias:
+        /src [b:src]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -153,8 +155,6 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
-      Truncated Path -> Alias:
-        /src [b:src]
 
   Stage: Stage-1
     Map Reduce
@@ -190,7 +190,6 @@ STAGE PLANS:
               value expressions:
                     expr: key
                     type: string
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -252,6 +251,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
             name: default.src
+      Truncated Path -> Alias:
+        /src [a]
+#### A masked pattern was here ####
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -288,9 +291,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /src [a]
-#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -399,7 +399,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -445,6 +444,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
             name: default.src
+      Truncated Path -> Alias:
+        /src [b:src]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -486,8 +488,6 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
-      Truncated Path -> Alias:
-        /src [b:src]
 
   Stage: Stage-1
     Map Reduce
@@ -523,7 +523,6 @@ STAGE PLANS:
               value expressions:
                     expr: key
                     type: string
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -585,6 +584,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
             name: default.src
+      Truncated Path -> Alias:
+        /src [a]
+#### A masked pattern was here ####
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -621,9 +624,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /src [a]
-#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -732,7 +732,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -778,6 +777,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
             name: default.src
+      Truncated Path -> Alias:
+        /src [b:src]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -819,8 +821,6 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
-      Truncated Path -> Alias:
-        /src [b:src]
 
   Stage: Stage-1
     Map Reduce
@@ -856,7 +856,6 @@ STAGE PLANS:
               value expressions:
                     expr: key
                     type: string
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -918,6 +917,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
             name: default.src
+      Truncated Path -> Alias:
+        /src [a]
+#### A masked pattern was here ####
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -954,9 +957,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /src [a]
-#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -1065,7 +1065,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1111,6 +1110,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
             name: default.src
+      Truncated Path -> Alias:
+        /src [b:src]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1152,8 +1154,6 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
-      Truncated Path -> Alias:
-        /src [b:src]
 
   Stage: Stage-1
     Map Reduce
@@ -1189,7 +1189,6 @@ STAGE PLANS:
               value expressions:
                     expr: key
                     type: string
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1251,6 +1250,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.src
             name: default.src
+      Truncated Path -> Alias:
+        /src [a]
+#### A masked pattern was here ####
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1287,9 +1290,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /src [a]
-#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator

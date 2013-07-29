@@ -132,7 +132,6 @@ STAGE PLANS:
                     MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

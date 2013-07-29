@@ -307,7 +307,6 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -422,7 +421,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col0
                         type: bigint
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -472,6 +470,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.fact_daily
             name: default.fact_daily
+      Truncated Path -> Alias:
+        /fact_daily/ds=1/hr=1 [fact_daily]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -502,8 +503,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /fact_daily/ds=1/hr=1 [fact_daily]
 
   Stage: Stage-0
     Fetch Operator
@@ -590,7 +589,6 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -728,7 +726,6 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

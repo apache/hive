@@ -57,6 +57,7 @@ import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -144,10 +145,10 @@ public class GenMRFileSink1 implements NodeProcessor {
               // or for a map-reduce job
               MapredWork currWork = (MapredWork) currTask.getWork();
               boolean mergeMapOnly =
-                  hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) && currWork.getReducer() == null;
+                  hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) && currWork.getReduceWork() == null;
               boolean mergeMapRed =
                   hconf.getBoolVar(ConfVars.HIVEMERGEMAPREDFILES) &&
-                      currWork.getReducer() != null;
+                      currWork.getReduceWork() != null;
               if (mergeMapOnly || mergeMapRed) {
                 chDir = true;
               }
@@ -239,7 +240,10 @@ public class GenMRFileSink1 implements NodeProcessor {
 
     // mark the MapredWork and FileSinkOperator for gathering stats
     nd.getConf().setGatherStats(true);
-    mrWork.setGatheringStats(true);
+    mrWork.getMapWork().setGatheringStats(true);
+    if (mrWork.getReduceWork() != null) {
+      mrWork.getReduceWork().setGatheringStats(true);
+    }
     nd.getConf().setStatsReliable(hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE));
     nd.getConf().setMaxStatsKeyPrefixLength(
         hconf.getIntVar(ConfVars.HIVE_STATS_KEY_PREFIX_MAX_LENGTH));
@@ -345,7 +349,8 @@ public class GenMRFileSink1 implements NodeProcessor {
     //
     MoveWork dummyMv = new MoveWork(null, null, null,
         new LoadFileDesc(fsInputDesc.getFinalDirName(), finalName, true, null, null), false);
-    MapredWork cplan;
+    MapWork cplan;
+    Serializable work;
 
     if (conf.getBoolVar(ConfVars.HIVEMERGERCFILEBLOCKLEVEL) &&
         fsInputDesc.getTableInfo().getInputFileFormatClass().equals(RCFileInputFormat.class)) {
@@ -358,6 +363,7 @@ public class GenMRFileSink1 implements NodeProcessor {
         LOG.info("RCFile format- Using block level merge");
         cplan = createRCFileMergeTask(fsInputDesc, finalName,
             dpCtx != null && dpCtx.getNumDPCols() > 0);
+        work = cplan;
       } catch (ClassNotFoundException e) {
         String msg = "Illegal input format class: " + inputFormatClass;
         throw new SemanticException(msg);
@@ -365,12 +371,14 @@ public class GenMRFileSink1 implements NodeProcessor {
 
     } else {
       cplan = createMRWorkForMergingFiles(conf, tsMerge, fsInputDesc);
+      work = new MapredWork();
+      ((MapredWork)work).setMapWork(cplan);
       // use CombineHiveInputFormat for map-only merging
     }
     cplan.setInputformat("org.apache.hadoop.hive.ql.io.CombineHiveInputFormat");
     // NOTE: we should gather stats in MR1 rather than MR2 at merge job since we don't
     // know if merge MR2 will be triggered at execution time
-    ConditionalTask cndTsk = createCondTask(conf, ctx.getCurrTask(), dummyMv, cplan,
+    ConditionalTask cndTsk = createCondTask(conf, ctx.getCurrTask(), dummyMv, work,
         fsInputDesc.getFinalDirName());
 
     // keep the dynamic partition context in conditional task resolver context
@@ -471,7 +479,7 @@ public class GenMRFileSink1 implements NodeProcessor {
    *          the last FileSinkOperator in the parent MapReduce work
    * @return the MapredWork
    */
-  private MapredWork createMRWorkForMergingFiles (HiveConf conf,
+  private MapWork createMRWorkForMergingFiles (HiveConf conf,
     Operator<? extends OperatorDesc> topOp,  FileSinkDesc fsDesc) {
 
     ArrayList<String> aliases = new ArrayList<String>();
@@ -480,10 +488,10 @@ public class GenMRFileSink1 implements NodeProcessor {
     aliases.add(inputDir); // dummy alias: just use the input path
 
     // constructing the default MapredWork
-    MapredWork cplan = GenMapRedUtils.getMapRedWorkFromConf(conf);
+    MapredWork cMrPlan = GenMapRedUtils.getMapRedWorkFromConf(conf);
+    MapWork cplan = cMrPlan.getMapWork();
     cplan.getPathToAliases().put(inputDir, aliases);
     cplan.getPathToPartitionInfo().put(inputDir, new PartitionDesc(tblDesc, null));
-    cplan.setNumReduceTasks(0);
     cplan.getAliasToWork().put(inputDir, topOp);
     cplan.setMapperCannotSpanPartns(true);
 
@@ -498,7 +506,7 @@ public class GenMRFileSink1 implements NodeProcessor {
    * @return MergeWork if table is stored as RCFile,
    *         null otherwise
    */
-  private MapredWork createRCFileMergeTask(FileSinkDesc fsInputDesc,
+  private MapWork createRCFileMergeTask(FileSinkDesc fsInputDesc,
       String finalName, boolean hasDynamicPartitions) throws SemanticException {
 
     String inputDir = fsInputDesc.getFinalDirName();
@@ -561,7 +569,7 @@ public class GenMRFileSink1 implements NodeProcessor {
    */
   private ConditionalTask createCondTask(HiveConf conf,
       Task<? extends Serializable> currTask, MoveWork mvWork,
-      MapredWork mergeWork, String inputPath) {
+      Serializable mergeWork, String inputPath) {
 
     // There are 3 options for this ConditionalTask:
     // 1) Merge the partitions

@@ -86,13 +86,13 @@ public class BucketingSortingInferenceOptimizer implements PhysicalPlanResolver 
         continue;
       }
 
-      Operator<? extends OperatorDesc> reducer = mapRedTask.getWork().getReducer();
-      if (reducer == null) {
+      if (mapRedTask.getWork().getReduceWork() == null) {
         continue;
       }
+      Operator<? extends OperatorDesc> reducer = mapRedTask.getWork().getReduceWork().getReducer();
 
       // uses sampling, which means it's not bucketed
-      boolean disableBucketing = mapRedTask.getWork().getSamplingType() > 0;
+      boolean disableBucketing = mapRedTask.getWork().getMapWork().getSamplingType() > 0;
       BucketingSortingCtx bCtx = new BucketingSortingCtx(disableBucketing);
 
       // RuleRegExp rules are used to match operators anywhere in the tree
@@ -145,8 +145,8 @@ public class BucketingSortingInferenceOptimizer implements PhysicalPlanResolver 
       topNodes.add(reducer);
       ogw.startWalking(topNodes, null);
 
-      mapRedTask.getWork().getBucketedColsByDirectory().putAll(bCtx.getBucketedColsByDirectory());
-      mapRedTask.getWork().getSortedColsByDirectory().putAll(bCtx.getSortedColsByDirectory());
+      mapRedTask.getWork().getMapWork().getBucketedColsByDirectory().putAll(bCtx.getBucketedColsByDirectory());
+      mapRedTask.getWork().getMapWork().getSortedColsByDirectory().putAll(bCtx.getSortedColsByDirectory());
     }
   }
 }

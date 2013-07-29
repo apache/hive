@@ -40,8 +40,10 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobConf;
@@ -101,7 +103,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
           conf.getBoolVar(HiveConf.ConfVars.LOCALMODEAUTO)) {
 
         if (inputSummary == null) {
-          inputSummary = Utilities.getInputSummary(driverContext.getCtx(), work, null);
+          inputSummary = Utilities.getInputSummary(driverContext.getCtx(), work.getMapWork(), null);
         }
 
         // set the values of totalInputFileSize and totalInputNumFiles, estimating them
@@ -109,7 +111,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
         estimateInputSize();
 
         // at this point the number of reducers is precisely defined in the plan
-        int numReducers = work.getNumReduceTasks();
+        int numReducers = work.getReduceWork() == null ? 0 : work.getReduceWork().getNumReduceTasks();
 
         if (LOG.isDebugEnabled()) {
           LOG.debug("Task: " + getId() + ", Summary: " +
@@ -177,7 +179,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
       OutputStream out = FileSystem.getLocal(conf).create(planPath);
       MapredWork plan = getWork();
       LOG.info("Generating plan file " + planPath.toString());
-      Utilities.serializeMapRedWork(plan, out);
+      Utilities.serializeObject(plan, out);
 
       String isSilent = "true".equalsIgnoreCase(System
           .getProperty("test.silent")) ? "-nolog" : "";
@@ -383,26 +385,26 @@ public class MapRedTask extends ExecDriver implements Serializable {
    * Set the number of reducers for the mapred work.
    */
   private void setNumberOfReducers() throws IOException {
+    ReduceWork rWork = work.getReduceWork();
     // this is a temporary hack to fix things that are not fixed in the compiler
-    Integer numReducersFromWork = work.getNumReduceTasks();
+    Integer numReducersFromWork = rWork == null ? 0 : rWork.getNumReduceTasks();
 
-    if (work.getReducer() == null) {
+    if (rWork == null) {
       console
           .printInfo("Number of reduce tasks is set to 0 since there's no reduce operator");
-      work.setNumReduceTasks(Integer.valueOf(0));
     } else {
       if (numReducersFromWork >= 0) {
         console.printInfo("Number of reduce tasks determined at compile time: "
-            + work.getNumReduceTasks());
+            + rWork.getNumReduceTasks());
       } else if (job.getNumReduceTasks() > 0) {
         int reducers = job.getNumReduceTasks();
-        work.setNumReduceTasks(reducers);
+        rWork.setNumReduceTasks(reducers);
         console
             .printInfo("Number of reduce tasks not specified. Defaulting to jobconf value of: "
             + reducers);
       } else {
         int reducers = estimateNumberOfReducers();
-        work.setNumReduceTasks(reducers);
+        rWork.setNumReduceTasks(reducers);
         console
             .printInfo("Number of reduce tasks not specified. Estimated from input data size: "
             + reducers);
@@ -437,7 +439,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
 
     if(inputSummary == null) {
       // compute the summary and stash it away
-      inputSummary =  Utilities.getInputSummary(driverContext.getCtx(), work, null);
+      inputSummary =  Utilities.getInputSummary(driverContext.getCtx(), work.getMapWork(), null);
     }
 
     // if all inputs are sampled, we should shrink the size of reducers accordingly.
@@ -459,7 +461,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
     // and the user has configured Hive to do this, make sure the number of reducers is a
     // power of two
     if (conf.getBoolVar(HiveConf.ConfVars.HIVE_INFER_BUCKET_SORT_NUM_BUCKETS_POWER_TWO) &&
-        work.isFinalMapRed() && !work.getBucketedColsByDirectory().isEmpty()) {
+        work.isFinalMapRed() && !work.getMapWork().getBucketedColsByDirectory().isEmpty()) {
 
       int reducersLog = (int)(Math.log(reducers) / Math.log(2)) + 1;
       int reducersPowerTwo = (int)Math.pow(2, reducersLog);
@@ -497,11 +499,13 @@ public class MapRedTask extends ExecDriver implements Serializable {
       return;
     }
 
+    MapWork mWork = work.getMapWork();
+
     // Initialize the values to be those taken from the input summary
     totalInputFileSize = inputSummary.getLength();
     totalInputNumFiles = inputSummary.getFileCount();
 
-    if (work.getNameToSplitSample() == null || work.getNameToSplitSample().isEmpty()) {
+    if (mWork.getNameToSplitSample() == null || mWork.getNameToSplitSample().isEmpty()) {
       // If percentage block sampling wasn't used, we don't need to do any estimation
       inputSizeEstimated = true;
       return;
@@ -510,10 +514,10 @@ public class MapRedTask extends ExecDriver implements Serializable {
     // if all inputs are sampled, we should shrink the size of the input accordingly
     double highestSamplePercentage = 0;
     boolean allSample = false;
-    for (String alias : work.getAliasToWork().keySet()) {
-      if (work.getNameToSplitSample().containsKey(alias)) {
+    for (String alias : mWork.getAliasToWork().keySet()) {
+      if (mWork.getNameToSplitSample().containsKey(alias)) {
         allSample = true;
-        Double rate = work.getNameToSplitSample().get(alias).getPercent();
+        Double rate = mWork.getNameToSplitSample().get(alias).getPercent();
         if (rate != null && rate > highestSamplePercentage) {
           highestSamplePercentage = rate;
         }
@@ -580,7 +584,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
 
   @Override
   public Operator<? extends OperatorDesc> getReducer() {
-    return getWork().getReducer();
+    return getWork().getReduceWork() == null ? null : getWork().getReduceWork().getReducer();
   }
 
   @Override
