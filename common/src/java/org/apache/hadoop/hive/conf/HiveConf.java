@@ -182,6 +182,8 @@ public class HiveConf extends Configuration {
     SUBMITVIACHILD("hive.exec.submitviachild", false),
     SCRIPTERRORLIMIT("hive.exec.script.maxerrsize", 100000),
     ALLOWPARTIALCONSUMP("hive.exec.script.allow.partial.consumption", false),
+    STREAMREPORTERPERFIX("stream.stderr.reporter.prefix", "reporter:"),
+    STREAMREPORTERENABLED("stream.stderr.reporter.enabled", true),
     COMPRESSRESULT("hive.exec.compress.output", false),
     COMPRESSINTERMEDIATE("hive.exec.compress.intermediate", false),
     COMPRESSINTERMEDIATECODEC("hive.intermediate.compression.codec", ""),

@@ -896,6 +896,18 @@
 </property>
 
 <property>
+  <name>stream.stderr.reporter.prefix</name>
+  <value>reporter:</value>
+  <description>Streaming jobs that log to stardard error with this prefix can log counter or status information.</description>
+</property>
+
+<property>
+  <name>stream.stderr.reporter.enabled</name>
+  <value>true</value>
+  <description>Enable consumption of status and counter messages for streaming jobs.</description>
+</property>
+
+<property>
   <name>hive.script.recordwriter</name>
   <value>org.apache.hadoop.hive.ql.exec.TextRecordWriter</value>
   <description>The default record writer for writing data to the user scripts. </description>
