@@ -78,7 +78,6 @@ STAGE PLANS:
                         type: double
                         expr: _col6
                         type: bigint
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -174,6 +173,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [src]
+        /srcpart/ds=2008-04-08/hr=12 [src]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -224,9 +227,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: true
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /srcpart/ds=2008-04-08/hr=11 [src]
-        /srcpart/ds=2008-04-08/hr=12 [src]
 
   Stage: Stage-0
     Move Operator

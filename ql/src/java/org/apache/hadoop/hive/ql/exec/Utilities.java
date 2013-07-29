@@ -114,6 +114,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
@@ -121,11 +122,13 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
-import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.PlanUtils.ExpressionTypes;
+import org.apache.hadoop.hive.ql.plan.ReduceWork;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.Adjacency;
 import org.apache.hadoop.hive.ql.plan.api.Graph;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -169,6 +172,8 @@ public final class Utilities {
    */
 
   public static String HADOOP_LOCAL_FS = "file:///";
+  public static String MAP_PLAN_NAME = "map.xml";
+  public static String REDUCE_PLAN_NAME = "reduce.xml";
 
   /**
    * ReduceField:
@@ -191,56 +196,85 @@ public final class Utilities {
     // prevent instantiation
   }
 
-  private static Map<String, MapredWork> gWorkMap = Collections
-      .synchronizedMap(new HashMap<String, MapredWork>());
+  private static Map<Path, BaseWork> gWorkMap = Collections
+      .synchronizedMap(new HashMap<Path, BaseWork>());
   private static final Log LOG = LogFactory.getLog(Utilities.class.getName());
 
-  public static void clearMapRedWork(Configuration job) {
+  public static void clearWork(Configuration conf) {
+    Path mapPath = getPlanPath(conf, MAP_PLAN_NAME);
+    Path reducePath = getPlanPath(conf, REDUCE_PLAN_NAME);
+
+    // if the plan path hasn't been initialized just return, nothing to clean.
+    if (mapPath == null || reducePath == null) {
+      return;
+    }
+
     try {
-      Path planPath = new Path(HiveConf.getVar(job, HiveConf.ConfVars.PLAN));
-      FileSystem fs = planPath.getFileSystem(job);
-      if (fs.exists(planPath)) {
-        try {
-          fs.delete(planPath, true);
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
+      FileSystem fs = mapPath.getFileSystem(conf);
+      if (fs.exists(mapPath)) {
+        fs.delete(mapPath, true);
       }
+      if (fs.exists(reducePath)) {
+        fs.delete(reducePath, true);
+      }
+
     } catch (Exception e) {
+      LOG.warn("Failed to clean-up tmp directories.", e);
     } finally {
       // where a single process works with multiple plans - we must clear
       // the cache before working with the next plan.
-      String jobID = getHiveJobID(job);
-      if (jobID != null) {
-        gWorkMap.remove(jobID);
+      if (mapPath != null) {
+        gWorkMap.remove(mapPath);
+      }
+      if (reducePath != null) {
+        gWorkMap.remove(reducePath);
       }
     }
   }
 
-  public static MapredWork getMapRedWork(Configuration job) {
-    MapredWork gWork = null;
+  public static MapredWork getMapRedWork(Configuration conf) {
+    MapredWork w = new MapredWork();
+    w.setMapWork(getMapWork(conf));
+    w.setReduceWork(getReduceWork(conf));
+    return w;
+  }
+
+  public static MapWork getMapWork(Configuration conf) {
+    return (MapWork) getBaseWork(conf, MAP_PLAN_NAME);
+  }
+
+  public static ReduceWork getReduceWork(Configuration conf) {
+    return (ReduceWork) getBaseWork(conf, REDUCE_PLAN_NAME);
+  }
+
+  public static BaseWork getBaseWork(Configuration conf, String name) {
+    BaseWork gWork = null;
+    Path path = null;
     try {
-      String jobID = getHiveJobID(job);
-      assert jobID != null;
-      gWork = gWorkMap.get(jobID);
+      path = getPlanPath(conf, name);
+      assert path != null;
+      gWork = gWorkMap.get(path);
       if (gWork == null) {
-        String jtConf = ShimLoader.getHadoopShims().getJobLauncherRpcAddress(job);
-        String path;
+        String jtConf = ShimLoader.getHadoopShims().getJobLauncherRpcAddress(conf);
+        Path localPath;
         if (jtConf.equals("local")) {
-          String planPath = HiveConf.getVar(job, HiveConf.ConfVars.PLAN);
-          path = new Path(planPath).toUri().getPath();
+          localPath = path;
         } else {
-          path = "HIVE_PLAN" + jobID;
+          localPath = new Path(name);
         }
-        InputStream in = new FileInputStream(path);
-        MapredWork ret = deserializeMapRedWork(in, job);
+        InputStream in = new FileInputStream(localPath.toUri().getPath());
+        BaseWork ret = deserializeObject(in);
         gWork = ret;
-        gWork.initialize();
-        gWorkMap.put(jobID, gWork);
+        gWorkMap.put(path, gWork);
       }
-      return (gWork);
+      return gWork;
+    } catch (FileNotFoundException fnf) {
+      // happens. e.g.: no reduce work.
+      LOG.debug("No plan file found: "+path);
+      return null;
     } catch (Exception e) {
       e.printStackTrace();
+      LOG.error("Failed to load plan: "+path, e);
       throw new RuntimeException(e);
     }
   }
@@ -414,47 +448,80 @@ public final class Utilities {
     }
   }
 
-  public static void setMapRedWork(Configuration job, MapredWork w, String hiveScratchDir) {
+  public static void setMapRedWork(Configuration conf, MapredWork w, String hiveScratchDir) {
+    setMapWork(conf, w.getMapWork(), hiveScratchDir);
+    if (w.getReduceWork() != null) {
+      setReduceWork(conf, w.getReduceWork(), hiveScratchDir);
+    }
+  }
+
+  public static void setMapWork(Configuration conf, MapWork w, String hiveScratchDir) {
+    setBaseWork(conf, w, hiveScratchDir, MAP_PLAN_NAME);
+  }
+
+  public static void setReduceWork(Configuration conf, ReduceWork w, String hiveScratchDir) {
+    setBaseWork(conf, w, hiveScratchDir, REDUCE_PLAN_NAME);
+  }
+
+  private static void setBaseWork(Configuration conf, BaseWork w, String hiveScratchDir, String name) {
     try {
+      setPlanPath(conf, hiveScratchDir);
 
-      // this is the unique job ID, which is kept in JobConf as part of the plan file name
-      String jobID = UUID.randomUUID().toString();
-      Path planPath = new Path(hiveScratchDir, jobID);
-      HiveConf.setVar(job, HiveConf.ConfVars.PLAN, planPath.toUri().toString());
+      Path planPath = getPlanPath(conf, name);
 
-      // use the default file system of the job
-      FileSystem fs = planPath.getFileSystem(job);
+      // use the default file system of the conf
+      FileSystem fs = planPath.getFileSystem(conf);
       FSDataOutputStream out = fs.create(planPath);
-      serializeMapRedWork(w, out);
+      serializeObject(w, out);
 
       // Serialize the plan to the default hdfs instance
       // Except for hadoop local mode execution where we should be
       // able to get the plan directly from the cache
-      if (!ShimLoader.getHadoopShims().isLocalMode(job)) {
+      if (!ShimLoader.getHadoopShims().isLocalMode(conf)) {
         // Set up distributed cache
-        DistributedCache.createSymlink(job);
-        String uriWithLink = planPath.toUri().toString() + "#HIVE_PLAN" + jobID;
-        DistributedCache.addCacheFile(new URI(uriWithLink), job);
+        if (!DistributedCache.getSymlink(conf)) {
+          DistributedCache.createSymlink(conf);
+        }
+        String uriWithLink = planPath.toUri().toString() + "#" + name;
+        DistributedCache.addCacheFile(new URI(uriWithLink), conf);
 
         // set replication of the plan file to a high number. we use the same
         // replication factor as used by the hadoop jobclient for job.xml etc.
-        short replication = (short) job.getInt("mapred.submit.replication", 10);
+        short replication = (short) conf.getInt("mapred.submit.replication", 10);
         fs.setReplication(planPath, replication);
       }
 
       // Cache the plan in this process
-      w.initialize();
-      gWorkMap.put(jobID, w);
+      gWorkMap.put(planPath, w);
     } catch (Exception e) {
       e.printStackTrace();
       throw new RuntimeException(e);
     }
   }
 
-  public static String getHiveJobID(Configuration job) {
-    String planPath = HiveConf.getVar(job, HiveConf.ConfVars.PLAN);
-    if (planPath != null && !planPath.isEmpty()) {
-      return (new Path(planPath)).getName();
+  private static Path getPlanPath(Configuration conf, String name) {
+    Path planPath = getPlanPath(conf);
+    if (planPath == null) {
+      return null;
+    }
+    return new Path(planPath, name);
+  }
+
+  private static void setPlanPath(Configuration conf, String hiveScratchDir) throws IOException {
+    if (getPlanPath(conf) == null) {
+      // this is the unique conf ID, which is kept in JobConf as part of the plan file name
+      String jobID = UUID.randomUUID().toString();
+      Path planPath = new Path(hiveScratchDir, jobID);
+      FileSystem fs = planPath.getFileSystem(conf);
+      fs.mkdirs(planPath);
+      HiveConf.setVar(conf, HiveConf.ConfVars.PLAN, planPath.toUri().toString());
+    }
+  }
+
+  private static Path getPlanPath(Configuration conf) {
+    String plan = HiveConf.getVar(conf, HiveConf.ConfVars.PLAN);
+    if (plan != null && !plan.isEmpty()) {
+      return new Path(plan);
     }
     return null;
   }
@@ -495,27 +562,6 @@ public final class Utilities {
     }
   }
 
-  /**
-   * Serialize a single Task.
-   */
-  public static void serializeTasks(Task<? extends Serializable> t, OutputStream out) {
-    XMLEncoder e = null;
-    try {
-      e = new XMLEncoder(out);
-      // workaround for java 1.5
-      e.setPersistenceDelegate(ExpressionTypes.class, new EnumDelegate());
-      e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
-      e.setPersistenceDelegate(Operator.ProgressCounter.class, new EnumDelegate());
-      e.setPersistenceDelegate(java.sql.Date.class, new DatePersistenceDelegate());
-      e.setPersistenceDelegate(Timestamp.class, new TimestampPersistenceDelegate());
-      e.writeObject(t);
-    } finally {
-      if (null != e) {
-        e.close();
-      }
-    }
-  }
-
   public static class CollectionPersistenceDelegate extends DefaultPersistenceDelegate {
     @Override
     protected Expression instantiate(Object oldInstance, Encoder out) {
@@ -532,14 +578,15 @@ public final class Utilities {
   }
 
   /**
-   * Serialize the whole query plan.
+   * Serialize the object. This helper function mainly makes sure that enums,
+   * counters, etc are handled properly.
    */
-  public static void serializeQueryPlan(QueryPlan plan, OutputStream out) {
+  public static void serializeObject(Object plan, OutputStream out) {
     XMLEncoder e = new XMLEncoder(out);
     e.setExceptionListener(new ExceptionListener() {
       public void exceptionThrown(Exception e) {
         LOG.warn(org.apache.hadoop.util.StringUtils.stringifyException(e));
-        throw new RuntimeException("Cannot serialize the query plan", e);
+        throw new RuntimeException("Cannot serialize object", e);
       }
     });
     // workaround for java 1.5
@@ -557,83 +604,14 @@ public final class Utilities {
   }
 
   /**
-   * Deserialize the whole query plan.
+   * De-serialize an object. This helper function mainly makes sure that enums,
+   * counters, etc are handled properly.
    */
-  public static QueryPlan deserializeQueryPlan(InputStream in, Configuration conf) {
+  public static <T> T deserializeObject(InputStream in) {
     XMLDecoder d = null;
     try {
       d = new XMLDecoder(in, null, null);
-      QueryPlan ret = (QueryPlan) d.readObject();
-      return (ret);
-    } finally {
-      if (null != d) {
-        d.close();
-      }
-    }
-  }
-
-  /**
-   * Serialize the mapredWork object to an output stream. DO NOT use this to write to standard
-   * output since it closes the output stream. DO USE mapredWork.toXML() instead.
-   */
-  public static void serializeMapRedWork(MapredWork w, OutputStream out) {
-    XMLEncoder e = null;
-    try {
-      e = new XMLEncoder(out);
-      // workaround for java 1.5
-      e.setPersistenceDelegate(ExpressionTypes.class, new EnumDelegate());
-      e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
-      e.setPersistenceDelegate(java.sql.Date.class, new DatePersistenceDelegate());
-      e.setPersistenceDelegate(Timestamp.class, new TimestampPersistenceDelegate());
-      e.writeObject(w);
-    } finally {
-      if (null != e) {
-        e.close();
-      }
-    }
-
-  }
-
-  public static MapredWork deserializeMapRedWork(InputStream in, Configuration conf) {
-    XMLDecoder d = null;
-    try {
-      d = new XMLDecoder(in, null, null);
-      MapredWork ret = (MapredWork) d.readObject();
-      return (ret);
-    } finally {
-      if (null != d) {
-        d.close();
-      }
-    }
-  }
-
-  /**
-   * Serialize the mapredLocalWork object to an output stream. DO NOT use this to write to standard
-   * output since it closes the output stream. DO USE mapredWork.toXML() instead.
-   */
-  public static void serializeMapRedLocalWork(MapredLocalWork w, OutputStream out) {
-    XMLEncoder e = null;
-    try {
-      e = new XMLEncoder(out);
-      // workaround for java 1.5
-      e.setPersistenceDelegate(ExpressionTypes.class, new EnumDelegate());
-      e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
-      e.setPersistenceDelegate(java.sql.Date.class, new DatePersistenceDelegate());
-      e.setPersistenceDelegate(Timestamp.class, new TimestampPersistenceDelegate());
-      e.writeObject(w);
-    } finally {
-      if (null != e) {
-        e.close();
-      }
-    }
-  }
-
-  public static MapredLocalWork deserializeMapRedLocalWork(InputStream in, Configuration conf) {
-    XMLDecoder d = null;
-    try {
-      d = new XMLDecoder(in, null, null);
-      MapredLocalWork ret = (MapredLocalWork) d.readObject();
-      return (ret);
+      return (T) d.readObject();
     } finally {
       if (null != d) {
         d.close();
@@ -1812,7 +1790,7 @@ public final class Utilities {
    * @return the summary of all the input paths.
    * @throws IOException
    */
-  public static ContentSummary getInputSummary(Context ctx, MapredWork work, PathFilter filter)
+  public static ContentSummary getInputSummary(Context ctx, MapWork work, PathFilter filter)
       throws IOException {
 
     long[] summary = {0, 0, 0};
@@ -2273,7 +2251,7 @@ public final class Utilities {
       try {
         MapredWork mapredWork = ((MapRedTask) task).getWork();
         Set<Class<? extends InputFormat>> reworkInputFormats = new HashSet<Class<? extends InputFormat>>();
-        for (PartitionDesc part : mapredWork.getPathToPartitionInfo().values()) {
+        for (PartitionDesc part : mapredWork.getMapWork().getPathToPartitionInfo().values()) {
           Class<? extends InputFormat> inputFormatCls = part
               .getInputFileFormatClass();
           if (ReworkMapredInputFormat.class.isAssignableFrom(inputFormatCls)) {

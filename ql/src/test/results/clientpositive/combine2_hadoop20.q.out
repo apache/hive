@@ -232,7 +232,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col0
                         type: bigint
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -596,6 +595,16 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.combine2
             name: default.combine2
+      Truncated Path -> Alias:
+        /combine2/value=2010-04-21 09%3A45%3A00 [combine2]
+        /combine2/value=val_0 [combine2]
+        /combine2/value=val_2 [combine2]
+        /combine2/value=val_4 [combine2]
+        /combine2/value=val_5 [combine2]
+        /combine2/value=val_8 [combine2]
+        /combine2/value=val_9 [combine2]
+        /combine2/value=| [combine2]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -626,15 +635,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /combine2/value=2010-04-21 09%3A45%3A00 [combine2]
-        /combine2/value=val_0 [combine2]
-        /combine2/value=val_2 [combine2]
-        /combine2/value=val_4 [combine2]
-        /combine2/value=val_5 [combine2]
-        /combine2/value=val_8 [combine2]
-        /combine2/value=val_9 [combine2]
-        /combine2/value=| [combine2]
 
   Stage: Stage-0
     Fetch Operator

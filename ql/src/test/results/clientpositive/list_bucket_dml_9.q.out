@@ -106,7 +106,6 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: true
                 MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -378,7 +377,6 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: true
                 MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -523,7 +521,6 @@ STAGE PLANS:
 
   Stage: Stage-3
     Block level merge
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -573,7 +570,6 @@ STAGE PLANS:
 
   Stage: Stage-5
     Block level merge
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -799,7 +795,6 @@ STAGE PLANS:
                         type: string
                         expr: _col3
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -849,6 +844,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.list_bucketing_static_part
             name: default.list_bucketing_static_part
+      Truncated Path -> Alias:
+        /list_bucketing_static_part/ds=2008-04-08/hr=11/key=484 [list_bucketing_static_part]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -869,8 +867,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /list_bucketing_static_part/ds=2008-04-08/hr=11/key=484 [list_bucketing_static_part]
 
   Stage: Stage-0
     Fetch Operator

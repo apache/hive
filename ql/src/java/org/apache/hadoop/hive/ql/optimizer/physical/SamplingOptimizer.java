@@ -27,7 +27,9 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.ReduceWork;
 
 /**
  * Mark final MapredWork for ORDER BY to use sampling and set number of reduce task as -1
@@ -39,12 +41,16 @@ public class SamplingOptimizer implements PhysicalPlanResolver {
       if (!(task instanceof MapRedTask) || !((MapRedTask)task).getWork().isFinalMapRed()) {
         continue; // this could be replaced by bucketing on RS + bucketed fetcher for next MR
       }
-      MapredWork mapreWork = ((MapRedTask) task).getWork();
-      if (mapreWork.getNumReduceTasks() != 1 || mapreWork.getAliasToWork().size() != 1 ||
-          mapreWork.getSamplingType() > 0 || mapreWork.getReducer() == null) {
+      MapredWork mrWork = ((MapRedTask) task).getWork();
+      MapWork mapWork = mrWork.getMapWork();
+      ReduceWork reduceWork = mrWork.getReduceWork();
+
+      if (reduceWork == null || reduceWork.getNumReduceTasks() != 1
+          || mapWork.getAliasToWork().size() != 1 || mapWork.getSamplingType() > 0
+          || reduceWork.getReducer() == null) {
         continue;
       }
-      Operator<?> operator = mapreWork.getAliasToWork().values().iterator().next();
+      Operator<?> operator = mapWork.getAliasToWork().values().iterator().next();
       if (!(operator instanceof TableScanOperator)) {
         continue;
       }
@@ -55,8 +61,8 @@ public class SamplingOptimizer implements PhysicalPlanResolver {
         continue;
       }
       child.getConf().setNumReducers(-1);
-      mapreWork.setNumReduceTasks(-1);
-      mapreWork.setSamplingType(MapredWork.SAMPLING_ON_START);
+      reduceWork.setNumReduceTasks(-1);
+      mapWork.setSamplingType(MapWork.SAMPLING_ON_START);
     }
     return pctx;
   }

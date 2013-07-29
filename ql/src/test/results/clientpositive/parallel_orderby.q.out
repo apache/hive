@@ -57,6 +57,7 @@ STAGE PLANS:
                       type: string
                       expr: _col1
                       type: string
+      Sampling: SAMPLING_ON_START
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -66,7 +67,6 @@ STAGE PLANS:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 name: default.total_ordered
-      Sampling: SAMPLING_ON_START
 
   Stage: Stage-0
     Move Operator

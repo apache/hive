@@ -191,7 +191,6 @@ STAGE PLANS:
                           type: bigint
       Local Work:
         Map Reduce Local Work
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -289,6 +288,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket_mapjoin_part_1
             name: default.srcbucket_mapjoin_part_1
+      Truncated Path -> Alias:
+        /srcbucket_mapjoin_part_1/part=1 [a]
+        /srcbucket_mapjoin_part_1/part=2 [a]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -319,9 +322,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /srcbucket_mapjoin_part_1/part=1 [a]
-        /srcbucket_mapjoin_part_1/part=2 [a]
 
   Stage: Stage-0
     Fetch Operator
@@ -432,7 +432,6 @@ STAGE PLANS:
                           type: bigint
       Local Work:
         Map Reduce Local Work
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -530,6 +529,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket_mapjoin_part_1
             name: default.srcbucket_mapjoin_part_1
+      Truncated Path -> Alias:
+        /srcbucket_mapjoin_part_1/part=1 [a]
+        /srcbucket_mapjoin_part_1/part=2 [a]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -560,9 +563,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /srcbucket_mapjoin_part_1/part=1 [a]
-        /srcbucket_mapjoin_part_1/part=2 [a]
 
   Stage: Stage-0
     Fetch Operator

@@ -93,7 +93,7 @@ public class IndexWhereTaskDispatcher implements Dispatcher {
     GraphWalker ogw = new DefaultGraphWalker(dispatcher);
     ArrayList<Node> topNodes = new ArrayList<Node>();
     if (task.getWork() instanceof MapredWork) {
-      topNodes.addAll(((MapredWork)task.getWork()).getAliasToWork().values());
+      topNodes.addAll(((MapredWork)task.getWork()).getMapWork().getAliasToWork().values());
     } else {
       return null;
     }

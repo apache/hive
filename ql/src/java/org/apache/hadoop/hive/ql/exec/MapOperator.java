@@ -36,7 +36,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
-import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -63,7 +63,7 @@ import org.apache.hadoop.util.StringUtils;
  * different from regular operators in that it starts off by processing a
  * Writable data structure from a Table (instead of a Hive Object).
  **/
-public class MapOperator extends Operator<MapredWork> implements Serializable, Cloneable {
+public class MapOperator extends Operator<MapWork> implements Serializable, Cloneable {
 
   private static final long serialVersionUID = 1L;
 
@@ -229,14 +229,14 @@ public class MapOperator extends Operator<MapredWork> implements Serializable, C
    * @param mrwork
    * @throws HiveException
    */
-  public void initializeAsRoot(Configuration hconf, MapredWork mrwork)
+  public void initializeAsRoot(Configuration hconf, MapWork mapWork)
       throws HiveException {
-    setConf(mrwork);
+    setConf(mapWork);
     setChildren(hconf);
     initialize(hconf, null);
   }
 
-  private MapOpCtx initObjectInspector(MapredWork conf,
+  private MapOpCtx initObjectInspector(MapWork conf,
       Configuration hconf, String onefile, Map<TableDesc, StructObjectInspector> convertedOI)
           throws HiveException,
       ClassNotFoundException, InstantiationException, IllegalAccessException,

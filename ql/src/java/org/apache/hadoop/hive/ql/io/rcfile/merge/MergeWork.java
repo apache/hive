@@ -33,14 +33,14 @@ import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
-import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.Mapper;
 
 @Explain(displayName = "Block level merge")
-public class MergeWork extends MapredWork implements Serializable {
+public class MergeWork extends MapWork implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -69,9 +69,6 @@ public class MergeWork extends MapredWork implements Serializable {
     partDesc.setInputFileFormatClass(RCFileBlockMergeInputFormat.class);
     if(this.getPathToPartitionInfo() == null) {
       this.setPathToPartitionInfo(new LinkedHashMap<String, PartitionDesc>());
-    }
-    if(this.getNumReduceTasks() == null) {
-      this.setNumReduceTasks(0);
     }
     for(String path: this.inputPaths) {
       this.getPathToPartitionInfo().put(path, partDesc);

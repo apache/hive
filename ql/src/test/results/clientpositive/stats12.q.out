@@ -60,7 +60,6 @@ STAGE PLANS:
             alias: analyze_srcpart
             Statistics Aggregation Key Prefix: analyze_srcpart/
             GatherStats: true
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

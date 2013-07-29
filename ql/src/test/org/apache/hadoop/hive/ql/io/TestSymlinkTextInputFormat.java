@@ -46,7 +46,6 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
 
 /**
@@ -167,8 +166,8 @@ public class TestSymlinkTextInputFormat extends TestCase {
       
       QueryPlan plan = drv.getPlan();
       MapRedTask selectTask = (MapRedTask)plan.getRootTasks().get(0);
-      
-      ExecDriver.addInputPaths(newJob, selectTask.getWork(), emptyScratchDir.toString(), ctx);
+
+      ExecDriver.addInputPaths(newJob, selectTask.getWork().getMapWork(), emptyScratchDir.toString(), ctx);
       Utilities.setMapRedWork(newJob, selectTask.getWork(), ctx.getMRTmpFileURI());
       
       CombineHiveInputFormat combineInputFormat = ReflectionUtils.newInstance(

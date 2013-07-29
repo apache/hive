@@ -121,8 +121,9 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
 
     if (work.getParseContext() != null) {
-      JSONObject jsonPlan = outputMap(work.getParseContext().getTopOps(),
-          "LOGICAL PLAN", out, jsonOutput, work.getExtended(), 0);
+      out.print("LOGICAL PLAN");
+      JSONObject jsonPlan = outputMap(work.getParseContext().getTopOps(), true,
+                                      out, jsonOutput, work.getExtended(), 0);
       if (out != null) {
         out.println();
       }
@@ -228,19 +229,16 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return sb.toString();
   }
 
-  private JSONObject outputMap(Map<?, ?> mp, String header, PrintStream out,
+  private JSONObject outputMap(Map<?, ?> mp, boolean hasHeader, PrintStream out,
       boolean extended, boolean jsonOutput, int indent) throws Exception {
 
-    boolean first_el = true;
     TreeMap<Object, Object> tree = new TreeMap<Object, Object>();
     tree.putAll(mp);
     JSONObject json = jsonOutput ? new JSONObject() : null;
+    if (out != null && hasHeader && !mp.isEmpty()) {
+      out.println();
+    }
     for (Entry<?, ?> ent : tree.entrySet()) {
-      if (first_el && (out != null)) {
-        out.println(header);
-      }
-      first_el = false;
-
       // Print the key
       if (out != null) {
         out.print(indentString(indent));
@@ -286,7 +284,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return jsonOutput ? json : null;
   }
 
-  private JSONArray outputList(List<?> l, String header, PrintStream out,
+  private JSONArray outputList(List<?> l, PrintStream out, boolean hasHeader,
       boolean extended, boolean jsonOutput, int indent) throws Exception {
 
     boolean first_el = true;
@@ -294,10 +292,6 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     JSONArray outputArray = new JSONArray();
 
     for (Object o : l) {
-      if (first_el && (out != null)) {
-        out.print(header);
-      }
-
       if (isPrintable(o)) {
         String delim = first_el ? " " : ", ";
         if (out != null) {
@@ -311,11 +305,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         nl = true;
       }
       else if (o instanceof Serializable) {
-        if (first_el && (out != null)) {
+        if (first_el && (out != null) && hasHeader) {
           out.println();
         }
         JSONObject jsonOut = outputPlan((Serializable) o, out, extended,
-            jsonOutput, jsonOutput ? 0 : indent + 2);
+            jsonOutput, jsonOutput ? 0 : (hasHeader ? indent + 2 : indent));
         if (jsonOutput) {
           outputArray.put(jsonOut);
         }
@@ -439,10 +433,14 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           }
 
           String header = null;
+          boolean skipHeader = xpl_note.skipHeader();
+          boolean emptyHeader = false;
+
           if (!xpl_note.displayName().equals("")) {
             header = indentString(prop_indents) + xpl_note.displayName() + ":";
           }
           else {
+            emptyHeader = true;
             prop_indents = indent;
             header = indentString(prop_indents);
           }
@@ -450,7 +448,9 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           // Try the output as a primitive object
           if (isPrintable(val)) {
             if (out != null && shouldPrint(xpl_note, val)) {
-              out.printf("%s ", header);
+              if (!skipHeader) {
+                out.printf("%s ", header);
+              }
               out.println(val);
             }
             if (jsonOutput) {
@@ -458,12 +458,26 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
             }
             continue;
           }
+
+          int ind = 0;
+          if (!jsonOutput) {
+            if (!skipHeader) {
+              ind = prop_indents + 2;
+            } else {
+              ind = indent;
+            }
+          }
+
           // Try this as a map
           try {
             // Go through the map and print out the stuff
             Map<?, ?> mp = (Map<?, ?>) val;
-            JSONObject jsonOut = outputMap(mp, header, out, extended, jsonOutput,
-                jsonOutput ? 0 : prop_indents + 2);
+
+            if (out != null && !skipHeader && mp != null && !mp.isEmpty()) {
+              out.print(header);
+            }
+
+            JSONObject jsonOut = outputMap(mp, !skipHeader && !emptyHeader, out, extended, jsonOutput, ind);
             if (jsonOutput) {
               json.put(header, jsonOut);
             }
@@ -476,8 +490,12 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           // Try this as a list
           try {
             List<?> l = (List<?>) val;
-            JSONArray jsonOut = outputList(l, header, out, extended, jsonOutput,
-                jsonOutput ? 0 : prop_indents + 2);
+
+            if (out != null && !skipHeader && l != null && !l.isEmpty()) {
+              out.print(header);
+            }
+
+            JSONArray jsonOut = outputList(l, out, !skipHeader && !emptyHeader, extended, jsonOutput, ind);
 
             if (jsonOutput) {
               json.put(header, jsonOut);
@@ -492,11 +510,11 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
           // Finally check if it is serializable
           try {
             Serializable s = (Serializable) val;
-            if (out != null) {
+
+            if (!skipHeader && out != null) {
               out.println(header);
             }
-            JSONObject jsonOut = outputPlan(s, out, extended, jsonOutput,
-                jsonOutput ? 0 : prop_indents + 2);
+            JSONObject jsonOut = outputPlan(s, out, extended, jsonOutput, ind);
             if (jsonOutput) {
               json.put(header, jsonOut);
             }

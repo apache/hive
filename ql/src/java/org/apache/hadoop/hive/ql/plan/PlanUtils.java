@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
-import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -89,12 +88,10 @@ public final class PlanUtils {
   @SuppressWarnings("nls")
   public static MapredWork getMapRedWork() {
     try {
-      return new MapredWork("", new LinkedHashMap<String, ArrayList<String>>(),
-        new LinkedHashMap<String, PartitionDesc>(),
-        new LinkedHashMap<String, Operator<? extends OperatorDesc>>(),
-        new TableDesc(), new ArrayList<TableDesc>(), null, Integer.valueOf(1),
-        null, Hive.get().getConf().getBoolVar(
+      MapredWork work = new MapredWork();
+      work.getMapWork().setHadoopSupportsSplittable(Hive.get().getConf().getBoolVar(
           HiveConf.ConfVars.HIVE_COMBINE_INPUT_FORMAT_SUPPORTS_SPLITTABLE));
+      return work;
     } catch (HiveException ex) {
       throw new RuntimeException(ex);
     }

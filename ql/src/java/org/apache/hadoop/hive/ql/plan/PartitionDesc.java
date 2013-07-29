@@ -279,7 +279,7 @@ public class PartitionDesc implements Serializable, Cloneable {
    * @param path
    *          URI to the partition file
    */
-  void deriveBaseFileName(String path) {
+  public void deriveBaseFileName(String path) {
     PlanUtils.configureInputJobPropertiesForStorageHandler(tableDesc);
 
     if (path == null) {
