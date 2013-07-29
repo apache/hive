@@ -47,5 +47,10 @@ public interface MetricsMBean extends DynamicMBean {
      * @throws Exception
      */
     public abstract Object get(String name) throws IOException;
+    
 
+    /**
+     * Removes all the keys and values from this MetricsMBean. 
+     */
+    void clear();
 }

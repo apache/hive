@@ -136,7 +136,6 @@ STAGE PLANS:
                           type: bigint
       Local Work:
         Map Reduce Local Work
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -188,6 +187,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket_big
             name: default.bucket_big
+      Truncated Path -> Alias:
+        /bucket_big/ds=2008-04-08 [b]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -213,12 +215,11 @@ STAGE PLANS:
                     columns _col0
                     columns.types bigint
                     escape.delim \
+                    hive.serialization.extend.nesting.levels true
                     serialization.format 1
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /bucket_big/ds=2008-04-08 [b]
 
   Stage: Stage-0
     Fetch Operator
@@ -285,7 +286,6 @@ STAGE PLANS:
                     value expressions:
                           expr: _col0
                           type: bigint
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -337,6 +337,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket_big
             name: default.bucket_big
+      Truncated Path -> Alias:
+        /bucket_big/ds=2008-04-08 [b]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -362,12 +365,11 @@ STAGE PLANS:
                     columns _col0
                     columns.types bigint
                     escape.delim \
+                    hive.serialization.extend.nesting.levels true
                     serialization.format 1
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /bucket_big/ds=2008-04-08 [b]
 
   Stage: Stage-0
     Fetch Operator

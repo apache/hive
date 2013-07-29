@@ -79,6 +79,7 @@ public class Context {
   private final Configuration conf;
   protected int pathid = 10000;
   protected boolean explain = false;
+  protected boolean explainLogical = false;
   protected String cmd = "";
   // number of previous attempts
   protected int tryCount = 0;
@@ -140,8 +141,23 @@ public class Context {
    * Find whether the current query is an explain query
    * @return true if the query is an explain query, false if not
    */
-  public boolean getExplain () {
+  public boolean getExplain() {
     return explain;
+  }
+
+  /**
+   * Find whether the current query is a logical explain query
+   */
+  public boolean getExplainLogical() {
+    return explainLogical;
+  }
+
+  /**
+   * Set the context on whether the current query is a logical
+   * explain query.
+   */
+  public void setExplainLogical(boolean explainLogical) {
+    this.explainLogical = explainLogical;
   }
 
   /**
@@ -166,7 +182,7 @@ public class Context {
    * @param scheme Scheme of the target FS
    * @param authority Authority of the target FS
    * @param mkdir create the directory if true
-   * @param scratchdir path of tmp directory
+   * @param scratchDir path of tmp directory
    */
   private String getScratchDir(String scheme, String authority,
                                boolean mkdir, String scratchDir) {

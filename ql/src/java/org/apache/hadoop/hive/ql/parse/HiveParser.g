@@ -106,6 +106,7 @@ TOK_BOOLEAN;
 TOK_FLOAT;
 TOK_DOUBLE;
 TOK_DATE;
+TOK_DATELITERAL;
 TOK_DATETIME;
 TOK_TIMESTAMP;
 TOK_STRING;
@@ -558,7 +559,7 @@ statement
 explainStatement
 @init { msgs.push("explain statement"); }
 @after { msgs.pop(); }
-	: KW_EXPLAIN (explainOptions=KW_EXTENDED|explainOptions=KW_FORMATTED|explainOptions=KW_DEPENDENCY)? execStatement
+	: KW_EXPLAIN (explainOptions=KW_EXTENDED|explainOptions=KW_FORMATTED|explainOptions=KW_DEPENDENCY|explainOptions=KW_LOGICAL)? execStatement
       -> ^(TOK_EXPLAIN execStatement $explainOptions?)
 	;
 

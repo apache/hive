@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -188,7 +189,7 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
 
     if (pctx.getConf().getBoolVar(ConfVars.HIVE_INDEX_COMPACT_BINARY_SEARCH) && useSorted) {
       // For now, only works if the predicate is a single condition
-      MapredWork work = null;
+      MapWork work = null;
       String originalInputFormat = null;
       for (Task task : driver.getPlan().getRootTasks()) {
         // The index query should have one and only one map reduce task in the root tasks
@@ -202,7 +203,9 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
             work.setInputFormatSorted(false);
             break;
           }
-          work = (MapredWork)task.getWork();
+          if (task.getWork() != null) {
+            work = ((MapredWork)task.getWork()).getMapWork();
+          }
           String inputFormat = work.getInputformat();
           originalInputFormat = inputFormat;
           if (inputFormat == null) {

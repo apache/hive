@@ -880,7 +880,7 @@ public class QTestUtil {
 
       FileOutputStream ofs = new FileOutputStream(outf);
       for (Task<? extends Serializable> plan : tasks) {
-        Utilities.serializeTasks(plan, ofs);
+        Utilities.serializeObject(plan, ofs);
       }
 
       String[] patterns = new String[] {
@@ -1007,7 +1007,6 @@ public class QTestUtil {
         ".*LOCATION '.*",
         ".*transient_lastDdlTime.*",
         ".*last_modified_.*",
-        ".*java.lang.RuntimeException.*",
         ".*at org.*",
         ".*at sun.*",
         ".*at java.*",

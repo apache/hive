@@ -150,13 +150,13 @@ sub new
 sub globalSetup
   {
     my ($self, $globalHash, $log) = @_;
-    my $subName = (caller(0))[3];
-
 
     # Setup the output path
     my $me = `whoami`;
     chomp $me;
-    $globalHash->{'runid'} = $me . "." . time;
+    my $jobId = $globalHash->{'job-id'};
+    my $timeId = time;
+    $globalHash->{'runid'} = $me . "-" . $timeId . "-" . $jobId;
 
     # if "-ignore false" was provided on the command line,
     # it means do run tests even when marked as 'ignore'
@@ -170,6 +170,7 @@ sub globalSetup
 
     $globalHash->{'outpath'} = $globalHash->{'outpathbase'} . "/" . $globalHash->{'runid'} . "/";
     $globalHash->{'localpath'} = $globalHash->{'localpathbase'} . "/" . $globalHash->{'runid'} . "/";
+    $globalHash->{'tmpPath'} = $globalHash->{'tmpPath'} . "/" . $globalHash->{'runid'} . "/";
     $globalHash->{'webhdfs_url'} = $ENV{'WEBHDFS_URL'};
     $globalHash->{'templeton_url'} = $ENV{'TEMPLETON_URL'};
     $globalHash->{'current_user'} = $ENV{'USER_NAME'};
@@ -184,6 +185,11 @@ sub globalSetup
     $globalHash->{'inpdir_hdfs'} = $ENV{'TH_INPDIR_HDFS'};
 
     $globalHash->{'is_secure_mode'} = $ENV{'SECURE_MODE'};
+  }
+
+sub globalSetupConditional
+  {
+    my ($self, $globalHash, $log) = @_;
 
     # add libexec location to the path
     if (defined($ENV{'PATH'})) {
@@ -217,6 +223,12 @@ sub globalSetup
 # Returns:
 # None
 sub globalCleanup
+  {
+    # noop there because the removal of temp directories, which are created in #globalSetupConditional(), is to be
+    # performed in method #globalCleanupConditional().
+  }
+
+sub globalCleanupConditional
   {
     my ($self, $globalHash, $log) = @_;
 
@@ -669,7 +681,12 @@ sub compare
     #try to get the call back url request until timeout
     if ($result == 1 && defined $testCmd->{'check_call_back'}) {
       my $d = $testCmd->{'http_daemon'};
-      $d->timeout(300);         #wait for 5 mins
+      if (defined $testCmd->{'timeout_seconds'}) {
+        $d->timeout($testCmd->{'timeout_seconds'})
+      }
+      else {      
+        $d->timeout(300);         #wait for 5 mins by default
+      }
       my $url_requested;
       $testCmd->{'callback_url'} =~ s/\$jobId/$json_hash->{'id'}/g;
       print $log "Expanded callback url : <" . $testCmd->{'callback_url'} . ">\n";
@@ -720,6 +737,10 @@ sub compare
           my $jobComplete;
           my $NUM_RETRIES = 60;
           my $SLEEP_BETWEEN_RETRIES = 5;
+          if (defined $testCmd->{'timeout_seconds'} && $testCmd->{'timeout_seconds'} > 0) {
+            $SLEEP_BETWEEN_RETRIES = ($testCmd->{'timeout_seconds'} / $NUM_RETRIES);
+            print $log "found timeout_seconds & set SLEEP_BETWEEN_RETRIES=$SLEEP_BETWEEN_RETRIES";
+          }
 
           #first wait for job completion
           while ($NUM_RETRIES-- > 0) {

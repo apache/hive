@@ -35,6 +35,7 @@ import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.mapreduce.TaskID;
+import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.util.Progressable;
 
 public class HCatHadoopShims20S implements HCatHadoopShims {
@@ -148,5 +149,12 @@ public class HCatHadoopShims20S implements HCatHadoopShims {
     public boolean isFileInHDFS(FileSystem fs, Path path) throws IOException {
         // In hadoop 1.x.x the file system URI is sufficient to determine the uri of the file
         return "hdfs".equals(fs.getUri().getScheme());
+    }
+
+    @Override
+    public InetSocketAddress getAddress(Configuration conf) {
+        String jobTrackerStr =
+            conf.get("mapred.job.tracker", "localhost:8012");
+        return NetUtils.createSocketAddr(jobTrackerStr);
     }
 }

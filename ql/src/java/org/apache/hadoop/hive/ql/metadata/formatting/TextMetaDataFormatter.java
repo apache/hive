@@ -49,8 +49,8 @@ import org.apache.hadoop.hive.shims.ShimLoader;
  * Format table and index information for human readability using
  * simple lines of text.
  */
-public class TextMetaDataFormatter implements MetaDataFormatter {
-    private static final Log LOG = LogFactory.getLog("hive.ql.exec.DDLTask");
+class TextMetaDataFormatter implements MetaDataFormatter {
+    private static final Log LOG = LogFactory.getLog(TextMetaDataFormatter.class);
 
     private static final int separator = Utilities.tabCode;
     private static final int terminator = Utilities.newLineCode;
@@ -67,54 +67,35 @@ public class TextMetaDataFormatter implements MetaDataFormatter {
     /**
      * Write an error message.
      */
-    public void error(OutputStream out, String msg, int errorCode)
+    @Override
+    public void error(OutputStream out, String msg, int errorCode, String sqlState)
         throws HiveException
     {
-        try {
-            out.write(msg.getBytes("UTF-8"));
-            out.write(terminator);
-        } catch (Exception e) {
-            throw new HiveException(e);
+        error(out, msg, errorCode, sqlState, null);
+    }
+
+    @Override
+    public void error(OutputStream out, String errorMessage, int errorCode, String sqlState, String errorDetail)
+          throws HiveException
+    {
+      try {
+        out.write(errorMessage.getBytes("UTF-8"));
+        if(errorDetail != null) {
+          out.write(errorDetail.getBytes("UTF-8"));
+        }
+        out.write(errorCode);
+        if(sqlState != null) {
+          out.write(sqlState.getBytes("UTF-8"));//this breaks all the tests in .q files
+        }
+        out.write(terminator);
+      } catch (Exception e) {
+          throw new HiveException(e);
         }
     }
-
-    /**
-     * Write a log warn message.
-     */
-    public void logWarn(OutputStream out, String msg, int errorCode)
-        throws HiveException
-    {
-        LOG.warn(msg);
-    }
-
-    /**
-     * Write a log info message.
-     */
-    public void logInfo(OutputStream out, String msg, int errorCode)
-        throws HiveException
-    {
-        LOG.info(msg);
-    }
-
-    /**
-     * Write a console error message.
-     */
-    public void consoleError(LogHelper console, String msg, int errorCode) {
-        console.printError(msg);
-    }
-
-    /**
-     * Write a console error message.
-     */
-    public void consoleError(LogHelper console, String msg, String detail,
-                             int errorCode)
-    {
-        console.printError(msg, detail);
-    }
-
     /**
      * Show a list of tables.
      */
+    @Override
     public void showTables(DataOutputStream out, Set<String> tables)
         throws HiveException
     {
@@ -131,33 +112,34 @@ public class TextMetaDataFormatter implements MetaDataFormatter {
         }
     }
 
+    @Override
     public void describeTable(DataOutputStream outStream,
                               String colPath, String tableName,
                               Table tbl, Partition part, List<FieldSchema> cols,
                               boolean isFormatted, boolean isExt, boolean isPretty)
          throws HiveException {
         try {
+          String output;
           if (colPath.equals(tableName)) {
             List<FieldSchema> partCols = tbl.isPartitioned() ? tbl.getPartCols() : null;
-            outStream.writeBytes(
-              isPretty ?
-                  MetaDataPrettyFormatUtils.getAllColumnsInformation(
-                      cols, partCols, prettyOutputNumCols)
+            output = isPretty ?
+                MetaDataPrettyFormatUtils.getAllColumnsInformation(
+                    cols, partCols, prettyOutputNumCols)
                 :
-                  MetaDataFormatUtils.getAllColumnsInformation(cols, partCols, isFormatted)
-              );
+                MetaDataFormatUtils.getAllColumnsInformation(cols, partCols, isFormatted);
           } else {
-            outStream.writeBytes(
-                MetaDataFormatUtils.getAllColumnsInformation(cols, isFormatted));
+            output = MetaDataFormatUtils.getAllColumnsInformation(cols, isFormatted);
           }
+          outStream.write(output.getBytes());
 
           if (tableName.equals(colPath)) {
             if (isFormatted) {
               if (part != null) {
-                outStream.writeBytes(MetaDataFormatUtils.getPartitionInformation(part));
+                output = MetaDataFormatUtils.getPartitionInformation(part);
               } else {
-                outStream.writeBytes(MetaDataFormatUtils.getTableInformation(tbl));
+                output = MetaDataFormatUtils.getTableInformation(tbl);
               }
+              outStream.write(output.getBytes());
             }
 
           // if extended desc table then show the complete details of the table
@@ -168,7 +150,7 @@ public class TextMetaDataFormatter implements MetaDataFormatter {
                 // show partition information
                 outStream.writeBytes("Detailed Partition Information");
                 outStream.write(separator);
-                outStream.writeBytes(part.getTPartition().toString());
+                outStream.write(part.getTPartition().toString().getBytes());
                 outStream.write(separator);
                 // comment column is empty
                 outStream.write(terminator);
@@ -176,7 +158,7 @@ public class TextMetaDataFormatter implements MetaDataFormatter {
                 // show table information
                 outStream.writeBytes("Detailed Table Information");
                 outStream.write(separator);
-                outStream.writeBytes(tbl.getTTable().toString());
+                outStream.write(tbl.getTTable().toString().getBytes());
                 outStream.write(separator);
                 outStream.write(terminator);
               }
@@ -187,6 +169,7 @@ public class TextMetaDataFormatter implements MetaDataFormatter {
         }
     }
 
+    @Override
     public void showTableStatus(DataOutputStream outStream,
                                 Hive db,
                                 HiveConf conf,
@@ -406,6 +389,7 @@ public class TextMetaDataFormatter implements MetaDataFormatter {
     /**
      * Show the table partitions.
      */
+    @Override
     public void showTablePartitons(DataOutputStream outStream, List<String> parts)
         throws HiveException
     {
@@ -430,6 +414,7 @@ public class TextMetaDataFormatter implements MetaDataFormatter {
     /**
      * Show the list of databases
      */
+    @Override
     public void showDatabases(DataOutputStream outStream, List<String> databases)
         throws HiveException
         {
@@ -447,6 +432,7 @@ public class TextMetaDataFormatter implements MetaDataFormatter {
     /**
      * Describe a database
      */
+    @Override
     public void showDatabaseDescription(DataOutputStream outStream,
                                         String database,
                                         String comment,
@@ -458,7 +444,7 @@ public class TextMetaDataFormatter implements MetaDataFormatter {
             outStream.writeBytes(database);
             outStream.write(separator);
             if (comment != null) {
-              outStream.writeBytes(comment);
+              outStream.write(comment.getBytes());
             }
             outStream.write(separator);
             if (location != null) {

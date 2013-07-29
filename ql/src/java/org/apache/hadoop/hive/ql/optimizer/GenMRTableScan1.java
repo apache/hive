@@ -84,7 +84,7 @@ public class GenMRTableScan1 implements NodeProcessor {
       if (currOp == op) {
         String currAliasId = alias;
         ctx.setCurrAliasId(currAliasId);
-        mapCurrCtx.put(op, new GenMapRedCtx(currTask, currTopOp, currAliasId));
+        mapCurrCtx.put(op, new GenMapRedCtx(currTask, currAliasId));
 
         QBParseInfo parseInfo = parseCtx.getQB().getParseInfo();
         if (parseInfo.isAnalyzeCommand()) {
@@ -117,7 +117,10 @@ public class GenMRTableScan1 implements NodeProcessor {
             handlePartialScanCommand(op, ctx, parseCtx, currTask, parseInfo, statsWork, statsTask);
           }
 
-          currWork.setGatheringStats(true);
+          currWork.getMapWork().setGatheringStats(true);
+          if (currWork.getReduceWork() != null) {
+            currWork.getReduceWork().setGatheringStats(true);
+          }
           // NOTE: here we should use the new partition predicate pushdown API to get a list of pruned list,
           // and pass it to setTaskPlan as the last parameter
           Set<Partition> confirmedPartns = new HashSet<Partition>();
@@ -139,12 +142,12 @@ public class GenMRTableScan1 implements NodeProcessor {
             Table source = parseCtx.getQB().getMetaData().getTableForAlias(alias);
             PrunedPartitionList partList = new PrunedPartitionList(source, confirmedPartns,
                 new HashSet<Partition>(), null);
-            GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, currWork, false, ctx, partList);
+            GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, currTask, false, ctx, partList);
           } else { // non-partitioned table
-            GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, currWork, false, ctx);
+            GenMapRedUtils.setTaskPlan(currAliasId, currTopOp, currTask, false, ctx);
           }
         }
-        return null;
+        return true;
       }
     }
     assert false;

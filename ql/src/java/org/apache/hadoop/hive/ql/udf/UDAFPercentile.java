@@ -149,7 +149,7 @@ public class UDAFPercentile extends UDAF {
       }
       if (state.percentiles == null) {
         if (percentile < 0.0 || percentile > 1.0) {
-          throw new RuntimeException("Percentile value must be wihin the range of 0 to 1.");
+          throw new RuntimeException("Percentile value must be within the range of 0 to 1.");
         }
         state.percentiles = new ArrayList<DoubleWritable>(1);
         state.percentiles.add(new DoubleWritable(percentile.doubleValue()));
@@ -238,7 +238,7 @@ public class UDAFPercentile extends UDAF {
         if(percentiles != null) {
           for (int i = 0; i < percentiles.size(); i++) {
             if (percentiles.get(i).get() < 0.0 || percentiles.get(i).get() > 1.0) {
-              throw new RuntimeException("Percentile value must be wihin the range of 0 to 1.");
+              throw new RuntimeException("Percentile value must be within the range of 0 to 1.");
             }
           }
           state.percentiles = new ArrayList<DoubleWritable>(percentiles);

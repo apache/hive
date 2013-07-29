@@ -33,6 +33,7 @@ import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
+import java.util.concurrent.Executor;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -160,27 +161,32 @@ public class HiveConnection implements java.sql.Connection {
     }
   }
 
-    private void openSession(String uri) throws SQLException {
-      TOpenSessionReq openReq = new TOpenSessionReq();
+  private void openSession(String uri) throws SQLException {
+    TOpenSessionReq openReq = new TOpenSessionReq();
 
-      // set the session configuration
-      // openReq.setConfiguration(null);
+    // set the session configuration
+    // openReq.setConfiguration(null);
 
-      try {
-        TOpenSessionResp openResp = client.OpenSession(openReq);
+    try {
+      TOpenSessionResp openResp = client.OpenSession(openReq);
 
-        // validate connection
-        Utils.verifySuccess(openResp.getStatus());
-        if (!supportedProtocols.contains(openResp.getServerProtocolVersion())) {
-          throw new TException("Unsupported Hive2 protocol");
-        }
-        sessHandle = openResp.getSessionHandle();
-      } catch (TException e) {
-        throw new SQLException("Could not establish connection to "
-            + uri + ": " + e.getMessage(), " 08S01", e);
+      // validate connection
+      Utils.verifySuccess(openResp.getStatus());
+      if (!supportedProtocols.contains(openResp.getServerProtocolVersion())) {
+        throw new TException("Unsupported Hive2 protocol");
       }
-      isClosed = false;
+      sessHandle = openResp.getSessionHandle();
+    } catch (TException e) {
+      throw new SQLException("Could not establish connection to "
+          + uri + ": " + e.getMessage(), " 08S01", e);
     }
+    isClosed = false;
+  }
+
+  public void abort(Executor executor) throws SQLException {
+    // JDK 1.7
+    throw new SQLException("Method not supported");
+  }
 
   /*
    * (non-Javadoc)
@@ -393,6 +399,17 @@ public class HiveConnection implements java.sql.Connection {
 
   public DatabaseMetaData getMetaData() throws SQLException {
     return new HiveDatabaseMetaData(client, sessHandle);
+  }
+
+  public int getNetworkTimeout() throws SQLException {
+    // JDK 1.7
+    throw new SQLException("Method not supported");
+  }
+
+
+  public String getSchema() throws SQLException {
+    // JDK 1.7
+    throw new SQLException("Method not supported");
   }
 
   /*
@@ -663,6 +680,11 @@ public class HiveConnection implements java.sql.Connection {
     throw new SQLException("Method not supported");
   }
 
+  public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
+    // JDK 1.7
+    throw new SQLException("Method not supported");
+  }
+
   /*
    * (non-Javadoc)
    *
@@ -693,6 +715,11 @@ public class HiveConnection implements java.sql.Connection {
 
   public Savepoint setSavepoint(String name) throws SQLException {
     // TODO Auto-generated method stub
+    throw new SQLException("Method not supported");
+  }
+
+  public void setSchema(String schema) throws SQLException {
+    // JDK 1.7
     throw new SQLException("Method not supported");
   }
 

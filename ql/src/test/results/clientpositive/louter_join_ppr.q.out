@@ -34,7 +34,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: ((key > 10.0) and (key < 20.0))
+                  expr: ((key > 10) and (key < 20))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -57,7 +57,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: ((key > 10.0) and (key < 20.0))
+                  expr: ((key > 10) and (key < 20))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -73,7 +73,6 @@ STAGE PLANS:
                       type: string
                       expr: value
                       type: string
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -211,6 +210,11 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
+      Truncated Path -> Alias:
+        /src [a]
+        /srcpart/ds=2008-04-08/hr=11 [b]
+        /srcpart/ds=2008-04-08/hr=12 [b]
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -223,7 +227,7 @@ STAGE PLANS:
           Filter Operator
             isSamplingPred: false
             predicate:
-                expr: ((_col4 > 15.0) and (_col4 < 25.0))
+                expr: ((_col4 > 15) and (_col4 < 25))
                 type: boolean
             Select Operator
               expressions:
@@ -249,14 +253,11 @@ STAGE PLANS:
                       columns _col0,_col1,_col2,_col3
                       columns.types string:string:string:string
                       escape.delim \
+                      hive.serialization.extend.nesting.levels true
                       serialization.format 1
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
-      Truncated Path -> Alias:
-        /src [a]
-        /srcpart/ds=2008-04-08/hr=11 [b]
-        /srcpart/ds=2008-04-08/hr=12 [b]
 
   Stage: Stage-0
     Fetch Operator
@@ -337,7 +338,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: ((key > 10.0) and (key < 20.0))
+                  expr: ((key > 10) and (key < 20))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -362,7 +363,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: ((key > 10.0) and (key < 20.0))
+                  expr: ((key > 10) and (key < 20))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -378,7 +379,6 @@ STAGE PLANS:
                       type: string
                       expr: value
                       type: string
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -608,6 +608,13 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
+      Truncated Path -> Alias:
+        /src [b]
+        /srcpart/ds=2008-04-08/hr=11 [a]
+        /srcpart/ds=2008-04-08/hr=12 [a]
+        /srcpart/ds=2008-04-09/hr=11 [a]
+        /srcpart/ds=2008-04-09/hr=12 [a]
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -625,7 +632,7 @@ STAGE PLANS:
           Filter Operator
             isSamplingPred: false
             predicate:
-                expr: ((_col6 > 15.0) and (_col6 < 25.0))
+                expr: ((_col6 > 15) and (_col6 < 25))
                 type: boolean
             Select Operator
               expressions:
@@ -651,16 +658,11 @@ STAGE PLANS:
                       columns _col0,_col1,_col2,_col3
                       columns.types string:string:string:string
                       escape.delim \
+                      hive.serialization.extend.nesting.levels true
                       serialization.format 1
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
-      Truncated Path -> Alias:
-        /src [b]
-        /srcpart/ds=2008-04-08/hr=11 [a]
-        /srcpart/ds=2008-04-08/hr=12 [a]
-        /srcpart/ds=2008-04-09/hr=11 [a]
-        /srcpart/ds=2008-04-09/hr=12 [a]
 
   Stage: Stage-0
     Fetch Operator
@@ -745,7 +747,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: ((key > 10.0) and (key < 20.0))
+                  expr: ((key > 10) and (key < 20))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -768,7 +770,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: ((key > 10.0) and (key < 20.0))
+                  expr: ((key > 10) and (key < 20))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -786,7 +788,6 @@ STAGE PLANS:
                       type: string
                       expr: ds
                       type: string
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1016,6 +1017,13 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
+      Truncated Path -> Alias:
+        /src [a]
+        /srcpart/ds=2008-04-08/hr=11 [b]
+        /srcpart/ds=2008-04-08/hr=12 [b]
+        /srcpart/ds=2008-04-09/hr=11 [b]
+        /srcpart/ds=2008-04-09/hr=12 [b]
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1028,7 +1036,7 @@ STAGE PLANS:
           Filter Operator
             isSamplingPred: false
             predicate:
-                expr: (((_col4 > 15.0) and (_col4 < 25.0)) and (_col6 = '2008-04-08'))
+                expr: (((_col4 > 15) and (_col4 < 25)) and (_col6 = '2008-04-08'))
                 type: boolean
             Select Operator
               expressions:
@@ -1054,16 +1062,11 @@ STAGE PLANS:
                       columns _col0,_col1,_col2,_col3
                       columns.types string:string:string:string
                       escape.delim \
+                      hive.serialization.extend.nesting.levels true
                       serialization.format 1
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
-      Truncated Path -> Alias:
-        /src [a]
-        /srcpart/ds=2008-04-08/hr=11 [b]
-        /srcpart/ds=2008-04-08/hr=12 [b]
-        /srcpart/ds=2008-04-09/hr=11 [b]
-        /srcpart/ds=2008-04-09/hr=12 [b]
 
   Stage: Stage-0
     Fetch Operator
@@ -1148,7 +1151,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: ((key > 10.0) and (key < 20.0))
+                  expr: ((key > 10) and (key < 20))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -1171,7 +1174,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: ((key > 10.0) and (key < 20.0))
+                  expr: ((key > 10) and (key < 20))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -1187,7 +1190,6 @@ STAGE PLANS:
                       type: string
                       expr: value
                       type: string
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1325,6 +1327,11 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
+      Truncated Path -> Alias:
+        /src [b]
+        /srcpart/ds=2008-04-08/hr=11 [a]
+        /srcpart/ds=2008-04-08/hr=12 [a]
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1337,7 +1344,7 @@ STAGE PLANS:
           Filter Operator
             isSamplingPred: false
             predicate:
-                expr: ((_col6 > 15.0) and (_col6 < 25.0))
+                expr: ((_col6 > 15) and (_col6 < 25))
                 type: boolean
             Select Operator
               expressions:
@@ -1363,14 +1370,11 @@ STAGE PLANS:
                       columns _col0,_col1,_col2,_col3
                       columns.types string:string:string:string
                       escape.delim \
+                      hive.serialization.extend.nesting.levels true
                       serialization.format 1
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
-      Truncated Path -> Alias:
-        /src [b]
-        /srcpart/ds=2008-04-08/hr=11 [a]
-        /srcpart/ds=2008-04-08/hr=12 [a]
 
   Stage: Stage-0
     Fetch Operator

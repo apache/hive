@@ -31,7 +31,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -50,6 +49,8 @@ import org.apache.hadoop.util.StringUtils;
 public abstract class Task<T extends Serializable> implements Serializable, Node {
 
   private static final long serialVersionUID = 1L;
+  public transient HashMap<String, Long> taskCounters;
+  public transient TaskHandle taskHandle;
   protected transient boolean started;
   protected transient boolean initialized;
   protected transient boolean isdone;
@@ -58,8 +59,6 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   protected transient Hive db;
   protected transient LogHelper console;
   protected transient QueryPlan queryPlan;
-  protected transient TaskHandle taskHandle;
-  protected transient HashMap<String, Long> taskCounters;
   protected transient DriverContext driverContext;
   protected transient boolean clonedConf = false;
   protected transient String jobID;
@@ -87,6 +86,7 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   protected String id;
   protected T work;
+
   public static enum FeedType {
     DYNAMIC_PARTITIONS, // list of dynamic partitions
   };
@@ -95,6 +95,12 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   protected List<Task<? extends Serializable>> childTasks;
   protected List<Task<? extends Serializable>> parentTasks;
+  /**
+   * this can be set by the Task, to provide more info about the failure in TaskResult
+   * where the Driver can find it.  This is checked if {@link Task#execute(org.apache.hadoop.hive.ql.DriverContext)}
+   * returns non-0 code.
+   */
+  private Throwable exception;
 
   public Task() {
     isdone = false;
@@ -493,5 +499,11 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   public List<FieldSchema> getResultSchema() {
     return null;
+  }
+  Throwable getException() {
+    return exception;
+  }
+  void setException(Throwable ex) {
+    exception = ex;
   }
 }

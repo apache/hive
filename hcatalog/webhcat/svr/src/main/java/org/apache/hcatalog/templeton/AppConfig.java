@@ -116,6 +116,7 @@ public class AppConfig extends Configuration {
     public static final String HADOOP_SPECULATIVE_NAME
         = "mapred.map.tasks.speculative.execution";
     public static final String HADOOP_CHILD_JAVA_OPTS = "mapred.child.java.opts";
+    public static final String UNIT_TEST_MODE     = "templeton.unit.test.mode";
 
     
     private static final Log LOG = LogFactory.getLog(AppConfig.class);

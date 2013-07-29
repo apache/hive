@@ -69,11 +69,11 @@ STAGE PLANS:
           TableScan
             alias: default__src_src_key_index__
             filterExpr:
-                expr: (key = 86.0)
+                expr: (key = 86)
                 type: boolean
             Filter Operator
               predicate:
-                  expr: (key = 86.0)
+                  expr: (key = 86)
                   type: boolean
               Select Operator
                 expressions:
@@ -111,11 +111,11 @@ STAGE PLANS:
           TableScan
             alias: src
             filterExpr:
-                expr: (key = 86.0)
+                expr: (key = 86)
                 type: boolean
             Filter Operator
               predicate:
-                  expr: (key = 86.0)
+                  expr: (key = 86)
                   type: boolean
               Select Operator
                 expressions:

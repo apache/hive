@@ -178,10 +178,12 @@ public class HiveConf extends Configuration {
     SCRIPTWRAPPER("hive.exec.script.wrapper", null),
     PLAN("hive.exec.plan", ""),
     SCRATCHDIR("hive.exec.scratchdir", "/tmp/hive-" + System.getProperty("user.name")),
-    LOCALSCRATCHDIR("hive.exec.local.scratchdir", "/tmp/" + System.getProperty("user.name")),
+    LOCALSCRATCHDIR("hive.exec.local.scratchdir", System.getProperty("java.io.tmpdir") + File.separator + System.getProperty("user.name")),
     SUBMITVIACHILD("hive.exec.submitviachild", false),
     SCRIPTERRORLIMIT("hive.exec.script.maxerrsize", 100000),
     ALLOWPARTIALCONSUMP("hive.exec.script.allow.partial.consumption", false),
+    STREAMREPORTERPERFIX("stream.stderr.reporter.prefix", "reporter:"),
+    STREAMREPORTERENABLED("stream.stderr.reporter.enabled", true),
     COMPRESSRESULT("hive.exec.compress.output", false),
     COMPRESSINTERMEDIATE("hive.exec.compress.intermediate", false),
     COMPRESSINTERMEDIATECODEC("hive.intermediate.compression.codec", ""),
@@ -202,7 +204,7 @@ public class HiveConf extends Configuration {
     DYNAMICPARTITIONMAXPARTSPERNODE("hive.exec.max.dynamic.partitions.pernode", 100),
     MAXCREATEDFILES("hive.exec.max.created.files", 100000L),
     DOWNLOADED_RESOURCES_DIR("hive.downloaded.resources.dir",
-        "/tmp/${hive.session.id}_resources"),
+        System.getProperty("java.io.tmpdir") + File.separator  + "${hive.session.id}_resources"),
     DEFAULTPARTITIONNAME("hive.exec.default.partition.name", "__HIVE_DEFAULT_PARTITION__"),
     DEFAULT_ZOOKEEPER_PARTITION_NAME("hive.lockmgr.zookeeper.default.partition.name", "__HIVE_DEFAULT_ZOOKEEPER_PARTITION__"),
     // Whether to show a link to the most failed task + debugging tips
@@ -314,7 +316,7 @@ public class HiveConf extends Configuration {
     METASTORE_CLUSTER_DELEGATION_TOKEN_STORE_ZK_ACL(
         "hive.cluster.delegation.token.store.zookeeper.acl", ""),
     METASTORE_CACHE_PINOBJTYPES("hive.metastore.cache.pinobjtypes", "Table,StorageDescriptor,SerDeInfo,Partition,Database,Type,FieldSchema,Order"),
-    METASTORE_CONNECTION_POOLING_TYPE("datanucleus.connectionPoolingType", "DBCP"),
+    METASTORE_CONNECTION_POOLING_TYPE("datanucleus.connectionPoolingType", "BONECP"),
     METASTORE_VALIDATE_TABLES("datanucleus.validateTables", false),
     METASTORE_VALIDATE_COLUMNS("datanucleus.validateColumns", false),
     METASTORE_VALIDATE_CONSTRAINTS("datanucleus.validateConstraints", false),
@@ -324,7 +326,8 @@ public class HiveConf extends Configuration {
     METASTORE_TRANSACTION_ISOLATION("datanucleus.transactionIsolation", "read-committed"),
     METASTORE_CACHE_LEVEL2("datanucleus.cache.level2", false),
     METASTORE_CACHE_LEVEL2_TYPE("datanucleus.cache.level2.type", "none"),
-    METASTORE_IDENTIFIER_FACTORY("datanucleus.identifierFactory", "datanucleus"),
+    METASTORE_IDENTIFIER_FACTORY("datanucleus.identifierFactory", "datanucleus1"),
+    METASTORE_USE_LEGACY_VALUE_STRATEGY("datanucleus.rdbms.useLegacyNativeValueStrategy", true),
     METASTORE_PLUGIN_REGISTRY_BUNDLE_CHECK("datanucleus.plugin.pluginRegistryBundleCheck", "LOG"),
     METASTORE_BATCH_RETRIEVE_MAX("hive.metastore.batch.retrieve.max", 300),
     METASTORE_BATCH_RETRIEVE_TABLE_PARTITION_MAX(
@@ -353,7 +356,7 @@ public class HiveConf extends Configuration {
     METASTORE_CONNECTION_DRIVER("javax.jdo.option.ConnectionDriverName",
         "org.apache.derby.jdbc.EmbeddedDriver"),
     METASTORE_MANAGER_FACTORY_CLASS("javax.jdo.PersistenceManagerFactoryClass",
-        "org.datanucleus.jdo.JDOPersistenceManagerFactory"),
+        "org.datanucleus.api.jdo.JDOPersistenceManagerFactory"),
     METASTORE_DETACH_ALL_ON_COMMIT("javax.jdo.option.DetachAllOnCommit", true),
     METASTORE_NON_TRANSACTIONAL_READ("javax.jdo.option.NonTransactionalRead", true),
     METASTORE_CONNECTION_USER_NAME("javax.jdo.option.ConnectionUserName", "APP"),
@@ -442,11 +445,11 @@ public class HiveConf extends Configuration {
     HIVECHECKFILEFORMAT("hive.fileformat.check", true),
 
     // default serde for rcfile
-    HIVEDEFAULTRCFILESERDE("hive.default.rcfile.serde", 
+    HIVEDEFAULTRCFILESERDE("hive.default.rcfile.serde",
                            "org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe"),
 
     //Location of Hive run time structured log file
-    HIVEHISTORYFILELOC("hive.querylog.location", "/tmp/" + System.getProperty("user.name")),
+    HIVEHISTORYFILELOC("hive.querylog.location", System.getProperty("java.io.tmpdir") + File.separator + System.getProperty("user.name")),
 
     // Whether to log the plan's progress every time a job's progress is checked
     HIVE_LOG_INCREMENTAL_PLAN_PROGRESS("hive.querylog.enable.plan.progress", true),
@@ -560,10 +563,16 @@ public class HiveConf extends Configuration {
     HIVEOPTSORTMERGEBUCKETMAPJOIN("hive.optimize.bucketmapjoin.sortedmerge", false), // try to use sorted merge bucket map join
     HIVEOPTREDUCEDEDUPLICATION("hive.optimize.reducededuplication", true),
     HIVEOPTREDUCEDEDUPLICATIONMINREDUCER("hive.optimize.reducededuplication.min.reducer", 4),
+
+    HIVESAMPLINGFORORDERBY("hive.optimize.sampling.orderby", false),
+    HIVESAMPLINGNUMBERFORORDERBY("hive.optimize.sampling.orderby.number", 1000),
+    HIVESAMPLINGPERCENTFORORDERBY("hive.optimize.sampling.orderby.percent", 0.1f),
+
     // whether to optimize union followed by select followed by filesink
     // It creates sub-directories in the final output, so should not be turned on in systems
     // where MAPREDUCE-1501 is not present
     HIVE_OPTIMIZE_UNION_REMOVE("hive.optimize.union.remove", false),
+    HIVEOPTCORRELATION("hive.optimize.correlation", false), // exploit intra-query correlations
 
     // whether hadoop map-reduce supports sub-directories. It was added by MAPREDUCE-1501.
     // Some optimizations can only be performed if the version of hadoop being used supports

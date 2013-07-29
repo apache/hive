@@ -74,7 +74,7 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
         }
       }
     }
-    
+
   }
 
   /**
@@ -107,7 +107,7 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
 
   /**
    * Create a ZooKeeper session that is in connected state.
-   * 
+   *
    * @param connectString ZooKeeper connect String
    * @param sessionTimeout ZooKeeper session timeout
    * @param connectTimeout milliseconds to wait for connection, 0 or negative value means no wait
@@ -147,7 +147,7 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
     }
     return zk;
   }
-  
+
   /**
    * Create a path if it does not already exist ("mkdir -p")
    * @param zk ZooKeeper session
@@ -458,6 +458,11 @@ public class ZooKeeperTokenStore implements DelegationTokenStore {
         LOGGER.warn("Failed to close existing session.", ex);
       }
     }
+  }
+
+  @Override
+  public void setStore(Object hmsHandler) throws TokenStoreException {
+    // no-op.
   }
 
 }

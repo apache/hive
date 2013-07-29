@@ -22,6 +22,7 @@ import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 
 import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 /**
@@ -39,32 +40,32 @@ import javax.management.ObjectName;
  */
 public class Metrics {
 
+  private Metrics() {
+    // block
+  }
+  
   /**
    * MetricsScope : A class that encapsulates an idea of a metered scope.
    * Instantiating a named scope and then closing it exposes two counters:
    *   (i) a "number of calls" counter ( &lt;name&gt;.n ), and
    *  (ii) a "number of msecs spent between scope open and close" counter. ( &lt;name&gt;.t)
    */
-  public class MetricsScope {
+  public static class MetricsScope {
 
-    String name = null;
-    boolean isOpen = false;
-    Long startTime = null;
-    String numCounter = null;
-    String timeCounter = null;
-    String avgTimeCounter = null;
-
-    //disable default ctor - so that it can't be created without a name
-    @SuppressWarnings("unused")
-    private MetricsScope() {
-    }
+    final String name;
+    final String numCounter;
+    final String timeCounter;
+    final String avgTimeCounter;
+    
+    private boolean isOpen = false;
+    private Long startTime = null;
 
     /**
      * Instantiates a named scope - intended to only be called by Metrics, so locally scoped.
      * @param name - name of the variable
      * @throws IOException
      */
-    MetricsScope(String name) throws IOException {
+    private MetricsScope(String name) throws IOException {
       this.name = name;
       this.numCounter = name + ".n";
       this.timeCounter = name + ".t";
@@ -128,28 +129,36 @@ public class Metrics {
 
   }
 
+  private static final MetricsMBean metrics = new MetricsMBeanImpl();
 
-  static MetricsMBean metrics = new MetricsMBeanImpl();
-
-  static ThreadLocal<HashMap<String, MetricsScope>> threadLocalScopes
+  private static final ObjectName oname;
+  static {
+    try {
+      oname = new ObjectName(
+          "org.apache.hadoop.hive.common.metrics:type=MetricsMBean");      
+    } catch (MalformedObjectNameException mone) {
+      throw new RuntimeException(mone);
+    }
+  }
+  
+  
+  private static final ThreadLocal<HashMap<String, MetricsScope>> threadLocalScopes
     = new ThreadLocal<HashMap<String,MetricsScope>>() {
     @Override
-    protected synchronized HashMap<String,MetricsScope> initialValue() {
+    protected HashMap<String,MetricsScope> initialValue() {
       return new HashMap<String,MetricsScope>();
     }
   };
 
-  static boolean initialized = false;
-
-  static Metrics m = new Metrics();
+  private static boolean initialized = false;
 
   public static void init() throws Exception {
-    if (!initialized) {
-      MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-      ObjectName oname = new ObjectName(
-        "org.apache.hadoop.hive.common.metrics:type=MetricsMBean");
-      mbs.registerMBean(metrics, oname);
-      initialized = true;
+    synchronized (metrics) {
+      if (!initialized) {
+        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+        mbs.registerMBean(metrics, oname);
+        initialized = true;
+      }
     }
   }
 
@@ -181,9 +190,7 @@ public class Metrics {
     if (!initialized) {
       return;
     }
-    synchronized(metrics) {
-      metrics.put(name,value);
-    }
+    metrics.put(name,value);
   }
 
   public static Object get(String name) throws IOException{
@@ -200,7 +207,7 @@ public class Metrics {
     if (threadLocalScopes.get().containsKey(name)) {
       threadLocalScopes.get().get(name).open();
     } else {
-      threadLocalScopes.get().put(name, m.new MetricsScope(name));
+      threadLocalScopes.get().put(name, new MetricsScope(name));
     }
     return threadLocalScopes.get().get(name);
   }
@@ -225,4 +232,22 @@ public class Metrics {
     }
   }
 
+  /**
+   * Resets the static context state to initial.
+   * Used primarily for testing purposes.
+   * 
+   * Note that threadLocalScopes ThreadLocal is *not* cleared in this call.
+   */
+  static void uninit() throws Exception {
+    synchronized (metrics) {
+      if (initialized) {
+        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+        if (mbs.isRegistered(oname)) {
+          mbs.unregisterMBean(oname);
+        }
+        metrics.clear();
+        initialized = false;
+      }
+    }
+  }
 }

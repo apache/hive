@@ -41,8 +41,7 @@ public class ListDelegator extends TempletonDelegator {
         UserGroupInformation ugi = UserGroupInformation.createRemoteUser(user);
         TempletonJobTracker tracker = null;
         try {
-            tracker = new TempletonJobTracker(getAddress(appConf),
-                    appConf);
+            tracker = new TempletonJobTracker(appConf);
 
             ArrayList<String> ids = new ArrayList<String>();
 

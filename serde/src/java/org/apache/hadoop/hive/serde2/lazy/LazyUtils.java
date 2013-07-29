@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
@@ -232,6 +233,11 @@ public final class LazyUtils {
       out.write(toWrite, 0, toWrite.length);
       break;
     }
+    case DATE: {
+      LazyDate.writeUTF8(out,
+          ((DateObjectInspector) oi).getPrimitiveWritableObject(o));
+      break;
+    }
     case TIMESTAMP: {
       LazyTimestamp.writeUTF8(out,
           ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o));
@@ -365,6 +371,30 @@ public final class LazyUtils {
     //TODO should replace with BytesWritable.copyData() once Hive
     //removes support for the Hadoop 0.20 series.
     return Arrays.copyOf(sourceBw.getBytes(), sourceBw.getLength());
+  }
+
+  /**
+   * Utility function to get separator for current level used in serialization.
+   * Used to get a better log message when out of bound lookup happens
+   * @param separators - array of separators byte, byte at index x indicates
+   *  separator used at that level
+   * @param level - nesting level
+   * @return separator at given level
+   * @throws SerDeException
+   */
+  static byte getSeparator(byte[] separators, int level) throws SerDeException {
+    try{
+      return separators[level];
+    }catch(ArrayIndexOutOfBoundsException e){
+      String msg = "Number of levels of nesting supported for " +
+          "LazySimpleSerde is " + (separators.length - 1) +
+          " Unable to work with level " + level;
+      if(separators.length < 9){
+        msg += ". Use " + LazySimpleSerDe.SERIALIZATION_EXTEND_NESTING_LEVELS +
+            " serde property for tables using LazySimpleSerde.";
+      }
+      throw new SerDeException(msg, e);
+    }
   }
 
   private LazyUtils() {

@@ -134,7 +134,7 @@ public class MapJoinProcessor implements Transform {
         new LinkedHashMap<String, FetchWork>());
 
     for (Map.Entry<String, Operator<? extends OperatorDesc>> entry :
-      newWork.getAliasToWork().entrySet()) {
+      newWork.getMapWork().getAliasToWork().entrySet()) {
       String alias = entry.getKey();
       Operator<? extends OperatorDesc> op = entry.getValue();
 
@@ -162,7 +162,7 @@ public class MapJoinProcessor implements Transform {
       smallTableAliasList.add(alias);
       // get input path and remove this alias from pathToAlias
       // because this file will be fetched by fetch operator
-      LinkedHashMap<String, ArrayList<String>> pathToAliases = newWork.getPathToAliases();
+      LinkedHashMap<String, ArrayList<String>> pathToAliases = newWork.getMapWork().getPathToAliases();
 
       // keep record all the input path for this alias
       HashSet<String> pathSet = new HashSet<String>();
@@ -193,7 +193,7 @@ public class MapJoinProcessor implements Transform {
       List<PartitionDesc> partDesc = new ArrayList<PartitionDesc>();
 
       for (String tablePath : pathSet) {
-        PartitionDesc partitionDesc = newWork.getPathToPartitionInfo().get(tablePath);
+        PartitionDesc partitionDesc = newWork.getMapWork().getPathToPartitionInfo().get(tablePath);
         // create fetchwork for non partitioned table
         if (partitionDesc.getPartSpec() == null || partitionDesc.getPartSpec().size() == 0) {
           fetchWork = new FetchWork(tablePath, partitionDesc.getTableDesc());
@@ -205,7 +205,7 @@ public class MapJoinProcessor implements Transform {
       }
       // create fetchwork for partitioned table
       if (fetchWork == null) {
-        TableDesc table = newWork.getAliasToPartnInfo().get(alias).getTableDesc();
+        TableDesc table = newWork.getMapWork().getAliasToPartnInfo().get(alias).getTableDesc();
         fetchWork = new FetchWork(partDir, partDesc, table);
       }
       // set alias to fetch work
@@ -213,13 +213,13 @@ public class MapJoinProcessor implements Transform {
     }
     // remove small table ailias from aliasToWork;Avoid concurrent modification
     for (String alias : smallTableAliasList) {
-      newWork.getAliasToWork().remove(alias);
+      newWork.getMapWork().getAliasToWork().remove(alias);
     }
 
     // set up local work
-    newWork.setMapLocalWork(newLocalWork);
+    newWork.getMapWork().setMapLocalWork(newLocalWork);
     // remove reducer
-    newWork.setReducer(null);
+    newWork.setReduceWork(null);
     // return the big table alias
     if (bigTableAlias == null) {
       throw new SemanticException("Big Table Alias is null");
@@ -240,8 +240,8 @@ public class MapJoinProcessor implements Transform {
   public static String genMapJoinOpAndLocalWork(MapredWork newWork, JoinOperator op, int mapJoinPos)
       throws SemanticException {
     LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap =
-        newWork.getOpParseCtxMap();
-    QBJoinTree newJoinTree = newWork.getJoinTree();
+        newWork.getMapWork().getOpParseCtxMap();
+    QBJoinTree newJoinTree = newWork.getMapWork().getJoinTree();
     // generate the map join operator; already checked the map join
     MapJoinOperator newMapJoinOp = MapJoinProcessor.convertMapJoin(opParseCtxMap, op,
         newJoinTree, mapJoinPos, true, false);
@@ -256,14 +256,15 @@ public class MapJoinProcessor implements Transform {
       String bigTableAlias = MapJoinProcessor
           .genMapJoinLocalWork(newWork, newMapJoinOp, mapJoinPos);
       // clean up the mapred work
-      newWork.setOpParseCtxMap(null);
-      newWork.setJoinTree(null);
+      newWork.getMapWork().setOpParseCtxMap(null);
+      newWork.getMapWork().setJoinTree(null);
 
       return bigTableAlias;
 
     } catch (Exception e) {
       e.printStackTrace();
-      throw new SemanticException("Generate New MapJoin Opertor Exeception " + e.getMessage());
+      throw new SemanticException("Failed to generate new mapJoin operator " +
+          "by exception : " + e.getMessage());
     }
   }
 

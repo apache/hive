@@ -34,12 +34,12 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
-import org.apache.hadoop.hive.ql.exec.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.optimizer.MapJoinProcessor;
@@ -50,10 +50,12 @@ import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin.ConditionalResolverCommonJoinCtx;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.ReduceWork;
 
 /*
  * Convert tasks involving JOIN into MAPJOIN.
@@ -108,7 +110,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
   }
 
   // Get the position of the big table for this join operator and the given alias
-  private int getPosition(MapredWork work, Operator<? extends OperatorDesc> joinOp,
+  private int getPosition(MapWork work, Operator<? extends OperatorDesc> joinOp,
       String alias) {
     Operator<? extends OperatorDesc> parentOp = work.getAliasToWork().get(alias);
 
@@ -127,9 +129,9 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
    */
   private void mergeMapJoinTaskWithChildMapJoinTask(MapRedTask task, Configuration conf) {
     MapRedTask childTask = (MapRedTask) task.getChildTasks().get(0);
-    MapredWork work = task.getWork();
+    MapWork work = task.getWork().getMapWork();
     MapredLocalWork localWork = work.getMapLocalWork();
-    MapredWork childWork = childTask.getWork();
+    MapWork childWork = childTask.getWork().getMapWork();
     MapredLocalWork childLocalWork = childWork.getMapLocalWork();
 
     // Can this be merged
@@ -205,21 +207,27 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
       }
     }
 
+    // Merge the 2 trees - remove the FileSinkOperator from the first tree pass it to the
+    // top of the second
     Operator<? extends Serializable> childAliasOp =
         childWork.getAliasToWork().values().iterator().next();
     if (fop.getParentOperators().size() > 1) {
       return;
     }
-
-    // Merge the 2 trees - remove the FileSinkOperator from the first tree pass it to the
-    // top of the second
     Operator<? extends Serializable> parentFOp = fop.getParentOperators().get(0);
-    parentFOp.getChildOperators().remove(fop);
-    parentFOp.getChildOperators().add(childAliasOp);
-    List<Operator<? extends OperatorDesc>> parentOps =
-        new ArrayList<Operator<? extends OperatorDesc>>();
-    parentOps.add(parentFOp);
-    childAliasOp.setParentOperators(parentOps);
+    // remove the unnecessary TableScan
+    if (childAliasOp instanceof TableScanOperator) {
+      TableScanOperator tso = (TableScanOperator)childAliasOp;
+      if (tso.getNumChild() != 1) {
+        // shouldn't happen
+        return;
+      }
+      childAliasOp = tso.getChildOperators().get(0);
+      childAliasOp.replaceParent(tso, parentFOp);
+    } else {
+      childAliasOp.setParentOperators(Utilities.makeList(parentFOp));
+    }
+    parentFOp.replaceChild(fop, childAliasOp);
 
     work.getAliasToPartnInfo().putAll(childWork.getAliasToPartnInfo());
     for (Map.Entry<String, PartitionDesc> childWorkEntry : childWork.getPathToPartitionInfo()
@@ -256,19 +264,26 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
    * @param childTask
    */
   private void copyReducerConf(MapRedTask task, MapRedTask childTask) {
-    MapredWork childWork = childTask.getWork();
+    MapredWork mrChildWork = childTask.getWork();
+    ReduceWork childWork = childTask.getWork().getReduceWork();
+    if (childWork == null) {
+      return;
+    }
+
     Operator childReducer = childWork.getReducer();
     MapredWork work = task.getWork();
     if (childReducer == null) {
       return;
     }
-    work.setReducer(childReducer);
-    work.setNumReduceTasks(childWork.getNumReduceTasks());
-    work.setJoinTree(childWork.getJoinTree());
-    work.setNeedsTagging(childWork.getNeedsTagging());
+    ReduceWork rWork = new ReduceWork();
+    work.setReduceWork(rWork);
+    rWork.setReducer(childReducer);
+    rWork.setNumReduceTasks(childWork.getNumReduceTasks());
+    work.getMapWork().setJoinTree(mrChildWork.getMapWork().getJoinTree());
+    rWork.setNeedsTagging(childWork.getNeedsTagging());
 
     // Make sure the key configuration is correct, clear and regenerate.
-    work.getTagToValueDesc().clear();
+    rWork.getTagToValueDesc().clear();
     GenMapRedUtils.setKeyAndValueDescForTaskTree(task);
   }
 
@@ -303,10 +318,9 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
       return;
     }
     MapRedTask childTask = (MapRedTask) firstChildTask;
-    MapredWork mapJoinWork = mapJoinTask.getWork();
+    MapWork mapJoinWork = mapJoinTask.getWork().getMapWork();
     MapredWork childWork = childTask.getWork();
-    Operator childReducer = childWork.getReducer();
-    if (childReducer == null) {
+    if (childWork.getReduceWork() == null) {
       // Not a MR job, nothing to merge.
       return;
     }
@@ -316,7 +330,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     if (aliasToWork.size() > 1) {
       return;
     }
-    Map<String, ArrayList<String>> childPathToAliases = childWork.getPathToAliases();
+    Map<String, ArrayList<String>> childPathToAliases = childWork.getMapWork().getPathToAliases();
     if (childPathToAliases.size() > 1) {
       return;
     }
@@ -347,7 +361,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     }
 
     MapredLocalWork mapJoinLocalWork = mapJoinWork.getMapLocalWork();
-    MapredLocalWork childLocalWork = childWork.getMapLocalWork();
+    MapredLocalWork childLocalWork = childWork.getMapWork().getMapLocalWork();
 
     // Either of them should not be bucketed
     if ((mapJoinLocalWork != null && mapJoinLocalWork.getBucketMapjoinContext() != null) ||
@@ -355,12 +369,12 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
       return;
     }
 
-    if (childWork.getAliasToWork().size() > 1) {
+    if (childWork.getMapWork().getAliasToWork().size() > 1) {
       return;
     }
 
     Operator<? extends Serializable> childAliasOp =
-        childWork.getAliasToWork().values().iterator().next();
+        childWork.getMapWork().getAliasToWork().values().iterator().next();
     if (mapJoinTaskFileSinkOperator.getParentOperators().size() > 1) {
       return;
     }
@@ -387,10 +401,10 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     parentOps.add(parentFOp);
     childAliasOp.setParentOperators(parentOps);
 
-    mapJoinWork.getAliasToPartnInfo().putAll(childWork.getAliasToPartnInfo());
-    for (Map.Entry<String, PartitionDesc> childWorkEntry : childWork.getPathToPartitionInfo()
+    mapJoinWork.getAliasToPartnInfo().putAll(childWork.getMapWork().getAliasToPartnInfo());
+    for (Map.Entry<String, PartitionDesc> childWorkEntry : childWork.getMapWork().getPathToPartitionInfo()
         .entrySet()) {
-      if (childWork.getAliasToPartnInfo().containsValue(childWorkEntry.getKey())) {
+      if (childWork.getMapWork().getAliasToPartnInfo().containsValue(childWorkEntry.getKey())) {
         mapJoinWork.getPathToPartitionInfo()
             .put(childWorkEntry.getKey(), childWorkEntry.getValue());
       }
@@ -416,6 +430,22 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     copyReducerConf(mapJoinTask, childTask);
   }
 
+  public static boolean cannotConvert(String bigTableAlias,
+      Map<String, Long> aliasToSize, long aliasTotalKnownInputSize,
+      long ThresholdOfSmallTblSizeSum) {
+    boolean ret = false;
+    Long aliasKnownSize = aliasToSize.get(bigTableAlias);
+    if (aliasKnownSize != null && aliasKnownSize.longValue() > 0) {
+      long smallTblTotalKnownSize = aliasTotalKnownInputSize
+          - aliasKnownSize.longValue();
+      if (smallTblTotalKnownSize > ThresholdOfSmallTblSizeSum) {
+        //this table is not good to be a big table.
+        ret = true;
+      }
+    }
+    return ret;
+  }
+
   @Override
   public Task<? extends Serializable> processCurrentTask(MapRedTask currTask,
       ConditionalTask conditionalTask, Context context)
@@ -428,7 +458,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
     }
     currTask.setTaskTag(Task.COMMON_JOIN);
 
-    MapredWork currWork = currTask.getWork();
+    MapWork currWork = currTask.getWork().getMapWork();
 
     // create conditional work list and task list
     List<Serializable> listWorks = new ArrayList<Serializable>();
@@ -519,7 +549,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
 
       if (convertJoinMapJoin) {
         // create map join task and set big table as bigTablePosition
-        MapRedTask newTask = convertTaskToMapJoinTask(currWork, bigTablePosition).getFirst();
+        MapRedTask newTask = convertTaskToMapJoinTask(currTask.getWork(), bigTablePosition).getFirst();
 
         newTask.setTaskTag(Task.MAPJOIN_ONLY_NOBACKUP);
         replaceTask(currTask, newTask, physicalContext);
@@ -555,23 +585,18 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
         }
         // deep copy a new mapred work from xml
         // Once HIVE-4396 is in, it would be faster to use a cheaper method to clone the plan
-        String xml = currWork.toXML();
+        String xml = currTask.getWork().toXML();
         InputStream in = new ByteArrayInputStream(xml.getBytes("UTF-8"));
-        MapredWork newWork = Utilities.deserializeMapRedWork(in, physicalContext.getConf());
+        MapredWork newWork = Utilities.deserializeObject(in);
 
         // create map join task and set big table as i
         ObjectPair<MapRedTask, String> newTaskAlias = convertTaskToMapJoinTask(newWork, i);
         MapRedTask newTask = newTaskAlias.getFirst();
         bigTableAlias = newTaskAlias.getSecond();
 
-        Long aliasKnownSize = aliasToSize.get(bigTableAlias);
-        if (aliasKnownSize != null && aliasKnownSize.longValue() > 0) {
-          long smallTblTotalKnownSize = aliasTotalKnownInputSize
-              - aliasKnownSize.longValue();
-          if (smallTblTotalKnownSize > ThresholdOfSmallTblSizeSum) {
-            // this table is not good to be a big table.
-            continue;
-          }
+        if (cannotConvert(bigTableAlias, aliasToSize,
+            aliasTotalKnownInputSize, ThresholdOfSmallTblSizeSum)) {
+          continue;
         }
 
         // add into conditional task
@@ -642,14 +667,15 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
   }
 
   private JoinOperator getJoinOp(MapRedTask task) throws SemanticException {
-    MapredWork work = task.getWork();
-    if (work == null) {
+    MapWork mWork = task.getWork().getMapWork();
+    ReduceWork rWork = task.getWork().getReduceWork();
+    if (rWork == null) {
       return null;
     }
-    Operator<? extends OperatorDesc> reducerOp = work.getReducer();
+    Operator<? extends OperatorDesc> reducerOp = rWork.getReducer();
     if (reducerOp instanceof JoinOperator) {
       /* Is any operator present, which prevents the conversion */
-      Map<String, Operator<? extends OperatorDesc>> aliasToWork = work.getAliasToWork();
+      Map<String, Operator<? extends OperatorDesc>> aliasToWork = mWork.getAliasToWork();
       for (Operator<? extends OperatorDesc> op : aliasToWork.values()) {
         if (!checkOperatorOKMapJoinConversion(op)) {
           return null;

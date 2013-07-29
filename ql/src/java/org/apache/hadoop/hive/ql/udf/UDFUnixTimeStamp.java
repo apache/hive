@@ -24,6 +24,7 @@ import java.util.Date;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -104,6 +105,15 @@ public class UDFUnixTimeStamp extends UDF {
     }
 
     return evaluate(dateText);
+  }
+
+  public LongWritable evaluate(DateWritable d) {
+    if (d == null) {
+      return null;
+    } else {
+      result.set(d.getTimeInSeconds());
+      return result;
+    }
   }
 
   public LongWritable evaluate(TimestampWritable i) {

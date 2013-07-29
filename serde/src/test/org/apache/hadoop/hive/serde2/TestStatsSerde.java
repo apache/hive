@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.serde2;
 
-import java.math.BigInteger;
+import java.sql.Date;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
@@ -114,13 +114,14 @@ public class TestStatsSerde extends TestCase {
         Double d = randField > 5 ? null : Double.valueOf(r.nextDouble());
         String st = randField > 6 ? null : TestBinarySortableSerDe
             .getRandString(r);
-	HiveDecimal bd = randField > 8 ? null : TestBinarySortableSerDe.getRandHiveDecimal(r);
+	HiveDecimal bd = randField > 7 ? null : TestBinarySortableSerDe.getRandHiveDecimal(r);
+	      Date date = randField > 8 ? null : TestBinarySortableSerDe.getRandDate(r);
         MyTestInnerStruct is = randField > 9 ? null : new MyTestInnerStruct(r
             .nextInt(5) - 2, r.nextInt(5) - 2);
         List<Integer> li = randField > 10 ? null : TestBinarySortableSerDe
             .getRandIntegerArray(r);
         byte[] ba = TestBinarySortableSerDe.getRandBA(r, i);
-        MyTestClass t = new MyTestClass(b, s, n, l, f, d, st, bd, is, li,ba);
+        MyTestClass t = new MyTestClass(b, s, n, l, f, d, st, bd, date, is, li,ba);
         rows[i] = t;
       }
 

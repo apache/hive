@@ -262,12 +262,21 @@
 
     <target name="test" depends="property-check, udfs, tar, init-test">
 
+        <!-- fork (parallelization) factors for e2e tests execution.
+             Defaults are 1, which means *no* parellelization: -->
+        <property name="fork.factor.group" value="1"/>
+        <property name="fork.factor.conf.file" value="1"/>
+        <property name="e2e.debug" value="false"/>
+
         <!-- If they have not specified tests to run then null it out -->
         <property name="tests.to.run" value=""/>
         <echo/>
         <exec executable="./test_harness.pl" dir="${test.location}" failonerror="true">
             <env key="HARNESS_ROOT" value="."/>
             <env key="PH_LOCAL" value="${harness.PH_LOCAL}"/>
+            <env key="FORK_FACTOR_GROUP" value="${fork.factor.group}"/>
+            <env key="FORK_FACTOR_FILE" value="${fork.factor.conf.file}"/>
+            <env key="E2E_DEBUG" value="${e2e.debug}"/>
             <env key="HADOOP_HOME" value="${hadoop.home}"/>
             <env key="HADOOP_CONF_DIR" value="${harness.cluster.conf}"/>
             <env key="HIVE_HOME" value="${hive.home}"/>

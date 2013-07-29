@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -152,7 +153,8 @@ public final class TypeCheckProcFactory {
         getStrExprProcessor());
     opRules.put(new RuleRegExp("R4", HiveParser.KW_TRUE + "%|"
         + HiveParser.KW_FALSE + "%"), getBoolExprProcessor());
-    opRules.put(new RuleRegExp("R5", HiveParser.TOK_TABLE_OR_COL + "%"),
+    opRules.put(new RuleRegExp("R5", HiveParser.TOK_DATELITERAL + "%"), getDateExprProcessor());
+    opRules.put(new RuleRegExp("R6", HiveParser.TOK_TABLE_OR_COL + "%"),
         getColumnExprProcessor());
 
     // The dispatcher fires the processor corresponding to the closest matching
@@ -388,6 +390,51 @@ public final class TypeCheckProcFactory {
   }
 
   /**
+   * Processor for date constants.
+   */
+  public static class DateExprProcessor implements NodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+
+      TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
+      if (ctx.getError() != null) {
+        return null;
+      }
+
+      ExprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
+      if (desc != null) {
+        return desc;
+      }
+
+      ASTNode expr = (ASTNode) nd;
+
+      // Get the string value and convert to a Date value.
+      if (expr.getChildCount() == 1) {
+        try {
+          String dateString = BaseSemanticAnalyzer.stripQuotes(expr.getChild(0).getText());
+          Date date = Date.valueOf(dateString);
+          return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo, date);
+        } catch (IllegalArgumentException err) {
+          throw new SemanticException("Unable to convert date literal string to date value.", err);
+        }
+      } else {
+        throw new SemanticException("Expected date string after DATE keyword");
+      }
+    }
+  }
+
+  /**
+   * Factory method to get DateExprProcessor.
+   *
+   * @return DateExprProcessor.
+   */
+  public static DateExprProcessor getDateExprProcessor() {
+    return new DateExprProcessor();
+  }
+
+  /**
    * Processor for table columns.
    */
   public static class ColumnExprProcessor implements NodeProcessor {
@@ -519,6 +566,8 @@ public final class TypeCheckProcFactory {
           serdeConstants.STRING_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_BINARY,
           serdeConstants.BINARY_TYPE_NAME);
+      conversionFunctionTextHashMap.put(HiveParser.TOK_DATE,
+          serdeConstants.DATE_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_TIMESTAMP,
           serdeConstants.TIMESTAMP_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_DECIMAL,
@@ -764,10 +813,9 @@ public final class TypeCheckProcFactory {
 
           if (inferTypes.contains(constType) && inferTypes.contains(columnType)
               && !columnType.equalsIgnoreCase(constType)) {
-            String constValue =
-                ((ExprNodeConstantDesc) children.get(constIdx)).getValue().toString();
+            Object originalValue =  ((ExprNodeConstantDesc) children.get(constIdx)).getValue();
+            String constValue = originalValue.toString();
             boolean triedDouble = false;
-
             Number value = null;
             try {
               if (columnType.equalsIgnoreCase(serdeConstants.TINYINT_TYPE_NAME)) {
@@ -780,12 +828,17 @@ public final class TypeCheckProcFactory {
                 value = new Long(constValue);
               } else if (columnType.equalsIgnoreCase(serdeConstants.FLOAT_TYPE_NAME)) {
                 value = new Float(constValue);
-              } else if (columnType.equalsIgnoreCase(serdeConstants.DOUBLE_TYPE_NAME)
-                  || (columnType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME)
-                     && !constType.equalsIgnoreCase(serdeConstants.BIGINT_TYPE_NAME))) {
-                // no smart inference for queries like "str_col = bigint_const"
+              } else if (columnType.equalsIgnoreCase(serdeConstants.DOUBLE_TYPE_NAME)) {
                 triedDouble = true;
                 value = new Double(constValue);
+              } else if (columnType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME)) {
+                // Don't scramble the const type information if comparing to a string column,
+                // It's not useful to do so; as of now, there is also a hack in
+                // SemanticAnalyzer#genTablePlan that causes every column to look like a string
+                // a string down here, so number type information is always lost otherwise.
+                boolean isNumber = (originalValue instanceof Number);
+                triedDouble = !isNumber;
+                value = isNumber ? (Number)originalValue : new Double(constValue);
               }
             } catch (NumberFormatException nfe) {
               // this exception suggests the precise type inference did not succeed

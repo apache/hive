@@ -419,6 +419,21 @@ public interface RawStore extends Configurable {
 
  public abstract long cleanupEvents();
 
+ public abstract boolean addToken(String tokenIdentifier, String delegationToken);
 
+ public abstract boolean removeToken(String tokenIdentifier);
+
+ public abstract String getToken(String tokenIdentifier);
+
+ public abstract List<String> getAllTokenIdentifiers();
+
+ public abstract int addMasterKey(String key) throws MetaException;
+
+ public abstract void updateMasterKey(Integer seqNo, String key)
+     throws NoSuchObjectException, MetaException;
+
+ public abstract boolean removeMasterKey(Integer keySeq);
+
+ public abstract String[] getMasterKeys();
 
 }

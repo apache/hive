@@ -127,4 +127,9 @@ public class HCatHadoopShims23 implements HCatHadoopShims {
         // resolvePath is a sure shot way of knowing which file system the file is.
         return "hdfs".equals(fs.resolvePath(path).toUri().getScheme());
     }
+
+    @Override
+    public InetSocketAddress getAddress(Configuration conf) {
+        return null;
+    }
 }

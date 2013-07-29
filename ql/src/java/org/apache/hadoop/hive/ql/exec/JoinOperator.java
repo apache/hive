@@ -87,14 +87,15 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
       }
 
       // number of rows for the key in the given table
-      int sz = storage[alias].size();
+      long sz = storage[alias].size();
       StructObjectInspector soi = (StructObjectInspector) inputObjInspectors[tag];
       StructField sf = soi.getStructFieldRef(Utilities.ReduceField.KEY
           .toString());
       List keyObject = (List) soi.getStructFieldData(row, sf);
       // Are we consuming too much memory
-      if (alias == numAliases - 1 && !(handleSkewJoin && skewJoinKeyContext.currBigKeyTag >= 0)) {
-        if (sz == joinEmitInterval) {
+      if (alias == numAliases - 1 && !(handleSkewJoin && skewJoinKeyContext.currBigKeyTag >= 0) &&
+          !hasLeftSemiJoin) {
+        if (sz == joinEmitInterval && !hasFilter(alias)) {
           // The input is sorted by alias, so if we are already in the last join
           // operand,
           // we can emit some results now.

@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
+import org.apache.hadoop.hive.ql.plan.MuxDesc;
+import org.apache.hadoop.hive.ql.plan.DemuxDesc;
 import org.apache.hadoop.hive.ql.plan.DummyStoreDesc;
 import org.apache.hadoop.hive.ql.plan.ExtractDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -98,6 +100,10 @@ public final class OperatorFactory {
         HashTableSinkOperator.class));
     opvec.add(new OpTuple<DummyStoreDesc>(DummyStoreDesc.class,
         DummyStoreOperator.class));
+    opvec.add(new OpTuple<DemuxDesc>(DemuxDesc.class,
+        DemuxOperator.class));
+    opvec.add(new OpTuple<MuxDesc>(MuxDesc.class,
+        MuxOperator.class));
   }
 
   public static <T extends OperatorDesc> Operator<T> get(Class<T> opClass) {
@@ -257,7 +263,7 @@ public final class OperatorFactory {
   public static <T extends OperatorDesc> Operator<T> getAndMakeChild(T conf,
       RowSchema rwsch, Map<String, ExprNodeDesc> colExprMap, Operator... oplist) {
     Operator<T> ret = getAndMakeChild(conf, rwsch, oplist);
-    ret.setColumnExprMap(colExprMap);    
+    ret.setColumnExprMap(colExprMap);
     return (ret);
   }
 

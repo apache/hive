@@ -23,8 +23,8 @@ package org.apache.hadoop.hive.ql.exec.errors;
  */
 public class ErrorAndSolution {
 
-  private String error = null;
-  private String solution = null;
+  private final String error;
+  private final String solution;
 
   ErrorAndSolution(String error, String solution) {
     this.error = error;

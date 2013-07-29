@@ -9,7 +9,7 @@ FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@loadpart1@ds=2009-01-01
-FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask
 PREHOOK: query: DESCRIBE loadpart1
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE loadpart1

@@ -106,8 +106,8 @@ public class SkewedValueList implements org.apache.thrift.TBase<SkewedValueList,
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.SKEWED_VALUE_LIST, new org.apache.thrift.meta_data.FieldMetaData("skewedValueList", org.apache.thrift.TFieldRequirementType.DEFAULT,
-        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST,
+    tmpMap.put(_Fields.SKEWED_VALUE_LIST, new org.apache.thrift.meta_data.FieldMetaData("skewedValueList", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+        new org.apache.thrift.meta_data.ListMetaData(org.apache.thrift.protocol.TType.LIST, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(SkewedValueList.class, metaDataMap);
@@ -339,7 +339,7 @@ public class SkewedValueList implements org.apache.thrift.TBase<SkewedValueList,
       while (true)
       {
         schemeField = iprot.readFieldBegin();
-        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) {
+        if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
           break;
         }
         switch (schemeField.id) {
@@ -357,7 +357,7 @@ public class SkewedValueList implements org.apache.thrift.TBase<SkewedValueList,
                 iprot.readListEnd();
               }
               struct.setSkewedValueListIsSet(true);
-            } else {
+            } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;

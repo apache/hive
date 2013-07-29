@@ -8,5 +8,4 @@ DROP TABLE xxx6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@xxx6
 PREHOOK: Output: default@xxx6
-FAILED: Error in metadata: Cannot drop a view with DROP TABLE
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. Cannot drop a view with DROP TABLE

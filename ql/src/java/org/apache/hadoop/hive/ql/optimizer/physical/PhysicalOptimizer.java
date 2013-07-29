@@ -67,6 +67,9 @@ public class PhysicalOptimizer {
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVEMETADATAONLYQUERIES)) {
       resolvers.add(new MetadataOnlyOptimizer());
     }
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVESAMPLINGFORORDERBY)) {
+      resolvers.add(new SamplingOptimizer());
+    }
 
     // Physical optimizers which follow this need to be careful not to invalidate the inferences
     // made by this optimizer. Only optimizers which depend on the results of this one should

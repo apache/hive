@@ -42,7 +42,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key < 20.0)
+                  expr: (key < 20)
                   type: boolean
               Select Operator
                 expressions:
@@ -78,7 +78,7 @@ STAGE PLANS:
                           type: bigint
             Filter Operator
               predicate:
-                  expr: (key < 20.0)
+                  expr: (key < 20)
                   type: boolean
               Select Operator
                 expressions:
@@ -317,7 +317,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key < 20.0)
+                  expr: (key < 20)
                   type: boolean
               Select Operator
                 expressions:
@@ -353,7 +353,7 @@ STAGE PLANS:
                           type: bigint
             Filter Operator
               predicate:
-                  expr: (key < 20.0)
+                  expr: (key < 20)
                   type: boolean
               Select Operator
                 expressions:
@@ -613,7 +613,7 @@ STAGE PLANS:
             alias: b
             Filter Operator
               predicate:
-                  expr: (key <= 20.0)
+                  expr: (key <= 20)
                   type: boolean
               Select Operator
                 expressions:
@@ -793,7 +793,7 @@ STAGE PLANS:
             alias: src1
             Filter Operator
               predicate:
-                  expr: ((key > 10.0) and (key < 20.0))
+                  expr: ((key > 10) and (key < 20))
                   type: boolean
               Select Operator
                 expressions:
@@ -961,7 +961,7 @@ STAGE PLANS:
             alias: src2
             Filter Operator
               predicate:
-                  expr: ((key > 15.0) and (key < 25.0))
+                  expr: ((key > 15) and (key < 25))
                   type: boolean
               Select Operator
                 expressions:

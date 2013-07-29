@@ -1,0 +1,172 @@
+PREHOOK: query: drop table ctas_date_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table ctas_date_1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table ctas_date_2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table ctas_date_2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop view ctas_date_3
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view ctas_date_3
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: drop view ctas_date_4
+PREHOOK: type: DROPVIEW
+POSTHOOK: query: drop view ctas_date_4
+POSTHOOK: type: DROPVIEW
+PREHOOK: query: create table ctas_date_1 (key int, value string, dd date)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table ctas_date_1 (key int, value string, dd date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@ctas_date_1
+PREHOOK: query: insert overwrite table ctas_date_1 
+  select key, value, date '2012-01-01' from src sort by key, value limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@ctas_date_1
+POSTHOOK: query: insert overwrite table ctas_date_1 
+  select key, value, date '2012-01-01' from src sort by key, value limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@ctas_date_1
+POSTHOOK: Lineage: ctas_date_1.dd SIMPLE []
+POSTHOOK: Lineage: ctas_date_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_date_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- create table as with date column
+create table ctas_date_2 as select key, value, dd, date '1980-12-12' from ctas_date_1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@ctas_date_1
+POSTHOOK: query: -- create table as with date column
+create table ctas_date_2 as select key, value, dd, date '1980-12-12' from ctas_date_1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@ctas_date_1
+POSTHOOK: Output: default@ctas_date_2
+POSTHOOK: Lineage: ctas_date_1.dd SIMPLE []
+POSTHOOK: Lineage: ctas_date_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_date_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- view with date column
+create view ctas_date_3 as select * from ctas_date_2 where dd > date '2000-01-01'
+PREHOOK: type: CREATEVIEW
+POSTHOOK: query: -- view with date column
+create view ctas_date_3 as select * from ctas_date_2 where dd > date '2000-01-01'
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@ctas_date_3
+POSTHOOK: Lineage: ctas_date_1.dd SIMPLE []
+POSTHOOK: Lineage: ctas_date_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_date_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create view ctas_date_4 as select * from ctas_date_2 where dd < date '2000-01-01'
+PREHOOK: type: CREATEVIEW
+POSTHOOK: query: create view ctas_date_4 as select * from ctas_date_2 where dd < date '2000-01-01'
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@ctas_date_4
+POSTHOOK: Lineage: ctas_date_1.dd SIMPLE []
+POSTHOOK: Lineage: ctas_date_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_date_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select key, value, dd, date '1980-12-12' from ctas_date_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_date_1
+#### A masked pattern was here ####
+POSTHOOK: query: select key, value, dd, date '1980-12-12' from ctas_date_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_date_1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: ctas_date_1.dd SIMPLE []
+POSTHOOK: Lineage: ctas_date_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_date_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0	val_0	2012-01-01	1980-12-12
+0	val_0	2012-01-01	1980-12-12
+0	val_0	2012-01-01	1980-12-12
+10	val_10	2012-01-01	1980-12-12
+100	val_100	2012-01-01	1980-12-12
+PREHOOK: query: select * from ctas_date_2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_date_2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ctas_date_2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_date_2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: ctas_date_1.dd SIMPLE []
+POSTHOOK: Lineage: ctas_date_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_date_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0	val_0	2012-01-01	1980-12-12
+0	val_0	2012-01-01	1980-12-12
+0	val_0	2012-01-01	1980-12-12
+10	val_10	2012-01-01	1980-12-12
+100	val_100	2012-01-01	1980-12-12
+PREHOOK: query: select * from ctas_date_3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_date_2
+PREHOOK: Input: default@ctas_date_3
+#### A masked pattern was here ####
+POSTHOOK: query: select * from ctas_date_3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_date_2
+POSTHOOK: Input: default@ctas_date_3
+#### A masked pattern was here ####
+POSTHOOK: Lineage: ctas_date_1.dd SIMPLE []
+POSTHOOK: Lineage: ctas_date_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_date_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0	val_0	2012-01-01	1980-12-12
+0	val_0	2012-01-01	1980-12-12
+0	val_0	2012-01-01	1980-12-12
+10	val_10	2012-01-01	1980-12-12
+100	val_100	2012-01-01	1980-12-12
+PREHOOK: query: select count(*) from ctas_date_4
+PREHOOK: type: QUERY
+PREHOOK: Input: default@ctas_date_2
+PREHOOK: Input: default@ctas_date_4
+#### A masked pattern was here ####
+POSTHOOK: query: select count(*) from ctas_date_4
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@ctas_date_2
+POSTHOOK: Input: default@ctas_date_4
+#### A masked pattern was here ####
+POSTHOOK: Lineage: ctas_date_1.dd SIMPLE []
+POSTHOOK: Lineage: ctas_date_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_date_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0
+PREHOOK: query: drop table ctas_date_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ctas_date_1
+PREHOOK: Output: default@ctas_date_1
+POSTHOOK: query: drop table ctas_date_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ctas_date_1
+POSTHOOK: Output: default@ctas_date_1
+POSTHOOK: Lineage: ctas_date_1.dd SIMPLE []
+POSTHOOK: Lineage: ctas_date_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_date_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: drop table ctas_date_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@ctas_date_2
+PREHOOK: Output: default@ctas_date_2
+POSTHOOK: query: drop table ctas_date_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@ctas_date_2
+POSTHOOK: Output: default@ctas_date_2
+POSTHOOK: Lineage: ctas_date_1.dd SIMPLE []
+POSTHOOK: Lineage: ctas_date_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_date_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: drop view ctas_date_3
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@ctas_date_3
+PREHOOK: Output: default@ctas_date_3
+POSTHOOK: query: drop view ctas_date_3
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@ctas_date_3
+POSTHOOK: Output: default@ctas_date_3
+POSTHOOK: Lineage: ctas_date_1.dd SIMPLE []
+POSTHOOK: Lineage: ctas_date_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_date_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: drop view ctas_date_4
+PREHOOK: type: DROPVIEW
+PREHOOK: Input: default@ctas_date_4
+PREHOOK: Output: default@ctas_date_4
+POSTHOOK: query: drop view ctas_date_4
+POSTHOOK: type: DROPVIEW
+POSTHOOK: Input: default@ctas_date_4
+POSTHOOK: Output: default@ctas_date_4
+POSTHOOK: Lineage: ctas_date_1.dd SIMPLE []
+POSTHOOK: Lineage: ctas_date_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: ctas_date_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

@@ -50,6 +50,7 @@ public class Main {
     private static final Log LOG = LogFactory.getLog(Main.class);
 
     public static final int DEFAULT_PORT = 8080;
+    private Server server;
 
     private static volatile AppConfig conf;
 
@@ -62,7 +63,7 @@ public class Main {
         return conf;
     }
 
-    public Main(String[] args) {
+    Main(String[] args) {
         init(args);
     }
 
@@ -115,6 +116,17 @@ public class Main {
             System.exit(1);
         }
     }
+    void stop() {
+        if(server != null) {
+            try {
+                server.stop();
+            }
+            catch(Exception ex) {
+                LOG.warn("Failed to stop jetty.Server", ex);
+            }
+        }
+    }
+
 
     private void checkEnv() {
         checkCurrentDirPermissions();
@@ -179,6 +191,7 @@ public class Main {
 
         // Start the server
         server.start();
+        this.server = server;
         return server;
     }
 

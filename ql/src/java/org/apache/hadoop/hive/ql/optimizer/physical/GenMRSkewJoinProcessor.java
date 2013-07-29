@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -50,6 +49,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -104,6 +104,7 @@ public final class GenMRSkewJoinProcessor {
    * https://issues.apache.org/jira/browse/HIVE-964.
    *
    */
+  @SuppressWarnings("unchecked")
   public static void processSkewJoin(JoinOperator joinOp,
       Task<? extends Serializable> currTask, ParseContext parseCtx)
       throws SemanticException {
@@ -151,7 +152,7 @@ public final class GenMRSkewJoinProcessor {
     List<Task<? extends Serializable>> listTasks = new ArrayList<Task<? extends Serializable>>();
     MapredWork currPlan = (MapredWork) currTask.getWork();
 
-    TableDesc keyTblDesc = (TableDesc) currPlan.getKeyDesc().clone();
+    TableDesc keyTblDesc = (TableDesc) currPlan.getReduceWork().getKeyDesc().clone();
     List<String> joinKeys = Utilities
         .getColumnNames(keyTblDesc.getProperties());
     List<String> joinKeyTypes = Utilities.getColumnTypes(keyTblDesc
@@ -232,7 +233,7 @@ public final class GenMRSkewJoinProcessor {
 
     for (int i = 0; i < numAliases - 1; i++) {
       Byte src = tags[i];
-      MapredWork newPlan = PlanUtils.getMapRedWork();
+      MapWork newPlan = PlanUtils.getMapRedWork().getMapWork();
 
       // This code has been only added for testing
       boolean mapperCannotSpanPartns =
@@ -246,7 +247,7 @@ public final class GenMRSkewJoinProcessor {
         StringBuilder sb = new StringBuilder(xmlPlan);
         ByteArrayInputStream bis;
         bis = new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
-        clonePlan = Utilities.deserializeMapRedWork(bis, parseCtx.getConf());
+        clonePlan = Utilities.deserializeObject(bis);
       } catch (UnsupportedEncodingException e) {
         throw new SemanticException(e);
       }
@@ -276,7 +277,7 @@ public final class GenMRSkewJoinProcessor {
       newPlan.getPathToPartitionInfo().put(bigKeyDirPath, part);
       newPlan.getAliasToPartnInfo().put(alias, part);
 
-      Operator<? extends OperatorDesc> reducer = clonePlan.getReducer();
+      Operator<? extends OperatorDesc> reducer = clonePlan.getReduceWork().getReducer();
       assert reducer instanceof JoinOperator;
       JoinOperator cloneJoinOp = (JoinOperator) reducer;
 
@@ -328,16 +329,18 @@ public final class GenMRSkewJoinProcessor {
       newPlan
           .setMinSplitSize(HiveConf.getLongVar(jc, HiveConf.ConfVars.HIVESKEWJOINMAPJOINMINSPLIT));
       newPlan.setInputformat(HiveInputFormat.class.getName());
-      Task<? extends Serializable> skewJoinMapJoinTask = TaskFactory.get(
-          newPlan, jc);
+
+      MapredWork w = new MapredWork();
+      w.setMapWork(newPlan);
+
+      Task<? extends Serializable> skewJoinMapJoinTask = TaskFactory.get(w, jc);
       bigKeysDirToTaskMap.put(bigKeyDirPath, skewJoinMapJoinTask);
       listWorks.add(skewJoinMapJoinTask.getWork());
       listTasks.add(skewJoinMapJoinTask);
     }
 
     ConditionalWork cndWork = new ConditionalWork(listWorks);
-    ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork,
-        parseCtx.getConf());
+    ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork, parseCtx.getConf());
     cndTsk.setListTasks(listTasks);
     cndTsk.setResolver(new ConditionalResolverSkewJoin());
     cndTsk

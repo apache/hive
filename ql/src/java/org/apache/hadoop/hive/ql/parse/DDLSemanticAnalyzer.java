@@ -156,8 +156,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   public static String getTypeName(int token) throws SemanticException {
-    // date and datetime types aren't currently supported
-    if (token == HiveParser.TOK_DATE || token == HiveParser.TOK_DATETIME) {
+    // datetime type isn't currently supported
+    if (token == HiveParser.TOK_DATETIME) {
       throw new SemanticException(ErrorMsg.UNSUPPORTED_TYPE.getMsg());
     }
     return TokenToTypeName.get(token);

@@ -21,10 +21,11 @@ package org.apache.hadoop.hive.hbase;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Map.Entry;
+import java.util.NavigableMap;
 
 import org.apache.hadoop.hbase.client.Result;
+import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazyMap;
@@ -42,6 +43,7 @@ public class LazyHBaseCellMap extends LazyMap {
 
   private Result result;
   private byte [] columnFamilyBytes;
+  private byte[] qualPrefix;
   private List<Boolean> binaryStorage;
 
   /**
@@ -54,12 +56,21 @@ public class LazyHBaseCellMap extends LazyMap {
 
   public void init(
       Result r,
-      byte [] columnFamilyBytes,
+      byte[] columnFamilyBytes,
       List<Boolean> binaryStorage) {
+
+    init(r, columnFamilyBytes, binaryStorage, null);
+  }
+
+  public void init(
+      Result r,
+      byte [] columnFamilyBytes,
+      List<Boolean> binaryStorage, byte[] qualPrefix) {
 
     result = r;
     this.columnFamilyBytes = columnFamilyBytes;
     this.binaryStorage = binaryStorage;
+    this.qualPrefix = qualPrefix;
     setParsed(false);
   }
 
@@ -77,6 +88,12 @@ public class LazyHBaseCellMap extends LazyMap {
       for (Entry<byte [], byte []> e : familyMap.entrySet()) {
         // null values and values of zero length are not added to the cachedMap
         if (e.getValue() == null || e.getValue().length == 0) {
+          continue;
+        }
+
+        if (qualPrefix != null && !Bytes.startsWith(e.getKey(), qualPrefix)) {
+          // since we were provided a qualifier prefix, only accept qualifiers that start with this
+          // prefix
           continue;
         }
 

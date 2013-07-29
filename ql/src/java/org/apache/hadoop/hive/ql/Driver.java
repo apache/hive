@@ -46,7 +46,6 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Schema;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
-import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -78,6 +77,9 @@ import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.formatting.JsonMetaDataFormatter;
+import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatUtils;
+import org.apache.hadoop.hive.ql.metadata.formatting.MetaDataFormatter;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.AbstractSemanticAnalyzerHook;
@@ -126,6 +128,7 @@ public class Driver implements CommandProcessor {
 
   private String errorMessage;
   private String SQLState;
+  private Throwable downstreamError;
 
   // A limit on the number of threads that can be launched
   private int maxthreads;
@@ -143,6 +146,7 @@ public class Driver implements CommandProcessor {
       } catch (SemanticException e) {
         errorMessage = "FAILED: Error in semantic analysis: " + e.getMessage();
         SQLState = ErrorMsg.findSQLState(e.getMessage());
+        downstreamError = e;
         console.printError(errorMessage, "\n"
             + org.apache.hadoop.util.StringUtils.stringifyException(e));
         return false;
@@ -193,7 +197,7 @@ public class Driver implements CommandProcessor {
   public ClusterStatus getClusterStatus() throws Exception {
     ClusterStatus cs;
     try {
-      JobConf job = new JobConf(conf, ExecDriver.class);
+      JobConf job = new JobConf(conf);
       JobClient jc = new JobClient(job);
       cs = jc.getClusterStatus();
     } catch (Exception e) {
@@ -456,12 +460,12 @@ public class Driver implements CommandProcessor {
 
         // serialize the queryPlan
         FileOutputStream fos = new FileOutputStream(queryPlanFileName);
-        Utilities.serializeQueryPlan(plan, fos);
+        Utilities.serializeObject(plan, fos);
         fos.close();
 
         // deserialize the queryPlan
         FileInputStream fis = new FileInputStream(queryPlanFileName);
-        QueryPlan newPlan = Utilities.deserializeQueryPlan(fis, conf);
+        QueryPlan newPlan = Utilities.deserializeObject(fis);
         fis.close();
 
         // Use the deserialized plan
@@ -483,8 +487,9 @@ public class Driver implements CommandProcessor {
           perfLogger.PerfLogBegin(LOG, PerfLogger.DO_AUTHORIZATION);
           doAuthorization(sem);
         } catch (AuthorizationException authExp) {
-          console.printError("Authorization failed:" + authExp.getMessage()
-              + ". Use show grant to get more details.");
+          errorMessage = "Authorization failed:" + authExp.getMessage()
+                  + ". Use show grant to get more details.";
+          console.printError(errorMessage);
           return 403;
         } finally {
           perfLogger.PerfLogEnd(LOG, PerfLogger.DO_AUTHORIZATION);
@@ -502,6 +507,7 @@ public class Driver implements CommandProcessor {
       }
       errorMessage += " " + e.getMessage();
       SQLState = error.getSQLState();
+      downstreamError = e;
       console.printError(errorMessage, "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return error.getErrorCode();
@@ -837,12 +843,14 @@ public class Driver implements CommandProcessor {
     } catch (SemanticException e) {
       errorMessage = "FAILED: Error in acquiring locks: " + e.getMessage();
       SQLState = ErrorMsg.findSQLState(e.getMessage());
+      downstreamError = e;
       console.printError(errorMessage, "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (10);
     } catch (LockException e) {
       errorMessage = "FAILED: Error in acquiring locks: " + e.getMessage();
       SQLState = ErrorMsg.findSQLState(e.getMessage());
+      downstreamError = e;
       console.printError(errorMessage, "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (10);
@@ -869,8 +877,65 @@ public class Driver implements CommandProcessor {
   }
 
   public CommandProcessorResponse run(String command) throws CommandNeedRetryException {
+    CommandProcessorResponse cpr = runInternal(command);
+    if(cpr.getResponseCode() == 0) {
+      return cpr;
+    }
+    SessionState ss = SessionState.get();
+    if(ss == null) {
+      return cpr;
+    }
+    MetaDataFormatter mdf = MetaDataFormatUtils.getFormatter(ss.getConf());
+    if(!(mdf instanceof JsonMetaDataFormatter)) {
+      return cpr;
+    }
+    /*Here we want to encode the error in machine readable way (e.g. JSON)
+     * Ideally, errorCode would always be set to a canonical error defined in ErrorMsg.
+     * In practice that is rarely the case, so the messy logic below tries to tease
+     * out canonical error code if it can.  Exclude stack trace from output when
+     * the error is a specific/expected one.
+     * It's written to stdout for backward compatibility (WebHCat consumes it).*/
+    try {
+      if(downstreamError == null) {
+        mdf.error(ss.out, errorMessage, cpr.getResponseCode(), SQLState);
+        return cpr;
+      }
+      ErrorMsg canonicalErr = ErrorMsg.getErrorMsg(cpr.getResponseCode());
+      if(canonicalErr != null && canonicalErr != ErrorMsg.GENERIC_ERROR) {
+        /*Some HiveExceptions (e.g. SemanticException) don't set
+          canonical ErrorMsg explicitly, but there is logic
+          (e.g. #compile()) to find an appropriate canonical error and
+          return its code as error code. In this case we want to
+          preserve it for downstream code to interpret*/
+        mdf.error(ss.out, errorMessage, cpr.getResponseCode(), SQLState, null);
+        return cpr;
+      }
+      if(downstreamError instanceof HiveException) {
+        HiveException rc = (HiveException) downstreamError;
+        mdf.error(ss.out, errorMessage,
+                rc.getCanonicalErrorMsg().getErrorCode(), SQLState,
+                rc.getCanonicalErrorMsg() == ErrorMsg.GENERIC_ERROR ?
+                        org.apache.hadoop.util.StringUtils.stringifyException(rc)
+                        : null);
+      }
+      else {
+        ErrorMsg canonicalMsg =
+                ErrorMsg.getErrorMsg(downstreamError.getMessage());
+        mdf.error(ss.out, errorMessage, canonicalMsg.getErrorCode(),
+                SQLState, org.apache.hadoop.util.StringUtils.
+                stringifyException(downstreamError));
+      }
+    }
+    catch(HiveException ex) {
+      console.printError("Unable to JSON-encode the error",
+              org.apache.hadoop.util.StringUtils.stringifyException(ex));
+    }
+    return cpr;
+  }
+  private CommandProcessorResponse runInternal(String command) throws CommandNeedRetryException {
     errorMessage = null;
     SQLState = null;
+    downstreamError = null;
 
     if (!validateConfVariables()) {
       return new CommandProcessorResponse(12, errorMessage, SQLState);
@@ -885,10 +950,11 @@ public class Driver implements CommandProcessor {
           driverRunHook.preDriverRun(hookContext);
       }
     } catch (Exception e) {
-      errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e)
-          + "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e);
+      errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
       SQLState = ErrorMsg.findSQLState(e.getMessage());
-      console.printError(errorMessage);
+      downstreamError = e;
+      console.printError(errorMessage + "\n"
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return new CommandProcessorResponse(12, errorMessage, SQLState);
     }
 
@@ -961,10 +1027,11 @@ public class Driver implements CommandProcessor {
           driverRunHook.postDriverRun(hookContext);
       }
     } catch (Exception e) {
-      errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e)
-          + "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e);
+      errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
       SQLState = ErrorMsg.findSQLState(e.getMessage());
-      console.printError(errorMessage);
+      downstreamError = e;
+      console.printError(errorMessage + "\n"
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return new CommandProcessorResponse(12, errorMessage, SQLState);
     }
 
@@ -984,7 +1051,7 @@ public class Driver implements CommandProcessor {
                   .getBoolVar(HiveConf.ConfVars.HIVE_OPTIMIZE_UNION_REMOVE))))) {
       errorMessage = "FAILED: Hive Internal Error: "
           + ErrorMsg.SUPPORT_DIR_MUST_TRUE_FOR_LIST_BUCKETING.getMsg();
-      SQLState = ErrorMsg.findSQLState(errorMessage);
+      SQLState = ErrorMsg.SUPPORT_DIR_MUST_TRUE_FOR_LIST_BUCKETING.getSQLState();
       console.printError(errorMessage + "\n");
       valid = false;
     }
@@ -1158,12 +1225,7 @@ public class Driver implements CommandProcessor {
           }
           Task<? extends Serializable> backupTask = tsk.getAndInitBackupTask();
           if (backupTask != null) {
-            errorMessage = "FAILED: Execution Error, return code " + exitVal + " from "
-                + tsk.getClass().getName();
-            ErrorMsg em = ErrorMsg.getErrorMsg(exitVal);
-            if (em != null) {
-              errorMessage += ". " +  em.getMsg();
-            }
+            setErrorMsgAndDetail(exitVal, tskRes.getTaskError(), tsk);
             console.printError(errorMessage);
             errorMessage = "ATTEMPT: Execute BackupTask: " + backupTask.getClass().getName();
             console.printError(errorMessage);
@@ -1184,13 +1246,7 @@ public class Driver implements CommandProcessor {
 
               perfLogger.PerfLogEnd(LOG, PerfLogger.FAILURE_HOOK + ofh.getClass().getName());
             }
-
-            errorMessage = "FAILED: Execution Error, return code " + exitVal + " from "
-                + tsk.getClass().getName();
-            ErrorMsg em = ErrorMsg.getErrorMsg(exitVal);
-            if (em != null) {
-              errorMessage += ". " +  em.getMsg();
-            }
+            setErrorMsgAndDetail(exitVal, tskRes.getTaskError(), tsk);
             SQLState = "08S01";
             console.printError(errorMessage);
             if (!running.isEmpty()) {
@@ -1273,6 +1329,7 @@ public class Driver implements CommandProcessor {
       // TODO: do better with handling types of Exception here
       errorMessage = "FAILED: Hive Internal Error: " + Utilities.getNameMessage(e);
       SQLState = "08S01";
+      downstreamError = e;
       console.printError(errorMessage + "\n"
           + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return (12);
@@ -1308,7 +1365,21 @@ public class Driver implements CommandProcessor {
 
     return (0);
   }
-
+  private void setErrorMsgAndDetail(int exitVal, Throwable downstreamError, Task tsk) {
+    this.downstreamError = downstreamError;
+    errorMessage = "FAILED: Execution Error, return code " + exitVal + " from " + tsk.getClass().getName();
+    if(downstreamError != null) {
+      //here we assume that upstream code may have parametrized the msg from ErrorMsg
+      //so we want to keep it
+      errorMessage += ". " + downstreamError.getMessage();
+    }
+    else {
+      ErrorMsg em = ErrorMsg.getErrorMsg(exitVal);
+      if (em != null) {
+        errorMessage += ". " +  em.getMsg();
+      }
+    }
+  }
   /**
    * Launches a new task
    *
@@ -1388,7 +1459,7 @@ public class Driver implements CommandProcessor {
     while (true) {
       while (resultIterator.hasNext()) {
         TaskResult tskRes = resultIterator.next();
-        if (tskRes.isRunning() == false) {
+        if (!tskRes.isRunning()) {
           return tskRes;
         }
       }

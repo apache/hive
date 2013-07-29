@@ -23,7 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.ql.exec.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.ExtractOperator;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -36,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.LimitOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
@@ -86,12 +86,14 @@ public class BucketingSortingInferenceOptimizer implements PhysicalPlanResolver 
         continue;
       }
 
-      Operator<? extends OperatorDesc> reducer = mapRedTask.getWork().getReducer();
-      if (reducer == null) {
+      if (mapRedTask.getWork().getReduceWork() == null) {
         continue;
       }
+      Operator<? extends OperatorDesc> reducer = mapRedTask.getWork().getReduceWork().getReducer();
 
-      BucketingSortingCtx bCtx = new BucketingSortingCtx();
+      // uses sampling, which means it's not bucketed
+      boolean disableBucketing = mapRedTask.getWork().getMapWork().getSamplingType() > 0;
+      BucketingSortingCtx bCtx = new BucketingSortingCtx(disableBucketing);
 
       // RuleRegExp rules are used to match operators anywhere in the tree
       // RuleExactMatch rules are used to specify exactly what the tree should look like
@@ -143,8 +145,8 @@ public class BucketingSortingInferenceOptimizer implements PhysicalPlanResolver 
       topNodes.add(reducer);
       ogw.startWalking(topNodes, null);
 
-      mapRedTask.getWork().getBucketedColsByDirectory().putAll(bCtx.getBucketedColsByDirectory());
-      mapRedTask.getWork().getSortedColsByDirectory().putAll(bCtx.getSortedColsByDirectory());
+      mapRedTask.getWork().getMapWork().getBucketedColsByDirectory().putAll(bCtx.getBucketedColsByDirectory());
+      mapRedTask.getWork().getMapWork().getSortedColsByDirectory().putAll(bCtx.getSortedColsByDirectory());
     }
   }
 }

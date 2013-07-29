@@ -28,12 +28,12 @@ import java.util.Stack;
 
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
-import org.apache.hadoop.hive.ql.exec.MapredLocalTask;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
@@ -48,8 +48,7 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolver;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin;
-import
-  org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin.ConditionalResolverCommonJoinCtx;
+import org.apache.hadoop.hive.ql.plan.ConditionalResolverCommonJoin.ConditionalResolverCommonJoinCtx;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverSkewJoin;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverSkewJoin.ConditionalResolverSkewJoinCtx;
 import org.apache.hadoop.hive.ql.plan.ConditionalWork;
@@ -73,7 +72,7 @@ public class MapJoinResolver implements PhysicalPlanResolver {
 
     // get all the tasks nodes from root task
     ArrayList<Node> topNodes = new ArrayList<Node>();
-    topNodes.addAll(pctx.rootTasks);
+    topNodes.addAll(pctx.getRootTasks());
 
     // begin to walk through the task tree.
     ogw.startWalking(topNodes, null);
@@ -98,14 +97,14 @@ public class MapJoinResolver implements PhysicalPlanResolver {
         ConditionalTask conditionalTask) throws SemanticException {
       // get current mapred work and its local work
       MapredWork mapredWork = (MapredWork) currTask.getWork();
-      MapredLocalWork localwork = mapredWork.getMapLocalWork();
+      MapredLocalWork localwork = mapredWork.getMapWork().getMapLocalWork();
       if (localwork != null) {
         // get the context info and set up the shared tmp URI
         Context ctx = physicalContext.getContext();
         String tmpFileURI = Utilities.generateTmpURI(ctx.getLocalTmpFileURI(), currTask.getId());
         localwork.setTmpFileURI(tmpFileURI);
         String hdfsTmpURI = Utilities.generateTmpURI(ctx.getMRTmpFileURI(), currTask.getId());
-        mapredWork.setTmpHDFSFileURI(hdfsTmpURI);
+        mapredWork.getMapWork().setTmpHDFSFileURI(hdfsTmpURI);
         // create a task for this local work; right now, this local work is shared
         // by the original MapredTask and this new generated MapredLocalTask.
         MapredLocalTask localTask = (MapredLocalTask) TaskFactory.get(localwork, physicalContext
@@ -134,7 +133,7 @@ public class MapJoinResolver implements PhysicalPlanResolver {
         newLocalWork.setTmpFileURI(tmpFileURI);
         newLocalWork.setInputFileChangeSensitive(localwork.getInputFileChangeSensitive());
         newLocalWork.setBucketMapjoinContext(localwork.copyPartSpecMappingOnly());
-        mapredWork.setMapLocalWork(newLocalWork);
+        mapredWork.getMapWork().setMapLocalWork(newLocalWork);
         // get all parent tasks
         List<Task<? extends Serializable>> parentTasks = currTask.getParentTasks();
         currTask.setParentTasks(null);

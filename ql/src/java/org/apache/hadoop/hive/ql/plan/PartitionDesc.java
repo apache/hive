@@ -188,6 +188,16 @@ public class PartitionDesc implements Serializable, Cloneable {
     return properties;
   }
 
+  public java.util.Properties getOverlayedProperties(){
+    if (tableDesc != null) {
+      Properties overlayedProps = new Properties(tableDesc.getProperties());
+      overlayedProps.putAll(getProperties());
+      return overlayedProps;
+    } else {
+      return getProperties();
+    }
+  }
+
   public void setProperties(final java.util.Properties properties) {
     this.properties = properties;
   }
@@ -232,6 +242,10 @@ public class PartitionDesc implements Serializable, Cloneable {
     return baseFileName;
   }
 
+  public boolean isPartitioned() {
+    return partSpec != null && !partSpec.isEmpty();
+  }
+
   @Override
   public PartitionDesc clone() {
     PartitionDesc ret = new PartitionDesc();
@@ -265,7 +279,7 @@ public class PartitionDesc implements Serializable, Cloneable {
    * @param path
    *          URI to the partition file
    */
-  void deriveBaseFileName(String path) {
+  public void deriveBaseFileName(String path) {
     PlanUtils.configureInputJobPropertiesForStorageHandler(tableDesc);
 
     if (path == null) {

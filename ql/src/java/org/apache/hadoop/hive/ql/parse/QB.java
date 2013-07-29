@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.logging.Log;
@@ -43,6 +44,7 @@ public class QB {
   private int numSelDi = 0;
   private HashMap<String, String> aliasToTabs;
   private HashMap<String, QBExpr> aliasToSubq;
+  private HashMap<String, Map<String, String>> aliasToProps;
   private List<String> aliases;
   private QBParseInfo qbp;
   private QBMetaData qbm;
@@ -81,6 +83,7 @@ public class QB {
   public QB(String outer_id, String alias, boolean isSubQ) {
     aliasToTabs = new HashMap<String, String>();
     aliasToSubq = new HashMap<String, QBExpr>();
+    aliasToProps = new HashMap<String, Map<String, String>>();
     aliases = new ArrayList<String>();
     if (alias != null) {
       alias = alias.toLowerCase();
@@ -142,6 +145,10 @@ public class QB {
     aliasToSubq.put(alias.toLowerCase(), qbexpr);
   }
 
+  public void setTabProps(String alias, Map<String, String> props) {
+    aliasToProps.put(alias.toLowerCase(), props);
+  }
+
   public void addAlias(String alias) {
     if (!aliases.contains(alias.toLowerCase())) {
       aliases.add(alias.toLowerCase());
@@ -186,6 +193,10 @@ public class QB {
 
   public String getTabNameForAlias(String alias) {
     return aliasToTabs.get(alias.toLowerCase());
+  }
+
+  public Map<String, String> getTabPropsForAlias(String alias) {
+    return aliasToProps.get(alias.toLowerCase());
   }
 
   public void rewriteViewToSubq(String alias, String viewName, QBExpr qbexpr) {

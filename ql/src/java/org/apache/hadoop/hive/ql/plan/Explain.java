@@ -32,4 +32,6 @@ public @interface Explain {
   boolean normalExplain() default true;
 
   boolean displayOnlyOnTrue() default false;
+
+  boolean skipHeader() default false;
 }

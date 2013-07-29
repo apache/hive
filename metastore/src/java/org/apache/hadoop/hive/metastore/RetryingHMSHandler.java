@@ -32,6 +32,7 @@ import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 
 @InterfaceAudience.Private
 @InterfaceStability.Evolving
@@ -126,6 +127,12 @@ public class RetryingHMSHandler implements InvocationHandler {
           // Due to reflection, the jdo exception is wrapped in
           // invocationTargetException
           caughtException = e.getCause();
+        } else if (e.getCause() instanceof NoSuchObjectException) {
+          String methodName = method.getName();
+          if (!methodName.startsWith("get_table") && !methodName.startsWith("get_partition")) {
+            LOG.error(ExceptionUtils.getStackTrace(e.getCause()));
+          }
+          throw e.getCause();
         } else if (e.getCause() instanceof MetaException && e.getCause().getCause() != null
             && e.getCause().getCause() instanceof javax.jdo.JDOException) {
           // The JDOException may be wrapped further in a MetaException

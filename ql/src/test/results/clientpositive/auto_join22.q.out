@@ -74,35 +74,35 @@ STAGE PLANS:
                       expr: _col1
                       type: string
                 outputColumnNames: _col2, _col3
-                  Map Join Operator
-                    condition map:
-                         Inner Join 0 to 1
-                    condition expressions:
-                      0 
-                      1 {_col3}
-                    handleSkewJoin: false
-                    keys:
-                      0 [Column[key]]
-                      1 [Column[_col2]]
-                    outputColumnNames: _col7
-                    Position of Big Table: 1
-                    Select Operator
-                      expressions:
-                            expr: _col7
-                            type: string
-                      outputColumnNames: _col3
-                      Group By Operator
-                        aggregations:
-                              expr: sum(hash(_col3))
-                        bucketGroup: false
-                        mode: hash
-                        outputColumnNames: _col0
-                        File Output Operator
-                          compressed: false
-                          GlobalTableId: 0
-                          table:
-                              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                Map Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 
+                    1 {_col3}
+                  handleSkewJoin: false
+                  keys:
+                    0 [Column[key]]
+                    1 [Column[_col2]]
+                  outputColumnNames: _col7
+                  Position of Big Table: 1
+                  Select Operator
+                    expressions:
+                          expr: _col7
+                          type: string
+                    outputColumnNames: _col3
+                    Group By Operator
+                      aggregations:
+                            expr: sum(hash(_col3))
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0
+                      File Output Operator
+                        compressed: false
+                        GlobalTableId: 0
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
       Local Work:
         Map Reduce Local Work
 

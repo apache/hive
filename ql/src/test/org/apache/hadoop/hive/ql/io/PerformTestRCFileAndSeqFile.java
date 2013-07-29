@@ -20,8 +20,6 @@ package org.apache.hadoop.hive.ql.io;
 import java.io.IOException;
 import java.util.Random;
 
-import junit.framework.TestCase;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -34,12 +32,13 @@ import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.SequenceFile.CompressionType;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DefaultCodec;
+import static org.junit.Assert.*;
 
 /**
  * PerformTestRCFileAndSeqFile.
  *
  */
-public class PerformTestRCFileAndSeqFile extends TestCase {
+public class PerformTestRCFileAndSeqFile {
 
   private final Configuration conf = new Configuration();
 

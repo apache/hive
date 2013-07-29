@@ -31,10 +31,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.hive.metastore.api.Index;
-import org.apache.hadoop.hive.ql.exec.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.index.HiveIndexQueryContext;
@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.optimizer.IndexUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -162,7 +163,7 @@ public class IndexWhereProcessor implements NodeProcessor {
       HiveIndexQueryContext queryContext = queryContexts.get(chosenIndex);
 
       // prepare the map reduce job to use indexing
-      MapredWork work = currentTask.getWork();
+      MapWork work = currentTask.getWork().getMapWork();
       work.setInputformat(queryContext.getIndexInputFormat());
       work.addIndexIntermediateFile(queryContext.getIndexIntermediateFile());
       // modify inputs based on index query
@@ -204,7 +205,7 @@ public class IndexWhereProcessor implements NodeProcessor {
 
     // check the size
     try {
-      ContentSummary inputSummary = Utilities.getInputSummary(pctx.getContext(), task.getWork(), null);
+      ContentSummary inputSummary = Utilities.getInputSummary(pctx.getContext(), task.getWork().getMapWork(), null);
       long inputSize = inputSummary.getLength();
       if (!indexHandler.checkQuerySize(inputSize, pctx.getConf())) {
         queryContext.setQueryTasks(null);

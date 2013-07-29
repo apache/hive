@@ -33,9 +33,9 @@ STAGE PLANS:
                 1 {key} {value}
                 2 {key} {value}
               filter predicates:
-                0 {(key < 10.0)}
+                0 {(key < 10)}
                 1 
-                2 {(key < 10.0)}
+                2 {(key < 10)}
               handleSkewJoin: false
               keys:
                 0 [Column[key]]
@@ -47,7 +47,7 @@ STAGE PLANS:
             alias: src2
             Filter Operator
               predicate:
-                  expr: (key > 10.0)
+                  expr: (key > 10)
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -55,9 +55,9 @@ STAGE PLANS:
                   1 {key} {value}
                   2 {key} {value}
                 filter predicates:
-                  0 {(key < 10.0)}
+                  0 {(key < 10)}
                   1 
-                  2 {(key < 10.0)}
+                  2 {(key < 10)}
                 handleSkewJoin: false
                 keys:
                   0 [Column[key]]
@@ -80,9 +80,9 @@ STAGE PLANS:
                 1 {key} {value}
                 2 {key} {value}
               filter predicates:
-                0 {(key < 10.0)}
+                0 {(key < 10)}
                 1 
-                2 {(key < 10.0)}
+                2 {(key < 10)}
               handleSkewJoin: false
               keys:
                 0 [Column[key]]
@@ -192,7 +192,7 @@ STAGE PLANS:
             alias: src2
             Filter Operator
               predicate:
-                  expr: (key > 10.0)
+                  expr: (key > 10)
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -200,7 +200,7 @@ STAGE PLANS:
                   1 {key} {value}
                   2 {key} {value}
                 filter predicates:
-                  0 {(key < 10.0)}
+                  0 {(key < 10)}
                   1 
                   2 
                 handleSkewJoin: false
@@ -214,7 +214,7 @@ STAGE PLANS:
             alias: src3
             Filter Operator
               predicate:
-                  expr: ((key > 10.0) and (key < 10.0))
+                  expr: ((key > 10) and (key < 10))
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -222,7 +222,7 @@ STAGE PLANS:
                   1 {key} {value}
                   2 {key} {value}
                 filter predicates:
-                  0 {(key < 10.0)}
+                  0 {(key < 10)}
                   1 
                   2 
                 handleSkewJoin: false
@@ -247,7 +247,7 @@ STAGE PLANS:
                 1 {key} {value}
                 2 {key} {value}
               filter predicates:
-                0 {(key < 10.0)}
+                0 {(key < 10)}
                 1 
                 2 
               handleSkewJoin: false
@@ -359,7 +359,7 @@ STAGE PLANS:
             alias: src1
             Filter Operator
               predicate:
-                  expr: (key < 10.0)
+                  expr: (key < 10)
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -368,7 +368,7 @@ STAGE PLANS:
                   2 {key} {value}
                 filter predicates:
                   0 
-                  1 {(key > 10.0)}
+                  1 {(key > 10)}
                   2 
                 handleSkewJoin: false
                 keys:
@@ -381,7 +381,7 @@ STAGE PLANS:
             alias: src3
             Filter Operator
               predicate:
-                  expr: (key < 10.0)
+                  expr: (key < 10)
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -390,7 +390,7 @@ STAGE PLANS:
                   2 {key} {value}
                 filter predicates:
                   0 
-                  1 {(key > 10.0)}
+                  1 {(key > 10)}
                   2 
                 handleSkewJoin: false
                 keys:
@@ -415,7 +415,7 @@ STAGE PLANS:
                 2 {key} {value}
               filter predicates:
                 0 
-                1 {(key > 10.0)}
+                1 {(key > 10)}
                 2 
               handleSkewJoin: false
               keys:
@@ -526,7 +526,7 @@ STAGE PLANS:
             alias: src1
             Filter Operator
               predicate:
-                  expr: (key < 10.0)
+                  expr: (key < 10)
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -535,8 +535,8 @@ STAGE PLANS:
                   2 {key} {value}
                 filter predicates:
                   0 
-                  1 {(key > 10.0)}
-                  2 {(key < 10.0)}
+                  1 {(key > 10)}
+                  2 {(key < 10)}
                 handleSkewJoin: false
                 keys:
                   0 [Column[key]]
@@ -553,8 +553,8 @@ STAGE PLANS:
                 2 {key} {value}
               filter predicates:
                 0 
-                1 {(key > 10.0)}
-                2 {(key < 10.0)}
+                1 {(key > 10)}
+                2 {(key < 10)}
               handleSkewJoin: false
               keys:
                 0 [Column[key]]
@@ -578,8 +578,8 @@ STAGE PLANS:
                 2 {key} {value}
               filter predicates:
                 0 
-                1 {(key > 10.0)}
-                2 {(key < 10.0)}
+                1 {(key > 10)}
+                2 {(key < 10)}
               handleSkewJoin: false
               keys:
                 0 [Column[key]]
