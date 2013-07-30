@@ -40,7 +40,12 @@ cd $localDir/$instanceName/${repositoryName}-source && \
 ret=$?
 if [[ $ret -ne 0 ]]
 then
-  cp -R $localDir/$instanceName/${repositoryName}-source $logDir/source
+  if [[ $numOfFailedTests -lt 5 ]]
+  then
+    cp -R $localDir/$instanceName/${repositoryName}-source $logDir/source
+  else
+    echo "Number of failed tests $numOfFailedTests exceeded threshold, not copying source"
+  fi
 fi
 if [[ -f $localDir/$instanceName/${repositoryName}-source/build/ql/tmp/hive.log ]]
 then

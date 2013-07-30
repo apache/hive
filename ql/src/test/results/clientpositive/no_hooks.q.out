@@ -18,7 +18,7 @@ STAGE PLANS:
             alias: src1
             Filter Operator
               predicate:
-                  expr: (key < 10.0)
+                  expr: (key < 10)
                   type: boolean
               Reduce Output Operator
                 sort order: 
@@ -33,7 +33,7 @@ STAGE PLANS:
             alias: src2
             Filter Operator
               predicate:
-                  expr: (key < 10.0)
+                  expr: (key < 10)
                   type: boolean
               Reduce Output Operator
                 sort order: 

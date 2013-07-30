@@ -24,7 +24,7 @@ STAGE PLANS:
             alias: b
             Filter Operator
               predicate:
-                  expr: (key >= 90.0)
+                  expr: (key >= 90)
                   type: boolean
               Select Operator
                 expressions:

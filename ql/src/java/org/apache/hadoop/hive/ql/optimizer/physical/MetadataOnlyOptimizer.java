@@ -49,6 +49,7 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -188,7 +189,7 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
       physicalContext = context;
     }
 
-    private String getAliasForTableScanOperator(MapredWork work,
+    private String getAliasForTableScanOperator(MapWork work,
         TableScanOperator tso) {
 
       for (Map.Entry<String, Operator<? extends OperatorDesc>> entry :
@@ -211,7 +212,7 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
       return desc;
     }
 
-    private List<String> getPathsForAlias(MapredWork work, String alias) {
+    private List<String> getPathsForAlias(MapWork work, String alias) {
       List<String> paths = new ArrayList<String>();
 
       for (Map.Entry<String, ArrayList<String>> entry : work.getPathToAliases().entrySet()) {
@@ -223,7 +224,7 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
       return paths;
     }
 
-    private void processAlias(MapredWork work, String alias) {
+    private void processAlias(MapWork work, String alias) {
       // Change the alias partition desc
       PartitionDesc aliasPartn = work.getAliasToPartnInfo().get(alias);
       changePartitionToMetadataOnly(aliasPartn);
@@ -245,12 +246,6 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
     // considered using URLEncoder, but it seemed too much
     private String encode(Map<String, String> partSpec) {
       return partSpec.toString().replaceAll("[:/#\\?]", "_");
-    }
-
-    private void convertToMetadataOnlyQuery(MapredWork work,
-        TableScanOperator tso) {
-      String alias = getAliasForTableScanOperator(work, tso);
-      processAlias(work, alias);
     }
 
     @Override
@@ -305,8 +300,10 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
 
       while (iterator.hasNext()) {
         TableScanOperator tso = iterator.next();
-        LOG.info("Metadata only table scan for " + tso.getConf().getAlias());
-        convertToMetadataOnlyQuery((MapredWork) task.getWork(), tso);
+        MapWork work = ((MapredWork) task.getWork()).getMapWork();
+        String alias = getAliasForTableScanOperator(work, tso);
+        LOG.info("Metadata only table scan for " + alias);
+        processAlias(work, alias);
       }
 
       return null;

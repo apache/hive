@@ -681,7 +681,12 @@ sub compare
     #try to get the call back url request until timeout
     if ($result == 1 && defined $testCmd->{'check_call_back'}) {
       my $d = $testCmd->{'http_daemon'};
-      $d->timeout(300);         #wait for 5 mins
+      if (defined $testCmd->{'timeout_seconds'}) {
+        $d->timeout($testCmd->{'timeout_seconds'})
+      }
+      else {      
+        $d->timeout(300);         #wait for 5 mins by default
+      }
       my $url_requested;
       $testCmd->{'callback_url'} =~ s/\$jobId/$json_hash->{'id'}/g;
       print $log "Expanded callback url : <" . $testCmd->{'callback_url'} . ">\n";
@@ -732,6 +737,10 @@ sub compare
           my $jobComplete;
           my $NUM_RETRIES = 60;
           my $SLEEP_BETWEEN_RETRIES = 5;
+          if (defined $testCmd->{'timeout_seconds'} && $testCmd->{'timeout_seconds'} > 0) {
+            $SLEEP_BETWEEN_RETRIES = ($testCmd->{'timeout_seconds'} / $NUM_RETRIES);
+            print $log "found timeout_seconds & set SLEEP_BETWEEN_RETRIES=$SLEEP_BETWEEN_RETRIES";
+          }
 
           #first wait for job completion
           while ($NUM_RETRIES-- > 0) {

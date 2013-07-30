@@ -81,7 +81,7 @@ STAGE PLANS:
             alias: b
             Filter Operator
               predicate:
-                  expr: (key < 10.0)
+                  expr: (key < 10)
                   type: boolean
               HashTable Sink Operator
                 condition expressions:
@@ -101,7 +101,7 @@ STAGE PLANS:
             alias: a
             Filter Operator
               predicate:
-                  expr: (key < 10.0)
+                  expr: (key < 10)
                   type: boolean
               Map Join Operator
                 condition map:

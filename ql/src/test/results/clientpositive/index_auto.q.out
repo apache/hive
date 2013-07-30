@@ -83,7 +83,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key > 80.0) and (key < 100.0))
+                  expr: ((key > 80) and (key < 100))
                   type: boolean
               Select Operator
                 expressions:
@@ -178,11 +178,11 @@ STAGE PLANS:
           TableScan
             alias: default__src_src_index__
             filterExpr:
-                expr: ((key > 80.0) and (key < 100.0))
+                expr: ((key > 80) and (key < 100))
                 type: boolean
             Filter Operator
               predicate:
-                  expr: ((key > 80.0) and (key < 100.0))
+                  expr: ((key > 80) and (key < 100))
                   type: boolean
               Select Operator
                 expressions:
@@ -220,11 +220,11 @@ STAGE PLANS:
           TableScan
             alias: src
             filterExpr:
-                expr: ((key > 80.0) and (key < 100.0))
+                expr: ((key > 80) and (key < 100))
                 type: boolean
             Filter Operator
               predicate:
-                  expr: ((key > 80.0) and (key < 100.0))
+                  expr: ((key > 80) and (key < 100))
                   type: boolean
               Select Operator
                 expressions:

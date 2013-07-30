@@ -25,6 +25,7 @@ import java.util.Date;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -71,6 +72,16 @@ public class UDFDayOfMonth extends UDF {
     } catch (ParseException e) {
       return null;
     }
+  }
+
+  public IntWritable evaluate(DateWritable d) {
+    if (d == null) {
+      return null;
+    }
+
+    calendar.setTime(d.get());
+    result.set(calendar.get(Calendar.DAY_OF_MONTH));
+    return result;
   }
 
   public IntWritable evaluate(TimestampWritable t) {

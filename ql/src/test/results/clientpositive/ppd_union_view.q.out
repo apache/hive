@@ -240,7 +240,6 @@ STAGE PLANS:
                     type: string
                     expr: ds
                     type: string
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -334,6 +333,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1_old
             name: default.t1_old
+      Truncated Path -> Alias:
+        /t1_mapping/ds=2011-10-13 [t1-subquery2:subq-subquery2:t1_mapping]
+        /t1_old/ds=2011-10-13 [t1-subquery2:subq-subquery2:t1_old]
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -367,9 +370,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /t1_mapping/ds=2011-10-13 [t1-subquery2:subq-subquery2:t1_mapping]
-        /t1_old/ds=2011-10-13 [t1-subquery2:subq-subquery2:t1_old]
 
   Stage: Stage-2
     Map Reduce
@@ -451,7 +451,6 @@ STAGE PLANS:
                       TotalFiles: 1
                       GatherStats: false
                       MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -477,7 +476,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select * from t1 where ds = '2011-10-13'
 PREHOOK: type: QUERY
@@ -733,7 +731,6 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: false
                     MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

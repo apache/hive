@@ -77,7 +77,7 @@ public class GenMRRedSink1 implements NodeProcessor {
 
     // If the plan for this reducer does not exist, initialize the plan
     if (oldTask == null) {
-      if (currPlan.getReducer() == null) {
+      if (currPlan.getReduceWork() == null) {
         GenMapRedUtils.initPlan(op, ctx);
       } else {
         GenMapRedUtils.splitPlan(op, ctx);

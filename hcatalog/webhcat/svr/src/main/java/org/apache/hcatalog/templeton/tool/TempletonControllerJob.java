@@ -44,7 +44,6 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapreduce.Counter;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobID;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -68,9 +67,6 @@ import org.apache.hadoop.util.ToolRunner;
  *   in hdfs files.
  */
 public class TempletonControllerJob extends Configured implements Tool {
-    static enum ControllerCounters {SIMPLE_COUNTER}
-
-    ;
     public static final String COPY_NAME = "templeton.copy";
     public static final String STATUSDIR_NAME = "templeton.statusdir";
     public static final String JAR_ARGS_NAME = "templeton.args";
@@ -157,14 +153,13 @@ public class TempletonControllerJob extends Configured implements Tool {
                 conf.get(OVERRIDE_CLASSPATH));
 
             String statusdir = conf.get(STATUSDIR_NAME);
-            Counter cnt = context.getCounter(ControllerCounters.SIMPLE_COUNTER);
 
             ExecutorService pool = Executors.newCachedThreadPool();
             executeWatcher(pool, conf, context.getJobID(),
                 proc.getInputStream(), statusdir, STDOUT_FNAME);
             executeWatcher(pool, conf, context.getJobID(),
                 proc.getErrorStream(), statusdir, STDERR_FNAME);
-            KeepAlive keepAlive = startCounterKeepAlive(pool, cnt);
+            KeepAlive keepAlive = startCounterKeepAlive(pool, context);
 
             proc.waitFor();
             keepAlive.sendReport = false;
@@ -193,7 +188,7 @@ public class TempletonControllerJob extends Configured implements Tool {
             pool.execute(w);
         }
 
-        private KeepAlive startCounterKeepAlive(ExecutorService pool, Counter cnt)
+        private KeepAlive startCounterKeepAlive(ExecutorService pool, Context cnt)
             throws IOException {
             KeepAlive k = new KeepAlive(cnt);
             pool.execute(k);
@@ -215,7 +210,7 @@ public class TempletonControllerJob extends Configured implements Tool {
         }
     }
 
-    public static class Watcher implements Runnable {
+    private static class Watcher implements Runnable {
         private InputStream in;
         private OutputStream out;
         private JobID jobid;
@@ -279,11 +274,11 @@ public class TempletonControllerJob extends Configured implements Tool {
         }
     }
 
-    public static class KeepAlive implements Runnable {
-        private Counter cnt;
-        public boolean sendReport;
+    private static class KeepAlive implements Runnable {
+        private final Mapper.Context cnt;
+        private volatile boolean sendReport;
 
-        public KeepAlive(Counter cnt) {
+        public KeepAlive(Mapper.Context cnt) {
             this.cnt = cnt;
             this.sendReport = true;
         }
@@ -292,7 +287,7 @@ public class TempletonControllerJob extends Configured implements Tool {
         public void run() {
             try {
                 while (sendReport) {
-                    cnt.increment(1);
+                    cnt.progress();
                     Thread.sleep(KEEP_ALIVE_MSEC);
                 }
             } catch (InterruptedException e) {

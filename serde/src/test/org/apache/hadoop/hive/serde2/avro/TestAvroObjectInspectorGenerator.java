@@ -17,10 +17,18 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.avro.Schema;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -31,13 +39,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
 import org.junit.Test;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 public class TestAvroObjectInspectorGenerator {
   private final TypeInfo STRING = TypeInfoFactory.getPrimitiveTypeInfo("string");
@@ -353,7 +354,7 @@ public class TestAvroObjectInspectorGenerator {
     AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(s);
     verifyMap(aoig, "aMap");
   }
- 
+
   /**
    * Check a given AvroObjectInspectorGenerator to verify that it matches our test
    * schema's expected map.
@@ -476,10 +477,8 @@ public class TestAvroObjectInspectorGenerator {
     // Column types
     assertEquals(1, aoig.getColumnTypes().size());
     TypeInfo typeInfo = aoig.getColumnTypes().get(0);
-    assertTrue(typeInfo instanceof ListTypeInfo);
-    ListTypeInfo listTypeInfo = (ListTypeInfo) typeInfo;
-    assertTrue(listTypeInfo.getListElementTypeInfo() instanceof PrimitiveTypeInfo);
-    assertEquals("tinyint", listTypeInfo.getListElementTypeInfo().getTypeName());
+    assertTrue(typeInfo instanceof PrimitiveTypeInfo);
+    assertEquals(((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory(), PrimitiveCategory.BINARY);
   }
 
   @Test // Avro considers bytes primitive, Hive doesn't. Make them list of tinyint.
@@ -495,10 +494,8 @@ public class TestAvroObjectInspectorGenerator {
     // Column types
     assertEquals(1, aoig.getColumnTypes().size());
     TypeInfo typeInfo = aoig.getColumnTypes().get(0);
-    assertTrue(typeInfo instanceof ListTypeInfo);
-    ListTypeInfo listTypeInfo = (ListTypeInfo) typeInfo;
-    assertTrue(listTypeInfo.getListElementTypeInfo() instanceof PrimitiveTypeInfo);
-    assertEquals("tinyint", listTypeInfo.getListElementTypeInfo().getTypeName());
+    assertTrue(typeInfo instanceof PrimitiveTypeInfo);
+    assertEquals(((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory(), PrimitiveCategory.BINARY);
   }
 
   @Test // That Union[T, NULL] is converted to just T.

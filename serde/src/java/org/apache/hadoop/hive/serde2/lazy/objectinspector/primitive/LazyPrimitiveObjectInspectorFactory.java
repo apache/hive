@@ -53,6 +53,8 @@ public final class LazyPrimitiveObjectInspectorFactory {
       new LazyDoubleObjectInspector();
   public static final LazyVoidObjectInspector LAZY_VOID_OBJECT_INSPECTOR =
       new LazyVoidObjectInspector();
+  public static final LazyDateObjectInspector LAZY_DATE_OBJECT_INSPECTOR =
+      new LazyDateObjectInspector();
   public static final LazyTimestampObjectInspector LAZY_TIMESTAMP_OBJECT_INSPECTOR =
       new LazyTimestampObjectInspector();
   public static final LazyBinaryObjectInspector LAZY_BINARY_OBJECT_INSPECTOR =
@@ -101,6 +103,8 @@ public final class LazyPrimitiveObjectInspectorFactory {
       return LAZY_BINARY_OBJECT_INSPECTOR;
     case VOID:
       return LAZY_VOID_OBJECT_INSPECTOR;
+    case DATE:
+      return LAZY_DATE_OBJECT_INSPECTOR;
     case TIMESTAMP:
       return LAZY_TIMESTAMP_OBJECT_INSPECTOR;
     case DECIMAL:

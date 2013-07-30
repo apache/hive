@@ -23,7 +23,7 @@ STAGE PLANS:
             alias: a
             Filter Operator
               predicate:
-                  expr: ((key > 80.0) and (key < 100.0))
+                  expr: ((key > 80) and (key < 100))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -42,7 +42,7 @@ STAGE PLANS:
             alias: b
             Filter Operator
               predicate:
-                  expr: ((key > 70.0) and (key < 90.0))
+                  expr: ((key > 70) and (key < 90))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -173,11 +173,11 @@ STAGE PLANS:
           TableScan
             alias: default__src_src_index__
             filterExpr:
-                expr: (((key > 70.0) and (key < 90.0)) and (not EWAH_BITMAP_EMPTY(_bitmaps)))
+                expr: (((key > 70) and (key < 90)) and (not EWAH_BITMAP_EMPTY(_bitmaps)))
                 type: boolean
             Filter Operator
               predicate:
-                  expr: (((key > 70.0) and (key < 90.0)) and (not EWAH_BITMAP_EMPTY(_bitmaps)))
+                  expr: (((key > 70) and (key < 90)) and (not EWAH_BITMAP_EMPTY(_bitmaps)))
                   type: boolean
               Select Operator
                 expressions:
@@ -244,11 +244,11 @@ STAGE PLANS:
           TableScan
             alias: a
             filterExpr:
-                expr: ((key > 80.0) and (key < 100.0))
+                expr: ((key > 80) and (key < 100))
                 type: boolean
             Filter Operator
               predicate:
-                  expr: ((key > 80.0) and (key < 100.0))
+                  expr: ((key > 80) and (key < 100))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -266,11 +266,11 @@ STAGE PLANS:
           TableScan
             alias: b
             filterExpr:
-                expr: ((key > 70.0) and (key < 90.0))
+                expr: ((key > 70) and (key < 90))
                 type: boolean
             Filter Operator
               predicate:
-                  expr: ((key > 70.0) and (key < 90.0))
+                  expr: ((key > 70) and (key < 90))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -338,11 +338,11 @@ STAGE PLANS:
           TableScan
             alias: default__src_src_index__
             filterExpr:
-                expr: (((key > 80.0) and (key < 100.0)) and (not EWAH_BITMAP_EMPTY(_bitmaps)))
+                expr: (((key > 80) and (key < 100)) and (not EWAH_BITMAP_EMPTY(_bitmaps)))
                 type: boolean
             Filter Operator
               predicate:
-                  expr: (((key > 80.0) and (key < 100.0)) and (not EWAH_BITMAP_EMPTY(_bitmaps)))
+                  expr: (((key > 80) and (key < 100)) and (not EWAH_BITMAP_EMPTY(_bitmaps)))
                   type: boolean
               Select Operator
                 expressions:

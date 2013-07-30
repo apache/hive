@@ -75,7 +75,7 @@ public class RevisionManagerFactory {
      * Internally used by endpoint implementation to instantiate from different configuration setting.
      * @param className
      * @param conf
-     * @return
+     * @return the opened revision manager
      * @throws IOException
      */
     static RevisionManager getOpenedRevisionManager(String className, Configuration conf) throws IOException {

@@ -33,8 +33,8 @@ import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
@@ -242,7 +242,7 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
           throws HiveException,
       ClassNotFoundException, InstantiationException, IllegalAccessException,
       SerDeException {
-    PartitionDesc pd = conf.getPathToPartitionInfo().get(onefile);
+    PartitionDesc pd = conf.getMapWork().getPathToPartitionInfo().get(onefile);
     LinkedHashMap<String, String> partSpec = pd.getPartSpec();
     // Use tblProps in case of unpartitioned tables
     Properties partProps =
@@ -337,8 +337,8 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
     Set<TableDesc> identityConverterTableDesc = new HashSet<TableDesc>();
     try
     {
-      for (String onefile : conf.getPathToAliases().keySet()) {
-        PartitionDesc pd = conf.getPathToPartitionInfo().get(onefile);
+      for (String onefile : conf.getMapWork().getPathToAliases().keySet()) {
+        PartitionDesc pd = conf.getMapWork().getPathToPartitionInfo().get(onefile);
         TableDesc tableDesc = pd.getTableDesc();
         Properties tblProps = tableDesc.getProperties();
         // If the partition does not exist, use table properties
@@ -416,7 +416,7 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
         new HashMap<String, Operator<? extends OperatorDesc>>();
 
     try {
-      for (String onefile : conf.getPathToAliases().keySet()) {
+      for (String onefile : conf.getMapWork().getPathToAliases().keySet()) {
         MapOpCtx opCtx = initObjectInspector(conf, hconf, onefile, convertedOI);
         //Create columnMap
         Map<String, Integer> columnMap = new HashMap<String, Integer>();
@@ -433,12 +433,12 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
         }
 
         Path onepath = new Path(new Path(onefile).toUri().getPath());
-        List<String> aliases = conf.getPathToAliases().get(onefile);
+        List<String> aliases = conf.getMapWork().getPathToAliases().get(onefile);
 
         vectorizationContext  = new VectorizationContext(columnMap, columnCount);
 
         for (String onealias : aliases) {
-          Operator<? extends OperatorDesc> op = conf.getAliasToWork().get(
+          Operator<? extends OperatorDesc> op = conf.getMapWork().getAliasToWork().get(
             onealias);
           LOG.info("Adding alias " + onealias + " to work list for file "
             + onefile);
@@ -640,14 +640,14 @@ public class VectorMapOperator extends Operator<MapredWork> implements Serializa
     Path fpath = new Path((new Path(this.getExecContext().getCurrentInputFile()))
         .toUri().getPath());
 
-    for (String onefile : conf.getPathToAliases().keySet()) {
+    for (String onefile : conf.getMapWork().getPathToAliases().keySet()) {
       Path onepath = new Path(new Path(onefile).toUri().getPath());
       // check for the operators who will process rows coming to this Map
       // Operator
       if (!onepath.toUri().relativize(fpath.toUri()).equals(fpath.toUri())) {
-        String onealias = conf.getPathToAliases().get(onefile).get(0);
+        String onealias = conf.getMapWork().getPathToAliases().get(onefile).get(0);
         Operator<? extends OperatorDesc> op =
-            conf.getAliasToWork().get(onealias);
+            conf.getMapWork().getAliasToWork().get(onealias);
 
         LOG.info("Processing alias " + onealias + " for file " + onefile);
 

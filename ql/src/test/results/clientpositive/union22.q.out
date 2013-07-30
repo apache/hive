@@ -112,7 +112,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: ((k0 > 50.0) and (k1 > 20.0))
+                  expr: ((k0 > 50) and (k1 > 20))
                   type: boolean
               Select Operator
                 expressions:
@@ -148,7 +148,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (k1 > 20.0)
+                  expr: (k1 > 20)
                   type: boolean
               Map Join Operator
                 condition map:
@@ -195,7 +195,6 @@ STAGE PLANS:
                     MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -348,7 +347,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (k0 <= 50.0)
+                  expr: (k0 <= 50)
                   type: boolean
               Select Operator
                 expressions:
@@ -404,7 +403,6 @@ STAGE PLANS:
                       TotalFiles: 1
                       GatherStats: true
                       MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -517,7 +515,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (k1 > 20.0)
+                  expr: (k1 > 20)
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -542,7 +540,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: ((k0 > 50.0) and (k1 > 20.0))
+                  expr: ((k0 > 50) and (k1 > 20))
                   type: boolean
               Select Operator
                 expressions:
@@ -567,7 +565,6 @@ STAGE PLANS:
                         type: string
                         expr: _col4
                         type: string
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -661,6 +658,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.dst_union22_delta
             name: default.dst_union22_delta
+      Truncated Path -> Alias:
+        /dst_union22/ds=1 [null-subquery2:subq-subquery2:a]
+        /dst_union22_delta/ds=1 [null-subquery2:subq-subquery2:b:dst_union22_delta]
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -701,9 +702,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /dst_union22/ds=1 [null-subquery2:subq-subquery2:a]
-        /dst_union22_delta/ds=1 [null-subquery2:subq-subquery2:b:dst_union22_delta]
 
 
 PREHOOK: query: insert overwrite table dst_union22 partition (ds='2')

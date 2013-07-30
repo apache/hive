@@ -33,8 +33,8 @@
 	<classpathentry exported="true" kind="lib" path="lib/commons-logging-api-@commons-logging-api.version@.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/derby.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jdo-api-@jdo-api.version@.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/datanucleus-api-jdo-@datanucleus-api-jdo.version@.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/datanucleus-core-@datanucleus-core.version@.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/datanucleus-enhancer-@datanucleus-enhancer.version@.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/datanucleus-rdbms-@datanucleus-rdbms.version@.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/thrift-fb303-@thrift-fb303.version@.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/thrift-@thrift.version@.jar"/>

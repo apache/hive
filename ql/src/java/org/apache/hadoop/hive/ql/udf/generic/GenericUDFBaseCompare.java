@@ -136,10 +136,18 @@ public abstract class GenericUDFBaseCompare extends GenericUDF {
       if (oiTypeInfo0 != oiTypeInfo1) {
         compareType = CompareType.NEED_CONVERT;
 
-        // If either argument is a string, we convert to a double because a number
-        // in string form should always be convertible into a double
-        if (oiTypeInfo0.equals(TypeInfoFactory.stringTypeInfo)
+        if ((oiTypeInfo0.equals(TypeInfoFactory.stringTypeInfo)
+                && oiTypeInfo1.equals(TypeInfoFactory.dateTypeInfo))
+            || (oiTypeInfo0.equals(TypeInfoFactory.dateTypeInfo)
+                && oiTypeInfo1.equals(TypeInfoFactory.stringTypeInfo))) {
+          // Date should be comparable with string
+          compareOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
+              TypeInfoFactory.stringTypeInfo);
+
+        } else if (oiTypeInfo0.equals(TypeInfoFactory.stringTypeInfo)
             || oiTypeInfo1.equals(TypeInfoFactory.stringTypeInfo)) {
+          // If either argument is a string, we convert to a double because a number
+          // in string form should always be convertible into a double
           compareOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
               TypeInfoFactory.doubleTypeInfo);
         } else {

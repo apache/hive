@@ -85,13 +85,13 @@ public class GenMRRedSink3 implements NodeProcessor {
     // If the plan for this reducer does not exist, initialize the plan
     if (reducerTask == null) {
       // When the reducer is encountered for the first time
-      if (plan.getReducer() == null) {
+      if (plan.getReduceWork() == null) {
         GenMapRedUtils.initUnionPlan(op, union, ctx, unionTask);
         // When union is followed by a multi-table insert
       } else {
         GenMapRedUtils.splitPlan(op, ctx);
       }
-    } else if (plan.getReducer() == reducer) {
+    } else if (plan.getReduceWork() != null && plan.getReduceWork().getReducer() == reducer) {
       // The union is already initialized. However, the union is walked from
       // another input
       // initUnionPlan is idempotent

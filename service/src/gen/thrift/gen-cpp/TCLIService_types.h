@@ -42,7 +42,8 @@ struct TTypeId {
     UNION_TYPE = 13,
     USER_DEFINED_TYPE = 14,
     DECIMAL_TYPE = 15,
-    NULL_TYPE = 16
+    NULL_TYPE = 16,
+    DATE_TYPE = 17
   };
 };
 

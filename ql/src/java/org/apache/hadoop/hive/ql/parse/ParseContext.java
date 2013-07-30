@@ -79,6 +79,7 @@ public class ParseContext {
   private HashMap<TableScanOperator, Table> topToTable;
   private Map<FileSinkOperator, Table> fsopToTable;
   private List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting;
+  private HashMap<TableScanOperator, Map<String, String>> topToProps;
   private HashMap<String, SplitSample> nameToSplitSample;
   private List<LoadTableDesc> loadTableWork;
   private List<LoadFileDesc> loadFileWork;
@@ -170,6 +171,7 @@ public class ParseContext {
       Map<JoinOperator, QBJoinTree> joinContext,
       Map<SMBMapJoinOperator, QBJoinTree> smbMapJoinContext,
       HashMap<TableScanOperator, Table> topToTable,
+      HashMap<TableScanOperator, Map<String, String>> topToProps,
       Map<FileSinkOperator, Table> fsopToTable,
       List<LoadTableDesc> loadTableWork, List<LoadFileDesc> loadFileWork,
       Context ctx, HashMap<String, String> idToTableNameMap, int destTableId,
@@ -193,6 +195,7 @@ public class ParseContext {
     this.smbMapJoinContext = smbMapJoinContext;
     this.topToTable = topToTable;
     this.fsopToTable = fsopToTable;
+    this.topToProps = topToProps;
     this.loadFileWork = loadFileWork;
     this.loadTableWork = loadTableWork;
     this.opParseCtx = opParseCtx;
@@ -333,6 +336,21 @@ public class ParseContext {
       List<ReduceSinkOperator> reduceSinkOperatorsAddedByEnforceBucketingSorting) {
     this.reduceSinkOperatorsAddedByEnforceBucketingSorting =
         reduceSinkOperatorsAddedByEnforceBucketingSorting;
+  }
+
+  /**
+   * @return the topToProps
+   */
+  public HashMap<TableScanOperator, Map<String, String>> getTopToProps() {
+    return topToProps;
+  }
+
+  /**
+   * @param topToProps
+   *          the topToProps to set
+   */
+  public void setTopToProps(HashMap<TableScanOperator, Map<String, String>> topToProps) {
+    this.topToProps = topToProps;
   }
 
   /**

@@ -128,7 +128,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col0
                         type: string
-      Needs Tagging: false
       Path -> Alias:
         -mr-10002default.test1{ds=1} [test1]
       Path -> Partition:
@@ -168,6 +167,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
+      Truncated Path -> Alias:
+        -mr-10002default.test1{ds=1} [test1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -198,8 +200,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        -mr-10002default.test1{ds=1} [test1]
 
   Stage: Stage-0
     Fetch Operator
@@ -259,7 +259,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-      Needs Tagging: false
       Path -> Alias:
         -mr-10002default.test1{ds=1} [test1]
       Path -> Partition:
@@ -299,6 +298,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
+      Truncated Path -> Alias:
+        -mr-10002default.test1{ds=1} [test1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -329,8 +331,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        -mr-10002default.test1{ds=1} [test1]
 
   Stage: Stage-0
     Fetch Operator
@@ -384,7 +384,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col0
                         type: bigint
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -424,6 +423,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
+      Truncated Path -> Alias:
+        /test1/ds=1 [test1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -454,8 +456,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /test1/ds=1 [test1]
 
   Stage: Stage-0
     Fetch Operator
@@ -520,7 +520,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col0
                         type: string
-      Needs Tagging: false
       Path -> Alias:
         -mr-10004default.test1{ds=1} [b:test1]
         -mr-10005default.test1{ds=2} [b:test1]
@@ -597,6 +596,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
+      Truncated Path -> Alias:
+        -mr-10004default.test1{ds=1} [b:test1]
+        -mr-10005default.test1{ds=2} [b:test1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -624,9 +627,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        -mr-10004default.test1{ds=1} [b:test1]
-        -mr-10005default.test1{ds=2} [b:test1]
 
   Stage: Stage-2
     Map Reduce
@@ -654,7 +654,6 @@ STAGE PLANS:
                     expr: ds
                     type: string
               tag: 0
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -746,6 +745,11 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
+      Truncated Path -> Alias:
+        /test1/ds=1 [a2]
+        /test1/ds=2 [a2]
+#### A masked pattern was here ####
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -776,10 +780,6 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
-      Truncated Path -> Alias:
-        /test1/ds=1 [a2]
-        /test1/ds=2 [a2]
-#### A masked pattern was here ####
 
   Stage: Stage-3
     Map Reduce
@@ -791,7 +791,6 @@ STAGE PLANS:
               value expressions:
                     expr: _col0
                     type: bigint
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -811,6 +810,9 @@ STAGE PLANS:
                 columns _col0
                 columns.types bigint
                 escape.delim \
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -841,8 +843,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -939,7 +939,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col2
                         type: bigint
-      Needs Tagging: false
       Path -> Alias:
         -mr-10002default.test2{ds=1, hr=1} [test2]
         -mr-10003default.test2{ds=1, hr=2} [test2]
@@ -1056,6 +1055,11 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test2
             name: default.test2
+      Truncated Path -> Alias:
+        -mr-10002default.test2{ds=1, hr=1} [test2]
+        -mr-10003default.test2{ds=1, hr=2} [test2]
+        -mr-10004default.test2{ds=1, hr=3} [test2]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1091,10 +1095,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        -mr-10002default.test2{ds=1, hr=1} [test2]
-        -mr-10003default.test2{ds=1, hr=2} [test2]
-        -mr-10004default.test2{ds=1, hr=3} [test2]
 
   Stage: Stage-0
     Fetch Operator
@@ -1163,7 +1163,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1278,6 +1277,11 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test2
             name: default.test2
+      Truncated Path -> Alias:
+        /test2/ds=1/hr=1 [test2]
+        /test2/ds=1/hr=2 [test2]
+        /test2/ds=1/hr=3 [test2]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1313,10 +1317,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /test2/ds=1/hr=1 [test2]
-        /test2/ds=1/hr=2 [test2]
-        /test2/ds=1/hr=3 [test2]
 
   Stage: Stage-0
     Fetch Operator
@@ -1373,7 +1373,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col0
                         type: string
-      Needs Tagging: false
       Path -> Alias:
         -mr-10002default.test1{ds=1} [test1]
         -mr-10003default.test1{ds=2} [test1]
@@ -1450,6 +1449,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test1
             name: default.test1
+      Truncated Path -> Alias:
+        -mr-10002default.test1{ds=1} [test1]
+        -mr-10003default.test1{ds=2} [test1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1480,9 +1483,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        -mr-10002default.test1{ds=1} [test1]
-        -mr-10003default.test1{ds=2} [test1]
 
   Stage: Stage-0
     Fetch Operator
@@ -1604,7 +1604,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col2
                         type: bigint
-      Needs Tagging: false
       Path -> Alias:
         -mr-10002default.test2{ds=01_10_10, hr=01} [test2]
         -mr-10003default.test2{ds=01_10_20, hr=02} [test2]
@@ -1797,6 +1796,13 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test2
             name: default.test2
+      Truncated Path -> Alias:
+        -mr-10002default.test2{ds=01_10_10, hr=01} [test2]
+        -mr-10003default.test2{ds=01_10_20, hr=02} [test2]
+        -mr-10004default.test2{ds=1, hr=1} [test2]
+        -mr-10005default.test2{ds=1, hr=2} [test2]
+        -mr-10006default.test2{ds=1, hr=3} [test2]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1832,12 +1838,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        -mr-10002default.test2{ds=01_10_10, hr=01} [test2]
-        -mr-10003default.test2{ds=01_10_20, hr=02} [test2]
-        -mr-10004default.test2{ds=1, hr=1} [test2]
-        -mr-10005default.test2{ds=1, hr=2} [test2]
-        -mr-10006default.test2{ds=1, hr=3} [test2]
 
   Stage: Stage-0
     Fetch Operator

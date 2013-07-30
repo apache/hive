@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.lazybinary;
 
+import java.sql.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -36,6 +37,7 @@ public class MyTestClassBigger {
     Double myDouble;
     String myString;
     HiveDecimal myDecimal;
+    Date myDate;
     MyTestInnerStruct myStruct;
     List<Integer> myList;
     byte[] myBA;
@@ -45,7 +47,7 @@ public class MyTestClassBigger {
     }
 
     public MyTestClassBigger(Byte b, Short s, Integer i, Long l, Float f,
-			     Double d, String st, HiveDecimal bd, MyTestInnerStruct is, List<Integer> li,
+			     Double d, String st, HiveDecimal bd, Date date, MyTestInnerStruct is, List<Integer> li,
 			     byte[] ba, Map<String, List<MyTestInnerStruct>> mp) {
 	myByte = b;
 	myShort = s;
@@ -55,6 +57,7 @@ public class MyTestClassBigger {
 	myDouble = d;
 	myString = st;
 	myDecimal = bd;
+	myDate = date;
 	myStruct = is;
 	myList = li;
 	myBA = ba;

@@ -24,6 +24,7 @@ import static org.mockito.Mockito.spy;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -46,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 
@@ -86,7 +88,7 @@ public class TestHostExecutor {
   private Logger logger;
   private BlockingQueue<TestBatch> parallelWorkQueue;
   private BlockingQueue<TestBatch> isolatedWorkQueue;
-  private List<TestBatch> failedTestResults;
+  private Set<TestBatch> failedTestResults;
   private TestBatch testBatchParallel1;
   private TestBatch testBatchParallel2;
   private TestBatch testBatchIsolated1;
@@ -101,7 +103,7 @@ public class TestHostExecutor {
     failedLogDir = Dirs.create(new File(logDir, "failed"));
     parallelWorkQueue = new LinkedBlockingQueue<TestBatch>();
     isolatedWorkQueue = new LinkedBlockingQueue<TestBatch>();
-    failedTestResults = Lists.newArrayList();
+    failedTestResults = Sets.newHashSet();
     testBatchParallel1 = new UnitTestBatch(DRIVER_PARALLEL_1, true);
     testBatchParallel2 = new UnitTestBatch(DRIVER_PARALLEL_2, true);
     testBatchIsolated1 = new UnitTestBatch(DRIVER_ISOLATED_1, false);
@@ -151,7 +153,7 @@ public class TestHostExecutor {
     parallelWorkQueue.addAll(Lists.newArrayList(testBatchParallel1, testBatchParallel2));
     parallelWorkQueue.addAll(Lists.newArrayList(testBatchIsolated1, testBatchIsolated2));
     executor.submitTests(parallelWorkQueue, isolatedWorkQueue, failedTestResults).get();
-    Assert.assertEquals(Collections.emptyList(),  failedTestResults);
+    Assert.assertEquals(Collections.emptySet(),  failedTestResults);
     Approvals.verify(getExecutedCommands());
   }
   @Test
@@ -162,7 +164,7 @@ public class TestHostExecutor {
     HostExecutor executor = createHostExecutor();
     parallelWorkQueue.addAll(Lists.newArrayList(testBatchParallel1));
     executor.submitTests(parallelWorkQueue, isolatedWorkQueue, failedTestResults).get();
-    Assert.assertEquals(Collections.emptyList(),  failedTestResults);
+    Assert.assertEquals(Collections.emptySet(),  failedTestResults);
     Assert.assertTrue(parallelWorkQueue.toString(), parallelWorkQueue.isEmpty());
     Approvals.verify(getExecutedCommands());
   }
@@ -174,7 +176,7 @@ public class TestHostExecutor {
     HostExecutor executor = createHostExecutor();
     isolatedWorkQueue.addAll(Lists.newArrayList(testBatchIsolated1));
     executor.submitTests(parallelWorkQueue, isolatedWorkQueue, failedTestResults).get();
-    Assert.assertEquals(Collections.emptyList(),  failedTestResults);
+    Assert.assertEquals(Collections.emptySet(),  failedTestResults);
     Assert.assertTrue(isolatedWorkQueue.toString(), parallelWorkQueue.isEmpty());
     Approvals.verify(getExecutedCommands());
   }
@@ -186,7 +188,7 @@ public class TestHostExecutor {
     HostExecutor executor = createHostExecutor();
     parallelWorkQueue.addAll(Lists.newArrayList(testBatchParallel1));
     executor.submitTests(parallelWorkQueue, isolatedWorkQueue, failedTestResults).get();
-    Assert.assertEquals(Collections.emptyList(),  failedTestResults);
+    Assert.assertEquals(Collections.emptySet(),  failedTestResults);
     Assert.assertTrue(parallelWorkQueue.toString(), parallelWorkQueue.isEmpty());
     Approvals.verify(getExecutedCommands());
   }
@@ -198,7 +200,7 @@ public class TestHostExecutor {
     HostExecutor executor = createHostExecutor();
     isolatedWorkQueue.addAll(Lists.newArrayList(testBatchIsolated1));
     executor.submitTests(parallelWorkQueue, isolatedWorkQueue, failedTestResults).get();
-    Assert.assertEquals(Collections.emptyList(),  failedTestResults);
+    Assert.assertEquals(Collections.emptySet(),  failedTestResults);
     Assert.assertTrue(isolatedWorkQueue.toString(), parallelWorkQueue.isEmpty());
     Approvals.verify(getExecutedCommands());
   }
@@ -210,7 +212,7 @@ public class TestHostExecutor {
     HostExecutor executor = createHostExecutor();
     isolatedWorkQueue.addAll(Lists.newArrayList(testBatchIsolated1));
     executor.submitTests(parallelWorkQueue, isolatedWorkQueue, failedTestResults).get();
-    Assert.assertEquals(Collections.emptyList(),  failedTestResults);
+    Assert.assertEquals(Collections.emptySet(),  failedTestResults);
     Assert.assertTrue(isolatedWorkQueue.toString(), parallelWorkQueue.isEmpty());
     Approvals.verify(getExecutedCommands());
   }

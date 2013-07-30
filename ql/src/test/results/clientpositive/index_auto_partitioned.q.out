@@ -59,11 +59,11 @@ STAGE PLANS:
           TableScan
             alias: default__srcpart_src_part_index__
             filterExpr:
-                expr: ((key = 86.0) and (ds = '2008-04-09'))
+                expr: ((key = 86) and (ds = '2008-04-09'))
                 type: boolean
             Filter Operator
               predicate:
-                  expr: (key = 86.0)
+                  expr: (key = 86)
                   type: boolean
               Select Operator
                 expressions:
@@ -101,11 +101,11 @@ STAGE PLANS:
           TableScan
             alias: srcpart
             filterExpr:
-                expr: ((key = 86.0) and (ds = '2008-04-09'))
+                expr: ((key = 86) and (ds = '2008-04-09'))
                 type: boolean
             Filter Operator
               predicate:
-                  expr: (key = 86.0)
+                  expr: (key = 86)
                   type: boolean
               Select Operator
                 expressions:

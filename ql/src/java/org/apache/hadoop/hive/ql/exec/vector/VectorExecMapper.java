@@ -28,10 +28,10 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -93,7 +93,7 @@ public class VectorExecMapper extends MapReduceBase implements Mapper {
       mo.setChildren(job);
       l4j.info(mo.dump(0));
       // initialize map local work
-      localWork = mrwork.getMapLocalWork();
+      localWork = mrwork.getMapWork().getMapLocalWork();
       execContext.setLocalWork(localWork);
 
       mo.setExecContext(execContext);
@@ -205,7 +205,7 @@ public class VectorExecMapper extends MapReduceBase implements Mapper {
       }
 
       if (fetchOperators != null) {
-        MapredLocalWork localWork = mo.getConf().getMapLocalWork();
+        MapredLocalWork localWork = mo.getConf().getMapWork().getMapLocalWork();
         for (Map.Entry<String, FetchOperator> entry : fetchOperators.entrySet()) {
           Operator<? extends OperatorDesc> forwardOp = localWork
               .getAliasToWork().get(entry.getKey());

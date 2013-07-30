@@ -345,13 +345,13 @@ public class TestOperators extends TestCase {
 
       // initialize mapredWork
       MapredWork mrwork = new MapredWork();
-      mrwork.setPathToAliases(pathToAliases);
-      mrwork.setPathToPartitionInfo(pathToPartitionInfo);
-      mrwork.setAliasToWork(aliasToWork);
+      mrwork.getMapWork().setPathToAliases(pathToAliases);
+      mrwork.getMapWork().setPathToPartitionInfo(pathToPartitionInfo);
+      mrwork.getMapWork().setAliasToWork(aliasToWork);
 
       // get map operator and initialize it
       MapOperator mo = new MapOperator();
-      mo.initializeAsRoot(hconf, mrwork);
+      mo.initializeAsRoot(hconf, mrwork.getMapWork());
 
       Text tw = new Text();
       InspectableObject io1 = new InspectableObject();

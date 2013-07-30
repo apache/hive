@@ -112,7 +112,6 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: true
                     MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -227,7 +226,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -293,7 +291,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -442,7 +439,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col2
                         type: bigint
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -492,6 +488,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1
             name: default.t1
+      Truncated Path -> Alias:
+        /t1 [t1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -519,8 +518,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /t1 [t1]
 
   Stage: Stage-2
     Map Reduce
@@ -542,7 +539,6 @@ STAGE PLANS:
               value expressions:
                     expr: _col2
                     type: bigint
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -562,6 +558,9 @@ STAGE PLANS:
                 columns _col0,_col1,_col2
                 columns.types string,string,bigint
                 escape.delim \
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -607,8 +606,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: true
               MultiFileSpray: false
-      Truncated Path -> Alias:
-#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -763,7 +760,6 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: true
                     MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -888,7 +884,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -969,7 +964,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1156,7 +1150,6 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: true
                     MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1281,7 +1274,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1362,7 +1354,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1572,7 +1563,6 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: true
                     MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1687,7 +1677,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1753,7 +1742,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1946,7 +1934,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col3
                         type: bigint
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1996,6 +1983,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1
             name: default.t1
+      Truncated Path -> Alias:
+        /t1 [t1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -2025,8 +2015,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /t1 [t1]
 
   Stage: Stage-2
     Map Reduce
@@ -2052,7 +2040,6 @@ STAGE PLANS:
               value expressions:
                     expr: _col3
                     type: bigint
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2072,6 +2059,9 @@ STAGE PLANS:
                 columns _col0,_col1,_col2,_col3
                 columns.types string,int,string,bigint
                 escape.delim \
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -2121,8 +2111,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: true
               MultiFileSpray: false
-      Truncated Path -> Alias:
-#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -2286,7 +2274,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col2
                         type: bigint
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2336,6 +2323,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1
             name: default.t1
+      Truncated Path -> Alias:
+        /t1 [t1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -2363,8 +2353,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /t1 [t1]
 
   Stage: Stage-2
     Map Reduce
@@ -2386,7 +2374,6 @@ STAGE PLANS:
               value expressions:
                     expr: _col2
                     type: bigint
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2406,6 +2393,9 @@ STAGE PLANS:
                 columns _col0,_col1,_col2
                 columns.types string,double,bigint
                 escape.delim \
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -2456,8 +2446,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: true
               MultiFileSpray: false
-      Truncated Path -> Alias:
-#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -2656,7 +2644,6 @@ STAGE PLANS:
                       value expressions:
                             expr: _col1
                             type: bigint
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2706,6 +2693,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1
             name: default.t1
+      Truncated Path -> Alias:
+        /t1 [subq1:t1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -2731,8 +2721,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /t1 [subq1:t1]
 
   Stage: Stage-2
     Map Reduce
@@ -2750,7 +2738,6 @@ STAGE PLANS:
               value expressions:
                     expr: _col1
                     type: bigint
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2770,6 +2757,9 @@ STAGE PLANS:
                 columns _col0,_col1
                 columns.types double,bigint
                 escape.delim \
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -2816,8 +2806,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: true
               MultiFileSpray: false
-      Truncated Path -> Alias:
-#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -3106,7 +3094,6 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: true
                         MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -3231,7 +3218,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -3312,7 +3298,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -3546,7 +3531,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -3596,6 +3580,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1
             name: default.t1
+      Truncated Path -> Alias:
+        /t1 [null-subquery2:subq1-subquery2:t1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -3621,8 +3608,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /t1 [null-subquery2:subq1-subquery2:t1]
 
   Stage: Stage-10
     Map Reduce
@@ -3640,7 +3625,6 @@ STAGE PLANS:
               value expressions:
                     expr: _col1
                     type: bigint
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -3660,6 +3644,9 @@ STAGE PLANS:
                 columns _col0,_col1
                 columns.types double,bigint
                 escape.delim \
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -3692,8 +3679,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-#### A masked pattern was here ####
 
   Stage: Stage-2
     Map Reduce
@@ -3800,7 +3785,6 @@ STAGE PLANS:
                         TotalFiles: 1
                         GatherStats: true
                         MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -3942,7 +3926,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4023,7 +4006,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4302,7 +4284,6 @@ STAGE PLANS:
                     value expressions:
                           expr: _col1
                           type: bigint
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4352,6 +4333,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1
             name: default.t1
+      Truncated Path -> Alias:
+        /t1 [subq1:t1, subq2:t1]
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -4397,8 +4381,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: true
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /t1 [subq1:t1, subq2:t1]
 
   Stage: Stage-0
     Move Operator
@@ -4615,7 +4597,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col2
                         type: bigint
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4665,6 +4646,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1
             name: default.t1
+      Truncated Path -> Alias:
+        /t1 [subq2:t1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -4692,8 +4676,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /t1 [subq2:t1]
 
   Stage: Stage-3
     Map Reduce
@@ -4715,7 +4697,6 @@ STAGE PLANS:
               value expressions:
                     expr: _col2
                     type: bigint
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4735,6 +4716,9 @@ STAGE PLANS:
                 columns _col0,_col1,_col2
                 columns.types string,string,bigint
                 escape.delim \
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -4771,8 +4755,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-#### A masked pattern was here ####
 
   Stage: Stage-1
     Map Reduce
@@ -4833,7 +4815,6 @@ STAGE PLANS:
                           type: string
                           expr: _col1
                           type: bigint
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4899,6 +4880,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1
             name: default.t1
+      Truncated Path -> Alias:
+        /t1 [subq1:t1]
+#### A masked pattern was here ####
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -4939,9 +4924,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /t1 [subq1:t1]
-#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -5109,7 +5091,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col1
                         type: bigint
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -5159,6 +5140,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t2
             name: default.t2
+      Truncated Path -> Alias:
+        /t2 [t2]
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -5184,8 +5168,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /t2 [t2]
 
   Stage: Stage-2
     Map Reduce
@@ -5203,7 +5185,6 @@ STAGE PLANS:
               value expressions:
                     expr: _col1
                     type: bigint
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -5223,6 +5204,9 @@ STAGE PLANS:
                 columns _col0,_col1
                 columns.types string,bigint
                 escape.delim \
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+      Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -5269,8 +5253,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: true
               MultiFileSpray: false
-      Truncated Path -> Alias:
-#### A masked pattern was here ####
 
   Stage: Stage-0
     Move Operator
@@ -5519,7 +5501,6 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: true
                     MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -5644,7 +5625,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -5725,7 +5705,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -6050,7 +6029,6 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: true
                     MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -6165,7 +6143,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -6231,7 +6208,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -6526,7 +6502,6 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: true
                     MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -6651,7 +6626,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -6732,7 +6706,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -7057,7 +7030,6 @@ STAGE PLANS:
                     TotalFiles: 1
                     GatherStats: true
                     MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -7182,7 +7154,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -7263,7 +7234,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -8081,7 +8051,7 @@ STAGE PLANS:
             alias: t2
             Filter Operator
               predicate:
-                  expr: (key = 8.0)
+                  expr: (key = 8)
                   type: boolean
               Select Operator
                 expressions:

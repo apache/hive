@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMapRedCtx;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -77,7 +78,7 @@ public final class MapJoinFactory {
    */
   private static class TableScanMapJoinProcessor implements NodeProcessor {
 
-    public static void setupBucketMapJoinInfo(MapredWork plan,
+    public static void setupBucketMapJoinInfo(MapWork plan,
         AbstractMapJoinOperator<? extends MapJoinDesc> currMapJoinOp) {
       if (currMapJoinOp != null) {
         Map<String, Map<String, List<String>>> aliasBucketFileNameMapping =
@@ -214,7 +215,7 @@ public final class MapJoinFactory {
       // the first time.
       boolean local = pos != mapJoin.getConf().getPosBigTable();
       if (oldTask == null) {
-        assert currPlan.getReducer() == null;
+        assert currPlan.getReduceWork() == null;
         initMapJoinPlan(mapJoin, currTask, ctx, local);
       } else {
         // The current plan can be thrown away after being merged with the
@@ -223,7 +224,7 @@ public final class MapJoinFactory {
         ctx.setCurrTask(currTask = oldTask);
       }
       MapredWork plan = (MapredWork) currTask.getWork();
-      setupBucketMapJoinInfo(plan, mapJoin);
+      setupBucketMapJoinInfo(plan.getMapWork(), mapJoin);
 
       mapCurrCtx.put(mapJoin, new GenMapRedCtx(ctx.getCurrTask(), ctx.getCurrAliasId()));
 

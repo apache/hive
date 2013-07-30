@@ -70,7 +70,6 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: true
                   MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -183,7 +182,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -249,7 +247,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -293,7 +290,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT s.*
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 4 on key) s
@@ -614,7 +610,6 @@ STAGE PLANS:
                         type: int
                         expr: _col1
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -662,6 +657,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket
             name: default.srcbucket
+      Truncated Path -> Alias:
+        /srcbucket/srcbucket1.txt [s]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -682,8 +680,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /srcbucket/srcbucket1.txt [s]
 
   Stage: Stage-0
     Fetch Operator
@@ -989,7 +985,6 @@ STAGE PLANS:
                         type: int
                         expr: _col1
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1037,6 +1032,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket
             name: default.srcbucket
+      Truncated Path -> Alias:
+        /srcbucket/srcbucket0.txt [s]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -1057,8 +1055,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /srcbucket/srcbucket0.txt [s]
 
   Stage: Stage-0
     Fetch Operator
@@ -1618,7 +1614,6 @@ STAGE PLANS:
                         type: int
                         expr: _col1
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1666,6 +1661,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket
             name: default.srcbucket
+      Truncated Path -> Alias:
+        /srcbucket [s]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -1686,8 +1684,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /srcbucket [s]
 
   Stage: Stage-0
     Fetch Operator
@@ -2090,7 +2086,6 @@ STAGE PLANS:
                         type: int
                         expr: _col1
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2138,6 +2133,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket
             name: default.srcbucket
+      Truncated Path -> Alias:
+        /srcbucket [s]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -2158,8 +2156,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /srcbucket [s]
 
   Stage: Stage-0
     Fetch Operator
@@ -2548,7 +2544,6 @@ STAGE PLANS:
                         type: int
                         expr: _col1
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2640,6 +2635,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket2
             name: default.srcbucket2
+      Truncated Path -> Alias:
+        /srcbucket2/srcbucket20.txt [s]
+        /srcbucket2/srcbucket22.txt [s]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -2660,9 +2659,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /srcbucket2/srcbucket20.txt [s]
-        /srcbucket2/srcbucket22.txt [s]
 
   Stage: Stage-0
     Fetch Operator
@@ -2851,7 +2847,6 @@ STAGE PLANS:
                         type: int
                         expr: _col1
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2899,6 +2894,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket2
             name: default.srcbucket2
+      Truncated Path -> Alias:
+        /srcbucket2/srcbucket21.txt [s]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -2919,8 +2917,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /srcbucket2/srcbucket21.txt [s]
 
   Stage: Stage-0
     Fetch Operator

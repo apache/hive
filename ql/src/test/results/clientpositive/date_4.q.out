@@ -1,0 +1,49 @@
+PREHOOK: query: drop table date_4
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table date_4
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table date_4 (d date)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table date_4 (d date)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@date_4
+PREHOOK: query: alter table date_4 set serde 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+PREHOOK: type: ALTERTABLE_SERIALIZER
+PREHOOK: Input: default@date_4
+PREHOOK: Output: default@date_4
+POSTHOOK: query: alter table date_4 set serde 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
+POSTHOOK: type: ALTERTABLE_SERIALIZER
+POSTHOOK: Input: default@date_4
+POSTHOOK: Output: default@date_4
+PREHOOK: query: -- Test date literal syntax
+insert overwrite table date_4 
+  select date '2011-01-01' from src limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@date_4
+POSTHOOK: query: -- Test date literal syntax
+insert overwrite table date_4 
+  select date '2011-01-01' from src limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@date_4
+POSTHOOK: Lineage: date_4.d SIMPLE []
+PREHOOK: query: select d, date '2011-01-01' from date_4 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@date_4
+#### A masked pattern was here ####
+POSTHOOK: query: select d, date '2011-01-01' from date_4 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@date_4
+#### A masked pattern was here ####
+POSTHOOK: Lineage: date_4.d SIMPLE []
+2011-01-01	2011-01-01
+PREHOOK: query: drop table date_4
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@date_4
+PREHOOK: Output: default@date_4
+POSTHOOK: query: drop table date_4
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@date_4
+POSTHOOK: Output: default@date_4
+POSTHOOK: Lineage: date_4.d SIMPLE []

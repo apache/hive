@@ -20,8 +20,8 @@ package org.apache.hive.ptest.execution;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
@@ -41,31 +41,38 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 public class ExecutionPhase extends Phase {
 
+  private final File succeededLogDir;
   private final File failedLogDir;
   private final BlockingQueue<TestBatch> parallelWorkQueue;
   private final BlockingQueue<TestBatch> isolatedWorkQueue;
+  private final Set<String> executedTests;
   private final Set<String> failedTests;
   private final Supplier<List<TestBatch>> testBatchSupplier;
-  private final List<TestBatch> failedTestResults;
+  private final Set<TestBatch> failedTestResults;
 
   public ExecutionPhase(ImmutableList<HostExecutor> hostExecutors,
       LocalCommandFactory localCommandFactory,
       ImmutableMap<String, String> templateDefaults,
-      File failedLogDir, Supplier<List<TestBatch>> testBatchSupplier,
-      Set<String> failedTests, Logger logger) throws IOException {
+      File succeededLogDir, File failedLogDir, Supplier<List<TestBatch>> testBatchSupplier,
+      Set<String> executedTests, Set<String> failedTests, Logger logger)
+          throws IOException {
     super(hostExecutors, localCommandFactory, templateDefaults, logger);
+    this.succeededLogDir = succeededLogDir;
     this.failedLogDir = failedLogDir;
     this.testBatchSupplier = testBatchSupplier;
+    this.executedTests = executedTests;
     this.failedTests = failedTests;
     this.parallelWorkQueue = new LinkedBlockingQueue<TestBatch>();
     this.isolatedWorkQueue = new LinkedBlockingQueue<TestBatch>();
     this.failedTestResults = Collections.
-        synchronizedList(new ArrayList<TestBatch>());
+        synchronizedSet(new HashSet<TestBatch>());
   }
   @Override
 public void execute() throws Throwable {
     long start = System.currentTimeMillis();
+    List<TestBatch> testBatches = Lists.newArrayList();
     for(TestBatch batch : testBatchSupplier.get()) {
+      testBatches.add(batch);
       if(batch.isParallel()) {
         parallelWorkQueue.add(batch);
       } else {
@@ -74,16 +81,17 @@ public void execute() throws Throwable {
     }
     try {
       do {
-        double numberBadHosts = 0d;
+        float numberBadHosts = 0f;
         for(HostExecutor hostExecutor : hostExecutors) {
           if(hostExecutor.remainingDrones() == 0) {
             numberBadHosts++;
           }
         }
         Preconditions.checkState(hostExecutors.size() > 0, "Host executors cannot be empty");
-        if((numberBadHosts / (double)hostExecutors.size()) > 0.30d) {
-          throw new IllegalStateException("Too many bad hosts: " + (int)numberBadHosts + 
-              " bad hosts out of " + hostExecutors.size() + " is greater than threshold of 30%");
+        float percentBadHosts = numberBadHosts / (float)hostExecutors.size();
+        if(percentBadHosts > 0.50f) {
+          throw new IllegalStateException("Too many bad hosts: " + percentBadHosts + "% (" + (int)numberBadHosts + 
+              " / " + hostExecutors.size() + ") is greater than threshold of 50%");
         }
         List<ListenableFuture<Void>> results = Lists.newArrayList();
         for(HostExecutor hostExecutor : getHostExecutors()) {
@@ -93,14 +101,16 @@ public void execute() throws Throwable {
       } while(!(parallelWorkQueue.isEmpty() && isolatedWorkQueue.isEmpty()));
       Preconditions.checkState(parallelWorkQueue.isEmpty(), "Parallel work queue is not empty. All drones must have aborted.");
       Preconditions.checkState(isolatedWorkQueue.isEmpty(), "Isolated work queue is not empty. All drones must have aborted.");
-      if(!failedTestResults.isEmpty()) {
-        for(TestBatch failure : failedTestResults) {
-          File batchLogDir = new File(failedLogDir, failure.getName());
-          JUnitReportParser parser = new JUnitReportParser(logger, batchLogDir);
-          for(String failedTest : parser.getFailedTests()) {
-            failedTests.add(failedTest);
-          }
-        }
+      for(TestBatch batch : testBatches) {
+       File batchLogDir;
+       if(failedTestResults.contains(batch)) {
+         batchLogDir = new File(failedLogDir, batch.getName());
+       } else {
+         batchLogDir = new File(succeededLogDir, batch.getName());
+       }
+       JUnitReportParser parser = new JUnitReportParser(logger, batchLogDir);
+       executedTests.addAll(parser.getExecutedTests());
+       failedTests.addAll(parser.getFailedTests());
       }
     } finally {
       long elapsed = System.currentTimeMillis() - start;

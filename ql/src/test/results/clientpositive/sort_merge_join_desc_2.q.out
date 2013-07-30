@@ -78,7 +78,7 @@ STAGE PLANS:
             alias: a
             Filter Operator
               predicate:
-                  expr: (key < 10.0)
+                  expr: (key < 10)
                   type: boolean
               Sorted Merge Bucket Map Join Operator
                 condition map:

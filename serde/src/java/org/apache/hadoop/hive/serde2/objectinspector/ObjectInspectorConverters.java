@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableFloatObje
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableIntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableLongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableShortObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableDateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
@@ -100,6 +101,10 @@ public final class ObjectInspectorConverters {
         return new PrimitiveObjectInspectorConverter.StringConverter(
             inputOI);
       }
+    case DATE:
+      return new PrimitiveObjectInspectorConverter.DateConverter(
+          inputOI,
+          (SettableDateObjectInspector) outputOI);
     case TIMESTAMP:
       return new PrimitiveObjectInspectorConverter.TimestampConverter(
           inputOI,

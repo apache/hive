@@ -219,12 +219,20 @@ public abstract class HiveBaseResultSet implements ResultSet{
       return null;
     }
 
+    if (obj instanceof Date) {
+      return (Date) obj;
+    }
+
     try {
-      return Date.valueOf((String) obj);
+      if (obj instanceof String) {
+        return Date.valueOf((String)obj);
+      }
     } catch (Exception e) {
       throw new SQLException("Cannot convert column " + columnIndex
               + " to date: " + e.toString());
     }
+
+    throw new SQLException("Illegal conversion");
   }
 
   public Date getDate(String columnName) throws SQLException {

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
@@ -237,6 +238,27 @@ public class PrimitiveObjectInspectorConverter {
     }
   }
 
+  public static class DateConverter implements Converter {
+    PrimitiveObjectInspector inputOI;
+    SettableDateObjectInspector outputOI;
+    Object r;
+
+    public DateConverter(PrimitiveObjectInspector inputOI,
+        SettableDateObjectInspector outputOI) {
+      this.inputOI = inputOI;
+      this.outputOI = outputOI;
+      r = outputOI.create(new Date(0));
+    }
+
+    public Object convert(Object input) {
+      if (input == null) {
+        return null;
+      }
+      return outputOI.set(r, PrimitiveObjectInspectorUtils.getDate(input,
+          inputOI));
+    }
+  }
+
   public static class TimestampConverter implements Converter {
     PrimitiveObjectInspector inputOI;
     SettableTimestampObjectInspector outputOI;
@@ -276,7 +298,7 @@ public class PrimitiveObjectInspectorConverter {
       if (input == null) {
         return null;
       }
-      
+
       try {
         return outputOI.set(r, PrimitiveObjectInspectorUtils.getHiveDecimal(input,
             inputOI));
@@ -367,6 +389,9 @@ public class PrimitiveObjectInspectorConverter {
         } else {
           t.set(((StringObjectInspector) inputOI).getPrimitiveJavaObject(input));
         }
+        return t;
+      case DATE:
+        t.set(((DateObjectInspector) inputOI).getPrimitiveWritableObject(input).toString());
         return t;
       case TIMESTAMP:
         t.set(((TimestampObjectInspector) inputOI)

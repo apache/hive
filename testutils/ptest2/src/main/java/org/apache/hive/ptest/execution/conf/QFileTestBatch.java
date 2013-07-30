@@ -66,4 +66,49 @@ public class QFileTestBatch implements TestBatch {
   public boolean isParallel() {
     return isParallel;
   }
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((driver == null) ? 0 : driver.hashCode());
+    result = prime * result + (isParallel ? 1231 : 1237);
+    result = prime * result + ((name == null) ? 0 : name.hashCode());
+    result = prime * result
+        + ((queryFilesProperty == null) ? 0 : queryFilesProperty.hashCode());
+    result = prime * result + ((tests == null) ? 0 : tests.hashCode());
+    return result;
+  }
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj)
+      return true;
+    if (obj == null)
+      return false;
+    if (getClass() != obj.getClass())
+      return false;
+    QFileTestBatch other = (QFileTestBatch) obj;
+    if (driver == null) {
+      if (other.driver != null)
+        return false;
+    } else if (!driver.equals(other.driver))
+      return false;
+    if (isParallel != other.isParallel)
+      return false;
+    if (name == null) {
+      if (other.name != null)
+        return false;
+    } else if (!name.equals(other.name))
+      return false;
+    if (queryFilesProperty == null) {
+      if (other.queryFilesProperty != null)
+        return false;
+    } else if (!queryFilesProperty.equals(other.queryFilesProperty))
+      return false;
+    if (tests == null) {
+      if (other.tests != null)
+        return false;
+    } else if (!tests.equals(other.tests))
+      return false;
+    return true;
+  }  
 }

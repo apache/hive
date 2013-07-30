@@ -67,6 +67,7 @@ public class PTest {
 
   private final TestConfiguration mConfiguration;
   private final ListeningExecutorService mExecutor;
+  private final Set<String> mExecutedTests;
   private final Set<String> mFailedTests;
   private final List<Phase> mPhases;
   private final ExecutionContext mExecutionContext;
@@ -81,6 +82,7 @@ public class PTest {
     mConfiguration = configuration;
     mLogger = logger;
     mBuildTag = buildTag;
+    mExecutedTests = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
     mFailedTests = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
     mExecutionContext = executionContext;
     mExecutor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
@@ -99,6 +101,7 @@ public class PTest {
         put("repositoryName", configuration.getRepositoryName()).
         put("repositoryType", configuration.getRepositoryType()).
         put("branch", configuration.getBranch()).
+        put("clearLibraryCache", String.valueOf(configuration.isClearLibraryCache())).
         put("workingDir", mExecutionContext.getLocalWorkingDirectory()).
         put("antArgs", configuration.getAntArgs()).
         put("buildTag", buildTag).
@@ -120,7 +123,7 @@ public class PTest {
     mPhases.add(new CleanupPhase(mHostExecutors, localCommandFactory, templateDefaults, logger));
     mPhases.add(new PrepPhase(mHostExecutors, localCommandFactory, templateDefaults, scratchDir, patchFile, logger));
     mPhases.add(new ExecutionPhase(mHostExecutors, localCommandFactory, templateDefaults,
-        failedLogDir, testParser.parse(), mFailedTests, logger));
+        succeededLogDir, failedLogDir, testParser.parse(), mExecutedTests, mFailedTests, logger));
     mPhases.add(new ReportingPhase(mHostExecutors, localCommandFactory, templateDefaults, logger));
   }
   public int run() {
@@ -143,11 +146,6 @@ public class PTest {
           elapsedTimes.put(phase.getClass().getSimpleName(), elapsedTime);
         }
       }
-      for(HostExecutor hostExecutor : mHostExecutors) {
-        if(hostExecutor.remainingDrones() == 0) {
-          mExecutionContext.addBadHost(hostExecutor.getHost());
-        }
-      }
       if(!mFailedTests.isEmpty()) {
         throw new TestsFailedException(mFailedTests.size() + " tests failed");
       }
@@ -156,6 +154,11 @@ public class PTest {
       messages.add("Tests failed with: " + throwable.getClass().getSimpleName() + ": " + throwable.getMessage());
       error = true;
     } finally {
+      for(HostExecutor hostExecutor : mHostExecutors) {
+        if(hostExecutor.remainingDrones() == 0) {
+          mExecutionContext.addBadHost(hostExecutor.getHost());
+        }
+      }
       mExecutor.shutdownNow();
       if(mFailedTests.isEmpty()) {
         mLogger.info(String.format("%d failed tests", mFailedTests.size()));
@@ -165,6 +168,7 @@ public class PTest {
       for(String failingTestName : mFailedTests) {
         mLogger.warn(failingTestName);
       }
+      mLogger.info("Executed " + mExecutedTests.size() + " tests");
       for(Map.Entry<String, Long> entry : elapsedTimes.entrySet()) {
         mLogger.info(String.format("PERF: Phase %s took %d minutes", entry.getKey(), entry.getValue()));
       }
@@ -194,7 +198,7 @@ public class PTest {
       return;
     }
     JIRAService jira = new JIRAService(mLogger, mConfiguration, mBuildTag);
-    jira.postComment(error, mFailedTests, messages);
+    jira.postComment(error, mExecutedTests.size(), mFailedTests, messages);
   }
 
   public static class Builder {

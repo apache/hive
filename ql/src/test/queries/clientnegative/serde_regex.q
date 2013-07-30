@@ -1,5 +1,5 @@
 USE default;
---  This should fail because Regex SerDe doesn't support TIMESTAMP, STRUCT
+--  This should fail because Regex SerDe doesn't support STRUCT
 CREATE TABLE serde_regex(
   host STRING,
   identity STRING,

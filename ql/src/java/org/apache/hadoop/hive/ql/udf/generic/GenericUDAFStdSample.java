@@ -58,6 +58,7 @@ public class GenericUDAFStdSample extends GenericUDAFVariance {
     case DECIMAL:
       return new GenericUDAFStdSampleEvaluator();
     case BOOLEAN:
+    case DATE:
     default:
       throw new UDFArgumentTypeException(0,
           "Only numeric or string type arguments are accepted but "

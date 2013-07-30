@@ -23,16 +23,18 @@ public class TestStartRequest {
   private String testHandle;
   private String patchURL;
   private String jiraName;
+  private boolean clearLibraryCache;
 
   public TestStartRequest() {
 
   }
   public TestStartRequest(String profile, String testHandle, 
-      String jiraName, String patchURL) {
+      String jiraName, String patchURL, boolean clearLibraryCache) {
     this.profile = profile;
     this.testHandle = testHandle;
     this.jiraName = jiraName;
     this.patchURL = patchURL;
+    this.clearLibraryCache = clearLibraryCache;
   }
   public String getProfile() {
     return profile;
@@ -45,8 +47,13 @@ public class TestStartRequest {
   }
   public void setPatchURL(String patchURL) {
     this.patchURL = patchURL;
+  }  
+  public boolean isClearLibraryCache() {
+    return clearLibraryCache;
   }
-  
+  public void setClearLibraryCache(boolean clearLibraryCache) {
+    this.clearLibraryCache = clearLibraryCache;
+  }
   public String getJiraName() {
     return jiraName;
   }
@@ -64,6 +71,6 @@ public class TestStartRequest {
   public String toString() {
     return "TestStartRequest [profile=" + profile + ", testHandle="
         + testHandle + ", patchURL=" + patchURL + ", jiraName=" + jiraName
-        + "]";
+        + ", clearLibraryCache=" + clearLibraryCache + "]";
   }
 }

@@ -110,6 +110,7 @@ public void run() {
             TestConfiguration testConfiguration = TestConfiguration.fromFile(profileConfFile, logger);
             testConfiguration.setPatch(startRequest.getPatchURL());
             testConfiguration.setJiraName(startRequest.getJiraName());
+            testConfiguration.setClearLibraryCache(startRequest.isClearLibraryCache());
             PTest ptest = mPTestBuilder.build(testConfiguration, mExecutionContext,
                 test.getStartRequest().getTestHandle(), logDir,
                 new LocalCommandFactory(logger), new SSHCommandExecutor(logger),

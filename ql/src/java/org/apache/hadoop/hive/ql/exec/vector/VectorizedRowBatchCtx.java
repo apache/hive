@@ -118,7 +118,7 @@ public class VectorizedRowBatchCtx {
       IllegalAccessException, HiveException {
 
     Map<String, PartitionDesc> pathToPartitionInfo = Utilities
-        .getMapRedWork(hiveConf).getPathToPartitionInfo();
+        .getMapRedWork(hiveConf).getMapWork().getPathToPartitionInfo();
 
     PartitionDesc part = HiveFileFormatUtils
         .getPartitionDescFromPathRecursively(pathToPartitionInfo,

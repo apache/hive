@@ -128,6 +128,8 @@ public class Utils {
       return Types.INTEGER;
     } else if ("bigint".equalsIgnoreCase(type)) {
       return Types.BIGINT;
+    } else if ("date".equalsIgnoreCase(type)) {
+      return Types.DATE;
     } else if ("timestamp".equalsIgnoreCase(type)) {
       return Types.TIMESTAMP;
     } else if ("decimal".equalsIgnoreCase(type)) {
