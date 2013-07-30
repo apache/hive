@@ -257,7 +257,7 @@ public final class TypeCheckProcFactory {
                 0, expr.getText().length() - 1));
         } else if (expr.getText().endsWith("BD")) {
           // Literal decimal
-          return new ExprNodeConstantDesc(TypeInfoFactory.decimalTypeInfo, 
+          return new ExprNodeConstantDesc(TypeInfoFactory.decimalTypeInfo,
                 expr.getText().substring(0, expr.getText().length() - 2));
         } else {
           v = Double.valueOf(expr.getText());
@@ -411,16 +411,12 @@ public final class TypeCheckProcFactory {
       ASTNode expr = (ASTNode) nd;
 
       // Get the string value and convert to a Date value.
-      if (expr.getChildCount() == 1) {
-        try {
-          String dateString = BaseSemanticAnalyzer.stripQuotes(expr.getChild(0).getText());
-          Date date = Date.valueOf(dateString);
-          return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo, date);
-        } catch (IllegalArgumentException err) {
-          throw new SemanticException("Unable to convert date literal string to date value.", err);
-        }
-      } else {
-        throw new SemanticException("Expected date string after DATE keyword");
+      try {
+        String dateString = BaseSemanticAnalyzer.stripQuotes(expr.getText());
+        Date date = Date.valueOf(dateString);
+        return new ExprNodeConstantDesc(TypeInfoFactory.dateTypeInfo, date);
+      } catch (IllegalArgumentException err) {
+        throw new SemanticException("Unable to convert date literal string to date value.", err);
       }
     }
   }

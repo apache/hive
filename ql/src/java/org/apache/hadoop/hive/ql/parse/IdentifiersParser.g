@@ -247,7 +247,12 @@ charSetStringLiteral
 
 dateLiteral
     :
-    KW_DATE StringLiteral -> ^(TOK_DATELITERAL StringLiteral)
+    KW_DATE StringLiteral ->
+    {
+      // Create DateLiteral token, but with the text of the string value
+      // This makes the dateLiteral more consistent with the other type literals.
+      adaptor.create(TOK_DATELITERAL, $StringLiteral.text)
+    }
     ;
 
 expression
