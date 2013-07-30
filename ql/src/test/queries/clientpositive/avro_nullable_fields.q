@@ -12,8 +12,8 @@ CREATE TABLE test_serializer(string1 STRING,
                              struct1 STRUCT<sint:INT,sboolean:BOOLEAN,sstring:STRING>,
                              enum1 STRING,
                              nullableint INT,
-                             bytes1 ARRAY<TINYINT>,
-                             fixed1 ARRAY<TINYINT>)
+                             bytes1 BINARY,
+                             fixed1 BINARY)
  ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' COLLECTION ITEMS TERMINATED BY ':' MAP KEYS TERMINATED BY '#' LINES TERMINATED BY '\n'
  STORED AS TEXTFILE;
 

@@ -17,9 +17,15 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
-import org.apache.avro.Schema;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import static org.apache.avro.Schema.Type.BOOLEAN;
+import static org.apache.avro.Schema.Type.BYTES;
+import static org.apache.avro.Schema.Type.DOUBLE;
+import static org.apache.avro.Schema.Type.FIXED;
+import static org.apache.avro.Schema.Type.FLOAT;
+import static org.apache.avro.Schema.Type.INT;
+import static org.apache.avro.Schema.Type.LONG;
+import static org.apache.avro.Schema.Type.NULL;
+import static org.apache.avro.Schema.Type.STRING;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,13 +33,9 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
-import static org.apache.avro.Schema.Type.BOOLEAN;
-import static org.apache.avro.Schema.Type.DOUBLE;
-import static org.apache.avro.Schema.Type.FLOAT;
-import static org.apache.avro.Schema.Type.INT;
-import static org.apache.avro.Schema.Type.LONG;
-import static org.apache.avro.Schema.Type.NULL;
-import static org.apache.avro.Schema.Type.STRING;
+import org.apache.avro.Schema;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
  * Convert an Avro Schema to a Hive TypeInfo
@@ -47,7 +49,8 @@ class SchemaToTypeInfo {
   // long             bigint     check
   // float            double     check
   // double           double     check
-  // bytes
+  // bytes            binary     check
+  // fixed            binary     check
   // string           string     check
   //                  tinyint
   //                  smallint
@@ -56,13 +59,15 @@ class SchemaToTypeInfo {
   private static final Map<Schema.Type, TypeInfo> primitiveTypeToTypeInfo = initTypeMap();
   private static Map<Schema.Type, TypeInfo> initTypeMap() {
     Map<Schema.Type, TypeInfo> theMap = new Hashtable<Schema.Type, TypeInfo>();
-    theMap.put(STRING, TypeInfoFactory.getPrimitiveTypeInfo("string"));
-    theMap.put(INT, TypeInfoFactory.getPrimitiveTypeInfo("int"));
+    theMap.put(NULL, TypeInfoFactory.getPrimitiveTypeInfo("void"));
     theMap.put(BOOLEAN, TypeInfoFactory.getPrimitiveTypeInfo("boolean"));
+    theMap.put(INT, TypeInfoFactory.getPrimitiveTypeInfo("int"));
     theMap.put(LONG, TypeInfoFactory.getPrimitiveTypeInfo("bigint"));
     theMap.put(FLOAT, TypeInfoFactory.getPrimitiveTypeInfo("float"));
     theMap.put(DOUBLE, TypeInfoFactory.getPrimitiveTypeInfo("double"));
-    theMap.put(NULL, TypeInfoFactory.getPrimitiveTypeInfo("void"));
+    theMap.put(BYTES, TypeInfoFactory.getPrimitiveTypeInfo("binary"));
+    theMap.put(FIXED, TypeInfoFactory.getPrimitiveTypeInfo("binary"));
+    theMap.put(STRING, TypeInfoFactory.getPrimitiveTypeInfo("string"));
     return Collections.unmodifiableMap(theMap);
   }
 
@@ -106,22 +111,22 @@ class SchemaToTypeInfo {
   private static TypeInfo generateTypeInfoWorker(Schema schema) throws AvroSerdeException {
     // Avro requires NULLable types to be defined as unions of some type T
     // and NULL.  This is annoying and we're going to hide it from the user.
-    if(AvroSerdeUtils.isNullableType(schema))
+    if(AvroSerdeUtils.isNullableType(schema)) {
       return generateTypeInfo(AvroSerdeUtils.getOtherTypeFromNullableType(schema));
+    }
 
     Schema.Type type = schema.getType();
 
-    if(primitiveTypeToTypeInfo.containsKey(type))
+    if(primitiveTypeToTypeInfo.containsKey(type)) {
       return primitiveTypeToTypeInfo.get(type);
+    }
 
     switch(type) {
-      case BYTES:  return generateBytesTypeInfo(schema);
       case RECORD: return generateRecordTypeInfo(schema);
       case MAP:    return generateMapTypeInfo(schema);
       case ARRAY:  return generateArrayTypeInfo(schema);
       case UNION:  return generateUnionTypeInfo(schema);
       case ENUM:   return generateEnumTypeInfo(schema);
-      case FIXED:  return generateFixedTypeInfo(schema);
       default:     throw new AvroSerdeException("Do not yet support: " + schema);
     }
   }
@@ -182,23 +187,5 @@ class SchemaToTypeInfo {
     assert schema.getType().equals(Schema.Type.ENUM);
 
     return TypeInfoFactory.getPrimitiveTypeInfo("string");
-  }
-
-  // Hive doesn't have a Fixed type, so we're going to treat them as arrays of
-  // bytes
-  // TODO: Make note in documentation that Hive sends these out as signed bytes.
-  private static final TypeInfo FIXED_AND_BYTES_EQUIV =
-          TypeInfoFactory.getListTypeInfo(TypeInfoFactory.byteTypeInfo);
-  private static TypeInfo generateFixedTypeInfo(Schema schema) {
-    assert schema.getType().equals(Schema.Type.FIXED);
-
-    return FIXED_AND_BYTES_EQUIV;
-  }
-
-  // Avro considers bytes to be a primitive type, but Hive doesn't.  We'll
-  // convert them to a list of bytes, just like Fixed.  Sigh.
-  private static TypeInfo generateBytesTypeInfo(Schema schema) {
-    assert schema.getType().equals(Schema.Type.BYTES);
-    return FIXED_AND_BYTES_EQUIV;
   }
 }
