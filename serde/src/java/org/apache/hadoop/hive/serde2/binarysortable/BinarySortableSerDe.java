@@ -376,7 +376,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
       case TIMESTAMP:
         TimestampWritable t = (reuse == null ? new TimestampWritable() :
             (TimestampWritable) reuse);
-        byte[] bytes = new byte[8];
+        byte[] bytes = new byte[TimestampWritable.BINARY_SORTABLE_LENGTH];
 
         for (int i = 0; i < bytes.length; i++) {
           bytes[i] = buffer.read(invert);
