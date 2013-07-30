@@ -17,9 +17,7 @@
  */
 package org.apache.hadoop.hive.metastore.parser;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -28,9 +26,9 @@ import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 
 import com.google.common.collect.Sets;
 
@@ -158,6 +156,7 @@ public class ExpressionTree {
   public static class LeafNode extends TreeNode {
     public String keyName;
     public Operator operator;
+    /** Constant expression side of the operator. Can currently be a String or a Long. */
     public Object value;
     public boolean isReverseOrder = false;
     private static final String PARAM_PREFIX = "hive_filter_param_";
@@ -196,7 +195,7 @@ public class ExpressionTree {
         String paramKeyName = keyName.substring(hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS.length());
         keyName = "this.parameters.get(\"" + paramKeyName + "\")";
         //value is persisted as a string in the db, so make sure it's a string here
-        // in case we get an integer.
+        // in case we get a long.
         value = value.toString();
       } else {
         throw new MetaException("Invalid key name in filter.  " +
@@ -210,8 +209,8 @@ public class ExpressionTree {
      * generates a statement of the form:
      * key1 operator value2 (&& | || ) key2 operator value2 ...
      *
-     * Currently supported types for value are String and Integer.
-     * The LIKE operator for Integers is unsupported.
+     * Currently supported types for value are String and Long.
+     * The LIKE operator for Longs is unsupported.
      */
     private String generateJDOFilterGeneral(Map<String, Object> params)
         throws MetaException {
@@ -257,23 +256,37 @@ public class ExpressionTree {
             "> is not a partitioning key for the table");
       }
 
-      //Can only support partitions whose types are string
-      if( ! table.getPartitionKeys().get(partitionColumnIndex).
-          getType().equals(org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME) ) {
-        throw new MetaException
-        ("Filtering is supported only on partition keys of type string");
+      String keyType = table.getPartitionKeys().get(partitionColumnIndex).getType();
+      boolean isIntegralSupported = doesOperatorSupportIntegral(operator);
+
+      // Can only support partitions whose types are string, or maybe integers
+      if (!keyType.equals(org.apache.hadoop.hive.serde.serdeConstants.STRING_TYPE_NAME)
+          && (!isIntegralSupported || !isIntegralType(keyType))) {
+        throw new MetaException("Filtering is supported only on partition keys of type " +
+            "string" + (isIntegralSupported ? ", or integral types" : ""));
       }
 
-      String valueParam = null;
+      boolean isStringValue = value instanceof String;
+      if (!isStringValue && (!isIntegralSupported || !(value instanceof Long))) {
+        throw new MetaException("Filtering is supported only on partition keys of type " +
+            "string" + (isIntegralSupported ? ", or integral types" : ""));
+      }
+
+      String valueAsString = null;
       try {
-        valueParam = (String) value;
+        valueAsString = isStringValue ? (String) value : Long.toString((Long) value);
       } catch (ClassCastException e) {
-        throw new MetaException("Filtering is supported only on partition keys of type string");
+        throw new MetaException("Unable to cast the constexpr to "
+            + (isStringValue ? "string" : "long"));
       }
 
       String paramName = PARAM_PREFIX + params.size();
-      params.put(paramName, valueParam);
-      String filter;
+      params.put(paramName, valueAsString);
+      boolean isOpEquals = operator == Operator.EQUALS;
+      if (isOpEquals || operator == Operator.NOTEQUALS || operator == Operator.NOTEQUALS2) {
+        return makeFilterForEquals(keyName, valueAsString, paramName, params,
+            partitionColumnIndex, partitionColumnCount, isOpEquals);
+      }
 
       String keyEqual = FileUtils.escapePathName(keyName) + "=";
       int keyEqualLength = keyEqual.length();
@@ -286,43 +299,52 @@ public class ExpressionTree {
         valString = "partitionName.substring(partitionName.indexOf(\"" + keyEqual + "\")+" + keyEqualLength + ").substring(0, partitionName.substring(partitionName.indexOf(\"" + keyEqual + "\")+" + keyEqualLength + ").indexOf(\"/\"))";
       }
 
-      //Handle "a > 10" and "10 > a" appropriately
-      if (isReverseOrder){
-        //For LIKE, the value should be on the RHS
-        if( operator == Operator.LIKE ) {
+      if (operator == Operator.LIKE) {
+        if (isReverseOrder) {
+          //For LIKE, the value should be on the RHS
           throw new MetaException(
-              "Value should be on the RHS for LIKE operator : " +
-              "Key <" + keyName + ">");
-        } else if (operator == Operator.EQUALS) {
-          filter = makeFilterForEquals(keyName, valueParam, paramName, params,
-              partitionColumnIndex, partitionColumnCount);
-        } else {
-          filter = paramName +
-          " " + operator.getJdoOp() + " " + valString;
+              "Value should be on the RHS for LIKE operator : Key <" + keyName + ">");
         }
-      } else {
-        if (operator == Operator.LIKE ) {
-          //generate this.values.get(i).matches("abc%")
-          filter = " " + valString + "."
-              + operator.getJdoOp() + "(" + paramName + ") ";
-        } else if (operator == Operator.EQUALS) {
-          filter = makeFilterForEquals(keyName, valueParam, paramName, params,
-              partitionColumnIndex, partitionColumnCount);
-        } else {
-          filter = " " + valString + " "
-              + operator.getJdoOp() + " " + paramName;
-        }
+        //generate this.values.get(i).matches("abc%")
+        return " " + valString + "." + operator.getJdoOp() + "(" + paramName + ") ";
       }
-      return filter;
+
+      // TODO: support for other ops for numbers to be handled in HIVE-4888.
+      return isReverseOrder
+          ? paramName + " " + operator.getJdoOp() + " " + valString
+          : " " + valString + " " + operator.getJdoOp() + " " + paramName;
+    }
+
+    /**
+     * @param operator operator
+     * @return true iff filter pushdown for this operator can be done for integral types.
+     */
+    private static boolean doesOperatorSupportIntegral(Operator operator) {
+      return (operator == Operator.EQUALS)
+          || (operator == Operator.NOTEQUALS)
+          || (operator == Operator.NOTEQUALS2);
+    }
+
+    /**
+     * @param type type
+     * @return true iff type is an integral type.
+     */
+    private static boolean isIntegralType(String type) {
+      return type.equals(org.apache.hadoop.hive.serde.serdeConstants.TINYINT_TYPE_NAME)
+          || type.equals(org.apache.hadoop.hive.serde.serdeConstants.SMALLINT_TYPE_NAME)
+          || type.equals(org.apache.hadoop.hive.serde.serdeConstants.INT_TYPE_NAME)
+          || type.equals(org.apache.hadoop.hive.serde.serdeConstants.BIGINT_TYPE_NAME);
     }
   }
 
   /**
-   * For equals, we can make the JDO query much faster by filtering based on the
-   * partition name. For a condition like ds="2010-10-01", we can see if there
-   * are any partitions with a name that contains the substring "ds=2010-10-01/"
+   * For equals and not-equals, we can make the JDO query much faster by filtering
+   * based on the partition name. For a condition like ds="2010-10-01", we can see
+   * if there are any partitions with a name that contains the substring "ds=2010-10-01/"
    * False matches aren't possible since "=" is escaped for partition names
    * and the trailing '/' ensures that we won't get a match with ds=2010-10-011
+   * Note that filters on integral type equality also work correctly by virtue of
+   * comparing them as part of ds=1234 string.
    *
    * Two cases to keep in mind: Case with only one partition column (no '/'s)
    * Case where the partition key column is at the end of the name. (no
@@ -332,11 +354,12 @@ public class ExpressionTree {
    * @param value
    * @param paramName name of the parameter to use for JDOQL
    * @param params a map from the parameter name to their values
+   * @param isEq whether the operator is equals, or not-equals.
    * @return
    * @throws MetaException
    */
-  private static String makeFilterForEquals(String keyName, String value,
-      String paramName, Map<String, Object> params, int keyPos, int keyCount)
+  private static String makeFilterForEquals(String keyName, String value, String paramName,
+      Map<String, Object> params, int keyPos, int keyCount, boolean isEq)
       throws MetaException {
     Map<String, String> partKeyToVal = new HashMap<String, String>();
     partKeyToVal.put(keyName, value);
@@ -348,22 +371,25 @@ public class ExpressionTree {
     if (keyCount == 1) {
       // Case where this is no other partition columns
       params.put(paramName, escapedNameFragment);
-      fltr.append("partitionName == ").append(paramName);
+      fltr.append("partitionName ").append(isEq ? "== " : "!= ").append(paramName);
     } else if (keyPos + 1 == keyCount) {
       // Case where the partition column is at the end of the name. There will
       // be a leading '/' but no trailing '/'
       params.put(paramName, "/" + escapedNameFragment);
-      fltr.append("partitionName.endsWith(").append(paramName).append(')');
+      fltr.append(isEq ? "" : "!").append("partitionName.endsWith(")
+        .append(paramName).append(')');
     } else if (keyPos == 0) {
       // Case where the parttion column is at the beginning of the name. There will
       // be a trailing '/' but no leading '/'
       params.put(paramName, escapedNameFragment + "/");
-      fltr.append("partitionName.startsWith(").append(paramName).append(')');
+      fltr.append(isEq ? "" : "!").append("partitionName.startsWith(")
+        .append(paramName).append(')');
     } else {
       // Case where the partition column is in the middle of the name. There will
       // be a leading '/' and an trailing '/'
       params.put(paramName, "/" + escapedNameFragment + "/");
-      fltr.append("partitionName.indexOf(").append(paramName).append(") >= 0");
+      fltr.append("partitionName.indexOf(").append(paramName).append(")")
+        .append(isEq ? ">= 0" : "< 0");
     }
     return fltr.toString();
   }

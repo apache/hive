@@ -201,7 +201,7 @@ public class PartitionPruner implements Transform {
             // are on non-partition columns.
             unkn_parts.addAll(Hive.get().getPartitions(tab));
           } else {
-            String message = Utilities.checkJDOPushDown(tab, compactExpr);
+            String message = Utilities.checkJDOPushDown(tab, compactExpr, null);
             if (message == null) {
               String filter = compactExpr.getExprString();
               String oldFilter = prunerExpr.getExprString();
