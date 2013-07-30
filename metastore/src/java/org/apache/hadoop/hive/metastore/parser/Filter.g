@@ -100,10 +100,10 @@ operatorExpression
        ) { val = TrimQuotes(value.getText()); }
        |
        (
-	       (key = Identifier op = operator value = IntLiteral)
+	       (key = Identifier op = operator value = IntegralLiteral)
 	       |
-	       (value = IntLiteral op = operator key = Identifier) { isReverseOrder = true; }
-       ) { val = Integer.parseInt(value.getText()); }
+	       (value = IntegralLiteral op = operator key = Identifier) { isReverseOrder = true; }
+       ) { val = Long.parseLong(value.getText()); }
     )
     {
         LeafNode node = new LeafNode();
@@ -157,9 +157,9 @@ StringLiteral
     ;
 
 
-IntLiteral
+IntegralLiteral
     :
-    (Digit)+
+    ('-')? (Digit)+
     ;
 
 Identifier
