@@ -3,4 +3,4 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE alter_test (d STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@alter_test
-FAILED: SemanticException [Error 10099]: DATE and DATETIME types aren't supported yet. Please use TIMESTAMP instead
+FAILED: SemanticException [Error 10099]: DATETIME type isn't supported yet. Please use DATE or TIMESTAMP instead

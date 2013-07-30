@@ -125,7 +125,6 @@ STAGE PLANS:
                         type: int
                         expr: _col3
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -175,6 +174,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test_table1
             name: default.test_table1
+      Truncated Path -> Alias:
+        /test_table1 [a]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           Limit
@@ -196,8 +198,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /test_table1 [a]
 
   Stage: Stage-0
     Fetch Operator
@@ -327,7 +327,6 @@ STAGE PLANS:
                         type: string
       Local Work:
         Map Reduce Local Work
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -377,6 +376,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test_table3
             name: default.test_table3
+      Truncated Path -> Alias:
+        /test_table3 [a]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           Limit
@@ -398,8 +400,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /test_table3 [a]
 
   Stage: Stage-0
     Fetch Operator

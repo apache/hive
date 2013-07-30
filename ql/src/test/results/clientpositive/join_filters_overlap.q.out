@@ -90,7 +90,6 @@ STAGE PLANS:
                       type: int
                       expr: value
                       type: int
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -136,6 +135,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.a
             name: default.a
+      Truncated Path -> Alias:
+        /a [b, c, a]
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -186,8 +188,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /a [b, c, a]
 
   Stage: Stage-0
     Fetch Operator
@@ -297,7 +297,6 @@ STAGE PLANS:
                       type: int
                       expr: value
                       type: int
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -343,6 +342,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.a
             name: default.a
+      Truncated Path -> Alias:
+        /a [b, c, a]
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -393,8 +395,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /a [b, c, a]
 
   Stage: Stage-0
     Fetch Operator
@@ -504,7 +504,6 @@ STAGE PLANS:
                       type: int
                       expr: value
                       type: int
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -550,6 +549,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.a
             name: default.a
+      Truncated Path -> Alias:
+        /a [b, c, a]
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -600,8 +602,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /a [b, c, a]
 
   Stage: Stage-0
     Fetch Operator
@@ -729,7 +729,6 @@ STAGE PLANS:
                       type: int
                       expr: value
                       type: int
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -775,6 +774,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.a
             name: default.a
+      Truncated Path -> Alias:
+        /a [d, b, c, a]
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -833,8 +835,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /a [d, b, c, a]
 
   Stage: Stage-0
     Fetch Operator
@@ -958,7 +958,6 @@ STAGE PLANS:
                       type: int
                       expr: value
                       type: int
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1004,6 +1003,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.a
             name: default.a
+      Truncated Path -> Alias:
+        /a [d, b, c, a]
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -1061,8 +1063,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /a [d, b, c, a]
 
   Stage: Stage-0
     Fetch Operator

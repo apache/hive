@@ -144,7 +144,12 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
 
       if (inpFs.exists(dirPath)) {
         // For each dynamic partition, check if it needs to be merged.
-        MapredWork work = (MapredWork) mrTask.getWork();
+        MapWork work;
+        if (mrTask.getWork() instanceof MapredWork) {
+          work = ((MapredWork) mrTask.getWork()).getMapWork();
+        } else {
+          work = (MapWork) mrTask.getWork();
+        }
 
         int lbLevel = (ctx.getLbCtx() == null) ? 0 : ctx.getLbCtx().calculateListBucketingLevel();
 
@@ -222,7 +227,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
   private void generateActualTasks(HiveConf conf, List<Task<? extends Serializable>> resTsks,
       long trgtSize, long avgConditionSize, Task<? extends Serializable> mvTask,
       Task<? extends Serializable> mrTask, Task<? extends Serializable> mrAndMvTask, Path dirPath,
-      FileSystem inpFs, ConditionalResolverMergeFilesCtx ctx, MapredWork work, int dpLbLevel)
+      FileSystem inpFs, ConditionalResolverMergeFilesCtx ctx, MapWork work, int dpLbLevel)
       throws IOException {
     DynamicPartitionCtx dpCtx = ctx.getDPCtx();
     // get list of dynamic partitions
@@ -319,18 +324,11 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
     return pDesc;
   }
 
-  private void setupMapRedWork(HiveConf conf, MapredWork work, long targetSize, long totalSize) {
-    if (work.getNumReduceTasks() > 0) {
-      int maxReducers = conf.getIntVar(HiveConf.ConfVars.MAXREDUCERS);
-      int reducers = (int) ((totalSize + targetSize - 1) / targetSize);
-      reducers = Math.max(1, reducers);
-      reducers = Math.min(maxReducers, reducers);
-      work.setNumReduceTasks(reducers);
-    }
-    work.setMaxSplitSize(targetSize);
-    work.setMinSplitSize(targetSize);
-    work.setMinSplitSizePerNode(targetSize);
-    work.setMinSplitSizePerRack(targetSize);
+  private void setupMapRedWork(HiveConf conf, MapWork mWork, long targetSize, long totalSize) {
+    mWork.setMaxSplitSize(targetSize);
+    mWork.setMinSplitSize(targetSize);
+    mWork.setMinSplitSizePerNode(targetSize);
+    mWork.setMinSplitSizePerRack(targetSize);
   }
 
   private static class AverageSize {
@@ -352,7 +350,6 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
   }
 
   private AverageSize getAverageSize(FileSystem inpFs, Path dirPath) {
-    AverageSize dummy = new AverageSize(0, 0);
     AverageSize error = new AverageSize(-1, -1);
     try {
       FileStatus[] fStats = inpFs.listStatus(dirPath);

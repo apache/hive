@@ -107,4 +107,9 @@ public class MemoryTokenStore implements DelegationTokenStore {
     //no-op
   }
 
+  @Override
+  public void setStore(Object hmsHandler) throws TokenStoreException {
+    // no-op
+  }
+
 }

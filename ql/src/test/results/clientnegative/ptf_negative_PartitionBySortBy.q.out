@@ -27,6 +27,5 @@ POSTHOOK: query: CREATE TABLE part(
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@part
-FAILED: ParseException line 5:45 missing ) at 'sort' near 'by'
-line 5:53 missing EOF at 'p_mfgr' near 'by'
+FAILED: ParseException line 5:45 missing ) at 'sort' near 'p_mfgr' in table name
 

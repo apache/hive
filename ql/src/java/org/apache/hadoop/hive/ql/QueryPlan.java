@@ -233,7 +233,7 @@ public class QueryPlan implements Serializable {
         mapTask.setTaskId(stage.getStageId() + "_MAP");
         mapTask.setTaskType(TaskType.MAP);
         stage.addToTaskList(mapTask);
-        populateOperatorGraph(mapTask, mrTask.getWork().getAliasToWork()
+        populateOperatorGraph(mapTask, mrTask.getWork().getMapWork().getAliasToWork()
             .values());
 
         // populate reduce task
@@ -245,7 +245,7 @@ public class QueryPlan implements Serializable {
           stage.addToTaskList(reduceTask);
           Collection<Operator<? extends OperatorDesc>> reducerTopOps =
             new ArrayList<Operator<? extends OperatorDesc>>();
-          reducerTopOps.add(mrTask.getWork().getReducer());
+          reducerTopOps.add(mrTask.getWork().getReduceWork().getReducer());
           populateOperatorGraph(reduceTask, reducerTopOps);
         }
       } else {
@@ -382,7 +382,7 @@ public class QueryPlan implements Serializable {
       }
       if (task instanceof ExecDriver) {
         ExecDriver mrTask = (ExecDriver) task;
-        extractOperatorCounters(mrTask.getWork().getAliasToWork().values(),
+        extractOperatorCounters(mrTask.getWork().getMapWork().getAliasToWork().values(),
             task.getId() + "_MAP");
         if (mrTask.mapStarted()) {
           started.add(task.getId() + "_MAP");
@@ -393,7 +393,7 @@ public class QueryPlan implements Serializable {
         if (mrTask.hasReduce()) {
           Collection<Operator<? extends OperatorDesc>> reducerTopOps =
             new ArrayList<Operator<? extends OperatorDesc>>();
-          reducerTopOps.add(mrTask.getWork().getReducer());
+          reducerTopOps.add(mrTask.getWork().getReduceWork().getReducer());
           extractOperatorCounters(reducerTopOps, task.getId() + "_REDUCE");
           if (mrTask.reduceStarted()) {
             started.add(task.getId() + "_REDUCE");

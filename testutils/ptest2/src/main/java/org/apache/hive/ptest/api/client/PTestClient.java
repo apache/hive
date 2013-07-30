@@ -80,6 +80,7 @@ public class PTestClient {
   private static final String JIRA = "jira";
   private static final String OUTPUT_DIR = "outputDir";
   private static final String TEST_HANDLE = "testHandle";
+  private static final String CLEAR_LIBRARY_CACHE = "clearLibraryCache";
   private final String mApiEndPoint;
   private final String mLogsEndpoint;
   private final ObjectMapper mMapper;
@@ -102,7 +103,7 @@ public class PTestClient {
         new UsernamePasswordCredentials("hive", password));
   }
   public boolean testStart(String profile, String testHandle,
-      String jira, String patch, String testOutputDir)
+      String jira, String patch, String testOutputDir, boolean clearLibraryCache)
   throws Exception {
     patch = Strings.nullToEmpty(patch).trim();
     if(!patch.isEmpty()) {
@@ -111,7 +112,7 @@ public class PTestClient {
         throw new IllegalArgumentException("Patch " + patch + " was zero bytes");
       }
     }
-    TestStartRequest startRequest = new TestStartRequest(profile, testHandle, jira, patch);
+    TestStartRequest startRequest = new TestStartRequest(profile, testHandle, jira, patch, clearLibraryCache);
     post(startRequest);
     boolean result = false;
     try {
@@ -256,7 +257,8 @@ public class PTestClient {
     options.addOption(null, JIRA, true, "JIRA to post the results to e.g.: HIVE-XXXX");
     options.addOption(null, TEST_HANDLE, true, "Server supplied test handle. (Required for testStop and testTailLog)");
     options.addOption(null, OUTPUT_DIR, true, "Directory to download and save test-results.tar.gz to. (Optional for testStart)");
-
+    options.addOption(null, CLEAR_LIBRARY_CACHE, false, "Before starting the test, delete the ivy and maven directories (Optional for testStart)");
+    
     CommandLine commandLine = parser.parse(options, args);
 
     if(commandLine.hasOption(HELP_SHORT)) {
@@ -278,7 +280,8 @@ public class PTestClient {
           TEST_HANDLE
         });
       result = client.testStart(commandLine.getOptionValue(PROFILE), commandLine.getOptionValue(TEST_HANDLE),
-          commandLine.getOptionValue(JIRA), commandLine.getOptionValue(PATCH), commandLine.getOptionValue(OUTPUT_DIR));
+          commandLine.getOptionValue(JIRA), commandLine.getOptionValue(PATCH), commandLine.getOptionValue(OUTPUT_DIR),
+          commandLine.hasOption(CLEAR_LIBRARY_CACHE));
     } else if("testTailLog".equalsIgnoreCase(command)) {
       result = client.testTailLog(commandLine.getOptionValue(TEST_HANDLE));
     } else if("testList".equalsIgnoreCase(command)) {

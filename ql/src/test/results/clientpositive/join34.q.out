@@ -68,7 +68,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (key < 20.0)
+                  expr: (key < 20)
                   type: boolean
               Select Operator
                 expressions:
@@ -130,7 +130,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (key > 100.0)
+                  expr: (key > 100)
                   type: boolean
               Select Operator
                 expressions:
@@ -187,7 +187,6 @@ STAGE PLANS:
                         MultiFileSpray: false
       Local Work:
         Map Reduce Local Work
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

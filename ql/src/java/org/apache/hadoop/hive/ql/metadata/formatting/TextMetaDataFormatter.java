@@ -119,27 +119,27 @@ class TextMetaDataFormatter implements MetaDataFormatter {
                               boolean isFormatted, boolean isExt, boolean isPretty)
          throws HiveException {
         try {
+          String output;
           if (colPath.equals(tableName)) {
             List<FieldSchema> partCols = tbl.isPartitioned() ? tbl.getPartCols() : null;
-            outStream.writeBytes(
-              isPretty ?
-                  MetaDataPrettyFormatUtils.getAllColumnsInformation(
-                      cols, partCols, prettyOutputNumCols)
+            output = isPretty ?
+                MetaDataPrettyFormatUtils.getAllColumnsInformation(
+                    cols, partCols, prettyOutputNumCols)
                 :
-                  MetaDataFormatUtils.getAllColumnsInformation(cols, partCols, isFormatted)
-              );
+                MetaDataFormatUtils.getAllColumnsInformation(cols, partCols, isFormatted);
           } else {
-            outStream.writeBytes(
-                MetaDataFormatUtils.getAllColumnsInformation(cols, isFormatted));
+            output = MetaDataFormatUtils.getAllColumnsInformation(cols, isFormatted);
           }
+          outStream.write(output.getBytes());
 
           if (tableName.equals(colPath)) {
             if (isFormatted) {
               if (part != null) {
-                outStream.writeBytes(MetaDataFormatUtils.getPartitionInformation(part));
+                output = MetaDataFormatUtils.getPartitionInformation(part);
               } else {
-                outStream.writeBytes(MetaDataFormatUtils.getTableInformation(tbl));
+                output = MetaDataFormatUtils.getTableInformation(tbl);
               }
+              outStream.write(output.getBytes());
             }
 
           // if extended desc table then show the complete details of the table
@@ -150,7 +150,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
                 // show partition information
                 outStream.writeBytes("Detailed Partition Information");
                 outStream.write(separator);
-                outStream.writeBytes(part.getTPartition().toString());
+                outStream.write(part.getTPartition().toString().getBytes());
                 outStream.write(separator);
                 // comment column is empty
                 outStream.write(terminator);
@@ -158,7 +158,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
                 // show table information
                 outStream.writeBytes("Detailed Table Information");
                 outStream.write(separator);
-                outStream.writeBytes(tbl.getTTable().toString());
+                outStream.write(tbl.getTTable().toString().getBytes());
                 outStream.write(separator);
                 outStream.write(terminator);
               }
@@ -444,7 +444,7 @@ class TextMetaDataFormatter implements MetaDataFormatter {
             outStream.writeBytes(database);
             outStream.write(separator);
             if (comment != null) {
-              outStream.writeBytes(comment);
+              outStream.write(comment.getBytes());
             }
             outStream.write(separator);
             if (location != null) {

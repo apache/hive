@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.mr.HadoopJobExecHook;
 import org.apache.hadoop.hive.ql.exec.mr.Throttle;
 import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormatImpl;
+import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -165,7 +166,9 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
     try {
       addInputPaths(job, work);
 
-      Utilities.setMapRedWork(job, work, ctx.getMRTmpFileURI());
+      MapredWork mrWork = new MapredWork();
+      mrWork.setMapWork(work);
+      Utilities.setMapRedWork(job, mrWork, ctx.getMRTmpFileURI());
 
       // remove the pwd from conf file so that job tracker doesn't show this
       // logs

@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
@@ -42,6 +43,7 @@ import org.apache.hadoop.io.LongWritable;
 public class GenericUDFToUnixTimeStamp extends GenericUDF {
 
   private StringObjectInspector intputTextOI;
+  private DateObjectInspector inputDateOI;
   private TimestampObjectInspector inputTimestampOI;
   private StringObjectInspector patternOI;
 
@@ -69,6 +71,8 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
         }
         patternOI = (StringObjectInspector) arguments[1];
       }
+    } else if (arguments[0] instanceof DateObjectInspector) {
+      inputDateOI = (DateObjectInspector) arguments[0];
     } else if (arguments[0] instanceof TimestampObjectInspector) {
       inputTimestampOI = (TimestampObjectInspector) arguments[0];
     } else {
@@ -106,7 +110,11 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
       } catch (ParseException e) {
         return null;
       }
-    }
+    } else if (inputDateOI != null) {
+      retValue.set(inputDateOI.getPrimitiveWritableObject(arguments[0].get())
+                   .getTimeInSeconds());
+      return retValue;
+	}
     Timestamp timestamp = inputTimestampOI.getPrimitiveJavaObject(arguments[0].get());
     retValue.set(timestamp.getTime() / 1000);
     return retValue;

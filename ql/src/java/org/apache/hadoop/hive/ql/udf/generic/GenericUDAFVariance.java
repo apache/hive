@@ -76,6 +76,7 @@ public class GenericUDAFVariance extends AbstractGenericUDAFResolver {
     case DECIMAL:
       return new GenericUDAFVarianceEvaluator();
     case BOOLEAN:
+    case DATE:
     default:
       throw new UDFArgumentTypeException(0,
           "Only numeric or string type arguments are accepted but "

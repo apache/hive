@@ -25,6 +25,7 @@ import java.util.TimeZone;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -77,6 +78,26 @@ public class UDFDateDiff extends UDF {
 
   public IntWritable evaluate(Text dateString, TimestampWritable t) {
     return evaluate(toDate(dateString), toDate(t));
+  }
+
+  public IntWritable evaluate(Text dateString, DateWritable d) {
+    return evaluate(toDate(dateString), d.get());
+  }
+
+  public IntWritable evaluate(TimestampWritable t, DateWritable d) {
+    return evaluate(toDate(t), d.get());
+  }
+
+  public IntWritable evaluate(DateWritable d1, DateWritable d2) {
+    return evaluate(d1.get(), d2.get());
+  }
+
+  public IntWritable evaluate(DateWritable d, Text dateString) {
+    return evaluate(d.get(), toDate(dateString));
+  }
+
+  public IntWritable evaluate(DateWritable d, TimestampWritable t) {
+    return evaluate(d.get(), toDate(t));
   }
 
   private IntWritable evaluate(Date date, Date date2) {

@@ -74,7 +74,7 @@ public class SkewJoinResolver implements PhysicalPlanResolver {
       Task<? extends Serializable> task = (Task<? extends Serializable>) nd;
 
       if (!task.isMapRedTask() || task instanceof ConditionalTask
-          || ((MapredWork) task.getWork()).getReducer() == null) {
+          || ((MapredWork) task.getWork()).getReduceWork() == null) {
         return null;
       }
 
@@ -94,7 +94,9 @@ public class SkewJoinResolver implements PhysicalPlanResolver {
 
       // iterator the reducer operator tree
       ArrayList<Node> topNodes = new ArrayList<Node>();
-      topNodes.add(((MapredWork) task.getWork()).getReducer());
+      if (((MapredWork)task.getWork()).getReduceWork() != null) {
+        topNodes.add(((MapredWork) task.getWork()).getReduceWork().getReducer());
+      }
       ogw.startWalking(topNodes, null);
       return null;
     }

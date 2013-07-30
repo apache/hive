@@ -104,6 +104,10 @@ class PigHCatUtil {
         }
     }
 
+    static public boolean pigHasBooleanSupport(){
+        return pigHasBooleanSupport;
+    }
+
     static public Pair<String, String> getDBTableNames(String location) throws IOException {
         // the location string will be of the form:
         // <database name>.<table name> - parse it and

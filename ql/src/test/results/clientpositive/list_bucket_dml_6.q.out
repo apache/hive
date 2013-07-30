@@ -154,7 +154,6 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: true
                 MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -485,7 +484,6 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: true
                 MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -631,7 +629,6 @@ STAGE PLANS:
 
   Stage: Stage-3
     Block level merge
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -683,7 +680,6 @@ STAGE PLANS:
 
   Stage: Stage-5
     Block level merge
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -986,7 +982,6 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:

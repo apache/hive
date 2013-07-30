@@ -66,7 +66,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key < 20.0)
+                  expr: (key < 20)
                   type: boolean
               Select Operator
                 expressions:
@@ -100,7 +100,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key > 20.0) and (key < 40.0))
+                  expr: ((key > 20) and (key < 40))
                   type: boolean
               Select Operator
                 expressions:

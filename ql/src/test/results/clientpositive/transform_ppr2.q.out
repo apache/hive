@@ -55,7 +55,7 @@ STAGE PLANS:
                 Filter Operator
                   isSamplingPred: false
                   predicate:
-                      expr: (_col1 < 100.0)
+                      expr: (_col1 < 100)
                       type: boolean
                   Reduce Output Operator
                     key expressions:
@@ -73,7 +73,6 @@ STAGE PLANS:
                           type: string
                           expr: _col2
                           type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -169,6 +168,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [tmap:src]
+        /srcpart/ds=2008-04-08/hr=12 [tmap:src]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           Select Operator
@@ -196,9 +199,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /srcpart/ds=2008-04-08/hr=11 [tmap:src]
-        /srcpart/ds=2008-04-08/hr=12 [tmap:src]
 
   Stage: Stage-0
     Fetch Operator

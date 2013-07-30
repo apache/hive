@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.ByteStream.Output;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
@@ -43,12 +44,13 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
@@ -378,6 +380,11 @@ public class LazyBinarySerDe extends AbstractSerDe {
         return warnedOnceNullMapKey;
       }
 
+      case DATE: {
+        DateWritable d = ((DateObjectInspector) poi).getPrimitiveWritableObject(obj);
+        d.writeToByteStream(byteStream);
+        return warnedOnceNullMapKey;
+      }
       case TIMESTAMP: {
         TimestampObjectInspector toi = (TimestampObjectInspector) poi;
         TimestampWritable t = toi.getPrimitiveWritableObject(obj);
@@ -557,6 +564,7 @@ public class LazyBinarySerDe extends AbstractSerDe {
    * Returns the statistics after (de)serialization)
    */
 
+  @Override
   public SerDeStats getSerDeStats() {
     // must be different
     assert (lastOperationSerialize != lastOperationDeserialize);

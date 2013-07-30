@@ -30,11 +30,11 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
-import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
-import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
@@ -45,10 +45,10 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.StringUtils;
 
 /**
- * ExecMapper is the generic Map class for Hive. Together with ExecReducer it is 
+ * ExecMapper is the generic Map class for Hive. Together with ExecReducer it is
  * the bridge between the map-reduce framework and the Hive operator pipeline at
  * execution time. It's main responsabilities are:
- * 
+ *
  * - Load and setup the operator pipeline from XML
  * - Run the pipeline by transforming key value pairs to records and forwarding them to the operators
  * - Stop execution when the "limit" is reached
@@ -96,7 +96,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       jc = job;
       execContext.setJc(jc);
       // create map and fetch operators
-      MapredWork mrwork = Utilities.getMapRedWork(job);
+      MapWork mrwork = Utilities.getMapWork(job);
       mo = new MapOperator();
       mo.setConf(mrwork);
       // initialize map operator

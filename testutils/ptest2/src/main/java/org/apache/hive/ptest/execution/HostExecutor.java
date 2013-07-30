@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -91,7 +92,7 @@ class HostExecutor {
    * @return failed tests
    */
   ListenableFuture<Void> submitTests(final BlockingQueue<TestBatch> parallelWorkQueue,
-      final BlockingQueue<TestBatch> isolatedWorkQueue, final List<TestBatch> failedTestResults) {
+      final BlockingQueue<TestBatch> isolatedWorkQueue, final Set<TestBatch> failedTestResults) {
     return mExecutor.submit(new Callable<Void>() {
       @Override
       public Void call() throws Exception {
@@ -116,7 +117,7 @@ class HostExecutor {
    * are removed the host will be replaced before the next run.
    */
   private void executeTests(final BlockingQueue<TestBatch> parallelWorkQueue,
-      final BlockingQueue<TestBatch> isolatedWorkQueue, final List<TestBatch> failedTestResults)
+      final BlockingQueue<TestBatch> isolatedWorkQueue, final Set<TestBatch> failedTestResults)
           throws Exception {
     mLogger.info("Starting parallel execution on " + mHost.getName());
     List<ListenableFuture<Void>> droneResults = Lists.newArrayList();
@@ -129,7 +130,7 @@ class HostExecutor {
             do {
               batch = parallelWorkQueue.poll(mNumPollSeconds, TimeUnit.SECONDS);
               if(batch != null) {
-                if(!executeTestBatch(drone, batch)) {
+                if(!executeTestBatch(drone, batch, failedTestResults.size())) {
                   failedTestResults.add(batch);
                 }
               }
@@ -154,7 +155,7 @@ class HostExecutor {
         do {
           batch = isolatedWorkQueue.poll(mNumPollSeconds, TimeUnit.SECONDS);
           if(batch != null) {
-            if(!executeTestBatch(drone, batch)) {
+            if(!executeTestBatch(drone, batch, failedTestResults.size())) {
               failedTestResults.add(batch);
             }
           }
@@ -173,7 +174,7 @@ class HostExecutor {
    * Executes the test batch on the drone in question. If the command
    * exits with a status code of 255 throw an AbortDroneException.
    */
-  private boolean executeTestBatch(Drone drone, TestBatch batch)
+  private boolean executeTestBatch(Drone drone, TestBatch batch, int numOfFailedTests)
       throws IOException, SSHExecutionException, AbortDroneException {
     String scriptName = "hiveptest-" + batch.getName() + ".sh";
     File script = new File(mLocalScratchDirectory, scriptName);
@@ -183,6 +184,7 @@ class HostExecutor {
     templateVariables.put("testArguments", batch.getTestArguments());
     templateVariables.put("localDir", drone.getLocalDirectory());
     templateVariables.put("logDir", drone.getLocalLogDirectory());
+    templateVariables.put("numOfFailedTests", String.valueOf(numOfFailedTests));
     String command = Templates.getTemplateResult("bash $localDir/$instanceName/scratch/" + script.getName(),
         templateVariables);
     Templates.writeTemplateResult("batch-exec.vm", script, templateVariables);

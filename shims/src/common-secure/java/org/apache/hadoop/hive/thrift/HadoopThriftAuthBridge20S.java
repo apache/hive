@@ -333,7 +333,7 @@ import static org.apache.hadoop.fs.CommonConfigurationKeys.HADOOP_SECURITY_AUTHE
      }
 
      @Override
-     public void startDelegationTokenSecretManager(Configuration conf)
+     public void startDelegationTokenSecretManager(Configuration conf, Object hms)
      throws IOException{
        long secretKeyInterval =
          conf.getLong(DELEGATION_KEY_UPDATE_INTERVAL_KEY,
@@ -345,10 +345,12 @@ import static org.apache.hadoop.fs.CommonConfigurationKeys.HADOOP_SECURITY_AUTHE
            conf.getLong(DELEGATION_TOKEN_RENEW_INTERVAL_KEY,
                         DELEGATION_TOKEN_RENEW_INTERVAL_DEFAULT);
 
+       DelegationTokenStore dts = getTokenStore(conf);
+       dts.setStore(hms);
        secretManager = new TokenStoreDelegationTokenSecretManager(secretKeyInterval,
              tokenMaxLifetime,
              tokenRenewInterval,
-             DELEGATION_TOKEN_GC_INTERVAL, getTokenStore(conf));
+             DELEGATION_TOKEN_GC_INTERVAL, dts);
        secretManager.startThreads();
      }
 

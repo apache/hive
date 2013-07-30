@@ -105,7 +105,6 @@ STAGE PLANS:
                         type: string
                         expr: _col2
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -199,6 +198,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -219,9 +222,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [pcr_t1]
-        /pcr_t1/ds=2000-04-09 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -304,7 +304,6 @@ STAGE PLANS:
                         type: int
                         expr: _col1
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -443,6 +442,11 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -463,10 +467,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [pcr_t1]
-        /pcr_t1/ds=2000-04-09 [pcr_t1]
-        /pcr_t1/ds=2000-04-10 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -592,7 +592,6 @@ STAGE PLANS:
                         type: string
                         expr: _col2
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -686,6 +685,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -706,9 +709,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [pcr_t1]
-        /pcr_t1/ds=2000-04-09 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -799,7 +799,6 @@ STAGE PLANS:
                         type: string
                         expr: _col2
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -893,6 +892,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -913,9 +916,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [pcr_t1]
-        /pcr_t1/ds=2000-04-10 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -1008,7 +1008,6 @@ STAGE PLANS:
                         type: string
                         expr: _col2
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1147,6 +1146,11 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -1167,10 +1171,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [pcr_t1]
-        /pcr_t1/ds=2000-04-09 [pcr_t1]
-        /pcr_t1/ds=2000-04-10 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -1273,7 +1273,6 @@ STAGE PLANS:
                         type: string
                         expr: _col2
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1412,6 +1411,11 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -1432,10 +1436,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [pcr_t1]
-        /pcr_t1/ds=2000-04-09 [pcr_t1]
-        /pcr_t1/ds=2000-04-10 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -1542,7 +1542,6 @@ STAGE PLANS:
                         type: int
                         expr: _col1
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1636,6 +1635,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -1656,9 +1659,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [pcr_t1]
-        /pcr_t1/ds=2000-04-09 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -1728,7 +1728,6 @@ STAGE PLANS:
                       type: int
                       expr: _col1
                       type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -1822,6 +1821,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -1842,9 +1845,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [pcr_t1]
-        /pcr_t1/ds=2000-04-09 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -1954,7 +1954,6 @@ STAGE PLANS:
                       type: int
                       expr: _col1
                       type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2093,6 +2092,11 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -2113,10 +2117,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [pcr_t1]
-        /pcr_t1/ds=2000-04-09 [pcr_t1]
-        /pcr_t1/ds=2000-04-10 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -2259,7 +2259,6 @@ STAGE PLANS:
                         type: string
                         expr: _col2
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2353,6 +2352,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -2373,9 +2376,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [pcr_t1]
-        /pcr_t1/ds=2000-04-09 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -2463,7 +2463,6 @@ STAGE PLANS:
                     type: string
                     expr: ds
                     type: string
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2512,6 +2511,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [t2, t1]
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -2551,8 +2553,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [t2, t1]
 
   Stage: Stage-2
     Map Reduce
@@ -2577,7 +2577,6 @@ STAGE PLANS:
                     type: string
                     expr: _col5
                     type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2597,6 +2596,9 @@ STAGE PLANS:
                 columns _col0,_col1,_col2,_col3,_col4,_col5
                 columns.types int,string,string,int,string,string
                 escape.delim \
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -2617,8 +2619,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -2741,7 +2741,6 @@ STAGE PLANS:
                     type: string
                     expr: ds
                     type: string
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2835,6 +2834,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [t1]
+        /pcr_t1/ds=2000-04-09 [t2]
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -2874,9 +2877,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [t1]
-        /pcr_t1/ds=2000-04-09 [t2]
 
   Stage: Stage-2
     Map Reduce
@@ -2901,7 +2901,6 @@ STAGE PLANS:
                     type: string
                     expr: _col5
                     type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -2921,6 +2920,9 @@ STAGE PLANS:
                 columns _col0,_col1,_col2,_col3,_col4,_col5
                 columns.types int,string,string,int,string,string
                 escape.delim \
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -2941,8 +2943,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-#### A masked pattern was here ####
 
   Stage: Stage-0
     Fetch Operator
@@ -3079,7 +3079,6 @@ STAGE PLANS:
                         type: string
                         expr: _col2
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -3263,6 +3262,12 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
+        /pcr_t1/ds=2000-04-11 [pcr_t1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -3283,11 +3288,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [pcr_t1]
-        /pcr_t1/ds=2000-04-09 [pcr_t1]
-        /pcr_t1/ds=2000-04-10 [pcr_t1]
-        /pcr_t1/ds=2000-04-11 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -3418,7 +3418,6 @@ STAGE PLANS:
                         type: string
                         expr: _col2
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -3557,6 +3556,11 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
             name: default.pcr_t1
+      Truncated Path -> Alias:
+        /pcr_t1/ds=2000-04-08 [pcr_t1]
+        /pcr_t1/ds=2000-04-09 [pcr_t1]
+        /pcr_t1/ds=2000-04-10 [pcr_t1]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -3577,10 +3581,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /pcr_t1/ds=2000-04-08 [pcr_t1]
-        /pcr_t1/ds=2000-04-09 [pcr_t1]
-        /pcr_t1/ds=2000-04-10 [pcr_t1]
 
   Stage: Stage-0
     Fetch Operator
@@ -3784,7 +3784,6 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: true
                 MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -3898,7 +3897,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -3964,7 +3962,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4071,7 +4068,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4137,7 +4133,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4343,7 +4338,6 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: true
                   MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4467,7 +4461,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4548,7 +4541,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4675,7 +4667,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4756,7 +4747,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4897,7 +4887,6 @@ STAGE PLANS:
                       type: string
                       expr: _col1
                       type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -4947,6 +4936,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [srcpart]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           Limit
@@ -4968,8 +4960,6 @@ STAGE PLANS:
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
-      Truncated Path -> Alias:
-        /srcpart/ds=2008-04-08/hr=11 [srcpart]
 
   Stage: Stage-0
     Fetch Operator
@@ -5038,7 +5028,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (key = 11.0)
+                  expr: (key = 11)
                   type: boolean
               Select Operator
                 expressions:
@@ -5070,7 +5060,6 @@ STAGE PLANS:
                         type: string
                         expr: _col3
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -5166,6 +5155,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [srcpart]
+        /srcpart/ds=2008-04-08/hr=12 [srcpart]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -5186,9 +5179,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /srcpart/ds=2008-04-08/hr=11 [srcpart]
-        /srcpart/ds=2008-04-08/hr=12 [srcpart]
 
   Stage: Stage-0
     Fetch Operator
@@ -5263,7 +5253,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (key = 11.0)
+                  expr: (key = 11)
                   type: boolean
               Select Operator
                 expressions:
@@ -5295,7 +5285,6 @@ STAGE PLANS:
                         type: string
                         expr: _col3
                         type: string
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -5391,6 +5380,10 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [srcpart]
+        /srcpart/ds=2008-04-09/hr=11 [srcpart]
+      Needs Tagging: false
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -5411,9 +5404,6 @@ STAGE PLANS:
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
-      Truncated Path -> Alias:
-        /srcpart/ds=2008-04-08/hr=11 [srcpart]
-        /srcpart/ds=2008-04-09/hr=11 [srcpart]
 
   Stage: Stage-0
     Fetch Operator

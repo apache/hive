@@ -43,7 +43,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key > 450.0) or (key > 500.0))
+                  expr: ((key > 450) or (key > 500))
                   type: boolean
               Select Operator
                 expressions:
@@ -63,7 +63,7 @@ STAGE PLANS:
         Forward
           Filter Operator
             predicate:
-                expr: (KEY._col0 > 450.0)
+                expr: (KEY._col0 > 450)
                 type: boolean
             Group By Operator
               aggregations:
@@ -89,7 +89,7 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
           Filter Operator
             predicate:
-                expr: (KEY._col0 > 500.0)
+                expr: (KEY._col0 > 500)
                 type: boolean
             Group By Operator
               aggregations:
@@ -335,7 +335,7 @@ STAGE PLANS:
         Forward
           Filter Operator
             predicate:
-                expr: (KEY._col0 > 450.0)
+                expr: (KEY._col0 > 450)
                 type: boolean
             Group By Operator
               aggregations:

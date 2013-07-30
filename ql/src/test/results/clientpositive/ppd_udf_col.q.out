@@ -24,7 +24,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key = 100.0)
+                  expr: (key = 100)
                   type: boolean
               Select Operator
                 expressions:
@@ -86,7 +86,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key = 100.0)
+                  expr: (key = 100)
                   type: boolean
               Select Operator
                 expressions:
@@ -156,7 +156,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key = 100.0)
+                  expr: (key = 100)
                   type: boolean
               Select Operator
                 expressions:
@@ -169,7 +169,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col2, _col3
                 Filter Operator
                   predicate:
-                      expr: (_col3 <= 3.0)
+                      expr: (_col3 <= 3)
                       type: boolean
                   Select Operator
                     expressions:
@@ -218,7 +218,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key = 100.0)
+                  expr: (key = 100)
                   type: boolean
               Select Operator
                 expressions:
@@ -280,7 +280,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key = 100.0)
+                  expr: (key = 100)
                   type: boolean
               Select Operator
                 expressions:
@@ -342,7 +342,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key = 100.0)
+                  expr: (key = 100)
                   type: boolean
               Select Operator
                 expressions:
@@ -401,7 +401,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key = 100.0)
+                  expr: (key = 100)
                   type: boolean
               Select Operator
                 expressions:
@@ -414,7 +414,7 @@ STAGE PLANS:
                 outputColumnNames: _col0, _col2, _col3
                 Filter Operator
                   predicate:
-                      expr: (_col3 <= 3.0)
+                      expr: (_col3 <= 3)
                       type: boolean
                   Select Operator
                     expressions:
@@ -463,7 +463,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: (key = 100.0)
+                  expr: (key = 100)
                   type: boolean
               Select Operator
                 expressions:

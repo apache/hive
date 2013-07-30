@@ -25,7 +25,7 @@ import java.util.List;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileBlockMergeInputFormat;
 import org.apache.hadoop.hive.ql.plan.Explain;
-import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.mapred.Mapper;
 
@@ -34,7 +34,7 @@ import org.apache.hadoop.mapred.Mapper;
  *
  */
 @Explain(displayName = "Partial Scan Statistics")
-public class PartialScanWork extends MapredWork implements Serializable {
+public class PartialScanWork extends MapWork implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -51,9 +51,6 @@ public class PartialScanWork extends MapredWork implements Serializable {
     partDesc.setInputFileFormatClass(RCFileBlockMergeInputFormat.class);
     if(this.getPathToPartitionInfo() == null) {
       this.setPathToPartitionInfo(new LinkedHashMap<String, PartitionDesc>());
-    }
-    if(this.getNumReduceTasks() == null) {
-      this.setNumReduceTasks(0);
     }
     for(String path: this.inputPaths) {
       this.getPathToPartitionInfo().put(path, partDesc);

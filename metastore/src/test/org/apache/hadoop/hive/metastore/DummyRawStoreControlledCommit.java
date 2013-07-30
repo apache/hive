@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configurable;
@@ -527,4 +528,36 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
       InvalidInputException {
     return objectStore.updatePartitionColumnStatistics(statsObj, partVals);
   }
+
+  public boolean addToken(String tokenIdentifier, String delegationToken) {
+    return false;
+  }
+ 
+  public boolean removeToken(String tokenIdentifier) {
+    return false;
+  }
+ 
+  public String getToken(String tokenIdentifier) {
+    return "";
+  }
+
+  public List<String> getAllTokenIdentifiers() {
+    return new ArrayList<String>();
+  }
+
+  public int addMasterKey(String key) throws MetaException {
+    return -1;
+  }
+
+  public void updateMasterKey(Integer seqNo, String key)
+    throws NoSuchObjectException, MetaException {}
+
+  public boolean removeMasterKey(Integer keySeq) {
+    return false;
+  }
+
+  public String[] getMasterKeys() {
+    return new String[0];
+  }
+
 }

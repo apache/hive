@@ -43,6 +43,7 @@ import javax.jdo.PersistenceManagerFactory;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
 import javax.jdo.datastore.DataStoreCache;
+import javax.jdo.identity.IntIdentity;
 
 import org.antlr.runtime.CharStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -96,9 +97,11 @@ import org.apache.hadoop.hive.metastore.api.UnknownTableException;
 import org.apache.hadoop.hive.metastore.model.MColumnDescriptor;
 import org.apache.hadoop.hive.metastore.model.MDBPrivilege;
 import org.apache.hadoop.hive.metastore.model.MDatabase;
+import org.apache.hadoop.hive.metastore.model.MDelegationToken;
 import org.apache.hadoop.hive.metastore.model.MFieldSchema;
 import org.apache.hadoop.hive.metastore.model.MGlobalPrivilege;
 import org.apache.hadoop.hive.metastore.model.MIndex;
+import org.apache.hadoop.hive.metastore.model.MMasterKey;
 import org.apache.hadoop.hive.metastore.model.MOrder;
 import org.apache.hadoop.hive.metastore.model.MPartition;
 import org.apache.hadoop.hive.metastore.model.MPartitionColumnPrivilege;
@@ -5267,6 +5270,206 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("Done executing cleanupEvents");
     }
     return delCnt;
+  }
+
+  private MDelegationToken getTokenFrom(String tokenId) {
+    Query query = pm.newQuery(MDelegationToken.class, "tokenIdentifier == tokenId");
+    query.declareParameters("java.lang.String tokenId");
+    query.setUnique(true);
+    return (MDelegationToken)query.execute(tokenId);
+  }
+
+  @Override
+  public boolean addToken(String tokenId, String delegationToken) {
+
+    LOG.debug("Begin executing addToken");
+    boolean committed = false;
+    MDelegationToken token;
+    try{
+      openTransaction();
+      token = getTokenFrom(tokenId);
+      if (token == null) {
+        // add Token, only if it already doesn't exist
+        pm.makePersistent(new MDelegationToken(tokenId, delegationToken));
+      }
+      committed = commitTransaction();
+    } finally {
+      if(!committed) {
+        rollbackTransaction();
+      }
+    }
+    LOG.debug("Done executing addToken with status : " + committed);
+    return committed && (token == null);
+  }
+
+  @Override
+  public boolean removeToken(String tokenId) {
+
+    LOG.debug("Begin executing removeToken");
+    boolean committed = false;
+    MDelegationToken token;
+    try{
+      openTransaction();
+      token = getTokenFrom(tokenId);
+      if (null != token) {
+        pm.deletePersistent(token);
+      }
+      committed = commitTransaction();
+    } finally {
+      if(!committed) {
+        rollbackTransaction();
+      }
+    }
+    LOG.debug("Done executing removeToken with status : " + committed);
+    return committed && (token != null);
+  }
+
+  @Override
+  public String getToken(String tokenId) {
+
+    LOG.debug("Begin executing getToken");
+    boolean committed = false;
+    MDelegationToken token;
+    try{
+      openTransaction();
+      token = getTokenFrom(tokenId);
+      if (null != token) {
+        pm.retrieve(token);
+      }
+      committed = commitTransaction();
+    } finally {
+      if(!committed) {
+        rollbackTransaction();
+      }
+    }
+    LOG.debug("Done executing getToken with status : " + committed);
+    return (null == token) ? null : token.getTokenStr();
+  }
+
+  @Override
+  public List<String> getAllTokenIdentifiers() {
+
+    LOG.debug("Begin executing getAllTokenIdentifiers");
+    boolean committed = false;
+    List<MDelegationToken> tokens;
+    try{
+      openTransaction();
+      Query query = pm.newQuery(MDelegationToken.class);
+      tokens = (List<MDelegationToken>) query.execute();
+      pm.retrieveAll(tokens);
+      committed = commitTransaction();
+    } finally {
+      if(!committed) {
+        rollbackTransaction();
+      }
+    }
+    LOG.debug("Done executing getAllTokenIdentifers with status : " + committed);
+    List<String> tokenIdents = new ArrayList<String>(tokens.size());
+
+    for (MDelegationToken token : tokens) {
+      tokenIdents.add(token.getTokenIdentifier());
+    }
+    return tokenIdents;
+  }
+
+  @Override
+  public int addMasterKey(String key) throws MetaException{
+    LOG.debug("Begin executing addMasterKey");
+    boolean committed = false;
+    MMasterKey masterKey = new MMasterKey(key);
+    try{
+      openTransaction();
+      pm.makePersistent(masterKey);
+      committed = commitTransaction();
+    } finally {
+      if(!committed) {
+        rollbackTransaction();
+      }
+    }
+    LOG.debug("Done executing addMasterKey with status : " + committed);
+    if (committed) {
+      return ((IntIdentity)pm.getObjectId(masterKey)).getKey();
+    } else {
+      throw new MetaException("Failed to add master key.");
+    }
+  }
+
+  @Override
+  public void updateMasterKey(Integer id, String key) throws NoSuchObjectException, MetaException {
+    LOG.debug("Begin executing updateMasterKey");
+    boolean committed = false;
+    MMasterKey masterKey;
+    try{
+    openTransaction();
+    Query query = pm.newQuery(MMasterKey.class, "keyId == id");
+    query.declareParameters("java.lang.Integer id");
+    query.setUnique(true);
+    masterKey = (MMasterKey)query.execute(id);
+    if (null != masterKey) {
+      masterKey.setMasterKey(key);
+    }
+    committed = commitTransaction();
+    } finally {
+      if(!committed) {
+        rollbackTransaction();
+      }
+    }
+    LOG.debug("Done executing updateMasterKey with status : " + committed);
+    if (null == masterKey) {
+      throw new NoSuchObjectException("No key found with keyId: " + id);
+    }
+    if (!committed) {
+      throw new MetaException("Though key is found, failed to update it. " + id);
+    }
+  }
+
+  @Override
+  public boolean removeMasterKey(Integer id) {
+    LOG.debug("Begin executing removeMasterKey");
+    boolean success = false;
+    MMasterKey masterKey;
+    try{
+    openTransaction();
+    Query query = pm.newQuery(MMasterKey.class, "keyId == id");
+    query.declareParameters("java.lang.Integer id");
+    query.setUnique(true);
+    masterKey = (MMasterKey)query.execute(id);
+    if (null != masterKey) {
+      pm.deletePersistent(masterKey);
+    }
+    success = commitTransaction();
+    } finally {
+      if(!success) {
+        rollbackTransaction();
+      }
+    }
+    LOG.debug("Done executing removeMasterKey with status : " + success);
+    return (null != masterKey) && success;
+  }
+
+  @Override
+  public String[] getMasterKeys() {
+    LOG.debug("Begin executing getMasterKeys");
+    boolean committed = false;
+    List<MMasterKey> keys;
+    try{
+      openTransaction();
+      Query query = pm.newQuery(MMasterKey.class);
+      keys = (List<MMasterKey>) query.execute();
+      pm.retrieveAll(keys);
+      committed = commitTransaction();
+    } finally {
+      if(!committed) {
+        rollbackTransaction();
+      }
+    }
+    LOG.debug("Done executing getMasterKeys with status : " + committed);
+    String[] masterKeys = new String[keys.size()];
+
+    for (int i = 0; i < keys.size(); i++) {
+      masterKeys[i] = keys.get(i).getMasterKey();
+    }
+    return masterKeys;
   }
 
 }

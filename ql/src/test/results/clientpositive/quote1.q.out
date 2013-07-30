@@ -33,7 +33,7 @@ STAGE PLANS:
             alias: src
             Filter Operator
               predicate:
-                  expr: ((key >= 200.0) and (key < 300.0))
+                  expr: ((key >= 200) and (key < 300))
                   type: boolean
               Select Operator
                 expressions:

@@ -538,7 +538,7 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: ((key < 200.0) and (key > 20.0))
+                  expr: ((key < 200) and (key > 20))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -557,7 +557,7 @@ STAGE PLANS:
             alias: y
             Filter Operator
               predicate:
-                  expr: ((key > 20.0) and (key < 200.0))
+                  expr: ((key > 20) and (key < 200))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -767,7 +767,7 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: ((key < 200.0) and (key > 20.0))
+                  expr: ((key < 200) and (key > 20))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -786,7 +786,7 @@ STAGE PLANS:
             alias: y
             Filter Operator
               predicate:
-                  expr: ((key > 20.0) and (key < 200.0))
+                  expr: ((key > 20) and (key < 200))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -965,7 +965,7 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: ((key < 200.0) and (key > 180.0))
+                  expr: ((key < 200) and (key > 180))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -984,7 +984,7 @@ STAGE PLANS:
             alias: y
             Filter Operator
               predicate:
-                  expr: ((key < 200.0) and (key > 180.0))
+                  expr: ((key < 200) and (key > 180))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -1206,7 +1206,7 @@ STAGE PLANS:
             alias: x
             Filter Operator
               predicate:
-                  expr: ((key < 200.0) and (key > 180.0))
+                  expr: ((key < 200) and (key > 180))
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -1225,7 +1225,7 @@ STAGE PLANS:
             alias: y
             Filter Operator
               predicate:
-                  expr: ((key < 200.0) and (key > 180.0))
+                  expr: ((key < 200) and (key > 180))
                   type: boolean
               Reduce Output Operator
                 key expressions:

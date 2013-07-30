@@ -52,7 +52,6 @@ STAGE PLANS:
                       type: string
                       expr: hr
                       type: string
-      Needs Tagging: true
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -102,6 +101,9 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
             name: default.srcpart
+      Truncated Path -> Alias:
+        /srcpart/ds=2008-04-08/hr=11 [a]
+      Needs Tagging: true
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -149,8 +151,6 @@ STAGE PLANS:
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
-      Truncated Path -> Alias:
-        /srcpart/ds=2008-04-08/hr=11 [a]
 
   Stage: Stage-0
     Fetch Operator

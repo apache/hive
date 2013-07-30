@@ -65,7 +65,7 @@ public class TestHCatLoader extends TestCase {
     private static int guardTestCount = 6; // ugh, instantiate using introspection in guardedSetupBeforeClass
     private static boolean setupHasRun = false;
 
-    
+
     private static Map<Integer, Pair<Integer, String>> basicInputData;
 
     protected String storageFormat() {
@@ -413,7 +413,7 @@ public class TestHCatLoader extends TestCase {
         File inputDataDir = new File(inputFileName).getParentFile();
         inputDataDir.mkdir();
 
-        String[] lines = new String[]{"llama\t1", "alpaca\t0"};
+        String[] lines = new String[]{"llama\ttrue", "alpaca\tfalse"};
         HcatTestUtils.createTestDataFile(inputFileName, lines);
 
         assertEquals(0, driver.run("drop table if exists " + tbl).getResponseCode());
@@ -433,13 +433,15 @@ public class TestHCatLoader extends TestCase {
         assertEquals("a", schema.getField(0).alias);
         assertEquals(DataType.CHARARRAY, schema.getField(0).type);
         assertEquals("b", schema.getField(1).alias);
-        assertEquals(DataType.INTEGER, schema.getField(1).type);
+        if (PigHCatUtil.pigHasBooleanSupport()){
+            assertEquals(DataType.BOOLEAN, schema.getField(1).type);
+        } else {
+            assertEquals(DataType.INTEGER, schema.getField(1).type);
+        }
 
         Iterator<Tuple> iterator = server.openIterator("data");
         Tuple t = iterator.next();
         assertEquals("llama", t.get(0));
-        // TODO: Figure out how to load a text file into Hive with boolean columns. This next assert
-        // passes because data was loaded as integers, not because it was converted.
         assertEquals(1, t.get(1));
         t = iterator.next();
         assertEquals("alpaca", t.get(0));

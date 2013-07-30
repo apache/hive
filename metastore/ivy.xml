@@ -33,18 +33,18 @@
                 conf="compile->default" />
     <dependency org="com.jolbox" name="bonecp" rev="${BoneCP.version}"/>
     <dependency org="commons-pool" name="commons-pool" rev="${commons-pool.version}"/>
-    <dependency org="org.datanucleus" name="datanucleus-connectionpool" rev="${datanucleus-connectionpool.version}"
-                transitive="false"/>
-     <dependency org="org.datanucleus" name="datanucleus-core" rev="${datanucleus-core.version}"
-                transitive="false"/>
-    <dependency org="org.datanucleus" name="datanucleus-enhancer" rev="${datanucleus-enhancer.version}"
+    <dependency org="org.datanucleus" name="datanucleus-api-jdo" rev="${datanucleus-api-jdo.version}">
+        <exclude org="javax.jdo" module="jdo2-api"/>
+        <exclude org="junit" module="junit"/>
+        <exclude org="log4j" module="log4j"/>
+    </dependency>
+    <dependency org="org.datanucleus" name="datanucleus-core" rev="${datanucleus-core.version}"
                 transitive="false"/>
     <dependency org="org.datanucleus" name="datanucleus-rdbms" rev="${datanucleus-rdbms.version}"
                 transitive="false"/>
     <dependency org="javax.jdo" name="jdo-api" rev="${jdo-api.version}"
                 transitive="false"/>
     <dependency org="org.apache.derby" name="derby" rev="${derby.version}"/>
-    <dependency org="asm" name="asm" rev="${asm.version}"/>
 
   </dependencies>
 </ivy-module>

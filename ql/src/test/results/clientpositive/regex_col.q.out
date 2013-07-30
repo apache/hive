@@ -229,7 +229,7 @@ STAGE PLANS:
             alias: a
             Filter Operator
               predicate:
-                  expr: (key = 103.0)
+                  expr: (key = 103)
                   type: boolean
               Reduce Output Operator
                 key expressions:
@@ -253,7 +253,7 @@ STAGE PLANS:
             alias: b
             Filter Operator
               predicate:
-                  expr: (key = 103.0)
+                  expr: (key = 103)
                   type: boolean
               Reduce Output Operator
                 key expressions:

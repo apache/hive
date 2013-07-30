@@ -25,7 +25,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,8 +58,17 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
 
   static final public byte[] nullBytes = {0x0, 0x0, 0x0, 0x0};
 
-  private static final int NO_DECIMAL_MASK = 0x7FFFFFFF;
-  private static final int HAS_DECIMAL_MASK = 0x80000000;
+  private static final int DECIMAL_OR_SECOND_VINT_FLAG = 0x80000000;
+  private static final int LOWEST_31_BITS_OF_SEC_MASK = 0x7fffffff;
+
+  private static final long SEVEN_BYTE_LONG_SIGN_FLIP = 0xff80L << 48;
+
+  private static final BigDecimal BILLION_BIG_DECIMAL = BigDecimal.valueOf(1000000000);
+
+  /** The maximum number of bytes required for a TimestampWritable */
+  public static final int MAX_BYTES = 13;
+
+  public static final int BINARY_SORTABLE_LENGTH = 11;
 
   private static final ThreadLocal<DateFormat> threadLocalDateFormat =
       new ThreadLocal<DateFormat>() {
@@ -82,16 +90,12 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
 
   /* Allow use of external byte[] for efficiency */
   private byte[] currentBytes;
-  private final byte[] internalBytes = new byte[9];
+  private final byte[] internalBytes = new byte[MAX_BYTES];
   private byte[] externalBytes;
   private int offset;
 
-  /* Reused to read VInts */
-  static private final VInt vInt = new VInt();
-
   /* Constructors */
   public TimestampWritable() {
-    Arrays.fill(internalBytes, (byte) 0x0);
     bytesEmpty = false;
     currentBytes = internalBytes;
     offset = 0;
@@ -156,11 +160,14 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
    *
    * @return seconds corresponding to this TimestampWritable
    */
-  public int getSeconds() {
-    if (bytesEmpty) {
-      return (int) (timestamp.getTime() / 1000);
+  public long getSeconds() {
+    if (!timestampEmpty) {
+      return millisToSeconds(timestamp.getTime());
+    } else if (!bytesEmpty) {
+      return TimestampWritable.getSeconds(currentBytes, offset);
+    } else {
+      throw new IllegalStateException("Both timestamp and bytes are empty");
     }
-    return TimestampWritable.getSeconds(currentBytes, offset);
   }
 
   /**
@@ -170,26 +177,33 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   public int getNanos() {
     if (!timestampEmpty) {
       return timestamp.getNanos();
+    } else if (!bytesEmpty) {
+      return hasDecimalOrSecondVInt() ?
+          TimestampWritable.getNanos(currentBytes, offset + 4) : 0;
+    } else {
+      throw new IllegalStateException("Both timestamp and bytes are empty");
     }
-
-    return hasDecimal() ? TimestampWritable.getNanos(currentBytes, offset+4) : 0;
   }
 
   /**
-   *
-   * @return length of serialized TimestampWritable data
+   * @return length of serialized TimestampWritable data. As a side effect, populates the internal
+   *         byte array if empty.
    */
-  private int getTotalLength() {
-    return 4 + getDecimalLength();
-  }
-
-  /**
-   *
-   * @return number of bytes the variable length decimal takes up
-   */
-  private int getDecimalLength() {
+  int getTotalLength() {
     checkBytes();
-    return hasDecimal() ? WritableUtils.decodeVIntSize(currentBytes[offset+4]) : 0;
+    return getTotalLength(currentBytes, offset);
+  }
+
+  public static int getTotalLength(byte[] bytes, int offset) {
+    int len = 4;
+    if (hasDecimalOrSecondVInt(bytes[offset])) {
+      int firstVIntLen = WritableUtils.decodeVIntSize(bytes[offset + 4]);
+      len += firstVIntLen;
+      if (hasSecondVInt(bytes[offset + 4])) {
+        len += WritableUtils.decodeVIntSize(bytes[offset + 4 + firstVIntLen]);
+      }
+    }
+    return len;
   }
 
   public Timestamp getTimestamp() {
@@ -215,33 +229,45 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
 
   /**
    * @return byte[] representation of TimestampWritable that is binary
-   * sortable (4 byte seconds, 4 bytes for nanoseconds)
+   * sortable (7 bytes for seconds, 4 bytes for nanoseconds)
    */
   public byte[] getBinarySortable() {
-    byte[] b = new byte[8];
+    byte[] b = new byte[BINARY_SORTABLE_LENGTH];
     int nanos = getNanos();
-    int seconds = HAS_DECIMAL_MASK | getSeconds();
-    intToBytes(seconds, b, 0);
-    intToBytes(nanos, b, 4);
+    // We flip the highest-order bit of the seven-byte representation of seconds to make negative
+    // values come before positive ones.
+    long seconds = getSeconds() ^ SEVEN_BYTE_LONG_SIGN_FLIP;
+    sevenByteLongToBytes(seconds, b, 0);
+    intToBytes(nanos, b, 7);
     return b;
   }
 
   /**
    * Given a byte[] that has binary sortable data, initialize the internal
    * structures to hold that data
-   * @param bytes
-   * @param offset
+   * @param bytes the byte array that holds the binary sortable representation
+   * @param binSortOffset offset of the binary-sortable representation within the buffer.
    */
-  public void setBinarySortable(byte[] bytes, int offset) {
-    int seconds = bytesToInt(bytes, offset);
-    int nanos = bytesToInt(bytes, offset+4);
-    if (nanos == 0) {
-      seconds &= NO_DECIMAL_MASK;
+  public void setBinarySortable(byte[] bytes, int binSortOffset) {
+    // Flip the sign bit (and unused bits of the high-order byte) of the seven-byte long back.
+    long seconds = readSevenByteLong(bytes, binSortOffset) ^ SEVEN_BYTE_LONG_SIGN_FLIP;
+    int nanos = bytesToInt(bytes, binSortOffset + 7);
+    int firstInt = (int) seconds;
+    boolean hasSecondVInt = seconds < 0 || seconds > Integer.MAX_VALUE;
+    if (nanos != 0 || hasSecondVInt) {
+      firstInt |= DECIMAL_OR_SECOND_VINT_FLAG;
     } else {
-      seconds |= HAS_DECIMAL_MASK;
+      firstInt &= LOWEST_31_BITS_OF_SEC_MASK;
     }
-    intToBytes(seconds, internalBytes, 0);
-    setNanosBytes(nanos, internalBytes, 4);
+
+    intToBytes(firstInt, internalBytes, 0);
+    setNanosBytes(nanos, internalBytes, 4, hasSecondVInt);
+    if (hasSecondVInt) {
+      LazyBinaryUtils.writeVLongToByteArray(internalBytes,
+          4 + WritableUtils.decodeVIntSize(internalBytes[4]),
+          seconds >> 31);
+    }
+
     currentBytes = internalBytes;
     this.offset = 0;
   }
@@ -268,7 +294,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   public double getDouble() {
     double seconds, nanos;
     if (bytesEmpty) {
-      seconds = timestamp.getTime() / 1000;
+      seconds = millisToSeconds(timestamp.getTime());
       nanos = timestamp.getNanos();
     } else {
       seconds = getSeconds();
@@ -281,10 +307,31 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
 
   public void readFields(DataInput in) throws IOException {
     in.readFully(internalBytes, 0, 4);
-    if (TimestampWritable.hasDecimal(internalBytes[0])) {
+    if (TimestampWritable.hasDecimalOrSecondVInt(internalBytes[0])) {
       in.readFully(internalBytes, 4, 1);
       int len = (byte) WritableUtils.decodeVIntSize(internalBytes[4]);
-      in.readFully(internalBytes, 5, len-1);
+      if (len > 1) {
+        in.readFully(internalBytes, 5, len-1);
+      }
+
+      long vlong = LazyBinaryUtils.readVLongFromByteArray(internalBytes, 4);
+      if (vlong < -1000000000 || vlong > 999999999) {
+        throw new IOException(
+            "Invalid first vint value (encoded nanoseconds) of a TimestampWritable: " + vlong +
+            ", expected to be between -1000000000 and 999999999.");
+        // Note that -1000000000 is a valid value corresponding to a nanosecond timestamp
+        // of 999999999, because if the second VInt is present, we use the value
+        // (-reversedNanoseconds - 1) as the second VInt.
+      }
+      if (vlong < 0) {
+        // This indicates there is a second VInt containing the additional bits of the seconds
+        // field.
+        in.readFully(internalBytes, 4 + len, 1);
+        int secondVIntLen = (byte) WritableUtils.decodeVIntSize(internalBytes[4 + len]);
+        if (secondVIntLen > 1) {
+          in.readFully(internalBytes, 5 + len, secondVIntLen - 1);
+        }
+      }
     }
     currentBytes = internalBytes;
     this.offset = 0;
@@ -301,8 +348,8 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
 
   public int compareTo(TimestampWritable t) {
     checkBytes();
-    int s1 = this.getSeconds();
-    int s2 = t.getSeconds();
+    long s1 = this.getSeconds();
+    long s2 = t.getSeconds();
     if (s1 == s2) {
       int n1 = this.getNanos();
       int n2 = t.getNanos();
@@ -311,7 +358,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
       }
       return n1 - n2;
     } else {
-      return s1 - s2;
+      return s1 < s2 ? -1 : 1;
     }
   }
 
@@ -342,7 +389,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   @Override
   public int hashCode() {
     long seconds = getSeconds();
-    seconds <<= 32;
+    seconds <<= 30;  // the nanosecond part fits in 30 bits
     seconds |= getNanos();
     return (int) ((seconds >>> 32) ^ seconds);
   }
@@ -362,13 +409,30 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
    * @param offset
    * @return the number of seconds
    */
-  public static int getSeconds(byte[] bytes, int offset) {
-    return NO_DECIMAL_MASK & bytesToInt(bytes, offset);
+  public static long getSeconds(byte[] bytes, int offset) {
+    int lowest31BitsOfSecondsAndFlag = bytesToInt(bytes, offset);
+    if (lowest31BitsOfSecondsAndFlag >= 0 ||  // the "has decimal or second VInt" flag is not set
+        !hasSecondVInt(bytes[offset + 4])) {
+      // The entire seconds field is stored in the first 4 bytes.
+      return lowest31BitsOfSecondsAndFlag & LOWEST_31_BITS_OF_SEC_MASK;
+    }
+
+    // We compose the seconds field from two parts. The lowest 31 bits come from the first four
+    // bytes. The higher-order bits come from the second VInt that follows the nanos field.
+    return ((long) (lowest31BitsOfSecondsAndFlag & LOWEST_31_BITS_OF_SEC_MASK)) |
+           (LazyBinaryUtils.readVLongFromByteArray(bytes,
+               offset + 4 + WritableUtils.decodeVIntSize(bytes[offset + 4])) << 31);
   }
 
   public static int getNanos(byte[] bytes, int offset) {
+    VInt vInt = LazyBinaryUtils.threadLocalVInt.get();
     LazyBinaryUtils.readVInt(bytes, offset, vInt);
     int val = vInt.value;
+    if (val < 0) {
+      // This means there is a second VInt present that specifies additional bits of the timestamp.
+      // The reversed nanoseconds value is still encoded in this VInt.
+      val = -val - 1;
+    }
     int len = (int) Math.floor(Math.log10(val)) + 1;
 
     // Reverse the value
@@ -387,40 +451,33 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   }
 
   /**
-   * Writes a Timestamp's serialized value to byte array b at
-   * @param t
-   * @param b
+   * Writes a Timestamp's serialized value to byte array b at the given offset
+   * @param timestamp to convert to bytes
+   * @param b destination byte array
+   * @param offset destination offset in the byte array
    */
   public static void convertTimestampToBytes(Timestamp t, byte[] b,
       int offset) {
-    if (b.length < 9) {
-      LOG.error("byte array too short");
-    }
     long millis = t.getTime();
     int nanos = t.getNanos();
 
-    boolean hasDecimal = nanos != 0 && setNanosBytes(nanos, b, offset+4);
-    setSecondsBytes(millis, b, offset, hasDecimal);
-  }
+    long seconds = millisToSeconds(millis);
+    boolean hasSecondVInt = seconds < 0 || seconds > Integer.MAX_VALUE;
+    boolean hasDecimal = setNanosBytes(nanos, b, offset+4, hasSecondVInt);
 
-  /**
-   * Given an integer representing seconds, write its serialized
-   * value to the byte array b at offset
-   * @param millis
-   * @param b
-   * @param offset
-   * @param hasDecimal
-   */
-  private static void setSecondsBytes(long millis, byte[] b, int offset, boolean hasDecimal) {
-    int seconds = (int) (millis / 1000);
-
-    if (!hasDecimal) {
-      seconds &= NO_DECIMAL_MASK;
+    int firstInt = (int) seconds;
+    if (hasDecimal || hasSecondVInt) {
+      firstInt |= DECIMAL_OR_SECOND_VINT_FLAG;
     } else {
-      seconds |= HAS_DECIMAL_MASK;
+      firstInt &= LOWEST_31_BITS_OF_SEC_MASK;
     }
+    intToBytes(firstInt, b, offset);
 
-    intToBytes(seconds, b, offset);
+    if (hasSecondVInt) {
+      LazyBinaryUtils.writeVLongToByteArray(b,
+          offset + 4 + WritableUtils.decodeVIntSize(b[offset + 4]),
+          seconds >> 31);
+    }
   }
 
   /**
@@ -432,7 +489,7 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
    * @param offset
    * @return
    */
-  private static boolean setNanosBytes(int nanos, byte[] b, int offset) {
+  private static boolean setNanosBytes(int nanos, byte[] b, int offset, boolean hasSecondVInt) {
     int decimal = 0;
     if (nanos != 0) {
       int counter = 0;
@@ -444,7 +501,11 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
       }
     }
 
-    LazyBinaryUtils.writeVLongToByteArray(b, offset, decimal);
+    if (hasSecondVInt || decimal != 0) {
+      // We use the sign of the reversed-nanoseconds field to indicate that there is a second VInt
+      // present.
+      LazyBinaryUtils.writeVLongToByteArray(b, offset, hasSecondVInt ? (-decimal - 1) : decimal);
+    }
     return decimal != 0;
   }
 
@@ -458,11 +519,14 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   }
 
   public static Timestamp decimalToTimestamp(HiveDecimal d) {
-    BigDecimal seconds = new BigDecimal(d.longValue());
-    long millis = d.bigDecimalValue().multiply(new BigDecimal(1000)).longValue();
-    int nanos = d.bigDecimalValue().subtract(seconds).multiply(new BigDecimal(1000000000)).intValue();
-
-    Timestamp t = new Timestamp(millis);
+    BigDecimal nanoInstant = d.bigDecimalValue().multiply(BILLION_BIG_DECIMAL);
+    int nanos = nanoInstant.remainder(BILLION_BIG_DECIMAL).intValue();
+    if (nanos < 0) {
+      nanos += 1000000000;
+    }
+    long seconds =
+      nanoInstant.subtract(new BigDecimal(nanos)).divide(BILLION_BIG_DECIMAL).longValue();
+    Timestamp t = new Timestamp(seconds * 1000);
     t.setNanos(nanos);
 
     return t;
@@ -480,6 +544,10 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
 
     // Convert to millis
     long millis = seconds * 1000;
+    if (nanos < 0) {
+      millis -= 1000;
+      nanos += 1000000000;
+    }
     Timestamp t = new Timestamp(millis);
 
     // Set remaining fractional portion to nanos
@@ -488,10 +556,19 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   }
 
   public static void setTimestamp(Timestamp t, byte[] bytes, int offset) {
-    boolean hasDecimal = hasDecimal(bytes[offset]);
-    t.setTime(((long) TimestampWritable.getSeconds(bytes, offset)) * 1000);
-    if (hasDecimal) {
-      t.setNanos(TimestampWritable.getNanos(bytes, offset+4));
+    boolean hasDecimalOrSecondVInt = hasDecimalOrSecondVInt(bytes[offset]);
+    long seconds = (long) TimestampWritable.getSeconds(bytes, offset);
+    int nanos = 0;
+    if (hasDecimalOrSecondVInt) {
+      nanos = TimestampWritable.getNanos(bytes, offset + 4);
+      if (hasSecondVInt(bytes[offset + 4])) {
+        seconds += LazyBinaryUtils.readVLongFromByteArray(bytes,
+            offset + 4 + WritableUtils.decodeVIntSize(bytes[offset + 4]));
+      }
+    }
+    t.setTime(seconds * 1000);
+    if (nanos != 0) {
+      t.setNanos(nanos);
     }
   }
 
@@ -501,17 +578,22 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
     return t;
   }
 
-  public boolean hasDecimal() {
-    return hasDecimal(currentBytes[offset]);
+  private static boolean hasDecimalOrSecondVInt(byte b) {
+    return (b >> 7) != 0;
   }
 
-  /**
-   *
-   * @param b first byte in an encoded TimestampWritable
-   * @return true if it has a decimal portion, false otherwise
-   */
-  public static boolean hasDecimal(byte b) {
-    return (b >> 7) != 0;
+  private static boolean hasSecondVInt(byte b) {
+    return WritableUtils.isNegativeVInt(b);
+  }
+
+  private final boolean hasDecimalOrSecondVInt() {
+    return hasDecimalOrSecondVInt(currentBytes[offset]);
+  }
+
+  public final boolean hasDecimal() {
+    return hasDecimalOrSecondVInt() || currentBytes[offset + 4] != -1;
+    // If the first byte of the VInt is -1, the VInt itself is -1, indicating that there is a
+    // second VInt but the nanoseconds field is actually 0.
   }
 
   /**
@@ -528,6 +610,20 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
   }
 
   /**
+   * Writes <code>value</code> into <code>dest</code> at <code>offset</code> as a seven-byte
+   * serialized long number.
+   */
+  static void sevenByteLongToBytes(long value, byte[] dest, int offset) {
+    dest[offset] = (byte) ((value >> 48) & 0xFF);
+    dest[offset+1] = (byte) ((value >> 40) & 0xFF);
+    dest[offset+2] = (byte) ((value >> 32) & 0xFF);
+    dest[offset+3] = (byte) ((value >> 24) & 0xFF);
+    dest[offset+4] = (byte) ((value >> 16) & 0xFF);
+    dest[offset+5] = (byte) ((value >> 8) & 0xFF);
+    dest[offset+6] = (byte) (value & 0xFF);
+  }
+
+  /**
    *
    * @param bytes
    * @param offset
@@ -539,5 +635,28 @@ public class TimestampWritable implements WritableComparable<TimestampWritable> 
         | ((0xFF & bytes[offset+1]) << 16)
         | ((0xFF & bytes[offset+2]) << 8)
         | (0xFF & bytes[offset+3]);
+  }
+
+  static long readSevenByteLong(byte[] bytes, int offset) {
+    // We need to shift everything 8 bits left and then shift back to populate the sign field.
+    return (((0xFFL & bytes[offset]) << 56)
+        | ((0xFFL & bytes[offset+1]) << 48)
+        | ((0xFFL & bytes[offset+2]) << 40)
+        | ((0xFFL & bytes[offset+3]) << 32)
+        | ((0xFFL & bytes[offset+4]) << 24)
+        | ((0xFFL & bytes[offset+5]) << 16)
+        | ((0xFFL & bytes[offset+6]) << 8)) >> 8;
+  }
+
+  /**
+   * Rounds the number of milliseconds relative to the epoch down to the nearest whole number of
+   * seconds. 500 would round to 0, -500 would round to -1.
+   */
+  static long millisToSeconds(long millis) {
+    if (millis >= 0) {
+      return millis / 1000;
+    } else {
+      return (millis - 999) / 1000;
+    }
   }
 }

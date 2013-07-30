@@ -54,6 +54,9 @@ public enum Type {
   STRING_TYPE("STRING",
       java.sql.Types.VARCHAR,
       TTypeId.STRING_TYPE),
+  DATE_TYPE("DATE",
+      java.sql.Types.DATE,
+      TTypeId.DATE_TYPE),
   TIMESTAMP_TYPE("TIMESTAMP",
       java.sql.Types.TIMESTAMP,
       TTypeId.TIMESTAMP_TYPE),
@@ -213,6 +216,7 @@ public enum Type {
     switch (this) {
     case BOOLEAN_TYPE:
     case STRING_TYPE:
+    case DATE_TYPE:
     case TIMESTAMP_TYPE:
     case TINYINT_TYPE:
     case SMALLINT_TYPE:
@@ -247,6 +251,8 @@ public enum Type {
     case STRING_TYPE:
     case BINARY_TYPE:
       return Integer.MAX_VALUE;
+    case DATE_TYPE:
+      return 10;
     case TIMESTAMP_TYPE:
       return 30;
     default:

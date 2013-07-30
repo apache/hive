@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.serde2.lazybinary;
 
+import java.sql.Date;
+
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.binarysortable.MyTestInnerStruct;
 
@@ -29,13 +31,14 @@ public class MyTestClassSmaller {
     Double myDouble;
     String myString;
     HiveDecimal myDecimal;
+    Date myDate;
     MyTestInnerStruct myStruct;
 
     public MyTestClassSmaller() {
     }
-    
+
     public MyTestClassSmaller(Byte b, Short s, Integer i, Long l, Float f,
-			      Double d, String st, HiveDecimal bd, MyTestInnerStruct is) {
+			      Double d, String st, HiveDecimal bd, Date date, MyTestInnerStruct is) {
 	myByte = b;
 	myShort = s;
 	myInt = i;
@@ -44,6 +47,7 @@ public class MyTestClassSmaller {
 	myDouble = d;
 	myString = st;
 	myDecimal = bd;
+	myDate = date;
 	myStruct = is;
     }
 }

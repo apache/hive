@@ -60,14 +60,18 @@ public class TestHCatLoaderComplexSchema {
         driver.run("drop table " + tablename);
     }
 
+    protected String storageFormat() {
+        return "RCFILE tblproperties('hcat.isd'='org.apache.hcatalog.rcfile.RCFileInputDriver'," +
+            "'hcat.osd'='org.apache.hcatalog.rcfile.RCFileOutputDriver')";
+    }
+
     private void createTable(String tablename, String schema, String partitionedBy) throws IOException, CommandNeedRetryException {
         String createTable;
         createTable = "create table " + tablename + "(" + schema + ") ";
         if ((partitionedBy != null) && (!partitionedBy.trim().isEmpty())) {
             createTable = createTable + "partitioned by (" + partitionedBy + ") ";
         }
-        createTable = createTable + "stored as RCFILE tblproperties('hcat.isd'='org.apache.hcatalog.rcfile.RCFileInputDriver'," +
-            "'hcat.osd'='org.apache.hcatalog.rcfile.RCFileOutputDriver') ";
+        createTable = createTable + "stored as " + storageFormat();
         LOG.info("Creating table:\n {}", createTable);
         CommandProcessorResponse result = driver.run(createTable);
         int retCode = result.getResponseCode();

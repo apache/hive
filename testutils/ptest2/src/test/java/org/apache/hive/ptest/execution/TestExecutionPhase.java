@@ -48,6 +48,7 @@ public class TestExecutionPhase extends AbstractTestPhase {
   private static final String QFILENAME = "sometest";
   private ExecutionPhase phase;
   private File testDir;
+  private Set<String> executedTests;
   private Set<String> failedTests;
   private List<TestBatch> testBatches;
   private TestBatch testBatch;
@@ -55,13 +56,14 @@ public class TestExecutionPhase extends AbstractTestPhase {
   @Before
   public void setup() throws Exception {
     initialize(getClass().getSimpleName());
+    executedTests = Sets.newHashSet();
     failedTests = Sets.newHashSet();
   }
   private ExecutionPhase getPhase() throws IOException {
     createHostExecutor();
     phase = new ExecutionPhase(hostExecutors, localCommandFactory, templateDefaults,
-        failedLogDir, Suppliers.ofInstance(testBatches),
-        failedTests, logger);
+        succeededLogDir, failedLogDir, Suppliers.ofInstance(testBatches),
+        executedTests, failedTests, logger);
     return phase;
   }
   private void setupQFile(boolean isParallel) throws Exception {
@@ -74,6 +76,12 @@ public class TestExecutionPhase extends AbstractTestPhase {
     testBatch = new UnitTestBatch(DRIVER, false);
     testBatches = Collections.singletonList(testBatch);
   }
+  private void copyTestOutput(String resource, File directory, String name) throws Exception {
+    String junitOutput = Templates.readResource(resource);
+    File junitOutputFile = new File(Dirs.create(
+        new File(directory, name)), "TEST-SomeTest.xml");
+    Files.write(junitOutput.getBytes(Charsets.UTF_8), junitOutputFile);
+  }
   @After
   public void teardown() {
     FileUtils.deleteQuietly(baseDir);
@@ -81,8 +89,10 @@ public class TestExecutionPhase extends AbstractTestPhase {
   @Test
   public void testPassingQFileTest() throws Throwable {
     setupQFile(true);
+    copyTestOutput("SomeTest-success.xml", succeededLogDir, testBatch.getName());
     getPhase().execute();
     Approvals.verify(getExecutedCommands());
+    Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME), executedTests);
     Assert.assertEquals(Sets.newHashSet(), failedTests);
   }
   @Test
@@ -90,19 +100,19 @@ public class TestExecutionPhase extends AbstractTestPhase {
     setupQFile(true);
     sshCommandExecutor.putFailure("bash " + LOCAL_DIR + "/" + HOST + "-" + USER +
         "-0/scratch/hiveptest-" + DRIVER + "-" + QFILENAME + ".sh", 1);
-    String junitOutput = Templates.readResource("TEST-SomeTest-failure.xml");
-    File driverFailureDir = Dirs.create(new File(failedLogDir, testBatch.getName()));
-    File junitOutputFile = new File(driverFailureDir, "TEST-SomeTest-failure.xml");
-    Files.write(junitOutput.getBytes(Charsets.UTF_8), junitOutputFile);
+    copyTestOutput("SomeTest-failure.xml", failedLogDir, testBatch.getName());
     getPhase().execute();
     Approvals.verify(getExecutedCommands());
+    Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME), executedTests);
     Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME), failedTests);
   }
   @Test
   public void testPassingUnitTest() throws Throwable {
     setupUnitTest();
+    copyTestOutput("SomeTest-success.xml", succeededLogDir, testBatch.getName());
     getPhase().execute();
     Approvals.verify(getExecutedCommands());
+    Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME), executedTests);
     Assert.assertEquals(Sets.newHashSet(), failedTests);
   }
   @Test
@@ -110,12 +120,10 @@ public class TestExecutionPhase extends AbstractTestPhase {
     setupUnitTest();
     sshCommandExecutor.putFailure("bash " + LOCAL_DIR + "/" + HOST + "-" + USER +
         "-0/scratch/hiveptest-" + DRIVER + ".sh", 1);
-    String junitOutput = Templates.readResource("TEST-SomeTest-failure.xml");
-    File driverFailureDir = Dirs.create(new File(failedLogDir, testBatch.getName()));
-    File junitOutputFile = new File(driverFailureDir, "TEST-SomeTest-failure.xml");
-    Files.write(junitOutput.getBytes(Charsets.UTF_8), junitOutputFile);
+    copyTestOutput("SomeTest-failure.xml", failedLogDir, testBatch.getName());
     getPhase().execute();
     Approvals.verify(getExecutedCommands());
+    Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME), executedTests);
     Assert.assertEquals(Sets.newHashSet("SomeTest." + QFILENAME), failedTests);
   }
 }

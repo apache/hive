@@ -150,3 +150,14 @@ Also useful to add to conf/hadoop-env.sh
 export HADOOP_OPTS="-Djava.security.krb5.realm=OX.AC.UK -Djava.security.krb5.kdc=kdc0.ox.ac.uk:kdc1.ox.ac.uk"
 to prevent warning about SCDynamicStore which may throw some tests off
 (http://stackoverflow.com/questions/7134723/hadoop-on-osx-unable-to-load-realm-info-from-scdynamicstore)
+
+
+Performance
+-----------
+It's a good idea to set fork.factor.conf.file={number of .conf files} and fork.factor.group to something > 1
+(see build.xml) to make these tests run faster.  If doing this, make sure the Hadoop Cluster has 
+enough map slots (10?) (mapred.tasktracker.map.tasks.maximum), otherwise test parallelism won't help.
+
+Adding Tests
+------------
+ToDo: add some guidelines

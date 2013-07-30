@@ -27,12 +27,12 @@ import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileBlockMergeInputFormat;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
-import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.mapred.Mapper;
 
 @Explain(displayName = "Column Truncate")
-public class ColumnTruncateWork extends MapredWork implements Serializable {
+public class ColumnTruncateWork extends MapWork implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -63,9 +63,6 @@ public class ColumnTruncateWork extends MapredWork implements Serializable {
     partDesc.setInputFileFormatClass(RCFileBlockMergeInputFormat.class);
     if(this.getPathToPartitionInfo() == null) {
       this.setPathToPartitionInfo(new LinkedHashMap<String, PartitionDesc>());
-    }
-    if(this.getNumReduceTasks() == null) {
-      this.setNumReduceTasks(0);
     }
     this.getPathToPartitionInfo().put(inputDir, partDesc);
   }

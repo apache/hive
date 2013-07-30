@@ -141,7 +141,7 @@
 
 <property>
   <name>javax.jdo.PersistenceManagerFactoryClass</name>
-  <value>org.datanucleus.jdo.JDOPersistenceManagerFactory</value>
+  <value>org.datanucleus.api.jdo.JDOPersistenceManagerFactory</value>
   <description>class implementing the jdo persistence</description>
 </property>
 
@@ -237,8 +237,8 @@
 
 <property>
   <name>datanucleus.identifierFactory</name>
-  <value>datanucleus</value>
-  <description>Name of the identifier factory to use when generating table/column names etc. 'datanucleus' is used for backward compatibility</description>
+  <value>datanucleus1</value>
+  <description>Name of the identifier factory to use when generating table/column names etc. 'datanucleus1' is used for backward compatibility with DataNucleus v1</description>
 </property>
 
 <property>
@@ -893,6 +893,18 @@
   <name>hive.script.recordreader</name>
   <value>org.apache.hadoop.hive.ql.exec.TextRecordReader</value>
   <description>The default record reader for reading data from the user scripts. </description>
+</property>
+
+<property>
+  <name>stream.stderr.reporter.prefix</name>
+  <value>reporter:</value>
+  <description>Streaming jobs that log to stardard error with this prefix can log counter or status information.</description>
+</property>
+
+<property>
+  <name>stream.stderr.reporter.enabled</name>
+  <value>true</value>
+  <description>Enable consumption of status and counter messages for streaming jobs.</description>
 </property>
 
 <property>

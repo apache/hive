@@ -24,7 +24,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: ((rand(1) < 0.1) and (not ((key > 50.0) or (key < 10.0))))
+                  expr: ((rand(1) < 0.1) and (not ((key > 50) or (key < 10))))
                   type: boolean
               Select Operator
                 expressions:
@@ -55,7 +55,6 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -152,7 +151,7 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: false
               predicate:
-                  expr: (not ((key > 50.0) or (key < 10.0)))
+                  expr: (not ((key > 50) or (key < 10)))
                   type: boolean
               Select Operator
                 expressions:
@@ -183,7 +182,6 @@ STAGE PLANS:
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
-      Needs Tagging: false
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
