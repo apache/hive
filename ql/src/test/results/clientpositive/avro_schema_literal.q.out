@@ -77,5 +77,5 @@ struct1             	struct<sint:int,sboolean:boolean,sstring:string>	from deser
 union1              	uniontype<float,boolean,string>	from deserializer   
 enum1               	string              	from deserializer   
 nullableint         	int                 	from deserializer   
-bytes1              	array<tinyint>      	from deserializer   
-fixed1              	array<tinyint>      	from deserializer   
+bytes1              	binary              	from deserializer   
+fixed1              	binary              	from deserializer   
