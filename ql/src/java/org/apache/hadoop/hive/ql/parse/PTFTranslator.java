@@ -425,8 +425,7 @@ public class PTFTranslator {
       }
     }
 
-    if (RANKING_FUNCS.contains(spec.getName()))
-    {
+    if (FunctionRegistry.isRankingFunction(spec.getName())){
       setupRankingArgs(wdwTFnDef, def, spec);
     }
 
@@ -784,19 +783,6 @@ public class PTFTranslator {
     combinedOrdExprs.addAll(orderCols);
     return combinedOrdExprs;
   }
-
-
-  /*
-   * Ranking Functions helpers
-   */
-
-  protected static final ArrayList<String> RANKING_FUNCS = new ArrayList<String>();
-  static {
-    RANKING_FUNCS.add("rank");
-    RANKING_FUNCS.add("dense_rank");
-    RANKING_FUNCS.add("percent_rank");
-    RANKING_FUNCS.add("cume_dist");
-  };
 
   private void setupRankingArgs(WindowTableFunctionDef wdwTFnDef,
       WindowFunctionDef wFnDef,

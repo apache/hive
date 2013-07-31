@@ -1480,4 +1480,23 @@ public final class FunctionRegistry {
     mFunctions.put(name.toLowerCase(), tInfo);
   }
 
+  /**
+   * Use this to check if function is ranking function
+   *
+   * @param name
+   *          name of a function
+   * @return true if function is a UDAF, has WindowFunctionDescription annotation and the annotations
+   *         confirms a ranking function, false otherwise
+   */
+  public static boolean isRankingFunction(String name){
+    FunctionInfo info = mFunctions.get(name.toLowerCase());
+    GenericUDAFResolver res = info.getGenericUDAFResolver();
+    if (res != null){
+      WindowFunctionDescription desc = res.getClass().getAnnotation(WindowFunctionDescription.class);
+      if (desc != null){
+        return desc.rankingFunction();
+      }
+    }
+    return false;
+  }
 }
