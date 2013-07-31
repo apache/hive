@@ -34,7 +34,8 @@ import org.apache.hadoop.hive.ql.exec.WindowFunctionDescription;
 										"that the next person came in third."
 								),
 		supportsWindow = false,
-		pivotResult = true
+		pivotResult = true,
+		rankingFunction = true
 )
 public class GenericUDAFDenseRank extends GenericUDAFRank
 {

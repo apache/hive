@@ -40,7 +40,8 @@ import org.apache.hadoop.io.IntWritable;
 									"(rank of row in its partition - 1) / (number of rows in the partition - 1)"
 								),
 		supportsWindow = false,
-		pivotResult = true
+		pivotResult = true,
+		rankingFunction = true
 )
 public class GenericUDAFPercentRank extends GenericUDAFRank
 {
