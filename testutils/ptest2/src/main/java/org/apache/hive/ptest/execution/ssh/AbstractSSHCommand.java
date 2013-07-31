@@ -21,50 +21,50 @@ package org.apache.hive.ptest.execution.ssh;
 import java.util.concurrent.Callable;
 
 public abstract class AbstractSSHCommand<RESULT> implements Callable<RESULT> {
-    private final String privateKey;
-    private final String user;
-    private final String host;
-    private final int instance;
-    private int exitCode = -1;
-    private Exception exception;
-    private String output;
+  private final String privateKey;
+  private final String user;
+  private final String host;
+  private final int instance;
+  private int exitCode = -1;
+  private Exception exception;
+  private String output;
 
-    public AbstractSSHCommand(String privateKey,
-        String user, String host, int instance) {
-      this.privateKey = privateKey;
-      this.user = user;
-      this.host = host;
-      this.instance = instance;
-    }
+  public AbstractSSHCommand(String privateKey,
+      String user, String host, int instance) {
+    this.privateKey = privateKey;
+    this.user = user;
+    this.host = host;
+    this.instance = instance;
+  }
 
-    public void setException(Exception exception) {
-      this.exception = exception;
-    }
-    public void setExitCode(int exitCode) {
-      this.exitCode = exitCode;
-    }
-    public void setOutput(String output) {
-      this.output = output;
-    }
-    public int getExitCode() {
-      return exitCode;
-    }
-    public Exception getException() {
-      return exception;
-    }
-    public String getOutput() {
-      return output;
-    }
-    public String getPrivateKey() {
-      return privateKey;
-    }
-    public String getUser() {
-      return user;
-    }
-    public String getHost() {
-      return host;
-    }
-    public int getInstance() {
-      return instance;
-    }
+  public void setException(Exception exception) {
+    this.exception = exception;
+  }
+  public void setExitCode(int exitCode) {
+    this.exitCode = exitCode;
+  }
+  public void setOutput(String output) {
+    this.output = output;
+  }
+  public int getExitCode() {
+    return exitCode;
+  }
+  public Exception getException() {
+    return exception;
+  }
+  public String getOutput() {
+    return output;
+  }
+  public String getPrivateKey() {
+    return privateKey;
+  }
+  public String getUser() {
+    return user;
+  }
+  public String getHost() {
+    return host;
+  }
+  public int getInstance() {
+    return instance;
+  }
 }

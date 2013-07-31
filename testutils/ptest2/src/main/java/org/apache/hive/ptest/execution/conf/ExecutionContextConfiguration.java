@@ -42,7 +42,7 @@ public class ExecutionContextConfiguration {
   private final String mGlobalLogDirectory;
   private final String mProfileDirectory;
   private final int mMaxLogDirectoriesPerProfile;
-  
+
   @VisibleForTesting
   public ExecutionContextConfiguration(Context context)
       throws IOException {

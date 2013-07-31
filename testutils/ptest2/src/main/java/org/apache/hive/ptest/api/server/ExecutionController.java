@@ -99,7 +99,8 @@ public class ExecutionController {
     mTestExecutor.start();
     Runtime.getRuntime().addShutdownHook(new Thread() {
       @Override
-    public void run() {
+      public void run() {
+        LOG.info("Shutdown hook called");
         try {
           mTestExecutor.shutdown();
         } catch (Exception e) {
@@ -131,7 +132,7 @@ public class ExecutionController {
       return new TestStartResponse(Status.illegalArgument());
     }
     if(!assertTestHandleIsAvailable(startRequest.getTestHandle())) {
-      return new TestStartResponse(Status.illegalArgument("Test handle " + startRequest.getTestHandle() + " already used")); 
+      return new TestStartResponse(Status.illegalArgument("Test handle " + startRequest.getTestHandle() + " already used"));
     }
     Test test = new Test(startRequest,
         Status.pending(), System.currentTimeMillis());

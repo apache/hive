@@ -21,6 +21,7 @@ package org.apache.hive.ptest.execution;
 
 public class Constants {
 
+  public static final int EXIT_CODE_EXCEPTION = -1;
   public static final int EXIT_CODE_SUCCESS = 0;
   public static final int EXIT_CODE_UNKNOWN = 255;
 }

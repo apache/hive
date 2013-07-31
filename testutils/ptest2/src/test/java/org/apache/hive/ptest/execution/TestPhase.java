@@ -46,10 +46,10 @@ public class TestPhase extends AbstractTestPhase {
   public void testExecLocallyFails() throws Throwable {
     phase = new Phase(hostExecutors, localCommandFactory,
         templateDefaults, logger) {
-          @Override
-          public void execute() throws Exception {
-            execLocally("local");
-          }
+      @Override
+      public void execute() throws Exception {
+        execLocally("local");
+      }
     };
     when(localCommand.getExitCode()).thenReturn(1);
     phase.execute();
@@ -58,10 +58,10 @@ public class TestPhase extends AbstractTestPhase {
   public void testExecLocallySucceeds() throws Throwable {
     phase = new Phase(hostExecutors, localCommandFactory,
         templateDefaults, logger) {
-          @Override
-          public void execute() throws Exception {
-            execLocally("local");
-          }
+      @Override
+      public void execute() throws Exception {
+        execLocally("local");
+      }
     };
     phase.execute();
     List<String> commands = localCommandFactory.getCommands();
@@ -73,10 +73,10 @@ public class TestPhase extends AbstractTestPhase {
     sshCommandExecutor.putFailure("echo", Constants.EXIT_CODE_UNKNOWN);
     phase = new Phase(hostExecutors, localCommandFactory,
         templateDefaults, logger) {
-          @Override
-          public void execute() throws Exception {
-            execInstances("echo");
-          }
+      @Override
+      public void execute() throws Exception {
+        execInstances("echo");
+      }
     };
     phase.execute();
     Approvals.verify(getExecutedCommands());
@@ -87,10 +87,10 @@ public class TestPhase extends AbstractTestPhase {
     sshCommandExecutor.putFailure("echo", Constants.EXIT_CODE_UNKNOWN);
     phase = new Phase(hostExecutors, localCommandFactory,
         templateDefaults, logger) {
-          @Override
-          public void execute() throws Exception {
-            execHosts("echo");
-          }
+      @Override
+      public void execute() throws Exception {
+        execHosts("echo");
+      }
     };
     phase.execute();
     Approvals.verify(getExecutedCommands());
@@ -101,10 +101,10 @@ public class TestPhase extends AbstractTestPhase {
     rsyncCommandExecutor.putFailure("local remote", Constants.EXIT_CODE_UNKNOWN);
     phase = new Phase(hostExecutors, localCommandFactory,
         templateDefaults, logger) {
-          @Override
-          public void execute() throws Exception {
-            rsyncFromLocalToRemoteInstances("local", "remote");
-          }
+      @Override
+      public void execute() throws Exception {
+        rsyncFromLocalToRemoteInstances("local", "remote");
+      }
     };
     phase.execute();
     Approvals.verify(getExecutedCommands());
@@ -115,10 +115,10 @@ public class TestPhase extends AbstractTestPhase {
     rsyncCommandExecutor.putFailure("local remote", 1);
     phase = new Phase(hostExecutors, localCommandFactory,
         templateDefaults, logger) {
-          @Override
-          public void execute() throws Exception {
-            rsyncFromLocalToRemoteInstances("local", "remote");
-          }
+      @Override
+      public void execute() throws Exception {
+        rsyncFromLocalToRemoteInstances("local", "remote");
+      }
     };
     phase.execute();
     Approvals.verify(getExecutedCommands());

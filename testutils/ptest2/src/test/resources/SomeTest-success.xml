@@ -3,4 +3,7 @@
   <properties></properties>
   <testcase classname="SomeTest" name="sometest" time="434.688">
   </testcase>
+  <testcase classname="SomeTest" name="someothertest" time="0">
+   <skipped/>
+  </testcase>
 </testsuite>

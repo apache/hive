@@ -18,26 +18,8 @@
  */
 package org.apache.hive.ptest.execution;
 
-import java.util.List;
+import org.apache.hive.ptest.execution.conf.Host;
 
-import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableMap;
-
-/**
- * Creates a tar.gz of the TEST-*.xml test results
- */
-public class ReportingPhase extends Phase {
-
-  public ReportingPhase(List<HostExecutor> hostExecutors,
-      LocalCommandFactory localCommandFactory,
-      ImmutableMap<String, String> templateDefaults, Logger logger) {
-    super(hostExecutors, localCommandFactory, templateDefaults, logger);
-  }
-  @Override
-  public void execute() throws Exception {
-    execLocally("mkdir $logDir/test-results");
-    execLocally("find $logDir/{failed,succeeded} -maxdepth 2 -name 'TEST*.xml' -exec cp {} $logDir/test-results \\; 2>/dev/null");
-    execLocally("cd $logDir/ && tar -zvcf test-results.tar.gz test-results/");
-  }
+public interface HostExecutorBuilder {
+  public HostExecutor build(Host host);
 }

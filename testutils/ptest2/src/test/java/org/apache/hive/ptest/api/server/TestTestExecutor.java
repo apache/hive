@@ -92,7 +92,7 @@ public class TestTestExecutor {
     profilePropertiesOutputStream.close();
     ptestBuilder = new PTest.Builder() {
       @Override
-    public PTest build(TestConfiguration configuration, ExecutionContext executionContext,
+      public PTest build(TestConfiguration configuration, ExecutionContext executionContext,
           String buildTag, File logDir, LocalCommandFactory localCommandFactory, SSHCommandExecutor sshCommandExecutor,
           RSyncCommandExecutor rsyncCommandExecutor, Logger logger) throws Exception {
         return ptest;
