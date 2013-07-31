@@ -29,6 +29,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.hive.ptest.execution.conf.Host;
 import org.apache.hive.ptest.execution.conf.TestBatch;
 import org.apache.hive.ptest.execution.ssh.RSyncCommand;
@@ -41,16 +42,19 @@ import org.apache.hive.ptest.execution.ssh.SSHExecutionException;
 import org.apache.hive.ptest.execution.ssh.SSHResult;
 import org.slf4j.Logger;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.io.Files;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 
 class HostExecutor {
+  private static final int MAX_SOURCE_DIRS = 5;
   private final Host mHost;
   private final List<Drone> mDrones;
   private final ListeningExecutorService mExecutor;
@@ -102,9 +106,12 @@ class HostExecutor {
 
     });
   }
-
+  @VisibleForTesting
   int remainingDrones() {
     return mDrones.size();
+  }
+  boolean isBad() {
+    return mDrones.isEmpty();
   }
   Host getHost() {
     return mHost;
@@ -130,7 +137,7 @@ class HostExecutor {
             do {
               batch = parallelWorkQueue.poll(mNumPollSeconds, TimeUnit.SECONDS);
               if(batch != null) {
-                if(!executeTestBatch(drone, batch, failedTestResults.size())) {
+                if(!executeTestBatch(drone, batch, failedTestResults)) {
                   failedTestResults.add(batch);
                 }
               }
@@ -155,7 +162,7 @@ class HostExecutor {
         do {
           batch = isolatedWorkQueue.poll(mNumPollSeconds, TimeUnit.SECONDS);
           if(batch != null) {
-            if(!executeTestBatch(drone, batch, failedTestResults.size())) {
+            if(!executeTestBatch(drone, batch, failedTestResults)) {
               failedTestResults.add(batch);
             }
           }
@@ -174,7 +181,7 @@ class HostExecutor {
    * Executes the test batch on the drone in question. If the command
    * exits with a status code of 255 throw an AbortDroneException.
    */
-  private boolean executeTestBatch(Drone drone, TestBatch batch, int numOfFailedTests)
+  private boolean executeTestBatch(Drone drone, TestBatch batch, Set<TestBatch> failedTestResults)
       throws IOException, SSHExecutionException, AbortDroneException {
     String scriptName = "hiveptest-" + batch.getName() + ".sh";
     File script = new File(mLocalScratchDirectory, scriptName);
@@ -184,7 +191,8 @@ class HostExecutor {
     templateVariables.put("testArguments", batch.getTestArguments());
     templateVariables.put("localDir", drone.getLocalDirectory());
     templateVariables.put("logDir", drone.getLocalLogDirectory());
-    templateVariables.put("numOfFailedTests", String.valueOf(numOfFailedTests));
+    templateVariables.put("maxSourceDirs", String.valueOf(MAX_SOURCE_DIRS));
+    templateVariables.put("numOfFailedTests", String.valueOf(failedTestResults.size()));
     String command = Templates.getTemplateResult("bash $localDir/$instanceName/scratch/" + script.getName(),
         templateVariables);
     Templates.writeTemplateResult("batch-exec.vm", script, templateVariables);
@@ -193,7 +201,7 @@ class HostExecutor {
     mLogger.info(drone + " executing " + batch + " with " + command);
     RemoteCommandResult sshResult = new SSHCommand(mSSHCommandExecutor, drone.getPrivateKey(), drone.getUser(),
         drone.getHost(), drone.getInstance(), command).
-    call();
+        call();
     File batchLogDir = null;
     if(sshResult.getExitCode() == Constants.EXIT_CODE_UNKNOWN) {
       throw new AbortDroneException("Drone " + drone.toString() + " exited with " +
@@ -209,6 +217,13 @@ class HostExecutor {
     }
     copyFromDroneToLocal(drone, batchLogDir.getAbsolutePath(),
         drone.getLocalLogDirectory() + "/");
+    if(failedTestResults.size() > MAX_SOURCE_DIRS) {
+      File sourceDir = new File(batchLogDir, "source");
+      if(sourceDir.isDirectory()) {
+        mLogger.info("Max source directories exceeded, deleting " + sourceDir.getAbsolutePath()
+            + ":" + FileUtils.deleteQuietly(sourceDir));
+      }
+    }
     File logFile = new File(batchLogDir, String.format("%s.txt", batch.getName()));
     PrintWriter writer = new PrintWriter(logFile);
     writer.write(String.format("result = '%s'\n", sshResult.toString()));
@@ -247,34 +262,54 @@ class HostExecutor {
    * they will be removed from use possibly leaving this host with zero
    * functioning drones.
    */
-  List<ListenableFuture<RSyncResult>> rsyncFromLocalToRemoteInstances(final String localFile, final String remoteFile)
+  ListenableFuture<List<ListenableFuture<RemoteCommandResult>>> rsyncFromLocalToRemoteInstances(final String localFile, final String remoteFile)
       throws InterruptedException, IOException {
-    List<ListenableFuture<RSyncResult>> result = Lists.newArrayList();
-    for(final Drone drone : ImmutableList.copyOf(mDrones)) {
-      final Map<String, String> templateVariables = Maps.newHashMap(mTemplateDefaults);
-      templateVariables.put("instanceName", drone.getInstanceName());
-      templateVariables.put("localDir", drone.getLocalDirectory());
-      result.add(mExecutor.submit(new Callable<RSyncResult>() {
-        @Override
-        public RSyncResult call() throws Exception {
+    // the basic premise here is that we will rsync the directory to first working drone
+    // then execute a local rsync on the node to the other drones. This keeps
+    // us from executing tons of rsyncs on the master node conserving CPU
+    return mExecutor.submit(new Callable<List<ListenableFuture<RemoteCommandResult>>>() {
+      @Override
+      public List<ListenableFuture<RemoteCommandResult>> call()
+          throws Exception {
+        List<Drone> drones = Lists.newArrayList(mDrones);
+        List<ListenableFuture<RemoteCommandResult>> results = Lists.newArrayList();
+        // local path doesn't depend on drone variables
+        String resolvedLocalLocation = Files.simplifyPath(Templates.getTemplateResult(localFile, mTemplateDefaults));
+        String remoteStagingLocation = null;
+        for(final Drone drone : ImmutableList.copyOf(mDrones)) {
+          Preconditions.checkState(remoteStagingLocation == null, "Remote staging location must be null at the start of the loop");
+          final Map<String, String> templateVariables = Maps.newHashMap(mTemplateDefaults);
+          templateVariables.put("instanceName", drone.getInstanceName());
+          templateVariables.put("localDir", drone.getLocalDirectory());
+          String resolvedRemoteLocation = Files.simplifyPath(Templates.getTemplateResult(remoteFile, templateVariables));
           RSyncResult result = new RSyncCommand(mRSyncCommandExecutor, drone.getPrivateKey(), drone.getUser(),
               drone.getHost(), drone.getInstance(),
-              Templates.getTemplateResult(localFile, templateVariables),
-              Templates.getTemplateResult(remoteFile, templateVariables),
+              resolvedLocalLocation,
+              resolvedRemoteLocation,
               RSyncCommand.Type.FROM_LOCAL).call();
-          if(result.getExitCode() != Constants.EXIT_CODE_SUCCESS) {
+          if(result.getExitCode() == Constants.EXIT_CODE_SUCCESS) {
+            remoteStagingLocation = resolvedRemoteLocation;
+            drones.remove(drone);
+            mLogger.info("Successfully staged " + resolvedLocalLocation + " on " + remoteStagingLocation);
+            break;
+          } else {
             mDrones.remove(drone);
             mLogger.error("Aborting drone during rsync",
                 new AbortDroneException("Drone " + drone + " exited with "
                     + result.getExitCode() + ": " + result));
-            return null;
-          } else {
-            return result;
           }
         }
-      }));
-    }
-    return result;
+        if(remoteStagingLocation == null) {
+          Preconditions.checkState(mDrones.isEmpty(), "If remote staging location is not set all drones should be bad");
+          mLogger.warn("Unable to stage directory on remote host, all drones must be bad");
+        } else {
+          String name = (new File(resolvedLocalLocation)).getName();
+          remoteStagingLocation = Files.simplifyPath(remoteStagingLocation + "/" + name);
+          results.addAll(execInstances(drones, "rsync -qaPe --delete --delete-during --force " + remoteStagingLocation + " " + remoteFile));
+        }
+        return results;
+      }
+    });
   }
   RSyncResult copyFromDroneToLocal(Drone drone, String localFile, String remoteFile)
       throws SSHExecutionException, IOException {
@@ -299,36 +334,9 @@ class HostExecutor {
   ListenableFuture<SSHResult> exec(final String cmd)
       throws Exception {
     return mExecutor.submit(new Callable<SSHResult>() {
-        @Override
-        public SSHResult call() throws Exception {
-          for(final Drone drone : ImmutableList.copyOf(mDrones)) {
-            Map<String, String> templateVariables = Maps.newHashMap(mTemplateDefaults);
-            templateVariables.put("instanceName", drone.getInstanceName());
-            templateVariables.put("localDir", drone.getLocalDirectory());
-            String command = Templates.getTemplateResult(cmd, templateVariables);
-            SSHResult result = new SSHCommand(mSSHCommandExecutor, drone.getPrivateKey(), drone.getUser(),
-                drone.getHost(), drone.getInstance(), command).call();
-            if(result.getExitCode() == Constants.EXIT_CODE_UNKNOWN) {
-              mDrones.remove(drone); // return value not checked due to concurrent access
-              mLogger.error("Aborting drone during exec " + command,
-                  new AbortDroneException("Drone " + drone + " exited with "
-                      + Constants.EXIT_CODE_UNKNOWN + ": " + result));
-            } else {
-              return result;
-            }
-          }
-          return null;
-        }
-    });
-
-  }
-  List<ListenableFuture<SSHResult>> execInstances(final String cmd)
-      throws SSHExecutionException, InterruptedException, IOException {
-    List<ListenableFuture<SSHResult>> result = Lists.newArrayList();
-    for(final Drone drone : ImmutableList.copyOf(mDrones)) {
-      result.add(mExecutor.submit(new Callable<SSHResult>() {
-        @Override
-        public SSHResult call() throws Exception {
+      @Override
+      public SSHResult call() throws Exception {
+        for(final Drone drone : ImmutableList.copyOf(mDrones)) {
           Map<String, String> templateVariables = Maps.newHashMap(mTemplateDefaults);
           templateVariables.put("instanceName", drone.getInstanceName());
           templateVariables.put("localDir", drone.getLocalDirectory());
@@ -340,6 +348,37 @@ class HostExecutor {
             mLogger.error("Aborting drone during exec " + command,
                 new AbortDroneException("Drone " + drone + " exited with "
                     + Constants.EXIT_CODE_UNKNOWN + ": " + result));
+          } else {
+            return result;
+          }
+        }
+        return null;
+      }
+    });
+
+  }
+  List<ListenableFuture<RemoteCommandResult>> execInstances(final String cmd)
+      throws InterruptedException, IOException {
+    return execInstances(mDrones, cmd);
+  }
+  private List<ListenableFuture<RemoteCommandResult>> execInstances(List<Drone> drones, final String cmd)
+      throws InterruptedException, IOException {
+    List<ListenableFuture<RemoteCommandResult>> result = Lists.newArrayList();
+    for(final Drone drone : ImmutableList.copyOf(drones)) {
+      result.add(mExecutor.submit(new Callable<RemoteCommandResult>() {
+        @Override
+        public RemoteCommandResult call() throws Exception {
+          Map<String, String> templateVariables = Maps.newHashMap(mTemplateDefaults);
+          templateVariables.put("instanceName", drone.getInstanceName());
+          templateVariables.put("localDir", drone.getLocalDirectory());
+          String command = Templates.getTemplateResult(cmd, templateVariables);
+          SSHResult result = new SSHCommand(mSSHCommandExecutor, drone.getPrivateKey(), drone.getUser(),
+              drone.getHost(), drone.getInstance(), command).call();
+          if(result.getExitCode() != Constants.EXIT_CODE_SUCCESS) {
+            mDrones.remove(drone); // return value not checked due to concurrent access
+            mLogger.error("Aborting drone during exec " + command,
+                new AbortDroneException("Drone " + drone + " exited with "
+                    + result.getExitCode() + ": " + result));
             return null;
           } else {
             return result;

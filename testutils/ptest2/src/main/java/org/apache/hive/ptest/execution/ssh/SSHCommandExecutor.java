@@ -50,11 +50,14 @@ public class SSHCommandExecutor {
         if(attempts++ <= 3 && cmd.getExitCode() == Constants.EXIT_CODE_UNKNOWN) {
           mLogger.warn("Command exited with " + cmd.getExitCode() + ", will retry: " + command);
           retry = true;
-          TimeUnit.SECONDS.sleep(20);
+          TimeUnit.SECONDS.sleep(5);
         }
       } while (retry); // an error occurred, re-try
       command.setExitCode(cmd.getExitCode());
     } catch (Exception e) {
+      if(command.getExitCode() == Constants.EXIT_CODE_SUCCESS) {
+        command.setExitCode(Constants.EXIT_CODE_EXCEPTION);
+      }
       command.setException(e);
     } finally {
       command.setOutput(collector.getOutput());

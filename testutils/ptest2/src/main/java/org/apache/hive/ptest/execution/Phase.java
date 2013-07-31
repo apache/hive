@@ -20,29 +20,32 @@ package org.apache.hive.ptest.execution;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.hive.ptest.execution.LocalCommand.CollectLogPolicy;
 import org.apache.hive.ptest.execution.ssh.NonZeroExitCodeException;
-import org.apache.hive.ptest.execution.ssh.RSyncResult;
 import org.apache.hive.ptest.execution.ssh.RemoteCommandResult;
 import org.apache.hive.ptest.execution.ssh.SSHExecutionException;
 import org.apache.hive.ptest.execution.ssh.SSHResult;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 
 public abstract class Phase {
 
-  protected final ImmutableList<HostExecutor> hostExecutors;
+  protected final List<HostExecutor> hostExecutors;
   private final LocalCommandFactory localCommandFactory;
   private final ImmutableMap<String, String> templateDefaults;
   protected final Logger logger;
 
-  public Phase(ImmutableList<HostExecutor> hostExecutors,
+  public Phase(List<HostExecutor> hostExecutors,
       LocalCommandFactory localCommandFactory,
       ImmutableMap<String, String> templateDefaults, Logger logger) {
     super();
@@ -67,13 +70,13 @@ public abstract class Phase {
     }
   }
   // prep
-  protected List<RSyncResult> rsyncFromLocalToRemoteInstances(String localFile, String remoteFile)
+  protected List<RemoteCommandResult> rsyncFromLocalToRemoteInstances(String localFile, String remoteFile)
       throws Exception {
-    List<ListenableFuture<RSyncResult>> futures = Lists.newArrayList();
+    List<ListenableFuture<List<ListenableFuture<RemoteCommandResult>>>> futures = Lists.newArrayList();
     for(HostExecutor hostExecutor : hostExecutors) {
-      futures.addAll(hostExecutor.rsyncFromLocalToRemoteInstances(localFile, remoteFile));
+      futures.add(hostExecutor.rsyncFromLocalToRemoteInstances(localFile, remoteFile));
     }
-    return toListOfResults(futures);
+    return flatten(futures);
   }
 
   // clean
@@ -86,16 +89,76 @@ public abstract class Phase {
     return toListOfResults(futures);
   }
   // clean prep
-  protected List<SSHResult> execInstances(String command)
+  protected List<RemoteCommandResult> execInstances(String command)
       throws Exception {
-    List<ListenableFuture<SSHResult>> futures = Lists.newArrayList();
+    List<ListenableFuture<RemoteCommandResult>> futures = Lists.newArrayList();
     for(HostExecutor hostExecutor : hostExecutors) {
       futures.addAll(hostExecutor.execInstances(command));
     }
     return toListOfResults(futures);
   }
+  protected List<RemoteCommandResult> initalizeHosts()
+      throws Exception {
+    List<ListenableFuture<List<RemoteCommandResult>>> futures = Lists.newArrayList();
+    ListeningExecutorService executor = MoreExecutors.
+        listeningDecorator(Executors.newFixedThreadPool(hostExecutors.size()));
+    try {
+      for(final HostExecutor hostExecutor : hostExecutors) {
+        futures.add(executor.submit(new Callable<List<RemoteCommandResult>>() {
+          @Override
+          public List<RemoteCommandResult> call() throws Exception {
+            return initalizeHost(hostExecutor);
+          }
+        }));
+      }
+      List<RemoteCommandResult> results = Lists.newArrayList();
+      for(ListenableFuture<List<RemoteCommandResult>> future : futures) {
+        List<RemoteCommandResult> result = future.get();
+        if(result != null) {
+          results.addAll(result);
+        }
+      }
+      executor.shutdown();
+      return results;
+    } finally {
+      if(executor.isShutdown()) {
+        executor.shutdownNow();
+      }
+    }
+  }
+  protected List<RemoteCommandResult> initalizeHost(HostExecutor hostExecutor)
+      throws Exception {
+    List<RemoteCommandResult> results = Lists.newArrayList();
+    results.add(hostExecutor.exec("killall -q -9 -f java || true").get());
+    TimeUnit.SECONDS.sleep(1);
+    // order matters in all of these so block
+    results.addAll(toListOfResults(hostExecutor.execInstances("rm -rf $localDir/$instanceName/scratch $localDir/$instanceName/logs")));
+    results.addAll(toListOfResults(hostExecutor.execInstances("mkdir -p $localDir/$instanceName/logs " +
+        "$localDir/$instanceName/maven " +
+        "$localDir/$instanceName/scratch " +
+        "$localDir/$instanceName/ivy " +
+        "$localDir/$instanceName/${repositoryName}-source")));
+    // order does not matter below, so go wide
+    List<ListenableFuture<List<ListenableFuture<RemoteCommandResult>>>> futures = Lists.newArrayList();
+    futures.add(hostExecutor.rsyncFromLocalToRemoteInstances("$workingDir/${repositoryName}-source", "$localDir/$instanceName/"));
+    futures.add(hostExecutor.rsyncFromLocalToRemoteInstances("$workingDir/maven", "$localDir/$instanceName/"));
+    futures.add(hostExecutor.rsyncFromLocalToRemoteInstances("$workingDir/ivy", "$localDir/$instanceName/"));
+    results.addAll(flatten(futures));
+    return results;
+  }
+  private <T extends RemoteCommandResult> List<T> flatten(List<ListenableFuture<List<ListenableFuture<T>>>> futures)
+      throws Exception {
+    List<T> results = Lists.newArrayList();
+    for(ListenableFuture<List<ListenableFuture<T>>> future : futures) {
+      List<ListenableFuture<T>> result = future.get();
+      if(result != null) {
+        results.addAll(toListOfResults(result));
+      }
+    }
+    return results;
+  }
   private <T extends RemoteCommandResult> List<T> toListOfResults(List<ListenableFuture<T>> futures)
-  throws Exception {
+      throws Exception {
     List<T> results = Lists.newArrayList();
     for(T result : Futures.allAsList(futures).get()) {
       if(result != null) {
@@ -109,8 +172,5 @@ public abstract class Phase {
   }
   protected ImmutableMap<String, String> getTemplateDefaults() {
     return templateDefaults;
-  }
-  protected ImmutableList<HostExecutor> getHostExecutors() {
-    return hostExecutors;
   }
 }

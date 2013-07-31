@@ -62,7 +62,7 @@ public class MockRSyncCommandExecutor extends RSyncCommandExecutor {
     if(queue == null || queue.isEmpty()) {
       command.setExitCode(0);
     } else {
-     command.setExitCode(queue.remove());
+      command.setExitCode(queue.remove());
     }
   }
 

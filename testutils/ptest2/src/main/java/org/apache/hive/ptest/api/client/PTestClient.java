@@ -104,7 +104,7 @@ public class PTestClient {
   }
   public boolean testStart(String profile, String testHandle,
       String jira, String patch, String testOutputDir, boolean clearLibraryCache)
-  throws Exception {
+          throws Exception {
     patch = Strings.nullToEmpty(patch).trim();
     if(!patch.isEmpty()) {
       byte[] bytes = Resources.toByteArray(new URL(patch));
@@ -126,7 +126,7 @@ public class PTestClient {
     return result;
   }
   public boolean testList()
-  throws Exception {
+      throws Exception {
     TestListRequest testListRequest = new TestListRequest();
     TestListResponse testListResponse = post(testListRequest);
     for(TestStatus testStatus : testListResponse.getEntries()) {
@@ -135,7 +135,7 @@ public class PTestClient {
     return true;
   }
   public boolean testTailLog(String testHandle)
-  throws Exception {
+      throws Exception {
     testHandle = Strings.nullToEmpty(testHandle).trim();
     if(testHandle.isEmpty()) {
       throw new IllegalArgumentException("TestHandle is required");
@@ -163,7 +163,7 @@ public class PTestClient {
     return Status.isOK(statusResponse.getTestStatus().getStatus());
   }
   private void downloadTestResults(String testHandle, String testOutputDir)
-  throws Exception {
+      throws Exception {
     HttpGet request = new HttpGet(mLogsEndpoint + testHandle + "/test-results.tar.gz");
     FileOutputStream output = null;
     try {
@@ -183,14 +183,14 @@ public class PTestClient {
     }
   }
   private long printLogs(String testHandle, long offset)
-  throws Exception {
+      throws Exception {
     TestLogRequest logsRequest = new TestLogRequest(testHandle, offset, 64 * 1024);
     TestLogResponse logsResponse = post(logsRequest);
     System.out.print(logsResponse.getBody());
     return logsResponse.getOffset();
   }
   private <S extends GenericResponse> S post(Object payload)
-  throws Exception {
+      throws Exception {
     EndPointResponsePair endPointResponse = Preconditions.
         checkNotNull(REQUEST_TO_ENDPOINT.get(payload.getClass()), payload.getClass().getName());
     HttpPost request = new HttpPost(mApiEndPoint + endPointResponse.getEndpoint());
@@ -207,7 +207,7 @@ public class PTestClient {
       String response = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
       @SuppressWarnings("unchecked")
       S result =  (S)endPointResponse.
-          getResponseClass().cast(mMapper.readValue(response, endPointResponse.getResponseClass()));
+      getResponseClass().cast(mMapper.readValue(response, endPointResponse.getResponseClass()));
       Status.assertOK(result.getStatus());
       if(System.getProperty("DEBUG_PTEST_CLIENT") != null) {
         System.err.println("payload " + payloadString);
@@ -242,7 +242,7 @@ public class PTestClient {
     for(String requiredOption : requiredOptions) {
       if(!commandLine.hasOption(requiredOption)) {
         throw new IllegalArgumentException(requiredOption + " is required");
-      } 
+      }
     }
   }
   public static void main(String[] args) throws Exception {
@@ -258,7 +258,7 @@ public class PTestClient {
     options.addOption(null, TEST_HANDLE, true, "Server supplied test handle. (Required for testStop and testTailLog)");
     options.addOption(null, OUTPUT_DIR, true, "Directory to download and save test-results.tar.gz to. (Optional for testStart)");
     options.addOption(null, CLEAR_LIBRARY_CACHE, false, "Before starting the test, delete the ivy and maven directories (Optional for testStart)");
-    
+
     CommandLine commandLine = parser.parse(options, args);
 
     if(commandLine.hasOption(HELP_SHORT)) {
@@ -266,9 +266,9 @@ public class PTestClient {
       System.exit(0);
     }
     assertRequired(commandLine, new String[] {
-      COMMAND,
-      PASSWORD,
-      ENDPOINT
+        COMMAND,
+        PASSWORD,
+        ENDPOINT
     });
     PTestClient client = new PTestClient(commandLine.getOptionValue(ENDPOINT),
         commandLine.getOptionValue(PASSWORD));
@@ -278,7 +278,7 @@ public class PTestClient {
       assertRequired(commandLine, new String[] {
           PROFILE,
           TEST_HANDLE
-        });
+      });
       result = client.testStart(commandLine.getOptionValue(PROFILE), commandLine.getOptionValue(TEST_HANDLE),
           commandLine.getOptionValue(JIRA), commandLine.getOptionValue(PATCH), commandLine.getOptionValue(OUTPUT_DIR),
           commandLine.hasOption(CLEAR_LIBRARY_CACHE));

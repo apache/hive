@@ -21,18 +21,18 @@ package org.apache.hive.ptest.execution;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 public class PrepPhase extends Phase {
   private final File mScratchDir;
   private final File mPatchFile;
 
-  public PrepPhase(ImmutableList<HostExecutor> hostExecutors,
+  public PrepPhase(List<HostExecutor> hostExecutors,
       LocalCommandFactory localCommandFactory,
       ImmutableMap<String, String> templateDefaults,
       File scratchDir, File patchFile, Logger logger) {
@@ -41,11 +41,9 @@ public class PrepPhase extends Phase {
     this.mPatchFile = patchFile;
   }
   @Override
-public void execute() throws Exception {
-    long prepStart = System.currentTimeMillis();
+  public void execute() throws Exception {
+    execLocally("rm -rf $workingDir/scratch");
     execLocally("mkdir -p $workingDir/scratch");
-    execInstances("mkdir -p $localDir/$instanceName/logs $localDir/$instanceName/maven $localDir/$instanceName/scratch");
-    execInstances("mkdir -p $localDir/$instanceName/ivy $localDir/$instanceName/${repositoryName}-source");
     if(mPatchFile != null) {
       File smartApplyPatch = new File(mScratchDir, "smart-apply-patch.sh");
       PrintWriter writer = new PrintWriter(smartApplyPatch);
@@ -61,7 +59,7 @@ public void execute() throws Exception {
     }
     long start;
     long elapsedTime;
-      // source prep
+    // source prep
     start = System.currentTimeMillis();
     File sourcePrepScript = new File(mScratchDir, "source-prep.sh");
     Templates.writeTemplateResult("source-prep.vm", sourcePrepScript, getTemplateDefaults());
@@ -70,24 +68,5 @@ public void execute() throws Exception {
     elapsedTime = TimeUnit.MINUTES.convert((System.currentTimeMillis() - start),
         TimeUnit.MILLISECONDS);
     logger.info("PERF: source prep took " + elapsedTime + " minutes");
-    // rsync source
-    start = System.currentTimeMillis();
-    rsyncFromLocalToRemoteInstances("$workingDir/${repositoryName}-source", "$localDir/$instanceName/");
-    elapsedTime = TimeUnit.MINUTES.convert((System.currentTimeMillis() - start),
-        TimeUnit.MILLISECONDS);
-    logger.info("PERF: rsync source took " + elapsedTime + " minutes");
-    start = System.currentTimeMillis();
-    rsyncFromLocalToRemoteInstances("$workingDir/maven", "$localDir/$instanceName/");
-    elapsedTime = TimeUnit.MINUTES.convert((System.currentTimeMillis() - start),
-        TimeUnit.MILLISECONDS);
-    logger.info("PERF: rsync maven took " + elapsedTime + " minutes");
-    start = System.currentTimeMillis();
-    rsyncFromLocalToRemoteInstances("$workingDir/ivy", "$localDir/$instanceName/");
-    elapsedTime = TimeUnit.MINUTES.convert((System.currentTimeMillis() - start),
-        TimeUnit.MILLISECONDS);
-    logger.info("PERF: rsync ivy took " + elapsedTime + " minutes");
-    elapsedTime = TimeUnit.MINUTES.convert((System.currentTimeMillis() - prepStart),
-        TimeUnit.MILLISECONDS);
-    logger.info("PERF: prep phase took " + elapsedTime + " minutes");
   }
 }
