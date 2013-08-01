@@ -1,0 +1,2515 @@
+PREHOOK: query: -- we will generate one MR job.
+EXPLAIN
+SELECT tmp.key
+FROM (SELECT x1.key AS key FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
+      UNION ALL
+      SELECT x2.key AS key FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)) tmp
+ORDER BY tmp.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- we will generate one MR job.
+EXPLAIN
+SELECT tmp.key
+FROM (SELECT x1.key AS key FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
+      UNION ALL
+      SELECT x2.key AS key FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)) tmp
+ORDER BY tmp.key
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x1) (TOK_TABREF (TOK_TABNAME src1) y1) (= (. (TOK_TABLE_OR_COL x1) key) (. (TOK_TABLE_OR_COL y1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x1) key) key)))) (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x2) (TOK_TABREF (TOK_TABNAME src1) y2) (= (. (TOK_TABLE_OR_COL x2) key) (. (TOK_TABLE_OR_COL y2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x2) key) key))))) tmp)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmp) key))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL tmp) key)))))
+
+STAGE DEPENDENCIES:
+  Stage-8 is a root stage
+  Stage-2 depends on stages: Stage-8
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-8
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        null-subquery1:tmp-subquery1:y1 
+          Fetch Operator
+            limit: -1
+        null-subquery2:tmp-subquery2:y2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        null-subquery1:tmp-subquery1:y1 
+          TableScan
+            alias: y1
+            HashTable Sink Operator
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 0
+        null-subquery2:tmp-subquery2:y2 
+          TableScan
+            alias: y2
+            HashTable Sink Operator
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 0
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        null-subquery1:tmp-subquery1:x1 
+          TableScan
+            alias: x1
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col0
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                outputColumnNames: _col0
+                Union
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: string
+        null-subquery2:tmp-subquery2:x2 
+          TableScan
+            alias: x2
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col0
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                outputColumnNames: _col0
+                Union
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: string
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT tmp.key
+FROM (SELECT x1.key AS key FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
+      UNION ALL
+      SELECT x2.key AS key FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)) tmp
+ORDER BY tmp.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tmp.key
+FROM (SELECT x1.key AS key FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
+      UNION ALL
+      SELECT x2.key AS key FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)) tmp
+ORDER BY tmp.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+128
+128
+128
+128
+128
+128
+146
+146
+146
+146
+150
+150
+213
+213
+213
+213
+224
+224
+224
+224
+238
+238
+238
+238
+255
+255
+255
+255
+273
+273
+273
+273
+273
+273
+278
+278
+278
+278
+311
+311
+311
+311
+311
+311
+369
+369
+369
+369
+369
+369
+401
+401
+401
+401
+401
+401
+401
+401
+401
+401
+406
+406
+406
+406
+406
+406
+406
+406
+66
+66
+98
+98
+98
+98
+PREHOOK: query: -- Check if the total size of local tables will be
+-- larger than the limit that
+-- we set through hive.auto.convert.join.noconditionaltask.size (right now, it is
+-- 400 bytes). If so, do not merge.
+-- For this query, we will merge the MapJoin of x2 and y2 into the MR job
+-- for UNION ALL and ORDER BY. But, the MapJoin of x1 and y2 will not be merged
+-- into that MR job.
+EXPLAIN
+SELECT tmp.key
+FROM (SELECT x1.key AS key FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
+      UNION ALL
+      SELECT x2.key AS key FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)) tmp
+ORDER BY tmp.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Check if the total size of local tables will be
+-- larger than the limit that
+-- we set through hive.auto.convert.join.noconditionaltask.size (right now, it is
+-- 400 bytes). If so, do not merge.
+-- For this query, we will merge the MapJoin of x2 and y2 into the MR job
+-- for UNION ALL and ORDER BY. But, the MapJoin of x1 and y2 will not be merged
+-- into that MR job.
+EXPLAIN
+SELECT tmp.key
+FROM (SELECT x1.key AS key FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
+      UNION ALL
+      SELECT x2.key AS key FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)) tmp
+ORDER BY tmp.key
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x1) (TOK_TABREF (TOK_TABNAME src1) y1) (= (. (TOK_TABLE_OR_COL x1) key) (. (TOK_TABLE_OR_COL y1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x1) key) key)))) (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x2) (TOK_TABREF (TOK_TABNAME src1) y2) (= (. (TOK_TABLE_OR_COL x2) key) (. (TOK_TABLE_OR_COL y2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x2) key) key))))) tmp)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmp) key))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL tmp) key)))))
+
+STAGE DEPENDENCIES:
+  Stage-9 is a root stage
+  Stage-7 depends on stages: Stage-9
+  Stage-8 depends on stages: Stage-7
+  Stage-2 depends on stages: Stage-8
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-9
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        null-subquery1:tmp-subquery1:y1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        null-subquery1:tmp-subquery1:y1 
+          TableScan
+            alias: y1
+            HashTable Sink Operator
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 0
+
+  Stage: Stage-7
+    Map Reduce
+      Alias -> Map Operator Tree:
+        null-subquery1:tmp-subquery1:x1 
+          TableScan
+            alias: x1
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col0
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                outputColumnNames: _col0
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-8
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        null-subquery2:tmp-subquery2:y2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        null-subquery2:tmp-subquery2:y2 
+          TableScan
+            alias: y2
+            HashTable Sink Operator
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 0
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+          TableScan
+            Union
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: string
+        null-subquery2:tmp-subquery2:x2 
+          TableScan
+            alias: x2
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col0
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                outputColumnNames: _col0
+                Union
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: string
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT tmp.key
+FROM (SELECT x1.key AS key FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
+      UNION ALL
+      SELECT x2.key AS key FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)) tmp
+ORDER BY tmp.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tmp.key
+FROM (SELECT x1.key AS key FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
+      UNION ALL
+      SELECT x2.key AS key FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)) tmp
+ORDER BY tmp.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+128
+128
+128
+128
+128
+128
+146
+146
+146
+146
+150
+150
+213
+213
+213
+213
+224
+224
+224
+224
+238
+238
+238
+238
+255
+255
+255
+255
+273
+273
+273
+273
+273
+273
+278
+278
+278
+278
+311
+311
+311
+311
+311
+311
+369
+369
+369
+369
+369
+369
+401
+401
+401
+401
+401
+401
+401
+401
+401
+401
+406
+406
+406
+406
+406
+406
+406
+406
+66
+66
+98
+98
+98
+98
+PREHOOK: query: -- We will use two jobs.
+-- We will generate one MR job for GROUP BY
+-- on x1, one MR job for both the MapJoin of x2 and y2, the UNION ALL, and the
+-- ORDER BY.
+EXPLAIN
+SELECT tmp.key
+FROM (SELECT x1.key AS key FROM src1 x1 GROUP BY x1.key
+      UNION ALL
+      SELECT x2.key AS key FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)) tmp
+ORDER BY tmp.key
+PREHOOK: type: QUERY
+POSTHOOK: query: -- We will use two jobs.
+-- We will generate one MR job for GROUP BY
+-- on x1, one MR job for both the MapJoin of x2 and y2, the UNION ALL, and the
+-- ORDER BY.
+EXPLAIN
+SELECT tmp.key
+FROM (SELECT x1.key AS key FROM src1 x1 GROUP BY x1.key
+      UNION ALL
+      SELECT x2.key AS key FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)) tmp
+ORDER BY tmp.key
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_UNION (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src1) x1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x1) key) key)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x1) key)))) (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x2) (TOK_TABREF (TOK_TABNAME src1) y2) (= (. (TOK_TABLE_OR_COL x2) key) (. (TOK_TABLE_OR_COL y2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x2) key) key))))) tmp)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmp) key))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (. (TOK_TABLE_OR_COL tmp) key)))))
+
+STAGE DEPENDENCIES:
+  Stage-4 is a root stage
+  Stage-6 depends on stages: Stage-4
+  Stage-2 depends on stages: Stage-6
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-4
+    Map Reduce
+      Alias -> Map Operator Tree:
+        null-subquery1:tmp-subquery1:x1 
+          TableScan
+            alias: x1
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              outputColumnNames: key
+              Group By Operator
+                bucketGroup: false
+                keys:
+                      expr: key
+                      type: string
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+      Reduce Operator Tree:
+        Group By Operator
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-6
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        null-subquery2:tmp-subquery2:y2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        null-subquery2:tmp-subquery2:y2 
+          TableScan
+            alias: y2
+            HashTable Sink Operator
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 0
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+          TableScan
+            Union
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: string
+        null-subquery2:tmp-subquery2:x2 
+          TableScan
+            alias: x2
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col0
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                outputColumnNames: _col0
+                Union
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      key expressions:
+                            expr: _col0
+                            type: string
+                      sort order: +
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: string
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT tmp.key
+FROM (SELECT x1.key AS key FROM src1 x1 GROUP BY x1.key
+      UNION ALL
+      SELECT x2.key AS key FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)) tmp
+ORDER BY tmp.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tmp.key
+FROM (SELECT x1.key AS key FROM src1 x1 GROUP BY x1.key
+      UNION ALL
+      SELECT x2.key AS key FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)) tmp
+ORDER BY tmp.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+
+128
+128
+128
+128
+146
+146
+146
+150
+150
+213
+213
+213
+224
+224
+224
+238
+238
+238
+255
+255
+255
+273
+273
+273
+273
+278
+278
+278
+311
+311
+311
+311
+369
+369
+369
+369
+401
+401
+401
+401
+401
+401
+406
+406
+406
+406
+406
+66
+66
+98
+98
+98
+PREHOOK: query: -- When Correlation Optimizer is disabled,
+-- we will use 5 jobs.
+-- We will generate one MR job to evaluate the sub-query tmp1,
+-- one MR job to evaluate the sub-query tmp2,
+-- one MR job for the Join of tmp1 and tmp2,
+-- one MR job for aggregation on the result of the Join of tmp1 and tmp2,
+-- and one MR job for the ORDER BY.
+EXPLAIN
+SELECT tmp1.key as key, count(*) as cnt
+FROM (SELECT x1.key AS key
+      FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
+      GROUP BY x1.key) tmp1
+JOIN (SELECT x2.key AS key
+      FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)
+      GROUP BY x2.key) tmp2
+ON (tmp1.key = tmp2.key)
+GROUP BY tmp1.key
+ORDER BY key, cnt
+PREHOOK: type: QUERY
+POSTHOOK: query: -- When Correlation Optimizer is disabled,
+-- we will use 5 jobs.
+-- We will generate one MR job to evaluate the sub-query tmp1,
+-- one MR job to evaluate the sub-query tmp2,
+-- one MR job for the Join of tmp1 and tmp2,
+-- one MR job for aggregation on the result of the Join of tmp1 and tmp2,
+-- and one MR job for the ORDER BY.
+EXPLAIN
+SELECT tmp1.key as key, count(*) as cnt
+FROM (SELECT x1.key AS key
+      FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
+      GROUP BY x1.key) tmp1
+JOIN (SELECT x2.key AS key
+      FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)
+      GROUP BY x2.key) tmp2
+ON (tmp1.key = tmp2.key)
+GROUP BY tmp1.key
+ORDER BY key, cnt
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x1) (TOK_TABREF (TOK_TABNAME src1) y1) (= (. (TOK_TABLE_OR_COL x1) key) (. (TOK_TABLE_OR_COL y1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x1) key) key)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x1) key)))) tmp1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x2) (TOK_TABREF (TOK_TABNAME src1) y2) (= (. (TOK_TABLE_OR_COL x2) key) (. (TOK_TABLE_OR_COL y2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x2) key) key)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x2) key)))) tmp2) (= (. (TOK_TABLE_OR_COL tmp1) key) (. (TOK_TABLE_OR_COL tmp2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmp1) key) key) (TOK_SELEXPR (TOK_FUNCTIONSTAR count) cnt)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL tmp1) key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL cnt)))))
+
+STAGE DEPENDENCIES:
+  Stage-17 is a root stage
+  Stage-2 depends on stages: Stage-17
+  Stage-12 depends on stages: Stage-2, Stage-8 , consists of Stage-15, Stage-16, Stage-3
+  Stage-15 has a backup stage: Stage-3
+  Stage-10 depends on stages: Stage-15
+  Stage-4 depends on stages: Stage-3, Stage-10, Stage-11
+  Stage-5 depends on stages: Stage-4
+  Stage-16 has a backup stage: Stage-3
+  Stage-11 depends on stages: Stage-16
+  Stage-3
+  Stage-18 is a root stage
+  Stage-8 depends on stages: Stage-18
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-17
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        tmp2:y2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        tmp2:y2 
+          TableScan
+            alias: y2
+            HashTable Sink Operator
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 0
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        tmp2:x2 
+          TableScan
+            alias: x2
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col0
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                outputColumnNames: _col0
+                Group By Operator
+                  bucketGroup: false
+                  keys:
+                        expr: _col0
+                        type: string
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-12
+    Conditional Operator
+
+  Stage: Stage-15
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME 
+            HashTable Sink Operator
+              condition expressions:
+                0 {_col0}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col0]]
+                1 [Column[_col0]]
+              Position of Big Table: 0
+
+  Stage: Stage-10
+    Map Reduce
+      Alias -> Map Operator Tree:
+        $INTNAME1 
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {_col0}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col0]]
+                1 [Column[_col0]]
+              outputColumnNames: _col0
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                outputColumnNames: _col0
+                Group By Operator
+                  aggregations:
+                        expr: count()
+                  bucketGroup: false
+                  keys:
+                        expr: _col0
+                        type: string
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-4
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: _col0
+                    type: string
+              tag: -1
+              value expressions:
+                    expr: _col1
+                    type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-5
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+              sort order: ++
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-16
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME1 
+            HashTable Sink Operator
+              condition expressions:
+                0 {_col0}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col0]]
+                1 [Column[_col0]]
+              Position of Big Table: 1
+
+  Stage: Stage-11
+    Map Reduce
+      Alias -> Map Operator Tree:
+        $INTNAME 
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {_col0}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col0]]
+                1 [Column[_col0]]
+              outputColumnNames: _col0
+              Position of Big Table: 1
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                outputColumnNames: _col0
+                Group By Operator
+                  aggregations:
+                        expr: count()
+                  bucketGroup: false
+                  keys:
+                        expr: _col0
+                        type: string
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        $INTNAME 
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: _col0
+                    type: string
+              tag: 1
+        $INTNAME1 
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: _col0
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: _col0
+                    type: string
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 {VALUE._col0}
+            1 
+          handleSkewJoin: false
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+            outputColumnNames: _col0
+            Group By Operator
+              aggregations:
+                    expr: count()
+              bucketGroup: false
+              keys:
+                    expr: _col0
+                    type: string
+              mode: hash
+              outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-18
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        tmp1:y1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        tmp1:y1 
+          TableScan
+            alias: y1
+            HashTable Sink Operator
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 0
+
+  Stage: Stage-8
+    Map Reduce
+      Alias -> Map Operator Tree:
+        tmp1:x1 
+          TableScan
+            alias: x1
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col0
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                outputColumnNames: _col0
+                Group By Operator
+                  bucketGroup: false
+                  keys:
+                        expr: _col0
+                        type: string
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT tmp1.key as key, count(*) as cnt
+FROM (SELECT x1.key AS key
+      FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
+      GROUP BY x1.key) tmp1
+JOIN (SELECT x2.key AS key
+      FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)
+      GROUP BY x2.key) tmp2
+ON (tmp1.key = tmp2.key)
+GROUP BY tmp1.key
+ORDER BY key, cnt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tmp1.key as key, count(*) as cnt
+FROM (SELECT x1.key AS key
+      FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
+      GROUP BY x1.key) tmp1
+JOIN (SELECT x2.key AS key
+      FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)
+      GROUP BY x2.key) tmp2
+ON (tmp1.key = tmp2.key)
+GROUP BY tmp1.key
+ORDER BY key, cnt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+128	1
+146	1
+150	1
+213	1
+224	1
+238	1
+255	1
+273	1
+278	1
+311	1
+369	1
+401	1
+406	1
+66	1
+98	1
+PREHOOK: query: -- When Correlation Optimizer is enabled,
+-- we will use two jobs. This first MR job will evaluate sub-queries of tmp1, tmp2,
+-- the Join of tmp1 and tmp2, and the aggregation on the result of the Join of
+-- tmp1 and tmp2. The second job will do the ORDER BY.
+EXPLAIN
+SELECT tmp1.key as key, count(*) as cnt
+FROM (SELECT x1.key AS key
+      FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
+      GROUP BY x1.key) tmp1
+JOIN (SELECT x2.key AS key
+      FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)
+      GROUP BY x2.key) tmp2
+ON (tmp1.key = tmp2.key)
+GROUP BY tmp1.key
+ORDER BY key, cnt
+PREHOOK: type: QUERY
+POSTHOOK: query: -- When Correlation Optimizer is enabled,
+-- we will use two jobs. This first MR job will evaluate sub-queries of tmp1, tmp2,
+-- the Join of tmp1 and tmp2, and the aggregation on the result of the Join of
+-- tmp1 and tmp2. The second job will do the ORDER BY.
+EXPLAIN
+SELECT tmp1.key as key, count(*) as cnt
+FROM (SELECT x1.key AS key
+      FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
+      GROUP BY x1.key) tmp1
+JOIN (SELECT x2.key AS key
+      FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)
+      GROUP BY x2.key) tmp2
+ON (tmp1.key = tmp2.key)
+GROUP BY tmp1.key
+ORDER BY key, cnt
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x1) (TOK_TABREF (TOK_TABNAME src1) y1) (= (. (TOK_TABLE_OR_COL x1) key) (. (TOK_TABLE_OR_COL y1) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x1) key) key)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x1) key)))) tmp1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x2) (TOK_TABREF (TOK_TABNAME src1) y2) (= (. (TOK_TABLE_OR_COL x2) key) (. (TOK_TABLE_OR_COL y2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x2) key) key)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x2) key)))) tmp2) (= (. (TOK_TABLE_OR_COL tmp1) key) (. (TOK_TABLE_OR_COL tmp2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmp1) key) key) (TOK_SELEXPR (TOK_FUNCTIONSTAR count) cnt)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL tmp1) key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL cnt)))))
+
+STAGE DEPENDENCIES:
+  Stage-9 is a root stage
+  Stage-2 depends on stages: Stage-9
+  Stage-3 depends on stages: Stage-2
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-9
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        tmp1:y1 
+          Fetch Operator
+            limit: -1
+        tmp2:y2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        tmp1:y1 
+          TableScan
+            alias: y1
+            HashTable Sink Operator
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 0
+        tmp2:y2 
+          TableScan
+            alias: y2
+            HashTable Sink Operator
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 0
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        tmp1:x1 
+          TableScan
+            alias: x1
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col0
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                outputColumnNames: _col0
+                Group By Operator
+                  bucketGroup: false
+                  keys:
+                        expr: _col0
+                        type: string
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: 0
+        tmp2:x2 
+          TableScan
+            alias: x2
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col0
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                outputColumnNames: _col0
+                Group By Operator
+                  bucketGroup: false
+                  keys:
+                        expr: _col0
+                        type: string
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: 1
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Demux Operator
+          Group By Operator
+            bucketGroup: false
+            keys:
+                  expr: KEY._col0
+                  type: string
+            mode: mergepartial
+            outputColumnNames: _col0
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: string
+              outputColumnNames: _col0
+              Mux Operator
+                Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 {VALUE._col0}
+                    1 
+                  handleSkewJoin: false
+                  outputColumnNames: _col0
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                    outputColumnNames: _col0
+                    Mux Operator
+                      Group By Operator
+                        aggregations:
+                              expr: count()
+                        bucketGroup: false
+                        keys:
+                              expr: _col0
+                              type: string
+                        mode: complete
+                        outputColumnNames: _col0, _col1
+                        Select Operator
+                          expressions:
+                                expr: _col0
+                                type: string
+                                expr: _col1
+                                type: bigint
+                          outputColumnNames: _col0, _col1
+                          File Output Operator
+                            compressed: false
+                            GlobalTableId: 0
+                            table:
+                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+          Group By Operator
+            bucketGroup: false
+            keys:
+                  expr: KEY._col0
+                  type: string
+            mode: mergepartial
+            outputColumnNames: _col0
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: string
+              outputColumnNames: _col0
+              Mux Operator
+                Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 {VALUE._col0}
+                    1 
+                  handleSkewJoin: false
+                  outputColumnNames: _col0
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                    outputColumnNames: _col0
+                    Mux Operator
+                      Group By Operator
+                        aggregations:
+                              expr: count()
+                        bucketGroup: false
+                        keys:
+                              expr: _col0
+                              type: string
+                        mode: complete
+                        outputColumnNames: _col0, _col1
+                        Select Operator
+                          expressions:
+                                expr: _col0
+                                type: string
+                                expr: _col1
+                                type: bigint
+                          outputColumnNames: _col0, _col1
+                          File Output Operator
+                            compressed: false
+                            GlobalTableId: 0
+                            table:
+                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+              sort order: ++
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT tmp1.key as key, count(*) as cnt
+FROM (SELECT x1.key AS key
+      FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
+      GROUP BY x1.key) tmp1
+JOIN (SELECT x2.key AS key
+      FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)
+      GROUP BY x2.key) tmp2
+ON (tmp1.key = tmp2.key)
+GROUP BY tmp1.key
+ORDER BY key, cnt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tmp1.key as key, count(*) as cnt
+FROM (SELECT x1.key AS key
+      FROM src x1 JOIN src1 y1 ON (x1.key = y1.key)
+      GROUP BY x1.key) tmp1
+JOIN (SELECT x2.key AS key
+      FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)
+      GROUP BY x2.key) tmp2
+ON (tmp1.key = tmp2.key)
+GROUP BY tmp1.key
+ORDER BY key, cnt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+128	1
+146	1
+150	1
+213	1
+224	1
+238	1
+255	1
+273	1
+278	1
+311	1
+369	1
+401	1
+406	1
+66	1
+98	1
+PREHOOK: query: -- When Correlation Optimizer is disabled,
+-- we will use five jobs.
+-- We will generate one MR job to evaluate the sub-query tmp1,
+-- one MR job to evaluate the sub-query tmp2,
+-- one MR job for the Join of tmp1 and tmp2,
+-- one MR job for aggregation on the result of the Join of tmp1 and tmp2,
+-- and one MR job for the ORDER BY.
+EXPLAIN
+SELECT tmp1.key as key, count(*) as cnt
+FROM (SELECT x1.key AS key
+      FROM src1 x1
+      GROUP BY x1.key) tmp1
+JOIN (SELECT x2.key AS key
+      FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)
+      GROUP BY x2.key) tmp2
+ON (tmp1.key = tmp2.key)
+GROUP BY tmp1.key
+ORDER BY key, cnt
+PREHOOK: type: QUERY
+POSTHOOK: query: -- When Correlation Optimizer is disabled,
+-- we will use five jobs.
+-- We will generate one MR job to evaluate the sub-query tmp1,
+-- one MR job to evaluate the sub-query tmp2,
+-- one MR job for the Join of tmp1 and tmp2,
+-- one MR job for aggregation on the result of the Join of tmp1 and tmp2,
+-- and one MR job for the ORDER BY.
+EXPLAIN
+SELECT tmp1.key as key, count(*) as cnt
+FROM (SELECT x1.key AS key
+      FROM src1 x1
+      GROUP BY x1.key) tmp1
+JOIN (SELECT x2.key AS key
+      FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)
+      GROUP BY x2.key) tmp2
+ON (tmp1.key = tmp2.key)
+GROUP BY tmp1.key
+ORDER BY key, cnt
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src1) x1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x1) key) key)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x1) key)))) tmp1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x2) (TOK_TABREF (TOK_TABNAME src1) y2) (= (. (TOK_TABLE_OR_COL x2) key) (. (TOK_TABLE_OR_COL y2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x2) key) key)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x2) key)))) tmp2) (= (. (TOK_TABLE_OR_COL tmp1) key) (. (TOK_TABLE_OR_COL tmp2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmp1) key) key) (TOK_SELEXPR (TOK_FUNCTIONSTAR count) cnt)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL tmp1) key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL cnt)))))
+
+STAGE DEPENDENCIES:
+  Stage-7 is a root stage
+  Stage-10 depends on stages: Stage-2, Stage-7 , consists of Stage-12, Stage-13, Stage-3
+  Stage-12 has a backup stage: Stage-3
+  Stage-8 depends on stages: Stage-12
+  Stage-4 depends on stages: Stage-3, Stage-8, Stage-9
+  Stage-5 depends on stages: Stage-4
+  Stage-13 has a backup stage: Stage-3
+  Stage-9 depends on stages: Stage-13
+  Stage-3
+  Stage-14 is a root stage
+  Stage-2 depends on stages: Stage-14
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-7
+    Map Reduce
+      Alias -> Map Operator Tree:
+        tmp1:x1 
+          TableScan
+            alias: x1
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              outputColumnNames: key
+              Group By Operator
+                bucketGroup: false
+                keys:
+                      expr: key
+                      type: string
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: -1
+      Reduce Operator Tree:
+        Group By Operator
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-10
+    Conditional Operator
+
+  Stage: Stage-12
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME 
+            HashTable Sink Operator
+              condition expressions:
+                0 {_col0}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col0]]
+                1 [Column[_col0]]
+              Position of Big Table: 0
+
+  Stage: Stage-8
+    Map Reduce
+      Alias -> Map Operator Tree:
+        $INTNAME1 
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {_col0}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col0]]
+                1 [Column[_col0]]
+              outputColumnNames: _col0
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                outputColumnNames: _col0
+                Group By Operator
+                  aggregations:
+                        expr: count()
+                  bucketGroup: false
+                  keys:
+                        expr: _col0
+                        type: string
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-4
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: _col0
+                    type: string
+              tag: -1
+              value expressions:
+                    expr: _col1
+                    type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: bigint
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-5
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+              sort order: ++
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-13
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        $INTNAME1 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        $INTNAME1 
+            HashTable Sink Operator
+              condition expressions:
+                0 {_col0}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col0]]
+                1 [Column[_col0]]
+              Position of Big Table: 1
+
+  Stage: Stage-9
+    Map Reduce
+      Alias -> Map Operator Tree:
+        $INTNAME 
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {_col0}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[_col0]]
+                1 [Column[_col0]]
+              outputColumnNames: _col0
+              Position of Big Table: 1
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                outputColumnNames: _col0
+                Group By Operator
+                  aggregations:
+                        expr: count()
+                  bucketGroup: false
+                  keys:
+                        expr: _col0
+                        type: string
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+      Local Work:
+        Map Reduce Local Work
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        $INTNAME 
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: _col0
+                    type: string
+              tag: 1
+        $INTNAME1 
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: _col0
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: _col0
+                    type: string
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Inner Join 0 to 1
+          condition expressions:
+            0 {VALUE._col0}
+            1 
+          handleSkewJoin: false
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+            outputColumnNames: _col0
+            Group By Operator
+              aggregations:
+                    expr: count()
+              bucketGroup: false
+              keys:
+                    expr: _col0
+                    type: string
+              mode: hash
+              outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-14
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        tmp2:y2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        tmp2:y2 
+          TableScan
+            alias: y2
+            HashTable Sink Operator
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 0
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        tmp2:x2 
+          TableScan
+            alias: x2
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col0
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                outputColumnNames: _col0
+                Group By Operator
+                  bucketGroup: false
+                  keys:
+                        expr: _col0
+                        type: string
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT tmp1.key as key, count(*) as cnt
+FROM (SELECT x1.key AS key
+      FROM src1 x1
+      GROUP BY x1.key) tmp1
+JOIN (SELECT x2.key AS key
+      FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)
+      GROUP BY x2.key) tmp2
+ON (tmp1.key = tmp2.key)
+GROUP BY tmp1.key
+ORDER BY key, cnt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tmp1.key as key, count(*) as cnt
+FROM (SELECT x1.key AS key
+      FROM src1 x1
+      GROUP BY x1.key) tmp1
+JOIN (SELECT x2.key AS key
+      FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)
+      GROUP BY x2.key) tmp2
+ON (tmp1.key = tmp2.key)
+GROUP BY tmp1.key
+ORDER BY key, cnt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+128	1
+146	1
+150	1
+213	1
+224	1
+238	1
+255	1
+273	1
+278	1
+311	1
+369	1
+401	1
+406	1
+66	1
+98	1
+PREHOOK: query: -- When Correlation Optimizer is enabled,
+-- we will use two job. This first MR job will evaluate sub-queries of tmp1, tmp2,
+-- the Join of tmp1 and tmp2, and the aggregation on the result of the Join of
+-- tmp1 and tmp2. The second job will do the ORDER BY.
+EXPLAIN
+SELECT tmp1.key as key, count(*) as cnt
+FROM (SELECT x1.key AS key
+      FROM src1 x1
+      GROUP BY x1.key) tmp1
+JOIN (SELECT x2.key AS key
+      FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)
+      GROUP BY x2.key) tmp2
+ON (tmp1.key = tmp2.key)
+GROUP BY tmp1.key
+ORDER BY key, cnt
+PREHOOK: type: QUERY
+POSTHOOK: query: -- When Correlation Optimizer is enabled,
+-- we will use two job. This first MR job will evaluate sub-queries of tmp1, tmp2,
+-- the Join of tmp1 and tmp2, and the aggregation on the result of the Join of
+-- tmp1 and tmp2. The second job will do the ORDER BY.
+EXPLAIN
+SELECT tmp1.key as key, count(*) as cnt
+FROM (SELECT x1.key AS key
+      FROM src1 x1
+      GROUP BY x1.key) tmp1
+JOIN (SELECT x2.key AS key
+      FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)
+      GROUP BY x2.key) tmp2
+ON (tmp1.key = tmp2.key)
+GROUP BY tmp1.key
+ORDER BY key, cnt
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src1) x1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x1) key) key)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x1) key)))) tmp1) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME src) x2) (TOK_TABREF (TOK_TABNAME src1) y2) (= (. (TOK_TABLE_OR_COL x2) key) (. (TOK_TABLE_OR_COL y2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL x2) key) key)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL x2) key)))) tmp2) (= (. (TOK_TABLE_OR_COL tmp1) key) (. (TOK_TABLE_OR_COL tmp2) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL tmp1) key) key) (TOK_SELEXPR (TOK_FUNCTIONSTAR count) cnt)) (TOK_GROUPBY (. (TOK_TABLE_OR_COL tmp1) key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL cnt)))))
+
+STAGE DEPENDENCIES:
+  Stage-7 is a root stage
+  Stage-2 depends on stages: Stage-7
+  Stage-3 depends on stages: Stage-2
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-7
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        tmp2:y2 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        tmp2:y2 
+          TableScan
+            alias: y2
+            HashTable Sink Operator
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 0
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        tmp1:x1 
+          TableScan
+            alias: x1
+            Select Operator
+              expressions:
+                    expr: key
+                    type: string
+              outputColumnNames: key
+              Group By Operator
+                bucketGroup: false
+                keys:
+                      expr: key
+                      type: string
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: 0
+        tmp2:x2 
+          TableScan
+            alias: x2
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 {key}
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              outputColumnNames: _col0
+              Position of Big Table: 0
+              Select Operator
+                expressions:
+                      expr: _col0
+                      type: string
+                outputColumnNames: _col0
+                Group By Operator
+                  bucketGroup: false
+                  keys:
+                        expr: _col0
+                        type: string
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: 1
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Demux Operator
+          Group By Operator
+            bucketGroup: false
+            keys:
+                  expr: KEY._col0
+                  type: string
+            mode: mergepartial
+            outputColumnNames: _col0
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: string
+              outputColumnNames: _col0
+              Mux Operator
+                Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 {VALUE._col0}
+                    1 
+                  handleSkewJoin: false
+                  outputColumnNames: _col0
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                    outputColumnNames: _col0
+                    Mux Operator
+                      Group By Operator
+                        aggregations:
+                              expr: count()
+                        bucketGroup: false
+                        keys:
+                              expr: _col0
+                              type: string
+                        mode: complete
+                        outputColumnNames: _col0, _col1
+                        Select Operator
+                          expressions:
+                                expr: _col0
+                                type: string
+                                expr: _col1
+                                type: bigint
+                          outputColumnNames: _col0, _col1
+                          File Output Operator
+                            compressed: false
+                            GlobalTableId: 0
+                            table:
+                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+          Group By Operator
+            bucketGroup: false
+            keys:
+                  expr: KEY._col0
+                  type: string
+            mode: mergepartial
+            outputColumnNames: _col0
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: string
+              outputColumnNames: _col0
+              Mux Operator
+                Join Operator
+                  condition map:
+                       Inner Join 0 to 1
+                  condition expressions:
+                    0 {VALUE._col0}
+                    1 
+                  handleSkewJoin: false
+                  outputColumnNames: _col0
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: string
+                    outputColumnNames: _col0
+                    Mux Operator
+                      Group By Operator
+                        aggregations:
+                              expr: count()
+                        bucketGroup: false
+                        keys:
+                              expr: _col0
+                              type: string
+                        mode: complete
+                        outputColumnNames: _col0, _col1
+                        Select Operator
+                          expressions:
+                                expr: _col0
+                                type: string
+                                expr: _col1
+                                type: bigint
+                          outputColumnNames: _col0, _col1
+                          File Output Operator
+                            compressed: false
+                            GlobalTableId: 0
+                            table:
+                                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+              sort order: ++
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT tmp1.key as key, count(*) as cnt
+FROM (SELECT x1.key AS key
+      FROM src1 x1
+      GROUP BY x1.key) tmp1
+JOIN (SELECT x2.key AS key
+      FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)
+      GROUP BY x2.key) tmp2
+ON (tmp1.key = tmp2.key)
+GROUP BY tmp1.key
+ORDER BY key, cnt
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT tmp1.key as key, count(*) as cnt
+FROM (SELECT x1.key AS key
+      FROM src1 x1
+      GROUP BY x1.key) tmp1
+JOIN (SELECT x2.key AS key
+      FROM src x2 JOIN src1 y2 ON (x2.key = y2.key)
+      GROUP BY x2.key) tmp2
+ON (tmp1.key = tmp2.key)
+GROUP BY tmp1.key
+ORDER BY key, cnt
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+128	1
+146	1
+150	1
+213	1
+224	1
+238	1
+255	1
+273	1
+278	1
+311	1
+369	1
+401	1
+406	1
+66	1
+98	1
+PREHOOK: query: -- Check if we can correctly handle partitioned table.
+CREATE TABLE part_table(key string, value string) PARTITIONED BY (partitionId int)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- Check if we can correctly handle partitioned table.
+CREATE TABLE part_table(key string, value string) PARTITIONED BY (partitionId int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@part_table
+PREHOOK: query: INSERT OVERWRITE TABLE part_table PARTITION (partitionId=1)
+  SELECT key, value FROM src ORDER BY key, value LIMIT 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@part_table@partitionid=1
+POSTHOOK: query: INSERT OVERWRITE TABLE part_table PARTITION (partitionId=1)
+  SELECT key, value FROM src ORDER BY key, value LIMIT 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@part_table@partitionid=1
+POSTHOOK: Lineage: part_table PARTITION(partitionid=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: part_table PARTITION(partitionid=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: INSERT OVERWRITE TABLE part_table PARTITION (partitionId=2)
+  SELECT key, value FROM src1 ORDER BY key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src1
+PREHOOK: Output: default@part_table@partitionid=2
+POSTHOOK: query: INSERT OVERWRITE TABLE part_table PARTITION (partitionId=2)
+  SELECT key, value FROM src1 ORDER BY key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src1
+POSTHOOK: Output: default@part_table@partitionid=2
+POSTHOOK: Lineage: part_table PARTITION(partitionid=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: part_table PARTITION(partitionid=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: part_table PARTITION(partitionid=2).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: part_table PARTITION(partitionid=2).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: EXPLAIN
+SELECT count(*)
+FROM part_table x JOIN src1 y ON (x.key = y.key)
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN
+SELECT count(*)
+FROM part_table x JOIN src1 y ON (x.key = y.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: part_table PARTITION(partitionid=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: part_table PARTITION(partitionid=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: part_table PARTITION(partitionid=2).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: part_table PARTITION(partitionid=2).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_TABREF (TOK_TABNAME part_table) x) (TOK_TABREF (TOK_TABNAME src1) y) (= (. (TOK_TABLE_OR_COL x) key) (. (TOK_TABLE_OR_COL y) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
+
+STAGE DEPENDENCIES:
+  Stage-5 is a root stage
+  Stage-2 depends on stages: Stage-5
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-5
+    Map Reduce Local Work
+      Alias -> Map Local Tables:
+        y 
+          Fetch Operator
+            limit: -1
+      Alias -> Map Local Operator Tree:
+        y 
+          TableScan
+            alias: y
+            HashTable Sink Operator
+              condition expressions:
+                0 
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 0
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        x 
+          TableScan
+            alias: x
+            Map Join Operator
+              condition map:
+                   Inner Join 0 to 1
+              condition expressions:
+                0 
+                1 
+              handleSkewJoin: false
+              keys:
+                0 [Column[key]]
+                1 [Column[key]]
+              Position of Big Table: 0
+              Select Operator
+                Group By Operator
+                  aggregations:
+                        expr: count()
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: bigint
+      Local Work:
+        Map Reduce Local Work
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT count(*)
+FROM part_table x JOIN src1 y ON (x.key = y.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@part_table
+PREHOOK: Input: default@part_table@partitionid=1
+PREHOOK: Input: default@part_table@partitionid=2
+PREHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT count(*)
+FROM part_table x JOIN src1 y ON (x.key = y.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@part_table
+POSTHOOK: Input: default@part_table@partitionid=1
+POSTHOOK: Input: default@part_table@partitionid=2
+POSTHOOK: Input: default@src1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: part_table PARTITION(partitionid=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: part_table PARTITION(partitionid=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: part_table PARTITION(partitionid=2).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: part_table PARTITION(partitionid=2).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+121

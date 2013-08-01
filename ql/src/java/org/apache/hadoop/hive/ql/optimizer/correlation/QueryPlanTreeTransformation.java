@@ -55,8 +55,8 @@ public class QueryPlanTreeTransformation {
           throws SemanticException {
     int newTag = bottomRSToNewTag.get(rsop);
     int oldTag = rsop.getConf().getTag();
-    // if this child of dispatcher does not use tag, we just set the oldTag to 0;
     if (oldTag == -1) {
+      // if this child of DemuxOperator does not use tag, we just set the oldTag to 0.
       oldTag = 0;
     }
     Operator<? extends OperatorDesc> child = CorrelationUtilities.getSingleChild(rsop, true);
@@ -68,7 +68,8 @@ public class QueryPlanTreeTransformation {
     rsop.getConf().setTag(newTag);
   }
 
-  /** Based on the correlation, we transform the query plan tree (operator tree).
+  /**
+   * Based on the correlation, we transform the query plan tree (operator tree).
    * In here, we first create DemuxOperator and all bottom ReduceSinkOperators
    * (bottom means near TableScanOperaotr) in the correlation will be be
    * the parents of the DemuxOperaotr. We also reassign tags to those

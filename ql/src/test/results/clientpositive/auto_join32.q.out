@@ -25,8 +25,7 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-5 is a root stage
-  Stage-4 depends on stages: Stage-5
-  Stage-2 depends on stages: Stage-4
+  Stage-2 depends on stages: Stage-5
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -50,7 +49,7 @@ STAGE PLANS:
                 1 [Column[name]]
               Position of Big Table: 1
 
-  Stage: Stage-4
+  Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
         v 
@@ -86,33 +85,22 @@ STAGE PLANS:
                         type: string
                   mode: hash
                   outputColumnNames: _col0, _col1, _col2
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
+                    sort order: ++
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: _col2
+                          type: bigint
       Local Work:
         Map Reduce Local Work
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-            Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
-              sort order: ++
-              Map-reduce partition columns:
-                    expr: _col0
-                    type: string
-              tag: -1
-              value expressions:
-                    expr: _col2
-                    type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:

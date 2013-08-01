@@ -189,7 +189,7 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-6 is a root stage
-  Stage-5 depends on stages: Stage-6
+  Stage-4 depends on stages: Stage-6
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -228,7 +228,7 @@ STAGE PLANS:
                 1 [Column[f3]]
               Position of Big Table: 0
 
-  Stage: Stage-5
+  Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
         fact 
@@ -314,7 +314,7 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-6 is a root stage
-  Stage-5 depends on stages: Stage-6
+  Stage-4 depends on stages: Stage-6
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -353,7 +353,7 @@ STAGE PLANS:
                 1 [Column[f3]]
               Position of Big Table: 0
 
-  Stage: Stage-5
+  Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
         fact 
@@ -439,7 +439,7 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-6 is a root stage
-  Stage-5 depends on stages: Stage-6
+  Stage-4 depends on stages: Stage-6
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -478,7 +478,7 @@ STAGE PLANS:
                 1 [Column[f3]]
               Position of Big Table: 0
 
-  Stage: Stage-5
+  Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
         fact 
@@ -580,7 +580,7 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-18 is a root stage
-  Stage-17 depends on stages: Stage-18
+  Stage-12 depends on stages: Stage-18
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -698,7 +698,7 @@ STAGE PLANS:
                 1 [Column[f13]]
               Position of Big Table: 0
 
-  Stage: Stage-17
+  Stage: Stage-12
     Map Reduce
       Alias -> Map Operator Tree:
         fact 
