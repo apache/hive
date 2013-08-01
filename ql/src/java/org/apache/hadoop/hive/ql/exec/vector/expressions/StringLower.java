@@ -15,11 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.udf.UDFLower;
 import org.apache.hadoop.hive.ql.udf.IUDFUnaryString;
+import org.apache.hadoop.hive.ql.udf.UDFLower;
 
+/**
+ * Expression to convert a string to lower case.
+ * Extends {@link StringUnaryUDF}.
+ */
 public class StringLower extends StringUnaryUDF {
   public StringLower(int colNum, int outputColumn) {
     super(colNum, outputColumn, (IUDFUnaryString) new UDFLower());

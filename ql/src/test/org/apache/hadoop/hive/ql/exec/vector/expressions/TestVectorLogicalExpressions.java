@@ -116,7 +116,7 @@ public class TestVectorLogicalExpressions {
     i = 5; v0.vector[i] = 0; v0.isNull[i] = true; v1.vector[i] = 1; v1.isNull[i] = false;  // NULL 1
     i = 6; v0.vector[i] = 0; v0.isNull[i] = false; v1.vector[i] = 0; v1.isNull[i] = true;  // 0 NULL
     i = 7; v0.vector[i] = 1; v0.isNull[i] = false; v1.vector[i] = 1; v1.isNull[i] = true;  // 1 NULL
-    i = 8; v0.vector[i] = 1; v0.isNull[i] = true; v1.vector[i] = 1; v1.isNull[i] = true;  // NULL NULL
+    i = 8; v0.vector[i] = 1; v0.isNull[i] = true; v1.vector[i] = 1; v1.isNull[i] = true; // NULL NULL
 
     v0.noNulls = false;
     v1.noNulls = false;

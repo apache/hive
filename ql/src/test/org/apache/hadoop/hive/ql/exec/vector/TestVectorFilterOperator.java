@@ -24,23 +24,24 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColEqualDoubleScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongScalar;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.junit.Test;
 
+/**
+ * Test cases for vectorized filter operator.
+ */
 public class TestVectorFilterOperator {
-  
-  /*
+
+  /**
    * Fundamental logic and performance tests for vector filters belong here.
-   * 
+   *
    * For tests about filters to cover specific operator and data type combinations,
    * see also the other filter tests under org.apache.hadoop.hive.ql.exec.vector.expressions
    */
-
   public static class FakeDataReader {
-    int size;
-    VectorizedRowBatch vrg;
-    int currentSize = 0;
+    private final int size;
+    private final VectorizedRowBatch vrg;
+    private int currentSize = 0;
     private final int numCols;
     private final int len = 1024;
 
@@ -51,9 +52,7 @@ public class TestVectorFilterOperator {
       for (int i = 0; i < numCols; i++) {
         try {
           Thread.sleep(2);
-        } catch (InterruptedException e) {
-
-        }
+        } catch (InterruptedException ignore) {}
         vrg.cols[i] = getLongVector(len);
       }
     }

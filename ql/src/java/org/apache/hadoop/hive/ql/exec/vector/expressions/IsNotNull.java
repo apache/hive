@@ -26,8 +26,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * The boolean output is stored in the specified output column.
  */
 public class IsNotNull extends VectorExpression {
-  int colNum;
-  int outputColumn;
+  private final int colNum;
+  private final int outputColumn;
 
   public IsNotNull(int colNum, int outputColumn) {
     this.colNum = colNum;

@@ -19,11 +19,11 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression.AggregationBuffer;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -35,25 +35,21 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
-import org.apache.hadoop.hive.ql.io.orc.*;
-
-@Description(name = "avg", value = "_FUNC_(expr) - Returns the average value of expr (vectorized, type: double)")
+/**
+ * Generated from template VectorUDAFAvg.txt.
+ */
+@Description(name = "avg",
+    value = "_FUNC_(expr) - Returns the average value of expr (vectorized, type: double)")
 public class VectorUDAFAvgDouble extends VectorAggregateExpression {
     
     /** class for storing the current aggregate value. */
     static class Aggregation implements AggregationBuffer {
-      double sum;
-      long count;
-      boolean isNull;
+      private double sum;
+      private long count;
+      private boolean isNull;
       
       public void sumValue(double value) {
         if (isNull) {
@@ -91,10 +87,10 @@ public class VectorUDAFAvgDouble extends VectorAggregateExpression {
     }
 
     private void initPartialResultInspector() {
-        ArrayList<ObjectInspector> foi = new ArrayList<ObjectInspector>();
+        List<ObjectInspector> foi = new ArrayList<ObjectInspector>();
         foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
         foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
-        ArrayList<String> fname = new ArrayList<String>();
+        List<String> fname = new ArrayList<String>();
         fname.add("count");
         fname.add("sum");
         soi = ObjectInspectorFactory.getStandardStructObjectInspector(fname, foi);
@@ -291,11 +287,13 @@ public class VectorUDAFAvgDouble extends VectorAggregateExpression {
 
     
     @Override
-    public void aggregateInput(AggregationBuffer agg, VectorizedRowBatch batch) throws HiveException {
+    public void aggregateInput(AggregationBuffer agg, VectorizedRowBatch batch) 
+        throws HiveException {
         
         inputExpression.evaluate(batch);
         
-        DoubleColumnVector inputVector = (DoubleColumnVector)batch.cols[this.inputExpression.getOutputColumn()];
+        DoubleColumnVector inputVector = 
+            (DoubleColumnVector)batch.cols[this.inputExpression.getOutputColumn()];
         
         int batchSize = batch.size;
         

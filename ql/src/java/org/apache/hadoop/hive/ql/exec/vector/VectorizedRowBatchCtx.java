@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.IOPrepareCache;
@@ -46,10 +47,8 @@ import org.apache.hadoop.mapred.FileSplit;
 /**
  * Context for Vectorized row batch. this calss does eager deserialization of row data using serde
  * in the RecordReader layer.
- * It has supports partitions in this layer so that the vectorized batch is populated correctly with
- * the partition column.
- * VectorizedRowBatchCtx.
- *
+ * It has supports partitions in this layer so that the vectorized batch is populated correctly
+ * with the partition column.
  */
 public class VectorizedRowBatchCtx {
 
@@ -63,7 +62,7 @@ public class VectorizedRowBatchCtx {
   private Deserializer deserializer;
 
   // Hash map of partition values. Key=TblColName value=PartitionValue
-  private LinkedHashMap<String, String> partitionValues;
+  private Map<String, String> partitionValues;
 
   // Column projection list - List of column indexes to include. This
   // list does not contain partition columns
@@ -82,7 +81,7 @@ public class VectorizedRowBatchCtx {
    *          Hash map of partition values. Key=TblColName value=PartitionValue
    */
   public VectorizedRowBatchCtx(StructObjectInspector rawRowOI, StructObjectInspector rowOI,
-      Deserializer deserializer, LinkedHashMap<String, String> partitionValues) {
+      Deserializer deserializer, Map<String, String> partitionValues) {
     this.rowOI = rowOI;
     this.rawRowOI = rawRowOI;
     this.deserializer = deserializer;
@@ -147,8 +146,7 @@ public class VectorizedRowBatchCtx {
     deserializer = partDeserializer;
 
     // Check to see if this split is part of a partition of a table
-    String pcols = partProps
-        .getProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS);
+    String pcols = partProps.getProperty(hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS);
 
     if (pcols != null && pcols.length() > 0) {
 
@@ -212,7 +210,8 @@ public class VectorizedRowBatchCtx {
       // partition column then create the column vector. Also note that partition columns are not
       // in the included list.
       if ((colsToInclude == null) || colsToInclude.contains(j)
-          || ((partitionValues != null) && (partitionValues.get(fieldRefs.get(j).getFieldName()) != null))) {
+          || ((partitionValues != null) &&
+              (partitionValues.get(fieldRefs.get(j).getFieldName()) != null))) {
         ObjectInspector foi = fieldRefs.get(j).getFieldObjectInspector();
         switch (foi.getCategory()) {
         case PRIMITIVE: {

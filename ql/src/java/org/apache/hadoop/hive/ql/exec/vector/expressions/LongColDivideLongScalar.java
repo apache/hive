@@ -15,14 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 
 /**
  * This operation is handled as a special case because Hive
@@ -30,9 +28,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
  * from a template like the other arithmetic operations are.
  */
 public class LongColDivideLongScalar extends VectorExpression {
-  private int colNum;
-  private long value;
-  private int outputColumn;
+  private final int colNum;
+  private final long value;
+  private final int outputColumn;
 
   public LongColDivideLongScalar(int colNum, long value, int outputColumn) {
     this.colNum = colNum;
@@ -57,7 +55,7 @@ public class LongColDivideLongScalar extends VectorExpression {
     int n = batch.size;
     long[] vector = inputColVector.vector;
     double[] outputVector = outputColVector.vector;
-    
+
     // return immediately if batch is empty
     if (n == 0) {
       return;
@@ -65,9 +63,9 @@ public class LongColDivideLongScalar extends VectorExpression {
 
     if (inputColVector.isRepeating) {
       outputVector[0] = vector[0] / (double) value;
-      
+
       // Even if there are no nulls, we always copy over entry 0. Simplifies code.
-      outputIsNull[0] = inputIsNull[0]; 
+      outputIsNull[0] = inputIsNull[0];
     } else if (inputColVector.noNulls) {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
@@ -93,9 +91,9 @@ public class LongColDivideLongScalar extends VectorExpression {
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }
     }
-    
+
     /* Set double data vector array entries for NULL elements to the correct value.
-     * Unlike other col-scalar operations, this one doesn't benefit from carrying 
+     * Unlike other col-scalar operations, this one doesn't benefit from carrying
      * over NaN values from the input array.
      */
     NullUtil.setNullDataEntriesDouble(outputColVector, batch.selectedInUse, sel, n);
@@ -105,7 +103,7 @@ public class LongColDivideLongScalar extends VectorExpression {
   public int getOutputColumn() {
     return outputColumn;
   }
-  
+
   @Override
   public String getOutputType() {
     return "double";

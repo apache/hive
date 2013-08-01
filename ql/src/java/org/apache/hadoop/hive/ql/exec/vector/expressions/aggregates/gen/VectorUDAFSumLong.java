@@ -18,12 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen;
 
-import java.util.ArrayList;
-
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression.AggregationBuffer;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -34,27 +31,21 @@ import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 
 /**
 * VectorUDAFSumLong. Vectorized implementation for SUM aggregates. 
 */
-@Description(name = "sum", value = "_FUNC_(expr) - Returns the sum value of expr (vectorized, type: long)")
+@Description(name = "sum", 
+    value = "_FUNC_(expr) - Returns the sum value of expr (vectorized, type: long)")
 public class VectorUDAFSumLong extends VectorAggregateExpression {
     
     /** 
-    /* class for storing the current aggregate value.
-    */
+     * class for storing the current aggregate value.
+     */
     private static final class Aggregation implements AggregationBuffer {
-      long sum;
-      boolean isNull;
+      private long sum;
+      private boolean isNull;
       
       public void sumValue(long value) {
         if (isNull) {
@@ -71,8 +62,8 @@ public class VectorUDAFSumLong extends VectorAggregateExpression {
       }
     }
     
-    VectorExpression inputExpression;
-    private LongWritable result;
+    private final VectorExpression inputExpression;
+    private final LongWritable result;
     
     public VectorUDAFSumLong(VectorExpression inputExpression) {
       super();

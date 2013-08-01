@@ -1665,7 +1665,8 @@ public class TestVectorGroupByOperator {
       HashMap<Object, Object> expected) throws HiveException {
 
     @SuppressWarnings("unchecked")
-    FakeVectorRowBatchFromLongIterables fdr = new FakeVectorRowBatchFromLongIterables(batchSize, list, values);
+    FakeVectorRowBatchFromLongIterables fdr = new FakeVectorRowBatchFromLongIterables(batchSize,
+        list, values);
     testAggregateLongKeyIterable (aggregateName, fdr, expected);
   }
 
@@ -1701,7 +1702,8 @@ public class TestVectorGroupByOperator {
       Object expected) throws HiveException {
 
     @SuppressWarnings("unchecked")
-    FakeVectorRowBatchFromLongIterables fdr = new FakeVectorRowBatchFromLongIterables(batchSize, values);
+    FakeVectorRowBatchFromLongIterables fdr = new FakeVectorRowBatchFromLongIterables(batchSize,
+        values);
     testAggregateLongIterable (aggregateName, fdr, expected);
   }
 
@@ -1711,7 +1713,8 @@ public class TestVectorGroupByOperator {
       Object expected) throws HiveException {
 
     @SuppressWarnings("unchecked")
-    FakeVectorRowBatchFromLongIterables fdr = new FakeVectorRowBatchFromLongIterables(batchSize, values);
+    FakeVectorRowBatchFromLongIterables fdr = new FakeVectorRowBatchFromLongIterables(batchSize,
+        values);
     testAggregateCountStarIterable (fdr, expected);
   }
 
@@ -1904,7 +1907,8 @@ public class TestVectorGroupByOperator {
     mapColumnNames.put("A", 0);
     VectorizationContext ctx = new VectorizationContext(mapColumnNames, 1);
 
-    GroupByDesc desc = buildGroupByDescType (ctx, aggregateName, "A", TypeInfoFactory.stringTypeInfo);
+    GroupByDesc desc = buildGroupByDescType(ctx, aggregateName, "A",
+        TypeInfoFactory.stringTypeInfo);
 
     VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
 
@@ -1934,7 +1938,8 @@ public class TestVectorGroupByOperator {
     mapColumnNames.put("A", 0);
     VectorizationContext ctx = new VectorizationContext(mapColumnNames, 1);
 
-    GroupByDesc desc = buildGroupByDescType (ctx, aggregateName, "A", TypeInfoFactory.doubleTypeInfo);
+    GroupByDesc desc = buildGroupByDescType (ctx, aggregateName, "A",
+        TypeInfoFactory.doubleTypeInfo);
 
     VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
 

@@ -19,9 +19,12 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
+/**
+ * An expression representing a column, only children are evaluated.
+ */
 public class IdentityExpression extends VectorExpression {
-	int colNum;
-  String type;
+	private final int colNum;
+  private final String type;
 
 	public IdentityExpression(int colNum, String type) {
 		this.colNum = colNum;

@@ -20,11 +20,14 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.util.Calendar;
 
-
+/**
+ * Expression to get week of year.
+ * Extends {@link VectorUDFTimestampFieldLong}
+ */
 public final class VectorUDFWeekOfYearLong extends VectorUDFTimestampFieldLong {
 
   public VectorUDFWeekOfYearLong(int colNum, int outputColumn) {
-    super(Calendar.WEEK_OF_YEAR, colNum,outputColumn);
+    super(Calendar.WEEK_OF_YEAR, colNum, outputColumn);
     /* code copied over from UDFWeekOfYear implementation */
     calendar.setFirstDayOfWeek(Calendar.MONDAY);
     calendar.setMinimalDaysInFirstWeek(4);

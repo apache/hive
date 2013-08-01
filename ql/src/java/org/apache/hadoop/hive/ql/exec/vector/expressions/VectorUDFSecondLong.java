@@ -20,11 +20,14 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.util.Calendar;
 
-
+/**
+ * Expression to get seconds.
+ * Extends {@link VectorUDFTimestampFieldLong}
+ */
 public final class VectorUDFSecondLong extends VectorUDFTimestampFieldLong {
 
   public VectorUDFSecondLong(int colNum, int outputColumn) {
-    super(Calendar.SECOND, colNum,outputColumn);
+    super(Calendar.SECOND, colNum, outputColumn);
   }
 
 }

@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression.AggregationBuffer;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
@@ -32,30 +31,25 @@ import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.io.Text;
 
 /**
 * VectorUDAFMaxString. Vectorized implementation for MIN/MAX aggregates. 
 */
-@Description(name = "max", value = "_FUNC_(expr) - Returns the minimum value of expr (vectorized, type: string)")
+@Description(name = "max", 
+    value = "_FUNC_(expr) - Returns the minimum value of expr (vectorized, type: string)")
 public class VectorUDAFMaxString extends VectorAggregateExpression {
 
     /** 
-    /* class for storing the current aggregate value.
-    */
+     * class for storing the current aggregate value.
+     */
     static private final class Aggregation implements AggregationBuffer {
 
-      final static int MIN_BUFFER_SIZE = 16;
-      byte[] bytes = new byte[MIN_BUFFER_SIZE];
-      int length;
-      boolean isNull;
+      private final static int MIN_BUFFER_SIZE = 16;
+      private byte[] bytes = new byte[MIN_BUFFER_SIZE];
+      private int length;
+      private boolean isNull;
 
       public void checkValue(byte[] bytes, int start, int length) {
         if (isNull) {

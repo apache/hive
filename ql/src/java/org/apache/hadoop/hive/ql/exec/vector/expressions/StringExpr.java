@@ -18,21 +18,21 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-/** 
- * String expression evaluation helper functions
+/**
+ * String expression evaluation helper functions.
  */
 public class StringExpr {
-  
-  /* Compare two strings from two byte arrays each 
-   * with their own start position and length. 
-   * Use lexicographic unsigned byte value order. 
+
+  /* Compare two strings from two byte arrays each
+   * with their own start position and length.
+   * Use lexicographic unsigned byte value order.
    * This is what's used for UTF-8 sort order.
-   * Return negative value if arg1 < arg2, 0 if arg1 = arg2, 
+   * Return negative value if arg1 < arg2, 0 if arg1 = arg2,
    * positive if arg1 > arg2.
    */
   public static int compare(byte[] arg1, int start1, int len1, byte[] arg2, int start2, int len2) {
     for (int i = 0; i < len1 && i < len2; i++) {
-      int b1 = arg1[i + start1] & 0xff; 
+      int b1 = arg1[i + start1] & 0xff;
       int b2 = arg2[i + start2] & 0xff;
       if (b1 != b2) {
         return b1 - b2;

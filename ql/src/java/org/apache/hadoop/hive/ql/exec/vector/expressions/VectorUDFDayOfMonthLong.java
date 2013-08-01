@@ -20,11 +20,14 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.util.Calendar;
 
-
+/**
+ * Expression to get day of month.
+ * Extends {@link VectorUDFTimestampFieldLong}
+ */
 public final class VectorUDFDayOfMonthLong extends VectorUDFTimestampFieldLong {
 
   public VectorUDFDayOfMonthLong(int colNum, int outputColumn) {
-    super(Calendar.DAY_OF_MONTH, colNum,outputColumn);
+    super(Calendar.DAY_OF_MONTH, colNum, outputColumn);
   }
 
 }

@@ -35,6 +35,9 @@ import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * Unit tests for filter expressions.
+ */
 public class TestVectorFilterExpressions {
 
   @Test
@@ -76,8 +79,7 @@ public class TestVectorFilterExpressions {
   }
 
   @Test
-  public void testColOpScalarNumericFilterNullAndRepeatingLogic()
-  {
+  public void testColOpScalarNumericFilterNullAndRepeatingLogic() {
     // No nulls, not repeating
     FilterLongColGreaterLongScalar f = new FilterLongColGreaterLongScalar(0, 1);
     VectorizedRowBatch batch = this.getSimpleLongBatch();

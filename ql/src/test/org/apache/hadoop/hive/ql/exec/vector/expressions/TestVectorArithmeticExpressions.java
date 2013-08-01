@@ -23,22 +23,23 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import junit.framework.Assert;
 
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TestVectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColDivideLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
 import org.junit.Test;
 
+/**
+ * Unit tests for vectori arithmetic expressions.
+ */
 public class TestVectorArithmeticExpressions {
 
   @Test
   public void testLongColAddLongScalarNoNulls()  {
-    VectorizedRowBatch vrg = getVectorizedRowBatchSingleLongVector
-        (VectorizedRowBatch.DEFAULT_SIZE);
+    VectorizedRowBatch vrg = getVectorizedRowBatchSingleLongVector(VectorizedRowBatch.DEFAULT_SIZE);
     LongColAddLongScalar expr = new LongColAddLongScalar(0, 23, 1);
     expr.evaluate(vrg);
     //verify
@@ -60,7 +61,7 @@ public class TestVectorArithmeticExpressions {
     vrg.size = size;
     return vrg;
   }
-  
+
   public static VectorizedRowBatch getVectorizedRowBatch2LongInDoubleOut() {
     VectorizedRowBatch batch = new VectorizedRowBatch(3);
     LongColumnVector lcv, lcv2;
@@ -73,7 +74,7 @@ public class TestVectorArithmeticExpressions {
     batch.cols[1] = lcv2;
     for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
       lcv2.vector[i] = i * 37;
-    }    
+    }
     batch.cols[2] = new DoubleColumnVector();
     batch.size = VectorizedRowBatch.DEFAULT_SIZE;
     return batch;
@@ -81,14 +82,14 @@ public class TestVectorArithmeticExpressions {
 
   @Test
   public void testLongColAddLongScalarWithNulls()  {
-    VectorizedRowBatch batch = getVectorizedRowBatchSingleLongVector
-        (VectorizedRowBatch.DEFAULT_SIZE);
+    VectorizedRowBatch batch = getVectorizedRowBatchSingleLongVector(
+        VectorizedRowBatch.DEFAULT_SIZE);
     LongColumnVector lcv = (LongColumnVector) batch.cols[0];
     LongColumnVector lcvOut = (LongColumnVector) batch.cols[1];
     TestVectorizedRowBatch.addRandomNulls(lcv);
     LongColAddLongScalar expr = new LongColAddLongScalar(0, 23, 1);
     expr.evaluate(batch);
-    
+
     // verify
     for (int i=0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
       if (!lcv.isNull[i]) {
@@ -109,8 +110,7 @@ public class TestVectorArithmeticExpressions {
     LongColAddLongScalar expr;
 
     // Case 1: is repeating, no nulls
-    batch = getVectorizedRowBatchSingleLongVector
-        (VectorizedRowBatch.DEFAULT_SIZE);
+    batch = getVectorizedRowBatchSingleLongVector(VectorizedRowBatch.DEFAULT_SIZE);
     in = (LongColumnVector) batch.cols[0];
     in.isRepeating = true;
     out = (LongColumnVector) batch.cols[1];
@@ -123,8 +123,7 @@ public class TestVectorArithmeticExpressions {
     Assert.assertEquals(out.vector[0], 0 * 37 + 23);
 
     // Case 2: is repeating, has nulls
-    batch = getVectorizedRowBatchSingleLongVector
-        (VectorizedRowBatch.DEFAULT_SIZE);
+    batch = getVectorizedRowBatchSingleLongVector(VectorizedRowBatch.DEFAULT_SIZE);
     in = (LongColumnVector) batch.cols[0];
     in.isRepeating = true;
     in.noNulls = false;
@@ -142,9 +141,9 @@ public class TestVectorArithmeticExpressions {
     Assert.assertEquals(true, out.isNull[0]);
     verifyLongNullDataVectorEntries(out, batch.selected, batch.selectedInUse, batch.size);
   }
-  
-  /* Make sure all the NULL entries in this long column output vector have their data vector 
-   * element set to the correct value, as per the specification, to prevent later arithmetic 
+
+  /* Make sure all the NULL entries in this long column output vector have their data vector
+   * element set to the correct value, as per the specification, to prevent later arithmetic
    * errors (e.g. zero-divide).
    */
   public static void verifyLongNullDataVectorEntries(
@@ -155,8 +154,7 @@ public class TestVectorArithmeticExpressions {
       if (v.isNull[0]) {
         assertEquals(LongColumnVector.NULL_VALUE, v.vector[0]);
       }
-    }
-    else if (selectedInUse) {
+    } else if (selectedInUse) {
       for (int j = 0; j != n; j++) {
         int i = sel[j];
         if (v.isNull[i]) {
@@ -167,7 +165,7 @@ public class TestVectorArithmeticExpressions {
       for (int i = 0; i != n; i++) {
         if (v.isNull[i]) {
           assertEquals(LongColumnVector.NULL_VALUE, v.vector[i]);
-        }        
+        }
       }
     }
   }
@@ -217,7 +215,7 @@ public class TestVectorArithmeticExpressions {
     LongColAddLongColumn expr2 = new LongColAddLongColumn(3, 4, 5);
     expr2.evaluate(vrg);
     for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
-      assertEquals(seed * ( 4 + 5*(i+1)), lcv5.vector[i]);
+      assertEquals(seed * (4 + 5*(i+1)), lcv5.vector[i]);
     }
 
     // Repeating with other as nullable
@@ -237,48 +235,48 @@ public class TestVectorArithmeticExpressions {
     assertTrue(lcv5.isRepeating);
     assertTrue(lcv5.isNull[0]);
     verifyLongNullDataVectorEntries(lcv5, vrg.selected, vrg.selectedInUse, vrg.size);
-    
+
     // Neither input has nulls. Verify that this propagates to output.
     vrg.selectedInUse = false;
     lcv0.noNulls = true;
     lcv1.noNulls = true;
     lcv0.isRepeating = false;
-    lcv1.isRepeating = false;   
+    lcv1.isRepeating = false;
     lcv2.noNulls = false;         // set output noNulls to true to make sure it gets over-written
     lcv2.isRepeating = true;      // similarly with isRepeating
     expr.evaluate(vrg);
     assertTrue(lcv2.noNulls);
     assertFalse(lcv2.isRepeating);
   }
-  
+
   @Test
   public void testLongColDivideLongColumn() {
-    
+
     /* Testing for equality of doubles after a math operation is
      * not always reliable so use this as a tolerance.
      */
-    final double eps = 1e-7d; 
+    final double eps = 1e-7d;
     VectorizedRowBatch batch = getVectorizedRowBatch2LongInDoubleOut();
     LongColDivideLongColumn expr = new LongColDivideLongColumn(0, 1, 2);
     batch.cols[0].isNull[1] = true;
     batch.cols[0].noNulls = false;
     batch.cols[1].noNulls = false;
     DoubleColumnVector out = (DoubleColumnVector) batch.cols[2];
-    
+
     // Set so we can verify they are reset by operation
     out.noNulls = true;
     out.isRepeating = true;
-    
+
     expr.evaluate(batch);
-    
+
     // 0/0 for entry 0 should work but generate NaN
     assertTrue(Double.isNaN(out.vector[0]));
-    
+
     // verify NULL output in entry 1 is correct
     assertTrue(out.isNull[1]);
     assertTrue(Double.isNaN(out.vector[1]));
 
-    // check entries beyond first 2 
+    // check entries beyond first 2
     for (int i = 2; i != batch.size; i++) {
       assertTrue(out.vector[i] > 1.0d - eps && out.vector[i] < 1.0d + eps);
     }

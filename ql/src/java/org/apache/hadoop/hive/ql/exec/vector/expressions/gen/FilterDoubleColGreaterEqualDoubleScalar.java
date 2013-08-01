@@ -22,7 +22,11 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
-
+/**
+ * Generated from template FilterColumnCompareScalar.txt, which covers binary comparison 
+ * expressions between a column and a scalar, however output is not produced in a separate column. 
+ * The selected vector of the input {@link VectorizedRowBatch} is updated for in-place filtering.
+ */
 public class FilterDoubleColGreaterEqualDoubleScalar extends VectorExpression {
   private int colNum;
   private double value;

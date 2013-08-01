@@ -24,8 +24,14 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
+/**
+ * Base class for aggregation expressions.
+ */
 public abstract class VectorAggregateExpression  {
 
+  /**
+   * Buffer interface to store aggregates.
+   */
   public static interface AggregationBuffer {
     int getVariableSize();
   };

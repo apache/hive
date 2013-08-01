@@ -19,11 +19,11 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression.AggregationBuffer;
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -35,28 +35,23 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 
 /**
 * VectorUDAFVarSampDouble. Vectorized implementation for VARIANCE aggregates. 
 */
-@Description(name = "var_samp", value = "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, double)")
+@Description(name = "var_samp",
+    value = "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, double)")
 public class VectorUDAFVarSampDouble extends VectorAggregateExpression {
     
     /** 
     /* class for storing the current aggregate value. 
     */
     private static final class Aggregation implements AggregationBuffer {
-      double sum;
-      long count;
-      double variance;
-      boolean isNull;
+      private double sum;
+      private long count;
+      private double variance;
+      private boolean isNull;
       
       public void init() {
         isNull = false;
@@ -94,12 +89,12 @@ public class VectorUDAFVarSampDouble extends VectorAggregateExpression {
     }
 
   private void initPartialResultInspector() {
-        ArrayList<ObjectInspector> foi = new ArrayList<ObjectInspector>();
+        List<ObjectInspector> foi = new ArrayList<ObjectInspector>();
         foi.add(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
         foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
         foi.add(PrimitiveObjectInspectorFactory.writableDoubleObjectInspector);
 
-        ArrayList<String> fname = new ArrayList<String>();
+        List<String> fname = new ArrayList<String>();
         fname.add("count");
         fname.add("sum");
         fname.add("variance");

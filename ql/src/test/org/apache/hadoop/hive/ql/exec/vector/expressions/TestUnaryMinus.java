@@ -26,12 +26,15 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColUnaryMinus;
 import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
 import org.junit.Test;
 
+/**
+ * Unit tests for unary minus.
+ */
 public class TestUnaryMinus {
 
   @Test
   public void testUnaryMinus() {
     VectorizedRowBatch vrg = VectorizedRowGroupGenUtil.getVectorizedRowBatch(1024, 2, 23);
-    LongColUnaryMinus expr = new LongColUnaryMinus(0,1);
+    LongColUnaryMinus expr = new LongColUnaryMinus(0, 1);
     expr.evaluate(vrg);
     //verify
     long[] inVector = ((LongColumnVector) vrg.cols[0]).vector;

@@ -18,9 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.udf.UDFUpper;
 import org.apache.hadoop.hive.ql.udf.IUDFUnaryString;
+import org.apache.hadoop.hive.ql.udf.UDFUpper;
 
+/**
+ * Expression to convert a string to lower case.
+ * Extends {@link StringUnaryUDF}.
+ */
 public class StringUpper extends StringUnaryUDF {
   public StringUpper(int colNum, int outputColumn) {
     super(colNum, outputColumn, (IUDFUnaryString) new UDFUpper());

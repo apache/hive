@@ -41,7 +41,7 @@ public class FakeVectorRowBatchFromObjectIterables extends FakeVectorRowBatchBas
   private final VectorizedRowBatch batch;
   private boolean eof;
   private final int batchSize;
-  
+
   public String[] getTypes() {
     return this.types;
   }
@@ -49,9 +49,8 @@ public class FakeVectorRowBatchFromObjectIterables extends FakeVectorRowBatchBas
   /**
    * Helper interface for assigning values to primitive vector column types.
    */
-  private static interface ColumnVectorAssign
-  {
-    public void assign(
+  private static interface ColumnVectorAssign {
+    void assign(
         ColumnVector columnVector,
         int row,
         Object value);
@@ -109,7 +108,7 @@ public class FakeVectorRowBatchFromObjectIterables extends FakeVectorRowBatchBas
             lcv.vector[row] = TimestampUtils.getTimeNanoSec(t);
           }
         };
-        
+
       } else if (types[i].equalsIgnoreCase("string")) {
         batch.cols[i] = new BytesColumnVector(batchSize);
         columnAssign[i] = new ColumnVectorAssign() {

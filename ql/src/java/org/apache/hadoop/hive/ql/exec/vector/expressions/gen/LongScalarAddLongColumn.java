@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 
 /**
+ * Generated from template ScalarArithmeticColumn.txt.
  * Implements a vectorized arithmetic operator with a scalar on the left and a
  * column vector on the right. The result is output to an output column vector.
  */

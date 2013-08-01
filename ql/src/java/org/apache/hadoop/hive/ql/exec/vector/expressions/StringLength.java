@@ -22,11 +22,15 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
+/**
+ * Calculate the length of the strings in the input column vector, and store
+ * it in the output column vector.
+ */
 public class StringLength extends VectorExpression {
-  private int colNum;
-  private int outputColumn;
-  
-  public StringLength (int colNum, int outputColumn) {
+  private final int colNum;
+  private final int outputColumn;
+
+  public StringLength(int colNum, int outputColumn) {
     this.colNum = colNum;
     this.outputColumn = outputColumn;
   }
@@ -34,45 +38,44 @@ public class StringLength extends VectorExpression {
   // Calculate the length of the UTF-8 strings in input vector and place results in output vector.
   @Override
   public void evaluate(VectorizedRowBatch batch) {
-    
+
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
-    
+
     BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[colNum];
-    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];  
+    LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
     int[] sel = batch.selected;
     int n = batch.size;
     byte[][] vector = inputColVector.vector;
-    int start[] = inputColVector.start;
-    int length[] = inputColVector.length;
-    long[] resultLen = outV.vector; 
-    
+    int [] start = inputColVector.start;
+    int [] length = inputColVector.length;
+    long[] resultLen = outV.vector;
+
     if (n == 0) {
-      
       //Nothing to do
       return;
     }
-    
+
     if (inputColVector.noNulls) {
       outV.noNulls = true;
       if (inputColVector.isRepeating) {
         outV.isRepeating = true;
-        resultLen[0] = UTF8StringLength(vector[0], start[0], length[0]);
+        resultLen[0] = utf8StringLength(vector[0], start[0], length[0]);
       } else if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          resultLen[i] = UTF8StringLength(vector[i], start[i], length[i]);
+          resultLen[i] = utf8StringLength(vector[i], start[i], length[i]);
         }
         outV.isRepeating = false;
       } else {
         for(int i = 0; i != n; i++) {
-          resultLen[i] = UTF8StringLength(vector[i], start[i], length[i]);
+          resultLen[i] = utf8StringLength(vector[i], start[i], length[i]);
         }
         outV.isRepeating = false;
       }
     } else {
-      
+
       /*
        * Handle case with nulls. Don't do function if the value is null, to save time,
        * because calling the function can be expensive.
@@ -82,13 +85,13 @@ public class StringLength extends VectorExpression {
         outV.isRepeating = true;
         outV.isNull[0] = inputColVector.isNull[0];
         if (!inputColVector.isNull[0]) {
-          resultLen[0] = UTF8StringLength(vector[0], start[0], length[0]);
+          resultLen[0] = utf8StringLength(vector[0], start[0], length[0]);
         }
       } else if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           if (!inputColVector.isNull[i]) {
-            resultLen[i] = UTF8StringLength(vector[i], start[i], length[i]);
+            resultLen[i] = utf8StringLength(vector[i], start[i], length[i]);
           }
           outV.isNull[i] = inputColVector.isNull[i];
         }
@@ -96,7 +99,7 @@ public class StringLength extends VectorExpression {
       } else {
         for(int i = 0; i != n; i++) {
           if (!inputColVector.isNull[i]) {
-            resultLen[i] = UTF8StringLength(vector[i], start[i], length[i]);
+            resultLen[i] = utf8StringLength(vector[i], start[i], length[i]);
           }
           outV.isNull[i] = inputColVector.isNull[i];
         }
@@ -104,22 +107,21 @@ public class StringLength extends VectorExpression {
       }
     }
   }
-  
-  /* 
+
+  /*
    * Return length in characters of UTF8 string in byte array
    * beginning at start that is len bytes long.
    */
-  static long UTF8StringLength(byte[] s, int start, int len)
-  {
+  static long utf8StringLength(byte[] s, int start, int len) {
     long resultLength = 0;
     for (int i = start; i < start + len; i++) {
-      
-      /* Byte bit patterns of the form 10xxxxxx are continuation 
-       * bytes. All other bit patterns are the first byte of 
+
+      /* Byte bit patterns of the form 10xxxxxx are continuation
+       * bytes. All other bit patterns are the first byte of
        * a character.
        */
       if ((s[i] & 0xc0) != 0x80) {
-        resultLength++;  
+        resultLength++;
       }
     }
     return resultLength;
