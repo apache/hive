@@ -167,7 +167,9 @@ public class TestSymlinkTextInputFormat extends TestCase {
       QueryPlan plan = drv.getPlan();
       MapRedTask selectTask = (MapRedTask)plan.getRootTasks().get(0);
 
-      ExecDriver.addInputPaths(newJob, selectTask.getWork().getMapWork(), emptyScratchDir.toString(), ctx);
+      List<Path> inputPaths = Utilities.getInputPaths(newJob, selectTask.getWork().getMapWork(), emptyScratchDir.toString(), ctx);
+      Utilities.setInputPaths(newJob, inputPaths);
+
       Utilities.setMapRedWork(newJob, selectTask.getWork(), ctx.getMRTmpFileURI());
       
       CombineHiveInputFormat combineInputFormat = ReflectionUtils.newInstance(
