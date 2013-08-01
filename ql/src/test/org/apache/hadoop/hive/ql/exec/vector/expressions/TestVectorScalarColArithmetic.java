@@ -22,14 +22,12 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import junit.framework.Assert;
 
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarSubtractLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarModuloLongColumn;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColDivideLongScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarDivideLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TestVectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarModuloLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarSubtractLongColumn;
 import org.junit.Test;
 
 /**
@@ -37,12 +35,12 @@ import org.junit.Test;
  * the left and a column vector on the right.
  */
 public class TestVectorScalarColArithmetic {
-  
+
   /* Testing for equality of doubles after a math operation is
    * not always reliable so use this as a tolerance.
    */
-  private final static double eps = 1e-7d; 
-  
+  private final double EPS = 1e-7d;
+
   private VectorizedRowBatch getVectorizedRowBatchSingleLongVector(int size) {
     VectorizedRowBatch batch = new VectorizedRowBatch(2, size);
     LongColumnVector lcv = new LongColumnVector(size);
@@ -67,13 +65,13 @@ public class TestVectorScalarColArithmetic {
     batch.size = size;
     return batch;
   }
-  
+
   @Test
   public void testLongScalarModuloLongColNoNulls()  {
     VectorizedRowBatch batch = getBatchSingleLongVectorPositiveNonZero();
     LongScalarModuloLongColumn expr = new LongScalarModuloLongColumn(100, 0, 1);
     expr.evaluate(batch);
-    
+
     // verify
     for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
       Assert.assertEquals(100 % ((i + 1) * 37), ((LongColumnVector) batch.cols[1]).vector[i]);
@@ -81,14 +79,14 @@ public class TestVectorScalarColArithmetic {
     Assert.assertTrue(((LongColumnVector)batch.cols[1]).noNulls);
     Assert.assertFalse(((LongColumnVector)batch.cols[1]).isRepeating);
   }
-  
+
   @Test
   public void testLongScalarSubtractLongColNoNulls()  {
     VectorizedRowBatch batch = getVectorizedRowBatchSingleLongVector(
         VectorizedRowBatch.DEFAULT_SIZE);
     LongScalarSubtractLongColumn expr = new LongScalarSubtractLongColumn(100, 0, 1);
     expr.evaluate(batch);
-    
+
     //verify
     for (int i = 0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
       Assert.assertEquals(100 - i * 37, ((LongColumnVector) batch.cols[1]).vector[i]);
@@ -105,7 +103,7 @@ public class TestVectorScalarColArithmetic {
     TestVectorizedRowBatch.addRandomNulls(lcv);
     LongScalarSubtractLongColumn expr = new LongScalarSubtractLongColumn(100, 0, 1);
     expr.evaluate(batch);
-    
+
     //verify
     for (int i=0; i < VectorizedRowBatch.DEFAULT_SIZE; i++) {
       if (!lcv.isNull[i]) {
@@ -117,7 +115,7 @@ public class TestVectorScalarColArithmetic {
     Assert.assertFalse(((LongColumnVector)batch.cols[1]).noNulls);
     Assert.assertFalse(((LongColumnVector)batch.cols[1]).isRepeating);
     TestVectorArithmeticExpressions.verifyLongNullDataVectorEntries(
-        (LongColumnVector) batch.cols[1], batch.selected, batch.selectedInUse, batch.size); 
+        (LongColumnVector) batch.cols[1], batch.selected, batch.selectedInUse, batch.size);
   }
 
   @Test
@@ -135,7 +133,7 @@ public class TestVectorScalarColArithmetic {
     out.isRepeating = false;
     expr = new LongScalarSubtractLongColumn(100, 0, 1);
     expr.evaluate(batch);
-    
+
     // verify
     Assert.assertTrue(out.isRepeating);
     Assert.assertTrue(out.noNulls);
@@ -155,46 +153,46 @@ public class TestVectorScalarColArithmetic {
     out.noNulls = true;
     expr = new LongScalarSubtractLongColumn(100, 0, 1);
     expr.evaluate(batch);
-    
+
     // verify
     Assert.assertTrue(out.isRepeating);
     Assert.assertFalse(out.noNulls);
     Assert.assertEquals(true, out.isNull[0]);
     TestVectorArithmeticExpressions.verifyLongNullDataVectorEntries(
-        out, batch.selected, batch.selectedInUse, batch.size); 
+        out, batch.selected, batch.selectedInUse, batch.size);
   }
-  
-  private static boolean equalsWithinTolerance(double a, double b) {
-    return Math.abs(a - b) < eps;
+
+  private boolean equalsWithinTolerance(double a, double b) {
+    return Math.abs(a - b) < EPS;
   }
-  
+
   @Test
   public void testLongScalarDivide() {
-    VectorizedRowBatch batch = 
+    VectorizedRowBatch batch =
         TestVectorArithmeticExpressions.getVectorizedRowBatch2LongInDoubleOut();
     LongColDivideLongScalar expr = new LongColDivideLongScalar(0, 100, 2);
     batch.cols[0].isNull[0] = true;
     batch.cols[0].noNulls = false;
     DoubleColumnVector out = (DoubleColumnVector) batch.cols[2];
     out.noNulls = true;     // set now so we can verify it changed
-    out.isRepeating = true; 
+    out.isRepeating = true;
     expr.evaluate(batch);
-    
+
     // verify NULL output in entry 0 is correct
     assertTrue(out.isNull[0]);
     assertTrue(Double.isNaN(out.vector[0]));
 
-    // check entries beyond first one 
+    // check entries beyond first one
     for (int i = 1; i != batch.size; i++) {
       assertTrue(equalsWithinTolerance((i * 37) / 100d, out.vector[i]));
     }
     assertFalse(out.noNulls);
     assertFalse(out.isRepeating);
   }
-  
-  @Test 
+
+  @Test
   public void testScalarLongDivide() {
-    VectorizedRowBatch batch = 
+    VectorizedRowBatch batch =
         TestVectorArithmeticExpressions.getVectorizedRowBatch2LongInDoubleOut();
     LongScalarDivideLongColumn expr = new LongScalarDivideLongColumn(100, 0, 2);
     batch.cols[0].isNull[1] = true;
@@ -203,15 +201,15 @@ public class TestVectorScalarColArithmetic {
     out.noNulls = true;     // set now so we can verify it changed
     out.isRepeating = true;
     expr.evaluate(batch);
-    
+
     // verify zero-divide result for position 0
     assertTrue(Double.isInfinite(out.vector[0]));
-    
+
     // verify NULL output in entry 1 is correct
     assertTrue(out.isNull[1]);
     assertTrue(Double.isNaN(out.vector[1]));
 
-    // check entries beyond 2nd one 
+    // check entries beyond 2nd one
     for (int i = 2; i != batch.size; i++) {
       assertTrue(equalsWithinTolerance(100d / (i * 37), out.vector[i]));
     }

@@ -20,11 +20,14 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.util.Calendar;
 
-
+/**
+ * Returns hour of day.
+ * Extends {@link VectorUDFTimestampFieldLong}
+ */
 public final class VectorUDFHourLong extends VectorUDFTimestampFieldLong {
 
   public VectorUDFHourLong(int colNum, int outputColumn) {
-    super(Calendar.HOUR_OF_DAY, colNum,outputColumn);
+    super(Calendar.HOUR_OF_DAY, colNum, outputColumn);
   }
 
 }

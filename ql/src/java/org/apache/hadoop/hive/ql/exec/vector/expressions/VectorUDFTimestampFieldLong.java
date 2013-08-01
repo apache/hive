@@ -24,8 +24,9 @@ import java.util.Calendar;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
-
-
+/**
+ * Abstract class to return various fields from a Timestamp.
+ */
 public abstract class VectorUDFTimestampFieldLong extends VectorExpression {
 
   protected final int colNum;
@@ -91,7 +92,7 @@ public abstract class VectorUDFTimestampFieldLong extends VectorExpression {
     if (inputCol.noNulls) {
       outV.noNulls = true;
       if (batch.selectedInUse) {
-        for(int j=0; j < n ; j++) {
+        for(int j=0; j < n; j++) {
           int i = sel[j];
           outV.vector[i] = getField(inputCol.vector[i]);
         }

@@ -1,3 +1,21 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.hadoop.hive.ql.exec.vector.expressions.templates;
 
 import java.io.BufferedReader;
@@ -7,9 +25,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+/**
+ * This class generates java classes from the templates.
+ */
 public class CodeGen {
 
-  static String [][] templateExpansions =
+  private static String [][] templateExpansions =
     {
       {"ColumnArithmeticScalar", "Add", "long", "long", "+"},
       {"ColumnArithmeticScalar", "Subtract", "long", "long", "-"},
@@ -195,14 +216,20 @@ public class CodeGen {
         {"ColumnUnaryMinus", "long"},
         {"ColumnUnaryMinus", "double"},
 
-        //template, <ClassName>, <ValueType>, <OperatorSymbol>, <DescriptionName>, <DescriptionValue>
-        {"VectorUDAFMinMax", "VectorUDAFMinLong", "long", "<", "min", "_FUNC_(expr) - Returns the minimum value of expr (vectorized, type: long)"},
-        {"VectorUDAFMinMax", "VectorUDAFMinDouble", "double", "<", "min", "_FUNC_(expr) - Returns the minimum value of expr (vectorized, type: double)"},
-        {"VectorUDAFMinMax", "VectorUDAFMaxLong", "long", ">", "max", "_FUNC_(expr) - Returns the maximum value of expr (vectorized, type: long)"},
-        {"VectorUDAFMinMax", "VectorUDAFMaxDouble", "double", ">", "max", "_FUNC_(expr) - Returns the maximum value of expr (vectorized, type: double)"},
+      // template, <ClassName>, <ValueType>, <OperatorSymbol>, <DescriptionName>, <DescriptionValue>
+      {"VectorUDAFMinMax", "VectorUDAFMinLong", "long", "<", "min",
+          "_FUNC_(expr) - Returns the minimum value of expr (vectorized, type: long)"},
+      {"VectorUDAFMinMax", "VectorUDAFMinDouble", "double", "<", "min",
+          "_FUNC_(expr) - Returns the minimum value of expr (vectorized, type: double)"},
+      {"VectorUDAFMinMax", "VectorUDAFMaxLong", "long", ">", "max",
+          "_FUNC_(expr) - Returns the maximum value of expr (vectorized, type: long)"},
+      {"VectorUDAFMinMax", "VectorUDAFMaxDouble", "double", ">", "max",
+          "_FUNC_(expr) - Returns the maximum value of expr (vectorized, type: double)"},
 
-        {"VectorUDAFMinMaxString", "VectorUDAFMinString", "<", "min", "_FUNC_(expr) - Returns the minimum value of expr (vectorized, type: string)"},
-        {"VectorUDAFMinMaxString", "VectorUDAFMaxString", ">", "max", "_FUNC_(expr) - Returns the minimum value of expr (vectorized, type: string)"},
+      {"VectorUDAFMinMaxString", "VectorUDAFMinString", "<", "min",
+          "_FUNC_(expr) - Returns the minimum value of expr (vectorized, type: string)"},
+      {"VectorUDAFMinMaxString", "VectorUDAFMaxString", ">", "max",
+          "_FUNC_(expr) - Returns the minimum value of expr (vectorized, type: string)"},
 
         //template, <ClassName>, <ValueType>
         {"VectorUDAFSum", "VectorUDAFSumLong", "long"},
@@ -210,15 +237,32 @@ public class CodeGen {
         {"VectorUDAFAvg", "VectorUDAFAvgLong", "long"},
         {"VectorUDAFAvg", "VectorUDAFAvgDouble", "double"},
 
-      //template, <ClassName>, <ValueType>, <VarianceFormula>, <DescriptionName>, <DescriptionValue>
-        {"VectorUDAFVar", "VectorUDAFVarPopLong", "long", "myagg.variance / myagg.count", "variance, var_pop", "_FUNC_(x) - Returns the variance of a set of numbers (vectorized, long)"},
-        {"VectorUDAFVar", "VectorUDAFVarPopDouble", "double", "myagg.variance / myagg.count", "variance, var_pop", "_FUNC_(x) - Returns the variance of a set of numbers (vectorized, double)"},
-        {"VectorUDAFVar", "VectorUDAFVarSampLong", "long", "myagg.variance / (myagg.count-1.0)", "var_samp", "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, long)"},
-        {"VectorUDAFVar", "VectorUDAFVarSampDouble", "double", "myagg.variance / (myagg.count-1.0)", "var_samp", "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, double)"},
-        {"VectorUDAFVar", "VectorUDAFStdPopLong", "long", "Math.sqrt(myagg.variance / (myagg.count))", "std,stddev,stddev_pop", "_FUNC_(x) - Returns the standard deviation of a set of numbers (vectorized, long)"},
-        {"VectorUDAFVar", "VectorUDAFStdPopDouble", "double", "Math.sqrt(myagg.variance / (myagg.count))", "std,stddev,stddev_pop", "_FUNC_(x) - Returns the standard deviation of a set of numbers (vectorized, double)"},
-        {"VectorUDAFVar", "VectorUDAFStdSampLong", "long", "Math.sqrt(myagg.variance / (myagg.count-1.0))", "stddev_samp", "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, long)"},
-        {"VectorUDAFVar", "VectorUDAFStdSampDouble", "double", "Math.sqrt(myagg.variance / (myagg.count-1.0))", "stddev_samp", "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, double)"},
+      // template, <ClassName>, <ValueType>, <VarianceFormula>, <DescriptionName>,
+      // <DescriptionValue>
+      {"VectorUDAFVar", "VectorUDAFVarPopLong", "long", "myagg.variance / myagg.count",
+          "variance, var_pop",
+          "_FUNC_(x) - Returns the variance of a set of numbers (vectorized, long)"},
+      {"VectorUDAFVar", "VectorUDAFVarPopDouble", "double", "myagg.variance / myagg.count",
+          "variance, var_pop",
+          "_FUNC_(x) - Returns the variance of a set of numbers (vectorized, double)"},
+      {"VectorUDAFVar", "VectorUDAFVarSampLong", "long", "myagg.variance / (myagg.count-1.0)",
+          "var_samp",
+          "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, long)"},
+      {"VectorUDAFVar", "VectorUDAFVarSampDouble", "double", "myagg.variance / (myagg.count-1.0)",
+          "var_samp",
+          "_FUNC_(x) - Returns the sample variance of a set of numbers (vectorized, double)"},
+      {"VectorUDAFVar", "VectorUDAFStdPopLong", "long",
+          "Math.sqrt(myagg.variance / (myagg.count))", "std,stddev,stddev_pop",
+          "_FUNC_(x) - Returns the standard deviation of a set of numbers (vectorized, long)"},
+      {"VectorUDAFVar", "VectorUDAFStdPopDouble", "double",
+          "Math.sqrt(myagg.variance / (myagg.count))", "std,stddev,stddev_pop",
+          "_FUNC_(x) - Returns the standard deviation of a set of numbers (vectorized, double)"},
+      {"VectorUDAFVar", "VectorUDAFStdSampLong", "long",
+          "Math.sqrt(myagg.variance / (myagg.count-1.0))", "stddev_samp",
+          "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, long)"},
+      {"VectorUDAFVar", "VectorUDAFStdSampDouble", "double",
+          "Math.sqrt(myagg.variance / (myagg.count-1.0))", "stddev_samp",
+          "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, double)"},
 
     };
 
@@ -239,13 +283,13 @@ public class CodeGen {
     templateDirectory = System.getProperty("user.dir");
     File f = new File(templateDirectory);
     outputDirectory = joinPath(f.getParent(), "gen");
-    testCodeGen =  new TestCodeGen(joinPath(f.getParent(), "test"),templateDirectory);
+    testCodeGen =  new TestCodeGen(joinPath(f.getParent(), "test"), templateDirectory);
   }
 
   public CodeGen(String templateDirectory, String outputDirectory, String testOutputDirectory) {
     this.templateDirectory = templateDirectory;
     this.outputDirectory = outputDirectory;
-    testCodeGen =  new TestCodeGen(testOutputDirectory,templateDirectory);
+    testCodeGen =  new TestCodeGen(testOutputDirectory, templateDirectory);
   }
 
   /**
@@ -418,16 +462,17 @@ public class CodeGen {
   private void generateFilterStringColumnCompareScalar(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
     String className = "FilterStringCol" + operatorName + "StringScalar";
-    generateFilterStringColumnCompareScalar(tdesc,className);
+    generateFilterStringColumnCompareScalar(tdesc, className);
   }
 
   private void generateFilterStringColumnCompareColumn(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
     String className = "FilterStringCol" + operatorName + "StringColumn";
-    generateFilterStringColumnCompareScalar(tdesc,className);
+    generateFilterStringColumnCompareScalar(tdesc, className);
   }
 
-  private void generateFilterStringColumnCompareScalar(String[] tdesc, String className) throws IOException {
+  private void generateFilterStringColumnCompareScalar(String[] tdesc, String className)
+      throws IOException {
    String operatorSymbol = tdesc[2];
    String outputFile = joinPath(this.outputDirectory, className + ".java");
    // Read the template into a string;
@@ -569,16 +614,14 @@ public class CodeGen {
     templateString = templateString.replaceAll("<ReturnType>", returnType);
     writeFile(outputFile, templateString);
 
-    if(returnType==null)
-    {
+    if(returnType==null) {
       testCodeGen.addColumnScalarFilterTestCases(
           true,
           className,
           inputColumnVectorType,
           operandType2,
           operatorSymbol);
-    }else
-    {
+    } else {
       testCodeGen.addColumnScalarOperationTestCases(
           true,
           className,
@@ -586,7 +629,6 @@ public class CodeGen {
           outputColumnVectorType,
           operandType2);
     }
-
   }
 
   private void generateScalarBinaryOperatorColumn(String[] tdesc, String returnType,
@@ -610,16 +652,14 @@ public class CodeGen {
      templateString = templateString.replaceAll("<ReturnType>", returnType);
      writeFile(outputFile, templateString);
 
-     if(returnType==null)
-     {
+     if(returnType==null) {
        testCodeGen.addColumnScalarFilterTestCases(
            false,
            className,
            inputColumnVectorType,
            operandType1,
            operatorSymbol);
-     }else
-     {
+     } else {
        testCodeGen.addColumnScalarOperationTestCases(
            false,
            className,

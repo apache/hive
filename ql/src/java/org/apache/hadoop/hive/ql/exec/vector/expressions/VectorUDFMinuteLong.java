@@ -20,11 +20,14 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.util.Calendar;
 
-
+/**
+ * Returns minute value.
+ * Extends {@link VectorUDFTimestampFieldLong}
+ */
 public final class VectorUDFMinuteLong extends VectorUDFTimestampFieldLong {
 
   public VectorUDFMinuteLong(int colNum, int outputColumn) {
-    super(Calendar.MINUTE, colNum,outputColumn);
+    super(Calendar.MINUTE, colNum, outputColumn);
   }
 
 }

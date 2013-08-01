@@ -22,9 +22,14 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
+/**
+ * Generated from template FilterColumnCompareColumn.txt, which covers binary comparison 
+ * expressions between two columns, however output is not produced in a separate column. 
+ * The selected vector of the input {@link VectorizedRowBatch} is updated for in-place filtering.
+ */
 public class FilterLongColLessEqualDoubleColumn extends VectorExpression {
-  int colNum1;
-  int colNum2;
+  private int colNum1;
+  private int colNum2;
 
   public FilterLongColLessEqualDoubleColumn(int colNum1, int colNum2) { 
     this.colNum1 = colNum1;

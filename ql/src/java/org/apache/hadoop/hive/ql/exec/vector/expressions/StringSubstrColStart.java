@@ -1,3 +1,21 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.io.UnsupportedEncodingException;
@@ -6,19 +24,21 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
 /**
- * This class provides the implementation of vectorized substring, with a single start index parameter.
- * If the start index is invalid (outside of the string boundaries) then an empty string will be in the output.
+ * This class provides the implementation of vectorized substring, with a single start index
+ * parameter. If the start index is invalid (outside of the string boundaries) then an empty
+ * string will be in the output.
  */
 public class StringSubstrColStart extends VectorExpression {
   private final int startIdx;
   private final int colNum;
   private final int outputColumn;
-  private static byte[] EMPTY_STRING;
+  private static byte[] EMPTYSTRING;
 
-  // Populating the Empty string bytes. Putting it as static since it should be immutable and can be shared
+  // Populating the Empty string bytes. Putting it as static since it should be immutable and can
+  // be shared.
   static {
     try {
-      EMPTY_STRING = "".getBytes("UTF-8");
+      EMPTYSTRING = "".getBytes("UTF-8");
     } catch(UnsupportedEncodingException e) {
       e.printStackTrace();
     }
@@ -31,8 +51,8 @@ public class StringSubstrColStart extends VectorExpression {
   }
 
   /**
-   * Given the substring start index param it finds the starting offset of the passed in utf8 string byte array
-   * that matches the index.
+   * Given the substring start index param it finds the starting offset of the passed in utf8
+   * string byte array that matches the index.
    * @param utf8String byte array that holds the utf8 string
    * @param start start offset of the byte array the string starts at
    * @param len length of the bytes the string holds in the byte array
@@ -94,7 +114,7 @@ public class StringSubstrColStart extends VectorExpression {
       if (!inV.noNulls && inV.isNull[0]) {
         outV.isNull[0] = true;
         outV.noNulls = false;
-        outV.setRef(0, EMPTY_STRING, 0, EMPTY_STRING.length);
+        outV.setRef(0, EMPTYSTRING, 0, EMPTYSTRING.length);
         return;
       } else {
         outV.noNulls = true;
@@ -102,7 +122,7 @@ public class StringSubstrColStart extends VectorExpression {
         if (offset != -1) {
           outV.setRef(0, vector[0], offset, len[0] - offset);
         } else {
-          outV.setRef(0, EMPTY_STRING, 0, EMPTY_STRING.length);
+          outV.setRef(0, EMPTYSTRING, 0, EMPTYSTRING.length);
         }
       }
     } else {
@@ -113,12 +133,13 @@ public class StringSubstrColStart extends VectorExpression {
           for (int i = 0; i != n; ++i) {
             int selected = sel[i];
             if (!inV.isNull[selected]) {
-              int offset = getSubstrStartOffset(vector[selected], start[selected], len[selected], startIdx);
+              int offset = getSubstrStartOffset(vector[selected], start[selected], len[selected],
+                  startIdx);
               outV.isNull[selected] = false;
               if (offset != -1) {
                 outV.setRef(selected, vector[selected], offset, len[selected] - offset);
               } else {
-                outV.setRef(selected, EMPTY_STRING, 0, EMPTY_STRING.length);
+                outV.setRef(selected, EMPTYSTRING, 0, EMPTYSTRING.length);
               }
             } else {
               outV.isNull[selected] = true;
@@ -128,11 +149,12 @@ public class StringSubstrColStart extends VectorExpression {
           outV.noNulls = true;
           for (int i = 0; i != n; ++i) {
             int selected = sel[i];
-            int offset = getSubstrStartOffset(vector[selected], start[selected], len[selected], startIdx);
+            int offset = getSubstrStartOffset(vector[selected], start[selected], len[selected],
+                startIdx);
             if (offset != -1) {
               outV.setRef(selected, vector[selected], offset, len[selected] - offset);
             } else {
-              outV.setRef(selected, EMPTY_STRING, 0, EMPTY_STRING.length);
+              outV.setRef(selected, EMPTYSTRING, 0, EMPTYSTRING.length);
             }
           }
         }
@@ -146,7 +168,7 @@ public class StringSubstrColStart extends VectorExpression {
               if (offset != -1) {
                 outV.setRef(i, vector[i], offset, len[i] - offset);
               } else {
-                outV.setRef(i, EMPTY_STRING, 0, EMPTY_STRING.length);
+                outV.setRef(i, EMPTYSTRING, 0, EMPTYSTRING.length);
               }
             }
           }
@@ -157,7 +179,7 @@ public class StringSubstrColStart extends VectorExpression {
             if (offset != -1) {
               outV.setRef(i, vector[i], offset, len[i] - offset);
             } else {
-              outV.setRef(i, EMPTY_STRING, 0, EMPTY_STRING.length);
+              outV.setRef(i, EMPTYSTRING, 0, EMPTYSTRING.length);
             }
           }
         }

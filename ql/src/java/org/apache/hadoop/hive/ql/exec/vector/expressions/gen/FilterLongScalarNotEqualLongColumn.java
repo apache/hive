@@ -22,6 +22,11 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
+/**
+ * Generated from template FilterScalarCompareColumn.txt, which covers binary comparison 
+ * expressions between a scalar and a column, however output is not produced in a separate column. 
+ * The selected vector of the input {@link VectorizedRowBatch} is updated for in-place filtering.
+ */
 public class FilterLongScalarNotEqualLongColumn extends VectorExpression {
   private int colNum;
   private long value;

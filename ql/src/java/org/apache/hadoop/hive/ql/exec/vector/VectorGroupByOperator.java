@@ -110,7 +110,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements Seri
   private transient int avgVariableSize;
 
   /**
-   * Current number of entries in the hash table
+   * Current number of entries in the hash table.
    */
   private transient int numEntriesHashTable;
 
@@ -130,7 +130,7 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements Seri
   private static final int FLUSH_CHECK_THRESHOLD = 10000;
 
   /**
-   * Percent of entries to flush when memory threshold exceeded
+   * Percent of entries to flush when memory threshold exceeded.
    */
   private static final float PERCENT_ENTRIES_TO_FLUSH = 0.1f;
 

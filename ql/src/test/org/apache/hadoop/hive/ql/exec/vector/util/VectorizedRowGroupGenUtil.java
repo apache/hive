@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
-
 public class VectorizedRowGroupGenUtil {
 
   private static final long LONG_VECTOR_NULL_VALUE = 1;
@@ -73,9 +72,8 @@ public class VectorizedRowGroupGenUtil {
     return lcv;
   }
 
-  public static DoubleColumnVector generateDoubleColumnVector(
-      boolean nulls, boolean repeating, int size, Random rand)
-  {
+  public static DoubleColumnVector generateDoubleColumnVector(boolean nulls,
+      boolean repeating, int size, Random rand) {
     DoubleColumnVector dcv = new DoubleColumnVector(size);
 
     dcv.noNulls = !nulls;

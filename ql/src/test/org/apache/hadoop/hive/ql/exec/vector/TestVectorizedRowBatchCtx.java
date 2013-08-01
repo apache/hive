@@ -59,7 +59,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Class that tests the functionality of VectorizedRowBatchCtx
+ * Class that tests the functionality of VectorizedRowBatchCtx.
  */
 public class TestVectorizedRowBatchCtx {
 
@@ -81,7 +81,7 @@ public class TestVectorizedRowBatchCtx {
     fs.delete(testFilePath, false);
   }
 
-  private void InitSerde() {
+  private void initSerde() {
     tbl = new Properties();
 
     // Set the configuration parameters
@@ -325,8 +325,7 @@ public class TestVectorizedRowBatchCtx {
 
   @Test
   public void TestCtx() throws Exception {
-
-    InitSerde();
+    initSerde();
     WriteRCFile(this.fs, this.testFilePath, this.conf);
     VectorizedRowBatch batch = GetRowBatch();
     ValidateRowBatch(batch);

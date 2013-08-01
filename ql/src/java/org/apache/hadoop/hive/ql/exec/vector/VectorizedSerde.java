@@ -22,11 +22,14 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Writable;
 
+/**
+ * Serdes that support vectorized {@link VectorizedRowBatch} must implement this interface.
+ */
 public interface VectorizedSerde {
 
   Writable serializeVector(VectorizedRowBatch vrg, ObjectInspector objInspector)
       throws SerDeException;
 
   void deserializeVector(Object rowBlob, int rowsInBlob, VectorizedRowBatch reuseBatch)
-      throws SerDeException;      
+      throws SerDeException;
 }

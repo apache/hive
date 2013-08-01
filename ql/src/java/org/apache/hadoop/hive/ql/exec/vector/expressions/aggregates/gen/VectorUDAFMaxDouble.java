@@ -18,13 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen;
 
-import java.util.ArrayList;
-
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.
-    VectorAggregateExpression.AggregationBuffer;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;    
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
@@ -34,30 +30,21 @@ import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 
 /**
 * VectorUDAFMaxDouble. Vectorized implementation for MIN/MAX aggregates. 
 */
-@Description(name = "max", value = "_FUNC_(expr) - Returns the maximum value of expr (vectorized, type: double)")
+@Description(name = "max", 
+    value = "_FUNC_(expr) - Returns the maximum value of expr (vectorized, type: double)")
 public class VectorUDAFMaxDouble extends VectorAggregateExpression {
     
     /** 
-    /* class for storing the current aggregate value.
-    */
+     * class for storing the current aggregate value.
+     */
     static private final class Aggregation implements AggregationBuffer {
-      double value;
-      boolean isNull;
+      private double value;
+      private boolean isNull;
 
       public void checkValue(double value) {
         if (isNull) {

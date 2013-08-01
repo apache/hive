@@ -1,3 +1,21 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.io.UnsupportedEncodingException;
@@ -6,9 +24,11 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
 /**
- * This class provides the implementation of vectorized substring, with a start index and length parameters.
- * If the start index is invalid (outside of the string boundaries) then an empty string will be in the output.
- * If the length provided is longer then the string boundary, then it will replace it with the ending index.
+ * This class provides the implementation of vectorized substring, with a start index and length
+ * parameters. If the start index is invalid (outside of the string boundaries) then an empty
+ * string will be in the output.
+ * If the length provided is longer then the string boundary, then it will replace it with the
+ * ending index.
  */
 public class StringSubstrColStartLen extends VectorExpression {
   private final int startIdx;
@@ -16,12 +36,13 @@ public class StringSubstrColStartLen extends VectorExpression {
   private final int length;
   private final int outputColumn;
   private final int[] offsetArray;
-  private static byte[] EMPTY_STRING;
+  private static byte[] EMPTYSTRING;
 
-  // Populating the Empty string bytes. Putting it as static since it should be immutable and can be shared
+  // Populating the Empty string bytes. Putting it as static since it should be immutable and can be
+  // shared
   static {
     try {
-      EMPTY_STRING = "".getBytes("UTF-8");
+      EMPTYSTRING = "".getBytes("UTF-8");
     } catch(UnsupportedEncodingException e) {
       e.printStackTrace();
     }
@@ -45,7 +66,8 @@ public class StringSubstrColStartLen extends VectorExpression {
    * @param substrLen the length of the substring
    * @param offsetArray the array that indexes are populated to. Assume its length >= 2.
    */
-  static void populateSubstrOffsets(byte[] utf8String, int start, int len, int substrStart, int substrLength, int[] offsetArray) {
+  static void populateSubstrOffsets(byte[] utf8String, int start, int len, int substrStart,
+      int substrLength, int[] offsetArray) {
     int curIdx = -1;
     offsetArray[0] = -1;
     offsetArray[1] = -1;
@@ -109,7 +131,7 @@ public class StringSubstrColStartLen extends VectorExpression {
       if (!inV.noNulls && inV.isNull[0]) {
         outV.isNull[0] = true;
         outV.noNulls = false;
-        outV.setRef(0, EMPTY_STRING, 0, EMPTY_STRING.length);
+        outV.setRef(0, EMPTYSTRING, 0, EMPTYSTRING.length);
         return;
       } else {
         outV.noNulls = true;
@@ -117,7 +139,7 @@ public class StringSubstrColStartLen extends VectorExpression {
         if (offsetArray[0] != -1) {
           outV.setRef(0, vector[0], offsetArray[0], offsetArray[1]);
         } else {
-          outV.setRef(0, EMPTY_STRING, 0, EMPTY_STRING.length);
+          outV.setRef(0, EMPTYSTRING, 0, EMPTYSTRING.length);
         }
       }
     } else {
@@ -129,11 +151,12 @@ public class StringSubstrColStartLen extends VectorExpression {
             int selected = sel[i];
             if (!inV.isNull[selected]) {
               outV.isNull[selected] = false;
-              populateSubstrOffsets(vector[selected], start[selected], len[selected], startIdx, length, offsetArray);
+              populateSubstrOffsets(vector[selected], start[selected], len[selected], startIdx,
+                  length, offsetArray);
               if (offsetArray[0] != -1) {
                 outV.setRef(selected, vector[selected], offsetArray[0], offsetArray[1]);
               } else {
-                outV.setRef(selected, EMPTY_STRING, 0, EMPTY_STRING.length);
+                outV.setRef(selected, EMPTYSTRING, 0, EMPTYSTRING.length);
               }
             } else {
               outV.isNull[selected] = true;
@@ -144,11 +167,12 @@ public class StringSubstrColStartLen extends VectorExpression {
           for (int i = 0; i != n; ++i) {
             int selected = sel[i];
             outV.isNull[selected] = false;
-            populateSubstrOffsets(vector[selected], start[selected], len[selected], startIdx, length, offsetArray);
+            populateSubstrOffsets(vector[selected], start[selected], len[selected], startIdx,
+                length, offsetArray);
             if (offsetArray[0] != -1) {
               outV.setRef(selected, vector[selected], offsetArray[0], offsetArray[1]);
             } else {
-              outV.setRef(selected, EMPTY_STRING, 0, EMPTY_STRING.length);
+              outV.setRef(selected, EMPTYSTRING, 0, EMPTYSTRING.length);
             }
           }
         }
@@ -162,7 +186,7 @@ public class StringSubstrColStartLen extends VectorExpression {
               if (offsetArray[0] != -1) {
                 outV.setRef(i, vector[i], offsetArray[0], offsetArray[1]);
               } else {
-                outV.setRef(i, EMPTY_STRING, 0, EMPTY_STRING.length);
+                outV.setRef(i, EMPTYSTRING, 0, EMPTYSTRING.length);
               }
             }
           }
@@ -174,7 +198,7 @@ public class StringSubstrColStartLen extends VectorExpression {
             if (offsetArray[0] != -1) {
               outV.setRef(i, vector[i], offsetArray[0], offsetArray[1]);
             } else {
-              outV.setRef(i, EMPTY_STRING, 0, EMPTY_STRING.length);
+              outV.setRef(i, EMPTYSTRING, 0, EMPTYSTRING.length);
             }
           }
         }

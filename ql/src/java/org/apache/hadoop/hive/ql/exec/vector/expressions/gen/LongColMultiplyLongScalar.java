@@ -24,6 +24,10 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 
+/**
+ * Generated from template ColumnArithmeticScalar.txt, which covers binary arithmetic 
+ * expressions between a column and a scalar.
+ */
 public class LongColMultiplyLongScalar extends VectorExpression {
   private int colNum;
   private long value;

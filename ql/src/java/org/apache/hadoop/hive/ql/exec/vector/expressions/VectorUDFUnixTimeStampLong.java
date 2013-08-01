@@ -18,8 +18,10 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-
-
+/**
+ * Return Unix Timestamp.
+ * Extends {@link VectorUDFTimestampFieldLong}
+ */
 public final class VectorUDFUnixTimeStampLong extends VectorUDFTimestampFieldLong {
 
   @Override
@@ -35,7 +37,7 @@ public final class VectorUDFUnixTimeStampLong extends VectorUDFTimestampFieldLon
 
   public VectorUDFUnixTimeStampLong(int colNum, int outputColumn) {
     /* not a real field */
-    super(-1, colNum,outputColumn);
+    super(-1, colNum, outputColumn);
   }
 
 }

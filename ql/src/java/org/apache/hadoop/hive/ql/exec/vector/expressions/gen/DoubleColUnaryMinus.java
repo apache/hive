@@ -22,9 +22,12 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
+/**
+ * Generated from template ColumnUnaryMinus.txt, which covers unary negation operator. 
+ */
 public class DoubleColUnaryMinus extends VectorExpression {
-  int colNum;
-  int outputColumn;
+  private int colNum;
+  private int outputColumn;
 
   public DoubleColUnaryMinus(int colNum, int outputColumn) {
     this.colNum = colNum;
@@ -64,11 +67,11 @@ public class DoubleColUnaryMinus extends VectorExpression {
       if (batch.selectedInUse) {
         for(int j=0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = - vector[i];
+          outputVector[i] = -vector[i];
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = - vector[i];
+          outputVector[i] = -vector[i];
         }
       }
       outputColVector.isRepeating = false;
@@ -76,12 +79,12 @@ public class DoubleColUnaryMinus extends VectorExpression {
       if (batch.selectedInUse) {
         for(int j=0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = - vector[i];
+          outputVector[i] = -vector[i];
           outputIsNull[i] = inputIsNull[i];
-	    }
+        }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = - vector[i];
+          outputVector[i] = -vector[i];
         }
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }

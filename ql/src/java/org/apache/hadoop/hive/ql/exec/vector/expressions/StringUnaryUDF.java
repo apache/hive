@@ -15,21 +15,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.hive.ql.udf.IUDFUnaryString;
+import org.apache.hadoop.io.Text;
 
+/**
+ * Expression for vectorized evaluation of unary UDFs on strings.
+ * An object of {@link IUDFUnaryString} is applied to every element of
+ * the vector.
+ */
 public class StringUnaryUDF extends VectorExpression {
-  
-  int colNum;
-  int outputColumn;
-  IUDFUnaryString func;
-  Text s;
-  
-  StringUnaryUDF (int colNum, int outputColumn, IUDFUnaryString func) {
+  private final int colNum;
+  private final int outputColumn;
+  private final IUDFUnaryString func;
+  private final Text s;
+
+  StringUnaryUDF(int colNum, int outputColumn, IUDFUnaryString func) {
     this.colNum = colNum;
     this.outputColumn = outputColumn;
     this.func = func;
@@ -38,56 +43,55 @@ public class StringUnaryUDF extends VectorExpression {
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
-    
+
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
-    
+
     BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[colNum];
     int[] sel = batch.selected;
     int n = batch.size;
     byte[][] vector = inputColVector.vector;
-    int start[] = inputColVector.start;
-    int length[] = inputColVector.length;
+    int [] start = inputColVector.start;
+    int [] length = inputColVector.length;
     BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumn];
-    byte[][] outputVector = outV.vector;
     Text t;
-    
+
     if (n == 0) {
       //Nothing to do
       return;
     }
-    
+
     // Design Note: In the future, if this function can be implemented
     // directly to translate input to output without creating new
     // objects, performance can probably be improved significantly.
-    // It's implemented in the simplest way now, just calling the 
+    // It's implemented in the simplest way now, just calling the
     // existing built-in function.
 
     if (inputColVector.noNulls) {
       outV.noNulls = true;
       if (inputColVector.isRepeating) {
         outV.isRepeating = true;
-        s.set(vector[0], start[0], length[0]); 
+        s.set(vector[0], start[0], length[0]);
         t = func.evaluate(s);
         outV.setRef(0, t.getBytes(), 0, t.getLength());
       } else if (batch.selectedInUse) {
         for(int j=0; j != n; j++) {
           int i = sel[j];
-          s.set(vector[i], start[i], length[i]); 
+          s.set(vector[i], start[i], length[i]);
           t = func.evaluate(s);
           outV.setRef(i, t.getBytes(), 0, t.getLength());
         }
         outV.isRepeating = false;
       } else {
         for(int i = 0; i != n; i++) {
-          s.set(vector[i], start[i], length[i]); 
+          s.set(vector[i], start[i], length[i]);
           t = func.evaluate(s);
           outV.setRef(i, t.getBytes(), 0, t.getLength());
         }
         outV.isRepeating = false;
       }
-    } else { 
+    } else {
       // Handle case with nulls. Don't do function if the value is null, to save time,
       // because calling the function can be expensive.
       outV.noNulls = false;
@@ -95,7 +99,7 @@ public class StringUnaryUDF extends VectorExpression {
         outV.isRepeating = true;
         outV.isNull[0] = inputColVector.isNull[0];
         if (!inputColVector.isNull[0]) {
-          s.set(vector[0], start[0], length[0]); 
+          s.set(vector[0], start[0], length[0]);
           t = func.evaluate(s);
           outV.setRef(0, t.getBytes(), 0, t.getLength());
         }
@@ -103,7 +107,7 @@ public class StringUnaryUDF extends VectorExpression {
         for(int j=0; j != n; j++) {
           int i = sel[j];
           if (!inputColVector.isNull[i]) {
-            s.set(vector[i], start[i], length[i]); 
+            s.set(vector[i], start[i], length[i]);
             t = func.evaluate(s);
             outV.setRef(i, t.getBytes(), 0, t.getLength());
           }
@@ -113,7 +117,7 @@ public class StringUnaryUDF extends VectorExpression {
       } else {
         for(int i = 0; i != n; i++) {
           if (!inputColVector.isNull[i]) {
-            s.set(vector[i], start[i], length[i]); 
+            s.set(vector[i], start[i], length[i]);
             t = func.evaluate(s);
             outV.setRef(i, t.getBytes(), 0, t.getLength());
           }

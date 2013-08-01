@@ -23,10 +23,14 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
+/**
+ * Generated from template ColumnArithmeticColumn.txt, which covers binary arithmetic 
+ * expressions between columns.
+ */
 public class LongColModuloDoubleColumn extends VectorExpression {
-  int colNum1;
-  int colNum2;
-  int outputColumn;
+  private int colNum1;
+  private int colNum2;
+  private int outputColumn;
 
   public LongColModuloDoubleColumn(int colNum1, int colNum2, int outputColumn) {
     this.colNum1 = colNum1;

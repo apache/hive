@@ -30,6 +30,9 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
 import org.junit.Test;
 
+/**
+ * Test vector expressions with constants.
+ */
 public class TestConstantVectorExpression {
 
   @Test

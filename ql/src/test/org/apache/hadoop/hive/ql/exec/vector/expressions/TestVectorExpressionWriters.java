@@ -46,6 +46,9 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.junit.Test;
 
+/**
+ * Unit tests for vector expression writers.
+ */
 public class TestVectorExpressionWriters {
 
   private final int vectorSize = 5;

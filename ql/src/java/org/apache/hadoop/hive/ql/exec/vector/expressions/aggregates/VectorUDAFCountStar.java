@@ -30,17 +30,17 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.io.LongWritable;
 
 /**
-* VectorUDAFCountStar. Vectorized implementation for COUNT(*) aggregates.
-*/
+ * VectorUDAFCountStar. Vectorized implementation for COUNT(*) aggregates.
+ */
 @Description(name = "count", value = "_FUNC_(expr) - Returns count(*) (vectorized)")
 public class VectorUDAFCountStar extends VectorAggregateExpression {
 
     /**
-    /* class for storing the current aggregate value.
-    */
+     * class for storing the current aggregate value.
+     */
     static class Aggregation implements AggregationBuffer {
-      long value;
-      boolean isNull;
+      private long value;
+      private boolean isNull;
 
       @Override
       public int getVariableSize() {

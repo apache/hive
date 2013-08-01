@@ -20,19 +20,21 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
+/**
+ * Evaluate AND of two boolean columns and store result in the output boolean column.
+ */
 public class ColAndCol extends VectorExpression {
-	int colNum1;
-	int colNum2;
-	int outputColumn;
+  private final int colNum1;
+  private final int colNum2;
+  private final int outputColumn;
 
-	public ColAndCol(int colNum1, int colNum2, int outputColumn)
-	{
-		this.colNum1 = colNum1;
-		this.colNum2 = colNum2;
-		this.outputColumn = outputColumn;
-	}
+  public ColAndCol(int colNum1, int colNum2, int outputColumn) {
+    this.colNum1 = colNum1;
+    this.colNum2 = colNum2;
+    this.outputColumn = outputColumn;
+  }
 
-	@Override
+  @Override
   public void evaluate(VectorizedRowBatch batch) {
 
     if (childExpressions != null) {
@@ -49,11 +51,11 @@ public class ColAndCol extends VectorExpression {
     LongColumnVector outV = (LongColumnVector) batch.cols[outputColumn];
     long[] outputVector = outV.vector;
     if (n <= 0) {
-      //Nothing to do
+      // Nothing to do
       return;
     }
 
-    //Handle null
+    // Handle null
     if (inputColVector1.noNulls && !inputColVector2.noNulls) {
       outV.noNulls = false;
       if (inputColVector2.isRepeating) {
@@ -61,12 +63,12 @@ public class ColAndCol extends VectorExpression {
         outV.isNull[0] = true;
       } else {
         if (batch.selectedInUse) {
-          for(int j = 0; j != n; j++) {
+          for (int j = 0; j != n; j++) {
             int i = sel[j];
             outV.isNull[i] = inputColVector2.isNull[i];
           }
         } else {
-          for(int i = 0; i != n; i++) {
+          for (int i = 0; i != n; i++) {
             outV.isNull[i] = inputColVector2.isNull[i];
           }
         }
@@ -107,23 +109,23 @@ public class ColAndCol extends VectorExpression {
       }
     }
 
-    //Now disregard null in second pass.
-    if ( (inputColVector1.isRepeating) && (inputColVector2.isRepeating) )  {
-      //All must be selected otherwise size would be zero
-      //Repeating property will not change.
+    // Now disregard null in second pass.
+    if ((inputColVector1.isRepeating) && (inputColVector2.isRepeating)) {
+      // All must be selected otherwise size would be zero
+      // Repeating property will not change.
       outV.isRepeating = true;
-      outputVector[0] = vector1[0] & vector2[0] ;
+      outputVector[0] = vector1[0] & vector2[0];
     } else if (batch.selectedInUse) {
-			for(int j=0; j != n; j++) {
-				int i = sel[j];
-				outputVector[i] = vector1[i] & vector2[i] ;
-			}
-		} else {
-			for(int i = 0; i != n; i++) {
-			  outputVector[i] = vector1[i] & vector2[i];
-			}
-		}
-	}
+      for (int j = 0; j != n; j++) {
+        int i = sel[j];
+        outputVector[i] = vector1[i] & vector2[i];
+      }
+    } else {
+      for (int i = 0; i != n; i++) {
+        outputVector[i] = vector1[i] & vector2[i];
+      }
+    }
+  }
 
   @Override
   public int getOutputColumn() {

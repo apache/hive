@@ -23,6 +23,11 @@ import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
+/**
+ * Generated from template ColumnCompareScalar.txt, which covers binary comparison 
+ * expressions between a column and a scalar. The boolean output is stored in a 
+ * separate boolean column.
+ */
 public class LongColEqualDoubleScalar extends VectorExpression {
   private int colNum;
   private double value;

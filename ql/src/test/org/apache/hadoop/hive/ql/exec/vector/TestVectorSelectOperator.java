@@ -39,6 +39,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Test;
 
+/**
+ * Unit tests for vectorized select operator.
+ */
 public class TestVectorSelectOperator {
 
   static class ValidatorVectorSelectOperator extends VectorSelectOperator {

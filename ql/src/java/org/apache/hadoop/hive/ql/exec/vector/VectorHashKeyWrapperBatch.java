@@ -34,13 +34,12 @@ import org.apache.hadoop.hive.ql.util.JavaDataModel;
 public class VectorHashKeyWrapperBatch {
 
   /**
-   * Helper class for looking up a key value based on key index
-   *
+   * Helper class for looking up a key value based on key index.
    */
   private static class KeyLookupHelper {
-    public int longIndex;
-    public int doubleIndex;
-    public int stringIndex;
+    private int longIndex;
+    private int doubleIndex;
+    private int stringIndex;
   }
 
   /**
@@ -49,22 +48,22 @@ public class VectorHashKeyWrapperBatch {
   private VectorExpression[] keyExpressions;
 
   /**
-   * indices of LONG primitive keys
+   * indices of LONG primitive keys.
    */
   private int[] longIndices;
 
   /**
-   * indices of DOUBLE primitive keys
+   * indices of DOUBLE primitive keys.
    */
   private int[] doubleIndices;
 
-  /*
-   * indices of string (byte[]) primitive keys
+  /**
+   * indices of string (byte[]) primitive keys.
    */
   private int[] stringIndices;
 
   /**
-   * pre-allocated batch size vector of keys wrappers.
+   * Pre-allocated batch size vector of keys wrappers.
    * N.B. these keys are **mutable** and should never be used in a HashMap.
    * Always clone the key wrapper to obtain an immutable keywrapper suitable
    * to use a key in a HashMap.
@@ -72,7 +71,7 @@ public class VectorHashKeyWrapperBatch {
   private VectorHashKeyWrapper[] vectorHashKeyWrappers;
 
   /**
-   * lookup vector to map from key index to primitive type index
+   * Lookup vector to map from key index to primitive type index.
    */
   private KeyLookupHelper[] indexLookup;
 
@@ -90,7 +89,7 @@ public class VectorHashKeyWrapperBatch {
   }
 
   /**
-   * Accessor for the batch-sized array of key wrappers
+   * Accessor for the batch-sized array of key wrappers.
    */
   public VectorHashKeyWrapper[] getVectorHashKeyWrappers() {
     return vectorHashKeyWrappers;
@@ -106,7 +105,7 @@ public class VectorHashKeyWrapperBatch {
    * @param batch
    * @throws HiveException
    */
-  public void evaluateBatch (VectorizedRowBatch batch) throws HiveException {
+  public void evaluateBatch(VectorizedRowBatch batch) throws HiveException {
     for(int i = 0; i < keyExpressions.length; ++i) {
       keyExpressions[i].evaluate(batch);
     }
@@ -127,7 +126,8 @@ public class VectorHashKeyWrapperBatch {
       } else if (!columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
         assignLongNullsNoRepeatingSelection (i, batch.size, columnVector, batch.selected);
       } else {
-        throw new HiveException (String.format("Unimplemented Long null/repeat/selected combination %b/%b/%b",
+        throw new HiveException (String.format(
+            "Unimplemented Long null/repeat/selected combination %b/%b/%b",
             columnVector.noNulls, columnVector.isRepeating, batch.selectedInUse));
       }
     }
@@ -148,7 +148,8 @@ public class VectorHashKeyWrapperBatch {
       } else if (!columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
         assignDoubleNullsNoRepeatingSelection (i, batch.size, columnVector, batch.selected);
       } else {
-        throw new HiveException (String.format("Unimplemented Double null/repeat/selected combination %b/%b/%b",
+        throw new HiveException (String.format(
+            "Unimplemented Double null/repeat/selected combination %b/%b/%b",
             columnVector.noNulls, columnVector.isRepeating, batch.selectedInUse));
       }
     }
@@ -169,7 +170,8 @@ public class VectorHashKeyWrapperBatch {
       } else if (!columnVector.noNulls && !columnVector.isRepeating && batch.selectedInUse) {
         assignStringNullsNoRepeatingSelection (i, batch.size, columnVector, batch.selected);
       } else {
-        throw new HiveException (String.format("Unimplemented String null/repeat/selected combination %b/%b/%b",
+        throw new HiveException (String.format(
+            "Unimplemented String null/repeat/selected combination %b/%b/%b",
             columnVector.noNulls, columnVector.isRepeating, batch.selectedInUse));
       }
     }
@@ -505,7 +507,8 @@ public class VectorHashKeyWrapperBatch {
     compiledKeyWrapperBatch.keysFixedSize += model.lengthForDoubleArrayOfSize(doubleIndicesIndex);
     compiledKeyWrapperBatch.keysFixedSize += model.lengthForObjectArrayOfSize(stringIndicesIndex);
     compiledKeyWrapperBatch.keysFixedSize += model.lengthForIntArrayOfSize(longIndicesIndex) * 2;
-    compiledKeyWrapperBatch.keysFixedSize += model.lengthForBooleanArrayOfSize(keyExpressions.length);
+    compiledKeyWrapperBatch.keysFixedSize +=
+        model.lengthForBooleanArrayOfSize(keyExpressions.length);
 
     return compiledKeyWrapperBatch;
   }
@@ -520,16 +523,16 @@ public class VectorHashKeyWrapperBatch {
 
     KeyLookupHelper klh = indexLookup[i];
     if (klh.longIndex >= 0) {
-      return kw.getIsLongNull(klh.longIndex) ? null : 
+      return kw.getIsLongNull(klh.longIndex) ? null :
         keyOutputWriter.writeValue(kw.getLongValue(klh.longIndex));
     } else if (klh.doubleIndex >= 0) {
       return kw.getIsDoubleNull(klh.doubleIndex) ? null :
           keyOutputWriter.writeValue(kw.getDoubleValue(klh.doubleIndex));
     } else if (klh.stringIndex >= 0) {
-      return kw.getIsBytesNull(klh.stringIndex) ? null : 
+      return kw.getIsBytesNull(klh.stringIndex) ? null :
           keyOutputWriter.writeValue(
-              kw.getBytes(klh.stringIndex), 
-                kw.getByteStart(klh.stringIndex), 
+              kw.getBytes(klh.stringIndex),
+                kw.getByteStart(klh.stringIndex),
                 kw.getByteLength(klh.stringIndex));
     } else {
       throw new HiveException(String.format(

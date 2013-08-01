@@ -23,6 +23,9 @@ import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
+/**
+ * Constant is represented as a vector with repeating values.
+ */
 public class ConstantVectorExpression extends VectorExpression {
 
   private static enum Type {

@@ -32,17 +32,17 @@ import org.apache.hadoop.io.LongWritable;
 
 
 /**
-* VectorUDAFCountLong. Vectorized implementation for COUNT aggregates.
-*/
+ * VectorUDAFCountLong. Vectorized implementation for COUNT aggregates.
+ */
 @Description(name = "count", value = "_FUNC_(expr) - Returns the count (vectorized)")
 public class VectorUDAFCount extends VectorAggregateExpression {
 
     /**
-    /* class for storing the current aggregate value.
-    */
+     * class for storing the current aggregate value.
+     */
     static class Aggregation implements AggregationBuffer {
-      long value;
-      boolean isNull;
+      private long value;
+      private boolean isNull;
 
       public void initIfNull() {
         if (isNull) {

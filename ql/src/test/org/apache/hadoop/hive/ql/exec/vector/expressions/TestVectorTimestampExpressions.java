@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Random;
 
 import junit.framework.Assert;
@@ -42,6 +43,9 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.junit.Test;
 
+/**
+ * Unit tests for timestamp expressions.
+ */
 public class TestVectorTimestampExpressions {
 
   /* copied over from VectorUDFTimestampFieldLong */
@@ -63,7 +67,7 @@ public class TestVectorTimestampExpressions {
   }
 
   private long[] getAllBoundaries() {
-    ArrayList<Long> boundaries = new ArrayList<Long>(1);
+    List<Long> boundaries = new ArrayList<Long>(1);
     Calendar c = Calendar.getInstance();
     c.setTimeInMillis(0); // c.set doesn't reset millis
     for (int year = 1902; year <= 2038; year++) {
@@ -126,7 +130,7 @@ public class TestVectorTimestampExpressions {
     Assert.assertEquals(batch.cols[in].noNulls, batch.cols[out].noNulls);
 
     for (int i = 0; i < batch.size; i++) {
-      if (batch.cols[in].noNulls || batch.cols[in].isNull[i] == false) {
+      if (batch.cols[in].noNulls || !batch.cols[in].isNull[i]) {
         if (!batch.cols[in].noNulls) {
           Assert.assertEquals(batch.cols[out].isNull[i], batch.cols[in].isNull[i]);
         }
@@ -190,7 +194,7 @@ public class TestVectorTimestampExpressions {
     Assert.assertEquals(batch.cols[in].noNulls, batch.cols[out].noNulls);
 
     for (int i = 0; i < batch.size; i++) {
-      if (batch.cols[in].noNulls || batch.cols[in].isNull[i] == false) {
+      if (batch.cols[in].noNulls || !batch.cols[in].isNull[i]) {
         if (!batch.cols[in].noNulls) {
           Assert.assertEquals(batch.cols[out].isNull[i], batch.cols[in].isNull[i]);
         }
@@ -252,7 +256,7 @@ public class TestVectorTimestampExpressions {
     Assert.assertEquals(batch.cols[in].noNulls, batch.cols[out].noNulls);
 
     for (int i = 0; i < batch.size; i++) {
-      if (batch.cols[in].noNulls || batch.cols[in].isNull[i] == false) {
+      if (batch.cols[in].noNulls || !batch.cols[in].isNull[i]) {
         if (!batch.cols[in].noNulls) {
           Assert.assertEquals(batch.cols[out].isNull[i], batch.cols[in].isNull[i]);
         }
@@ -314,7 +318,7 @@ public class TestVectorTimestampExpressions {
     Assert.assertEquals(batch.cols[in].noNulls, batch.cols[out].noNulls);
 
     for (int i = 0; i < batch.size; i++) {
-      if (batch.cols[in].noNulls || batch.cols[in].isNull[i] == false) {
+      if (batch.cols[in].noNulls || !batch.cols[in].isNull[i]) {
         if (!batch.cols[in].noNulls) {
           Assert.assertEquals(batch.cols[out].isNull[i], batch.cols[in].isNull[i]);
         }
@@ -376,7 +380,7 @@ public class TestVectorTimestampExpressions {
     Assert.assertEquals(batch.cols[in].noNulls, batch.cols[out].noNulls);
 
     for (int i = 0; i < batch.size; i++) {
-      if (batch.cols[in].noNulls || batch.cols[in].isNull[i] == false) {
+      if (batch.cols[in].noNulls || !batch.cols[in].isNull[i]) {
         if (!batch.cols[in].noNulls) {
           Assert.assertEquals(batch.cols[out].isNull[i], batch.cols[in].isNull[i]);
         }
@@ -438,7 +442,7 @@ public class TestVectorTimestampExpressions {
     Assert.assertEquals(batch.cols[in].noNulls, batch.cols[out].noNulls);
 
     for (int i = 0; i < batch.size; i++) {
-      if (batch.cols[in].noNulls || batch.cols[in].isNull[i] == false) {
+      if (batch.cols[in].noNulls || !batch.cols[in].isNull[i]) {
         if (!batch.cols[in].noNulls) {
           Assert.assertEquals(batch.cols[out].isNull[i], batch.cols[in].isNull[i]);
         }
@@ -489,7 +493,8 @@ public class TestVectorTimestampExpressions {
     TimestampWritable tsw = toTimestampWritable(t);
     LongWritable res = udf.evaluate(tsw);
     if(res.get() != y) {
-      System.out.printf("%d vs %d for %d, %d\n", res.get(), y, t, tsw.getTimestamp().getTime()/1000);
+      System.out.printf("%d vs %d for %d, %d\n", res.get(), y, t,
+          tsw.getTimestamp().getTime()/1000);
     }
 
     Assert.assertEquals(res.get(), y);
@@ -504,7 +509,7 @@ public class TestVectorTimestampExpressions {
     Assert.assertEquals(batch.cols[in].noNulls, batch.cols[out].noNulls);
 
     for (int i = 0; i < batch.size; i++) {
-      if (batch.cols[in].noNulls || batch.cols[in].isNull[i] == false) {
+      if (batch.cols[in].noNulls || !batch.cols[in].isNull[i]) {
         if (!batch.cols[in].noNulls) {
           Assert.assertEquals(batch.cols[out].isNull[i], batch.cols[in].isNull[i]);
         }
@@ -566,7 +571,7 @@ public class TestVectorTimestampExpressions {
     Assert.assertEquals(batch.cols[in].noNulls, batch.cols[out].noNulls);
 
     for (int i = 0; i < batch.size; i++) {
-      if (batch.cols[in].noNulls || batch.cols[in].isNull[i] == false) {
+      if (batch.cols[in].noNulls || !batch.cols[in].isNull[i]) {
         if (!batch.cols[in].noNulls) {
           Assert.assertEquals(batch.cols[out].isNull[i], batch.cols[in].isNull[i]);
         }
