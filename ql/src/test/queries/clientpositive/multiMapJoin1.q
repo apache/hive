@@ -1,9 +1,14 @@
--- Join of a big table with 2 small tables on different keys should be performed as a single MR job
 create table smallTbl1(key string, value string);
 insert overwrite table smallTbl1 select * from src where key < 10;
 
 create table smallTbl2(key string, value string);
 insert overwrite table smallTbl2 select * from src where key < 10;
+
+create table smallTbl3(key string, value string);
+insert overwrite table smallTbl3 select * from src where key < 10;
+
+create table smallTbl4(key string, value string);
+insert overwrite table smallTbl4 select * from src where key < 10;
 
 create table bigTbl(key string, value string);
 insert overwrite table bigTbl
@@ -68,37 +73,30 @@ select count(*) FROM
  bigTbl.value as value2 FROM bigTbl JOIN smallTbl1 
  on (bigTbl.key = smallTbl1.key)
 ) firstjoin
-JOIN                                                                  
+JOIN
 smallTbl2 on (firstjoin.value1 = smallTbl2.value);
-
-set hive.optimize.mapjoin.mapreduce=true;
 
 -- Now run a query with two-way join, which should first be converted into a
 -- map-join followed by groupby and then finally into a single MR job.
 
-explain insert overwrite directory '${system:test.tmp.dir}/multiJoin1.output'
+explain
 select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
- bigTbl.value as value2 FROM bigTbl JOIN smallTbl1 
+ bigTbl.value as value2 FROM bigTbl JOIN smallTbl1
  on (bigTbl.key = smallTbl1.key)
 ) firstjoin
-JOIN                                                                  
+JOIN
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
 group by smallTbl2.key;
 
-insert overwrite directory '${system:test.tmp.dir}/multiJoin1.output'
 select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
- bigTbl.value as value2 FROM bigTbl JOIN smallTbl1 
+ bigTbl.value as value2 FROM bigTbl JOIN smallTbl1
  on (bigTbl.key = smallTbl1.key)
 ) firstjoin
-JOIN                                                                  
+JOIN
 smallTbl2 on (firstjoin.value1 = smallTbl2.value)
 group by smallTbl2.key;
-set hive.optimize.mapjoin.mapreduce=false;
-
-create table smallTbl3(key string, value string);
-insert overwrite table smallTbl3 select * from src where key < 10;
 
 drop table bigTbl;
 
@@ -128,100 +126,276 @@ select * from
 ) subq;
 
 set hive.auto.convert.join.noconditionaltask=false;
+-- First disable noconditionaltask
+EXPLAIN
+SELECT SUM(HASH(join3.key1)),
+       SUM(HASH(join3.key2)),
+       SUM(HASH(join3.key3)),
+       SUM(HASH(join3.key4)),
+       SUM(HASH(join3.key5)),
+       SUM(HASH(smallTbl4.key)),
+       SUM(HASH(join3.value1)),
+       SUM(HASH(join3.value2))
+FROM (SELECT join2.key1 as key1,
+             join2.key2 as key2,
+             join2.key3 as key3,
+             join2.key4 as key4,
+             smallTbl3.key as key5,
+             join2.value1 as value1,
+             join2.value2 as value2
+      FROM (SELECT join1.key1 as key1,
+                   join1.key2 as key2,
+                   join1.key3 as key3,
+                   smallTbl2.key as key4,
+                   join1.value1 as value1,
+                   join1.value2 as value2
+            FROM (SELECT bigTbl.key1 as key1,
+                         bigTbl.key2 as key2,
+                         smallTbl1.key as key3,
+                         bigTbl.value as value1,
+                         bigTbl.value as value2
+                  FROM bigTbl
+                  JOIN smallTbl1 ON (bigTbl.key1 = smallTbl1.key)) join1
+            JOIN smallTbl2 ON (join1.value1 = smallTbl2.value)) join2
+      JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
+JOIN smallTbl4 ON (join3.key3 = smallTbl4.key);
 
-explain
-select count(*) FROM
- (
-   SELECT firstjoin.key1 as key1, firstjoin.key2 as key2, smallTbl2.key as key3,
-          firstjoin.value1 as value1, firstjoin.value2 as value2 FROM
-    (SELECT bigTbl.key1 as key1, bigTbl.key2 as key2, 
-            bigTbl.value as value1, bigTbl.value as value2 
-     FROM bigTbl JOIN smallTbl1 
-     on (bigTbl.key1 = smallTbl1.key)
-    ) firstjoin
-    JOIN                                                                  
-    smallTbl2 on (firstjoin.value1 = smallTbl2.value)
- ) secondjoin
- JOIN smallTbl3 on (secondjoin.key2 = smallTbl3.key);
-
-select count(*) FROM
- (
-   SELECT firstjoin.key1 as key1, firstjoin.key2 as key2, smallTbl2.key as key3,
-          firstjoin.value1 as value1, firstjoin.value2 as value2 FROM
-    (SELECT bigTbl.key1 as key1, bigTbl.key2 as key2, 
-            bigTbl.value as value1, bigTbl.value as value2 
-     FROM bigTbl JOIN smallTbl1 
-     on (bigTbl.key1 = smallTbl1.key)
-    ) firstjoin
-    JOIN                                                                  
-    smallTbl2 on (firstjoin.value1 = smallTbl2.value)
- ) secondjoin
- JOIN smallTbl3 on (secondjoin.key2 = smallTbl3.key);
+SELECT SUM(HASH(join3.key1)),
+       SUM(HASH(join3.key2)),
+       SUM(HASH(join3.key3)),
+       SUM(HASH(join3.key4)),
+       SUM(HASH(join3.key5)),
+       SUM(HASH(smallTbl4.key)),
+       SUM(HASH(join3.value1)),
+       SUM(HASH(join3.value2))
+FROM (SELECT join2.key1 as key1,
+             join2.key2 as key2,
+             join2.key3 as key3,
+             join2.key4 as key4,
+             smallTbl3.key as key5,
+             join2.value1 as value1,
+             join2.value2 as value2
+      FROM (SELECT join1.key1 as key1,
+                   join1.key2 as key2,
+                   join1.key3 as key3,
+                   smallTbl2.key as key4,
+                   join1.value1 as value1,
+                   join1.value2 as value2
+            FROM (SELECT bigTbl.key1 as key1,
+                         bigTbl.key2 as key2,
+                         smallTbl1.key as key3,
+                         bigTbl.value as value1,
+                         bigTbl.value as value2
+                  FROM bigTbl
+                  JOIN smallTbl1 ON (bigTbl.key1 = smallTbl1.key)) join1
+            JOIN smallTbl2 ON (join1.value1 = smallTbl2.value)) join2
+      JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
+JOIN smallTbl4 ON (join3.key3 = smallTbl4.key);
 
 set hive.auto.convert.join.noconditionaltask=true;
 set hive.auto.convert.join.noconditionaltask.size=10000;
+-- Enable noconditionaltask and set the size of hive.auto.convert.join.noconditionaltask.size
+-- to 10000, which is large enough to fit all four small tables (smallTbl1 to smallTbl4).
+-- We will use a single MR job to evaluate this query.
+EXPLAIN
+SELECT SUM(HASH(join3.key1)),
+       SUM(HASH(join3.key2)),
+       SUM(HASH(join3.key3)),
+       SUM(HASH(join3.key4)),
+       SUM(HASH(join3.key5)),
+       SUM(HASH(smallTbl4.key)),
+       SUM(HASH(join3.value1)),
+       SUM(HASH(join3.value2))
+FROM (SELECT join2.key1 as key1,
+             join2.key2 as key2,
+             join2.key3 as key3,
+             join2.key4 as key4,
+             smallTbl3.key as key5,
+             join2.value1 as value1,
+             join2.value2 as value2
+      FROM (SELECT join1.key1 as key1,
+                   join1.key2 as key2,
+                   join1.key3 as key3,
+                   smallTbl2.key as key4,
+                   join1.value1 as value1,
+                   join1.value2 as value2
+            FROM (SELECT bigTbl.key1 as key1,
+                         bigTbl.key2 as key2,
+                         smallTbl1.key as key3,
+                         bigTbl.value as value1,
+                         bigTbl.value as value2
+                  FROM bigTbl
+                  JOIN smallTbl1 ON (bigTbl.key1 = smallTbl1.key)) join1
+            JOIN smallTbl2 ON (join1.value1 = smallTbl2.value)) join2
+      JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
+JOIN smallTbl4 ON (join3.key3 = smallTbl4.key);
 
--- join with 4 tables on different keys is also executed as a single MR job,
--- So, overall two jobs - one for multi-way join and one for count(*)
-explain
-select count(*) FROM
- (
-   SELECT firstjoin.key1 as key1, firstjoin.key2 as key2, smallTbl2.key as key3,
-          firstjoin.value1 as value1, firstjoin.value2 as value2 FROM
-    (SELECT bigTbl.key1 as key1, bigTbl.key2 as key2, 
-            bigTbl.value as value1, bigTbl.value as value2 
-     FROM bigTbl JOIN smallTbl1 
-     on (bigTbl.key1 = smallTbl1.key)
-    ) firstjoin
-    JOIN                                                                  
-    smallTbl2 on (firstjoin.value1 = smallTbl2.value)
- ) secondjoin
- JOIN smallTbl3 on (secondjoin.key2 = smallTbl3.key);
+SELECT SUM(HASH(join3.key1)),
+       SUM(HASH(join3.key2)),
+       SUM(HASH(join3.key3)),
+       SUM(HASH(join3.key4)),
+       SUM(HASH(join3.key5)),
+       SUM(HASH(smallTbl4.key)),
+       SUM(HASH(join3.value1)),
+       SUM(HASH(join3.value2))
+FROM (SELECT join2.key1 as key1,
+             join2.key2 as key2,
+             join2.key3 as key3,
+             join2.key4 as key4,
+             smallTbl3.key as key5,
+             join2.value1 as value1,
+             join2.value2 as value2
+      FROM (SELECT join1.key1 as key1,
+                   join1.key2 as key2,
+                   join1.key3 as key3,
+                   smallTbl2.key as key4,
+                   join1.value1 as value1,
+                   join1.value2 as value2
+            FROM (SELECT bigTbl.key1 as key1,
+                         bigTbl.key2 as key2,
+                         smallTbl1.key as key3,
+                         bigTbl.value as value1,
+                         bigTbl.value as value2
+                  FROM bigTbl
+                  JOIN smallTbl1 ON (bigTbl.key1 = smallTbl1.key)) join1
+            JOIN smallTbl2 ON (join1.value1 = smallTbl2.value)) join2
+      JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
+JOIN smallTbl4 ON (join3.key3 = smallTbl4.key);
+ 
+set hive.auto.convert.join.noconditionaltask.size=200;
+-- Enable noconditionaltask and set the size of hive.auto.convert.join.noconditionaltask.size
+-- to 200, which is large enough to fit two small tables. We will have two jobs to evaluate this
+-- query. The first job is a Map-only job to evaluate join1 and join2.
+-- The second job will evaluate the rest of this query.
+EXPLAIN
+SELECT SUM(HASH(join3.key1)),
+       SUM(HASH(join3.key2)),
+       SUM(HASH(join3.key3)),
+       SUM(HASH(join3.key4)),
+       SUM(HASH(join3.key5)),
+       SUM(HASH(smallTbl4.key)),
+       SUM(HASH(join3.value1)),
+       SUM(HASH(join3.value2))
+FROM (SELECT join2.key1 as key1,
+             join2.key2 as key2,
+             join2.key3 as key3,
+             join2.key4 as key4,
+             smallTbl3.key as key5,
+             join2.value1 as value1,
+             join2.value2 as value2
+      FROM (SELECT join1.key1 as key1,
+                   join1.key2 as key2,
+                   join1.key3 as key3,
+                   smallTbl2.key as key4,
+                   join1.value1 as value1,
+                   join1.value2 as value2
+            FROM (SELECT bigTbl.key1 as key1,
+                         bigTbl.key2 as key2,
+                         smallTbl1.key as key3,
+                         bigTbl.value as value1,
+                         bigTbl.value as value2
+                  FROM bigTbl
+                  JOIN smallTbl1 ON (bigTbl.key1 = smallTbl1.key)) join1
+            JOIN smallTbl2 ON (join1.value1 = smallTbl2.value)) join2
+      JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
+JOIN smallTbl4 ON (join3.key3 = smallTbl4.key);
 
-select count(*) FROM
- (
-   SELECT firstjoin.key1 as key1, firstjoin.key2 as key2, smallTbl2.key as key3,
-          firstjoin.value1 as value1, firstjoin.value2 as value2 FROM
-    (SELECT bigTbl.key1 as key1, bigTbl.key2 as key2, 
-            bigTbl.value as value1, bigTbl.value as value2 
-     FROM bigTbl JOIN smallTbl1 
-     on (bigTbl.key1 = smallTbl1.key)
-    ) firstjoin
-    JOIN                                                                  
-    smallTbl2 on (firstjoin.value1 = smallTbl2.value)
- ) secondjoin
- JOIN smallTbl3 on (secondjoin.key2 = smallTbl3.key);
+SELECT SUM(HASH(join3.key1)),
+       SUM(HASH(join3.key2)),
+       SUM(HASH(join3.key3)),
+       SUM(HASH(join3.key4)),
+       SUM(HASH(join3.key5)),
+       SUM(HASH(smallTbl4.key)),
+       SUM(HASH(join3.value1)),
+       SUM(HASH(join3.value2))
+FROM (SELECT join2.key1 as key1,
+             join2.key2 as key2,
+             join2.key3 as key3,
+             join2.key4 as key4,
+             smallTbl3.key as key5,
+             join2.value1 as value1,
+             join2.value2 as value2
+      FROM (SELECT join1.key1 as key1,
+                   join1.key2 as key2,
+                   join1.key3 as key3,
+                   smallTbl2.key as key4,
+                   join1.value1 as value1,
+                   join1.value2 as value2
+            FROM (SELECT bigTbl.key1 as key1,
+                         bigTbl.key2 as key2,
+                         smallTbl1.key as key3,
+                         bigTbl.value as value1,
+                         bigTbl.value as value2
+                  FROM bigTbl
+                  JOIN smallTbl1 ON (bigTbl.key1 = smallTbl1.key)) join1
+            JOIN smallTbl2 ON (join1.value1 = smallTbl2.value)) join2
+      JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
+JOIN smallTbl4 ON (join3.key3 = smallTbl4.key);
 
-set hive.optimize.mapjoin.mapreduce=true;
--- Now run the above query with M-MR optimization
--- This should be a single MR job end-to-end.
-explain
-select count(*) FROM
- (
-   SELECT firstjoin.key1 as key1, firstjoin.key2 as key2, smallTbl2.key as key3,
-          firstjoin.value1 as value1, firstjoin.value2 as value2 FROM
-    (SELECT bigTbl.key1 as key1, bigTbl.key2 as key2, 
-            bigTbl.value as value1, bigTbl.value as value2 
-     FROM bigTbl JOIN smallTbl1 
-     on (bigTbl.key1 = smallTbl1.key)
-    ) firstjoin
-    JOIN                                                                  
-    smallTbl2 on (firstjoin.value1 = smallTbl2.value)
- ) secondjoin
- JOIN smallTbl3 on (secondjoin.key2 = smallTbl3.key);
+set hive.auto.convert.join.noconditionaltask.size=0;
+-- Enable noconditionaltask and but set the size of hive.auto.convert.join.noconditionaltask.size
+-- to 0. The plan will be the same as the one with a disabled nonconditionaltask.
+EXPLAIN
+SELECT SUM(HASH(join3.key1)),
+       SUM(HASH(join3.key2)),
+       SUM(HASH(join3.key3)),
+       SUM(HASH(join3.key4)),
+       SUM(HASH(join3.key5)),
+       SUM(HASH(smallTbl4.key)),
+       SUM(HASH(join3.value1)),
+       SUM(HASH(join3.value2))
+FROM (SELECT join2.key1 as key1,
+             join2.key2 as key2,
+             join2.key3 as key3,
+             join2.key4 as key4,
+             smallTbl3.key as key5,
+             join2.value1 as value1,
+             join2.value2 as value2
+      FROM (SELECT join1.key1 as key1,
+                   join1.key2 as key2,
+                   join1.key3 as key3,
+                   smallTbl2.key as key4,
+                   join1.value1 as value1,
+                   join1.value2 as value2
+            FROM (SELECT bigTbl.key1 as key1,
+                         bigTbl.key2 as key2,
+                         smallTbl1.key as key3,
+                         bigTbl.value as value1,
+                         bigTbl.value as value2
+                  FROM bigTbl
+                  JOIN smallTbl1 ON (bigTbl.key1 = smallTbl1.key)) join1
+            JOIN smallTbl2 ON (join1.value1 = smallTbl2.value)) join2
+      JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
+JOIN smallTbl4 ON (join3.key3 = smallTbl4.key);
 
-select count(*) FROM
- (
-   SELECT firstjoin.key1 as key1, firstjoin.key2 as key2, smallTbl2.key as key3,
-          firstjoin.value1 as value1, firstjoin.value2 as value2 FROM
-    (SELECT bigTbl.key1 as key1, bigTbl.key2 as key2, 
-            bigTbl.value as value1, bigTbl.value as value2 
-     FROM bigTbl JOIN smallTbl1 
-     on (bigTbl.key1 = smallTbl1.key)
-    ) firstjoin
-    JOIN                                                                  
-    smallTbl2 on (firstjoin.value1 = smallTbl2.value)
- ) secondjoin
- JOIN smallTbl3 on (secondjoin.key2 = smallTbl3.key);
-
-set hive.optimize.mapjoin.mapreduce=false;
+SELECT SUM(HASH(join3.key1)),
+       SUM(HASH(join3.key2)),
+       SUM(HASH(join3.key3)),
+       SUM(HASH(join3.key4)),
+       SUM(HASH(join3.key5)),
+       SUM(HASH(smallTbl4.key)),
+       SUM(HASH(join3.value1)),
+       SUM(HASH(join3.value2))
+FROM (SELECT join2.key1 as key1,
+             join2.key2 as key2,
+             join2.key3 as key3,
+             join2.key4 as key4,
+             smallTbl3.key as key5,
+             join2.value1 as value1,
+             join2.value2 as value2
+      FROM (SELECT join1.key1 as key1,
+                   join1.key2 as key2,
+                   join1.key3 as key3,
+                   smallTbl2.key as key4,
+                   join1.value1 as value1,
+                   join1.value2 as value2
+            FROM (SELECT bigTbl.key1 as key1,
+                         bigTbl.key2 as key2,
+                         smallTbl1.key as key3,
+                         bigTbl.value as value1,
+                         bigTbl.value as value2
+                  FROM bigTbl
+                  JOIN smallTbl1 ON (bigTbl.key1 = smallTbl1.key)) join1
+            JOIN smallTbl2 ON (join1.value1 = smallTbl2.value)) join2
+      JOIN smallTbl3 ON (join2.key2 = smallTbl3.key)) join3
+JOIN smallTbl4 ON (join3.key3 = smallTbl4.key);

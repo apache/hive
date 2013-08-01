@@ -36,7 +36,6 @@ FROM (SELECT b.key AS key, b.cnt AS cnt, d.value AS value
 
 set hive.optimize.correlation=true;
 set hive.auto.convert.join=true;
-set hive.optimize.mapjoin.mapreduce=true;
 -- Enable hive.auto.convert.join.
 EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt)), SUM(HASH(tmp.value))
@@ -79,10 +78,9 @@ FROM (SELECT d.key AS key, d.cnt AS cnt, b.value as value
       FROM (SELECT x.key, x.value FROM src1 x JOIN src y ON (x.key = y.key)) b
       JOIN (SELECT x.key, count(1) AS cnt FROM src1 x JOIN src y ON (x.key = y.key) group by x.key) d
       ON b.key = d.key) tmp;
-      
+
 set hive.optimize.correlation=true;
 set hive.auto.convert.join=true;
-set hive.optimize.mapjoin.mapreduce=true;
 -- Enable hive.auto.convert.join.
 EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt)), SUM(HASH(tmp.value))

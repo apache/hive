@@ -1,9 +1,4 @@
 /**
- <<<<<<< HEAD
- =======
- * Copyright 2010 The Apache Software Foundation
- *
- >>>>>>> HIVE-1402 [jira] Add parallel ORDER BY to Hive
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
  * distributed with this work for additional information
@@ -30,30 +25,30 @@ import java.util.Set;
 public class OperatorUtils {
 
   public static <T> Set<T> findOperators(Operator<?> start, Class<T> clazz) {
-    return findOperator(start, clazz, new HashSet<T>());
+    return findOperators(start, clazz, new HashSet<T>());
   }
 
   public static <T> T findSingleOperator(Operator<?> start, Class<T> clazz) {
-    Set<T> found = findOperator(start, clazz, new HashSet<T>());
+    Set<T> found = findOperators(start, clazz, new HashSet<T>());
     return found.size() == 1 ? found.iterator().next() : null;
   }
 
   public static <T> Set<T> findOperators(Collection<Operator<?>> starts, Class<T> clazz) {
     Set<T> found = new HashSet<T>();
     for (Operator<?> start : starts) {
-      findOperator(start, clazz, found);
+      findOperators(start, clazz, found);
     }
     return found;
   }
 
   @SuppressWarnings("unchecked")
-  private static <T> Set<T> findOperator(Operator<?> start, Class<T> clazz, Set<T> found) {
+  private static <T> Set<T> findOperators(Operator<?> start, Class<T> clazz, Set<T> found) {
     if (clazz.isInstance(start)) {
       found.add((T) start);
     }
     if (start.getChildOperators() != null) {
       for (Operator<?> child : start.getChildOperators()) {
-        findOperator(child, clazz, found);
+        findOperators(child, clazz, found);
       }
     }
     return found;

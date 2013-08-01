@@ -112,8 +112,7 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-8 is a root stage
-  Stage-7 depends on stages: Stage-8
-  Stage-2 depends on stages: Stage-7
+  Stage-2 depends on stages: Stage-8
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -174,7 +173,7 @@ STAGE PLANS:
                 1 []
               Position of Big Table: 0
 
-  Stage: Stage-7
+  Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
         c 
@@ -219,21 +218,12 @@ STAGE PLANS:
                       bucketGroup: false
                       mode: hash
                       outputColumnNames: _col0
-                      File Output Operator
-                        compressed: false
-                        GlobalTableId: 0
-#### A masked pattern was here ####
-                        NumFilesPerFileSink: 1
-                        table:
-                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-                            properties:
-                              columns _col0
-                              columns.types bigint
-                              escape.delim \
-                        TotalFiles: 1
-                        GatherStats: false
-                        MultiFileSpray: false
+                      Reduce Output Operator
+                        sort order: 
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: bigint
       Local Work:
         Map Reduce Local Work
       Path -> Alias:
@@ -434,38 +424,6 @@ STAGE PLANS:
       Truncated Path -> Alias:
         /bucket_big/ds=2008-04-08 [c]
         /bucket_big/ds=2008-04-09 [c]
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-            Reduce Output Operator
-              sort order: 
-              tag: -1
-              value expressions:
-                    expr: _col0
-                    type: bigint
-      Path -> Alias:
-#### A masked pattern was here ####
-      Path -> Partition:
-#### A masked pattern was here ####
-          Partition
-            base file name: -mr-10002
-            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-            properties:
-              columns _col0
-              columns.types bigint
-              escape.delim \
-          
-              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-              properties:
-                columns _col0
-                columns.types bigint
-                escape.delim \
-      Truncated Path -> Alias:
-#### A masked pattern was here ####
       Needs Tagging: false
       Reduce Operator Tree:
         Group By Operator
