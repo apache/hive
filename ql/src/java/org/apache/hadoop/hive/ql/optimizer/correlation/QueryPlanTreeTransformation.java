@@ -204,7 +204,6 @@ public class QueryPlanTreeTransformation {
           childOP.setParentOperators(Utilities.makeList(mux));
           parentOp.setChildOperators(Utilities.makeList(mux));
         } else {
-          // childOp is a JoinOperator
           List<Operator<? extends OperatorDesc>> parentsOfMux =
               new ArrayList<Operator<? extends OperatorDesc>>();
           List<Operator<? extends OperatorDesc>> siblingOPs =
