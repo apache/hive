@@ -54,7 +54,9 @@ struct OperatorType {
     LATERALVIEWFORWARD = 15,
     HASHTABLESINK = 16,
     HASHTABLEDUMMY = 17,
-    PTF = 18
+    PTF = 18,
+    MUX = 19,
+    DEMUX = 20
   };
 };
 

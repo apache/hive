@@ -54,6 +54,8 @@ final class OperatorType {
   const HASHTABLESINK = 16;
   const HASHTABLEDUMMY = 17;
   const PTF = 18;
+  const MUX = 19;
+  const DEMUX = 20;
   static public $__names = array(
     0 => 'JOIN',
     1 => 'MAPJOIN',
@@ -74,6 +76,8 @@ final class OperatorType {
     16 => 'HASHTABLESINK',
     17 => 'HASHTABLEDUMMY',
     18 => 'PTF',
+    19 => 'MUX',
+    20 => 'DEMUX',
   );
 }
 
