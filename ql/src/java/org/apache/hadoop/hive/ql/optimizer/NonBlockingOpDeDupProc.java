@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -49,8 +50,11 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
  */
 public class NonBlockingOpDeDupProc implements Transform {
 
+  private ParseContext pctx;
+
   @Override
   public ParseContext transform(ParseContext pctx) throws SemanticException {
+    this.pctx = pctx;
     String SEL = SelectOperator.getOperatorName();
     String FIL = FilterOperator.getOperatorName();
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
@@ -66,7 +70,7 @@ public class NonBlockingOpDeDupProc implements Transform {
     return pctx;
   }
 
-  static class SelectDedup implements NodeProcessor {
+  private class SelectDedup implements NodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
@@ -86,19 +90,42 @@ public class NonBlockingOpDeDupProc implements Transform {
         Set<String> funcOutputs = getFunctionOutputs(
             pSEL.getConf().getOutputColumnNames(), pSEL.getConf().getColList());
 
-        List<ExprNodeDesc> sources = cSEL.getConf().getColList();
-        if (!funcOutputs.isEmpty() && !checkReferences(sources, funcOutputs)) {
+        List<ExprNodeDesc> cSELColList = cSEL.getConf().getColList();
+        List<String> cSELOutputColumnNames = cSEL.getConf().getOutputColumnNames();
+        if (!funcOutputs.isEmpty() && !checkReferences(cSELColList, funcOutputs)) {
           return null;
         }
-        pSEL.getConf().setColList(ExprNodeDescUtils.backtrack(sources, cSEL, pSEL));
-        pSEL.getConf().setOutputColumnNames(cSEL.getConf().getOutputColumnNames());
-
-        // updates schema only (this should be the last optimizer modifying operator tree)
+        if (cSEL.getColumnExprMap() == null) {
+          // If the child SelectOperator does not have the ColumnExprMap,
+          // we do not need to update the ColumnExprMap in the parent SelectOperator.
+          pSEL.getConf().setColList(ExprNodeDescUtils.backtrack(cSELColList, cSEL, pSEL));
+          pSEL.getConf().setOutputColumnNames(cSELOutputColumnNames);
+        } else {
+          // If the child SelectOperator has the ColumnExprMap,
+          // we need to update the ColumnExprMap in the parent SelectOperator.
+          List<ExprNodeDesc> newPSELColList = new ArrayList<ExprNodeDesc>();
+          List<String> newPSELOutputColumnNames = new ArrayList<String>();
+          Map<String, ExprNodeDesc> colExprMap = new HashMap<String, ExprNodeDesc>();
+          for (int i= 0; i < cSELOutputColumnNames.size(); i++) {
+            String outputColumnName = cSELOutputColumnNames.get(i);
+            ExprNodeDesc cSELExprNodeDesc = cSELColList.get(i);
+            ExprNodeDesc newPSELExprNodeDesc =
+                ExprNodeDescUtils.backtrack(cSELExprNodeDesc, cSEL, pSEL);
+            newPSELColList.add(newPSELExprNodeDesc);
+            newPSELOutputColumnNames.add(outputColumnName);
+            colExprMap.put(outputColumnName, newPSELExprNodeDesc);
+          }
+          pSEL.getConf().setColList(newPSELColList);
+          pSEL.getConf().setOutputColumnNames(newPSELOutputColumnNames);
+          pSEL.setColumnExprMap(colExprMap);
+        }
         pSEL.setSchema(cSEL.getSchema());
       }
 
       pSEL.getConf().setSelectStar(cSEL.getConf().isSelectStar());
-
+      // We need to use the OpParseContext of the child SelectOperator to replace the
+      // the OpParseContext of the parent SelectOperator.
+      pctx.updateOpParseCtx(pSEL, pctx.removeOpParseCtx(cSEL));
       pSEL.removeChildAndAdoptItsChildren(cSEL);
       cSEL.setParentOperators(null);
       cSEL.setChildOperators(null);
@@ -148,7 +175,7 @@ public class NonBlockingOpDeDupProc implements Transform {
     }
   }
 
-  static class FilterDedup implements NodeProcessor {
+  private class FilterDedup implements NodeProcessor {
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
