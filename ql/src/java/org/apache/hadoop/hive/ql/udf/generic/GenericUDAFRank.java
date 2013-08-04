@@ -45,7 +45,8 @@ import org.apache.hadoop.io.IntWritable;
 								),
 		supportsWindow = false,
 		pivotResult = true,
-		rankingFunction = true
+		rankingFunction = true,
+		impliesOrder = true
 )
 public class GenericUDAFRank extends AbstractGenericUDAFResolver
 {

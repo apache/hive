@@ -41,7 +41,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 								value = "_FUNC_(x)"
 								),
 		supportsWindow = true,
-		pivotResult = false
+		pivotResult = false,
+		impliesOrder = true
 )
 public class GenericUDAFFirstValue extends AbstractGenericUDAFResolver
 {

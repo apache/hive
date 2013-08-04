@@ -35,7 +35,8 @@ import org.apache.hadoop.hive.ql.exec.WindowFunctionDescription;
 								),
 		supportsWindow = false,
 		pivotResult = true,
-		rankingFunction = true
+		rankingFunction = true,
+		impliesOrder = true
 )
 public class GenericUDAFDenseRank extends GenericUDAFRank
 {
