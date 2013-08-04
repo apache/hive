@@ -184,10 +184,6 @@ public final class FunctionRegistry {
 
   static Map<String, WindowFunctionInfo> windowFunctions = Collections.synchronizedMap(new LinkedHashMap<String, WindowFunctionInfo>());
 
-  /*
-   * UDAFS that only work when the input rows have an order.
-   */
-  public static final HashSet<String> UDAFS_IMPLY_ORDER = new HashSet<String>();
 
   static {
     registerUDF("concat", UDFConcat.class, false);
@@ -441,15 +437,6 @@ public final class FunctionRegistry {
     registerWindowFunction("last_value", new GenericUDAFLastValue());
     registerWindowFunction(LEAD_FUNC_NAME, new GenericUDAFLead(), false);
     registerWindowFunction(LAG_FUNC_NAME, new GenericUDAFLag(), false);
-
-    UDAFS_IMPLY_ORDER.add("rank");
-    UDAFS_IMPLY_ORDER.add("dense_rank");
-    UDAFS_IMPLY_ORDER.add("percent_rank");
-    UDAFS_IMPLY_ORDER.add("cume_dist");
-    UDAFS_IMPLY_ORDER.add(LEAD_FUNC_NAME);
-    UDAFS_IMPLY_ORDER.add(LAG_FUNC_NAME);
-    UDAFS_IMPLY_ORDER.add("first_value");
-    UDAFS_IMPLY_ORDER.add("last_value");
 
     registerTableFunction(NOOP_TABLE_FUNCTION, NoopResolver.class);
     registerTableFunction(NOOP_MAP_TABLE_FUNCTION, NoopWithMapResolver.class);
@@ -1431,8 +1418,30 @@ public final class FunctionRegistry {
     return windowFunctions.get(name.toLowerCase());
   }
 
+  /**
+   * Both UDF and UDAF functions can imply order for analytical functions
+   *
+   * @param name
+   *          name of function
+   * @return true if a GenericUDF or GenericUDAF exists for this name and implyOrder is true, false
+   *         otherwise.
+   */
   public static boolean impliesOrder(String functionName) {
-    return functionName == null ? false : UDAFS_IMPLY_ORDER.contains(functionName.toLowerCase());
+
+    FunctionInfo info = mFunctions.get(functionName.toLowerCase());
+    if (info != null) {
+      if (info.isGenericUDF()) {
+        UDFType type = info.getGenericUDF().getClass().getAnnotation(UDFType.class);
+        if (type != null) {
+          return type.impliesOrder();
+        }
+      }
+    }
+    WindowFunctionInfo windowInfo = windowFunctions.get(functionName.toLowerCase());
+    if (windowInfo != null) {
+      return windowInfo.isImpliesOrder();
+    }
+    return false;
   }
 
   static void registerHiveUDAFsAsWindowFunctions()
