@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.serde2.objectinspector;
 
 import junit.framework.TestCase;
 
-
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -49,6 +48,7 @@ public class TestObjectInspectorConverters extends TestCase {
           booleanConverter.convert(Integer.valueOf(0)));
       assertEquals("BooleanConverter", new BooleanWritable(true),
           booleanConverter.convert(Integer.valueOf(1)));
+      assertEquals("BooleanConverter", null, booleanConverter.convert(null));
 
       // Byte
       Converter byteConverter = ObjectInspectorConverters.getConverter(
@@ -58,6 +58,7 @@ public class TestObjectInspectorConverters extends TestCase {
           .convert(Integer.valueOf(0)));
       assertEquals("ByteConverter", new ByteWritable((byte) 1), byteConverter
           .convert(Integer.valueOf(1)));
+      assertEquals("ByteConverter", null, byteConverter.convert(null));
 
       // Short
       Converter shortConverter = ObjectInspectorConverters.getConverter(
@@ -67,6 +68,7 @@ public class TestObjectInspectorConverters extends TestCase {
           shortConverter.convert(Integer.valueOf(0)));
       assertEquals("ShortConverter", new ShortWritable((short) 1),
           shortConverter.convert(Integer.valueOf(1)));
+      assertEquals("ShortConverter", null, shortConverter.convert(null));
 
       // Int
       Converter intConverter = ObjectInspectorConverters.getConverter(
@@ -76,6 +78,7 @@ public class TestObjectInspectorConverters extends TestCase {
           .convert(Integer.valueOf(0)));
       assertEquals("IntConverter", new IntWritable(1), intConverter
           .convert(Integer.valueOf(1)));
+      assertEquals("IntConverter", null, intConverter.convert(null));
 
       // Long
       Converter longConverter = ObjectInspectorConverters.getConverter(
@@ -85,6 +88,7 @@ public class TestObjectInspectorConverters extends TestCase {
           .convert(Integer.valueOf(0)));
       assertEquals("LongConverter", new LongWritable(1), longConverter
           .convert(Integer.valueOf(1)));
+      assertEquals("LongConverter", null, longConverter.convert(null));
 
       // Float
       Converter floatConverter = ObjectInspectorConverters.getConverter(
@@ -94,6 +98,7 @@ public class TestObjectInspectorConverters extends TestCase {
           .convert(Integer.valueOf(0)));
       assertEquals("LongConverter", new FloatWritable(1), floatConverter
           .convert(Integer.valueOf(1)));
+      assertEquals("LongConverter", null, floatConverter.convert(null));
 
       // Double
       Converter doubleConverter = ObjectInspectorConverters.getConverter(
@@ -103,6 +108,7 @@ public class TestObjectInspectorConverters extends TestCase {
           .convert(Integer.valueOf(0)));
       assertEquals("DoubleConverter", new DoubleWritable(1), doubleConverter
           .convert(Integer.valueOf(1)));
+      assertEquals("DoubleConverter", null, doubleConverter.convert(null));
 
       // Text
       Converter textConverter = ObjectInspectorConverters.getConverter(
@@ -112,27 +118,36 @@ public class TestObjectInspectorConverters extends TestCase {
           .convert(Integer.valueOf(0)));
       assertEquals("TextConverter", new Text("1"), textConverter
           .convert(Integer.valueOf(1)));
+      assertEquals("TextConverter", null, textConverter.convert(null));
+
       textConverter = ObjectInspectorConverters.getConverter(
           PrimitiveObjectInspectorFactory.writableBinaryObjectInspector,
           PrimitiveObjectInspectorFactory.writableStringObjectInspector);
       assertEquals("TextConverter", new Text("hive"), textConverter
           .convert(new BytesWritable(new byte[]
               {(byte)'h', (byte)'i',(byte)'v',(byte)'e'})));
+      assertEquals("TextConverter", null, textConverter.convert(null));
+
       textConverter = ObjectInspectorConverters.getConverter(
           PrimitiveObjectInspectorFactory.writableStringObjectInspector,
           PrimitiveObjectInspectorFactory.writableStringObjectInspector);
       assertEquals("TextConverter", new Text("hive"), textConverter
 	  .convert(new Text("hive")));
+      assertEquals("TextConverter", null, textConverter.convert(null));
+
       textConverter = ObjectInspectorConverters.getConverter(
           PrimitiveObjectInspectorFactory.javaStringObjectInspector,
           PrimitiveObjectInspectorFactory.writableStringObjectInspector);
       assertEquals("TextConverter", new Text("hive"), textConverter
 	  .convert(new String("hive")));
+      assertEquals("TextConverter", null, textConverter.convert(null));
+
       textConverter = ObjectInspectorConverters.getConverter(
           PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
           PrimitiveObjectInspectorFactory.writableStringObjectInspector);
       assertEquals("TextConverter", new Text("100.001"), textConverter
 	  .convert(new HiveDecimal("100.001")));
+      assertEquals("TextConverter", null, textConverter.convert(null));
 
       // Binary
       Converter baConverter = ObjectInspectorConverters.getConverter(
@@ -141,12 +156,15 @@ public class TestObjectInspectorConverters extends TestCase {
       assertEquals("BAConverter", new BytesWritable(new byte[]
           {(byte)'h', (byte)'i',(byte)'v',(byte)'e'}),
           baConverter.convert("hive"));
+      assertEquals("BAConverter", null, baConverter.convert(null));
+
       baConverter = ObjectInspectorConverters.getConverter(
           PrimitiveObjectInspectorFactory.writableStringObjectInspector,
           PrimitiveObjectInspectorFactory.writableBinaryObjectInspector);
       assertEquals("BAConverter", new BytesWritable(new byte[]
           {(byte)'h', (byte)'i',(byte)'v',(byte)'e'}),
           baConverter.convert(new Text("hive")));
+      assertEquals("BAConverter", null, baConverter.convert(null));
     } catch (Throwable e) {
       e.printStackTrace();
       throw e;
