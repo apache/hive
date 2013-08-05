@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.mr;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,13 +28,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -55,8 +49,6 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.HiveTotalOrderPartitioner;
 import org.apache.hadoop.hive.ql.exec.JobCloseFeedBack;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -66,20 +58,16 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveKey;
-import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormatImpl;
 import org.apache.hadoop.hive.ql.io.IOPrepareCache;
-import org.apache.hadoop.hive.ql.io.OneNullRowInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
-import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
-import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
@@ -90,7 +78,6 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.Counters;
-import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
@@ -211,49 +198,10 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     return false;
   }
 
-  protected void createTmpDirs() throws IOException {
-    // fix up outputs
-    Map<String, ArrayList<String>> pa = work.getMapWork().getPathToAliases();
-    if (pa != null) {
-      List<Operator<? extends OperatorDesc>> opList =
-        new ArrayList<Operator<? extends OperatorDesc>>();
-
-      if (work.getReduceWork() != null) {
-        opList.add(work.getReduceWork().getReducer());
-      }
-
-      for (List<String> ls : pa.values()) {
-        for (String a : ls) {
-          opList.add(work.getMapWork().getAliasToWork().get(a));
-
-          while (!opList.isEmpty()) {
-            Operator<? extends OperatorDesc> op = opList.remove(0);
-
-            if (op instanceof FileSinkOperator) {
-              FileSinkDesc fdesc = ((FileSinkOperator) op).getConf();
-              String tempDir = fdesc.getDirName();
-
-              if (tempDir != null) {
-                Path tempPath = Utilities.toTempPath(new Path(tempDir));
-                LOG.info("Making Temp Directory: " + tempDir);
-                FileSystem fs = tempPath.getFileSystem(job);
-                fs.mkdirs(tempPath);
-              }
-            }
-
-            if (op.getChildOperators() != null) {
-              opList.addAll(op.getChildOperators());
-            }
-          }
-        }
-      }
-    }
-  }
-
    /**
    * Execute a query plan using Hadoop.
    */
-  @SuppressWarnings("deprecation")
+  @SuppressWarnings({"deprecation", "unchecked"})
   @Override
   public int execute(DriverContext driverContext) {
 
@@ -430,7 +378,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         }
       }
       work.configureJobConf(job);
-      addInputPaths(job, mWork, emptyScratchDirStr, ctx);
+      List<Path> inputPaths = Utilities.getInputPaths(job, mWork, emptyScratchDirStr, ctx);
+      Utilities.setInputPaths(job, inputPaths);
 
       Utilities.setMapRedWork(job, work, ctx.getMRTmpFileURI());
 
@@ -470,7 +419,8 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         }
       }
 
-      this.createTmpDirs();
+      Utilities.createTmpDirs(job, mWork);
+      Utilities.createTmpDirs(job, rWork);
 
       // Finally SUBMIT the JOB!
       rj = jc.submitJob(job);
@@ -658,6 +608,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     }
   }
 
+  @SuppressWarnings("unchecked")
   public static void main(String[] args) throws IOException, HiveException {
 
     String planFileName = null;
@@ -665,6 +616,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     boolean noLog = false;
     String files = null;
     boolean localtask = false;
+    String hadoopAuthToken = null;
     try {
       for (int i = 0; i < args.length; i++) {
         if (args[i].equals("-plan")) {
@@ -677,6 +629,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
           files = args[++i];
         } else if (args[i].equals("-localtask")) {
           localtask = true;
+        } else if (args[i].equals("-hadooptoken")) {
+          //set with HS2 in secure mode with doAs
+          hadoopAuthToken = args[++i];
         }
       }
     } catch (IndexOutOfBoundsException e) {
@@ -697,6 +652,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
     if (files != null) {
       conf.set("tmpfiles", files);
+    }
+    if(hadoopAuthToken != null){
+      conf.set("mapreduce.job.credentials.binary", hadoopAuthToken);
     }
 
     boolean isSilent = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESESSIONSILENT);
@@ -832,164 +790,6 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   public boolean hasReduce() {
     MapredWork w = getWork();
     return w.getReduceWork() != null;
-  }
-
-  /**
-   * Handle a empty/null path for a given alias.
-   */
-  private static int addInputPath(String path, JobConf job, MapWork work, String hiveScratchDir,
-      int numEmptyPaths, boolean isEmptyPath, String alias) throws Exception {
-    // either the directory does not exist or it is empty
-    assert path == null || isEmptyPath;
-
-    // The input file does not exist, replace it by a empty file
-    Class<? extends HiveOutputFormat> outFileFormat = null;
-    boolean nonNative = true;
-    boolean oneRow = false;
-    Properties props;
-    if (isEmptyPath) {
-      PartitionDesc partDesc = work.getPathToPartitionInfo().get(path);
-      props = partDesc.getProperties();
-      outFileFormat = partDesc.getOutputFileFormatClass();
-      nonNative = partDesc.getTableDesc().isNonNative();
-      oneRow = partDesc.getInputFileFormatClass() == OneNullRowInputFormat.class;
-    } else {
-      TableDesc tableDesc = work.getAliasToPartnInfo().get(alias).getTableDesc();
-      props = tableDesc.getProperties();
-      outFileFormat = tableDesc.getOutputFileFormatClass();
-      nonNative = tableDesc.isNonNative();
-    }
-
-    if (nonNative) {
-      FileInputFormat.addInputPaths(job, path);
-      LOG.info("Add a non-native table " + path);
-      return numEmptyPaths;
-    }
-
-    // create a dummy empty file in a new directory
-    String newDir = hiveScratchDir + File.separator + (++numEmptyPaths);
-    Path newPath = new Path(newDir);
-    FileSystem fs = newPath.getFileSystem(job);
-    fs.mkdirs(newPath);
-    //Qualify the path against the filesystem. The user configured path might contain default port which is skipped
-    //in the file status. This makes sure that all paths which goes into PathToPartitionInfo are always listed status
-    //filepath.
-    newPath = fs.makeQualified(newPath);
-    String newFile = newDir + File.separator + "emptyFile";
-    Path newFilePath = new Path(newFile);
-
-    LOG.info("Changed input file to " + newPath.toString());
-
-    // toggle the work
-
-    LinkedHashMap<String, ArrayList<String>> pathToAliases = work.getPathToAliases();
-
-    if (isEmptyPath) {
-      assert path != null;
-      pathToAliases.put(newPath.toUri().toString(), pathToAliases.get(path));
-      pathToAliases.remove(path);
-    } else {
-      assert path == null;
-      ArrayList<String> newList = new ArrayList<String>();
-      newList.add(alias);
-      pathToAliases.put(newPath.toUri().toString(), newList);
-    }
-
-    work.setPathToAliases(pathToAliases);
-
-    LinkedHashMap<String, PartitionDesc> pathToPartitionInfo = work.getPathToPartitionInfo();
-    if (isEmptyPath) {
-      pathToPartitionInfo.put(newPath.toUri().toString(), pathToPartitionInfo.get(path));
-      pathToPartitionInfo.remove(path);
-    } else {
-      PartitionDesc pDesc = work.getAliasToPartnInfo().get(alias).clone();
-      pathToPartitionInfo.put(newPath.toUri().toString(), pDesc);
-    }
-    work.setPathToPartitionInfo(pathToPartitionInfo);
-
-    String onefile = newPath.toString();
-    RecordWriter recWriter = outFileFormat.newInstance().getHiveRecordWriter(job, newFilePath,
-        Text.class, false, props, null);
-    if (oneRow) {
-      // empty files are ommited at CombineHiveInputFormat.
-      // for metadata only query, it effectively makes partition columns disappear..
-      // this could be fixed by other methods, but this seemed to be the most easy (HIVEV-2955)
-      recWriter.write(new Text("empty"));  // written via HiveIgnoreKeyTextOutputFormat
-    }
-    recWriter.close(false);
-    FileInputFormat.addInputPaths(job, onefile);
-    return numEmptyPaths;
-  }
-
-  public static void addInputPaths(JobConf job, MapWork work, String hiveScratchDir, Context ctx)
-      throws Exception {
-    int numEmptyPaths = 0;
-
-    Set<String> pathsProcessed = new HashSet<String>();
-    List<String> pathsToAdd = new LinkedList<String>();
-    // AliasToWork contains all the aliases
-    for (String oneAlias : work.getAliasToWork().keySet()) {
-      LOG.info("Processing alias " + oneAlias);
-      List<String> emptyPaths = new ArrayList<String>();
-
-      // The alias may not have any path
-      String path = null;
-      for (String onefile : work.getPathToAliases().keySet()) {
-        List<String> aliases = work.getPathToAliases().get(onefile);
-        if (aliases.contains(oneAlias)) {
-          path = onefile;
-
-          // Multiple aliases can point to the same path - it should be
-          // processed only once
-          if (pathsProcessed.contains(path)) {
-            continue;
-          }
-
-          pathsProcessed.add(path);
-
-          LOG.info("Adding input file " + path);
-          if (Utilities.isEmptyPath(job, path, ctx)) {
-            emptyPaths.add(path);
-          } else {
-            pathsToAdd.add(path);
-          }
-        }
-      }
-
-      // Create a empty file if the directory is empty
-      for (String emptyPath : emptyPaths) {
-        numEmptyPaths = addInputPath(emptyPath, job, work, hiveScratchDir, numEmptyPaths, true,
-            oneAlias);
-      }
-
-      // If the query references non-existent partitions
-      // We need to add a empty file, it is not acceptable to change the
-      // operator tree
-      // Consider the query:
-      // select * from (select count(1) from T union all select count(1) from
-      // T2) x;
-      // If T is empty and T2 contains 100 rows, the user expects: 0, 100 (2
-      // rows)
-      if (path == null) {
-        numEmptyPaths = addInputPath(null, job, work, hiveScratchDir, numEmptyPaths, false,
-            oneAlias);
-      }
-    }
-    setInputPaths(job, pathsToAdd);
-  }
-
-  private static void setInputPaths(JobConf job, List<String> pathsToAdd) {
-    Path[] addedPaths = FileInputFormat.getInputPaths(job);
-    List<Path> toAddPathList = new ArrayList<Path>();
-    if(addedPaths != null) {
-      for(Path added: addedPaths) {
-        toAddPathList.add(added);
-      }
-    }
-    for(String toAdd: pathsToAdd) {
-      toAddPathList.add(new Path(toAdd));
-    }
-    FileInputFormat.setInputPaths(job, toAddPathList.toArray(new Path[0]));
   }
 
   @Override

@@ -192,7 +192,7 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
     try {
       addInputPaths(job, work);
 
-      Utilities.setMapWork(job, work, ctx.getMRTmpFileURI());
+      Utilities.setMapWork(job, work, ctx.getMRTmpFileURI(), true);
 
       // remove the pwd from conf file so that job tracker doesn't show this
       // logs

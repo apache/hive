@@ -66,7 +66,7 @@ public class TestExecutor extends Thread {
   }
 
   @Override
-public void run() {
+  public void run() {
     while(execute) {
       Test test = null;
       PrintStream logStream = null;

@@ -36,7 +36,6 @@ ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.cnt;
 
 set hive.optimize.correlation=true;
 set hive.auto.convert.join=true;
-set hive.optimize.mapjoin.mapreduce=true;
 -- Enable hive.auto.convert.join.
 EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.cnt
@@ -306,7 +305,6 @@ ON xx.key=yy.key ORDER BY xx.key, xx.cnt, yy.key, yy.value, yy.cnt;
 
 set hive.optimize.correlation=true;
 set hive.auto.convert.join=true;
-set hive.optimize.mapjoin.mapreduce=true;
 EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value, yy.cnt
 FROM

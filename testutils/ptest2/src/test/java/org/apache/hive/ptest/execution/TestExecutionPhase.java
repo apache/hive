@@ -61,9 +61,9 @@ public class TestExecutionPhase extends AbstractTestPhase {
   }
   private ExecutionPhase getPhase() throws IOException {
     createHostExecutor();
-    phase = new ExecutionPhase(hostExecutors, localCommandFactory, templateDefaults,
-        succeededLogDir, failedLogDir, Suppliers.ofInstance(testBatches),
-        executedTests, failedTests, logger);
+    phase = new ExecutionPhase(hostExecutors, executionContext, hostExecutorBuilder, 
+        localCommandFactory, templateDefaults, succeededLogDir, failedLogDir,
+        Suppliers.ofInstance(testBatches), executedTests, failedTests, logger);
     return phase;
   }
   private void setupQFile(boolean isParallel) throws Exception {

@@ -45,7 +45,6 @@
     <dependency org="javax.jdo" name="jdo-api" rev="${jdo-api.version}"
                 transitive="false"/>
     <dependency org="org.apache.derby" name="derby" rev="${derby.version}"/>
-    <dependency org="asm" name="asm" rev="${asm.version}"/>
 
   </dependencies>
 </ivy-module>

@@ -78,10 +78,9 @@ cd /some/working/dir/
   fi
   if [[ "false" == "true" ]]
   then
-  	rm -rf /some/working/dir/ivy /some/working/dir/maven
-  	mkdir /some/working/dir/ivy /some/working/dir/maven
+    rm -rf /some/working/dir/ivy /some/working/dir/maven
+    mkdir /some/working/dir/ivy /some/working/dir/maven
   fi
-  ant -Dant=arg1 -Divy.default.ivy.user.dir=/some/working/dir/ivy -Dmvn.local.repo=/some/working/dir/maven clean package
-  ant -Dant=arg1 -Divy.default.ivy.user.dir=/some/working/dir/ivy -Dmvn.local.repo=/some/working/dir/maven -Dtestcase=nothing test
+  ant -Dant=arg1 -Divy.default.ivy.user.dir=/some/working/dir/ivy -Dmvn.local.repo=/some/working/dir/maven clean package test -Dtestcase=nothing
 ) 2>&1 | tee /some/log/dir/source-prep.txt
 exit ${PIPESTATUS[0]}

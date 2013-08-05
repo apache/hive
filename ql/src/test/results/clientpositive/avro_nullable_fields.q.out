@@ -12,8 +12,8 @@ CREATE TABLE test_serializer(string1 STRING,
                              struct1 STRUCT<sint:INT,sboolean:BOOLEAN,sstring:STRING>,
                              enum1 STRING,
                              nullableint INT,
-                             bytes1 ARRAY<TINYINT>,
-                             fixed1 ARRAY<TINYINT>)
+                             bytes1 BINARY,
+                             fixed1 BINARY)
  ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' COLLECTION ITEMS TERMINATED BY ':' MAP KEYS TERMINATED BY '#' LINES TERMINATED BY '\n'
  STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
@@ -31,8 +31,8 @@ CREATE TABLE test_serializer(string1 STRING,
                              struct1 STRUCT<sint:INT,sboolean:BOOLEAN,sstring:STRING>,
                              enum1 STRING,
                              nullableint INT,
-                             bytes1 ARRAY<TINYINT>,
-                             fixed1 ARRAY<TINYINT>)
+                             bytes1 BINARY,
+                             fixed1 BINARY)
  ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' COLLECTION ITEMS TERMINATED BY ':' MAP KEYS TERMINATED BY '#' LINES TERMINATED BY '\n'
  STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
@@ -124,10 +124,10 @@ POSTHOOK: Input: default@test_serializer
 POSTHOOK: Output: default@as_avro
 POSTHOOK: Lineage: as_avro.bigint1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:bigint1, type:bigint, comment:null), ]
 POSTHOOK: Lineage: as_avro.boolean1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:boolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: as_avro.bytes1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:bytes1, type:array<tinyint>, comment:null), ]
+POSTHOOK: Lineage: as_avro.bytes1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:bytes1, type:binary, comment:null), ]
 POSTHOOK: Lineage: as_avro.double1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:double1, type:double, comment:null), ]
 POSTHOOK: Lineage: as_avro.enum1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:enum1, type:string, comment:null), ]
-POSTHOOK: Lineage: as_avro.fixed1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:fixed1, type:array<tinyint>, comment:null), ]
+POSTHOOK: Lineage: as_avro.fixed1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:fixed1, type:binary, comment:null), ]
 POSTHOOK: Lineage: as_avro.float1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:float1, type:float, comment:null), ]
 POSTHOOK: Lineage: as_avro.int1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: as_avro.list1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:list1, type:array<string>, comment:null), ]
@@ -147,10 +147,10 @@ POSTHOOK: Input: default@as_avro
 #### A masked pattern was here ####
 POSTHOOK: Lineage: as_avro.bigint1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:bigint1, type:bigint, comment:null), ]
 POSTHOOK: Lineage: as_avro.boolean1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:boolean1, type:boolean, comment:null), ]
-POSTHOOK: Lineage: as_avro.bytes1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:bytes1, type:array<tinyint>, comment:null), ]
+POSTHOOK: Lineage: as_avro.bytes1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:bytes1, type:binary, comment:null), ]
 POSTHOOK: Lineage: as_avro.double1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:double1, type:double, comment:null), ]
 POSTHOOK: Lineage: as_avro.enum1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:enum1, type:string, comment:null), ]
-POSTHOOK: Lineage: as_avro.fixed1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:fixed1, type:array<tinyint>, comment:null), ]
+POSTHOOK: Lineage: as_avro.fixed1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:fixed1, type:binary, comment:null), ]
 POSTHOOK: Lineage: as_avro.float1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:float1, type:float, comment:null), ]
 POSTHOOK: Lineage: as_avro.int1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:int1, type:int, comment:null), ]
 POSTHOOK: Lineage: as_avro.list1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:list1, type:array<string>, comment:null), ]
@@ -160,21 +160,21 @@ POSTHOOK: Lineage: as_avro.smallint1 EXPRESSION [(test_serializer)test_serialize
 POSTHOOK: Lineage: as_avro.string1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:string1, type:string, comment:null), ]
 POSTHOOK: Lineage: as_avro.struct1 SIMPLE [(test_serializer)test_serializer.FieldSchema(name:struct1, type:struct<sint:int,sboolean:boolean,sstring:string>, comment:null), ]
 POSTHOOK: Lineage: as_avro.tinyint1 EXPRESSION [(test_serializer)test_serializer.FieldSchema(name:tinyint1, type:tinyint, comment:null), ]
-why hello there	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	[0,1,2,3,4,5]	[50,51,53]
-another record	98	4	101	9999999	false	99.89	9.0E-8	["beta"]	{"Earth":101}	{"sint":1134,"sboolean":false,"sstring":"wazzup"}	RED	NULL	[6,7,8,9,10]	[54,55,56]
-third record	45	5	102	999999999	true	89.99	9.0E-14	["alpha","gamma"]	{"Earth":237,"Bob":723}	{"sint":102,"sboolean":false,"sstring":"BNL"}	GREEN	NULL	[11,12,13]	[57,58,59]
-NULL	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	[0,1,2,3,4,5]	[50,51,53]
-string	NULL	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	[0,1,2,3,4,5]	[50,51,53]
-string	42	NULL	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	[0,1,2,3,4,5]	[50,51,53]
-string	42	3	NULL	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	[0,1,2,3,4,5]	[50,51,53]
-string	42	3	100	NULL	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	[0,1,2,3,4,5]	[50,51,53]
-string	42	3	100	1412341	NULL	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	[0,1,2,3,4,5]	[50,51,53]
-string	42	3	100	1412341	true	NULL	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	[0,1,2,3,4,5]	[50,51,53]
-string	42	3	100	1412341	true	42.43	NULL	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	[0,1,2,3,4,5]	[50,51,53]
-string	42	3	100	1412341	true	42.43	85.23423424	NULL	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	[0,1,2,3,4,5]	[50,51,53]
-string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	NULL	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	[0,1,2,3,4,5]	[50,51,53]
-string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	NULL	BLUE	72	[0,1,2,3,4,5]	[50,51,53]
-string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	NULL	72	[0,1,2,3,4,5]	[50,51,53]
-string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	NULL	[0,1,2,3,4,5]	[50,51,53]
-string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	NULL	[50,51,53]
-string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	[0,1,2,3,4,5]	NULL
+why hello there	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+another record	98	4	101	9999999	false	99.89	9.0E-8	["beta"]	{"Earth":101}	{"sint":1134,"sboolean":false,"sstring":"wazzup"}	RED	NULL		ef
+third record	45	5	102	999999999	true	89.99	9.0E-14	["alpha","gamma"]	{"Earth":237,"Bob":723}	{"sint":102,"sboolean":false,"sstring":"BNL"}	GREEN	NULL		hi
+NULL	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	NULL	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	NULL	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	NULL	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	100	NULL	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	100	1412341	NULL	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	100	1412341	true	NULL	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	100	1412341	true	42.43	NULL	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	100	1412341	true	42.43	85.23423424	NULL	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	NULL	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		bc
+string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	NULL	BLUE	72		bc
+string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	NULL	72		bc
+string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	NULL		bc
+string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72	NULL	bc
+string	42	3	100	1412341	true	42.43	85.23423424	["alpha","beta","gamma"]	{"Earth":42,"Bob":31,"Control":86}	{"sint":17,"sboolean":true,"sstring":"Abe Linkedin"}	BLUE	72		NULL

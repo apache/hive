@@ -33,7 +33,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
                 value = "_FUNC_(expr, amt, default)"
                 ),
     supportsWindow = false,
-    pivotResult = true
+    pivotResult = true,
+    impliesOrder = true
 )
 public class GenericUDAFLag extends GenericUDAFLeadLag {
 
