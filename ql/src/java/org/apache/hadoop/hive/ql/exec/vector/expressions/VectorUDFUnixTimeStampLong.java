@@ -26,11 +26,11 @@ public final class VectorUDFUnixTimeStampLong extends VectorUDFTimestampFieldLon
 
   @Override
   protected long getField(long time) {
-    long ms = time / (1000*1000);
-    long remainder = time % (1000*1000);
+    long ms = (time / (1000*1000*1000)) * 1000;
+    long remainder = time % (1000*1000*1000);
     /* negative timestamps need to be adjusted */
     if(remainder < 0) {
-      ms -= 1;
+      ms -= 1000;
     }
     return ms/1000;
   }
