@@ -521,6 +521,7 @@
         <exclude name="**/ant-contrib*.jar"/>
         <exclude name="**/hive-anttasks*.jar"/>
         <exclude name="**/hive-testutils*.jar"/>
+        <exclude name="**/tez-*.jar"/>
       </fileset>
       <fileset file="${build.dir.hive}/beeline/hive-beeline-${version}.jar" erroronmissingdir="false"/>
       <fileset file="${build.dir.hive}/cli/hive-cli-${version}.jar" erroronmissingdir="false"/>
@@ -540,6 +541,7 @@
         <exclude name="**/mockito*.jar"/>
         <exclude name="**/velocity*.jar"/>
         <exclude name="**/antlr-3*.jar"/>
+        <exclude name="**/tez-*.jar"/>
       </fileset>
     </copy>
     <copy todir="${target.example.dir}/files" preservelastmodified="true" flatten="true">

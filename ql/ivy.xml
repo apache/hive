@@ -26,6 +26,8 @@
     <include file="${ivy.conf.dir}/common-configurations.xml"/>
   </configurations>
   <dependencies>
+    <dependency org="org.apache.mina" name="mina-core" rev="${mina.version}"
+                conf="compile->default" />
     <dependency org="org.apache.hive" name="hive-metastore" rev="${version}"
                 conf="compile->default" />
     <dependency org="org.apache.hive" name="hive-hbase-handler" rev="${version}"
@@ -44,6 +46,19 @@
                 rev="${protobuf.version}" transitive="false"/>
     <dependency org="org.iq80.snappy" name="snappy" 
                 rev="${snappy.version}" transitive="false"/>
+    <dependency org="org.apache.tez" name="tez-dag-api" rev="${tez.version}" conf="compile->master" />
+    <dependency org="org.apache.tez" name="tez-dag" rev="${tez.version}" conf="compile->master" />
+    <dependency org="org.apache.tez" name="tez-engine-api" rev="${tez.version}" conf="compile->master" />
+    <dependency org="org.apache.tez" name="tez-common" rev="${tez.version}" conf="compile->master" />
+    <dependency org="org.apache.tez" name="tez-engine" rev="${tez.version}" conf="compile->master" />
+    <dependency org="org.apache.tez" name="tez-mapreduce" rev="${tez.version}" conf="compile->master" />
+    <dependency org="org.apache.hadoop" name="hadoop-yarn-api" rev="${hadoop-0.23.version}" 
+                conf="compile->master" transitive="false" />
+    <dependency org="org.apache.hadoop" name="hadoop-yarn-common" rev="${hadoop-0.23.version}" 
+                conf="compile->master" transitive="false" />
+    <dependency org="org.apache.hadoop" name="hadoop-yarn-client" rev="${hadoop-0.23.version}" 
+                conf="compile->master" transitive="false" />
+
 
     <!-- hadoop specific guava -->
     <dependency org="org.json" name="json" rev="${json.version}"/>
