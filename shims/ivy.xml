@@ -52,6 +52,11 @@
       <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
       <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
     </dependency>
+    <dependency org="org.apache.tez" name="tez-mapreduce-tests" rev="${tez.version}" conf="hadoop0.23.shim->default">
+      <artifact name="tez-mapreduce-tests" ext="jar"/>
+      <artifact name="tez-mapreduce-tests" type="tests" ext="jar" m:classifier="tests"/>
+    </dependency>
+
     <dependency org="org.apache.hadoop" name="hadoop-mapreduce-client-core"
                 rev="${hadoop-0.23.version}"
                 conf="hadoop0.23.shim->default">

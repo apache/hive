@@ -75,6 +75,16 @@
   </condition>
 
   <target name="set-test-classpath">
+    <if>
+      <equals arg1="${hadoop.use.tez}" arg2="true"/>
+      <then>
+        <fileset id="hive.tez.fileset" dir="${build.dir.hive}/ivy/lib/default" includes="**/tez-*.jar" erroronmissingdir="false"/>
+      </then>
+      <else>
+        <fileset id="hive.tez.fileset" dir="${build.dir.hive}/ivy/lib/default" includes="" excludes="*.jar" erroronmissingdir="false"/>
+      </else>
+    </if>
+
     <typedef name="distinctelementsclasspath" classname="org.apache.hadoop.hive.ant.DistinctElementsClassPath"
       classpath="${build.dir.hive}/anttasks/hive-anttasks-${version}.jar:${build.ivy.lib.dir}/default/commons-collections-${commons-collections.version}.jar:${build.ivy.lib.dir}/default/commons-lang-${commons-lang.version}.jar"/>
     <distinctelementsclasspath id="test.classpath">
@@ -97,7 +107,8 @@
       <pathelement location="${build.dir.hive}/shims/test/classes"/>
 
       <!-- Include build/dist/lib on the classpath before Ivy and exclude hive jars from Ivy to make sure we get the local changes when we test Hive -->
-      <fileset dir="${build.dir.hive}/dist/lib" includes="*.jar" erroronmissingdir="false" excludes="**/hive_contrib*.jar,**/hive-contrib*.jar,**/lib*.jar"/>
+      <fileset refid="hive.tez.fileset"/>
+      <fileset dir="${build.dir.hive}/dist/lib" includes="*.jar" erroronmissingdir="false" excludes="**/hive_contrib*.jar,**/hive-contrib*.jar,**/lib*.jar,**/tez-*.jar"/>
       <fileset dir="${hive.root}/testlibs" includes="*.jar"/>
       <fileset dir="${build.ivy.lib.dir}/hadoop0.${hadoop.mr.rev}.shim" includes="*.jar" erroronmissingdir="false" />
       <pathelement location="${build.classes}" />
@@ -193,7 +204,6 @@
     <fileset dir="${build.ivy.lib.dir}/default" includes="junit*.jar" />
     <fileset dir="${build.ivy.lib.dir}/hadoop0.${hadoop.mr.rev}.shim" includes="*.jar" erroronmissingdir="false" />
     <fileset dir="${build.ivy.lib.dir}/default" includes="*.jar"
-             excludes="**/hadoop-*.jar"
              erroronmissingdir="false"/>
   </path>
 
