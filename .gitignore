@@ -17,3 +17,4 @@ ql/derby.log
 derby.log
 .arc
 ql/TempStatsStore
+data/files/*alltypesorc*

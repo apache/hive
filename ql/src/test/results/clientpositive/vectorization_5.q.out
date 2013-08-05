@@ -1,0 +1,43 @@
+PREHOOK: query: SELECT MAX(csmallint),
+       (MAX(csmallint) * -75),
+       COUNT(*),
+       ((MAX(csmallint) * -75) / COUNT(*)),
+       (6981 * MAX(csmallint)),
+       MIN(csmallint),
+       (-(MIN(csmallint))),
+       (197 % ((MAX(csmallint) * -75) / COUNT(*))),
+       SUM(cint),
+       MAX(ctinyint),
+       (-(MAX(ctinyint))),
+       ((-(MAX(ctinyint))) + MAX(ctinyint))
+FROM   alltypesorc
+WHERE  (((cboolean2 IS NOT NULL)
+         AND (cstring1 LIKE '%b%'))
+        OR ((ctinyint = cdouble)
+            AND ((ctimestamp2 IS NOT NULL)
+                 AND (cstring2 LIKE 'a'))))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT MAX(csmallint),
+       (MAX(csmallint) * -75),
+       COUNT(*),
+       ((MAX(csmallint) * -75) / COUNT(*)),
+       (6981 * MAX(csmallint)),
+       MIN(csmallint),
+       (-(MIN(csmallint))),
+       (197 % ((MAX(csmallint) * -75) / COUNT(*))),
+       SUM(cint),
+       MAX(ctinyint),
+       (-(MAX(ctinyint))),
+       ((-(MAX(ctinyint))) + MAX(ctinyint))
+FROM   alltypesorc
+WHERE  (((cboolean2 IS NOT NULL)
+         AND (cstring1 LIKE '%b%'))
+        OR ((ctinyint = cdouble)
+            AND ((ctimestamp2 IS NOT NULL)
+                 AND (cstring2 LIKE 'a'))))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+16343	-1225725	1070	-1145.53738317757	114090483	-16307	16307	197.0	-26853917571	11	-11	0

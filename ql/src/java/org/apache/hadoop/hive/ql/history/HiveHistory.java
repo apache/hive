@@ -287,7 +287,7 @@ public class HiveHistory {
       String key = ent.getKey();
       String val = ent.getValue();
       if(val != null) {
-        val = val.replace(System.getProperty("line.separator"), " ");
+        val = val.replace("\r","").replace("\n", " ");
       }
       sb.append(key + "=\"" + val + "\"");
 
