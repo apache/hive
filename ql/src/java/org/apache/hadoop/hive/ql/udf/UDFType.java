@@ -34,4 +34,11 @@ public @interface UDFType {
   boolean deterministic() default true;
   boolean stateful() default false;
   boolean distinctLike() default false;
+
+  /**
+   * Using in analytical functions to specify that UDF implies an ordering
+   *
+   * @return true if the function implies order
+   */
+  boolean impliesOrder() default false;
 }

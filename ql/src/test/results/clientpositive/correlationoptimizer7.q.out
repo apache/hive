@@ -19,11 +19,9 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-9 is a root stage
-  Stage-7 depends on stages: Stage-9
-  Stage-4 depends on stages: Stage-7
+  Stage-4 depends on stages: Stage-9
   Stage-8 depends on stages: Stage-4
-  Stage-6 depends on stages: Stage-8
-  Stage-2 depends on stages: Stage-6
+  Stage-2 depends on stages: Stage-8
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -47,7 +45,7 @@ STAGE PLANS:
                 1 [Column[key]]
               Position of Big Table: 0
 
-  Stage: Stage-7
+  Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
         xx:x 
@@ -79,31 +77,20 @@ STAGE PLANS:
                         type: string
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: -1
+                    value expressions:
+                          expr: _col1
+                          type: bigint
       Local Work:
         Map Reduce Local Work
-
-  Stage: Stage-4
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-            Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: _col0
-                    type: string
-              tag: -1
-              value expressions:
-                    expr: _col1
-                    type: bigint
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -148,7 +135,7 @@ STAGE PLANS:
                 1 [Column[key]]
               Position of Big Table: 0
 
-  Stage: Stage-6
+  Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
@@ -175,40 +162,29 @@ STAGE PLANS:
                       expr: _col3
                       type: string
                 outputColumnNames: _col0, _col1, _col2, _col3
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: bigint
+                        expr: _col2
+                        type: string
+                        expr: _col3
+                        type: string
+                  sort order: ++++
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: bigint
+                        expr: _col2
+                        type: string
+                        expr: _col3
+                        type: string
       Local Work:
         Map Reduce Local Work
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-            Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: bigint
-                    expr: _col2
-                    type: string
-                    expr: _col3
-                    type: string
-              sort order: ++++
-              tag: -1
-              value expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: bigint
-                    expr: _col2
-                    type: string
-                    expr: _col3
-                    type: string
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -279,8 +255,7 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-6 is a root stage
-  Stage-5 depends on stages: Stage-6
-  Stage-1 depends on stages: Stage-5
+  Stage-1 depends on stages: Stage-6
   Stage-2 depends on stages: Stage-1
   Stage-0 is a root stage
 
@@ -305,7 +280,7 @@ STAGE PLANS:
                 1 [Column[key]]
               Position of Big Table: 0
 
-  Stage: Stage-5
+  Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
         xx:x 
@@ -337,31 +312,18 @@ STAGE PLANS:
                         type: string
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-      Local Work:
-        Map Reduce Local Work
-
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        $INTNAME 
-            Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: _col0
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: _col1
-                    type: bigint
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: 0
+                    value expressions:
+                          expr: _col1
+                          type: bigint
         yy 
           TableScan
             alias: yy
@@ -379,6 +341,8 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+      Local Work:
+        Map Reduce Local Work
       Reduce Operator Tree:
         Demux Operator
           Group By Operator
@@ -527,13 +491,9 @@ POSTHOOK: Input: default@src1
 PREHOOK: query: -- Without correlation optimizer, we will have 3 MR jobs.
 -- The first one is a MapJoin and Aggregation (in the Reduce Phase).
 -- The second one is another MapJoin. The third one is for ordering.
--- With the correlation optimizer, right now, we still have
--- 3 MR jobs. The first one is a MapJoin and the map-side aggregation (a map-only job).
--- The second one have the reduce-side aggregation and the second join.
--- The third one is for ordering.
--- Although we have turned on hive.optimize.mapjoin.mapreduce, that optimizer
--- can not handle the case that the MR job (the one which a map-only job will be merged in)
--- has multiple inputs. We should improve that optimizer.
+-- With the correlation optimizer, right now, we have
+-- 2 MR jobs. The first one will evaluate the sub-query xx and the join of
+-- xx and yy. The second one will do the ORDER BY.
 EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
@@ -545,13 +505,9 @@ PREHOOK: type: QUERY
 POSTHOOK: query: -- Without correlation optimizer, we will have 3 MR jobs.
 -- The first one is a MapJoin and Aggregation (in the Reduce Phase).
 -- The second one is another MapJoin. The third one is for ordering.
--- With the correlation optimizer, right now, we still have
--- 3 MR jobs. The first one is a MapJoin and the map-side aggregation (a map-only job).
--- The second one have the reduce-side aggregation and the second join.
--- The third one is for ordering.
--- Although we have turned on hive.optimize.mapjoin.mapreduce, that optimizer
--- can not handle the case that the MR job (the one which a map-only job will be merged in)
--- has multiple inputs. We should improve that optimizer.
+-- With the correlation optimizer, right now, we have
+-- 2 MR jobs. The first one will evaluate the sub-query xx and the join of
+-- xx and yy. The second one will do the ORDER BY.
 EXPLAIN
 SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
@@ -565,9 +521,9 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-9 is a root stage
-  Stage-7 depends on stages: Stage-9
-  Stage-8 depends on stages: Stage-7
-  Stage-6 depends on stages: Stage-8
+  Stage-4 depends on stages: Stage-9
+  Stage-8 depends on stages: Stage-4
+  Stage-2 depends on stages: Stage-8
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -591,7 +547,7 @@ STAGE PLANS:
                 1 [Column[key]]
               Position of Big Table: 0
 
-  Stage: Stage-7
+  Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
         xx:x 
@@ -681,7 +637,7 @@ STAGE PLANS:
                 1 [Column[key]]
               Position of Big Table: 0
 
-  Stage: Stage-6
+  Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
@@ -801,8 +757,7 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-6 is a root stage
-  Stage-5 depends on stages: Stage-6
-  Stage-1 depends on stages: Stage-5
+  Stage-1 depends on stages: Stage-6
   Stage-2 depends on stages: Stage-1
   Stage-0 is a root stage
 
@@ -827,7 +782,7 @@ STAGE PLANS:
                 1 [Column[key]]
               Position of Big Table: 0
 
-  Stage: Stage-5
+  Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
         xx:x 
@@ -859,31 +814,18 @@ STAGE PLANS:
                         type: string
                   mode: hash
                   outputColumnNames: _col0, _col1
-                  File Output Operator
-                    compressed: false
-                    GlobalTableId: 0
-                    table:
-                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-      Local Work:
-        Map Reduce Local Work
-
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        $INTNAME 
-            Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: _col0
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: _col1
-                    type: bigint
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                    sort order: +
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                    tag: 0
+                    value expressions:
+                          expr: _col1
+                          type: bigint
         yy 
           TableScan
             alias: yy
@@ -901,6 +843,8 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
+      Local Work:
+        Map Reduce Local Work
       Reduce Operator Tree:
         Demux Operator
           Group By Operator

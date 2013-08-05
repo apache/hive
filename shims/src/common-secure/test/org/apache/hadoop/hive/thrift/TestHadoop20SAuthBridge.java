@@ -72,8 +72,6 @@ public class TestHadoop20SAuthBridge extends TestCase {
       return new Server();
     }
 
-
-
     static class Server extends HadoopThriftAuthBridge20S.Server {
       public Server() throws TTransportException {
         super();
@@ -98,9 +96,9 @@ public class TestHadoop20SAuthBridge extends TestCase {
       }
 
       @Override
-      public void startDelegationTokenSecretManager(Configuration conf)
+      public void startDelegationTokenSecretManager(Configuration conf, Object hms)
       throws IOException{
-        super.startDelegationTokenSecretManager(conf);
+        super.startDelegationTokenSecretManager(conf, hms);
         isMetastoreTokenManagerInited = true;
       }
 

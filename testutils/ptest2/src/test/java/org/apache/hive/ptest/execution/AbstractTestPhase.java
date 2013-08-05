@@ -29,7 +29,9 @@ import java.util.concurrent.Executors;
 
 import junit.framework.Assert;
 
+import org.apache.hive.ptest.api.server.TestLogger;
 import org.apache.hive.ptest.execution.conf.Host;
+import org.apache.hive.ptest.execution.context.ExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,6 +73,8 @@ public abstract class AbstractTestPhase {
   protected ImmutableMap<String, String> templateDefaults;
   protected ImmutableList<HostExecutor> hostExecutors;
   protected HostExecutor hostExecutor;
+  protected ExecutionContext executionContext;
+  protected HostExecutorBuilder hostExecutorBuilder;
   protected Logger logger;
 
   public void initialize(String name) throws Exception {
@@ -80,12 +84,14 @@ public abstract class AbstractTestPhase {
     succeededLogDir = Dirs.create(new File(logDir, "succeeded"));
     failedLogDir = Dirs.create(new File(logDir, "failed"));
     executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(2));
+    executionContext = mock(ExecutionContext.class);
+    hostExecutorBuilder = mock(HostExecutorBuilder.class);
     localCommandFactory = new MockLocalCommandFactory(LOG);
     localCommand = mock(LocalCommand.class);
     localCommandFactory.setInstance(localCommand);
     sshCommandExecutor = spy(new MockSSHCommandExecutor(LOG));
     rsyncCommandExecutor = spy(new MockRSyncCommandExecutor(LOG));
-    logger = LOG;
+    logger = new TestLogger(System.err, TestLogger.LEVEL.TRACE);
     templateDefaults = ImmutableMap.<String, String>builder()
         .put("localDir", LOCAL_DIR)
         .put("workingDir", WORKING_DIR)

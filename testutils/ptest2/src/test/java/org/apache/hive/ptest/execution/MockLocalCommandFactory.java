@@ -39,7 +39,7 @@ public class MockLocalCommandFactory extends LocalCommandFactory {
     return commands;
   }
   @Override
-public LocalCommand create(LocalCommand.CollectPolicy policy, String command)
+  public LocalCommand create(LocalCommand.CollectPolicy policy, String command)
       throws IOException {
     commands.add(command);
     return this.instance;

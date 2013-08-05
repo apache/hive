@@ -110,5 +110,5 @@ public class QFileTestBatch implements TestBatch {
     } else if (!tests.equals(other.tests))
       return false;
     return true;
-  }  
+  }
 }

@@ -43,7 +43,9 @@ import org.apache.hadoop.io.IntWritable;
 									"   and including x in the specified order/ N"
 								),
 		supportsWindow = false,
-		pivotResult = true
+		pivotResult = true,
+		rankingFunction = true,
+		impliesOrder = true
 )
 public class GenericUDAFCumeDist extends GenericUDAFRank
 {

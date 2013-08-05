@@ -16,8 +16,8 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-8 is a root stage
-  Stage-7 depends on stages: Stage-8
-  Stage-0 depends on stages: Stage-7
+  Stage-6 depends on stages: Stage-8
+  Stage-0 depends on stages: Stage-6
   Stage-3 depends on stages: Stage-0
 
 STAGE PLANS:
@@ -56,7 +56,7 @@ STAGE PLANS:
                 1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
               Position of Big Table: 0
 
-  Stage: Stage-7
+  Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
         src2 

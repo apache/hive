@@ -40,15 +40,18 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.util.DosToUnix;
+import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * SessionState encapsulates common data associated with a session.
@@ -133,6 +136,7 @@ public class SessionState {
    */
   LineageState ls;
 
+  private PerfLogger perfLogger;
   /**
    * Get the lineage state stored in this session.
    *
@@ -746,4 +750,25 @@ public class SessionState {
       LOG.info("Error removing session resource dir " + resourceDir, e);
     }
   }
+
+  /**
+   * @param resetPerfLogger
+   * @return  Tries to return an instance of the class whose name is configured in
+   *          hive.exec.perf.logger, but if it can't it just returns an instance of
+   *          the base PerfLogger class
+
+   */
+  public PerfLogger getPerfLogger(boolean resetPerfLogger) {
+    if ((perfLogger == null) || resetPerfLogger) {
+      try {
+        perfLogger = (PerfLogger) ReflectionUtils.newInstance(conf.getClassByName(
+            conf.getVar(ConfVars.HIVE_PERF_LOGGER)), conf);
+      } catch (ClassNotFoundException e) {
+        LOG.error("Performance Logger Class not found:" + e.getMessage());
+        perfLogger = new PerfLogger();
+      }
+    }
+    return perfLogger;
+  }
+
 }

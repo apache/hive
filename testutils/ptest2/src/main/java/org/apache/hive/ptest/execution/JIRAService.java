@@ -20,9 +20,10 @@ package org.apache.hive.ptest.execution;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.SortedSet;
 
 import org.apache.hive.ptest.api.server.TestLogger;
 import org.apache.hive.ptest.execution.conf.Context;
@@ -77,9 +78,9 @@ class JIRAService {
     mJenkinsURL = configuration.getJenkinsURL();
   }
 
-  void postComment(boolean error, int numExecutesTests, Set<String> failedTests,
-      List<String> messages) { 
-    DefaultHttpClient httpClient = new DefaultHttpClient();    
+  void postComment(boolean error, int numExecutesTests, SortedSet<String> failedTests,
+      List<String> messages) {
+    DefaultHttpClient httpClient = new DefaultHttpClient();
     try {
       String buildTag = formatBuildTag(mBuildTag);
       List<String> comments = Lists.newArrayList();
@@ -111,7 +112,7 @@ class JIRAService {
           comments.addAll(failedTests);
           comments.add("{noformat}");
         }
-        comments.add("");        
+        comments.add("");
       }
       comments.add("Test results: " + mJenkinsURL + "/" + buildTag + "/testReport");
       comments.add("Console output: " + mJenkinsURL + "/" + buildTag + "/console");
@@ -121,21 +122,21 @@ class JIRAService {
         comments.add("{noformat}");
         comments.addAll(messages);
         comments.add("{noformat}");
-        comments.add("");        
+        comments.add("");
       }
       comments.add("This message is automatically generated.");
-      mLogger.info("Comment: " + Joiner.on("\n").join(comments));      
+      mLogger.info("Comment: " + Joiner.on("\n").join(comments));
       String body = Joiner.on("\n").join(comments);
       String url = String.format("%s/rest/api/2/issue/%s/comment", mUrl, mName);
       URL apiURL = new URL(mUrl);
       httpClient.getCredentialsProvider()
-          .setCredentials(
-              new AuthScope(apiURL.getHost(), apiURL.getPort(),
-                  AuthScope.ANY_REALM),
+      .setCredentials(
+          new AuthScope(apiURL.getHost(), apiURL.getPort(),
+              AuthScope.ANY_REALM),
               new UsernamePasswordCredentials(mUser, mPassword));
       BasicHttpContext localcontext = new BasicHttpContext();
       localcontext.setAttribute("preemptive-auth", new BasicScheme());
-      httpClient.addRequestInterceptor(new PreemptiveAuth(), 0);      
+      httpClient.addRequestInterceptor(new PreemptiveAuth(), 0);
       HttpPost request = new HttpPost(url);
       ObjectMapper mapper = new ObjectMapper();
       StringEntity params = new StringEntity(mapper.writeValueAsString(new Body(body)));
@@ -155,12 +156,12 @@ class JIRAService {
       httpClient.getConnectionManager().shutdown();
     }
   }
-  
-  @SuppressWarnings("unused")  
+
+  @SuppressWarnings("unused")
   private static class Body {
     private String body;
     public Body() {
-      
+
     }
     public Body(String body) {
       this.body = body;
@@ -170,9 +171,9 @@ class JIRAService {
     }
     public void setBody(String body) {
       this.body = body;
-    }    
+    }
   }
-  
+
   /**
    * Hive-Build-123 to Hive-Build/123
    */
@@ -198,7 +199,7 @@ class JIRAService {
 
     public void process(final HttpRequest request, final HttpContext context)
         throws HttpException, IOException {
-      AuthState authState = (AuthState) context.getAttribute(ClientContext.TARGET_AUTH_STATE);      
+      AuthState authState = (AuthState) context.getAttribute(ClientContext.TARGET_AUTH_STATE);
       if (authState.getAuthScheme() == null) {
         AuthScheme authScheme = (AuthScheme) context.getAttribute("preemptive-auth");
         CredentialsProvider credsProvider = (CredentialsProvider) context.getAttribute(ClientContext.CREDS_PROVIDER);
@@ -215,7 +216,7 @@ class JIRAService {
       }
     }
   }
-  
+
   public static void main(String[] args) throws Exception {
     TestLogger logger = new TestLogger(System.err, TestLogger.LEVEL.TRACE);
     Map<String, String> context = Maps.newHashMap();
@@ -230,7 +231,7 @@ class JIRAService {
     configuration.setJiraName("HIVE-4892");
     JIRAService service = new JIRAService(logger, configuration, "test-123");
     List<String> messages = Lists.newArrayList("msg1", "msg2");
-    Set<String> failedTests = Sets.newHashSet("failed");
+    SortedSet<String> failedTests = Sets.newTreeSet(Collections.singleton("failed"));
     service.postComment(false, 5, failedTests, messages);
   }
 }

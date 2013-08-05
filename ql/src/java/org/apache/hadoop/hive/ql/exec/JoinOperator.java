@@ -76,10 +76,6 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
       // get alias
       alias = (byte) tag;
 
-      if ((lastAlias == null) || (!lastAlias.equals(alias))) {
-        nextSz = joinEmitInterval;
-      }
-
       ArrayList<Object> nr = getFilteredValue(alias, row);
 
       if (handleSkewJoin) {
