@@ -12,6 +12,7 @@ PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
+alltypesorc
 src
 src1
 src_json
@@ -130,6 +131,7 @@ PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1:,pcol2=old_part2:).col1 SIMPLE [(alter_rename_partition_src)alter_rename_partition_src.FieldSchema(name:col1, type:string, comment:null), ]
+alltypesorc
 src
 src1
 src_json
