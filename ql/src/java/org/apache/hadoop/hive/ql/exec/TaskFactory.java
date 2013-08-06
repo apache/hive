@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.mr.MapredLocalTask;
+import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.BlockMergeTask;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.MergeWork;
 import org.apache.hadoop.hive.ql.io.rcfile.stats.PartialScanTask;
@@ -41,6 +42,7 @@ import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
+import org.apache.hadoop.hive.ql.plan.TezWork;
 
 /**
  * TaskFactory implementation.
@@ -89,6 +91,7 @@ public final class TaskFactory {
         DependencyCollectionTask.class));
     taskvec.add(new taskTuple<PartialScanWork>(PartialScanWork.class,
         PartialScanTask.class));
+    taskvec.add(new taskTuple<TezWork>(TezWork.class, TezTask.class));
 
   }
 
