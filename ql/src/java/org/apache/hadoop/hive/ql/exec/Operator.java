@@ -112,6 +112,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   public Operator() {
     id = String.valueOf(seqId.getAndIncrement());
+    childOperators = new ArrayList<Operator<? extends OperatorDesc>>();
+    parentOperators = new ArrayList<Operator<? extends OperatorDesc>>();
   }
 
   public static void resetId() {
@@ -131,6 +133,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   public void setChildOperators(
       List<Operator<? extends OperatorDesc>> childOperators) {
+    if (childOperators == null) {
+      childOperators = new ArrayList<Operator<? extends OperatorDesc>>();
+    }
     this.childOperators = childOperators;
   }
 
@@ -164,6 +169,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   public void setParentOperators(
       List<Operator<? extends OperatorDesc>> parentOperators) {
+    if (parentOperators == null) {
+      parentOperators = new ArrayList<Operator<? extends OperatorDesc>>();
+    }
     this.parentOperators = parentOperators;
   }
 
@@ -691,7 +699,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     int childIndex = childOperators.indexOf(child);
     assert childIndex != -1;
     if (childOperators.size() == 1) {
-      childOperators = null;
+      setChildOperators(null);
     } else {
       childOperators.remove(childIndex);
     }
@@ -740,7 +748,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     int parentIndex = parentOperators.indexOf(parent);
     assert parentIndex != -1;
     if (parentOperators.size() == 1) {
-      parentOperators = null;
+      setParentOperators(null);
     } else {
       parentOperators.remove(parentIndex);
     }
