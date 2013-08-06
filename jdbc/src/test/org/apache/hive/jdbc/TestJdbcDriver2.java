@@ -42,7 +42,12 @@ import junit.framework.TestCase;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hive.common.util.HiveVersionInfo;
+import org.apache.hive.service.cli.operation.ClassicTableTypeMapping;
+import org.apache.hive.service.cli.operation.ClassicTableTypeMapping.ClassicTableTypes;
+import org.apache.hive.service.cli.operation.HiveTableTypeMapping;
+import org.apache.hive.service.cli.operation.TableTypeMappingFactory.TableTypeMappings;
 
 
 /**
@@ -664,6 +669,25 @@ public class TestJdbcDriver2 extends TestCase {
   }
 
   public void testMetaDataGetTables() throws SQLException {
+    getTablesTest(TableType.MANAGED_TABLE.toString(), TableType.VIRTUAL_VIEW.toString());
+  }
+
+  public  void testMetaDataGetTablesHive() throws SQLException {
+    Statement stmt = con.createStatement();
+    stmt.execute("set " + HiveConf.ConfVars.HIVE_SERVER2_TABLE_TYPE_MAPPING.varname +
+        " = " + TableTypeMappings.HIVE.toString());
+    getTablesTest(TableType.MANAGED_TABLE.toString(), TableType.VIRTUAL_VIEW.toString());
+  }
+
+  public  void testMetaDataGetTablesClassic() throws SQLException {
+    Statement stmt = con.createStatement();
+    stmt.execute("set " + HiveConf.ConfVars.HIVE_SERVER2_TABLE_TYPE_MAPPING.varname +
+        " = " + TableTypeMappings.CLASSIC.toString());
+    stmt.close();
+    getTablesTest(ClassicTableTypes.TABLE.toString(), ClassicTableTypes.VIEW.toString());
+  }
+
+  private void getTablesTest(String tableTypeName, String viewTypeName) throws SQLException {
     Map<String, Object[]> tests = new HashMap<String, Object[]>();
     tests.put("test%jdbc%", new Object[]{"testhivejdbcdriver_table"
             , "testhivejdbcdriverpartitionedtable"
@@ -698,7 +722,9 @@ public class TestJdbcDriver2 extends TestCase {
         assertTrue("Missing comment on the table.", resultTableComment.length()>0);
         String tableType = rs.getString("TABLE_TYPE");
         if (resultTableName.endsWith("view")) {
-          assertEquals("Expected a tabletype view but got something else.", "VIRTUAL_VIEW", tableType);
+          assertEquals("Expected a tabletype view but got something else.", viewTypeName, tableType);
+        } else {
+          assertEquals("Expected a tabletype table but got something else.", tableTypeName, tableType);
         }
         cnt++;
       }
@@ -708,7 +734,7 @@ public class TestJdbcDriver2 extends TestCase {
 
     // only ask for the views.
     ResultSet rs = (ResultSet)con.getMetaData().getTables("default", null, null
-            , new String[]{"VIRTUAL_VIEW"});
+            , new String[]{viewTypeName});
     int cnt=0;
     while (rs.next()) {
       cnt++;
@@ -742,13 +768,28 @@ public class TestJdbcDriver2 extends TestCase {
   }
 
   public void testMetaDataGetTableTypes() throws SQLException {
-    ResultSet rs = (ResultSet)con.getMetaData().getTableTypes();
+    metaDataGetTableTypeTest(new HiveTableTypeMapping().getTableTypeNames());
+  }
 
-    Set<String> tabletypes = new HashSet();
-    tabletypes.add("MANAGED_TABLE");
-    tabletypes.add("EXTERNAL_TABLE");
-    tabletypes.add("VIRTUAL_VIEW");
-    tabletypes.add("INDEX_TABLE");
+  public void testMetaDataGetHiveTableTypes() throws SQLException {
+    Statement stmt = con.createStatement();
+    stmt.execute("set " + HiveConf.ConfVars.HIVE_SERVER2_TABLE_TYPE_MAPPING.varname +
+        " = " + TableTypeMappings.HIVE.toString());
+    stmt.close();
+    metaDataGetTableTypeTest(new HiveTableTypeMapping().getTableTypeNames());
+  }
+
+  public void testMetaDataGetClassicTableTypes() throws SQLException {
+    Statement stmt = con.createStatement();
+    stmt.execute("set " + HiveConf.ConfVars.HIVE_SERVER2_TABLE_TYPE_MAPPING.varname +
+        " = " + TableTypeMappings.CLASSIC.toString());
+    stmt.close();
+    metaDataGetTableTypeTest(new ClassicTableTypeMapping().getTableTypeNames());
+  }
+
+  private void metaDataGetTableTypeTest(Set<String> tabletypes)
+      throws SQLException {
+    ResultSet rs = (ResultSet)con.getMetaData().getTableTypes();
 
     int cnt = 0;
     while (rs.next()) {

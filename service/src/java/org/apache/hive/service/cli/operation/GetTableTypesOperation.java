@@ -18,6 +18,7 @@
 
 package org.apache.hive.service.cli.operation;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -37,9 +38,14 @@ public class GetTableTypesOperation extends MetadataOperation {
   .addStringColumn("TABLE_TYPE", "Table type name.");
 
   private RowSet rowSet;
+  private final TableTypeMapping tableTypeMapping;
 
   protected GetTableTypesOperation(HiveSession parentSession) {
     super(parentSession, OperationType.GET_TABLE_TYPES);
+    String tableMappingStr = getParentSession().getHiveConf().
+        getVar(HiveConf.ConfVars.HIVE_SERVER2_TABLE_TYPE_MAPPING);
+    tableTypeMapping =
+      TableTypeMappingFactory.getTableTypeMapping(tableMappingStr);
   }
 
   /* (non-Javadoc)
@@ -51,7 +57,8 @@ public class GetTableTypesOperation extends MetadataOperation {
     try {
       rowSet = new RowSet();
       for (TableType type : TableType.values()) {
-        rowSet.addRow(RESULT_SET_SCHEMA, new String[] {type.toString()});
+        rowSet.addRow(RESULT_SET_SCHEMA,
+            new String[] {tableTypeMapping.mapToClientType(type.toString())});
       }
       setState(OperationState.FINISHED);
     } catch (Exception e) {
