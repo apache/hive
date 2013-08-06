@@ -121,6 +121,12 @@
     </dependency>
 
     <!-- Hadoop 0.20 shim dependencies. Used for building 0.20 shims. -->
+    <dependency org="commons-io" name="commons-io" rev="${commons-io.version}">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+    </dependency>
+
     <dependency org="org.apache.hadoop" name="hadoop-core"
                 rev="${hadoop-0.20.version}"
                 conf="hadoop0.20.shim->default">
