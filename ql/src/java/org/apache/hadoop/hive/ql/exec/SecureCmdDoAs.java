@@ -24,7 +24,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.security.UserGroupInformation;
 
 /**
  * SecureCmdDoAs - Helper class for setting parameters and env necessary for
@@ -48,7 +47,7 @@ public class SecureCmdDoAs {
   }
 
   public void addEnv(Map<String, String> env){
-    env.put(UserGroupInformation.HADOOP_TOKEN_FILE_LOCATION,
+    env.put(ShimLoader.getHadoopShims().getTokenFileLocEnvName(),
         tokenPath.toUri().getPath());
   }
 
