@@ -90,7 +90,7 @@ public class GenericUDAFNTile  extends AbstractGenericUDAFResolver
 
 	public static class GenericUDAFNTileEvaluator extends GenericUDAFEvaluator
 	{
-		PrimitiveObjectInspector inputOI;
+		private transient PrimitiveObjectInspector inputOI;
 
 		@Override
 		public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException

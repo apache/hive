@@ -243,15 +243,15 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
   public static abstract class AbstractGenericUDAFAverageEvaluator<TYPE> extends GenericUDAFEvaluator {
 
     // For PARTIAL1 and COMPLETE
-    private PrimitiveObjectInspector inputOI;
+    private transient PrimitiveObjectInspector inputOI;
     // For PARTIAL2 and FINAL
-    private StructObjectInspector soi;
-    private StructField countField;
-    private StructField sumField;
+    private transient StructObjectInspector soi;
+    private transient StructField countField;
+    private transient StructField sumField;
     private LongObjectInspector countFieldOI;
     private ObjectInspector sumFieldOI;
     // For PARTIAL1 and PARTIAL2
-    protected Object[] partialResult;
+    protected transient Object[] partialResult;
 
     private boolean warned = false;
 

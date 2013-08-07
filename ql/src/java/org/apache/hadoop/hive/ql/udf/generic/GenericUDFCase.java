@@ -32,9 +32,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  * and f should have the same TypeInfo, or an exception will be thrown.
  */
 public class GenericUDFCase extends GenericUDF {
-  private ObjectInspector[] argumentOIs;
-  private GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
-  private GenericUDFUtils.ReturnObjectInspectorResolver caseOIResolver;
+  private transient ObjectInspector[] argumentOIs;
+  private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
+  private transient GenericUDFUtils.ReturnObjectInspectorResolver caseOIResolver;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentTypeException {

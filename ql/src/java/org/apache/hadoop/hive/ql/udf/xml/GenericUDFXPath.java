@@ -29,8 +29,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.Text;
 import org.w3c.dom.NodeList;
@@ -50,11 +50,11 @@ public class GenericUDFXPath extends GenericUDF {
 
   private static final List<Text> emptyResult = Collections.<Text>emptyList();
 
-  private final UDFXPathUtil xpath = new UDFXPathUtil();
+  private transient final UDFXPathUtil xpath = new UDFXPathUtil();
   private final List<Text> result = new ArrayList<Text>(10);
 
-  private Converter converterArg0;
-  private Converter converterArg1;
+  private transient Converter converterArg0;
+  private transient Converter converterArg1;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)

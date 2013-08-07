@@ -66,7 +66,7 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
    * This class uses a writableObjectInspector rather than a TypeInfo to store
    * the canonical type information for this NodeDesc.
    */
-  private ObjectInspector writableObjectInspector;
+  private transient ObjectInspector writableObjectInspector;
   //Is this an expression that should perform a comparison for sorted searches
   private boolean isSortedExpr;
 

@@ -38,9 +38,9 @@ public class GenericUDFFromUtcTimestamp extends GenericUDF {
 
   static final Log LOG = LogFactory.getLog(GenericUDFFromUtcTimestamp.class);
 
-  private PrimitiveObjectInspector[] argumentOIs;
-  private TimestampConverter timestampConverter;
-  private TextConverter textConverter;
+  private transient PrimitiveObjectInspector[] argumentOIs;
+  private transient TimestampConverter timestampConverter;
+  private transient TextConverter textConverter;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)

@@ -56,17 +56,17 @@ public abstract class GenericUDFBaseCompare extends GenericUDF {
   protected String opName;
   protected String opDisplayName;
 
-  protected ObjectInspector[] argumentOIs;
+  protected transient ObjectInspector[] argumentOIs;
 
-  protected ReturnObjectInspectorResolver conversionHelper = null;
+  protected transient ReturnObjectInspectorResolver conversionHelper = null;
   protected ObjectInspector compareOI;
   protected CompareType compareType;
-  protected Converter converter0, converter1;
-  protected StringObjectInspector soi0, soi1;
-  protected IntObjectInspector ioi0, ioi1;
-  protected LongObjectInspector loi0, loi1;
-  protected ByteObjectInspector byoi0, byoi1;
-  protected BooleanObjectInspector boi0,boi1;
+  protected transient Converter converter0, converter1;
+  protected transient StringObjectInspector soi0, soi1;
+  protected transient IntObjectInspector ioi0, ioi1;
+  protected transient LongObjectInspector loi0, loi1;
+  protected transient ByteObjectInspector byoi0, byoi1;
+  protected transient BooleanObjectInspector boi0,boi1;
   protected final BooleanWritable result = new BooleanWritable();
 
   @Override

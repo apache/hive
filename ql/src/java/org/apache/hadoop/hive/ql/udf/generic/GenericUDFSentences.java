@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Locale;
-import java.text.BreakIterator;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -49,7 +49,7 @@ import org.apache.hadoop.io.Text;
     + "language codes are fully supported, and if an unsupported code is specified, a default "
     + "locale is used to process that string.")
 public class GenericUDFSentences extends GenericUDF {
-  private ObjectInspectorConverters.Converter[] converters;
+  private transient ObjectInspectorConverters.Converter[] converters;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {

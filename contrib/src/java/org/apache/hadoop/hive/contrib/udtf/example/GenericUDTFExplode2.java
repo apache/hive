@@ -38,7 +38,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
     value = "_FUNC_(a) - like explode, but outputs two identical columns (for testing purposes)")
 public class GenericUDTFExplode2 extends GenericUDTF {
 
-  ListObjectInspector listOI = null;
+  private transient ListObjectInspector listOI = null;
 
   @Override
   public void close() throws HiveException {

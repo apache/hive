@@ -18,16 +18,15 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.util.List;
 import java.util.ArrayList;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils.ReturnObjectInspectorResolver;
-import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableConstantIntObjectInspector;
 import org.apache.hadoop.io.IntWritable;
@@ -48,9 +47,9 @@ public class GenericUDTFStack extends GenericUDTF {
   public void close() throws HiveException {
   }
 
-  ArrayList<ObjectInspector> argOIs = new ArrayList<ObjectInspector>();
+  private transient List<ObjectInspector> argOIs = new ArrayList<ObjectInspector>();
   Object[] forwardObj = null;
-  ArrayList<ReturnObjectInspectorResolver> returnOIResolvers =
+  private transient ArrayList<ReturnObjectInspectorResolver> returnOIResolvers =
       new ArrayList<ReturnObjectInspectorResolver>();
   IntWritable numRows = null;
   Integer numCols = null;
