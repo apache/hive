@@ -700,7 +700,7 @@
     <antcall target="docs-anakia"/>
   </target>
 
-  <target name="javadoc" depends="package" description="Generate Javadoc">
+  <target name="javadoc" depends="package" description="Generate Javadoc" unless="skip.javadoc">
     <echo message="Project: ${ant.project.name}"/>
     <mkdir dir="${build.javadoc}"/>
     <javadoc
