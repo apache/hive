@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.metastore.api.SkewedValueList;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
@@ -40,7 +39,7 @@ public class ListBucketingCtx implements Serializable {
   private static final long serialVersionUID = 1L;
   private List<String> skewedColNames;
   private List<List<String>> skewedColValues;
-  private Map<SkewedValueList, String> lbLocationMap;
+  private Map<List<String>, String> lbLocationMap;
   private List<SkewedColumnPositionPair> rowSkewedIndex;
   private boolean isStoredAsSubDirectories;
   private String defaultKey;
@@ -83,14 +82,14 @@ public class ListBucketingCtx implements Serializable {
   /**
    * @return the lbLocationMap
    */
-  public Map<SkewedValueList, String> getLbLocationMap() {
+  public Map<List<String>, String> getLbLocationMap() {
     return lbLocationMap;
   }
 
   /**
    * @param lbLocationMap the lbLocationMap to set
    */
-  public void setLbLocationMap(Map<SkewedValueList, String> lbLocationMap) {
+  public void setLbLocationMap(Map<List<String>, String> lbLocationMap) {
     this.lbLocationMap = lbLocationMap;
   }
 
