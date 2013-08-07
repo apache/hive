@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang.StringUtils.join;
+import static org.apache.commons.lang.StringUtils.repeat;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -33,6 +34,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -157,6 +159,7 @@ public class ObjectStore implements RawStore, Configurable {
 
   private boolean isInitialized = false;
   private PersistenceManager pm = null;
+  private MetaStoreDirectSql directSql = null;
   private Configuration hiveConf;
   int openTrasactionCalls = 0;
   private Transaction currentTransaction = null;
@@ -196,6 +199,7 @@ public class ObjectStore implements RawStore, Configurable {
       // Always want to re-create pm as we don't know if it were created by the
       // most recent instance of the pmf
       pm = null;
+      directSql = null;
       openTrasactionCalls = 0;
       currentTransaction = null;
       transactionStatus = TXN_STATUS.NO_STATE;
@@ -227,6 +231,9 @@ public class ObjectStore implements RawStore, Configurable {
     prop = dsProps;
     pm = getPersistenceManager();
     isInitialized = pm != null;
+    if (isInitialized) {
+      directSql = new MetaStoreDirectSql(pm);
+    }
     return;
   }
 
@@ -1652,43 +1659,34 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<Partition> getPartitionsByNames(String dbName, String tblName,
       List<String> partNames) throws MetaException, NoSuchObjectException {
+    boolean doTrace = LOG.isDebugEnabled();
+    List<Partition> results = null;
+    boolean doUseDirectSql = HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL);
 
     boolean success = false;
     try {
+      long start = doTrace ? System.nanoTime() : 0;
       openTransaction();
-
-      StringBuilder sb = new StringBuilder(
-          "table.tableName == t1 && table.database.name == t2 && (");
-      int n = 0;
-      Map<String, String> params = new HashMap<String, String>();
-      for (Iterator<String> itr = partNames.iterator(); itr.hasNext();) {
-        String pn = "p" + n;
-        n++;
-        String part = itr.next();
-        params.put(pn, part);
-        sb.append("partitionName == ").append(pn);
-        sb.append(" || ");
+      if (doUseDirectSql) {
+        try {
+          results = directSql.getPartitionsViaSqlFilter(dbName, tblName, partNames);
+        } catch (Exception ex) {
+          LOG.error("Direct SQL failed, falling back to ORM", ex);
+          doUseDirectSql = false;
+          rollbackTransaction();
+          start = doTrace ? System.nanoTime() : 0;
+          openTransaction();
+        }
       }
-      sb.setLength(sb.length() - 4); // remove the last " || "
-      sb.append(')');
 
-      Query query = pm.newQuery(MPartition.class, sb.toString());
-
-      LOG.debug(" JDOQL filter is " + sb.toString());
-
-      params.put("t1", tblName.trim());
-      params.put("t2", dbName.trim());
-
-      String parameterDeclaration = makeParameterDeclarationString(params);
-      query.declareParameters(parameterDeclaration);
-      query.setOrdering("partitionName ascending");
-
-      List<MPartition> mparts = (List<MPartition>) query.executeWithMap(params);
-      // pm.retrieveAll(mparts); // retrieveAll is pessimistic. some fields may not be needed
-      List<Partition> results = convertToParts(dbName, tblName, mparts);
-      // pm.makeTransientAll(mparts); // makeTransient will prohibit future access of unfetched fields
-      query.closeAll();
+      if (!doUseDirectSql) {
+        results = getPartitionsViaOrm(dbName, tblName, partNames);
+      }
       success = commitTransaction();
+      if (doTrace) {
+        LOG.debug(results.size() + " partition retrieved using " + (doUseDirectSql ? "SQL" : "ORM")
+            + " in " + ((System.nanoTime() - start) / 1000000.0) + "ms");
+      }
       return results;
     } finally {
       if (!success) {
@@ -1697,15 +1695,98 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
+  private List<Partition> getPartitionsViaOrm(
+      String dbName, String tblName, List<String> partNames) throws MetaException {
+    StringBuilder sb = new StringBuilder(
+        "table.tableName == t1 && table.database.name == t2 && (");
+    int n = 0;
+    Map<String, String> params = new HashMap<String, String>();
+    for (Iterator<String> itr = partNames.iterator(); itr.hasNext();) {
+      String pn = "p" + n;
+      n++;
+      String part = itr.next();
+      params.put(pn, part);
+      sb.append("partitionName == ").append(pn);
+      sb.append(" || ");
+    }
+    sb.setLength(sb.length() - 4); // remove the last " || "
+    sb.append(')');
+
+    Query query = pm.newQuery(MPartition.class, sb.toString());
+
+    LOG.debug(" JDOQL filter is " + sb.toString());
+    params.put("t1", tblName.trim());
+    params.put("t2", dbName.trim());
+
+    String parameterDeclaration = makeParameterDeclarationString(params);
+
+    query.declareParameters(parameterDeclaration);
+    query.setOrdering("partitionName ascending");
+
+    List<MPartition> mparts = (List<MPartition>) query.executeWithMap(params);
+    // pm.retrieveAll(mparts); // retrieveAll is pessimistic. some fields may not be needed
+    List<Partition> results = convertToParts(dbName, tblName, mparts);
+    // pm.makeTransientAll(mparts); // makeTransient will prohibit future access of unfetched fields
+    query.closeAll();
+    return results;
+  }
+
   @Override
   public List<Partition> getPartitionsByFilter(String dbName, String tblName,
       String filter, short maxParts) throws MetaException, NoSuchObjectException {
-    openTransaction();
-    List<Partition> parts = convertToParts(listMPartitionsByFilter(dbName,
-        tblName, filter, maxParts));
-    LOG.info("# parts after pruning = " + parts.size());
-    commitTransaction();
-    return parts;
+    boolean doTrace = LOG.isDebugEnabled();
+    // There's no portable SQL limit. It doesn't make a lot of sense w/o offset anyway.
+    boolean doUseDirectSql = (maxParts < 0)
+        && HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL);
+    dbName = dbName.toLowerCase();
+    tblName = tblName.toLowerCase();
+    List<Partition> results = null;
+    FilterParser parser = null;
+    if (filter != null && filter.length() != 0) {
+      LOG.debug("Filter specified is " + filter);
+      parser = getFilterParser(filter);
+    }
+
+    boolean success = false;
+    try {
+      long start = doTrace ? System.nanoTime() : 0;
+      openTransaction();
+      MTable mtable = ensureGetMTable(dbName, tblName);
+      if (doUseDirectSql) {
+        try {
+          Table table = convertToTable(mtable);
+          results = directSql.getPartitionsViaSqlFilter(table, dbName, tblName, parser);
+        } catch (Exception ex) {
+          LOG.error("Direct SQL failed, falling back to ORM", ex);
+          doUseDirectSql = false;
+          rollbackTransaction();
+          start = doTrace ? System.nanoTime() : 0;
+          openTransaction();
+          mtable = ensureGetMTable(dbName, tblName); // Detached on rollback, get again.
+        }
+      }
+      if (!doUseDirectSql) {
+        results = convertToParts(listMPartitionsByFilterNoTxn(
+            mtable, dbName, tblName, parser, maxParts));
+      }
+      success = commitTransaction();
+      LOG.info(results.size() + " partitions retrieved using " + (doUseDirectSql ? "SQL" : "ORM")
+          + (doTrace ? (" in " + ((System.nanoTime() - start) / 1000000.0) + "ms") : ""));
+      return results;
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+  }
+
+  private MTable ensureGetMTable(String dbName, String tblName) throws NoSuchObjectException {
+    MTable mtable = getMTable(dbName, tblName);
+    if (mtable == null) {
+      throw new NoSuchObjectException("Specified database/table does not exist : "
+          + dbName + "." + tblName);
+    }
+    return mtable;
   }
 
   private FilterParser getFilterParser(String filter) throws MetaException {
@@ -1736,6 +1817,18 @@ public class ObjectStore implements RawStore, Configurable {
    * if mtable is null, generates the query to filter over tables in a database
    */
   private String makeQueryFilterString(MTable mtable, String filter,
+      Map<String, Object> params) throws MetaException {
+    FilterParser parser =
+        (filter != null && filter.length() != 0) ? getFilterParser(filter) : null;
+    return makeQueryFilterString(mtable, parser, params);
+  }
+
+  /**
+   * Makes a JDO query filter string
+   * if mtable is not null, generates the query to filter over partitions in a table.
+   * if mtable is null, generates the query to filter over tables in a database
+   */
+  private String makeQueryFilterString(MTable mtable, FilterParser parser,
       Map<String, Object> params)
       throws MetaException {
 
@@ -1746,10 +1839,8 @@ public class ObjectStore implements RawStore, Configurable {
       queryBuilder.append("database.name == dbName");
     }
 
-    if (filter != null && filter.length() > 0) {
-      FilterParser parser = getFilterParser(filter);
+    if (parser != null) {
       String jdoFilter;
-
       if (mtable != null) {
         Table table = convertToTable(mtable);
         jdoFilter = parser.tree.generateJDOFilter(table, params);
@@ -1794,54 +1885,35 @@ public class ObjectStore implements RawStore, Configurable {
     return paramDecl.toString();
   }
 
-  private List<MPartition> listMPartitionsByFilter(String dbName, String tableName,
-      String filter, short maxParts) throws MetaException, NoSuchObjectException{
-    boolean success = false;
+  private List<MPartition> listMPartitionsByFilterNoTxn(MTable mtable, String dbName,
+      String tableName, FilterParser parser, short maxParts)
+          throws MetaException, NoSuchObjectException {
     List<MPartition> mparts = null;
-    try {
-      openTransaction();
-      LOG.debug("Executing listMPartitionsByFilter");
-      dbName = dbName.toLowerCase();
-      tableName = tableName.toLowerCase();
+    LOG.debug("Executing listMPartitionsByFilterNoTxn");
+    Map<String, Object> params = new HashMap<String, Object>();
+    String queryFilterString = makeQueryFilterString(mtable, parser, params);
 
-      MTable mtable = getMTable(dbName, tableName);
-      if( mtable == null ) {
-        throw new NoSuchObjectException("Specified database/table does not exist : "
-            + dbName + "." + tableName);
-      }
-      Map<String, Object> params = new HashMap<String, Object>();
-      String queryFilterString =
-        makeQueryFilterString(mtable, filter, params);
+    Query query = pm.newQuery(MPartition.class,
+        queryFilterString);
 
-      Query query = pm.newQuery(MPartition.class,
-          queryFilterString);
-
-      if( maxParts >= 0 ) {
-        //User specified a row limit, set it on the Query
-        query.setRange(0, maxParts);
-      }
-
-      LOG.debug("Filter specified is " + filter + "," +
-             " JDOQL filter is " + queryFilterString);
-
-      params.put("t1", tableName.trim());
-      params.put("t2", dbName.trim());
-
-      String parameterDeclaration = makeParameterDeclarationStringObj(params);
-      query.declareParameters(parameterDeclaration);
-      query.setOrdering("partitionName ascending");
-
-      mparts = (List<MPartition>) query.executeWithMap(params);
-
-      LOG.debug("Done executing query for listMPartitionsByFilter");
-      pm.retrieveAll(mparts);
-      success = commitTransaction();
-      LOG.debug("Done retrieving all objects for listMPartitionsByFilter");
-    } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+    if( maxParts >= 0 ) {
+      //User specified a row limit, set it on the Query
+      query.setRange(0, maxParts);
     }
+
+    LOG.debug("JDOQL filter is " + queryFilterString);
+
+    params.put("t1", tableName.trim());
+    params.put("t2", dbName.trim());
+
+    String parameterDeclaration = makeParameterDeclarationStringObj(params);
+    query.declareParameters(parameterDeclaration);
+    query.setOrdering("partitionName ascending");
+
+    mparts = (List<MPartition>) query.executeWithMap(params);
+
+    LOG.debug("Done executing query for listMPartitionsByFilterNoTxn");
+    pm.retrieveAll(mparts);
     return mparts;
   }
 
@@ -1909,8 +1981,7 @@ public class ObjectStore implements RawStore, Configurable {
         return partNames;
       }
       Map<String, Object> params = new HashMap<String, Object>();
-      String queryFilterString =
-        makeQueryFilterString(mtable, filter, params);
+      String queryFilterString = makeQueryFilterString(mtable, filter, params);
       Query query = pm.newQuery(
           "select partitionName from org.apache.hadoop.hive.metastore.model.MPartition "
           + "where " + queryFilterString);
