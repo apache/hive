@@ -713,6 +713,7 @@
       windowtitle="${Name} ${version} API"
       doctitle="${Name} ${version} API"
       bottom="Copyright &amp;copy; ${year} The Apache Software Foundation"
+      useexternalfile="yes"
       >
 
       <packageset dir="ant/src"/>

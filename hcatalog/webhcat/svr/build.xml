@@ -48,7 +48,7 @@
       <fileset dir="${basedir}/src/main/config/"/>
     </copy>
     <echo message="Generating wadl xml file"/>
-    <javadoc access="public" classpathref="compile.class.path">
+    <javadoc access="public" classpathref="compile.class.path" useexternalfile="yes">
       <fileset dir="${basedir}/src/main/java" defaultexcludes="yes"/>
       <doclet name="com.sun.jersey.wadl.resourcedoc.ResourceDoclet"
               pathref="compile.class.path">
