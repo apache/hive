@@ -121,10 +121,10 @@ public class GenericUDAFHistogramNumeric extends AbstractGenericUDAFResolver {
 
     // For PARTIAL1 and COMPLETE: ObjectInspectors for original data
     private PrimitiveObjectInspector inputOI;
-    private PrimitiveObjectInspector nbinsOI;
+    private transient PrimitiveObjectInspector nbinsOI;
 
     // For PARTIAL2 and FINAL: ObjectInspectors for partial aggregations (list of doubles)
-    private StandardListObjectInspector loi;
+    private transient StandardListObjectInspector loi;
 
 
     @Override

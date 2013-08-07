@@ -51,9 +51,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
     + "  > SELECT _FUNC_(array('b', 'd', 'c', 'a')) FROM src LIMIT 1;\n"
     + "  'a', 'b', 'c', 'd'")
 public class GenericUDFSortArray extends GenericUDF {
-  private Converter[] converters;
+  private transient Converter[] converters;
   private final List<Object> ret = new ArrayList<Object>();
-  private ObjectInspector[] argumentOIs;
+  private transient ObjectInspector[] argumentOIs;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {

@@ -31,8 +31,8 @@ import org.apache.hadoop.hive.ql.index.bitmap.BitmapObjectInput;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
@@ -42,8 +42,8 @@ import org.apache.hadoop.io.LongWritable;
 @Description(name = "ewah_bitmap_empty", value = "_FUNC_(bitmap) - "
     + "Predicate that tests whether an EWAH-compressed bitmap is all zeros ")
 public class GenericUDFEWAHBitmapEmpty extends GenericUDF {
-  ObjectInspector bitmapOI;
-  BooleanObjectInspector boolOI;
+  private transient ObjectInspector bitmapOI;
+  private transient BooleanObjectInspector boolOI;
 
 @Override
 public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {

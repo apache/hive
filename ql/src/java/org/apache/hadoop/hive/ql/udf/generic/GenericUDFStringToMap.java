@@ -40,8 +40,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
     + " second delimiter sperates key and value. If only one parameter is given, default"
     + " delimiters are used: ',' as delimiter1 and '=' as delimiter2.")
 public class GenericUDFStringToMap extends GenericUDF {
-  HashMap<Object, Object> ret = new HashMap<Object, Object>();
-  StringObjectInspector soi_text, soi_de1 = null, soi_de2 = null;
+  private final HashMap<Object, Object> ret = new HashMap<Object, Object>();
+  private transient StringObjectInspector soi_text, soi_de1 = null, soi_de2 = null;
   final static String default_de1 = ",";
   final static String default_de2 = ":";
 

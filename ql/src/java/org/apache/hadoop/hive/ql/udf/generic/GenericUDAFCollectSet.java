@@ -69,10 +69,11 @@ public class GenericUDAFCollectSet extends AbstractGenericUDAFResolver {
     private PrimitiveObjectInspector inputOI;
     // For PARTIAL2 and FINAL: ObjectInspectors for partial aggregations (list
     // of objs)
-    private StandardListObjectInspector loi;
+    private transient StandardListObjectInspector loi;
     
-    private StandardListObjectInspector internalMergeOI;
+    private transient StandardListObjectInspector internalMergeOI;
     
+    @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters)
         throws HiveException {
       super.init(m, parameters);

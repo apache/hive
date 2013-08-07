@@ -37,8 +37,8 @@ import org.apache.hadoop.io.IntWritable;
  */
 @Description(name = "size", value = "_FUNC_(a) - Returns the size of a")
 public class GenericUDFSize extends GenericUDF {
-  private ObjectInspector returnOI;
-  private final IntWritable result = new IntWritable(-1);
+  private transient ObjectInspector returnOI;
+  private final transient IntWritable result = new IntWritable(-1);
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)

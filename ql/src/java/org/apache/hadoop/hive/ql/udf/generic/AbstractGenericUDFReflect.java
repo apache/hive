@@ -26,18 +26,18 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.*;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 
 /**
  * common class for reflective UDFs
  */
 public abstract class AbstractGenericUDFReflect extends GenericUDF {
 
-  private PrimitiveObjectInspector[] parameterOIs;
-  private PrimitiveTypeEntry[] parameterTypes;
-  private Class[] parameterClasses;
+  private transient PrimitiveObjectInspector[] parameterOIs;
+  private transient PrimitiveTypeEntry[] parameterTypes;
+  private transient Class[] parameterClasses;
 
-  private Object[] parameterJavaValues;
+  private transient Object[] parameterJavaValues;
 
   void setupParameterOIs(ObjectInspector[] arguments, int start) throws UDFArgumentTypeException {
     int length = arguments.length - start;

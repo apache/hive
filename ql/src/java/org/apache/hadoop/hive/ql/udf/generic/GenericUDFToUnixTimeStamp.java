@@ -42,13 +42,13 @@ import org.apache.hadoop.io.LongWritable;
     extended = "Converts the specified time to number of seconds since 1970-01-01.")
 public class GenericUDFToUnixTimeStamp extends GenericUDF {
 
-  private StringObjectInspector intputTextOI;
-  private DateObjectInspector inputDateOI;
-  private TimestampObjectInspector inputTimestampOI;
-  private StringObjectInspector patternOI;
+  private transient StringObjectInspector intputTextOI;
+  private transient DateObjectInspector inputDateOI;
+  private transient TimestampObjectInspector inputTimestampOI;
+  private transient StringObjectInspector patternOI;
 
   private String lasPattern = "yyyy-MM-dd HH:mm:ss";
-  private SimpleDateFormat formatter = new SimpleDateFormat(lasPattern);
+  private transient final SimpleDateFormat formatter = new SimpleDateFormat(lasPattern);
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {

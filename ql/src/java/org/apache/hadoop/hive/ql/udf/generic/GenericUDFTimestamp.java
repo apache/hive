@@ -37,8 +37,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  */
 public class GenericUDFTimestamp extends GenericUDF {
 
-  private PrimitiveObjectInspector argumentOI;
-  private TimestampConverter tc;
+  private transient PrimitiveObjectInspector argumentOI;
+  private transient TimestampConverter tc;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {

@@ -34,7 +34,7 @@ import org.apache.hadoop.io.BooleanWritable;
 @Description(name = "not", value = "_FUNC_ a - Logical not")
 public class GenericUDFOPNot extends GenericUDF {
   private final BooleanWritable result = new BooleanWritable();
-  BooleanObjectInspector boi;
+  private transient BooleanObjectInspector boi;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)
