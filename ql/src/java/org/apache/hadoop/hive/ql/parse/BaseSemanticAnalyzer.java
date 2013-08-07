@@ -986,11 +986,24 @@ public abstract class BaseSemanticAnalyzer {
     ListBucketingCtx lbCtx = new ListBucketingCtx();
     lbCtx.setSkewedColNames(skewedColNames);
     lbCtx.setSkewedColValues(skewedValues);
-    lbCtx.setLbLocationMap(skewedColValueLocationMaps);
+    lbCtx.setLbLocationMap(convertSkewedValueListToSimpleList(skewedColValueLocationMaps));
     lbCtx.setStoredAsSubDirectories(isStoredAsSubDirectories);
     lbCtx.setDefaultKey(ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_KEY);
     lbCtx.setDefaultDirName(ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME);
     return lbCtx;
+  }
+
+ // This is done to avoid the need of sending metastore jars to task nodes.
+  private Map<List<String>, String> convertSkewedValueListToSimpleList(
+      Map<SkewedValueList, String> skewedColValueLocationMaps) {
+    if (skewedColValueLocationMaps == null) {
+      return null;
+    }
+    Map<List<String>, String> converted = new HashMap<List<String>, String>();
+    for (Map.Entry<SkewedValueList, String> entry : skewedColValueLocationMaps.entrySet()) {
+      converted.put(entry.getKey().getSkewedValueList(), entry.getValue());
+    }
+    return converted;
   }
 
   /**
