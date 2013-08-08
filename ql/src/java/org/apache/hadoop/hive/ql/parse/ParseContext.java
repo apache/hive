@@ -640,8 +640,7 @@ public class ParseContext {
       throws HiveException {
     PrunedPartitionList partsList = opToPartList.get(ts);
     if (partsList == null) {
-      partsList = PartitionPruner.prune(topToTable.get(ts),
-          opToPartPruner.get(ts), conf, alias, prunedPartitions);
+      partsList = PartitionPruner.prune(ts, this, alias);
       opToPartList.put(ts, partsList);
     }
     return partsList;

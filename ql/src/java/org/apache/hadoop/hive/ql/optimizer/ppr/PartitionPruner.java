@@ -36,12 +36,14 @@ import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.PrunerUtils;
 import org.apache.hadoop.hive.ql.optimizer.Transform;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
@@ -130,6 +132,17 @@ public class PartitionPruner implements Transform {
   }
 
   /**
+   * Get the partition list for the TS operator that satisfies the partition pruner
+   * condition.
+   */
+  public static PrunedPartitionList prune(TableScanOperator ts, ParseContext parseCtx,
+      String alias) throws HiveException {
+    return prune(parseCtx.getTopToTable().get(ts),
+        parseCtx.getOpToPartPruner().get(ts), parseCtx.getConf(), alias,
+        ts.getConf().getVirtualCols(), parseCtx.getPrunedPartitions());
+  }
+
+  /**
    * Get the partition list for the table that satisfies the partition pruner
    * condition.
    *
@@ -141,12 +154,16 @@ public class PartitionPruner implements Transform {
    *          for checking whether "strict" mode is on.
    * @param alias
    *          for generating error message only.
+   * @param vcs
+   *          virtual columns referenced
+   * @param prunedPartitionsMap
+   *          cached result for the table
    * @return the partition list for the table that satisfies the partition
    *         pruner condition.
    * @throws HiveException
    */
-  public static PrunedPartitionList prune(Table tab, ExprNodeDesc prunerExpr,
-      HiveConf conf, String alias,
+  private static PrunedPartitionList prune(Table tab, ExprNodeDesc prunerExpr,
+      HiveConf conf, String alias, List<VirtualColumn> vcs,
       Map<String, PrunedPartitionList> prunedPartitionsMap) throws HiveException {
     LOG.trace("Started pruning partiton");
     LOG.trace("dbname = " + tab.getDbName());
@@ -168,10 +185,6 @@ public class PartitionPruner implements Transform {
     LinkedHashSet<Partition> denied_parts = new LinkedHashSet<Partition>();
 
     try {
-      StructObjectInspector rowObjectInspector = (StructObjectInspector) tab
-          .getDeserializer().getObjectInspector();
-      Object[] rowWithPart = new Object[2];
-
       if (tab.isPartitioned()) {
         // If the "strict" mode is on, we have to provide partition pruner for
         // each table.
@@ -216,8 +229,10 @@ public class PartitionPruner implements Transform {
             } else {
               LOG.info(ErrorMsg.INVALID_JDO_FILTER_EXPRESSION.getMsg("by condition '"
                   + message + "'"));
+              StructObjectInspector rowObjectInspector = (StructObjectInspector) tab
+                  .getDeserializer().getObjectInspector();
               pruneBySequentialScan(tab, true_parts, unkn_parts, denied_parts,
-                  prunerExpr, rowObjectInspector, conf);
+                  prunerExpr, rowObjectInspector, vcs, conf);
             }
           }
         }
@@ -253,7 +268,7 @@ public class PartitionPruner implements Transform {
       GenericUDF udf = ((ExprNodeGenericFuncDesc)expr).getGenericUDF();
       if (udf instanceof GenericUDFOPAnd ||
           udf instanceof GenericUDFOPOr) {
-        List<ExprNodeDesc> children = ((ExprNodeGenericFuncDesc)expr).getChildren();
+        List<ExprNodeDesc> children = expr.getChildren();
         ExprNodeDesc left = children.get(0);
         children.set(0, compactExpr(left));
         ExprNodeDesc right = children.get(1);
@@ -300,11 +315,13 @@ public class PartitionPruner implements Transform {
    * @param denied_parts pruned out partitions.
    * @param prunerExpr the SQL predicate that involves partition columns.
    * @param rowObjectInspector object inspector used by the evaluator
+   * @param vcs virtual columns referenced
    * @param conf Hive Configuration object, can not be NULL.
    * @throws Exception
    */
-  static private void pruneBySequentialScan(Table tab, Set<Partition> true_parts, Set<Partition> unkn_parts,
-      Set<Partition> denied_parts, ExprNodeDesc prunerExpr, StructObjectInspector rowObjectInspector, HiveConf conf)
+   static private void pruneBySequentialScan(Table tab, Set<Partition> true_parts,
+       Set<Partition> unkn_parts, Set<Partition> denied_parts, ExprNodeDesc prunerExpr,
+       StructObjectInspector rowObjectInspector, List<VirtualColumn> vcs, HiveConf conf)
       throws Exception {
 
     List<String> trueNames = null;
@@ -320,15 +337,17 @@ public class PartitionPruner implements Transform {
     List<FieldSchema> pCols = tab.getPartCols();
     List<String> partCols = new ArrayList<String>(pCols.size());
     List<String> values = new ArrayList<String>(pCols.size());
-    Object[] objectWithPart = new Object[2];
     String defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+ 
+    boolean hasVC = vcs != null && !vcs.isEmpty();
+    Object[] objectWithPart = new Object[hasVC ? 3 : 2];
 
     for (FieldSchema pCol : pCols) {
       partCols.add(pCol.getName());
     }
 
     Map<PrimitiveObjectInspector, ExprNodeEvaluator> handle = PartExprEvalUtils.prepareExpr(
-        prunerExpr, partCols, rowObjectInspector);
+        prunerExpr, partCols, vcs, rowObjectInspector);
 
     for (String partName : partNames) {
 

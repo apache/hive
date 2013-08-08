@@ -455,13 +455,8 @@ public final class GenMapRedUtils {
 
     if (partsList == null) {
       try {
-        partsList = parseCtx.getOpToPartList().get((TableScanOperator) topOp);
-        if (partsList == null) {
-          partsList = PartitionPruner.prune(parseCtx.getTopToTable().get(topOp),
-              parseCtx.getOpToPartPruner().get(topOp), opProcCtx.getConf(),
-              alias_id, parseCtx.getPrunedPartitions());
-          parseCtx.getOpToPartList().put((TableScanOperator) topOp, partsList);
-        }
+        TableScanOperator tsOp = (TableScanOperator) topOp;
+        partsList = PartitionPruner.prune(tsOp, parseCtx, alias_id);
       } catch (SemanticException e) {
         throw e;
       } catch (HiveException e) {
