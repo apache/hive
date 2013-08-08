@@ -71,6 +71,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.tools.HadoopArchives;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.VersionInfo;
 
 /**
  * Implemention of shims against Hadoop 0.20.0.
@@ -605,7 +606,17 @@ public class Hadoop20Shims implements HadoopShims {
 
   @Override
   public void loginUserFromKeytab(String principal, String keytabFile) throws IOException {
-    throw new UnsupportedOperationException("Kerberos login is not supported in current hadoop version");
+    throwKerberosUnsupportedError();
+  }
+
+  @Override
+  public void reLoginUserFromKeytab() throws IOException{
+    throwKerberosUnsupportedError();
+  }
+
+  private void throwKerberosUnsupportedError() throws UnsupportedOperationException{
+    throw new UnsupportedOperationException("Kerberos login is not supported" +
+        " in this hadoop version (" + VersionInfo.getVersion() + ")");
   }
 
   @Override
