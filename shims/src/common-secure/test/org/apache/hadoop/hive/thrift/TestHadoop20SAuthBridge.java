@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -77,13 +78,13 @@ public class TestHadoop20SAuthBridge extends TestCase {
         super();
       }
       @Override
-      public TTransportFactory createTransportFactory()
+      public TTransportFactory createTransportFactory(Map<String, String> saslProps)
       throws TTransportException {
         TSaslServerTransport.Factory transFactory =
           new TSaslServerTransport.Factory();
         transFactory.addServerDefinition(AuthMethod.DIGEST.getMechanismName(),
             null, SaslRpcServer.SASL_DEFAULT_REALM,
-            SaslRpcServer.SASL_PROPS,
+            saslProps,
             new SaslDigestCallbackHandler(secretManager));
 
         return new TUGIAssumingTransportFactory(transFactory, realUgi);
