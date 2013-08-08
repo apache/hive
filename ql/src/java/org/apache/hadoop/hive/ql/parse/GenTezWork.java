@@ -24,9 +24,12 @@ import java.util.Stack;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
+import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
@@ -82,7 +85,13 @@ public class GenTezWork implements NodeProcessor {
       assert root.getParentOperators().isEmpty();
       LOG.debug("Adding map work for " + root);
       MapWork mapWork = new MapWork();
-      mapWork.getAliasToWork().put("", root);
+
+      // map work starts with table scan operators
+      assert root instanceof TableScanOperator;
+      String alias = ((TableScanOperator)root).getConf().getAlias();
+
+      GenMapRedUtils.setMapWork(mapWork, context.parseContext,
+          context.inputs, null, root, alias, context.conf, false);
       tezWork.add(mapWork);
       work = mapWork;
     } else {
@@ -90,6 +99,16 @@ public class GenTezWork implements NodeProcessor {
       LOG.debug("Adding reduce work for " + root);
       ReduceWork reduceWork = new ReduceWork();
       reduceWork.setReducer(root);
+      reduceWork.setNeedsTagging(GenMapRedUtils.needsTagging(reduceWork));
+
+      // All parents should be reduce sinks. We pick the first to choose the
+      // number of reducers. In the join/union case they will all be -1. In
+      // sort/order case where it matters there will be only one parent.
+      assert root.getParentOperators().get(0) instanceof ReduceSinkOperator;
+      ReduceSinkOperator reduceSink
+        = (ReduceSinkOperator)root.getParentOperators().get(0);
+      reduceWork.setNumReduceTasks(reduceSink.getConf().getNumReducers());
+
       tezWork.add(reduceWork);
       tezWork.connect(
           context.preceedingWork,

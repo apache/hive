@@ -238,9 +238,9 @@ public class DagUtils {
   /*
    * Helper function to create Vertex for given ReduceWork.
    */
-  private static Vertex creatVertex(JobConf conf, ReduceWork reduceWork, int seqNo,
+  private static Vertex createVertex(JobConf conf, ReduceWork reduceWork, int seqNo,
       LocalResource appJarLr, List<LocalResource> additionalLr, FileSystem fs,
-      Path mrScratchDir, Context ctx) throws IOException {
+      Path mrScratchDir, Context ctx) throws Exception {
 
     // write out the operator plan
     Path planPath = Utilities.setReduceWork(conf, reduceWork,
@@ -404,16 +404,16 @@ public class DagUtils {
    */
   public static Vertex createVertex(JobConf conf, BaseWork work,
       Path scratchDir, int seqNo, LocalResource appJarLr, List<LocalResource> additionalLr,
-      FileSystem fileSystem, Context ctx) {
+      FileSystem fileSystem, Context ctx) throws Exception {
 
     // simply dispatch the call to the right method for the actual (sub-) type of
     // BaseWork.
     if (work instanceof MapWork) {
-      return createVertex(conf, (MapWork) work, scratchDir, seqNo, appJarLr,
-          additionalLr, fileSystem, ctx);
+      return createVertex(conf, (MapWork) work, seqNo, appJarLr,
+          additionalLr, fileSystem, scratchDir, ctx);
     } else if (work instanceof ReduceWork) {
-      return createVertex(conf, (ReduceWork) work, scratchDir, seqNo, appJarLr,
-          additionalLr, fileSystem, ctx);
+      return createVertex(conf, (ReduceWork) work, seqNo, appJarLr,
+          additionalLr, fileSystem, scratchDir, ctx);
     } else {
       assert false;
       return null;
