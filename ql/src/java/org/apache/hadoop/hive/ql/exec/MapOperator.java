@@ -168,57 +168,51 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
     initialize(hconf, null);
   }
 
-  private MapOpCtx initObjectInspector(MapWork conf,
-      Configuration hconf, String onefile, Map<TableDesc, StructObjectInspector> convertedOI)
-          throws HiveException,
-      ClassNotFoundException, InstantiationException, IllegalAccessException,
-      SerDeException {
-    PartitionDesc pd = conf.getPathToPartitionInfo().get(onefile);
-    LinkedHashMap<String, String> partSpec = pd.getPartSpec();
+  private MapOpCtx initObjectInspector(Configuration hconf, MapInputPath ctx,
+      Map<TableDesc, StructObjectInspector> convertedOI) throws Exception {
+
+    PartitionDesc pd = ctx.partDesc;
+    TableDesc td = pd.getTableDesc();
+
+    MapOpCtx opCtx = new MapOpCtx();
     // Use table properties in case of unpartitioned tables,
     // and the union of table properties and partition properties, with partition
     // taking precedence
-    Properties partProps =
-        (pd.getPartSpec() == null || pd.getPartSpec().isEmpty()) ?
-            pd.getTableDesc().getProperties() : pd.getOverlayedProperties();
+    Properties partProps = isPartitioned(pd) ?
+        pd.getOverlayedProperties() : pd.getTableDesc().getProperties();
+
+    Map<String, String> partSpec = pd.getPartSpec();
+
+    opCtx.tableName = String.valueOf(partProps.getProperty("name"));
+    opCtx.partName = String.valueOf(partSpec);
 
     Class serdeclass = pd.getDeserializerClass();
     if (serdeclass == null) {
-      String className = pd.getSerdeClassName();
-      if ((className == null) || (className.isEmpty())) {
-        throw new HiveException(
-            "SerDe class or the SerDe class name is not set for table: "
-                + pd.getProperties().getProperty("name"));
-      }
+      String className = checkSerdeClassName(pd.getSerdeClassName(), opCtx.tableName);
       serdeclass = hconf.getClassByName(className);
     }
 
-    String tableName = String.valueOf(partProps.getProperty("name"));
-    String partName = String.valueOf(partSpec);
-    Deserializer partDeserializer = (Deserializer) serdeclass.newInstance();
-    partDeserializer.initialize(hconf, partProps);
-    StructObjectInspector partRawRowObjectInspector = (StructObjectInspector) partDeserializer
-        .getObjectInspector();
+    opCtx.deserializer = (Deserializer) serdeclass.newInstance();
+    opCtx.deserializer.initialize(hconf, partProps);
 
-    StructObjectInspector tblRawRowObjectInspector = convertedOI.get(pd.getTableDesc());
+    StructObjectInspector partRawRowObjectInspector =
+        (StructObjectInspector) opCtx.deserializer.getObjectInspector();
 
-    partTblObjectInspectorConverter =
-    ObjectInspectorConverters.getConverter(partRawRowObjectInspector,
-        tblRawRowObjectInspector);
+    opCtx.tblRawRowObjectInspector = convertedOI.get(td);
 
-    MapOpCtx opCtx = null;
+    opCtx.partTblObjectInspectorConverter = ObjectInspectorConverters.getConverter(
+        partRawRowObjectInspector, opCtx.tblRawRowObjectInspector);
+
     // Next check if this table has partitions and if so
     // get the list of partition names as well as allocate
     // the serdes for the partition columns
-    String pcols = partProps
-        .getProperty(org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS);
+    String pcols = partProps.getProperty(hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS);
     // Log LOG = LogFactory.getLog(MapOperator.class.getName());
     if (pcols != null && pcols.length() > 0) {
       String[] partKeys = pcols.trim().split("/");
       List<String> partNames = new ArrayList<String>(partKeys.length);
       Object[] partValues = new Object[partKeys.length];
-      List<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>(
-          partKeys.length);
+      List<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>(partKeys.length);
       for (int i = 0; i < partKeys.length; i++) {
         String key = partKeys[i];
         partNames.add(key);
