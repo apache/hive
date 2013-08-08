@@ -64,8 +64,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
-
 
 public class MetaStoreUtils {
 
@@ -1263,6 +1263,18 @@ public class MetaStoreUtils {
     }
     return true;
   }
+
+  /**
+   * Read and return the meta store Sasl configuration. Currently it uses the default
+   * Hadoop SASL configuration and can be configured using "hadoop.rpc.protection"
+   * @param conf
+   * @return The SASL configuration
+   */
+  public static Map<String, String> getMetaStoreSaslProperties(HiveConf conf) {
+    // As of now Hive Meta Store uses the same configuration as Hadoop SASL configuration
+    return ShimLoader.getHadoopThriftAuthBridge().getHadoopSaslProperties(conf);
+  }
+
 
   private static String getPartitionValWithInvalidCharacter(List<String> partVals,
       Pattern partitionValidationPattern) {

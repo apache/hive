@@ -18,6 +18,7 @@
 package org.apache.hive.service.auth;
 
 import java.io.IOException;
+import java.util.Map;
 
 import javax.security.sasl.SaslException;
 
@@ -56,7 +57,7 @@ public class KerberosSaslHelper {
   }
 
   public static TTransport getKerberosTransport(String principal, String host,
-      final TTransport underlyingTransport) throws SaslException {
+      final TTransport underlyingTransport, Map<String, String> saslProps) throws SaslException {
     try {
       final String names[] = principal.split("[/@]");
       if (names.length != 3) {
@@ -67,7 +68,7 @@ public class KerberosSaslHelper {
       HadoopThriftAuthBridge.Client authBridge =
         ShimLoader.getHadoopThriftAuthBridge().createClientWithConf("kerberos");
       return authBridge.createClientTransport(principal, host,
-          "KERBEROS", null, underlyingTransport);
+          "KERBEROS", null, underlyingTransport, saslProps);
     } catch (IOException e) {
       throw new SaslException("Failed to open client transport", e);
     }

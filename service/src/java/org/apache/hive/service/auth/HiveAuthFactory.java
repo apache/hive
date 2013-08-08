@@ -20,6 +20,7 @@ package org.apache.hive.service.auth;
 import java.io.IOException;
 
 import javax.security.auth.login.LoginException;
+import javax.security.sasl.Sasl;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
@@ -29,8 +30,15 @@ import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.thrift.TProcessorFactory;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 
 public class HiveAuthFactory {
+  private static final Logger LOG = LoggerFactory.getLogger(HiveAuthFactory.class);
 
   public static enum AuthTypes {
     NOSASL("NOSASL"),
@@ -71,13 +79,32 @@ public class HiveAuthFactory {
     }
   }
 
+  public Map<String, String> getSaslProperties() {
+    Map<String, String> saslProps = new HashMap<String, String>();
+    SaslQOP saslQOP =
+            SaslQOP.fromString(conf.getVar(ConfVars.HIVE_SERVER2_THRIFT_SASL_QOP));
+    // hadoop.rpc.protection being set to a higher level than hive.server2.thrift.rpc.protection
+    // does not make sense in most situations. Log warning message in such cases.
+    Map<String, String> hadoopSaslProps =  ShimLoader.getHadoopThriftAuthBridge().
+            getHadoopSaslProperties(conf);
+    SaslQOP hadoopSaslQOP = SaslQOP.fromString(hadoopSaslProps.get(Sasl.QOP));
+    if(hadoopSaslQOP.ordinal() > saslQOP.ordinal()) {
+      LOG.warn(MessageFormat.format("\"hadoop.rpc.protection\" is set to higher security level " +
+              "{0} then {1} which is set to {2}", hadoopSaslQOP.toString(),
+              ConfVars.HIVE_SERVER2_THRIFT_SASL_QOP.varname, saslQOP.toString()));
+    }
+    saslProps.put(Sasl.QOP, saslQOP.toString());
+    saslProps.put(Sasl.SERVER_AUTH, "true");
+    return saslProps;
+  }
+
   public TTransportFactory getAuthTransFactory() throws LoginException {
 
     TTransportFactory transportFactory;
 
     if (authTypeStr.equalsIgnoreCase(AuthTypes.KERBEROS.getAuthName())) {
       try {
-        transportFactory = saslServer.createTransportFactory();
+        transportFactory = saslServer.createTransportFactory(getSaslProperties());
       } catch (TTransportException e) {
         throw new LoginException(e.getMessage());
       }
