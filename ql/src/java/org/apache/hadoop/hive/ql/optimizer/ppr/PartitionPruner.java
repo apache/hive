@@ -319,8 +319,8 @@ public class PartitionPruner implements Transform {
    * @param conf Hive Configuration object, can not be NULL.
    * @throws Exception
    */
-   static private void pruneBySequentialScan(Table tab, Set<Partition> true_parts,
-       Set<Partition> unkn_parts, Set<Partition> denied_parts, ExprNodeDesc prunerExpr,
+  static private void pruneBySequentialScan(Table tab, Set<Partition> true_parts,
+      Set<Partition> unkn_parts, Set<Partition> denied_parts, ExprNodeDesc prunerExpr,
        StructObjectInspector rowObjectInspector, List<VirtualColumn> vcs, HiveConf conf)
       throws Exception {
 
@@ -338,7 +338,7 @@ public class PartitionPruner implements Transform {
     List<String> partCols = new ArrayList<String>(pCols.size());
     List<String> values = new ArrayList<String>(pCols.size());
     String defaultPartitionName = conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME);
- 
+
     boolean hasVC = vcs != null && !vcs.isEmpty();
     Object[] objectWithPart = new Object[hasVC ? 3 : 2];
 
