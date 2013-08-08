@@ -27,6 +27,7 @@ import java.util.Map;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -44,9 +45,11 @@ public class PartExprEvalUtils {
    * @return value returned by the expression
    * @throws HiveException
    */
-  static synchronized public Object evalExprWithPart(ExprNodeDesc expr, LinkedHashMap<String, String> partSpec,
+  static synchronized public Object evalExprWithPart(ExprNodeDesc expr,
+      LinkedHashMap<String, String> partSpec, List<VirtualColumn> vcs,
       StructObjectInspector rowObjectInspector) throws HiveException {
-    Object[] rowWithPart = new Object[2];
+    boolean hasVC = vcs != null && !vcs.isEmpty();
+    Object[] rowWithPart = new Object[hasVC ? 3 : 2];
     // Create the row object
     ArrayList<String> partNames = new ArrayList<String>();
     ArrayList<String> partValues = new ArrayList<String>();
@@ -61,10 +64,12 @@ public class PartExprEvalUtils {
         .getStandardStructObjectInspector(partNames, partObjectInspectors);
 
     rowWithPart[1] = partValues;
-    ArrayList<StructObjectInspector> ois = new ArrayList<StructObjectInspector>(
-        2);
+    ArrayList<StructObjectInspector> ois = new ArrayList<StructObjectInspector>(2);
     ois.add(rowObjectInspector);
     ois.add(partObjectInspector);
+    if (hasVC) {
+      ois.add(VirtualColumn.getVCSObjectInspector(vcs));
+    }
     StructObjectInspector rowWithPartObjectInspector = ObjectInspectorFactory
         .getUnionStructObjectInspector(ois);
 
@@ -79,9 +84,9 @@ public class PartExprEvalUtils {
   }
 
   static synchronized public Map<PrimitiveObjectInspector, ExprNodeEvaluator> prepareExpr(
-      ExprNodeDesc expr, List<String> partNames,
+      ExprNodeDesc expr, List<String> partNames, List<VirtualColumn> vcs,
       StructObjectInspector rowObjectInspector) throws HiveException {
-
+    boolean hasVC = vcs != null && !vcs.isEmpty();
     // Create the row object
     List<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>();
     for (int i = 0; i < partNames.size(); i++) {
@@ -90,9 +95,12 @@ public class PartExprEvalUtils {
     StructObjectInspector partObjectInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(partNames, partObjectInspectors);
 
-    List<StructObjectInspector> ois = new ArrayList<StructObjectInspector>(2);
+    List<StructObjectInspector> ois = new ArrayList<StructObjectInspector>(3);
     ois.add(rowObjectInspector);
     ois.add(partObjectInspector);
+    if (hasVC) {
+      ois.add(VirtualColumn.getVCSObjectInspector(vcs));
+    }
     StructObjectInspector rowWithPartObjectInspector =
       ObjectInspectorFactory.getUnionStructObjectInspector(ois);
 

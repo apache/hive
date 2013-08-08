@@ -137,6 +137,10 @@ public class TableScanDesc extends AbstractOperatorDesc {
     this.virtualCols.addAll(virtualCols);
   }
 
+  public boolean hasVirtualCols() {
+    return virtualCols != null && !virtualCols.isEmpty();
+  }
+
   public void setStatsAggPrefix(String k) {
     statsAggKeyPrefix = k;
   }
