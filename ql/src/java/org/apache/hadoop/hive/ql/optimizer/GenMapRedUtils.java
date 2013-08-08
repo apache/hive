@@ -85,7 +85,7 @@ public final class GenMapRedUtils {
     LOG = LogFactory.getLog("org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils");
   }
 
-  private static boolean needsTagging(ReduceWork rWork) {
+  public static boolean needsTagging(ReduceWork rWork) {
     return rWork != null && (rWork.getReducer().getClass() == JoinOperator.class ||
          rWork.getReducer().getClass() == DemuxOperator.class);
   }
@@ -439,17 +439,37 @@ public final class GenMapRedUtils {
   public static void setTaskPlan(String alias_id,
       Operator<? extends OperatorDesc> topOp, Task<?> task, boolean local,
       GenMRProcContext opProcCtx, PrunedPartitionList pList) throws SemanticException {
-    MapWork plan = ((MapredWork) task.getWork()).getMapWork();
-    ParseContext parseCtx = opProcCtx.getParseCtx();
-    Set<ReadEntity> inputs = opProcCtx.getInputs();
+    setMapWork(((MapredWork) task.getWork()).getMapWork(), opProcCtx.getParseCtx(),
+        opProcCtx.getInputs(), pList, topOp, alias_id, opProcCtx.getConf(), local);
+    opProcCtx.addSeenOp(task, topOp);
+  }
 
+  /**
+   * initialize MapWork
+   *
+   * @param alias_id
+   *          current alias
+   * @param topOp
+   *          the top operator of the stack
+   * @param plan
+   *          map work to initialize
+   * @param local
+   *          whether you need to add to map-reduce or local work
+   * @param pList
+   *          pruned partition list. If it is null it will be computed on-the-fly.
+   * @param inputs
+   *          read entities for the map work
+   * @param conf
+   *          current instance of hive conf
+   */
+  public static void setMapWork(MapWork plan, ParseContext parseCtx, Set<ReadEntity> inputs,
+      PrunedPartitionList partsList, Operator<? extends OperatorDesc> topOp, String alias_id,
+      HiveConf conf, boolean local) throws SemanticException {
     ArrayList<Path> partDir = new ArrayList<Path>();
     ArrayList<PartitionDesc> partDesc = new ArrayList<PartitionDesc>();
 
     Path tblDir = null;
     TableDesc tblDesc = null;
-
-    PrunedPartitionList partsList = pList;
 
     plan.setNameToSplitSample(parseCtx.getNameToSplitSample());
 
@@ -458,7 +478,7 @@ public final class GenMapRedUtils {
         partsList = parseCtx.getOpToPartList().get((TableScanOperator) topOp);
         if (partsList == null) {
           partsList = PartitionPruner.prune(parseCtx.getTopToTable().get(topOp),
-              parseCtx.getOpToPartPruner().get(topOp), opProcCtx.getConf(),
+              parseCtx.getOpToPartPruner().get(topOp), conf,
               alias_id, parseCtx.getPrunedPartitions());
           parseCtx.getOpToPartList().put((TableScanOperator) topOp, partsList);
         }
@@ -704,7 +724,6 @@ public final class GenMapRedUtils {
       }
       plan.setMapLocalWork(localPlan);
     }
-    opProcCtx.addSeenOp(task, topOp);
   }
 
   /**

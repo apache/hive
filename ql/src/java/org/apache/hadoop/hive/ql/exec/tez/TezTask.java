@@ -102,7 +102,7 @@ public class TezTask extends Task<TezWork> {
 
   private DAG build(JobConf conf, TezWork work, Path scratchDir,
       LocalResource appJarLr, Context ctx)
-      throws IOException {
+      throws Exception {
 
     Map<BaseWork, Vertex> workToVertex = new HashMap<BaseWork, Vertex>();
     Map<BaseWork, JobConf> workToConf = new HashMap<BaseWork, JobConf>();
