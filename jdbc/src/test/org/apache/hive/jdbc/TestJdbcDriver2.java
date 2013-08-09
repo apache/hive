@@ -389,6 +389,46 @@ public class TestJdbcDriver2 extends TestCase {
         expectedException);
   }
 
+  /**
+   * Execute non-select statements using execute() and executeUpdated() APIs
+   * of PreparedStatement interface
+   * @throws Exception
+   */
+  public void testExecutePreparedStatement() throws Exception {
+    String key = "testKey";
+    String val1 = "val1";
+    String val2 = "val2";
+    PreparedStatement ps = con.prepareStatement("set " + key + " = ?");
+
+    // execute() of Prepared statement
+    ps.setString(1, val1);
+    ps.execute();
+    verifyConfValue(key, val1);
+
+    // executeUpdate() of Prepared statement
+    ps.clearParameters();
+    ps.setString(1, val2);
+    ps.executeUpdate();
+    verifyConfValue(key, val2);
+  }
+
+  /**
+   * Execute "set x" and extract value from key=val format result
+   * Verify the extracted value
+   * @param stmt
+   * @return
+   * @throws Exception
+   */
+  private void verifyConfValue(String key, String expectedVal) throws Exception {
+    Statement stmt = con.createStatement();
+    ResultSet res = stmt.executeQuery("set " + key);
+    assertTrue(res.next());
+    String resultValues[] = res.getString(1).split("="); // "key = 'val'"
+    assertEquals("Result not in key = val format", 2, resultValues.length);
+    String result = resultValues[1].substring(1, resultValues[1].length() -1); // remove '
+    assertEquals("Conf value should be set by execute()", expectedVal, result);
+  }
+
   public final void testSelectAll() throws Exception {
     doTestSelectAll(tableName, -1, -1); // tests not setting maxRows (return all)
     doTestSelectAll(tableName, 0, -1); // tests setting maxRows to 0 (return all)

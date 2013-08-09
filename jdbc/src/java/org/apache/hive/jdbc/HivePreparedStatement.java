@@ -25,7 +25,6 @@ import java.net.URL;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.Clob;
-import java.sql.Connection;
 import java.sql.Date;
 import java.sql.NClob;
 import java.sql.ParameterMetaData;
@@ -35,71 +34,30 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.RowId;
 import java.sql.SQLException;
-import java.sql.SQLWarning;
 import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.Map;
 
 import org.apache.hive.service.cli.thrift.TCLIService;
-import org.apache.hive.service.cli.thrift.TExecuteStatementReq;
-import org.apache.hive.service.cli.thrift.TExecuteStatementResp;
-import org.apache.hive.service.cli.thrift.TOperationHandle;
 import org.apache.hive.service.cli.thrift.TSessionHandle;
 
 /**
  * HivePreparedStatement.
  *
  */
-public class HivePreparedStatement implements PreparedStatement {
+public class HivePreparedStatement extends HiveStatement implements PreparedStatement {
   private final String sql;
-  private TCLIService.Iface client;
-  private final TSessionHandle sessHandle;
-  private TOperationHandle stmtHandle;
-  Map<String,String> sessConf = new HashMap<String,String>();
 
   /**
    * save the SQL parameters {paramLoc:paramValue}
    */
   private final HashMap<Integer, String> parameters=new HashMap<Integer, String>();
 
-  /**
-   * We need to keep a reference to the result set to support the following:
-   * <code>
-   * statement.execute(String sql);
-   * statement.getResultSet();
-   * </code>.
-   */
-  private ResultSet resultSet = null;
-  /**
-   * The maximum number of rows this statement should return (0 => all rows).
-   */
-  private  int maxRows = 0;
-
-  /**
-   * Add SQLWarnings to the warningChain if needed.
-   */
-  private  SQLWarning warningChain = null;
-
-  /**
-   * Keep state so we can fail certain calls made after close().
-   */
-  private boolean isClosed = false;
-
-  /**
-   * keep the current ResultRet update count
-   */
-  private final int updateCount=0;
-
-  /**
-   *
-   */
   public HivePreparedStatement(TCLIService.Iface client, TSessionHandle sessHandle,
       String sql) {
-    this.client = client;
-    this.sessHandle = sessHandle;
+    super(client, sessHandle);
     this.sql = sql;
   }
 
@@ -134,8 +92,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public boolean execute() throws SQLException {
-    ResultSet rs = executeImmediate(sql);
-    return rs != null;
+    return super.execute(updateSql(sql, parameters));
   }
 
   /**
@@ -146,7 +103,7 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public ResultSet executeQuery() throws SQLException {
-    return executeImmediate(sql);
+    return super.executeQuery(updateSql(sql, parameters));
   }
 
   /*
@@ -156,45 +113,8 @@ public class HivePreparedStatement implements PreparedStatement {
    */
 
   public int executeUpdate() throws SQLException {
-    executeImmediate(sql);
-    return updateCount;
-  }
-
-  /**
-   *  Executes the SQL statement.
-   *
-   *  @param sql The sql, as a string, to execute
-   *  @return ResultSet
-   *  @throws SQLException if the prepared statement is closed or there is a database error.
-   *                       caught Exceptions are thrown as SQLExceptions with the description
-   *                       "08S01".
-   */
-
-  protected ResultSet executeImmediate(String sql) throws SQLException {
-    if (isClosed) {
-      throw new SQLException("Can't execute after statement has been closed");
-    }
-
-    try {
-      clearWarnings();
-      resultSet = null;
-      if (sql.contains("?")) {
-        sql = updateSql(sql, parameters);
-      }
-      TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, sql);
-      execReq.setConfOverlay(sessConf);
-      TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
-      Utils.verifySuccessWithInfo(execResp.getStatus());
-      stmtHandle = execResp.getOperationHandle();
-    } catch (SQLException es) {
-      throw es;
-    } catch (Exception ex) {
-      throw new SQLException(ex.toString(), "08S01", ex);
-    }
-    resultSet = new HiveQueryResultSet.Builder().setClient(client).setSessionHandle(sessHandle)
-                      .setStmtHandle(stmtHandle).setMaxRows(maxRows)
-                      .build();
-    return resultSet;
+    super.executeUpdate(updateSql(sql, parameters));
+    return 0;
   }
 
   /**
@@ -205,6 +125,9 @@ public class HivePreparedStatement implements PreparedStatement {
    * @return updated SQL string
    */
   private String updateSql(final String sql, HashMap<Integer, String> parameters) {
+    if (!sql.contains("?")) {
+      return sql;
+    }
 
     StringBuffer newSql = new StringBuffer(sql);
 
@@ -813,477 +736,4 @@ public class HivePreparedStatement implements PreparedStatement {
     // TODO Auto-generated method stub
     throw new SQLException("Method not supported");
   }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#addBatch(java.lang.String)
-   */
-
-  public void addBatch(String sql) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#cancel()
-   */
-
-  public void cancel() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#clearBatch()
-   */
-
-  public void clearBatch() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#clearWarnings()
-   */
-
-  public void clearWarnings() throws SQLException {
-     warningChain=null;
-  }
-
-  public void closeOnCompletion() throws SQLException {
-    // JDK 1.7
-    throw new SQLException("Method not supported");
-  }
-
-  /**
-   *  Closes the prepared statement.
-   *
-   *  @throws SQLException
-   */
-
-  public void close() throws SQLException {
-    client = null;
-    if (resultSet!=null) {
-      resultSet.close();
-      resultSet = null;
-    }
-    isClosed = true;
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#execute(java.lang.String)
-   */
-
-  public boolean execute(String sql) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#execute(java.lang.String, int)
-   */
-
-  public boolean execute(String sql, int autoGeneratedKeys) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#execute(java.lang.String, int[])
-   */
-
-  public boolean execute(String sql, int[] columnIndexes) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#execute(java.lang.String, java.lang.String[])
-   */
-
-  public boolean execute(String sql, String[] columnNames) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#executeBatch()
-   */
-
-  public int[] executeBatch() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#executeQuery(java.lang.String)
-   */
-
-  public ResultSet executeQuery(String sql) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#executeUpdate(java.lang.String)
-   */
-
-  public int executeUpdate(String sql) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#executeUpdate(java.lang.String, int)
-   */
-
-  public int executeUpdate(String sql, int autoGeneratedKeys) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#executeUpdate(java.lang.String, int[])
-   */
-
-  public int executeUpdate(String sql, int[] columnIndexes) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#executeUpdate(java.lang.String, java.lang.String[])
-   */
-
-  public int executeUpdate(String sql, String[] columnNames) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#getConnection()
-   */
-
-  public Connection getConnection() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#getFetchDirection()
-   */
-
-  public int getFetchDirection() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#getFetchSize()
-   */
-
-  public int getFetchSize() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#getGeneratedKeys()
-   */
-
-  public ResultSet getGeneratedKeys() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#getMaxFieldSize()
-   */
-
-  public int getMaxFieldSize() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#getMaxRows()
-   */
-
-  public int getMaxRows() throws SQLException {
-    return this.maxRows;
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#getMoreResults()
-   */
-
-  public boolean getMoreResults() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#getMoreResults(int)
-   */
-
-  public boolean getMoreResults(int current) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#getQueryTimeout()
-   */
-
-  public int getQueryTimeout() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#getResultSet()
-   */
-
-  public ResultSet getResultSet() throws SQLException {
-    return this.resultSet;
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#getResultSetConcurrency()
-   */
-
-  public int getResultSetConcurrency() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#getResultSetHoldability()
-   */
-
-  public int getResultSetHoldability() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#getResultSetType()
-   */
-
-  public int getResultSetType() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#getUpdateCount()
-   */
-
-  public int getUpdateCount() throws SQLException {
-    return updateCount;
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#getWarnings()
-   */
-
-  public SQLWarning getWarnings() throws SQLException {
-    return warningChain;
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#isClosed()
-   */
-
-  public boolean isClosed() throws SQLException {
-    return isClosed;
-  }
-
-  public boolean isCloseOnCompletion() throws SQLException {
-    //JDK 1.7
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#isPoolable()
-   */
-
-  public boolean isPoolable() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#setCursorName(java.lang.String)
-   */
-
-  public void setCursorName(String name) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#setEscapeProcessing(boolean)
-   */
-
-  public void setEscapeProcessing(boolean enable) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#setFetchDirection(int)
-   */
-
-  public void setFetchDirection(int direction) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#setFetchSize(int)
-   */
-
-  public void setFetchSize(int rows) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#setMaxFieldSize(int)
-   */
-
-  public void setMaxFieldSize(int max) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#setMaxRows(int)
-   */
-
-  public void setMaxRows(int max) throws SQLException {
-    if (max < 0) {
-      throw new SQLException("max must be >= 0");
-    }
-    this.maxRows = max;
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#setPoolable(boolean)
-   */
-
-  public void setPoolable(boolean poolable) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Statement#setQueryTimeout(int)
-   */
-
-  public void setQueryTimeout(int seconds) throws SQLException {
-    // TODO Auto-generated method stub
-    // throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Wrapper#isWrapperFor(java.lang.Class)
-   */
-
-  public boolean isWrapperFor(Class<?> iface) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see java.sql.Wrapper#unwrap(java.lang.Class)
-   */
-
-  public <T> T unwrap(Class<T> iface) throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
-  }
-
 }
