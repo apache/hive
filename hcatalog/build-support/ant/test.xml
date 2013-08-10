@@ -54,6 +54,7 @@
           <path refid="test.class.path"/>
           <pathelement location="${clover.jar}"/>
         </classpath>
+        <jvmarg line="${junit.jvm.args}"/>
         <formatter type="${test.junit.output.format}"/>
         <batchtest fork="yes" todir="${test.logs}" unless="testcase">
           <fileset dir="@{srcDir}" includes="**/Test*.java"/>

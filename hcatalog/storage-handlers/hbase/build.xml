@@ -144,6 +144,7 @@
                     <path refid="test.class.path"/>
                     <pathelement path="${clover.jar}"/>
                 </classpath>
+                <jvmarg line="${junit.jvm.args}"/>
                 <formatter type="${test.junit.output.format}" />
                 <!-- If the user has not defined a particular test to run, run them all -->
                 <batchtest fork="yes" todir="${test.log.dir}" unless="testcase">
