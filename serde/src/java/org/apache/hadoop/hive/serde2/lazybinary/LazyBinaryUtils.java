@@ -123,7 +123,12 @@ public final class LazyBinaryUtils {
     }
   }
 
-  static VInt vInt = new LazyBinaryUtils.VInt();
+  private static ThreadLocal<VInt> vIntThreadLocal = new ThreadLocal<VInt>() {
+    @Override
+    public VInt initialValue() {
+      return new VInt();
+    }
+  };
 
   /**
    * Check a particular field and set its size and offset in bytes based on the
@@ -148,6 +153,7 @@ public final class LazyBinaryUtils {
    */
   public static void checkObjectByteInfo(ObjectInspector objectInspector,
       byte[] bytes, int offset, RecordInfo recordInfo) {
+    VInt vInt = vIntThreadLocal.get();
     Category category = objectInspector.getCategory();
     switch (category) {
     case PRIMITIVE:
@@ -391,9 +397,15 @@ public final class LazyBinaryUtils {
     return 1 + len;
   }
 
-  private static byte[] vLongBytes = new byte[9];
+  private static ThreadLocal<byte[]> vLongBytesThreadLocal = new ThreadLocal<byte[]>() {
+    @Override
+    public byte[] initialValue() {
+      return new byte[9];
+    }
+  };
 
   public static void writeVLong(Output byteStream, long l) {
+    byte[] vLongBytes = vLongBytesThreadLocal.get();
     int len = LazyBinaryUtils.writeVLongToByteArray(vLongBytes, l);
     byteStream.write(vLongBytes, 0, len);
   }
