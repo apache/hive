@@ -1701,6 +1701,15 @@
 </property>
 
 <property>
+  <name>hive.exec.orc.dictionary.key.size.threshold</name>
+  <value>0.8</value>
+  <description>
+    If the number of keys in a dictionary is greater than this fraction of the total number of
+    non-null rows, turn off dictionary encoding.  Use 1 to always use dictionary encoding.
+  </description>
+</property>
+
+<property>
   <name>hive.multi.insert.move.tasks.share.dependencies</name>
   <value>false</value>
   <description>

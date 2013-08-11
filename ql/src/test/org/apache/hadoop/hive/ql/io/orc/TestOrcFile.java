@@ -1028,7 +1028,7 @@ public class TestOrcFile {
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     MyMemoryManager memory = new MyMemoryManager(conf, 10000, 0.1);
-    Writer writer = new WriterImpl(fs, testFilePath, inspector,
+    Writer writer = new WriterImpl(fs, testFilePath, conf, inspector,
         50000, CompressionKind.NONE, 100, 0, memory);
     assertEquals(testFilePath, memory.path);
     for(int i=0; i < 2500; ++i) {
