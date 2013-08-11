@@ -76,11 +76,7 @@ class OutStream extends PositionedOutputStream {
   }
 
   public void clear() throws IOException {
-    uncompressedBytes = 0;
-    compressedBytes = 0;
-    compressed = null;
-    overflow = null;
-    current = null;
+    flush();
     suppress = false;
   }
 
@@ -246,7 +242,10 @@ class OutStream extends PositionedOutputStream {
       receiver.output(compressed);
       compressed = null;
     }
-    clear();
+    uncompressedBytes = 0;
+    compressedBytes = 0;
+    overflow = null;
+    current = null;
   }
 
   @Override

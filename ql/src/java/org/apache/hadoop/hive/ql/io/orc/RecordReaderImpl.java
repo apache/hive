@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -713,18 +714,21 @@ class RecordReaderImpl implements RecordReader {
     }
   }
 
+  /**
+   * A tree reader that will read string columns. At the start of the
+   * stripe, it creates an internal reader based on whether a direct or
+   * dictionary encoding was used.
+   */
   private static class StringTreeReader extends TreeReader {
-    private DynamicByteArray dictionaryBuffer = null;
-    private int dictionarySize;
-    private int[] dictionaryOffsets;
-    private RunLengthIntegerReader reader;
+    private TreeReader reader;
 
     StringTreeReader(Path path, int columnId) {
       super(path, columnId);
     }
 
     void checkEncoding(OrcProto.ColumnEncoding encoding) throws IOException {
-      if (encoding.getKind() != OrcProto.ColumnEncoding.Kind.DICTIONARY) {
+      if (encoding.getKind() != OrcProto.ColumnEncoding.Kind.DICTIONARY &&
+          encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT) {
         throw new IOException("Unknown encoding " + encoding + " in column " +
             columnId + " of " + path);
       }
@@ -734,10 +738,138 @@ class RecordReaderImpl implements RecordReader {
     void startStripe(Map<StreamName, InStream> streams,
                      List<OrcProto.ColumnEncoding> encodings
                     ) throws IOException {
+      // For each stripe, checks the encoding and initializes the appropriate
+      // reader
+      switch (encodings.get(columnId).getKind()) {
+        case DIRECT:
+          reader = new StringDirectTreeReader(path, columnId);
+          break;
+        case DICTIONARY:
+          reader = new StringDictionaryTreeReader(path, columnId);
+          break;
+        default:
+          throw new IllegalArgumentException("Unsupported encoding " +
+              encodings.get(columnId).getKind());
+      }
+      reader.startStripe(streams, encodings);
+    }
+
+    @Override
+    void seek(PositionProvider[] index) throws IOException {
+      reader.seek(index);
+    }
+
+    @Override
+    Object next(Object previous) throws IOException {
+      return reader.next(previous);
+    }
+
+    @Override
+    void skipRows(long items) throws IOException {
+      reader.skipRows(items);
+    }
+  }
+
+  /**
+   * A reader for string columns that are direct encoded in the current
+   * stripe.
+   */
+  private static class StringDirectTreeReader extends TreeReader {
+    private InStream stream;
+    private RunLengthIntegerReader lengths;
+
+    StringDirectTreeReader(Path path, int columnId) {
+      super(path, columnId);
+    }
+
+    @Override
+    void checkEncoding(OrcProto.ColumnEncoding encoding) throws IOException {
+      // PASS
+    }
+
+    @Override
+    void startStripe(Map<StreamName, InStream> streams,
+                     List<OrcProto.ColumnEncoding> encodings
+                    ) throws IOException {
+      super.startStripe(streams, encodings);
+      StreamName name = new StreamName(columnId,
+          OrcProto.Stream.Kind.DATA);
+      stream = streams.get(name);
+      lengths = new RunLengthIntegerReader(streams.get(new
+          StreamName(columnId, OrcProto.Stream.Kind.LENGTH)),
+          false);
+    }
+
+    @Override
+    void seek(PositionProvider[] index) throws IOException {
+      super.seek(index);
+      stream.seek(index[columnId]);
+      lengths.seek(index[columnId]);
+    }
+
+    @Override
+    Object next(Object previous) throws IOException {
+      super.next(previous);
+      Text result = null;
+      if (valuePresent) {
+        if (previous == null) {
+          result = new Text();
+        } else {
+          result = (Text) previous;
+        }
+        int len = (int) lengths.next();
+        int offset = 0;
+        byte[] bytes = new byte[len];
+        while (len > 0) {
+          int written = stream.read(bytes, offset, len);
+          if (written < 0) {
+            throw new EOFException("Can't finish byte read from " + stream);
+          }
+          len -= written;
+          offset += written;
+        }
+        result.set(bytes);
+      }
+      return result;
+    }
+
+    @Override
+    void skipRows(long items) throws IOException {
+      items = countNonNulls(items);
+      long lengthToSkip = 0;
+      for(int i=0; i < items; ++i) {
+        lengthToSkip += lengths.next();
+      }
+      stream.skip(lengthToSkip);
+    }
+  }
+
+  /**
+   * A reader for string columns that are dictionary encoded in the current
+   * stripe.
+   */
+  private static class StringDictionaryTreeReader extends TreeReader {
+    private DynamicByteArray dictionaryBuffer;
+    private int[] dictionaryOffsets;
+    private RunLengthIntegerReader reader;
+
+    StringDictionaryTreeReader(Path path, int columnId) {
+      super(path, columnId);
+    }
+
+    @Override
+    void checkEncoding(OrcProto.ColumnEncoding encoding) throws IOException {
+      // PASS
+    }
+
+    @Override
+    void startStripe(Map<StreamName, InStream> streams,
+                     List<OrcProto.ColumnEncoding> encodings
+                    ) throws IOException {
       super.startStripe(streams, encodings);
 
       // read the dictionary blob
-      dictionarySize = encodings.get(columnId).getDictionarySize();
+      int dictionarySize = encodings.get(columnId).getDictionarySize();
       StreamName name = new StreamName(columnId,
           OrcProto.Stream.Kind.DICTIONARY_DATA);
       InStream in = streams.get(name);

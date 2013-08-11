@@ -27,11 +27,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+
+import com.google.protobuf.ByteString;
+import com.google.protobuf.CodedOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -55,9 +60,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspec
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
-
-import com.google.protobuf.ByteString;
-import com.google.protobuf.CodedOutputStream;
+import org.apache.hadoop.io.Text;
 
 /**
  * An ORC file writer. The file is divided into stripes, which is the natural
@@ -111,8 +114,11 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   private final boolean buildIndex;
   private final MemoryManager memoryManager;
 
+  private final Configuration conf;
+
   WriterImpl(FileSystem fs,
              Path path,
+             Configuration conf,
              ObjectInspector inspector,
              long stripeSize,
              CompressionKind compress,
@@ -121,6 +127,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
              MemoryManager memoryManager) throws IOException {
     this.fs = fs;
     this.path = path;
+    this.conf = conf;
     this.stripeSize = stripeSize;
     this.compress = compress;
     this.bufferSize = bufferSize;
@@ -343,6 +350,14 @@ class WriterImpl implements Writer, MemoryManager.Callback {
      */
     public boolean isCompressed() {
       return codec != null;
+    }
+
+    /**
+     * Get the writer's configuration.
+     * @return configuration
+     */
+    public Configuration getConfiguration() {
+      return conf;
     }
   }
 
@@ -760,16 +775,22 @@ class WriterImpl implements Writer, MemoryManager.Callback {
 
   private static class StringTreeWriter extends TreeWriter {
     private static final int INITIAL_DICTIONARY_SIZE = 4096;
-    private final PositionedOutputStream stringOutput;
+    private final OutStream stringOutput;
     private final RunLengthIntegerWriter lengthOutput;
     private final RunLengthIntegerWriter rowOutput;
     private final StringRedBlackTree dictionary =
         new StringRedBlackTree(INITIAL_DICTIONARY_SIZE);
     private final DynamicIntArray rows = new DynamicIntArray();
+    private final PositionedOutputStream directStreamOutput;
+    private final RunLengthIntegerWriter directLengthOutput;
     private final List<OrcProto.RowIndexEntry> savedRowIndex =
         new ArrayList<OrcProto.RowIndexEntry>();
     private final boolean buildIndex;
     private final List<Long> rowIndexValueCount = new ArrayList<Long>();
+    // If the number of keys in a dictionary is greater than this fraction of
+    //the total number of non-null rows, turn off dictionary encoding
+    private final float dictionaryKeySizeThreshold;
+    private boolean useDictionaryEncoding = true;
 
     StringTreeWriter(int columnId,
                      ObjectInspector inspector,
@@ -785,6 +806,14 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       recordPosition(rowIndexPosition);
       rowIndexValueCount.add(0L);
       buildIndex = writer.buildIndex();
+      directStreamOutput = writer.createStream(id, OrcProto.Stream.Kind.DATA);
+      directLengthOutput =
+        new RunLengthIntegerWriter(writer.createStream
+                                    (id, OrcProto.Stream.Kind.LENGTH), false);
+      dictionaryKeySizeThreshold = writer.getConfiguration().getFloat(
+        HiveConf.ConfVars.HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD.varname,
+        HiveConf.ConfVars.HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD.
+          defaultFloatVal);
     }
 
     @Override
@@ -801,22 +830,36 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     @Override
     void writeStripe(OrcProto.StripeFooter.Builder builder,
                      int requiredIndexEntries) throws IOException {
-      // Traverse the red-black tree writing out the bytes and lengths; and
-      // creating the map from the original order to the final sorted order.
+      // Set the flag indicating whether or not to use dictionary encoding
+      // based on whether or not the fraction of distinct keys over number of
+      // non-null rows is less than the configured threshold
+      useDictionaryEncoding = rows.size() > 0 &&
+        (float)(dictionary.size()) / rows.size() <=
+          dictionaryKeySizeThreshold;
       final int[] dumpOrder = new int[dictionary.size()];
-      dictionary.visit(new StringRedBlackTree.Visitor() {
-        private int currentId = 0;
-        @Override
-        public void visit(StringRedBlackTree.VisitorContext context
-                         ) throws IOException {
-          context.writeBytes(stringOutput);
-          lengthOutput.write(context.getLength());
-          dumpOrder[context.getOriginalPosition()] = currentId++;
-        }
-      });
+
+      if (useDictionaryEncoding) {
+        // Write the dictionary by traversing the red-black tree writing out
+        // the bytes and lengths; and creating the map from the original order
+        // to the final sorted order.
+        dictionary.visit(new StringRedBlackTree.Visitor() {
+          private int currentId = 0;
+          @Override
+          public void visit(StringRedBlackTree.VisitorContext context
+                           ) throws IOException {
+            context.writeBytes(stringOutput);
+            lengthOutput.write(context.getLength());
+            dumpOrder[context.getOriginalPosition()] = currentId++;
+          }
+        });
+      } else {
+        // for direct encoding, we don't want the dictionary data stream
+        stringOutput.suppress();
+      }
       int length = rows.size();
       int rowIndexEntry = 0;
       OrcProto.RowIndex.Builder rowIndex = getRowIndex();
+      Text text = new Text();
       // write the values translated into the dump order.
       for(int i = 0; i <= length; ++i) {
         // now that we are writing out the row values, we can finalize the
@@ -826,12 +869,24 @@ class WriterImpl implements Writer, MemoryManager.Callback {
               rowIndexEntry < savedRowIndex.size()) {
             OrcProto.RowIndexEntry.Builder base =
                 savedRowIndex.get(rowIndexEntry++).toBuilder();
-            rowOutput.getPosition(new RowIndexPositionRecorder(base));
+            if (useDictionaryEncoding) {
+              rowOutput.getPosition(new RowIndexPositionRecorder(base));
+            } else {
+              PositionRecorder posn = new RowIndexPositionRecorder(base);
+              directStreamOutput.getPosition(posn);
+              directLengthOutput.getPosition(posn);
+            }
             rowIndex.addEntry(base.build());
           }
         }
         if (i != length) {
-          rowOutput.write(dumpOrder[rows.get(i)]);
+          if (useDictionaryEncoding) {
+            rowOutput.write(dumpOrder[rows.get(i)]);
+          } else {
+            dictionary.getText(text, rows.get(i));
+            directStreamOutput.write(text.getBytes(), 0, text.getLength());
+            directLengthOutput.write(text.getLength());
+          }
         }
       }
       // we need to build the rowindex before calling super, since it
@@ -840,6 +895,8 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       stringOutput.flush();
       lengthOutput.flush();
       rowOutput.flush();
+      directStreamOutput.flush();
+      directLengthOutput.flush();
       // reset all of the fields to be ready for the next stripe.
       dictionary.clear();
       rows.clear();
@@ -849,11 +906,27 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       rowIndexValueCount.add(0L);
     }
 
+    // Calls getPosition on the row output stream if dictionary encoding is used, and the direct
+    // output stream if direct encoding is used
+    private void recordOutputPosition(OrcProto.RowIndexEntry.Builder base) throws IOException {
+      if (useDictionaryEncoding) {
+        rowOutput.getPosition(new RowIndexPositionRecorder(base));
+      } else {
+        directStreamOutput.getPosition(new RowIndexPositionRecorder(base));
+      }
+    }
+
     @Override
     OrcProto.ColumnEncoding getEncoding() {
-      return OrcProto.ColumnEncoding.newBuilder().setKind(
-          OrcProto.ColumnEncoding.Kind.DICTIONARY).
-          setDictionarySize(dictionary.size()).build();
+      // Returns the encoding used for the last call to writeStripe
+      if (useDictionaryEncoding) {
+        return OrcProto.ColumnEncoding.newBuilder().setKind(
+            OrcProto.ColumnEncoding.Kind.DICTIONARY).
+            setDictionarySize(dictionary.size()).build();
+      } else {
+        return OrcProto.ColumnEncoding.newBuilder().setKind(
+            OrcProto.ColumnEncoding.Kind.DIRECT).build();
+      }
     }
 
     /**
