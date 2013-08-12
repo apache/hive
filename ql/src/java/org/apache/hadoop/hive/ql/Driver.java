@@ -505,7 +505,14 @@ public class Driver implements CommandProcessor {
       if (error != ErrorMsg.GENERIC_ERROR) {
         errorMessage += " [Error "  + error.getErrorCode()  + "]:";
       }
-      errorMessage += " " + e.getMessage();
+
+      // HIVE-4889
+      if ((e instanceof IllegalArgumentException) && e.getMessage() == null && e.getCause() != null) {
+        errorMessage += " " + e.getCause().getMessage();
+      } else {
+        errorMessage += " " + e.getMessage();
+      }
+
       SQLState = error.getSQLState();
       downstreamError = e;
       console.printError(errorMessage, "\n"
