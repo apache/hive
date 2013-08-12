@@ -28,6 +28,7 @@ import java.util.Map;
 import javax.security.auth.login.LoginException;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -200,11 +201,11 @@ public class DagUtils {
       if (localWorkLr != null) {
         localResources.put(hashTableArchive.getName(), localWorkLr);
       }
-      localResources.put(appJarLr.getResource().getFile(), appJarLr);
+      localResources.put(getBaseName(appJarLr), appJarLr);
       for (LocalResource lr: additionalLr) {
-        localResources.put(lr.getResource().getFile(), lr);
+        localResources.put(getBaseName(lr), lr);
       }
-      localResources.put(planPath.getName(), planLr);
+      localResources.put(FilenameUtils.getName(planPath.getName()), planLr);
 
       MRHelpers.updateLocalResourcesForInputSplits(FileSystem.get(conf), inputSplitInfo,
           localResources);
@@ -269,11 +270,11 @@ public class DagUtils {
     reducer.setJavaOpts(MRHelpers.getReduceJavaOpts(conf));
 
     Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();
-    localResources.put(appJarLr.getResource().getFile(), appJarLr);
+    localResources.put(getBaseName(appJarLr), appJarLr);
     for (LocalResource lr: additionalLr) {
-      localResources.put(lr.getResource().getFile(), lr);
+      localResources.put(getBaseName(lr), lr);
     }
-    localResources.put(planPath.getName(), planLr);
+    localResources.put(FilenameUtils.getName(planPath.getName()), planLr);
     reducer.setTaskLocalResources(localResources);
 
     return reducer;
@@ -393,7 +394,13 @@ public class DagUtils {
       // returns the location on disc of the jar of this class.
     return DagUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI().toString();
   }
-
+  
+  /*
+   * Helper function to retrieve the basename of a local resource
+   */
+  public static String getBaseName(LocalResource lr) {
+    return FilenameUtils.getName(lr.getResource().getFile());
+  }
 
   /**
    * @param pathStr - the string from which we try to determine the resource base name
@@ -546,7 +553,6 @@ public class DagUtils {
     hiveConf.setBoolean("mapred.mapper.new-api", false);
 
     JobConf conf = (JobConf) MRHelpers.getBaseMRConfiguration();
-    MRHelpers.doJobClientMagic(conf);
 
     for (Map.Entry<String, String> entry: hiveConf) {
       if (conf.get(entry.getKey()) == null) {
