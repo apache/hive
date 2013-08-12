@@ -24,16 +24,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
+import org.apache.hadoop.hive.ql.exec.JobCloseFeedBack;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.tez.client.TezClient;
 import org.apache.tez.dag.api.DAG;
@@ -60,14 +64,25 @@ public class TezTask extends Task<TezWork> {
   @Override
   public int execute(DriverContext driverContext) {
     int rc = 1;
-
-    Context ctx = driverContext.getCtx();
+    boolean cleanContext = false;
+    Context ctx = null;
+    DAGClient client = null;
 
     try {
+      // Get or create Context object. If we create it we have to clean
+      // it later as well.
+      ctx = driverContext.getCtx();
+      if (ctx == null) {
+        ctx = new Context(conf);
+        cleanContext = true;
+      }
 
       // we will localize all the files (jars, plans, hashtables) to the
       // scratch dir. let's create this first.
       Path scratchDir = new Path(ctx.getMRScratchDir());
+
+      // create the tez tmp dir
+      DagUtils.createTezDir(scratchDir, conf);
 
       // jobConf will hold all the configuration for hadoop, tez, and hive
       JobConf jobConf = DagUtils.createConfiguration(conf);
@@ -80,7 +95,7 @@ public class TezTask extends Task<TezWork> {
       DAG dag = build(jobConf, work, scratchDir, appJarLr, ctx);
 
       // submit will send the job to the cluster and start executing
-      DAGClient client = submit(jobConf, dag, scratchDir, appJarLr);
+      client = submit(jobConf, dag, scratchDir, appJarLr);
 
       // finally monitor will print progress until the job is done
       TezJobMonitor monitor = new TezJobMonitor();
@@ -88,13 +103,21 @@ public class TezTask extends Task<TezWork> {
 
     } catch (Exception e) {
       LOG.error("Failed to execute tez graph.", e);
+      // rc will be 1 at this point indicating failure.
     } finally {
       Utilities.clearWork(conf);
-      try {
-        ctx.clear();
-      } catch (Exception e) {
-        /*best effort*/
-        LOG.warn("Failed to clean up after tez job");
+      if (cleanContext) {
+        try {
+          ctx.clear();
+        } catch (Exception e) {
+          /*best effort*/
+          LOG.warn("Failed to clean up after tez job");
+        }
+      }
+      // need to either move tmp files or remove them
+      if (client != null) {
+        // rc will only be overwritten if close errors out
+        rc = close(work, rc);
       }
     }
     return rc;
@@ -115,6 +138,9 @@ public class TezTask extends Task<TezWork> {
     List<BaseWork> ws = work.getAllWork();
     Collections.reverse(ws);
 
+    Path tezDir = DagUtils.getTezDir(scratchDir);
+    FileSystem fs = tezDir.getFileSystem(conf);
+
     // the name of the dag is what is displayed in the AM/Job UI
     DAG dag = new DAG(
         Utilities.abbreviate(HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYSTRING),
@@ -125,8 +151,8 @@ public class TezTask extends Task<TezWork> {
 
       // translate work to vertex
       JobConf wxConf = DagUtils.initializeVertexConf(conf, w);
-      Vertex wx = DagUtils.createVertex(wxConf, w, scratchDir, i--,
-          appJarLr, additionalLr, scratchDir.getFileSystem(conf), ctx);
+      Vertex wx = DagUtils.createVertex(wxConf, w, tezDir, 
+          i--, appJarLr, additionalLr, fs, ctx);
       dag.addVertex(wx);
       workToVertex.put(w, wx);
       workToConf.put(w, wxConf);
@@ -155,12 +181,40 @@ public class TezTask extends Task<TezWork> {
     Map<String, LocalResource> amLrs = new HashMap<String, LocalResource>();
     amLrs.put(DagUtils.getBaseName(appJarLr), appJarLr);
 
+    Path tezDir = DagUtils.getTezDir(scratchDir);
+
     // ready to start execution on the cluster
-    DAGClient dagClient = tezClient.submitDAGApplication(dag, scratchDir,
+    DAGClient dagClient = tezClient.submitDAGApplication(dag, tezDir,
         null, "default", Collections.singletonList(""), amEnv, amLrs,
         new TezConfiguration(conf));
 
     return dagClient;
+  }
+
+  /*
+   * close will move the temp files into the right place for the fetch
+   * task. If the job has failed it will clean up the files.
+   */
+  private int close(TezWork work, int rc) {
+    try {
+      JobCloseFeedBack feedBack = new JobCloseFeedBack();
+      List<BaseWork> ws = work.getAllWork();
+      for (BaseWork w: ws) {
+        List<Operator<?>> ops = w.getAllOperators();
+        for (Operator<?> op: ops) {
+          op.jobClose(conf, rc == 0, feedBack);
+        }
+      }
+    } catch (Exception e) {
+      // jobClose needs to execute successfully otherwise fail task
+      if (rc == 0) {
+        rc = 3;
+        String mesg = "Job Commit failed with exception '" 
+          + Utilities.getNameMessage(e) + "'";
+        console.printError(mesg, "\n" + StringUtils.stringifyException(e));
+      }
+    }
+    return rc;
   }
 
   @Override

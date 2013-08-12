@@ -82,10 +82,12 @@ import org.apache.tez.mapreduce.processor.reduce.ReduceProcessor;
  */
 public class DagUtils {
 
+  private static final String TEZ_DIR = "_tez_scratch_dir";
+
   /*
    * Creates the configuration object necessary to run a specific vertex from
    * map work. This includes input formats, input processor, etc.
-=  */
+   */
   private static JobConf initializeVertexConf(JobConf baseConf, MapWork mapWork) {
     JobConf conf = new JobConf(baseConf);
 
@@ -124,8 +126,8 @@ public class DagUtils {
       inpFormat = BucketizedHiveInputFormat.class.getName();
     }
 
-    conf.set(MRJobConfig.MAP_CLASS_ATTR, ExecMapper.class.getName());
-    conf.set(MRJobConfig.INPUT_FORMAT_CLASS_ATTR, inpFormat);
+    conf.set("mapred.mapper.class", ExecMapper.class.getName());
+    conf.set("mapred.input.format.class", inpFormat);
 
     return conf;
   }
@@ -141,10 +143,15 @@ public class DagUtils {
    * @param w The second vertex (sink)
    * @return
    */
-  public static Edge createEdge(JobConf vConf, Vertex v, JobConf wConf, Vertex w) {
+  public static Edge createEdge(JobConf vConf, Vertex v, JobConf wConf, Vertex w) 
+      throws IOException {
 
     // Tez needs to setup output subsequent input pairs correctly
     MultiStageMRConfToTezTranslator.translateVertexConfToTez(wConf, vConf);
+
+    // update payloads (configuration for the vertices might have changed)
+    v.getProcessorDescriptor().setUserPayload(MRHelpers.createUserPayloadFromConf(vConf));
+    w.getProcessorDescriptor().setUserPayload(MRHelpers.createUserPayloadFromConf(wConf));
 
     // all edges are of the same type right now
     EdgeProperty edgeProperty =
@@ -161,6 +168,8 @@ public class DagUtils {
       LocalResource appJarLr, List<LocalResource> additionalLr, FileSystem fs,
       Path mrScratchDir, Context ctx) throws Exception {
 
+    Path tezDir = getTezDir(mrScratchDir);
+
     // map work can contain localwork, i.e: hashtables for map-side joins
     Path hashTableArchive = createHashTables(mapWork, conf);
     LocalResource localWorkLr = null;
@@ -171,17 +180,24 @@ public class DagUtils {
     }
 
     // write out the operator plan
-    Path planPath = Utilities.setMapWork(conf, mapWork, mrScratchDir.toUri().toString(), false);
+    Path planPath = Utilities.setMapWork(conf, mapWork, 
+        mrScratchDir.toUri().toString(), false);
     LocalResource planLr = createLocalResource(fs,
         planPath, LocalResourceType.FILE,
         LocalResourceVisibility.APPLICATION);
 
     // setup input paths and split info
-    List<Path> inputPaths = Utilities.getInputPaths(conf, mapWork, mrScratchDir.toUri().toString(), ctx);
+    List<Path> inputPaths = Utilities.getInputPaths(conf, mapWork, 
+        mrScratchDir.toUri().toString(), ctx);
     Utilities.setInputPaths(conf, inputPaths);
 
-    InputSplitInfo inputSplitInfo = MRHelpers.generateInputSplits(conf, mrScratchDir);
-    MultiStageMRConfToTezTranslator.translateVertexConfToTez(conf, conf);
+    InputSplitInfo inputSplitInfo = MRHelpers.generateInputSplits(conf, tezDir);
+
+    // create the directories FileSinkOperators need
+    Utilities.createTmpDirs(conf, mapWork);
+
+    // Tez ask us to call this even if there's no preceding vertex
+    MultiStageMRConfToTezTranslator.translateVertexConfToTez(conf, null);
 
     // finally create the vertex
     Vertex map = null;
@@ -229,16 +245,12 @@ public class DagUtils {
   private static JobConf initializeVertexConf(JobConf baseConf, ReduceWork reduceWork) {
     JobConf conf = new JobConf(baseConf);
 
-    conf.set(MRJobConfig.REDUCE_CLASS_ATTR, ExecReducer.class.getName());
+    conf.set("mapred.reducer.class", ExecReducer.class.getName());
 
     boolean useSpeculativeExecReducers = HiveConf.getBoolVar(conf,
         HiveConf.ConfVars.HIVESPECULATIVEEXECREDUCERS);
     HiveConf.setBoolVar(conf, HiveConf.ConfVars.HADOOPSPECULATIVEEXECREDUCERS,
         useSpeculativeExecReducers);
-
-    // reducers should have been set at planning stage
-    // job.setNumberOfReducers(rWork.getNumberOfReducers())
-    conf.set(MRJobConfig.NUM_REDUCES, reduceWork.getNumReduceTasks().toString());
 
     return conf;
   }
@@ -252,9 +264,12 @@ public class DagUtils {
 
     // write out the operator plan
     Path planPath = Utilities.setReduceWork(conf, reduceWork,
-        mrScratchDir.getName(), false);
+        mrScratchDir.toUri().toString(), false);
     LocalResource planLr = createLocalResource(fs, planPath,
         LocalResourceType.FILE, LocalResourceVisibility.APPLICATION);
+
+    // create the directories FileSinkOperators need
+    Utilities.createTmpDirs(conf, reduceWork);
 
     // create the vertex
     Vertex reducer = new Vertex("Reducer "+seqNo,
@@ -476,7 +491,7 @@ public class DagUtils {
    * @throws URISyntaxException when current jar location cannot be determined.
    */
   public static LocalResource createHiveExecLocalResource(HiveConf conf)
-  throws IOException, LoginException, URISyntaxException {
+      throws IOException, LoginException, URISyntaxException {
     String hiveJarDir = conf.getVar(HiveConf.ConfVars.HIVE_JAR_DIRECTORY);
     String currentVersionPathStr = getExecJarPathLocal();
     String currentJarName = getResourceBaseName(currentVersionPathStr);
@@ -560,20 +575,17 @@ public class DagUtils {
       }
     }
 
-    conf.set("mapreduce.framework.name","yarn-tez");
-    conf.set("mapreduce.job.output.committer.class", NullOutputCommitter.class.getName());
+    conf.set("mapred.output.committer.class", NullOutputCommitter.class.getName());
 
-    conf.setBoolean(MRJobConfig.SETUP_CLEANUP_NEEDED, false);
-    conf.setBoolean(MRJobConfig.TASK_CLEANUP_NEEDED, false);
+    conf.setBoolean("mapred.committer.job.setup.cleanup.needed", false);
+    conf.setBoolean("mapred.committer.job.task.cleanup.needed", false);
 
-    conf.setClass(MRJobConfig.OUTPUT_FORMAT_CLASS_ATTR, HiveOutputFormatImpl.class, OutputFormat.class);
-
-    conf.set(MRJobConfig.MAP_CLASS_ATTR, ExecMapper.class.getName());
+    conf.setClass("mapred.output.format.class", HiveOutputFormatImpl.class, OutputFormat.class);
 
     conf.set(MRJobConfig.OUTPUT_KEY_CLASS, HiveKey.class.getName());
     conf.set(MRJobConfig.OUTPUT_VALUE_CLASS, BytesWritable.class.getName());
 
-    conf.set(MRJobConfig.PARTITIONER_CLASS_ATTR, HiveConf.getVar(conf, HiveConf.ConfVars.HIVEPARTITIONER));
+    conf.set("mapred.partitioner.class", HiveConf.getVar(conf, HiveConf.ConfVars.HIVEPARTITIONER));
 
     return conf;
   }
@@ -629,6 +641,25 @@ public class DagUtils {
       assert false;
       return null;
     }
+  }
+
+  /**
+   * createTezDir creates a temporary directory in the scratchDir folder to
+   * be used with Tez. Assumes scratchDir exists.
+   */
+  public static Path createTezDir(Path scratchDir, Configuration conf) 
+      throws IOException {
+    Path tezDir = getTezDir(scratchDir);
+    FileSystem fs = tezDir.getFileSystem(conf);
+    fs.mkdirs(tezDir);
+    return tezDir;
+  }
+
+  /**
+   * Gets the tez dir that belongs to the hive scratch dir
+   */
+  public static Path getTezDir(Path scratchDir) {
+    return new Path(scratchDir, TEZ_DIR);
   }
 
   private DagUtils() {
