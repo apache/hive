@@ -28,6 +28,8 @@
   <dependencies>
     <dependency org="org.apache.hive" name="hive-metastore" rev="${version}"
                 conf="compile->default" />
+    <dependency org="org.apache.mina" name="mina-core" rev="${mina.version}"
+                conf="test->default" />
     <dependency org="org.apache.hive" name="hive-hbase-handler" rev="${version}"
                 conf="test->default" transitive="false"/>
     <dependency org="org.apache.hive" name="hive-contrib" rev="${version}"
