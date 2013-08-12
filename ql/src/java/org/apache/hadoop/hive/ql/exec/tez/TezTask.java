@@ -153,7 +153,7 @@ public class TezTask extends Task<TezWork> {
 
     // setup local resources used by application master
     Map<String, LocalResource> amLrs = new HashMap<String, LocalResource>();
-    amLrs.put(appJarLr.getResource().getFile(), appJarLr);
+    amLrs.put(DagUtils.getBaseName(appJarLr), appJarLr);
 
     // ready to start execution on the cluster
     DAGClient dagClient = tezClient.submitDAGApplication(dag, scratchDir,
