@@ -502,6 +502,9 @@ public class HiveConf extends Configuration {
 
     // Maximum fraction of heap that can be used by ORC file writers
     HIVE_ORC_FILE_MEMORY_POOL("hive.exec.orc.memory.pool", 0.5f), // 50%
+    // use 0.11 version of RLE encoding. if this conf is not defined or any
+    // other value specified, ORC will use the new RLE encoding
+    HIVE_ORC_WRITE_FORMAT("hive.exec.orc.write.format", "0.11"),
 
     HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD("hive.exec.orc.dictionary.key.size.threshold", 0.8f),
 
