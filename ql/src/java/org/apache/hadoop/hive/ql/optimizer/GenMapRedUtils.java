@@ -773,6 +773,21 @@ public final class GenMapRedUtils {
   }
 
   /**
+   * Set key and value descriptor
+   * @param work RedueWork
+   * @param rs ReduceSinkOperator
+   */
+  public static void setKeyAndValueDesc(ReduceWork work, ReduceSinkOperator rs) {
+    work.setKeyDesc(rs.getConf().getKeySerializeInfo());
+    int tag = Math.max(0, rs.getConf().getTag());
+    List<TableDesc> tagToSchema = work.getTagToValueDesc();
+    while (tag + 1 > tagToSchema.size()) {
+      tagToSchema.add(null);
+    }
+    tagToSchema.set(tag, rs.getConf().getValueSerializeInfo());
+  }
+
+  /**
    * set key and value descriptor.
    *
    * @param plan
@@ -788,13 +803,7 @@ public final class GenMapRedUtils {
 
     if (topOp instanceof ReduceSinkOperator) {
       ReduceSinkOperator rs = (ReduceSinkOperator) topOp;
-      plan.setKeyDesc(rs.getConf().getKeySerializeInfo());
-      int tag = Math.max(0, rs.getConf().getTag());
-      List<TableDesc> tagToSchema = plan.getTagToValueDesc();
-      while (tag + 1 > tagToSchema.size()) {
-        tagToSchema.add(null);
-      }
-      tagToSchema.set(tag, rs.getConf().getValueSerializeInfo());
+      setKeyAndValueDesc(plan, rs);
     } else {
       List<Operator<? extends OperatorDesc>> children = topOp.getChildOperators();
       if (children != null) {

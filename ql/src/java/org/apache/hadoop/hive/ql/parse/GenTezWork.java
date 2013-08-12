@@ -109,6 +109,14 @@ public class GenTezWork implements NodeProcessor {
         = (ReduceSinkOperator)root.getParentOperators().get(0);
       reduceWork.setNumReduceTasks(reduceSink.getConf().getNumReducers());
 
+      // need to fill in information about the key and value in the reducer
+      GenMapRedUtils.setKeyAndValueDesc(reduceWork, reduceSink);
+
+      // needs to be fixed in HIVE-5052. This should be driven off of stats
+      if (reduceWork.getNumReduceTasks() <= 0) {
+        reduceWork.setNumReduceTasks(1);
+      }
+
       tezWork.add(reduceWork);
       tezWork.connect(
           context.preceedingWork,
@@ -129,6 +137,17 @@ public class GenTezWork implements NodeProcessor {
     // Also note: the concept of leaf and root is reversed in hive for historical
     // reasons. Roots are data sources, leaves are data sinks. I know.
     if (context.leafOperatorToFollowingWork.containsKey(operator)) {
+
+      BaseWork followingWork = context.leafOperatorToFollowingWork.get(operator);
+
+      // need to add this branch to the key + value info
+      assert operator instanceof ReduceSinkOperator 
+        && followingWork instanceof ReduceWork;
+      ReduceSinkOperator rs = (ReduceSinkOperator) operator;
+      ReduceWork rWork = (ReduceWork) followingWork;
+      GenMapRedUtils.setKeyAndValueDesc(rWork, rs);
+
+      // add dependency between the two work items
       tezWork.connect(work, context.leafOperatorToFollowingWork.get(operator));
     }
 
@@ -136,6 +155,7 @@ public class GenTezWork implements NodeProcessor {
     // we might have to connect parent work with this work later.
     for (Operator<?> parent: new ArrayList<Operator<?>>(root.getParentOperators())) {
       assert !context.leafOperatorToFollowingWork.containsKey(parent);
+      assert !(work instanceof MapWork);
       context.leafOperatorToFollowingWork.put(parent, work);
       LOG.debug("Removing " + parent + " as parent from " + root);
       root.removeParent(parent);
