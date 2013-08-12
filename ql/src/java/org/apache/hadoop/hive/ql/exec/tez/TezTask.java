@@ -74,7 +74,7 @@ public class TezTask extends Task<TezWork> {
 
       // unless already installed on all the cluster nodes, we'll have to
       // localize hive-exec.jar as well.
-      LocalResource appJarLr = DagUtils.createHiveExecLocalResource(scratchDir);
+      LocalResource appJarLr = DagUtils.createHiveExecLocalResource(conf);
 
       // next we translate the TezWork to a Tez DAG
       DAG dag = build(jobConf, work, scratchDir, appJarLr, ctx);

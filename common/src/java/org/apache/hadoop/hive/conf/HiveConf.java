@@ -786,6 +786,8 @@ public class HiveConf extends Configuration {
       (int) Math.pow(2, (5 + 10 + 10)) ),  // 32MB
 
     HIVE_OPTIMIZE_TEZ("hive.optimize.tez", false),
+    HIVE_JAR_DIRECTORY("hive.jar.directory", "hdfs:///user/hive/"),
+    HIVE_USER_INSTALL_DIR("hive.user.install.directory", "hdfs:///user/"),
     ;
 
     public final String varname;
