@@ -73,6 +73,8 @@ message ColumnEncoding {
   enum Kind {
     DIRECT = 0;
     DICTIONARY = 1;
+    DIRECT_V2 = 2;
+    DICTIONARY_V2 = 3;
   }
   required Kind kind = 1;
   optional uint32 dictionarySize = 2;

@@ -381,6 +381,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     private final PositionedOutputStream rowIndexStream;
     private boolean foundNulls;
     private OutStream isPresentOutStream;
+    protected final boolean useDirectV2Encoding;
 
     /**
      * Create a tree writer.
@@ -396,6 +397,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       this.isCompressed = streamFactory.isCompressed();
       this.id = columnId;
       this.inspector = inspector;
+      this.useDirectV2Encoding = true;
       if (nullable) {
         isPresentOutStream = streamFactory.createStream(id,
             OrcProto.Stream.Kind.PRESENT);
@@ -428,6 +430,32 @@ class WriterImpl implements Writer, MemoryManager.Callback {
 
     protected OrcProto.RowIndexEntry.Builder getRowIndexEntry() {
       return rowIndexEntry;
+    }
+
+    IntegerWriter createIntegerWriter(PositionedOutputStream output,
+                                      boolean signed, boolean isDirectV2) {
+      if (isDirectV2) {
+        return new RunLengthIntegerWriterV2(output, signed);
+      } else {
+        return new RunLengthIntegerWriter(output, signed);
+      }
+    }
+
+    boolean isNewWriteFormat(StreamFactory writer) {
+      String writeFormat = writer.getConfiguration().get(
+          HiveConf.ConfVars.HIVE_ORC_WRITE_FORMAT.varname);
+      if (writeFormat == null) {
+        LOG.warn("ORC write format not defined. Using 0.12 ORC write format.");
+        return true;
+      }
+      if (writeFormat
+          .equals(HiveConf.ConfVars.HIVE_ORC_WRITE_FORMAT.defaultVal)) {
+        LOG.info("Using 0.11 ORC write format.");
+        return false;
+      }
+
+      LOG.info("Using 0.12 ORC write format.");
+      return true;
     }
 
     /**
@@ -635,10 +663,11 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   }
 
   private static class IntegerTreeWriter extends TreeWriter {
-    private final RunLengthIntegerWriter writer;
+    private final IntegerWriter writer;
     private final ShortObjectInspector shortInspector;
     private final IntObjectInspector intInspector;
     private final LongObjectInspector longInspector;
+    private boolean isDirectV2 = true;
 
     IntegerTreeWriter(int columnId,
                       ObjectInspector inspector,
@@ -647,7 +676,8 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       super(columnId, inspector, writer, nullable);
       PositionedOutputStream out = writer.createStream(id,
           OrcProto.Stream.Kind.DATA);
-      this.writer = new RunLengthIntegerWriter(out, true);
+      this.isDirectV2 = isNewWriteFormat(writer);
+      this.writer = createIntegerWriter(out, true, isDirectV2);
       if (inspector instanceof IntObjectInspector) {
         intInspector = (IntObjectInspector) inspector;
         shortInspector = null;
@@ -663,6 +693,16 @@ class WriterImpl implements Writer, MemoryManager.Callback {
         }
       }
       recordPosition(rowIndexPosition);
+    }
+
+    @Override
+    OrcProto.ColumnEncoding getEncoding() {
+      if (isDirectV2) {
+        return OrcProto.ColumnEncoding.newBuilder()
+            .setKind(OrcProto.ColumnEncoding.Kind.DIRECT_V2).build();
+      }
+      return OrcProto.ColumnEncoding.newBuilder()
+          .setKind(OrcProto.ColumnEncoding.Kind.DIRECT).build();
     }
 
     @Override
@@ -776,13 +816,13 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   private static class StringTreeWriter extends TreeWriter {
     private static final int INITIAL_DICTIONARY_SIZE = 4096;
     private final OutStream stringOutput;
-    private final RunLengthIntegerWriter lengthOutput;
-    private final RunLengthIntegerWriter rowOutput;
+    private final IntegerWriter lengthOutput;
+    private final IntegerWriter rowOutput;
     private final StringRedBlackTree dictionary =
         new StringRedBlackTree(INITIAL_DICTIONARY_SIZE);
     private final DynamicIntArray rows = new DynamicIntArray();
     private final PositionedOutputStream directStreamOutput;
-    private final RunLengthIntegerWriter directLengthOutput;
+    private final IntegerWriter directLengthOutput;
     private final List<OrcProto.RowIndexEntry> savedRowIndex =
         new ArrayList<OrcProto.RowIndexEntry>();
     private final boolean buildIndex;
@@ -791,25 +831,26 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     //the total number of non-null rows, turn off dictionary encoding
     private final float dictionaryKeySizeThreshold;
     private boolean useDictionaryEncoding = true;
+    private boolean isDirectV2 = true;
 
     StringTreeWriter(int columnId,
                      ObjectInspector inspector,
                      StreamFactory writer,
                      boolean nullable) throws IOException {
       super(columnId, inspector, writer, nullable);
+      this.isDirectV2 = isNewWriteFormat(writer);
       stringOutput = writer.createStream(id,
           OrcProto.Stream.Kind.DICTIONARY_DATA);
-      lengthOutput = new RunLengthIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.LENGTH), false);
-      rowOutput = new RunLengthIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.DATA), false);
+      lengthOutput = createIntegerWriter(writer.createStream(id,
+          OrcProto.Stream.Kind.LENGTH), false, isDirectV2);
+      rowOutput = createIntegerWriter(writer.createStream(id,
+          OrcProto.Stream.Kind.DATA), false, isDirectV2);
       recordPosition(rowIndexPosition);
       rowIndexValueCount.add(0L);
       buildIndex = writer.buildIndex();
       directStreamOutput = writer.createStream(id, OrcProto.Stream.Kind.DATA);
-      directLengthOutput =
-        new RunLengthIntegerWriter(writer.createStream
-                                    (id, OrcProto.Stream.Kind.LENGTH), false);
+      directLengthOutput = createIntegerWriter(writer.createStream(id,
+          OrcProto.Stream.Kind.LENGTH), false, isDirectV2);
       dictionaryKeySizeThreshold = writer.getConfiguration().getFloat(
         HiveConf.ConfVars.HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD.varname,
         HiveConf.ConfVars.HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD.
@@ -906,24 +947,23 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       rowIndexValueCount.add(0L);
     }
 
-    // Calls getPosition on the row output stream if dictionary encoding is used, and the direct
-    // output stream if direct encoding is used
-    private void recordOutputPosition(OrcProto.RowIndexEntry.Builder base) throws IOException {
-      if (useDictionaryEncoding) {
-        rowOutput.getPosition(new RowIndexPositionRecorder(base));
-      } else {
-        directStreamOutput.getPosition(new RowIndexPositionRecorder(base));
-      }
-    }
-
     @Override
     OrcProto.ColumnEncoding getEncoding() {
       // Returns the encoding used for the last call to writeStripe
       if (useDictionaryEncoding) {
+        if(isDirectV2) {
+          return OrcProto.ColumnEncoding.newBuilder().setKind(
+              OrcProto.ColumnEncoding.Kind.DICTIONARY_V2).
+              setDictionarySize(dictionary.size()).build();
+        }
         return OrcProto.ColumnEncoding.newBuilder().setKind(
             OrcProto.ColumnEncoding.Kind.DICTIONARY).
             setDictionarySize(dictionary.size()).build();
       } else {
+        if(isDirectV2) {
+          return OrcProto.ColumnEncoding.newBuilder().setKind(
+              OrcProto.ColumnEncoding.Kind.DIRECT_V2).build();
+        }
         return OrcProto.ColumnEncoding.newBuilder().setKind(
             OrcProto.ColumnEncoding.Kind.DIRECT).build();
       }
@@ -956,7 +996,8 @@ class WriterImpl implements Writer, MemoryManager.Callback {
 
   private static class BinaryTreeWriter extends TreeWriter {
     private final PositionedOutputStream stream;
-    private final RunLengthIntegerWriter length;
+    private final IntegerWriter length;
+    private boolean isDirectV2 = true;
 
     BinaryTreeWriter(int columnId,
                      ObjectInspector inspector,
@@ -965,9 +1006,20 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       super(columnId, inspector, writer, nullable);
       this.stream = writer.createStream(id,
           OrcProto.Stream.Kind.DATA);
-      this.length = new RunLengthIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.LENGTH), false);
+      this.isDirectV2 = isNewWriteFormat(writer);
+      this.length = createIntegerWriter(writer.createStream(id,
+          OrcProto.Stream.Kind.LENGTH), false, isDirectV2);
       recordPosition(rowIndexPosition);
+    }
+
+    @Override
+    OrcProto.ColumnEncoding getEncoding() {
+      if (isDirectV2) {
+        return OrcProto.ColumnEncoding.newBuilder()
+            .setKind(OrcProto.ColumnEncoding.Kind.DIRECT_V2).build();
+      }
+      return OrcProto.ColumnEncoding.newBuilder()
+          .setKind(OrcProto.ColumnEncoding.Kind.DIRECT).build();
     }
 
     @Override
@@ -1003,19 +1055,31 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       Timestamp.valueOf("2015-01-01 00:00:00").getTime() / MILLIS_PER_SECOND;
 
   private static class TimestampTreeWriter extends TreeWriter {
-    private final RunLengthIntegerWriter seconds;
-    private final RunLengthIntegerWriter nanos;
+    private final IntegerWriter seconds;
+    private final IntegerWriter nanos;
+    private final boolean isDirectV2;
 
     TimestampTreeWriter(int columnId,
                      ObjectInspector inspector,
                      StreamFactory writer,
                      boolean nullable) throws IOException {
       super(columnId, inspector, writer, nullable);
-      this.seconds = new RunLengthIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.DATA), true);
-      this.nanos = new RunLengthIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.SECONDARY), false);
+      this.isDirectV2 = isNewWriteFormat(writer);
+      this.seconds = createIntegerWriter(writer.createStream(id,
+          OrcProto.Stream.Kind.DATA), true, isDirectV2);
+      this.nanos = createIntegerWriter(writer.createStream(id,
+          OrcProto.Stream.Kind.SECONDARY), false, isDirectV2);
       recordPosition(rowIndexPosition);
+    }
+
+    @Override
+    OrcProto.ColumnEncoding getEncoding() {
+      if (isDirectV2) {
+        return OrcProto.ColumnEncoding.newBuilder()
+            .setKind(OrcProto.ColumnEncoding.Kind.DIRECT_V2).build();
+      }
+      return OrcProto.ColumnEncoding.newBuilder()
+          .setKind(OrcProto.ColumnEncoding.Kind.DIRECT).build();
     }
 
     @Override
@@ -1064,7 +1128,8 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   }
 
   private static class DateTreeWriter extends TreeWriter {
-    private final RunLengthIntegerWriter writer;
+    private final IntegerWriter writer;
+    private final boolean isDirectV2;
 
     DateTreeWriter(int columnId,
                    ObjectInspector inspector,
@@ -1073,7 +1138,8 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       super(columnId, inspector, writer, nullable);
       PositionedOutputStream out = writer.createStream(id,
           OrcProto.Stream.Kind.DATA);
-      this.writer = new RunLengthIntegerWriter(out, true);
+      this.isDirectV2 = isNewWriteFormat(writer);
+      this.writer = createIntegerWriter(out, true, isDirectV2);
       recordPosition(rowIndexPosition);
     }
 
@@ -1101,21 +1167,43 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       super.recordPosition(recorder);
       writer.getPosition(recorder);
     }
+
+    @Override
+    OrcProto.ColumnEncoding getEncoding() {
+      if (isDirectV2) {
+        return OrcProto.ColumnEncoding.newBuilder()
+            .setKind(OrcProto.ColumnEncoding.Kind.DIRECT_V2).build();
+      }
+      return OrcProto.ColumnEncoding.newBuilder()
+          .setKind(OrcProto.ColumnEncoding.Kind.DIRECT).build();
+    }
   }
 
   private static class DecimalTreeWriter extends TreeWriter {
     private final PositionedOutputStream valueStream;
-    private final RunLengthIntegerWriter scaleStream;
+    private final IntegerWriter scaleStream;
+    private final boolean isDirectV2;
 
     DecimalTreeWriter(int columnId,
                         ObjectInspector inspector,
                         StreamFactory writer,
                         boolean nullable) throws IOException {
       super(columnId, inspector, writer, nullable);
+      this.isDirectV2 = isNewWriteFormat(writer);
       valueStream = writer.createStream(id, OrcProto.Stream.Kind.DATA);
-      scaleStream = new RunLengthIntegerWriter(writer.createStream(id,
-          OrcProto.Stream.Kind.SECONDARY), true);
+      this.scaleStream = createIntegerWriter(writer.createStream(id,
+          OrcProto.Stream.Kind.SECONDARY), true, isDirectV2);
       recordPosition(rowIndexPosition);
+    }
+
+    @Override
+    OrcProto.ColumnEncoding getEncoding() {
+      if (isDirectV2) {
+        return OrcProto.ColumnEncoding.newBuilder()
+            .setKind(OrcProto.ColumnEncoding.Kind.DIRECT_V2).build();
+      }
+      return OrcProto.ColumnEncoding.newBuilder()
+          .setKind(OrcProto.ColumnEncoding.Kind.DIRECT).build();
     }
 
     @Override
@@ -1191,22 +1279,33 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   }
 
   private static class ListTreeWriter extends TreeWriter {
-    private final RunLengthIntegerWriter lengths;
+    private final IntegerWriter lengths;
+    private final boolean isDirectV2;
 
     ListTreeWriter(int columnId,
                    ObjectInspector inspector,
                    StreamFactory writer,
                    boolean nullable) throws IOException {
       super(columnId, inspector, writer, nullable);
+      this.isDirectV2 = isNewWriteFormat(writer);
       ListObjectInspector listObjectInspector = (ListObjectInspector) inspector;
       childrenWriters = new TreeWriter[1];
       childrenWriters[0] =
         createTreeWriter(listObjectInspector.getListElementObjectInspector(),
           writer, true);
-      lengths =
-        new RunLengthIntegerWriter(writer.createStream(columnId,
-            OrcProto.Stream.Kind.LENGTH), false);
+      lengths = createIntegerWriter(writer.createStream(columnId,
+          OrcProto.Stream.Kind.LENGTH), false, isDirectV2);
       recordPosition(rowIndexPosition);
+    }
+
+    @Override
+    OrcProto.ColumnEncoding getEncoding() {
+      if (isDirectV2) {
+        return OrcProto.ColumnEncoding.newBuilder()
+            .setKind(OrcProto.ColumnEncoding.Kind.DIRECT_V2).build();
+      }
+      return OrcProto.ColumnEncoding.newBuilder()
+          .setKind(OrcProto.ColumnEncoding.Kind.DIRECT).build();
     }
 
     @Override
@@ -1241,23 +1340,34 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   }
 
   private static class MapTreeWriter extends TreeWriter {
-    private final RunLengthIntegerWriter lengths;
+    private final IntegerWriter lengths;
+    private final boolean isDirectV2;
 
     MapTreeWriter(int columnId,
                   ObjectInspector inspector,
                   StreamFactory writer,
                   boolean nullable) throws IOException {
       super(columnId, inspector, writer, nullable);
+      this.isDirectV2 = isNewWriteFormat(writer);
       MapObjectInspector insp = (MapObjectInspector) inspector;
       childrenWriters = new TreeWriter[2];
       childrenWriters[0] =
         createTreeWriter(insp.getMapKeyObjectInspector(), writer, true);
       childrenWriters[1] =
         createTreeWriter(insp.getMapValueObjectInspector(), writer, true);
-      lengths =
-        new RunLengthIntegerWriter(writer.createStream(columnId,
-            OrcProto.Stream.Kind.LENGTH), false);
+      lengths = createIntegerWriter(writer.createStream(columnId,
+          OrcProto.Stream.Kind.LENGTH), false, isDirectV2);
       recordPosition(rowIndexPosition);
+    }
+
+    @Override
+    OrcProto.ColumnEncoding getEncoding() {
+      if (isDirectV2) {
+        return OrcProto.ColumnEncoding.newBuilder()
+            .setKind(OrcProto.ColumnEncoding.Kind.DIRECT_V2).build();
+      }
+      return OrcProto.ColumnEncoding.newBuilder()
+          .setKind(OrcProto.ColumnEncoding.Kind.DIRECT).build();
     }
 
     @Override
@@ -1346,8 +1456,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
 
   private static TreeWriter createTreeWriter(ObjectInspector inspector,
                                              StreamFactory streamFactory,
-                                             boolean nullable
-                                            ) throws IOException {
+                                             boolean nullable) throws IOException {
     switch (inspector.getCategory()) {
       case PRIMITIVE:
         switch (((PrimitiveObjectInspector) inspector).getPrimitiveCategory()) {
