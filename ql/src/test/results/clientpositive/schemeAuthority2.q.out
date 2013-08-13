@@ -1,0 +1,46 @@
+PREHOOK: query: create external table dynPart (key string) partitioned by (value string, value2 string) row format delimited fields terminated by '\\t' stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create external table dynPart (key string) partitioned by (value string, value2 string) row format delimited fields terminated by '\\t' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@dynPart
+#### A masked pattern was here ####
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@dynpart
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@dynpart
+POSTHOOK: Output: default@dynpart@value=0/value2=clusterA
+#### A masked pattern was here ####
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@dynpart
+#### A masked pattern was here ####
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@dynpart
+POSTHOOK: Output: default@dynpart@value=0/value2=clusterB
+PREHOOK: query: select value2, key from dynPart where value='0'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@dynpart
+PREHOOK: Input: default@dynpart@value=0/value2=clusterA
+PREHOOK: Input: default@dynpart@value=0/value2=clusterB
+#### A masked pattern was here ####
+POSTHOOK: query: select value2, key from dynPart where value='0'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@dynpart
+POSTHOOK: Input: default@dynpart@value=0/value2=clusterA
+POSTHOOK: Input: default@dynpart@value=0/value2=clusterB
+#### A masked pattern was here ####
+clusterB	20
+clusterA	10
+#### A masked pattern was here ####
