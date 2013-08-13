@@ -624,11 +624,10 @@ public class Driver implements CommandProcessor {
             if (tbl.isPartitioned() &&
                 tableUsePartLevelAuth.get(tbl.getTableName()) == Boolean.TRUE) {
               String alias_id = topOpMap.getKey();
+
               PrunedPartitionList partsList = PartitionPruner.prune(tableScanOp,
                   parseCtx, alias_id);
-              Set<Partition> parts = new HashSet<Partition>();
-              parts.addAll(partsList.getConfirmedPartns());
-              parts.addAll(partsList.getUnknownPartns());
+              Set<Partition> parts = partsList.getPartitions();
               for (Partition part : parts) {
                 List<String> existingCols = part2Cols.get(part);
                 if (existingCols == null) {

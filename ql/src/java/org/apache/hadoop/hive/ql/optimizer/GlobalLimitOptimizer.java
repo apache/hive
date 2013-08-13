@@ -117,7 +117,7 @@ public class GlobalLimitOptimizer implements Transform {
 
             // If there is any unknown partition, create a map-reduce job for
             // the filter to prune correctly
-            if ((partsList.getUnknownPartns().size() == 0)) {
+            if (!partsList.hasUnknownPartitions()) {
               globalLimitCtx.enableOpt(tempGlobalLimit);
             }
           }
