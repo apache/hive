@@ -447,6 +447,12 @@
 </property>
 
 <property>
+  <name>hive.session.history.enabled</name>
+  <value>false</value>
+  <description>Whether to log hive query, query plan, runtime statistics etc </description>
+</property>
+
+<property>
   <name>hive.map.aggr.hash.min.reduction</name>
   <value>0.5</value>
   <description>Hash aggregation will be turned off if the ratio between hash
