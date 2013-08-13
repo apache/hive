@@ -300,7 +300,7 @@ STAGE PLANS:
             alias: inputtbl1
             Filter Operator
               predicate:
-                  expr: (key = 7.0)
+                  expr: (key = 7)
                   type: boolean
               Select Operator
                 expressions:
@@ -372,7 +372,7 @@ STAGE PLANS:
             alias: inputtbl1
             Filter Operator
               predicate:
-                  expr: (key = 7.0)
+                  expr: (key = 7)
                   type: boolean
               Select Operator
                 expressions:
