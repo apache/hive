@@ -466,12 +466,9 @@ public final class GenMapRedUtils {
     }
 
     // Generate the map work for this alias_id
-    Set<Partition> parts = null;
     // pass both confirmed and unknown partitions through the map-reduce
     // framework
-
-    parts = partsList.getConfirmedPartns();
-    parts.addAll(partsList.getUnknownPartns());
+    Set<Partition> parts = partsList.getPartitions();
     PartitionDesc aliasPartnDesc = null;
     try {
       if (!parts.isEmpty()) {

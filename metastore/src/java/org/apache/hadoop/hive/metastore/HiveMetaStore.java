@@ -651,17 +651,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         success = true;
       } catch (Exception e) {
         ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else if (e instanceof TException) {
-          throw (TException) e;
-        } else {
-          MetaException me = new MetaException(e.toString());
-          me.initCause(e);
-          throw me;
-        }
+        rethrowException(e);
       } finally {
         endFunction("alter_database", success, ex);
       }
@@ -2038,17 +2028,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw new MetaException(e.getMessage());
       } catch (Exception e) {
         ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else if (e instanceof TException) {
-          throw (TException) e;
-        } else {
-          MetaException me = new MetaException(e.toString());
-          me.initCause(e);
-          throw me;
-        }
+        rethrowException(e);
       } finally {
         endFunction("drop_partition", ret, ex, tbl_name);
       }
@@ -2099,17 +2079,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw new NoSuchObjectException(e.getMessage());
       } catch (Exception e) {
         ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else if (e instanceof TException) {
-          throw (TException) e;
-        } else {
-          MetaException me = new MetaException(e.toString());
-          me.initCause(e);
-          throw me;
-        }
+        rethrowException(e);
       } finally {
         endFunction("get_partition_with_auth", ret != null, ex, tbl_name);
       }
@@ -2159,17 +2129,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw new NoSuchObjectException(e.getMessage());
       } catch (Exception e) {
         ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else if (e instanceof TException) {
-          throw (TException) e;
-        } else {
-          MetaException me = new MetaException(e.toString());
-          me.initCause(e);
-          throw me;
-        }
+        rethrowException(e);
       } finally {
         endFunction("get_partitions_with_auth", ret != null, ex, tblName);
       }
@@ -2714,17 +2674,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ret = get_partition_by_name_core(getMS(), db_name, tbl_name, part_name);
       } catch (Exception e) {
         ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else if (e instanceof TException) {
-          throw (TException) e;
-        } else {
-          MetaException me = new MetaException(e.toString());
-          me.initCause(e);
-          throw me;
-        }
+        rethrowException(e);
       } finally {
         endFunction("get_partition_by_name", ret != null, ex, tbl_name);
       }
@@ -2813,17 +2763,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw new MetaException(e.getMessage());
       } catch (Exception e) {
         ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else if (e instanceof TException) {
-          throw (TException) e;
-        } else {
-          MetaException me = new MetaException(e.toString());
-          me.initCause(e);
-          throw me;
-        }
+        rethrowException(e);
       } finally {
         endFunction("drop_partition_by_name", ret, ex, tbl_name);
       }
@@ -2844,17 +2784,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             max_parts, null, null);
       } catch (Exception e) {
         ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else if (e instanceof TException) {
-          throw (TException) e;
-        } else {
-          MetaException me = new MetaException(e.toString());
-          me.initCause(e);
-          throw me;
-        }
+        rethrowException(e);
       } finally {
         endFunction("get_partitions_ps", ret != null, ex, tbl_name);
       }
@@ -2879,17 +2809,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw new MetaException(e.getMessage());
       } catch (Exception e) {
         ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else if (e instanceof TException) {
-          throw (TException) e;
-        } else {
-          MetaException me = new MetaException(e.toString());
-          me.initCause(e);
-          throw me;
-        }
+        rethrowException(e);
       } finally {
         endFunction("get_partitions_ps_with_auth", ret != null, ex, tbl_name);
       }
@@ -2907,17 +2827,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ret = getMS().listPartitionNamesPs(db_name, tbl_name, part_vals, max_parts);
       } catch (Exception e) {
         ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else if (e instanceof TException) {
-          throw (TException) e;
-        } else {
-          MetaException me = new MetaException(e.toString());
-          me.initCause(e);
-          throw me;
-        }
+        rethrowException(e);
       } finally {
         endFunction("get_partitions_names_ps", ret != null, ex, tbl_name);
       }
@@ -3049,17 +2959,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         throw new MetaException(e.getMessage());
       } catch (Exception e) {
         ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else if (e instanceof TException) {
-          throw (TException) e;
-        } else {
-          MetaException me = new MetaException(e.toString());
-          me.initCause(e);
-          throw me;
-        }
+        rethrowException(e);
       } finally {
         endFunction("drop_index_by_name", ret, ex, tblName);
       }
@@ -3139,17 +3039,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ret = get_index_by_name_core(getMS(), dbName, tblName, indexName);
       } catch (Exception e) {
         ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else if (e instanceof TException) {
-          throw (TException) e;
-        } else {
-          MetaException me = new MetaException(e.toString());
-          me.initCause(e);
-          throw me;
-        }
+        rethrowException(e);
       } finally {
         endFunction("drop_index_by_name", ret != null, ex, tblName);
       }
@@ -3206,17 +3096,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ret = getMS().getIndexes(dbName, tblName, maxIndexes);
       } catch (Exception e) {
         ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else if (e instanceof TException) {
-          throw (TException) e;
-        } else {
-          MetaException me = new MetaException(e.toString());
-          me.initCause(e);
-          throw me;
-        }
+        rethrowException(e);
       } finally {
         endFunction("get_indexes", ret != null, ex, tblName);
       }
@@ -3424,21 +3304,27 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ret = getMS().getPartitionsByFilter(dbName, tblName, filter, maxParts);
       } catch (Exception e) {
         ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else if (e instanceof TException) {
-          throw (TException) e;
-        } else {
-          MetaException me = new MetaException(e.toString());
-          me.initCause(e);
-          throw me;
-        }
+        rethrowException(e);
       } finally {
         endFunction("get_partitions_by_filter", ret != null, ex, tblName);
       }
       return ret;
+    }
+
+    private void rethrowException(Exception e)
+        throws MetaException, NoSuchObjectException, TException {
+      // TODO: Both of these are TException, why do we need these separate clauses?
+      if (e instanceof MetaException) {
+        throw (MetaException) e;
+      } else if (e instanceof NoSuchObjectException) {
+        throw (NoSuchObjectException) e;
+      } else if (e instanceof TException) {
+        throw (TException) e;
+      } else {
+        MetaException me = new MetaException(e.toString());
+        me.initCause(e);
+        throw me;
+      }
     }
 
     @Override
@@ -3454,17 +3340,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         ret = getMS().getPartitionsByNames(dbName, tblName, partNames);
       } catch (Exception e) {
         ex = e;
-        if (e instanceof MetaException) {
-          throw (MetaException) e;
-        } else if (e instanceof NoSuchObjectException) {
-          throw (NoSuchObjectException) e;
-        } else if (e instanceof TException) {
-          throw (TException) e;
-        } else {
-          MetaException me = new MetaException(e.toString());
-          me.initCause(e);
-          throw me;
-        }
+        rethrowException(e);
       } finally {
         endFunction("get_partitions_by_names", ret != null, ex, tblName);
       }

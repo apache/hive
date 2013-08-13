@@ -84,28 +84,25 @@ public class PartExprEvalUtils {
   }
 
   static synchronized public Map<PrimitiveObjectInspector, ExprNodeEvaluator> prepareExpr(
-      ExprNodeDesc expr, List<String> partNames, List<VirtualColumn> vcs,
-      StructObjectInspector rowObjectInspector) throws HiveException {
+      ExprNodeDesc expr, List<String> partNames, List<VirtualColumn> vcs) throws HiveException {
     boolean hasVC = vcs != null && !vcs.isEmpty();
     // Create the row object
     List<ObjectInspector> partObjectInspectors = new ArrayList<ObjectInspector>();
     for (int i = 0; i < partNames.size(); i++) {
       partObjectInspectors.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
     }
-    StructObjectInspector partObjectInspector = ObjectInspectorFactory
+    StructObjectInspector objectInspector = ObjectInspectorFactory
         .getStandardStructObjectInspector(partNames, partObjectInspectors);
 
-    List<StructObjectInspector> ois = new ArrayList<StructObjectInspector>(3);
-    ois.add(rowObjectInspector);
-    ois.add(partObjectInspector);
     if (hasVC) {
+      List<StructObjectInspector> ois = new ArrayList<StructObjectInspector>(2);
+      ois.add(objectInspector);
       ois.add(VirtualColumn.getVCSObjectInspector(vcs));
+      objectInspector = ObjectInspectorFactory.getUnionStructObjectInspector(ois);
     }
-    StructObjectInspector rowWithPartObjectInspector =
-      ObjectInspectorFactory.getUnionStructObjectInspector(ois);
 
     ExprNodeEvaluator evaluator = ExprNodeEvaluatorFactory.get(expr);
-    ObjectInspector evaluateResultOI = evaluator.initialize(rowWithPartObjectInspector);
+    ObjectInspector evaluateResultOI = evaluator.initialize(objectInspector);
 
     Map<PrimitiveObjectInspector, ExprNodeEvaluator> result =
       new HashMap<PrimitiveObjectInspector, ExprNodeEvaluator>();
@@ -114,7 +111,7 @@ public class PartExprEvalUtils {
   }
 
   static synchronized public Object evaluateExprOnPart(
-      Map<PrimitiveObjectInspector, ExprNodeEvaluator> pair, Object[] rowWithPart)
+      Map<PrimitiveObjectInspector, ExprNodeEvaluator> pair, Object rowWithPart)
       throws HiveException {
     assert(pair.size() > 0);
     // only get the 1st entry from the map

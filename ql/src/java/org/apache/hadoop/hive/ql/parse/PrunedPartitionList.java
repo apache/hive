@@ -30,30 +30,19 @@ import org.apache.hadoop.hive.ql.metadata.Table;
  */
 public class PrunedPartitionList {
 
-  // source table
+  /** Source table. */
   private final Table source;
 
-  // confirmed partitions - satisfy the partition criteria
-  private Set<Partition> confirmedPartns;
+  /** Partitions that either satisfy the partition criteria, or may satisfy it. */
+  private Set<Partition> partitions;
 
-  // unknown partitions - may/may not satisfy the partition criteria
-  private Set<Partition> unknownPartns;
+  /** Whether there are partitions in the list that may or may not satisfy the criteria. */
+  private boolean hasUnknowns;
 
-  // denied partitions - do not satisfy the partition criteria
-  private final Set<Partition> deniedPartns;
-
-  /**
-   * @param confirmedPartns
-   *          confirmed partitions
-   * @param unknownPartns
-   *          unknown partitions
-   */
-  public PrunedPartitionList(Table source, Set<Partition> confirmedPartns,
-      Set<Partition> unknownPartns, Set<Partition> deniedPartns) {
+  public PrunedPartitionList(Table source, Set<Partition> partitions, boolean hasUnknowns) {
     this.source = source;
-    this.confirmedPartns = confirmedPartns;
-    this.unknownPartns = unknownPartns;
-    this.deniedPartns = deniedPartns;
+    this.partitions = partitions;
+    this.hasUnknowns = hasUnknowns;
   }
 
   public Table getSourceTable() {
@@ -61,59 +50,24 @@ public class PrunedPartitionList {
   }
 
   /**
-   * get confirmed partitions.
-   *
-   * @return confirmedPartns confirmed paritions
+   * @return partitions
    */
-  public Set<Partition> getConfirmedPartns() {
-    return confirmedPartns;
-  }
-
-  /**
-   * get unknown partitions.
-   *
-   * @return unknownPartns unknown paritions
-   */
-  public Set<Partition> getUnknownPartns() {
-    return unknownPartns;
-  }
-
-  /**
-   * get denied partitions.
-   *
-   * @return deniedPartns denied paritions
-   */
-  public Set<Partition> getDeniedPartns() {
-    return deniedPartns;
-  }
-
-  /**
-   * return all not-denied(confirmed + unknown) partitions.
-   */
-  public List<Partition> getNotDeniedPartns() {
-    List<Partition> partitions = new ArrayList<Partition>();
-    partitions.addAll(confirmedPartns);
-    partitions.addAll(unknownPartns);
+  public Set<Partition> getPartitions() {
     return partitions;
   }
 
+
   /**
-   * set confirmed partitions.
-   *
-   * @param confirmedPartns
-   *          confirmed paritions
+   * @return all partitions.
    */
-  public void setConfirmedPartns(Set<Partition> confirmedPartns) {
-    this.confirmedPartns = confirmedPartns;
+  public List<Partition> getNotDeniedPartns() {
+    return new ArrayList<Partition>(partitions);
   }
 
   /**
-   * set unknown partitions.
-   *
-   * @param unknownPartns
-   *          unknown partitions
+   * @return Whether there are unknown partitions in {@link #getPartitions()} result.
    */
-  public void setUnknownPartns(Set<Partition> unknownPartns) {
-    this.unknownPartns = unknownPartns;
+  public boolean hasUnknownPartitions() {
+    return hasUnknowns;
   }
 }
