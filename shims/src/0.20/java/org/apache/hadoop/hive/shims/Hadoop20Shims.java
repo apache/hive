@@ -63,6 +63,7 @@ import org.apache.hadoop.mapred.TaskID;
 import org.apache.hadoop.mapred.TaskLogServlet;
 import org.apache.hadoop.mapred.lib.CombineFileInputFormat;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
+import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.security.SecurityUtil;
@@ -77,6 +78,7 @@ import org.apache.hadoop.util.VersionInfo;
  * Implemention of shims against Hadoop 0.20.0.
  */
 public class Hadoop20Shims implements HadoopShims {
+
   public boolean usesJobShell() {
     return false;
   }
@@ -192,6 +194,10 @@ public class Hadoop20Shims implements HadoopShims {
         throw new IOException("CombineFileInputFormat.getRecordReader not needed.");
       }
     };
+  }
+
+  public void setTotalOrderPartitionFile(JobConf jobConf, Path partitionFile){
+    TotalOrderPartitioner.setPartitionFile(jobConf, partitionFile);
   }
 
   public static class InputSplitShim extends CombineFileSplit implements HadoopShims.InputSplitShim {

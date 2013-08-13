@@ -83,7 +83,6 @@ import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.mapred.RunningJob;
-import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
 import org.apache.log4j.Appender;
 import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.FileAppender;
@@ -505,7 +504,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     String tmpPath = context.getCtx().getExternalTmpFileURI(onePath.toUri());
 
     Path partitionFile = new Path(tmpPath, ".partitions");
-    TotalOrderPartitioner.setPartitionFile(job, partitionFile);
+    ShimLoader.getHadoopShims().setTotalOrderPartitionFile(job, partitionFile);
 
     PartitionKeySampler sampler = new PartitionKeySampler();
 
