@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.history;
 
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.Proxy;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -31,9 +32,9 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.common.LogUtils.LogInitializationException;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.Driver;
-import org.apache.hadoop.hive.ql.QTestUtil.QTestSetup;
 import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
 import org.apache.hadoop.hive.ql.history.HiveHistory.QueryInfo;
 import org.apache.hadoop.hive.ql.history.HiveHistory.TaskInfo;
@@ -75,7 +76,7 @@ public class TestHiveHistory extends TestCase {
               + tmpdir);
         }
       }
-      
+
       conf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
 
       // copy the test files into hadoop if required.
@@ -124,8 +125,9 @@ public class TestHiveHistory extends TestCase {
         LogUtils.initHiveLog4j();
       } catch (LogInitializationException e) {
       }
-
-      CliSessionState ss = new CliSessionState(new HiveConf(SessionState.class));
+      HiveConf hconf = new HiveConf(SessionState.class);
+      hconf.setBoolVar(ConfVars.HIVE_SESSION_HISTORY_ENABLED, true);
+      CliSessionState ss = new CliSessionState(hconf);
       ss.in = System.in;
       try {
         ss.out = new PrintStream(System.out, true, "UTF-8");
@@ -179,7 +181,7 @@ public class TestHiveHistory extends TestCase {
       HiveConf conf = new HiveConf(SessionState.class);
       conf.set(HiveConf.ConfVars.HIVEHISTORYFILELOC.toString(), actualDir);
       SessionState ss = new CliSessionState(conf);
-      HiveHistory hiveHistory = new HiveHistory(ss);
+      HiveHistory hiveHistory = new HiveHistoryImpl(ss);
       Path actualPath = new Path(actualDir);
       if (!fs.exists(actualPath)) {
         fail("Query location path is not exist :" + actualPath.toString());
@@ -191,5 +193,39 @@ public class TestHiveHistory extends TestCase {
       }
     }
   }
+
+  /**
+   * Check if HiveHistoryImpl class is returned when hive history is enabled
+   * @throws Exception
+   */
+  public void testHiveHistoryConfigEnabled() throws Exception {
+      HiveConf conf = new HiveConf(SessionState.class);
+      conf.setBoolVar(ConfVars.HIVE_SESSION_HISTORY_ENABLED, true);
+      SessionState ss = new CliSessionState(conf);
+      SessionState.start(ss);
+      HiveHistory hHistory = ss.getHiveHistory();
+      assertEquals("checking hive history class when history is enabled",
+          hHistory.getClass(), HiveHistoryImpl.class);
+  }
+  /**
+   * Check if HiveHistory class is a Proxy class when hive history is disabled
+   * @throws Exception
+   */
+  public void testHiveHistoryConfigDisabled() throws Exception {
+    HiveConf conf = new HiveConf(SessionState.class);
+    conf.setBoolVar(ConfVars.HIVE_SESSION_HISTORY_ENABLED, false);
+    SessionState ss = new CliSessionState(conf);
+    SessionState.start(ss);
+    HiveHistory hHistory = ss.getHiveHistory();
+    assertTrue("checking hive history class when history is disabled",
+        hHistory.getClass() != HiveHistoryImpl.class);
+    System.err.println("hHistory.getClass" + hHistory.getClass());
+    assertTrue("verifying proxy class is used when history is disabled",
+        Proxy.isProxyClass(hHistory.getClass()));
+
+  }
+
+
+
 
 }

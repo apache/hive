@@ -384,6 +384,9 @@ public class HiveConf extends Configuration {
     // whether session is running in silent mode or not
     HIVESESSIONSILENT("hive.session.silent", false),
 
+    // Whether to enable history for this session
+    HIVE_SESSION_HISTORY_ENABLED("hive.session.history.enabled", false),
+
     // query being executed (multiple per session)
     HIVEQUERYSTRING("hive.query.string", ""),
 
