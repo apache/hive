@@ -480,7 +480,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   }
 
   private Path normalizePath(String onefile) {
-    return new Path(new Path(onefile).toUri().getPath());
+    return new Path(onefile);
   }
 
   public void process(Writable value) throws HiveException {
