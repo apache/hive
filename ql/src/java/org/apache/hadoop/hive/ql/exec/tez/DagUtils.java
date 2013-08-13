@@ -272,6 +272,9 @@ public class DagUtils {
     // create the directories FileSinkOperators need
     Utilities.createTmpDirs(conf, reduceWork);
 
+    // Call once here, will be updated when we find edges
+    MultiStageMRConfToTezTranslator.translateVertexConfToTez(conf, null);
+
     // create the vertex
     Vertex reducer = new Vertex("Reducer "+seqNo,
         new ProcessorDescriptor(ReduceProcessor.class.getName(),
