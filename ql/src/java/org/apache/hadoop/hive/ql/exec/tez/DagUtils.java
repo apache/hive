@@ -191,7 +191,8 @@ public class DagUtils {
         mrScratchDir.toUri().toString(), ctx);
     Utilities.setInputPaths(conf, inputPaths);
 
-    InputSplitInfo inputSplitInfo = MRHelpers.generateInputSplits(conf, tezDir);
+    InputSplitInfo inputSplitInfo = MRHelpers.generateInputSplits(conf, 
+        new Path(tezDir, ""+seqNo));
 
     // create the directories FileSinkOperators need
     Utilities.createTmpDirs(conf, mapWork);
