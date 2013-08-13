@@ -317,15 +317,11 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
   }
 
   private HiveException hiveException(Exception e) {
-    HiveException ex = new HiveException(e);
-    ex.initCause(e);
-    return ex;
+    return new HiveException(e);
   }
 
   private AuthorizationException authorizationException(Exception e) {
-    AuthorizationException ex = new AuthorizationException(e);
-    ex.initCause(e);
-    return ex;
+    return new AuthorizationException(e);
   }
 
   private static AccessControlException accessControlException(
