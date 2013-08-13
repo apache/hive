@@ -43,12 +43,15 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.udf.GenericUDFDecode;
+import org.apache.hadoop.hive.ql.udf.GenericUDFEncode;
 import org.apache.hadoop.hive.ql.udf.UDAFPercentile;
 import org.apache.hadoop.hive.ql.udf.UDFAbs;
 import org.apache.hadoop.hive.ql.udf.UDFAcos;
 import org.apache.hadoop.hive.ql.udf.UDFAscii;
 import org.apache.hadoop.hive.ql.udf.UDFAsin;
 import org.apache.hadoop.hive.ql.udf.UDFAtan;
+import org.apache.hadoop.hive.ql.udf.UDFBase64;
 import org.apache.hadoop.hive.ql.udf.UDFBin;
 import org.apache.hadoop.hive.ql.udf.UDFCeil;
 import org.apache.hadoop.hive.ql.udf.UDFConcat;
@@ -122,6 +125,7 @@ import org.apache.hadoop.hive.ql.udf.UDFToShort;
 import org.apache.hadoop.hive.ql.udf.UDFToString;
 import org.apache.hadoop.hive.ql.udf.UDFTrim;
 import org.apache.hadoop.hive.ql.udf.UDFType;
+import org.apache.hadoop.hive.ql.udf.UDFUnbase64;
 import org.apache.hadoop.hive.ql.udf.UDFUnhex;
 import org.apache.hadoop.hive.ql.udf.UDFUpper;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
@@ -229,6 +233,11 @@ public final class FunctionRegistry {
     registerUDF("bin", UDFBin.class, false);
     registerUDF("hex", UDFHex.class, false);
     registerUDF("unhex", UDFUnhex.class, false);
+    registerUDF("base64", UDFBase64.class, false);
+    registerUDF("unbase64", UDFUnbase64.class, false);
+
+    registerGenericUDF("encode", GenericUDFEncode.class);
+    registerGenericUDF("decode", GenericUDFDecode.class);
 
     registerUDF("upper", UDFUpper.class, false);
     registerUDF("lower", UDFLower.class, false);
