@@ -156,8 +156,8 @@ public class DagUtils {
     // all edges are of the same type right now
     EdgeProperty edgeProperty =
         new EdgeProperty(ConnectionPattern.BIPARTITE, SourceType.STABLE,
-            new OutputDescriptor(OnFileSortedOutput.class.getName(), null),
-            new InputDescriptor(ShuffledMergedInput.class.getName(), null));
+            new OutputDescriptor(OnFileSortedOutput.class.getName()),
+            new InputDescriptor(ShuffledMergedInput.class.getName()));
     return new Edge(v, w, edgeProperty);
   }
 
@@ -204,8 +204,8 @@ public class DagUtils {
     Vertex map = null;
     if (inputSplitInfo.getNumTasks() != 0) {
       map = new Vertex("Map "+seqNo,
-          new ProcessorDescriptor(MapProcessor.class.getName(),
-              MRHelpers.createUserPayloadFromConf(conf)),
+          new ProcessorDescriptor(MapProcessor.class.getName()).
+               setUserPayload(MRHelpers.createUserPayloadFromConf(conf)),
           inputSplitInfo.getNumTasks(), MRHelpers.getMapResource(conf));
       Map<String, String> environment = new HashMap<String, String>();
       MRHelpers.updateEnvironmentForMRTasks(conf, environment, true);
@@ -277,9 +277,9 @@ public class DagUtils {
 
     // create the vertex
     Vertex reducer = new Vertex("Reducer "+seqNo,
-        new ProcessorDescriptor(ReduceProcessor.class.getName(),
-            MRHelpers.createUserPayloadFromConf(conf)),
-            reduceWork.getNumReduceTasks(), MRHelpers.getReduceResource(conf));
+        new ProcessorDescriptor(ReduceProcessor.class.getName()).
+             setUserPayload(MRHelpers.createUserPayloadFromConf(conf)),
+        reduceWork.getNumReduceTasks(), MRHelpers.getReduceResource(conf));
 
     Map<String, String> environment = new HashMap<String, String>();
 
