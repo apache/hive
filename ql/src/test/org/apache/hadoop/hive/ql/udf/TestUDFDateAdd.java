@@ -18,12 +18,12 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
+import java.util.TimeZone;
 
 import junit.framework.TestCase;
 
-import java.util.TimeZone;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
 
 /**
  * JUnit test for UDFDateAdd.
@@ -37,7 +37,7 @@ public class TestUDFDateAdd extends TestCase {
      * on 2009-10-31.
      */
     public void testFallBack() throws Exception {
-        // set the default time zone so that the dates cover 
+        // set the default time zone so that the dates cover
         // the zone's daylight saving time adjustment (2009-10-31)
         // from daylight to standard time
         TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
@@ -55,7 +55,7 @@ public class TestUDFDateAdd extends TestCase {
      * on 2010-03-14.
      */
     public void testSpringAhead() throws Exception {
-        // set the default time zone so that the dates cover 
+        // set the default time zone so that the dates cover
         // the zone's daylight saving time adjustment (2010-03-14)
         // from standard to daylight time
         TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
