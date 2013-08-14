@@ -201,19 +201,21 @@ public class PartitionPruner implements Transform {
       }
     } else if (expr instanceof ExprNodeGenericFuncDesc) {
       GenericUDF udf = ((ExprNodeGenericFuncDesc)expr).getGenericUDF();
-      if (udf instanceof GenericUDFOPAnd ||
-          udf instanceof GenericUDFOPOr) {
-        List<ExprNodeDesc> children = expr.getChildren();
+      boolean isAnd = udf instanceof GenericUDFOPAnd;
+      if (isAnd || udf instanceof GenericUDFOPOr) {
+        List<ExprNodeDesc> children = ((ExprNodeGenericFuncDesc)expr).getChildren();
         ExprNodeDesc left = children.get(0);
         children.set(0, compactExpr(left));
         ExprNodeDesc right = children.get(1);
         children.set(1, compactExpr(right));
+        // Note that one does not simply compact (not-null or null) to not-null.
+        // Only if we have an "and" is it valid to send one side to metastore.
         if (children.get(0) == null && children.get(1) == null) {
           return null;
         } else if (children.get(0) == null) {
-          return children.get(1);
+          return isAnd ? children.get(1) : null;
         } else if (children.get(1) == null) {
-          return children.get(0);
+          return isAnd ? children.get(0) : null;
         }
       }
       return expr;
