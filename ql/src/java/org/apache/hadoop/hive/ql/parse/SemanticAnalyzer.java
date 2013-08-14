@@ -7719,10 +7719,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       TableScanDesc tsDesc = new TableScanDesc(alias, vcList);
       setupStats(tsDesc, qb.getParseInfo(), tab, alias, rwsch);
 
-      SplitSample sample = nameToSplitSample.get(alias);
+      SplitSample sample = nameToSplitSample.get(alias_id);
       if (sample != null && sample.getRowCount() != null) {
         tsDesc.setRowLimit(sample.getRowCount());
-        nameToSplitSample.remove(alias);
+        nameToSplitSample.remove(alias_id);
       }
 
       top = putOpInsertMap(OperatorFactory.get(tsDesc,
