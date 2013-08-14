@@ -93,6 +93,8 @@ public abstract class TaskCompiler {
       return;
     }
 
+    optimizeOperatorPlan(pCtx, inputs, outputs);
+
     /*
      * In case of a select, use a fetch task instead of a move task.
      * If the select is from analyze table column rewrite, don't create a fetch task. Instead create
@@ -333,6 +335,13 @@ public abstract class TaskCompiler {
    * Called to setup counters for the generated tasks
    */
   protected abstract void generateCountersTask(Task<? extends Serializable> rootTask);
+
+  /*
+   * Called at the beginning of the compile phase to have another chance to optimize the operator plan
+   */
+  protected void optimizeOperatorPlan(ParseContext pCtxSet, Set<ReadEntity> inputs, 
+      Set<WriteEntity> outputs) throws SemanticException {
+  }
 
   /*
    * Called after the tasks have been generated to run another round of optimization
