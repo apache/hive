@@ -7338,8 +7338,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (limit != null) {
         boolean extraMRStep = true;
 
-        if (qb.getIsQuery() && qbp.getClusterByForClause(dest) == null
-            && qbp.getSortByForClause(dest) == null) {
+        if (qbp.getOrderByForClause(dest) != null ||
+            qb.getIsQuery() && qbp.getClusterByForClause(dest) == null &&
+            qbp.getSortByForClause(dest) == null) {
           extraMRStep = false;
         }
 
