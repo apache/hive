@@ -31,6 +31,7 @@ import org.apache.hadoop.util.StringUtils;
 public final class ColumnProjectionUtils {
 
   public static final String READ_COLUMN_IDS_CONF_STR = "hive.io.file.readcolumn.ids";
+  public static final String READ_COLUMN_NAMES_CONF_STR = "hive.io.file.readcolumn.names";
 
   /**
    * Sets read columns' ids(start from zero) for RCFile's Reader. Once a column
@@ -57,6 +58,24 @@ public final class ColumnProjectionUtils {
       }
 
       setReadColumnIDConf(conf, newConfStr);
+    }
+  }
+
+  public static void appendReadColumnNames(Configuration conf,
+                                           List<String> cols) {
+    if (cols != null) {
+      String old = conf.get(READ_COLUMN_NAMES_CONF_STR, "");
+      StringBuilder result = new StringBuilder(old);
+      boolean first = old.isEmpty();
+      for(String col: cols) {
+        if (first) {
+          first = false;
+        } else {
+          result.append(',');
+        }
+        result.append(col);
+      }
+      conf.set(READ_COLUMN_NAMES_CONF_STR, result.toString());
     }
   }
 

@@ -18,13 +18,22 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import com.google.common.collect.Lists;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
+import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileSplit;
@@ -43,6 +52,8 @@ import java.util.List;
 public class OrcInputFormat  extends FileInputFormat<NullWritable, OrcStruct>
   implements InputFormatChecker {
 
+  private static final Log LOG = LogFactory.getLog(OrcInputFormat.class);
+
   private static class OrcRecordReader
       implements RecordReader<NullWritable, OrcStruct> {
     private final org.apache.hadoop.hive.ql.io.orc.RecordReader reader;
@@ -53,14 +64,38 @@ public class OrcInputFormat  extends FileInputFormat<NullWritable, OrcStruct>
 
     OrcRecordReader(Reader file, Configuration conf,
                     long offset, long length) throws IOException {
-      this.reader = file.rows(offset, length,
-          findIncludedColumns(file.getTypes(), conf));
+      String serializedPushdown = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
+      String columnNamesString =
+          conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
+      String[] columnNames = null;
+      SearchArgument sarg = null;
       List<OrcProto.Type> types = file.getTypes();
       if (types.size() == 0) {
         numColumns = 0;
       } else {
         numColumns = types.get(0).getSubtypesCount();
       }
+      columnNames = new String[types.size()];
+      LOG.info("included column ids = " +
+          conf.get(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "null"));
+      LOG.info("included columns names = " +
+          conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, "null"));
+      boolean[] includeColumn = findIncludedColumns(types, conf);
+      if (serializedPushdown != null && columnNamesString != null) {
+        sarg = SearchArgument.FACTORY.create
+            (Utilities.deserializeExpression(serializedPushdown, conf));
+        LOG.info("ORC pushdown predicate: " + sarg);
+        String[] neededColumnNames = columnNamesString.split(",");
+        int i = 0;
+        for(int columnId: types.get(0).getSubtypesList()) {
+          if (includeColumn[columnId]) {
+            columnNames[columnId] = neededColumnNames[i++];
+          }
+        }
+      } else {
+        LOG.info("No ORC pushdown predicate");
+      }
+      this.reader = file.rows(offset, length,includeColumn, sarg, columnNames);
       this.offset = offset;
       this.length = length;
     }

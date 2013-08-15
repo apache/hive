@@ -25,97 +25,149 @@ abstract class InStream extends InputStream {
 
   private static class UncompressedStream extends InStream {
     private final String name;
-    private byte[] array;
-    private int offset;
-    private final int base;
-    private final int limit;
+    private final ByteBuffer[] bytes;
+    private final long[] offsets;
+    private final long length;
+    private long currentOffset;
+    private byte[] range;
+    private int currentRange;
+    private int offsetInRange;
+    private int limitInRange;
 
-    public UncompressedStream(String name, ByteBuffer input) {
+    public UncompressedStream(String name, ByteBuffer[] input, long[] offsets,
+                              long length) {
       this.name = name;
-      this.array = input.array();
-      base = input.arrayOffset() + input.position();
-      offset = base;
-      limit = input.arrayOffset() + input.limit();
+      this.bytes = input;
+      this.offsets = offsets;
+      this.length = length;
+      currentRange = 0;
+      offsetInRange = 0;
+      limitInRange = 0;
+      currentOffset = 0;
     }
 
     @Override
     public int read() {
-      if (offset == limit) {
-        return -1;
+      if (offsetInRange >= limitInRange) {
+        if (currentOffset == length) {
+          return -1;
+        }
+        seek(currentOffset);
       }
-      return 0xff & array[offset++];
+      currentOffset += 1;
+      return 0xff & range[offsetInRange++];
     }
 
     @Override
     public int read(byte[] data, int offset, int length) {
-      if (this.offset == limit) {
-        return -1;
+      if (offsetInRange >= limitInRange) {
+        if (currentOffset == this.length) {
+          return -1;
+        }
+        seek(currentOffset);
       }
-      int actualLength = Math.min(length, limit - this.offset);
-      System.arraycopy(array, this.offset, data, offset, actualLength);
-      this.offset += actualLength;
+      int actualLength = Math.min(length, limitInRange - offsetInRange);
+      System.arraycopy(range, offsetInRange, data, offset, actualLength);
+      offsetInRange += actualLength;
+      currentOffset += actualLength;
       return actualLength;
     }
 
     @Override
     public int available() {
-      return limit - offset;
+      if (offsetInRange < limitInRange) {
+        return limitInRange - offsetInRange;
+      }
+      return (int) (length - currentOffset);
     }
 
     @Override
     public void close() {
-      array = null;
-      offset = 0;
+      currentRange = bytes.length;
+      currentOffset = length;
     }
 
     @Override
     public void seek(PositionProvider index) throws IOException {
-      offset = base + (int) index.getNext();
+      seek(index.getNext());
+    }
+
+    public void seek(long desired) {
+      for(int i = 0; i < bytes.length; ++i) {
+        if (offsets[i] <= desired &&
+            desired - offsets[i] < bytes[i].remaining()) {
+          currentOffset = desired;
+          currentRange = i;
+          this.range = bytes[i].array();
+          offsetInRange = bytes[i].arrayOffset() + bytes[i].position();
+          limitInRange = bytes[i].arrayOffset() + bytes[i].limit();
+          offsetInRange += desired - offsets[i];
+          return;
+        }
+      }
+      throw new IllegalArgumentException("Seek in " + name + " to " +
+        desired + " is outside of the data");
     }
 
     @Override
     public String toString() {
-      return "uncompressed stream " + name + " base: " + base +
-         " offset: " + offset + " limit: " + limit;
+      return "uncompressed stream " + name + " position: " + currentOffset +
+          " length: " + length + " range: " + currentRange +
+          " offset: " + offsetInRange + " limit: " + limitInRange;
     }
   }
 
   private static class CompressedStream extends InStream {
     private final String name;
-    private byte[] array;
+    private final ByteBuffer[] bytes;
+    private final long[] offsets;
     private final int bufferSize;
+    private final long length;
     private ByteBuffer uncompressed = null;
     private final CompressionCodec codec;
-    private int offset;
-    private final int base;
-    private final int limit;
+    private byte[] compressed = null;
+    private long currentOffset;
+    private int currentRange;
+    private int offsetInCompressed;
+    private int limitInCompressed;
     private boolean isUncompressedOriginal;
 
-    public CompressedStream(String name, ByteBuffer input,
+    public CompressedStream(String name, ByteBuffer[] input,
+                            long[] offsets, long length,
                             CompressionCodec codec, int bufferSize
                            ) {
-      this.array = input.array();
+      this.bytes = input;
       this.name = name;
       this.codec = codec;
+      this.length = length;
+      this.offsets = offsets;
       this.bufferSize = bufferSize;
-      base = input.arrayOffset() + input.position();
-      offset = base;
-      limit = input.arrayOffset() + input.limit();
+      currentOffset = 0;
+      currentRange = 0;
+      offsetInCompressed = 0;
+      limitInCompressed = 0;
     }
 
     private void readHeader() throws IOException {
-      if (limit - offset > OutStream.HEADER_SIZE) {
-        int chunkLength = ((0xff & array[offset + 2]) << 15) |
-          ((0xff & array[offset + 1]) << 7) | ((0xff & array[offset]) >> 1);
+      if (compressed == null || offsetInCompressed >= limitInCompressed) {
+        seek(currentOffset);
+      }
+      if (limitInCompressed - offsetInCompressed > OutStream.HEADER_SIZE) {
+        int chunkLength = ((0xff & compressed[offsetInCompressed + 2]) << 15) |
+          ((0xff & compressed[offsetInCompressed + 1]) << 7) |
+            ((0xff & compressed[offsetInCompressed]) >> 1);
         if (chunkLength > bufferSize) {
           throw new IllegalArgumentException("Buffer size too small. size = " +
               bufferSize + " needed = " + chunkLength);
         }
-        boolean isOriginal = (array[offset] & 0x01) == 1;
-        offset += OutStream.HEADER_SIZE;
+        boolean isOriginal = (compressed[offsetInCompressed] & 0x01) == 1;
+        offsetInCompressed += OutStream.HEADER_SIZE;
         if (isOriginal) {
           isUncompressedOriginal = true;
-          uncompressed = ByteBuffer.wrap(array, offset, chunkLength);
+          uncompressed = bytes[currentRange].duplicate();
+          uncompressed.position(offsetInCompressed -
+              bytes[currentRange].arrayOffset());
+          uncompressed.limit(offsetInCompressed + chunkLength);
         } else {
           if (isUncompressedOriginal) {
             uncompressed = ByteBuffer.allocate(bufferSize);
@@ -125,19 +177,21 @@ abstract class InStream extends InputStream {
           } else {
             uncompressed.clear();
           }
-          codec.decompress(ByteBuffer.wrap(array, offset, chunkLength),
+          codec.decompress(ByteBuffer.wrap(compressed, offsetInCompressed,
+              chunkLength),
             uncompressed);
         }
-        offset += chunkLength;
+        offsetInCompressed += chunkLength;
+        currentOffset += chunkLength + OutStream.HEADER_SIZE;
       } else {
-        throw new IllegalStateException("Can't read header");
+        throw new IllegalStateException("Can't read header at " + this);
       }
     }
 
     @Override
     public int read() throws IOException {
       if (uncompressed == null || uncompressed.remaining() == 0) {
-        if (offset == limit) {
+        if (currentOffset == length) {
           return -1;
         }
         readHeader();
@@ -148,7 +202,7 @@ abstract class InStream extends InputStream {
     @Override
     public int read(byte[] data, int offset, int length) throws IOException {
       if (uncompressed == null || uncompressed.remaining() == 0) {
-        if (this.offset == this.limit) {
+        if (currentOffset == this.length) {
           return -1;
         }
         readHeader();
@@ -164,7 +218,7 @@ abstract class InStream extends InputStream {
     @Override
     public int available() throws IOException {
       if (uncompressed == null || uncompressed.remaining() == 0) {
-        if (offset == limit) {
+        if (currentOffset == length) {
           return 0;
         }
         readHeader();
@@ -174,27 +228,74 @@ abstract class InStream extends InputStream {
 
     @Override
     public void close() {
-      array = null;
       uncompressed = null;
-      offset = 0;
+      currentRange = bytes.length;
+      offsetInCompressed = 0;
+      limitInCompressed = 0;
+      currentOffset = length;
     }
 
     @Override
     public void seek(PositionProvider index) throws IOException {
-      offset = base + (int) index.getNext();
-      int uncompBytes = (int) index.getNext();
-      if (uncompBytes != 0) {
+      seek(index.getNext());
+      long uncompressedBytes = index.getNext();
+      if (uncompressedBytes != 0) {
         readHeader();
-        uncompressed.position(uncompressed.position() + uncompBytes);
+        uncompressed.position(uncompressed.position() +
+                              (int) uncompressedBytes);
       } else if (uncompressed != null) {
+        // mark the uncompressed buffer as done
         uncompressed.position(uncompressed.limit());
       }
     }
 
+    private void seek(long desired) throws IOException {
+      for(int i = 0; i < bytes.length; ++i) {
+        if (offsets[i] <= desired &&
+            desired - offsets[i] < bytes[i].remaining()) {
+          currentRange = i;
+          compressed = bytes[i].array();
+          offsetInCompressed = (int) (bytes[i].arrayOffset() +
+              bytes[i].position() + (desired - offsets[i]));
+          currentOffset = desired;
+          limitInCompressed = bytes[i].arrayOffset() + bytes[i].limit();
+          return;
+        }
+      }
+      // if they are seeking to the precise end, go ahead and let them go there
+      int segments = bytes.length;
+      if (segments != 0 &&
+          desired == offsets[segments - 1] + bytes[segments - 1].remaining()) {
+        currentRange = segments - 1;
+        compressed = bytes[currentRange].array();
+        offsetInCompressed = bytes[currentRange].arrayOffset() +
+          bytes[currentRange].limit();
+        currentOffset = desired;
+        limitInCompressed = offsetInCompressed;
+        return;
+      }
+      throw new IOException("Seek outside of data in " + this + " to " +
+        desired);
+    }
+
+    private String rangeString() {
+      StringBuilder builder = new StringBuilder();
+      for(int i=0; i < offsets.length; ++i) {
+        if (i != 0) {
+          builder.append("; ");
+        }
+        builder.append(" range " + i + " = " + offsets[i] + " to " +
+            bytes[i].remaining());
+      }
+      return builder.toString();
+    }
+
     @Override
     public String toString() {
-      return "compressed stream " + name + " base: " + base +
-          " offset: " + offset + " limit: " + limit +
+      return "compressed stream " + name + " position: " + currentOffset +
+          " length: " + length + " range: " + currentRange +
+          " offset: " + offsetInCompressed + " limit: " + limitInCompressed +
+          rangeString() +
           (uncompressed == null ? "" :
               " uncompressed: " + uncompressed.position() + " to " +
                   uncompressed.limit());
@@ -203,14 +304,29 @@ abstract class InStream extends InputStream {
 
   public abstract void seek(PositionProvider index) throws IOException;
 
+  /**
+   * Create an input stream from a list of buffers.
+   * @param name the name of the stream
+   * @param input the list of ranges of bytes for the stream
+   * @param offsets a list of offsets (the same length as input) that must
+   *                contain the first offset of the each set of bytes in input
+   * @param length the length in bytes of the stream
+   * @param codec the compression codec
+   * @param bufferSize the compression buffer size
+   * @return an input stream
+   * @throws IOException
+   */
   public static InStream create(String name,
-                                ByteBuffer input,
+                                ByteBuffer[] input,
+                                long[] offsets,
+                                long length,
                                 CompressionCodec codec,
                                 int bufferSize) throws IOException {
     if (codec == null) {
-      return new UncompressedStream(name, input);
+      return new UncompressedStream(name, input, offsets, length);
     } else {
-      return new CompressedStream(name, input, codec, bufferSize);
+      return new CompressedStream(name, input, offsets, length, codec,
+          bufferSize);
     }
   }
 }

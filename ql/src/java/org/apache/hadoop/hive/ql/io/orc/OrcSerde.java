@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
@@ -38,6 +40,9 @@ import java.util.Properties;
  * It transparently passes the object to/from the ORC file reader/writer.
  */
 public class OrcSerde implements SerDe {
+
+  private static final Log LOG = LogFactory.getLog(OrcSerde.class);
+
   private final OrcSerdeRow row = new OrcSerdeRow();
   private ObjectInspector inspector = null;
 
@@ -129,4 +134,5 @@ public class OrcSerde implements SerDe {
   public SerDeStats getSerDeStats() {
     return null;
   }
+
 }
