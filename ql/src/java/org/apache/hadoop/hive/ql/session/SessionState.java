@@ -292,10 +292,10 @@ public class SessionState {
    * @throws IOException
    */
   private static File createTempFile(HiveConf conf) throws IOException {
-    String hHistDir =
-        HiveConf.getVar(conf, HiveConf.ConfVars.HIVEHISTORYFILELOC);
+    String lScratchDir =
+        HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR);
 
-    File tmpDir = new File(hHistDir);
+    File tmpDir = new File(lScratchDir);
     String sessionID = conf.getVar(HiveConf.ConfVars.HIVESESSIONID);
     if (!tmpDir.exists()) {
       if (!tmpDir.mkdirs()) {
@@ -304,7 +304,7 @@ public class SessionState {
         // mkdirs returned false, that is fine
         if(!tmpDir.exists()){
           throw new RuntimeException("Unable to create log directory "
-              + hHistDir);
+              + lScratchDir);
         }
       }
     }
