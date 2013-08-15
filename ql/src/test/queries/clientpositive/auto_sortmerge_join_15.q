@@ -16,10 +16,8 @@ set hive.optimize.bucketmapjoin = true;
 set hive.optimize.bucketmapjoin.sortedmerge = true;
 set hive.auto.convert.join=true;
 
--- Since tbl1 is the bigger table, tbl1 Left Outer Join tbl2 can be performed
 explain
 select count(*) FROM tbl1 a LEFT OUTER JOIN tbl2 b ON a.key = b.key;
 
--- Since tbl1 is the bigger table, tbl1 Right Outer Join tbl2 cannot be performed
 explain
 select count(*) FROM tbl1 a RIGHT OUTER JOIN tbl2 b ON a.key = b.key;

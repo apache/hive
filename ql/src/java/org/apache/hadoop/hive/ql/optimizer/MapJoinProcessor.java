@@ -328,7 +328,9 @@ public class MapJoinProcessor implements Transform {
     Byte[] tagOrder = desc.getTagOrder();
 
     if (!noCheckOuterJoin) {
-      checkMapJoin(mapJoinPos, condns);
+      if (checkMapJoin(mapJoinPos, condns) < 0) {
+        throw new SemanticException(ErrorMsg.NO_OUTER_MAPJOIN.getMsg());
+      }
     }
 
     RowResolver oldOutputRS = opParseCtxMap.get(op).getRowResolver();
@@ -620,10 +622,10 @@ public class MapJoinProcessor implements Transform {
    *
    *
    * @param condns
-   * @return list of big table candidates
+   * @return set of big table candidates
    */
-  public static HashSet<Integer> getBigTableCandidates(JoinCondDesc[] condns) {
-    HashSet<Integer> bigTableCandidates = new HashSet<Integer>();
+  public static Set<Integer> getBigTableCandidates(JoinCondDesc[] condns) {
+    Set<Integer> bigTableCandidates = new HashSet<Integer>();
 
     boolean seenOuterJoin = false;
     Set<Integer> seenPostitions = new HashSet<Integer>();
@@ -677,13 +679,20 @@ public class MapJoinProcessor implements Transform {
     return bigTableCandidates;
   }
 
-  public static void checkMapJoin(int mapJoinPos, JoinCondDesc[] condns) throws SemanticException {
-    HashSet<Integer> bigTableCandidates = MapJoinProcessor.getBigTableCandidates(condns);
+  /**
+   * @param mapJoinPos the position of big table as determined by either hints or auto conversion.
+   * @param condns the join conditions
+   * @return if given mapjoin position is a feasible big table position return same else -1.
+   * @throws SemanticException if given position is not in the big table candidates.
+   */
+  public static int checkMapJoin(int mapJoinPos, JoinCondDesc[] condns) {
+    Set<Integer> bigTableCandidates = MapJoinProcessor.getBigTableCandidates(condns);
 
-    if (bigTableCandidates == null || !bigTableCandidates.contains(mapJoinPos)) {
-      throw new SemanticException(ErrorMsg.NO_OUTER_MAPJOIN.getMsg());
+    // bigTableCandidates can never be null
+    if (!bigTableCandidates.contains(mapJoinPos)) {
+      return -1;
     }
-    return;
+    return mapJoinPos;
   }
 
   private void genSelectPlan(ParseContext pctx, MapJoinOperator input) throws SemanticException {
