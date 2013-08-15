@@ -103,6 +103,7 @@ import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
+import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
@@ -1967,6 +1968,26 @@ public final class Utilities {
       }
     }
     return true;
+  }
+
+  public static List<TezTask> getTezTasks(List<Task<? extends Serializable>> tasks) {
+    List<TezTask> tezTasks = new ArrayList<TezTask>();
+    if (tasks != null) {
+      getTezTasks(tasks, tezTasks);
+    }
+    return tezTasks;
+  }
+
+  private static void getTezTasks(List<Task<? extends Serializable>> tasks, List<TezTask> tezTasks) {
+    for (Task<? extends Serializable> task : tasks) {
+      if (task instanceof TezTask && !tezTasks.contains((TezTask) task)) {
+        tezTasks.add((TezTask) task);
+      }
+
+      if (task.getDependentTasks() != null) {
+        getTezTasks(task.getDependentTasks(), tezTasks);
+      }
+    }
   }
 
   public static List<ExecDriver> getMRTasks(List<Task<? extends Serializable>> tasks) {

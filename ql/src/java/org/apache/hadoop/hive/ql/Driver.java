@@ -1162,7 +1162,8 @@ public class Driver implements CommandProcessor {
       }
 
 
-      int jobs = Utilities.getMRTasks(plan.getRootTasks()).size();
+      int jobs = Utilities.getMRTasks(plan.getRootTasks()).size()
+        + Utilities.getTezTasks(plan.getRootTasks()).size();
       if (jobs > 0) {
         console.printInfo("Total MapReduce jobs = " + jobs);
       }
