@@ -2493,14 +2493,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             (ASTNode) selExprList.getChild(1),
             ErrorMsg.UDTF_MULTIPLE_EXPR.getMsg()));
       }
-      // Require an AS for UDTFs for column aliases
+
       ASTNode selExpr = (ASTNode) selExprList.getChild(posn);
-      if (selExpr.getChildCount() < 2) {
-        throw new SemanticException(generateErrorMessage(udtfExpr,
-            ErrorMsg.UDTF_REQUIRE_AS.getMsg()));
-      }
+
       // Get the column / table aliases from the expression. Start from 1 as
       // 0 is the TOK_FUNCTION
+      // column names also can be inferred from result of UDTF
       for (int i = 1; i < selExpr.getChildCount(); i++) {
         ASTNode selExprChild = (ASTNode) selExpr.getChild(i);
         switch (selExprChild.getType()) {
@@ -5490,9 +5488,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     StructObjectInspector outputOI = genericUDTF.initialize(colOIs);
 
+    int numUdtfCols = outputOI.getAllStructFieldRefs().size();
+    if (colAliases.isEmpty()) {
+      // user did not specfied alias names, infer names from outputOI
+      for (StructField field : outputOI.getAllStructFieldRefs()) {
+        colAliases.add(field.getFieldName());
+      }
+    }
     // Make sure that the number of column aliases in the AS clause matches
     // the number of columns output by the UDTF
-    int numUdtfCols = outputOI.getAllStructFieldRefs().size();
     int numSuppliedAliases = colAliases.size();
     if (numUdtfCols != numSuppliedAliases) {
       throw new SemanticException(ErrorMsg.UDTF_ALIAS_MISMATCH

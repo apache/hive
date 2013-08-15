@@ -144,7 +144,7 @@ public enum ErrorMsg {
   COLUMN_ALIAS_ALREADY_EXISTS(10074, "Column alias already exists:", "42S02"),
   UDTF_MULTIPLE_EXPR(10075, "Only a single expression in the SELECT clause is "
       + "supported with UDTF's"),
-  UDTF_REQUIRE_AS(10076, "UDTF's require an AS clause"),
+  @Deprecated UDTF_REQUIRE_AS(10076, "UDTF's require an AS clause"),
   UDTF_NO_GROUP_BY(10077, "GROUP BY is not supported with a UDTF in the SELECT clause"),
   UDTF_NO_SORT_BY(10078, "SORT BY is not supported with a UDTF in the SELECT clause"),
   UDTF_NO_CLUSTER_BY(10079, "CLUSTER BY is not supported with a UDTF in the SELECT clause"),
