@@ -360,6 +360,7 @@ public enum ErrorMsg {
   CANNOT_REPLACE_COLUMNS(10243, "Replace columns is not supported for table {0}. SerDe may be incompatible.", true),
   BAD_LOCATION_VALUE(10244, "{0}  is not absolute or has no scheme information.  Please specify a complete absolute uri with scheme information."),
   UNSUPPORTED_ALTER_TBL_OP(10245, "{0} alter table options is not supported"),
+  INVALID_BIGTABLE_MAPJOIN(10246, "{0} table chosen for streaming is not valid", true),
 
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),
   SCRIPT_IO_ERROR(20001, "An error occurred while reading or writing to your custom script. "
@@ -616,8 +617,8 @@ public enum ErrorMsg {
     return format(new String[]{reason});
   }
   /**
-   * If the message is parametrized, this will fill the parameters with supplied 
-   * {@code reasons}, otherwise {@code reasons} are appended at the end of the 
+   * If the message is parametrized, this will fill the parameters with supplied
+   * {@code reasons}, otherwise {@code reasons} are appended at the end of the
    * message.
    */
   public String format(String... reasons) {
