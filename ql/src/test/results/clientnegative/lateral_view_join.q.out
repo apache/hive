@@ -1,2 +1,2 @@
-FAILED: ParseException line 1:62 missing AS at 'myTable' near '<EOF>'
+FAILED: ParseException line 1:62 missing EOF at 'myTable' near 'AS'
 
