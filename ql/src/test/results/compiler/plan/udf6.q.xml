@@ -515,6 +515,9 @@
         <void property="neededColumnIDs"> 
          <object class="java.util.ArrayList"/> 
         </void> 
+        <void property="neededColumns"> 
+         <object class="java.util.ArrayList"/> 
+        </void> 
         <void property="operatorId"> 
          <string>TS_0</string> 
         </void> 

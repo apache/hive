@@ -84,7 +84,11 @@ public class TestBitPack {
     inBuf.flip();
     long[] buff = new long[SIZE];
     SerializationUtils.readInts(buff, 0, SIZE, fixedWidth,
-        InStream.create("test", inBuf, null, SIZE));
+                                InStream.create("test",
+                                                new ByteBuffer[]{inBuf},
+                                                new long[]{0},
+                                                inBuf.remaining(),
+                                                null, SIZE));
     for(int i = 0; i < SIZE; i++) {
       buff[i] = SerializationUtils.zigzagDecode(buff[i]);
     }
