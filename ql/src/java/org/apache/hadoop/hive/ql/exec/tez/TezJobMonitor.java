@@ -63,7 +63,7 @@ public class TezJobMonitor {
    * @return int 0 - success, 1 - killed, 2 - failed
    */
   public int monitorExecution(DAGClient dagClient) throws InterruptedException {
-    DAGStatus status;
+    DAGStatus status = null;
 
     boolean running = false;
     boolean done = false;
@@ -146,6 +146,11 @@ public class TezJobMonitor {
       }
 
       if (done) {
+        if (rc != 0 && status != null) {
+          for (String diag: status.getDiagnostics()) {
+            console.printError(diag);
+          }
+        }
         break;
       }
       Thread.sleep(500);
