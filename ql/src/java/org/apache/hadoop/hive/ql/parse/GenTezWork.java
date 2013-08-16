@@ -101,12 +101,13 @@ public class GenTezWork implements NodeProcessor {
       reduceWork.setReducer(root);
       reduceWork.setNeedsTagging(GenMapRedUtils.needsTagging(reduceWork));
 
-      // All parents should be reduce sinks. We pick the first to choose the
-      // number of reducers. In the join/union case they will all be -1. In
-      // sort/order case where it matters there will be only one parent.
-      assert root.getParentOperators().get(0) instanceof ReduceSinkOperator;
-      ReduceSinkOperator reduceSink
-        = (ReduceSinkOperator)root.getParentOperators().get(0);
+      // All parents should be reduce sinks. We pick the one we just walked 
+      // to choose the number of reducers. In the join/union case they will 
+      // all be -1. In sort/order case where it matters there will be only 
+      // one parent.
+      assert context.parentOfRoot instanceof ReduceSinkOperator;
+      ReduceSinkOperator reduceSink = (ReduceSinkOperator) context.parentOfRoot;
+
       reduceWork.setNumReduceTasks(reduceSink.getConf().getNumReducers());
 
       // need to fill in information about the key and value in the reducer
@@ -165,9 +166,11 @@ public class GenTezWork implements NodeProcessor {
     // the next item will be a new root.
     if (!operator.getChildOperators().isEmpty()) {
       assert operator.getChildOperators().size() == 1;
+      context.parentOfRoot = operator;
       context.currentRootOperator = operator.getChildOperators().get(0);
       context.preceedingWork = work;
     } else {
+      context.parentOfRoot = null;
       context.currentRootOperator = null;
       context.preceedingWork = null;
     }

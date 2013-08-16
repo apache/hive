@@ -65,6 +65,12 @@ public class GenTezProcContext implements NodeProcessorCtx{
   // first operator of a reduce task.
   public Operator<? extends OperatorDesc> currentRootOperator;
 
+  // this is the original parent of the currentRootOperator as we scan
+  // through the graph. A root operator might have multiple parents and
+  // we just use this one to remember where we came from in the current
+  // walk.
+  public Operator<? extends OperatorDesc> parentOfRoot;
+
   // tez task we're currently processing
   public TezTask currentTask;
 
