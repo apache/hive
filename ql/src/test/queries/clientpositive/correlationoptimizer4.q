@@ -33,10 +33,9 @@ SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2 x JOIN T1 y ON (x.key = y.key) JOIN T3 z ON (y.key = z.key)
       GROUP BY y.key) tmp;
-      
+
 set hive.optimize.correlation=true;
 set hive.auto.convert.join=true;
-set hive.optimize.mapjoin.mapreduce=true;
 -- Enable hive.auto.convert.join.
 EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))

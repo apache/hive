@@ -28,7 +28,7 @@ public class TestStartRequest {
   public TestStartRequest() {
 
   }
-  public TestStartRequest(String profile, String testHandle, 
+  public TestStartRequest(String profile, String testHandle,
       String jiraName, String patchURL, boolean clearLibraryCache) {
     this.profile = profile;
     this.testHandle = testHandle;
@@ -47,7 +47,7 @@ public class TestStartRequest {
   }
   public void setPatchURL(String patchURL) {
     this.patchURL = patchURL;
-  }  
+  }
   public boolean isClearLibraryCache() {
     return clearLibraryCache;
   }
@@ -60,7 +60,7 @@ public class TestStartRequest {
   public void setJiraName(String jiraName) {
     this.jiraName = jiraName;
   }
-  
+
   public String getTestHandle() {
     return testHandle;
   }

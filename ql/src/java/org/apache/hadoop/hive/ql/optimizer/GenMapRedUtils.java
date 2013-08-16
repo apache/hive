@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
@@ -62,7 +63,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
-import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
@@ -455,13 +455,8 @@ public final class GenMapRedUtils {
 
     if (partsList == null) {
       try {
-        partsList = parseCtx.getOpToPartList().get((TableScanOperator) topOp);
-        if (partsList == null) {
-          partsList = PartitionPruner.prune(parseCtx.getTopToTable().get(topOp),
-              parseCtx.getOpToPartPruner().get(topOp), opProcCtx.getConf(),
-              alias_id, parseCtx.getPrunedPartitions());
-          parseCtx.getOpToPartList().put((TableScanOperator) topOp, partsList);
-        }
+        TableScanOperator tsOp = (TableScanOperator) topOp;
+        partsList = PartitionPruner.prune(tsOp, parseCtx, alias_id);
       } catch (SemanticException e) {
         throw e;
       } catch (HiveException e) {
@@ -471,12 +466,9 @@ public final class GenMapRedUtils {
     }
 
     // Generate the map work for this alias_id
-    Set<Partition> parts = null;
     // pass both confirmed and unknown partitions through the map-reduce
     // framework
-
-    parts = partsList.getConfirmedPartns();
-    parts.addAll(partsList.getUnknownPartns());
+    Set<Partition> parts = partsList.getPartitions();
     PartitionDesc aliasPartnDesc = null;
     try {
       if (!parts.isEmpty()) {
@@ -985,6 +977,77 @@ public final class GenMapRedUtils {
       }
     }
     return true;
+  }
+
+
+
+  /**
+   * Replace the Map-side operator tree associated with targetAlias in
+   * target with the Map-side operator tree associated with sourceAlias in source.
+   * @param sourceAlias
+   * @param targetAlias
+   * @param source
+   * @param target
+   */
+  public static void replaceMapWork(String sourceAlias, String targetAlias,
+      MapWork source, MapWork target) {
+    Map<String, ArrayList<String>> sourcePathToAliases = source.getPathToAliases();
+    Map<String, PartitionDesc> sourcePathToPartitionInfo = source.getPathToPartitionInfo();
+    Map<String, Operator<? extends OperatorDesc>> sourceAliasToWork = source.getAliasToWork();
+    Map<String, PartitionDesc> sourceAliasToPartnInfo = source.getAliasToPartnInfo();
+
+    Map<String, ArrayList<String>> targetPathToAliases = target.getPathToAliases();
+    Map<String, PartitionDesc> targetPathToPartitionInfo = target.getPathToPartitionInfo();
+    Map<String, Operator<? extends OperatorDesc>> targetAliasToWork = target.getAliasToWork();
+    Map<String, PartitionDesc> targetAliasToPartnInfo = target.getAliasToPartnInfo();
+
+    if (!sourceAliasToWork.containsKey(sourceAlias) ||
+        !targetAliasToWork.containsKey(targetAlias)) {
+      // Nothing to do if there is no operator tree associated with
+      // sourceAlias in source or there is not operator tree associated
+      // with targetAlias in target.
+      return;
+    }
+
+    if (sourceAliasToWork.size() > 1) {
+      // If there are multiple aliases in source, we do not know
+      // how to merge.
+      return;
+    }
+
+    // Remove unnecessary information from target
+    targetAliasToWork.remove(targetAlias);
+    targetAliasToPartnInfo.remove(targetAlias);
+    List<String> pathsToRemove = new ArrayList<String>();
+    for (Entry<String, ArrayList<String>> entry: targetPathToAliases.entrySet()) {
+      ArrayList<String> aliases = entry.getValue();
+      aliases.remove(targetAlias);
+      if (aliases.isEmpty()) {
+        pathsToRemove.add(entry.getKey());
+      }
+    }
+    for (String pathToRemove: pathsToRemove) {
+      targetPathToAliases.remove(pathToRemove);
+      targetPathToPartitionInfo.remove(pathToRemove);
+    }
+
+    // Add new information from source to target
+    targetAliasToWork.put(sourceAlias, sourceAliasToWork.get(sourceAlias));
+    targetAliasToPartnInfo.putAll(sourceAliasToPartnInfo);
+    targetPathToPartitionInfo.putAll(sourcePathToPartitionInfo);
+    List<String> pathsToAdd = new ArrayList<String>();
+    for (Entry<String, ArrayList<String>> entry: sourcePathToAliases.entrySet()) {
+      ArrayList<String> aliases = entry.getValue();
+      if (aliases.contains(sourceAlias)) {
+        pathsToAdd.add(entry.getKey());
+      }
+    }
+    for (String pathToAdd: pathsToAdd) {
+      if (!targetPathToAliases.containsKey(pathToAdd)) {
+        targetPathToAliases.put(pathToAdd, new ArrayList<String>());
+      }
+      targetPathToAliases.get(pathToAdd).add(sourceAlias);
+    }
   }
 
   private GenMapRedUtils() {

@@ -23,11 +23,8 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * PerfLogger.
@@ -55,7 +52,7 @@ public class PerfLogger {
 
   static final private Log LOG = LogFactory.getLog(PerfLogger.class.getName());
 
-  protected PerfLogger() {
+  public PerfLogger() {
     // Use getPerfLogger to get an instance of PerfLogger
   }
 
@@ -68,26 +65,17 @@ public class PerfLogger {
    *
    * Use resetPerfLogger to require a new instance.  Useful at the beginning of execution.
    *
-   * @return  Tries to return an instance of the class whose name is configured in
-   *          hive.exec.perf.logger, but if it can't it just returns an instance of
-   *          the base PerfLogger class
+   * @return Session perflogger if there's a sessionstate, otherwise return the thread local instance
    */
   public static PerfLogger getPerfLogger(boolean resetPerfLogger) {
-    if (perfLogger.get() == null || resetPerfLogger) {
-      if (SessionState.get() == null) {
+    if (SessionState.get() == null) {
+      if (perfLogger.get() == null || resetPerfLogger) {
         perfLogger.set(new PerfLogger());
-      } else {
-        HiveConf conf = SessionState.get().getConf();
-        try {
-          perfLogger.set((PerfLogger) ReflectionUtils.newInstance(conf.getClassByName(
-              conf.getVar(ConfVars.HIVE_PERF_LOGGER)), conf));
-        } catch (ClassNotFoundException e) {
-          LOG.error("Performance Logger Class not found:" + e.getMessage());
-          perfLogger.set(new PerfLogger());
-        }
       }
+      return perfLogger.get();
+    } else {
+      return SessionState.get().getPerfLogger(resetPerfLogger);
     }
-    return perfLogger.get();
   }
 
   /**

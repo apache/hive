@@ -53,12 +53,12 @@ public class RSyncCommandExecutor {
         retry = false;
         if(command.getType() == RSyncCommand.Type.TO_LOCAL) {
           cmd = new LocalCommand(mLogger, collector,
-              String.format("rsync -qaPe \"ssh -i %s\" %s@%s:%s %s",
+              String.format("timeout 1h rsync -qaPe \"ssh -i %s\" --timeout 600 %s@%s:%s %s",
                   command.getPrivateKey(), command.getUser(), command.getHost(),
                   command.getRemoteFile(), command.getLocalFile()));
         } else if(command.getType() == RSyncCommand.Type.FROM_LOCAL) {
           cmd = new LocalCommand(mLogger, collector,
-              String.format("rsync -qaPe \"ssh -i %s\" --delete --delete-during --force %s %s@%s:%s",
+              String.format("timeout 1h rsync -qaPe \"ssh -i %s\" --timeout 600 --delete --delete-during --force %s %s@%s:%s",
                   command.getPrivateKey(), command.getLocalFile(), command.getUser(), command.getHost(),
                   command.getRemoteFile()));
         } else {

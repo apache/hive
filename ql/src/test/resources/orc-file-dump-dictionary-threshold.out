@@ -1,0 +1,78 @@
+Structure for TestFileDump.testDump.orc
+Rows: 21000
+Compression: ZLIB
+Compression size: 10000
+Type: struct<i:int,l:bigint,s:string>
+
+Statistics:
+  Column 0: count: 21000
+  Column 1: count: 21000 min: -2147390285 max: 2147453086 sum: 109128518326
+  Column 2: count: 21000 min: -9222731174895935707 max: 9222919052987871506
+  Column 3: count: 21000 min: Darkness,-230 max: worst-54-290-346-648-908-996-1038-1080-1560-1584-1620-1744-1770-1798-1852-1966-2162-2244-2286-2296-2534-2660-3114-3676-3788-4068-4150-4706-4744-5350-5420-5582-5696-5726-6006-6020-6024-6098-6184-6568-6636-6802-6994-7004-7318-7498-7758-7780-7798-7920-7952-7960-7988-8232-8256-8390-8416-8478-8620-8840-8984-9038-9128-9236-9248-9344-9594-9650-9714-9928-9938-10178-10368-10414-10502-10732-10876-11008-11158-11410-11722-11836-11964-12054-12096-12126-12136-12202-12246-12298-12616-12774-12782-12790-12802-12976-13216-13246-13502-13766-14454-14974-15004-15124-15252-15294-15356-15530-15610-16316-16936-17024-17122-17214-17310-17528-17682-17742-17870-17878-18010-18410-18524-18788-19204-19254-19518-19596-19786-19874-19904-20390-20752-20936
+
+Stripes:
+  Stripe: offset: 3 data: 102311 rows: 4000 tail: 68 index: 217
+    Stream: column 0 section ROW_INDEX start: 3 length 10
+    Stream: column 1 section ROW_INDEX start: 13 length 36
+    Stream: column 2 section ROW_INDEX start: 49 length 39
+    Stream: column 3 section ROW_INDEX start: 88 length 132
+    Stream: column 1 section DATA start: 220 length 16022
+    Stream: column 2 section DATA start: 16242 length 32028
+    Stream: column 3 section DATA start: 48270 length 50887
+    Stream: column 3 section LENGTH start: 99157 length 3374
+    Encoding column 0: DIRECT
+    Encoding column 1: DIRECT_V2
+    Encoding column 2: DIRECT_V2
+    Encoding column 3: DIRECT_V2
+  Stripe: offset: 102599 data: 284999 rows: 5000 tail: 68 index: 349
+    Stream: column 0 section ROW_INDEX start: 102599 length 10
+    Stream: column 1 section ROW_INDEX start: 102609 length 36
+    Stream: column 2 section ROW_INDEX start: 102645 length 39
+    Stream: column 3 section ROW_INDEX start: 102684 length 264
+    Stream: column 1 section DATA start: 102948 length 20029
+    Stream: column 2 section DATA start: 122977 length 40035
+    Stream: column 3 section DATA start: 163012 length 219588
+    Stream: column 3 section LENGTH start: 382600 length 5347
+    Encoding column 0: DIRECT
+    Encoding column 1: DIRECT_V2
+    Encoding column 2: DIRECT_V2
+    Encoding column 3: DIRECT_V2
+  Stripe: offset: 388015 data: 491655 rows: 5000 tail: 69 index: 536
+    Stream: column 0 section ROW_INDEX start: 388015 length 10
+    Stream: column 1 section ROW_INDEX start: 388025 length 36
+    Stream: column 2 section ROW_INDEX start: 388061 length 39
+    Stream: column 3 section ROW_INDEX start: 388100 length 451
+    Stream: column 1 section DATA start: 388551 length 20029
+    Stream: column 2 section DATA start: 408580 length 40035
+    Stream: column 3 section DATA start: 448615 length 425862
+    Stream: column 3 section LENGTH start: 874477 length 5729
+    Encoding column 0: DIRECT
+    Encoding column 1: DIRECT_V2
+    Encoding column 2: DIRECT_V2
+    Encoding column 3: DIRECT_V2
+  Stripe: offset: 880275 data: 707368 rows: 5000 tail: 68 index: 677
+    Stream: column 0 section ROW_INDEX start: 880275 length 10
+    Stream: column 1 section ROW_INDEX start: 880285 length 36
+    Stream: column 2 section ROW_INDEX start: 880321 length 39
+    Stream: column 3 section ROW_INDEX start: 880360 length 592
+    Stream: column 1 section DATA start: 880952 length 20029
+    Stream: column 2 section DATA start: 900981 length 40035
+    Stream: column 3 section DATA start: 941016 length 641580
+    Stream: column 3 section LENGTH start: 1582596 length 5724
+    Encoding column 0: DIRECT
+    Encoding column 1: DIRECT_V2
+    Encoding column 2: DIRECT_V2
+    Encoding column 3: DIRECT_V2
+  Stripe: offset: 1588388 data: 348697 rows: 2000 tail: 67 index: 786
+    Stream: column 0 section ROW_INDEX start: 1588388 length 10
+    Stream: column 1 section ROW_INDEX start: 1588398 length 36
+    Stream: column 2 section ROW_INDEX start: 1588434 length 39
+    Stream: column 3 section ROW_INDEX start: 1588473 length 701
+    Stream: column 1 section DATA start: 1589174 length 8011
+    Stream: column 2 section DATA start: 1597185 length 16014
+    Stream: column 3 section DATA start: 1613199 length 322259
+    Stream: column 3 section LENGTH start: 1935458 length 2413
+    Encoding column 0: DIRECT
+    Encoding column 1: DIRECT_V2
+    Encoding column 2: DIRECT_V2
+    Encoding column 3: DIRECT_V2

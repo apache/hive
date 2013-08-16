@@ -60,8 +60,27 @@ public class TestReportParser {
     Assert.assertEquals(3, parser.getFailedTests().size());
     Assert.assertEquals(Sets.
         newHashSet("org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_skewjoin_union_remove_1",
-        "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_union_remove_9",
-        "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_skewjoin"),
-        parser.getFailedTests());
+            "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_union_remove_9",
+            "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_skewjoin"),
+            parser.getFailedTests());
+    Assert.assertEquals(Sets.
+        newHashSet("org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_shutdown", 
+            "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_binary_constant", 
+            "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_skewjoin_union_remove_1", 
+            "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_udf_regexp_extract", 
+            "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_index_auth", 
+            "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_auto_join17", 
+            "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_authorization_2", 
+            "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_load_dyn_part3", 
+            "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_index_bitmap2", 
+            "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_groupby_rollup1", 
+            "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_bucketcontext_3", 
+            "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_ppd_join", 
+            "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_rcfile_lazydecompress", 
+            "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_notable_alias1", 
+            "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_union_remove_9", 
+            "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_skewjoin", 
+            "org.apache.hadoop.hive.cli.TestCliDriver.testCliDriver_multi_insert_gby"),
+            parser.getExecutedTests());
   }
 }

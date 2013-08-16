@@ -1,12 +1,3 @@
-/some/working/dir/ivy /some/local/dir/somehost-someuser-0/
-/some/working/dir/ivy /some/local/dir/somehost-someuser-1/
-/some/working/dir/maven /some/local/dir/somehost-someuser-0/
-/some/working/dir/maven /some/local/dir/somehost-someuser-1/
-/some/working/dir/repositoryName-source /some/local/dir/somehost-someuser-0/
-/some/working/dir/repositoryName-source /some/local/dir/somehost-someuser-1/
 bash /tmp/hive-ptest-units/TestPrepPhase/source-prep.sh
-mkdir -p /some/local/dir/somehost-someuser-0/ivy /some/local/dir/somehost-someuser-0/repositoryName-source
-mkdir -p /some/local/dir/somehost-someuser-0/logs /some/local/dir/somehost-someuser-0/maven /some/local/dir/somehost-someuser-0/scratch
-mkdir -p /some/local/dir/somehost-someuser-1/ivy /some/local/dir/somehost-someuser-1/repositoryName-source
-mkdir -p /some/local/dir/somehost-someuser-1/logs /some/local/dir/somehost-someuser-1/maven /some/local/dir/somehost-someuser-1/scratch
 mkdir -p /some/working/dir/scratch
+rm -rf /some/working/dir/scratch

@@ -134,6 +134,21 @@ class RecordReaderImpl implements RecordReader {
       }
     }
 
+    IntegerReader createIntegerReader(OrcProto.ColumnEncoding.Kind kind,
+        InStream in,
+        boolean signed) throws IOException {
+      switch (kind) {
+      case DIRECT_V2:
+      case DICTIONARY_V2:
+        return new RunLengthIntegerReaderV2(in, signed);
+      case DIRECT:
+      case DICTIONARY:
+        return new RunLengthIntegerReader(in, signed);
+      default:
+        throw new IllegalArgumentException("Unknown encoding " + kind);
+      }
+    }
+
     void startStripe(Map<StreamName, InStream> streams,
                      List<OrcProto.ColumnEncoding> encoding
                     ) throws IOException {
@@ -336,10 +351,19 @@ class RecordReaderImpl implements RecordReader {
   }
 
   private static class ShortTreeReader extends TreeReader{
-    private RunLengthIntegerReader reader = null;
+    private IntegerReader reader = null;
 
     ShortTreeReader(Path path, int columnId) {
       super(path, columnId);
+    }
+
+    @Override
+    void checkEncoding(OrcProto.ColumnEncoding encoding) throws IOException {
+      if ((encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT) &&
+          (encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT_V2)) {
+        throw new IOException("Unknown encoding " + encoding + " in column " +
+            columnId + " of " + path);
+      }
     }
 
     @Override
@@ -349,7 +373,7 @@ class RecordReaderImpl implements RecordReader {
       super.startStripe(streams, encodings);
       StreamName name = new StreamName(columnId,
           OrcProto.Stream.Kind.DATA);
-      reader = new RunLengthIntegerReader(streams.get(name), true);
+      reader = createIntegerReader(encodings.get(columnId).getKind(), streams.get(name), true);
     }
 
     @Override
@@ -397,10 +421,19 @@ class RecordReaderImpl implements RecordReader {
   }
 
   private static class IntTreeReader extends TreeReader{
-    private RunLengthIntegerReader reader = null;
+    private IntegerReader reader = null;
 
     IntTreeReader(Path path, int columnId) {
       super(path, columnId);
+    }
+
+    @Override
+    void checkEncoding(OrcProto.ColumnEncoding encoding) throws IOException {
+      if ((encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT) &&
+          (encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT_V2)) {
+        throw new IOException("Unknown encoding " + encoding + " in column " +
+            columnId + " of " + path);
+      }
     }
 
     @Override
@@ -410,7 +443,7 @@ class RecordReaderImpl implements RecordReader {
       super.startStripe(streams, encodings);
       StreamName name = new StreamName(columnId,
           OrcProto.Stream.Kind.DATA);
-      reader = new RunLengthIntegerReader(streams.get(name), true);
+      reader = createIntegerReader(encodings.get(columnId).getKind(), streams.get(name), true);
     }
 
     @Override
@@ -458,10 +491,19 @@ class RecordReaderImpl implements RecordReader {
   }
 
   private static class LongTreeReader extends TreeReader{
-    private RunLengthIntegerReader reader = null;
+    private IntegerReader reader = null;
 
     LongTreeReader(Path path, int columnId) {
       super(path, columnId);
+    }
+
+    @Override
+    void checkEncoding(OrcProto.ColumnEncoding encoding) throws IOException {
+      if ((encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT) &&
+          (encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT_V2)) {
+        throw new IOException("Unknown encoding " + encoding + " in column " +
+            columnId + " of " + path);
+      }
     }
 
     @Override
@@ -471,7 +513,7 @@ class RecordReaderImpl implements RecordReader {
       super.startStripe(streams, encodings);
       StreamName name = new StreamName(columnId,
           OrcProto.Stream.Kind.DATA);
-      reader = new RunLengthIntegerReader(streams.get(name), true);
+      reader = createIntegerReader(encodings.get(columnId).getKind(), streams.get(name), true);
     }
 
     @Override
@@ -678,10 +720,19 @@ class RecordReaderImpl implements RecordReader {
 
   private static class BinaryTreeReader extends TreeReader{
     private InStream stream;
-    private RunLengthIntegerReader lengths;
+    private IntegerReader lengths = null;
 
     BinaryTreeReader(Path path, int columnId) {
       super(path, columnId);
+    }
+
+    @Override
+    void checkEncoding(OrcProto.ColumnEncoding encoding) throws IOException {
+      if ((encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT) &&
+          (encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT_V2)) {
+        throw new IOException("Unknown encoding " + encoding + " in column " +
+            columnId + " of " + path);
+      }
     }
 
     @Override
@@ -692,9 +743,8 @@ class RecordReaderImpl implements RecordReader {
       StreamName name = new StreamName(columnId,
           OrcProto.Stream.Kind.DATA);
       stream = streams.get(name);
-      lengths = new RunLengthIntegerReader(streams.get(new
-          StreamName(columnId, OrcProto.Stream.Kind.LENGTH)),
-          false);
+      lengths = createIntegerReader(encodings.get(columnId).getKind(), streams.get(new
+          StreamName(columnId, OrcProto.Stream.Kind.LENGTH)), false);
     }
 
     @Override
@@ -747,8 +797,8 @@ class RecordReaderImpl implements RecordReader {
   }
 
   private static class TimestampTreeReader extends TreeReader{
-    private RunLengthIntegerReader data;
-    private RunLengthIntegerReader nanos;
+    private IntegerReader data = null;
+    private IntegerReader nanos = null;
     private final LongColumnVector nanoVector = new LongColumnVector();
 
     TimestampTreeReader(Path path, int columnId) {
@@ -756,14 +806,25 @@ class RecordReaderImpl implements RecordReader {
     }
 
     @Override
+    void checkEncoding(OrcProto.ColumnEncoding encoding) throws IOException {
+      if ((encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT) &&
+          (encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT_V2)) {
+        throw new IOException("Unknown encoding " + encoding + " in column " +
+            columnId + " of " + path);
+      }
+    }
+
+    @Override
     void startStripe(Map<StreamName, InStream> streams,
                      List<OrcProto.ColumnEncoding> encodings
                     ) throws IOException {
       super.startStripe(streams, encodings);
-      data = new RunLengthIntegerReader(streams.get(new StreamName(columnId,
-          OrcProto.Stream.Kind.DATA)), true);
-      nanos = new RunLengthIntegerReader(streams.get(new StreamName(columnId,
-          OrcProto.Stream.Kind.SECONDARY)), false);
+      data = createIntegerReader(encodings.get(columnId).getKind(),
+          streams.get(new StreamName(columnId,
+              OrcProto.Stream.Kind.DATA)), true);
+      nanos = createIntegerReader(encodings.get(columnId).getKind(),
+          streams.get(new StreamName(columnId,
+              OrcProto.Stream.Kind.SECONDARY)), false);
     }
 
     @Override
@@ -865,10 +926,19 @@ class RecordReaderImpl implements RecordReader {
   }
 
   private static class DateTreeReader extends TreeReader{
-    private RunLengthIntegerReader reader = null;
+    private IntegerReader reader = null;
 
     DateTreeReader(Path path, int columnId) {
       super(path, columnId);
+    }
+
+    @Override
+    void checkEncoding(OrcProto.ColumnEncoding encoding) throws IOException {
+      if ((encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT) &&
+          (encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT_V2)) {
+        throw new IOException("Unknown encoding " + encoding + " in column " +
+            columnId + " of " + path);
+      }
     }
 
     @Override
@@ -878,7 +948,7 @@ class RecordReaderImpl implements RecordReader {
       super.startStripe(streams, encodings);
       StreamName name = new StreamName(columnId,
           OrcProto.Stream.Kind.DATA);
-      reader = new RunLengthIntegerReader(streams.get(name), true);
+      reader = createIntegerReader(encodings.get(columnId).getKind(), streams.get(name), true);
     }
 
     @Override
@@ -910,10 +980,19 @@ class RecordReaderImpl implements RecordReader {
 
   private static class DecimalTreeReader extends TreeReader{
     private InStream valueStream;
-    private RunLengthIntegerReader scaleStream;
+    private IntegerReader scaleStream = null;
 
     DecimalTreeReader(Path path, int columnId) {
       super(path, columnId);
+    }
+
+    @Override
+    void checkEncoding(OrcProto.ColumnEncoding encoding) throws IOException {
+      if ((encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT) &&
+          (encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT_V2)) {
+        throw new IOException("Unknown encoding " + encoding + " in column " +
+            columnId + " of " + path);
+      }
     }
 
     @Override
@@ -923,7 +1002,7 @@ class RecordReaderImpl implements RecordReader {
       super.startStripe(streams, encodings);
       valueStream = streams.get(new StreamName(columnId,
           OrcProto.Stream.Kind.DATA));
-      scaleStream = new RunLengthIntegerReader(streams.get(
+      scaleStream = createIntegerReader(encodings.get(columnId).getKind(), streams.get(
           new StreamName(columnId, OrcProto.Stream.Kind.SECONDARY)), true);
     }
 
@@ -960,22 +1039,234 @@ class RecordReaderImpl implements RecordReader {
     }
   }
 
+  /**
+   * A tree reader that will read string columns. At the start of the
+   * stripe, it creates an internal reader based on whether a direct or
+   * dictionary encoding was used.
+   */
   private static class StringTreeReader extends TreeReader {
-    private DynamicByteArray dictionaryBuffer = null;
-    private int dictionarySize;
-    private int[] dictionaryOffsets;
-    private RunLengthIntegerReader reader;
-
-    private byte[] dictionaryBufferInBytesCache = null;
-    private final LongColumnVector scratchlcv;
+    private TreeReader reader;
 
     StringTreeReader(Path path, int columnId) {
+      super(path, columnId);
+    }
+
+    @Override
+    void checkEncoding(OrcProto.ColumnEncoding encoding) throws IOException {
+      reader.checkEncoding(encoding);
+    }
+
+    @Override
+    void startStripe(Map<StreamName, InStream> streams,
+                     List<OrcProto.ColumnEncoding> encodings
+                    ) throws IOException {
+      // For each stripe, checks the encoding and initializes the appropriate
+      // reader
+      switch (encodings.get(columnId).getKind()) {
+        case DIRECT:
+        case DIRECT_V2:
+          reader = new StringDirectTreeReader(path, columnId);
+          break;
+        case DICTIONARY:
+        case DICTIONARY_V2:
+          reader = new StringDictionaryTreeReader(path, columnId);
+          break;
+        default:
+          throw new IllegalArgumentException("Unsupported encoding " +
+              encodings.get(columnId).getKind());
+      }
+      reader.startStripe(streams, encodings);
+    }
+
+    @Override
+    void seek(PositionProvider[] index) throws IOException {
+      reader.seek(index);
+    }
+
+    @Override
+    Object next(Object previous) throws IOException {
+      return reader.next(previous);
+    }
+
+    @Override
+    Object nextVector(Object previousVector, long batchSize) throws IOException {
+      return reader.nextVector(previousVector, batchSize);
+    }
+
+    @Override
+    void skipRows(long items) throws IOException {
+      reader.skipRows(items);
+    }
+  }
+
+  /**
+   * A reader for string columns that are direct encoded in the current
+   * stripe.
+   */
+  private static class StringDirectTreeReader extends TreeReader {
+    private InStream stream;
+    private IntegerReader lengths;
+
+    private final LongColumnVector scratchlcv;
+
+    StringDirectTreeReader(Path path, int columnId) {
       super(path, columnId);
       scratchlcv = new LongColumnVector();
     }
 
+    @Override
     void checkEncoding(OrcProto.ColumnEncoding encoding) throws IOException {
-      if (encoding.getKind() != OrcProto.ColumnEncoding.Kind.DICTIONARY) {
+      if (encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT &&
+          encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT_V2) {
+        throw new IOException("Unknown encoding " + encoding + " in column " +
+            columnId + " of " + path);
+      }
+    }
+
+    @Override
+    void startStripe(Map<StreamName, InStream> streams,
+                     List<OrcProto.ColumnEncoding> encodings
+                    ) throws IOException {
+      super.startStripe(streams, encodings);
+      StreamName name = new StreamName(columnId,
+          OrcProto.Stream.Kind.DATA);
+      stream = streams.get(name);
+      lengths = createIntegerReader(encodings.get(columnId).getKind(),
+          streams.get(new StreamName(columnId, OrcProto.Stream.Kind.LENGTH)),
+          false);
+    }
+
+    @Override
+    void seek(PositionProvider[] index) throws IOException {
+      super.seek(index);
+      stream.seek(index[columnId]);
+      lengths.seek(index[columnId]);
+    }
+
+    @Override
+    Object next(Object previous) throws IOException {
+      super.next(previous);
+      Text result = null;
+      if (valuePresent) {
+        if (previous == null) {
+          result = new Text();
+        } else {
+          result = (Text) previous;
+        }
+        int len = (int) lengths.next();
+        int offset = 0;
+        byte[] bytes = new byte[len];
+        while (len > 0) {
+          int written = stream.read(bytes, offset, len);
+          if (written < 0) {
+            throw new EOFException("Can't finish byte read from " + stream);
+          }
+          len -= written;
+          offset += written;
+        }
+        result.set(bytes);
+      }
+      return result;
+    }
+
+    @Override
+    Object nextVector(Object previousVector, long batchSize) throws IOException {
+      BytesColumnVector result = null;
+      if (previousVector == null) {
+        result = new BytesColumnVector();
+      } else {
+        result = (BytesColumnVector) previousVector;
+      }
+
+      // Read present/isNull stream
+      super.nextVector(result, batchSize);
+
+      // Read lengths
+      scratchlcv.isNull = result.isNull;
+      lengths.nextVector(scratchlcv, batchSize);
+      int totalLength = 0;
+      if (!scratchlcv.isRepeating) {
+        for (int i = 0; i < batchSize; i++) {
+          if (!scratchlcv.isNull[i]) {
+            totalLength += (int) scratchlcv.vector[i];
+          }
+        }
+      } else {
+        if (!scratchlcv.isNull[0]) {
+          totalLength = (int) (batchSize * scratchlcv.vector[0]);
+        }
+      }
+
+      //Read all the strings for this batch
+      byte[] allBytes = new byte[totalLength];
+      int offset = 0;
+      int len = totalLength;
+      while (len > 0) {
+        int bytesRead = stream.read(allBytes, offset, len);
+        if (bytesRead < 0) {
+          throw new EOFException("Can't finish byte read from " + stream);
+        }
+        len -= bytesRead;
+        offset += bytesRead;
+      }
+
+      // Too expensive to figure out 'repeating' by comparisons.
+      result.isRepeating = false;
+      offset = 0;
+      if (!scratchlcv.isRepeating) {
+        for (int i = 0; i < batchSize; i++) {
+          if (!scratchlcv.isNull[i]) {
+            result.setRef(i, allBytes, offset, (int) scratchlcv.vector[i]);
+            offset += scratchlcv.vector[i];
+          } else {
+            result.setRef(i, allBytes, 0, 0);
+          }
+        }
+      } else {
+        for (int i = 0; i < batchSize; i++) {
+          if (!scratchlcv.isNull[i]) {
+            result.setRef(i, allBytes, offset, (int) scratchlcv.vector[0]);
+            offset += scratchlcv.vector[0];
+          } else {
+            result.setRef(i, allBytes, 0, 0);
+          }
+        }
+      }
+      return result;
+    }
+
+    @Override
+    void skipRows(long items) throws IOException {
+      items = countNonNulls(items);
+      long lengthToSkip = 0;
+      for(int i=0; i < items; ++i) {
+        lengthToSkip += lengths.next();
+      }
+      stream.skip(lengthToSkip);
+    }
+  }
+
+  /**
+   * A reader for string columns that are dictionary encoded in the current
+   * stripe.
+   */
+  private static class StringDictionaryTreeReader extends TreeReader {
+    private DynamicByteArray dictionaryBuffer;
+    private int[] dictionaryOffsets;
+    private IntegerReader reader;
+
+    private byte[] dictionaryBufferInBytesCache = null;
+    private final LongColumnVector scratchlcv;
+
+    StringDictionaryTreeReader(Path path, int columnId) {
+      super(path, columnId);
+      scratchlcv = new LongColumnVector();
+    }
+
+    @Override
+    void checkEncoding(OrcProto.ColumnEncoding encoding) throws IOException {
+      if (encoding.getKind() != OrcProto.ColumnEncoding.Kind.DICTIONARY &&
+          encoding.getKind() != OrcProto.ColumnEncoding.Kind.DICTIONARY_V2) {
         throw new IOException("Unknown encoding " + encoding + " in column " +
             columnId + " of " + path);
       }
@@ -988,7 +1279,7 @@ class RecordReaderImpl implements RecordReader {
       super.startStripe(streams, encodings);
 
       // read the dictionary blob
-      dictionarySize = encodings.get(columnId).getDictionarySize();
+      int dictionarySize = encodings.get(columnId).getDictionarySize();
       StreamName name = new StreamName(columnId,
           OrcProto.Stream.Kind.DICTIONARY_DATA);
       InStream in = streams.get(name);
@@ -1005,7 +1296,8 @@ class RecordReaderImpl implements RecordReader {
       // read the lengths
       name = new StreamName(columnId, OrcProto.Stream.Kind.LENGTH);
       in = streams.get(name);
-      RunLengthIntegerReader lenReader = new RunLengthIntegerReader(in, false);
+      IntegerReader lenReader = createIntegerReader(encodings.get(columnId)
+          .getKind(), in, false);
       int offset = 0;
       if (dictionaryOffsets == null ||
           dictionaryOffsets.length < dictionarySize + 1) {
@@ -1020,7 +1312,8 @@ class RecordReaderImpl implements RecordReader {
 
       // set up the row reader
       name = new StreamName(columnId, OrcProto.Stream.Kind.DATA);
-      reader = new RunLengthIntegerReader(streams.get(name), false);
+      reader = createIntegerReader(encodings.get(columnId).getKind(),
+          streams.get(name), false);
     }
 
     @Override
@@ -1153,7 +1446,9 @@ class RecordReaderImpl implements RecordReader {
     void seek(PositionProvider[] index) throws IOException {
       super.seek(index);
       for(TreeReader kid: fields) {
-        kid.seek(index);
+        if (kid != null) {
+          kid.seek(index);
+        }
       }
     }
 
@@ -1221,7 +1516,9 @@ class RecordReaderImpl implements RecordReader {
     void skipRows(long items) throws IOException {
       items = countNonNulls(items);
       for(TreeReader field: fields) {
-        field.skipRows(items);
+        if (field != null) {
+          field.skipRows(items);
+        }
       }
     }
   }
@@ -1307,7 +1604,7 @@ class RecordReaderImpl implements RecordReader {
 
   private static class ListTreeReader extends TreeReader {
     private final TreeReader elementReader;
-    private RunLengthIntegerReader lengths;
+    private IntegerReader lengths = null;
 
     ListTreeReader(Path path, int columnId,
                    List<OrcProto.Type> types,
@@ -1361,13 +1658,22 @@ class RecordReaderImpl implements RecordReader {
           "NextVector is not supported operation for List type");
     }
 
+    void checkEncoding(OrcProto.ColumnEncoding encoding) throws IOException {
+      if ((encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT) &&
+          (encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT_V2)) {
+        throw new IOException("Unknown encoding " + encoding + " in column " +
+            columnId + " of " + path);
+      }
+    }
+
     @Override
     void startStripe(Map<StreamName, InStream> streams,
                      List<OrcProto.ColumnEncoding> encodings
                     ) throws IOException {
       super.startStripe(streams, encodings);
-      lengths = new RunLengthIntegerReader(streams.get(new StreamName(columnId,
-          OrcProto.Stream.Kind.LENGTH)), false);
+      lengths = createIntegerReader(encodings.get(columnId).getKind(),
+          streams.get(new StreamName(columnId,
+              OrcProto.Stream.Kind.LENGTH)), false);
       if (elementReader != null) {
         elementReader.startStripe(streams, encodings);
       }
@@ -1387,7 +1693,7 @@ class RecordReaderImpl implements RecordReader {
   private static class MapTreeReader extends TreeReader {
     private final TreeReader keyReader;
     private final TreeReader valueReader;
-    private RunLengthIntegerReader lengths;
+    private IntegerReader lengths = null;
 
     MapTreeReader(Path path,
                   int columnId,
@@ -1445,13 +1751,22 @@ class RecordReaderImpl implements RecordReader {
           "NextVector is not supported operation for Map type");
     }
 
+    void checkEncoding(OrcProto.ColumnEncoding encoding) throws IOException {
+      if ((encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT) &&
+          (encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT_V2)) {
+        throw new IOException("Unknown encoding " + encoding + " in column " +
+            columnId + " of " + path);
+      }
+    }
+
     @Override
     void startStripe(Map<StreamName, InStream> streams,
                      List<OrcProto.ColumnEncoding> encodings
                     ) throws IOException {
       super.startStripe(streams, encodings);
-      lengths = new RunLengthIntegerReader(streams.get(new StreamName(columnId,
-          OrcProto.Stream.Kind.LENGTH)), false);
+      lengths = createIntegerReader(encodings.get(columnId).getKind(),
+          streams.get(new StreamName(columnId,
+              OrcProto.Stream.Kind.LENGTH)), false);
       if (keyReader != null) {
         keyReader.startStripe(streams, encodings);
       }
@@ -1735,7 +2050,7 @@ class RecordReaderImpl implements RecordReader {
       readStripe();
     }
     readRowIndex();
-    rowInStripe = rowNumber - rowBaseInStripe;
+    rowInStripe = rowNumber - rowBaseInStripe - firstRow;
     if (rowIndexStride != 0) {
       long entry = rowInStripe / rowIndexStride;
       seekToRowEntry((int) entry);

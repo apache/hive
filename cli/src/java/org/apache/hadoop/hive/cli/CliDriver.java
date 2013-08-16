@@ -611,11 +611,11 @@ public class CliDriver {
   }
 
   public static void main(String[] args) throws Exception {
-    int ret = run(args);
+    int ret = new CliDriver().run(args);
     System.exit(ret);
   }
 
-  public static int run(String[] args) throws Exception {
+  public  int run(String[] args) throws Exception {
 
     OptionsProcessor oproc = new OptionsProcessor();
     if (!oproc.process_stage1(args)) {
@@ -690,7 +690,7 @@ public class CliDriver {
    * @return status of the CLI comman execution
    * @throws Exception
    */
-  private static int executeDriver(CliSessionState ss, HiveConf conf, OptionsProcessor oproc)
+  private  int executeDriver(CliSessionState ss, HiveConf conf, OptionsProcessor oproc)
       throws Exception {
 
     // connect to Hive Server
@@ -734,15 +734,14 @@ public class CliDriver {
 
     try {
       if (ss.fileName != null) {
-        int fileProcessStatus = cli.processFile(ss.fileName);
-        return fileProcessStatus;
+        return cli.processFile(ss.fileName);
       }
     } catch (FileNotFoundException e) {
       System.err.println("Could not open input file for reading. (" + e.getMessage() + ")");
       return 3;
     }
 
-    ConsoleReader reader = new ConsoleReader();
+    ConsoleReader reader =  getConsoleReader();
     reader.setBellEnabled(false);
     // reader.setDebug(new PrintWriter(new FileWriter("writer.debug", true)));
     for (Completor completor : getCommandCompletor()) {
@@ -793,6 +792,9 @@ public class CliDriver {
     return ret;
   }
 
+  protected ConsoleReader getConsoleReader() throws IOException{
+    return new ConsoleReader();
+  }
   /**
    * Retrieve the current database name string to display, based on the
    * configuration value.

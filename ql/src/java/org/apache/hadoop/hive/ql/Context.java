@@ -563,6 +563,10 @@ public class Context {
     pathToCS.put(path, cs);
   }
 
+  public ContentSummary getCS(Path path) {
+    return getCS(path.toString());
+  }
+
   public ContentSummary getCS(String path) {
     return pathToCS.get(path);
   }
@@ -574,7 +578,6 @@ public class Context {
   public Configuration getConf() {
     return conf;
   }
-
 
   /**
    * Given a mapping from paths to objects, localize any MR tmp paths

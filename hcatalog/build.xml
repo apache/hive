@@ -222,7 +222,7 @@
         </copy>
     </target>
 
-    <target name="javadoc" depends="jar" description="Generate Javadoc documentation">
+    <target name="javadoc" depends="jar" description="Generate Javadoc documentation" unless="skip.javadoc">
         <mkdir dir="${build.javadoc}"/>
         <record name="${build.dir}/javadoc.log" action="start"/>
         <javadoc overview="${src.dir}/../docs/overview.html"

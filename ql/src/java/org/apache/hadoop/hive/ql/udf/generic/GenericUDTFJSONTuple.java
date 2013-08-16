@@ -66,7 +66,7 @@ public class GenericUDTFJSONTuple extends GenericUDTF {
   Text[] retCols; // array of returned column values
   Text[] cols;    // object pool of non-null Text, avoid creating objects all the time
   Object[] nullCols; // array of null column values
-  ObjectInspector[] inputOIs; // input ObjectInspectors
+  private transient ObjectInspector[] inputOIs; // input ObjectInspectors
   boolean pathParsed = false;
   boolean seenErrors = false;
 

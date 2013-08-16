@@ -50,5 +50,17 @@ public @interface WindowFunctionDescription
 	 * for all the rows.
 	 */
 	boolean pivotResult() default false;
+
+	/**
+	 * Used in translations process to validate arguments
+	 * @return true if ranking function
+	 */
+	boolean rankingFunction() default false;
+
+	 /**
+	  * Using in analytical functions to specify that UDF implies an ordering
+	  * @return true if the function implies order
+	  */
+	 boolean impliesOrder() default false;
 }
 

@@ -25,10 +25,6 @@ import java.io.*;
 import java.util.*;
 
 import org.apache.hadoop.hive.ql.QTestUtil;
-import org.apache.hadoop.hive.ql.history.HiveHistoryViewer;
-import org.apache.hadoop.hive.ql.history.HiveHistory.QueryInfo;
-import org.apache.hadoop.hive.ql.history.HiveHistory.Keys;
-import org.apache.hadoop.hive.ql.history.HiveHistory.TaskInfo;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class $className extends TestCase {
@@ -136,22 +132,6 @@ public class $className extends TestCase {
       if (ecode != 0) {
         fail("Client Execution failed with error code = " + ecode + debugHint);
       }
-      if (SessionState.get() != null) {
-        HiveHistoryViewer hv = new HiveHistoryViewer(SessionState.get()
-          .getHiveHistory().getHistFileName());
-        Map<String, QueryInfo> jobInfoMap = hv.getJobInfoMap();
-        Map<String, TaskInfo> taskInfoMap = hv.getTaskInfoMap();
-
-        if(jobInfoMap.size() != 0) {
-          String cmd = (String)jobInfoMap.keySet().toArray()[0];
-          QueryInfo ji = jobInfoMap.get(cmd);
-
-          if (!ji.hm.get(Keys.QUERY_RET_CODE.name()).equals("0")) {
-              fail("Wrong return code in hive history" + debugHint);
-          }
-        }
-      }
-
       ecode = qt.checkCliDriverResults(fname);
       if (ecode != 0) {
         fail("Client execution results failed with error code = " + ecode

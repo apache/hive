@@ -40,6 +40,8 @@ import org.apache.hadoop.mapreduce.task.JobContextImpl;
 import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl;
 import org.apache.hadoop.mapreduce.util.HostUtil;
 import org.apache.hadoop.util.Progressable;
+import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
+
 
 /**
  * Implemention of shims against Hadoop 0.23.0.
@@ -135,6 +137,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public boolean moveToAppropriateTrash(FileSystem fs, Path path, Configuration conf)
           throws IOException {
     return Trash.moveToAppropriateTrash(fs, path, conf);
+  }
+
+  @Override
+  public void setTotalOrderPartitionFile(JobConf jobConf, Path partitionFile){
+    TotalOrderPartitioner.setPartitionFile(jobConf, partitionFile);
   }
 
   /**

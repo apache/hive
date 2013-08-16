@@ -54,7 +54,7 @@ public class TestParser {
     Set<String> included = Sets.newHashSet(splitter.split(unitContext.getString("include", "")));
     if(!included.isEmpty() && !excluded.isEmpty()) {
       throw new IllegalArgumentException(String.format("Included and excluded mutally exclusive." +
-      		" Included = %s, excluded = %s", included.toString(), excluded.toString()));
+          " Included = %s, excluded = %s", included.toString(), excluded.toString()));
     }
     List<File> unitTestsDirs = Lists.newArrayList();
     for(String unitTestDir : Splitter.on(" ").omitEmptyStrings()

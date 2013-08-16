@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -64,7 +65,9 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
   public static final String MAX_BID = "maxBid";
   public static final String SLAVE_LOCAL_DIRECTORIES = "localDirs";
   public static final String USERNAME = "user";
+  public static final String INSTANCE_TYPE = "instanceType";
   public static final String NUM_THREADS = "numThreads";
+  
   private final RandomAccessFile mHostLog;
   private final String mPrivateKey;
   private final String mUser;
@@ -122,7 +125,7 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
     mHostLog.setLength(0);
     Thread thread = new Thread() {
       @Override
-    public void run() {
+      public void run() {
         while (true) {
           try {
             TimeUnit.MINUTES.sleep(15);
@@ -168,13 +171,12 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
       }
     }
     Preconditions.checkState(hostsNotRemoved.isEmpty(),
-        "Host " + hostsNotRemoved + " was in bad hosts but could be removed");
+        "Host " + hostsNotRemoved + " was in bad hosts but could not be removed");
   }
 
   @Override
   public synchronized ExecutionContext createExecutionContext()
       throws CreateHostsFailedException, ServiceNotAvailableException {
-    boolean error = true;
     try {
       Set<NodeMetadata> nodes = createNodes(mNumHosts);
       Set<Host> hosts = Sets.newHashSet();
@@ -182,18 +184,15 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
         hosts.add(new Host(node.getHostname(), mUser, mSlaveLocalDirs,
             mNumThreads));
       }
-      error = false;
       return new ExecutionContext(this, hosts, mWorkingDir.getAbsolutePath(),
           mPrivateKey);
     } finally {
-      if (!error) {
-        syncLog();
-      }
+      syncLog();
     }
   }
 
   private Set<NodeMetadata> createNodes(int numHosts)
-  throws CreateHostsFailedException {
+      throws CreateHostsFailedException {
     Set<NodeMetadata> result = Sets.newHashSet();
     int attempts = 0;
     int numRequired = numHosts;
@@ -205,10 +204,9 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
       } catch (RunNodesException e) {
         exception = e;
         LOG.warn("Error creating nodes", e);
-        persistHostnamesToLog(e.getNodeErrors().keySet());
+        terminateInternal(e.getNodeErrors().keySet());
         result.addAll(verifyHosts(e.getSuccessfulNodes()));
       }
-      persistHostnamesToLog(result); // ok to persist more than once
       LOG.info("Successfully created " + result.size() + " nodes");
       numRequired = numHosts - result.size();
       if(numRequired > 0) {
@@ -240,16 +238,41 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
     }
   }
 
-  private Set<NodeMetadata> verifyHosts(Set<? extends NodeMetadata> hosts) {
-    Set<NodeMetadata> result = Sets.newHashSet();
-    for(NodeMetadata node : hosts) {
-      SSHCommand command = new SSHCommand(mSSHCommandExecutor, mPrivateKey, mUser, node.getHostname(), 0, "pkill -f java");
-      mSSHCommandExecutor.execute(command);
-      if(command.getExitCode() == Constants.EXIT_CODE_UNKNOWN) {
-        LOG.error("Node " + node.getHostname() + " is bad on startup");
-        terminateInternal(node);
-      } else {
-        result.add(node);
+  private Set<NodeMetadata> verifyHosts(Set<? extends NodeMetadata> hosts)
+      throws CreateHostsFailedException {
+    persistHostnamesToLog(hosts);
+    final Set<NodeMetadata> result = Collections.synchronizedSet(new HashSet<NodeMetadata>());
+    ExecutorService executorService = Executors.newFixedThreadPool(Math.min(hosts.size(), 25));
+    try {
+      for(final NodeMetadata node : hosts) {
+        executorService.submit(new Runnable() {
+          @Override
+          public void run() {
+            SSHCommand command = new SSHCommand(mSSHCommandExecutor, mPrivateKey, mUser, node.getHostname(), 0, "pkill -f java");
+            mSSHCommandExecutor.execute(command);
+            if(command.getExitCode() == Constants.EXIT_CODE_UNKNOWN ||
+                command.getException() != null) {
+              if(command.getException() == null) {
+                LOG.error("Node " + node.getHostname() + " is bad on startup");
+              } else {
+                LOG.error("Node " + node.getHostname() + " is bad on startup", command.getException());
+              }
+              terminateInternal(node);
+            } else {
+              result.add(node);
+            }
+          }
+        });
+      }
+      executorService.shutdown();
+      if(!executorService.awaitTermination(10, TimeUnit.MINUTES)) {
+        LOG.error("Verify command still executing on a host after 10 minutes");
+      }
+    } catch (InterruptedException e) {
+      throw new CreateHostsFailedException("Interrupted while trying to create hosts", e);
+    } finally {
+      if(!executorService.isShutdown()) {
+        executorService.shutdownNow();
       }
     }
     return result;
@@ -376,8 +399,9 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
         .split(context.getString(SLAVE_LOCAL_DIRECTORIES, "/home/hiveptest/")),
         String.class);
     Integer numThreads = context.getInteger(NUM_THREADS, 3);
+    String instanceType = context.getString(INSTANCE_TYPE, "c1.xlarge");
     CloudComputeService cloudComputeService = new CloudComputeService(apiKey, accessKey,
-        groupName, imageId, keyPair, securityGroup, maxBid);
+        instanceType, groupName, imageId, keyPair, securityGroup, maxBid);
     CloudExecutionContextProvider service = new CloudExecutionContextProvider(
         dataDir, numHosts, cloudComputeService, new SSHCommandExecutor(LOG), workingDirectory,
         privateKey, user, localDirs, numThreads, 10, 10);

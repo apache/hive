@@ -505,7 +505,14 @@ public class Driver implements CommandProcessor {
       if (error != ErrorMsg.GENERIC_ERROR) {
         errorMessage += " [Error "  + error.getErrorCode()  + "]:";
       }
-      errorMessage += " " + e.getMessage();
+
+      // HIVE-4889
+      if ((e instanceof IllegalArgumentException) && e.getMessage() == null && e.getCause() != null) {
+        errorMessage += " " + e.getCause().getMessage();
+      } else {
+        errorMessage += " " + e.getMessage();
+      }
+
       SQLState = error.getSQLState();
       downstreamError = e;
       console.printError(errorMessage, "\n"
@@ -617,13 +624,10 @@ public class Driver implements CommandProcessor {
             if (tbl.isPartitioned() &&
                 tableUsePartLevelAuth.get(tbl.getTableName()) == Boolean.TRUE) {
               String alias_id = topOpMap.getKey();
-              PrunedPartitionList partsList = PartitionPruner.prune(parseCtx
-                  .getTopToTable().get(topOp), parseCtx.getOpToPartPruner()
-                  .get(topOp), parseCtx.getConf(), alias_id, parseCtx
-                  .getPrunedPartitions());
-              Set<Partition> parts = new HashSet<Partition>();
-              parts.addAll(partsList.getConfirmedPartns());
-              parts.addAll(partsList.getUnknownPartns());
+
+              PrunedPartitionList partsList = PartitionPruner.prune(tableScanOp,
+                  parseCtx, alias_id);
+              Set<Partition> parts = partsList.getPartitions();
               for (Partition part : parts) {
                 List<String> existingCols = part2Cols.get(part);
                 if (existingCols == null) {

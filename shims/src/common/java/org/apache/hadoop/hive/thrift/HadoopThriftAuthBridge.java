@@ -20,6 +20,7 @@
 
  import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.thrift.TProcessor;
@@ -50,6 +51,18 @@ import org.apache.thrift.transport.TTransportFactory;
    }
 
 
+  /**
+   * Read and return Hadoop SASL configuration which can be configured using
+   * "hadoop.rpc.protection"
+   *
+   * @param conf
+   * @return Hadoop SASL configuration
+   */
+   public Map<String, String> getHadoopSaslProperties(Configuration conf) {
+     throw new UnsupportedOperationException(
+       "The current version of Hadoop does not support Authentication");
+   }
+
    public static abstract class Client {
    /**
     *
@@ -65,13 +78,14 @@ import org.apache.thrift.transport.TTransportFactory;
     * @throws IOException
     */
      public abstract TTransport createClientTransport(
-       String principalConfig, String host,
-       String methodStr,String tokenStrForm, TTransport underlyingTransport)
-       throws IOException;
+             String principalConfig, String host,
+             String methodStr, String tokenStrForm, TTransport underlyingTransport,
+             Map<String, String> saslProps)
+             throws IOException;
    }
 
    public static abstract class Server {
-     public abstract TTransportFactory createTransportFactory() throws TTransportException;
+     public abstract TTransportFactory createTransportFactory(Map<String, String> saslProps) throws TTransportException;
      public abstract TProcessor wrapProcessor(TProcessor processor);
      public abstract TProcessor wrapNonAssumingProcessor(TProcessor processor);
      public abstract InetAddress getRemoteAddress();

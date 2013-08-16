@@ -34,7 +34,7 @@ import org.junit.Test;
  * This class is taken from the zookeeper 3.4.0 as-is to test the zookeeper lock
  * Recipe with a change in the package name.
  */
-public class WriteLockTest extends ClientBase {
+public class TestWriteLock extends ClientBase {
     protected int sessionTimeout = 10 * 1000;
     protected String dir = "/" + getClass().getName();
     protected WriteLock[] nodes;

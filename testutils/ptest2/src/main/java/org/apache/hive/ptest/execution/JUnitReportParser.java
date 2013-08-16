@@ -87,21 +87,25 @@ public class JUnitReportParser {
           private String name;
           private boolean failedOrErrored;
           @Override
-        public void startElement(String uri, String localName, String qName, Attributes attributes) {
+          public void startElement(String uri, String localName, String qName, Attributes attributes) {
             if ("testcase".equals(qName)) {
               name = attributes.getValue("classname");
               failedOrErrored = false;
-              if(name == null) {
+              if(name == null || "junit.framework.TestSuite".equals(name)) {
                 name = attributes.getValue("name");
               } else {
                 name = name + "." + attributes.getValue("name");
               }
-            } else if (name != null && ("failure".equals(qName) || "error".equals(qName))) {
-              failedOrErrored = true;
+            } else if (name != null) {
+              if ("failure".equals(qName) || "error".equals(qName)) {
+                failedOrErrored = true;
+              } else if("skipped".equals(qName)) {
+                name = null;
+              }
             }
           }
           @Override
-        public void endElement(String uri, String localName, String qName)  {
+          public void endElement(String uri, String localName, String qName)  {
             if ("testcase".equals(qName)) {
               if(name != null) {
                 executedTests.add(name);

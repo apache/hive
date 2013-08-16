@@ -65,5 +65,4 @@ public class Drone {
   public int getInstance() {
     return instance;
   }
-
 }

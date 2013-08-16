@@ -700,7 +700,7 @@
     <antcall target="docs-anakia"/>
   </target>
 
-  <target name="javadoc" depends="package" description="Generate Javadoc">
+  <target name="javadoc" depends="package" description="Generate Javadoc" unless="skip.javadoc">
     <echo message="Project: ${ant.project.name}"/>
     <mkdir dir="${build.javadoc}"/>
     <javadoc
@@ -713,6 +713,7 @@
       windowtitle="${Name} ${version} API"
       doctitle="${Name} ${version} API"
       bottom="Copyright &amp;copy; ${year} The Apache Software Foundation"
+      useexternalfile="yes"
       >
 
       <packageset dir="ant/src"/>

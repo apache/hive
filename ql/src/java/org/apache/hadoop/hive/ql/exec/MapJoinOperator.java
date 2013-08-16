@@ -228,10 +228,6 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
       alias = (byte)tag;
 
-      if ((lastAlias == null) || (!lastAlias.equals(alias))) {
-        nextSz = joinEmitInterval;
-      }
-
       // compute keys and values as StandardObjects
       AbstractMapJoinKey key = JoinUtil.computeMapJoinKeys(row, joinKeys[alias],
           joinKeysObjectInspectors[alias]);

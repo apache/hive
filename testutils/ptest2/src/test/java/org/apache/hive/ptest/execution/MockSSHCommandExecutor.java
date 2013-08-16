@@ -38,7 +38,7 @@ public class MockSSHCommandExecutor extends SSHCommandExecutor {
     mCommands = Lists.newArrayList();
     mFailures = Maps.newHashMap();
   }
-  public List<String> getCommands() {
+  public synchronized List<String> getCommands() {
     return mCommands;
   }
   public synchronized void putFailure(String command, Integer... exitCodes) {
@@ -54,14 +54,14 @@ public class MockSSHCommandExecutor extends SSHCommandExecutor {
     }
   }
   @Override
-public synchronized void execute(SSHCommand command) {
+  public synchronized void execute(SSHCommand command) {
     mCommands.add(command.getCommand());
     command.setOutput("");
     Queue<Integer> queue = mFailures.get(command.getCommand());
     if(queue == null || queue.isEmpty()) {
       command.setExitCode(0);
     } else {
-     command.setExitCode(queue.remove());
+      command.setExitCode(queue.remove());
     }
   }
 }

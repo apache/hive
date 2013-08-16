@@ -158,16 +158,16 @@ public class GenericUDAFContextNGrams implements GenericUDAFResolver {
    */
   public static class GenericUDAFContextNGramEvaluator extends GenericUDAFEvaluator {
     // For PARTIAL1 and COMPLETE: ObjectInspectors for original data
-    private StandardListObjectInspector outerInputOI;
-    private StandardListObjectInspector innerInputOI;
-    private StandardListObjectInspector contextListOI;
+    private transient StandardListObjectInspector outerInputOI;
+    private transient StandardListObjectInspector innerInputOI;
+    private transient StandardListObjectInspector contextListOI;
     private PrimitiveObjectInspector contextOI;
     private PrimitiveObjectInspector inputOI;
-    private PrimitiveObjectInspector kOI;
-    private PrimitiveObjectInspector pOI;
+    private transient PrimitiveObjectInspector kOI;
+    private transient PrimitiveObjectInspector pOI;
 
     // For PARTIAL2 and FINAL: ObjectInspectors for partial aggregations
-    private StandardListObjectInspector loi;
+    private transient StandardListObjectInspector loi;
 
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {

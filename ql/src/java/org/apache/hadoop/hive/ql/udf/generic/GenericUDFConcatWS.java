@@ -47,7 +47,7 @@ import org.apache.hadoop.io.Text;
     + "  > SELECT _FUNC_('.', 'www', array('facebook', 'com')) FROM src LIMIT 1;\n"
     + "  'www.facebook.com'")
 public class GenericUDFConcatWS extends GenericUDF {
-  private ObjectInspector[] argumentOIs;
+  private transient ObjectInspector[] argumentOIs;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -64,12 +64,14 @@ public class GenericUDFConcatWS extends GenericUDF {
           if (((ListObjectInspector)arguments[i]).getListElementObjectInspector()
             .getTypeName().equals(serdeConstants.STRING_TYPE_NAME)
             || ((ListObjectInspector)arguments[i]).getListElementObjectInspector()
-            .getTypeName().equals(serdeConstants.VOID_TYPE_NAME))
+            .getTypeName().equals(serdeConstants.VOID_TYPE_NAME)) {
           break;
+          }
         case PRIMITIVE:
           if (arguments[i].getTypeName().equals(serdeConstants.STRING_TYPE_NAME)
-            || arguments[i].getTypeName().equals(serdeConstants.VOID_TYPE_NAME))
+            || arguments[i].getTypeName().equals(serdeConstants.VOID_TYPE_NAME)) {
           break;
+          }
         default:
           throw new UDFArgumentTypeException(i, "Argument " + (i + 1)
             + " of function CONCAT_WS must be \"" + serdeConstants.STRING_TYPE_NAME

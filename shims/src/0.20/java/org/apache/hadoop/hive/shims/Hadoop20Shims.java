@@ -63,6 +63,7 @@ import org.apache.hadoop.mapred.TaskID;
 import org.apache.hadoop.mapred.TaskLogServlet;
 import org.apache.hadoop.mapred.lib.CombineFileInputFormat;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
+import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.security.SecurityUtil;
@@ -71,11 +72,13 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.tools.HadoopArchives;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.util.VersionInfo;
 
 /**
  * Implemention of shims against Hadoop 0.20.0.
  */
 public class Hadoop20Shims implements HadoopShims {
+
   public boolean usesJobShell() {
     return false;
   }
@@ -191,6 +194,10 @@ public class Hadoop20Shims implements HadoopShims {
         throw new IOException("CombineFileInputFormat.getRecordReader not needed.");
       }
     };
+  }
+
+  public void setTotalOrderPartitionFile(JobConf jobConf, Path partitionFile){
+    TotalOrderPartitioner.setPartitionFile(jobConf, partitionFile);
   }
 
   public static class InputSplitShim extends CombineFileSplit implements HadoopShims.InputSplitShim {
@@ -594,13 +601,28 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   @Override
+  public Path createDelegationTokenFile(Configuration conf) throws IOException {
+    throw new UnsupportedOperationException("Tokens are not supported in current hadoop version");
+  }
+
+  @Override
   public UserGroupInformation createRemoteUser(String userName, List<String> groupNames) {
     return new UnixUserGroupInformation(userName, groupNames.toArray(new String[0]));
   }
 
   @Override
   public void loginUserFromKeytab(String principal, String keytabFile) throws IOException {
-    throw new UnsupportedOperationException("Kerberos login is not supported in current hadoop version");
+    throwKerberosUnsupportedError();
+  }
+
+  @Override
+  public void reLoginUserFromKeytab() throws IOException{
+    throwKerberosUnsupportedError();
+  }
+
+  private void throwKerberosUnsupportedError() throws UnsupportedOperationException{
+    throw new UnsupportedOperationException("Kerberos login is not supported" +
+        " in this hadoop version (" + VersionInfo.getVersion() + ")");
   }
 
   @Override
@@ -707,4 +729,11 @@ public class Hadoop20Shims implements HadoopShims {
   public short getDefaultReplication(FileSystem fs, Path path) {
     return fs.getDefaultReplication();
   }
+
+  @Override
+  public String getTokenFileLocEnvName() {
+    throw new UnsupportedOperationException(
+        "Kerberos not supported in current hadoop version");
+  }
+
 }

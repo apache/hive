@@ -138,6 +138,11 @@ public class NumericOpMethodResolver implements UDFMethodResolver {
         }
       }
     }
+
+    if (udfMethod == null) {
+      throw new NoMatchingMethodException(udfClass, argTypeInfos, null);
+    }
+
     return udfMethod;
   }
 }

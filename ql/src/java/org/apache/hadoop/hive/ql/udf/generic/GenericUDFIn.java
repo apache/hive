@@ -56,14 +56,14 @@ import org.apache.hadoop.io.BooleanWritable;
 
 public class GenericUDFIn extends GenericUDF {
 
-  private ObjectInspector[] argumentOIs;
+  private transient ObjectInspector[] argumentOIs;
   private Set<Object> constantInSet;
   private boolean isInSetConstant = true; //are variables from IN(...) constant
 
-  BooleanWritable bw = new BooleanWritable();
+  private final BooleanWritable bw = new BooleanWritable();
 
-  ReturnObjectInspectorResolver conversionHelper;
-  ObjectInspector compareOI;
+  private transient ReturnObjectInspectorResolver conversionHelper;
+  private transient ObjectInspector compareOI;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)

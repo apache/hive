@@ -148,7 +148,7 @@ public class TestHostExecutor {
   }
   @Test
   public void testBasic()
-  throws Exception {
+      throws Exception {
     HostExecutor executor = createHostExecutor();
     parallelWorkQueue.addAll(Lists.newArrayList(testBatchParallel1, testBatchParallel2));
     parallelWorkQueue.addAll(Lists.newArrayList(testBatchIsolated1, testBatchIsolated2));
@@ -158,7 +158,7 @@ public class TestHostExecutor {
   }
   @Test
   public void testParallelFailsOnExec()
-  throws Exception {
+      throws Exception {
     sshCommandExecutor.putFailure("bash /some/local/dir/somehost-someuser-0/scratch/hiveptest-driver-parallel-1.sh",
         Constants.EXIT_CODE_UNKNOWN);
     HostExecutor executor = createHostExecutor();
@@ -170,7 +170,7 @@ public class TestHostExecutor {
   }
   @Test
   public void testIsolatedFailsOnExec()
-  throws Exception {
+      throws Exception {
     sshCommandExecutor.putFailure("bash /some/local/dir/somehost-someuser-0/scratch/hiveptest-driver-isolated-1.sh",
         Constants.EXIT_CODE_UNKNOWN);
     HostExecutor executor = createHostExecutor();
@@ -182,7 +182,7 @@ public class TestHostExecutor {
   }
   @Test
   public void testParallelFailsOnRsync()
-  throws Exception {
+      throws Exception {
     rsyncCommandExecutor.putFailure("/tmp/hive-ptest-units/TestHostExecutor/scratch/hiveptest-driver-parallel-1.sh "
         + "/some/local/dir/somehost-someuser-0/scratch/hiveptest-driver-parallel-1.sh", Constants.EXIT_CODE_UNKNOWN);
     HostExecutor executor = createHostExecutor();
@@ -194,7 +194,7 @@ public class TestHostExecutor {
   }
   @Test
   public void testIsolatedFailsOnRsyncUnknown()
-  throws Exception {
+      throws Exception {
     rsyncCommandExecutor.putFailure("/tmp/hive-ptest-units/TestHostExecutor/scratch/hiveptest-driver-isolated-1.sh "+
         "/some/local/dir/somehost-someuser-0/scratch/hiveptest-driver-isolated-1.sh", Constants.EXIT_CODE_UNKNOWN);
     HostExecutor executor = createHostExecutor();
@@ -206,7 +206,7 @@ public class TestHostExecutor {
   }
   @Test
   public void testIsolatedFailsOnRsyncOne()
-  throws Exception {
+      throws Exception {
     rsyncCommandExecutor.putFailure("/tmp/hive-ptest-units/TestHostExecutor/scratch/hiveptest-driver-isolated-1.sh "+
         "/some/local/dir/somehost-someuser-0/scratch/hiveptest-driver-isolated-1.sh", 1);
     HostExecutor executor = createHostExecutor();

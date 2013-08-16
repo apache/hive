@@ -27,8 +27,8 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 
 /**
  * GenericUDFMapKeys.
@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 @Description(name = "map_keys", value = "_FUNC_(map) - "
   + "Returns an unordered array containing the keys of the input map.")
 public class GenericUDFMapKeys extends GenericUDF {
-  private MapObjectInspector mapOI;
+  private transient MapObjectInspector mapOI;
   private final ArrayList<Object> retArray = new ArrayList<Object>();
 
   @Override

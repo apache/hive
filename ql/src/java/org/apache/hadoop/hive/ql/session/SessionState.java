@@ -40,15 +40,20 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
+import org.apache.hadoop.hive.ql.history.HiveHistoryImpl;
+import org.apache.hadoop.hive.ql.history.HiveHistoryProxyHandler;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.ql.plan.HiveOperation;
 import org.apache.hadoop.hive.ql.security.HiveAuthenticationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.util.DosToUnix;
+import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * SessionState encapsulates common data associated with a session.
@@ -133,6 +138,7 @@ public class SessionState {
    */
   LineageState ls;
 
+  private PerfLogger perfLogger;
   /**
    * Get the lineage state stored in this session.
    *
@@ -247,19 +253,19 @@ public class SessionState {
 
     tss.set(startSs);
 
-    if (startSs.hiveHist == null) {
-      startSs.hiveHist = new HiveHistory(startSs);
+    if(startSs.hiveHist == null){
+      if (startSs.getConf().getBoolVar(HiveConf.ConfVars.HIVE_SESSION_HISTORY_ENABLED)) {
+        startSs.hiveHist = new HiveHistoryImpl(startSs);
+      }else {
+        //Hive history is disabled, create a no-op proxy
+        startSs.hiveHist = HiveHistoryProxyHandler.getNoOpHiveHistoryProxy();
+      }
     }
 
     if (startSs.getTmpOutputFile() == null) {
-      // per-session temp file containing results to be sent from HiveServer to HiveClient
-      File tmpDir = new File(
-          HiveConf.getVar(startSs.getConf(), HiveConf.ConfVars.HIVEHISTORYFILELOC));
-      String sessionID = startSs.getConf().getVar(HiveConf.ConfVars.HIVESESSIONID);
+      // set temp file containing results to be sent to HiveClient
       try {
-        File tmpFile = File.createTempFile(sessionID, ".pipeout", tmpDir);
-        tmpFile.deleteOnExit();
-        startSs.setTmpOutputFile(tmpFile);
+        startSs.setTmpOutputFile(createTempFile(startSs.getConf()));
       } catch (IOException e) {
         throw new RuntimeException(e);
       }
@@ -278,6 +284,33 @@ public class SessionState {
     }
 
     return startSs;
+  }
+
+  /**
+   * @param conf
+   * @return per-session temp file
+   * @throws IOException
+   */
+  private static File createTempFile(HiveConf conf) throws IOException {
+    String hHistDir =
+        HiveConf.getVar(conf, HiveConf.ConfVars.HIVEHISTORYFILELOC);
+
+    File tmpDir = new File(hHistDir);
+    String sessionID = conf.getVar(HiveConf.ConfVars.HIVESESSIONID);
+    if (!tmpDir.exists()) {
+      if (!tmpDir.mkdirs()) {
+        //Do another exists to check to handle possible race condition
+        // Another thread might have created the dir, if that is why
+        // mkdirs returned false, that is fine
+        if(!tmpDir.exists()){
+          throw new RuntimeException("Unable to create log directory "
+              + hHistDir);
+        }
+      }
+    }
+    File tmpFile = File.createTempFile(sessionID, ".pipeout", tmpDir);
+    tmpFile.deleteOnExit();
+    return tmpFile;
   }
 
   /**
@@ -746,4 +779,25 @@ public class SessionState {
       LOG.info("Error removing session resource dir " + resourceDir, e);
     }
   }
+
+  /**
+   * @param resetPerfLogger
+   * @return  Tries to return an instance of the class whose name is configured in
+   *          hive.exec.perf.logger, but if it can't it just returns an instance of
+   *          the base PerfLogger class
+
+   */
+  public PerfLogger getPerfLogger(boolean resetPerfLogger) {
+    if ((perfLogger == null) || resetPerfLogger) {
+      try {
+        perfLogger = (PerfLogger) ReflectionUtils.newInstance(conf.getClassByName(
+            conf.getVar(ConfVars.HIVE_PERF_LOGGER)), conf);
+      } catch (ClassNotFoundException e) {
+        LOG.error("Performance Logger Class not found:" + e.getMessage());
+        perfLogger = new PerfLogger();
+      }
+    }
+    return perfLogger;
+  }
+
 }

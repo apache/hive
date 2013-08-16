@@ -79,10 +79,9 @@ cd $workingDir/
   fi
   if [[ "$clearLibraryCache" == "true" ]]
   then
-  	rm -rf $workingDir/ivy $workingDir/maven
-  	mkdir $workingDir/ivy $workingDir/maven
+    rm -rf $workingDir/ivy $workingDir/maven
+    mkdir $workingDir/ivy $workingDir/maven
   fi
-  ant $antArgs -Divy.default.ivy.user.dir=$workingDir/ivy -Dmvn.local.repo=$workingDir/maven clean package
-  ant $antArgs -Divy.default.ivy.user.dir=$workingDir/ivy -Dmvn.local.repo=$workingDir/maven -Dtestcase=nothing test
+  ant $antArgs -Divy.default.ivy.user.dir=$workingDir/ivy -Dmvn.local.repo=$workingDir/maven clean package test -Dtestcase=nothing
 ) 2>&1 | tee $logDir/source-prep.txt
 exit ${PIPESTATUS[0]}

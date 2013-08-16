@@ -18,9 +18,10 @@
  */
 package org.apache.hive.ptest.execution;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 /**
@@ -28,13 +29,13 @@ import com.google.common.collect.ImmutableMap;
  */
 public class ReportingPhase extends Phase {
 
-  public ReportingPhase(ImmutableList<HostExecutor> hostExecutors,
+  public ReportingPhase(List<HostExecutor> hostExecutors,
       LocalCommandFactory localCommandFactory,
       ImmutableMap<String, String> templateDefaults, Logger logger) {
     super(hostExecutors, localCommandFactory, templateDefaults, logger);
   }
   @Override
-public void execute() throws Exception {
+  public void execute() throws Exception {
     execLocally("mkdir $logDir/test-results");
     execLocally("find $logDir/{failed,succeeded} -maxdepth 2 -name 'TEST*.xml' -exec cp {} $logDir/test-results \\; 2>/dev/null");
     execLocally("cd $logDir/ && tar -zvcf test-results.tar.gz test-results/");

@@ -100,8 +100,8 @@ public class TestConfiguration {
     this.jiraName = Strings.nullToEmpty(jiraName);
   }
   public boolean isClearLibraryCache() {
-    return clearLibraryCache; 
-   }
+    return clearLibraryCache;
+  }
   public void setClearLibraryCache(boolean clearLibraryCache) {
     this.clearLibraryCache = clearLibraryCache;
   }

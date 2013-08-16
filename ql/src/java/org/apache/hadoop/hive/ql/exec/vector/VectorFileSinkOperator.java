@@ -34,9 +34,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.metastore.api.SkewedValueList;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
@@ -44,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.JobCloseFeedBack;
 import org.apache.hadoop.hive.ql.exec.Stat;
 import org.apache.hadoop.hive.ql.exec.TerminalOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
@@ -699,7 +698,7 @@ public class VectorFileSinkOperator extends TerminalOperator<FileSinkDesc> imple
     List<String> skewedCols = lbCtx.getSkewedColNames();
     List<List<String>> allSkewedVals = lbCtx.getSkewedColValues();
     List<String> skewedValsCandidate = null;
-    Map<SkewedValueList, String> locationMap = lbCtx.getLbLocationMap();
+    Map<List<String>, String> locationMap = lbCtx.getLbLocationMap();
 
     /* Convert input row to standard objects. */
     ObjectInspectorUtils.copyToStandardObject(standObjs, row,
@@ -717,14 +716,14 @@ public class VectorFileSinkOperator extends TerminalOperator<FileSinkDesc> imple
     if (allSkewedVals.contains(skewedValsCandidate)) {
       /* matches skewed values. */
       lbDirName = FileUtils.makeListBucketingDirName(skewedCols, skewedValsCandidate);
-      locationMap.put(new SkewedValueList(skewedValsCandidate), lbDirName);
+      locationMap.put(skewedValsCandidate, lbDirName);
     } else {
       /* create default directory. */
       lbDirName = FileUtils.makeDefaultListBucketingDirName(skewedCols,
           lbCtx.getDefaultDirName());
       List<String> defaultKey = Arrays.asList(lbCtx.getDefaultKey());
       if (!locationMap.containsKey(defaultKey)) {
-        locationMap.put(new SkewedValueList(defaultKey), lbDirName);
+        locationMap.put(defaultKey, lbDirName);
       }
     }
     return lbDirName;

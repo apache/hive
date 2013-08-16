@@ -39,7 +39,7 @@ import org.apache.hadoop.io.Text;
     + "  > SELECT _FUNC_('oneAtwoBthreeC', '[ABC]') FROM src LIMIT 1;\n"
     + "  [\"one\", \"two\", \"three\"]")
 public class GenericUDFSplit extends GenericUDF {
-  private ObjectInspectorConverters.Converter[] converters;
+  private transient ObjectInspectorConverters.Converter[] converters;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
