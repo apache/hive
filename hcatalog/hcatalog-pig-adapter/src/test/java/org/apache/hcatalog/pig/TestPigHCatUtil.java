@@ -87,5 +87,9 @@ public class TestPigHCatUtil {
         ResourceSchema actual = PigHCatUtil.getBagSubSchema(actualHCatFieldSchema);
 
         Assert.assertEquals(expected.toString(), actual.toString());
+
+        // Clean up System properties that were set by this test
+        System.clearProperty(HCatConstants.HCAT_PIG_INNER_TUPLE_NAME);
+        System.clearProperty(HCatConstants.HCAT_PIG_INNER_FIELD_NAME);
     }
 }
