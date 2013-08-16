@@ -15,34 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.apache.hadoop.hive.ql.exec.persistence;
+package org.apache.hadoop.hive.ql.exec.mapjoin;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
-public abstract class AbstractRowContainer<ROW> {
 
-  public AbstractRowContainer() {
 
+public class MapJoinMemoryExhaustionException extends HiveException {
+  private static final long serialVersionUID = 3678353959830506881L;
+  public MapJoinMemoryExhaustionException(String msg) {
+    super(msg);
   }
-
-  public abstract void add(ROW t) throws HiveException;
-
-  public abstract ROW first() throws HiveException;
-
-  public abstract ROW next() throws HiveException;
-
-  /**
-   * Get the number of elements in the RowContainer.
-   *
-   * @return number of elements in the RowContainer
-   */
-
-  public abstract long size();
-
-  /**
-   * Remove all elements in the RowContainer.
-   */
-
-  public abstract void clear() throws HiveException;
 }

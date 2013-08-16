@@ -71,18 +71,18 @@ import org.apache.hadoop.util.ReflectionUtils;
  * reading.
  *
  */
-public class RowContainer<Row extends List<Object>> extends AbstractRowContainer<Row> {
+public class RowContainer<ROW extends List<Object>> extends AbstractRowContainer<ROW> {
 
   protected static Log LOG = LogFactory.getLog(RowContainer.class);
 
   // max # of rows can be put into one block
   private static final int BLOCKSIZE = 25000;
 
-  private Row[] currentWriteBlock; // the last block that add() should append to
-  private Row[] currentReadBlock; // the current block where the cursor is in
+  private ROW[] currentWriteBlock; // the last block that add() should append to
+  private ROW[] currentReadBlock; // the current block where the cursor is in
   // since currentReadBlock may assigned to currentWriteBlock, we need to store
   // original read block
-  private Row[] firstReadBlockPointer;
+  private ROW[] firstReadBlockPointer;
   private int blockSize; // number of objects in the block before it is spilled
   // to disk
   private int numFlushedBlocks; // total # of blocks
@@ -108,7 +108,7 @@ public class RowContainer<Row extends List<Object>> extends AbstractRowContainer
   RecordWriter rw = null;
   InputFormat<WritableComparable, Writable> inputFormat = null;
   InputSplit[] inputSplits = null;
-  private Row dummyRow = null;
+  private ROW dummyRow = null;
   private final Reporter reporter;
 
   Writable val = null; // cached to use serialize data
@@ -130,7 +130,7 @@ public class RowContainer<Row extends List<Object>> extends AbstractRowContainer
     this.addCursor = 0;
     this.numFlushedBlocks = 0;
     this.tmpFile = null;
-    this.currentWriteBlock = (Row[]) new ArrayList[blockSize];
+    this.currentWriteBlock = (ROW[]) new ArrayList[blockSize];
     this.currentReadBlock = this.currentWriteBlock;
     this.firstReadBlockPointer = currentReadBlock;
     this.serde = null;
@@ -158,13 +158,13 @@ public class RowContainer<Row extends List<Object>> extends AbstractRowContainer
   }
 
   @Override
-  public void add(Row t) throws HiveException {
+  public void add(ROW t) throws HiveException {
     if (this.tblDesc != null) {
       if (addCursor >= blockSize) { // spill the current block to tmp file
         spillBlock(currentWriteBlock, addCursor);
         addCursor = 0;
         if (numFlushedBlocks == 1) {
-          currentWriteBlock = (Row[]) new ArrayList[blockSize];
+          currentWriteBlock = (ROW[]) new ArrayList[blockSize];
         }
       }
       currentWriteBlock[addCursor++] = t;
@@ -178,7 +178,7 @@ public class RowContainer<Row extends List<Object>> extends AbstractRowContainer
   }
 
   @Override
-  public Row first() throws HiveException {
+  public ROW first() throws HiveException {
     if (size == 0) {
       return null;
     }
@@ -224,7 +224,7 @@ public class RowContainer<Row extends List<Object>> extends AbstractRowContainer
         nextBlock();
       }
       // we are guaranteed that we can get data here (since 'size' is not zero)
-      Row ret = currentReadBlock[itrCursor++];
+      ROW ret = currentReadBlock[itrCursor++];
       removeKeys(ret);
       return ret;
     } catch (Exception e) {
@@ -234,7 +234,7 @@ public class RowContainer<Row extends List<Object>> extends AbstractRowContainer
   }
 
   @Override
-  public Row next() throws HiveException {
+  public ROW next() throws HiveException {
 
     if (!firstCalled) {
       throw new RuntimeException("Call first() then call next().");
@@ -252,7 +252,7 @@ public class RowContainer<Row extends List<Object>> extends AbstractRowContainer
       return null;
     }
 
-    Row ret;
+    ROW ret;
     if (itrCursor < this.readBlockSize) {
       ret = this.currentReadBlock[itrCursor++];
       removeKeys(ret);
@@ -273,7 +273,7 @@ public class RowContainer<Row extends List<Object>> extends AbstractRowContainer
     }
   }
 
-  private void removeKeys(Row ret) {
+  private void removeKeys(ROW ret) {
     if (this.keyObject != null && this.currentReadBlock != this.currentWriteBlock) {
       int len = this.keyObject.size();
       int rowSize = ((ArrayList) ret).size();
@@ -285,7 +285,7 @@ public class RowContainer<Row extends List<Object>> extends AbstractRowContainer
 
   private final ArrayList<Object> row = new ArrayList<Object>(2);
 
-  private void spillBlock(Row[] block, int length) throws HiveException {
+  private void spillBlock(ROW[] block, int length) throws HiveException {
     try {
       if (tmpFile == null) {
 
@@ -329,14 +329,14 @@ public class RowContainer<Row extends List<Object>> extends AbstractRowContainer
       if (this.keyObject != null) {
         row.set(1, this.keyObject);
         for (int i = 0; i < length; ++i) {
-          Row currentValRow = block[i];
+          ROW currentValRow = block[i];
           row.set(0, currentValRow);
           Writable outVal = serde.serialize(row, standardOI);
           rw.write(outVal);
         }
       } else {
         for (int i = 0; i < length; ++i) {
-          Row currentValRow = block[i];
+          ROW currentValRow = block[i];
           Writable outVal = serde.serialize(currentValRow, standardOI);
           rw.write(outVal);
         }
@@ -382,7 +382,7 @@ public class RowContainer<Row extends List<Object>> extends AbstractRowContainer
         Object key = rr.createKey();
         while (i < this.currentReadBlock.length && rr.next(key, val)) {
           nextSplit = false;
-          this.currentReadBlock[i++] = (Row) ObjectInspectorUtils.copyToStandardObject(serde
+          this.currentReadBlock[i++] = (ROW) ObjectInspectorUtils.copyToStandardObject(serde
               .deserialize(val), serde.getObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
         }
       }

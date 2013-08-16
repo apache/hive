@@ -23,8 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.persistence.AbstractMapJoinKey;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
@@ -54,7 +53,7 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
 
   protected transient byte posBigTable = -1; // one of the tables that is not in memory
 
-  protected transient RowContainer<ArrayList<Object>> emptyList = null;
+  protected transient RowContainer<List<Object>> emptyList = null;
 
   transient int numMapRowsRead;
 
@@ -95,9 +94,9 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
     // all other tables are small, and are cached in the hash table
     posBigTable = (byte) conf.getPosBigTable();
 
-    emptyList = new RowContainer<ArrayList<Object>>(1, hconf, reporter);
+    emptyList = new RowContainer<List<Object>>(1, hconf, reporter);
 
-    RowContainer bigPosRC = JoinUtil.getRowContainer(hconf,
+    RowContainer<List<Object>> bigPosRC = JoinUtil.getRowContainer(hconf,
         rowContainerStandardObjectInspectors[posBigTable],
         posBigTable, joinCacheSize,spillTableDesc, conf,
         !hasFilter(posBigTable), reporter);
@@ -160,7 +159,7 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
   }
 
   // returns true if there are elements in key list and any of them is null
-  protected boolean hasAnyNulls(AbstractMapJoinKey key) {
+  protected boolean hasAnyNulls(MapJoinKey key) {
     return key.hasAnyNulls(nullsafes);
   }
 }
