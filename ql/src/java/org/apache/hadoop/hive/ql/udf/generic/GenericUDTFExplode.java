@@ -42,8 +42,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
       + " or the elements of a map into multiple rows and columns ")
 public class GenericUDTFExplode extends GenericUDTF {
 
-  private ObjectInspector inputOI = null;
-
+  private transient ObjectInspector inputOI = null;
   @Override
   public void close() throws HiveException {
   }

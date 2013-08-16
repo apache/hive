@@ -389,6 +389,99 @@ STAGE PLANS:
         b 
           Fetch Operator
             limit: -1
+            Partition Description:
+                Partition
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                  properties:
+                    bucket_count 2
+                    bucket_field_name key
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.bucket_small
+                    numFiles 2
+                    numRows 0
+                    partition_columns ds
+                    rawDataSize 0
+                    serialization.ddl struct bucket_small { string key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 114
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      SORTBUCKETCOLSPREFIX TRUE
+                      bucket_count 2
+                      bucket_field_name key
+                      columns key,value
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.bucket_small
+                      numFiles 4
+                      numPartitions 2
+                      numRows 0
+                      partition_columns ds
+                      rawDataSize 0
+                      serialization.ddl struct bucket_small { string key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 228
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.bucket_small
+                  name: default.bucket_small
+                Partition
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                  properties:
+                    bucket_count 2
+                    bucket_field_name key
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.bucket_small
+                    numFiles 2
+                    numRows 0
+                    partition_columns ds
+                    rawDataSize 0
+                    serialization.ddl struct bucket_small { string key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 114
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      SORTBUCKETCOLSPREFIX TRUE
+                      bucket_count 2
+                      bucket_field_name key
+                      columns key,value
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.bucket_small
+                      numFiles 4
+                      numPartitions 2
+                      numRows 0
+                      partition_columns ds
+                      rawDataSize 0
+                      serialization.ddl struct bucket_small { string key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 228
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.bucket_small
+                  name: default.bucket_small
       Alias -> Map Local Operator Tree:
         b 
           TableScan
@@ -622,6 +715,54 @@ STAGE PLANS:
         a 
           Fetch Operator
             limit: -1
+            Partition Description:
+                Partition
+                  base file name: ds=2008-04-08
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                  properties:
+                    bucket_count 4
+                    bucket_field_name key
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.bucket_big
+                    numFiles 4
+                    numRows 0
+                    partition_columns ds
+                    rawDataSize 0
+                    serialization.ddl struct bucket_big { string key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 5812
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      SORTBUCKETCOLSPREFIX TRUE
+                      bucket_count 4
+                      bucket_field_name key
+                      columns key,value
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.bucket_big
+                      numFiles 4
+                      numPartitions 1
+                      numRows 0
+                      partition_columns ds
+                      rawDataSize 0
+                      serialization.ddl struct bucket_big { string key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 5812
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.bucket_big
+                  name: default.bucket_big
       Alias -> Map Local Operator Tree:
         a 
           TableScan

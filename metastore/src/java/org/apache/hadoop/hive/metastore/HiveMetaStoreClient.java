@@ -258,17 +258,17 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
               String tokenSig = conf.get("hive.metastore.token.signature");
               // tokenSig could be null
               tokenStrForm = shim.getTokenStrForm(tokenSig);
-
               if(tokenStrForm != null) {
                 // authenticate using delegation tokens via the "DIGEST" mechanism
                 transport = authBridge.createClientTransport(null, store.getHost(),
-                    "DIGEST", tokenStrForm, transport);
+                    "DIGEST", tokenStrForm, transport,
+                        MetaStoreUtils.getMetaStoreSaslProperties(conf));
               } else {
                 String principalConfig =
                     conf.getVar(HiveConf.ConfVars.METASTORE_KERBEROS_PRINCIPAL);
                 transport = authBridge.createClientTransport(
                     principalConfig, store.getHost(), "KERBEROS", null,
-                    transport);
+                    transport, MetaStoreUtils.getMetaStoreSaslProperties(conf));
               }
             } catch (IOException ioe) {
               LOG.error("Couldn't create client transport", ioe);

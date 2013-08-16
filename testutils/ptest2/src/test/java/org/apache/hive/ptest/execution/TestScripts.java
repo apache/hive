@@ -68,6 +68,7 @@ public class TestScripts  {
     templateVariables.put("instanceName", "instance-1");
     templateVariables.put("batchName","batch-1");
     templateVariables.put("numOfFailedTests", "20");
+    templateVariables.put("maxSourceDirs", String.valueOf(5));
     templateVariables.put("testArguments", "-Dtest=arg1");
     templateVariables.put("clearLibraryCache", "true");
     templateVariables.put("javaHome", "/usr/java/jdk1.7");

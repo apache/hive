@@ -1,0 +1,1 @@
+FAILED: SemanticException Line 0:-1 Wrong arguments ''2000-01-01 00:00:01'': No matching method for class org.apache.hadoop.hive.ql.udf.UDFOPMinus with (timestamp, timestamp)

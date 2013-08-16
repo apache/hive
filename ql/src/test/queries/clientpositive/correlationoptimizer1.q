@@ -33,23 +33,6 @@ set hive.optimize.correlation=true;
 -- Enable hive.auto.convert.join.
 -- Correlation Optimizer will detect that the join will be converted to a Map-join,
 -- so it will not try to optimize this query.
-EXPLAIN
-SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
-FROM (SELECT x.key AS key, count(1) AS cnt
-      FROM src1 x JOIN src y ON (x.key = y.key)
-      GROUP BY x.key) tmp;
-
-SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
-FROM (SELECT x.key AS key, count(1) AS cnt
-      FROM src1 x JOIN src y ON (x.key = y.key)
-      GROUP BY x.key) tmp;
-      
-set hive.auto.convert.join=true;
-set hive.optimize.mapjoin.mapreduce=true;
-set hive.optimize.correlation=true;
--- Enable hive.auto.convert.join.
--- Correlation Optimizer will detect that the join will be converted to a Map-join,
--- so it will not try to optimize this query.
 -- We should generate 1 MR job for subquery tmp.
 EXPLAIN
 SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))

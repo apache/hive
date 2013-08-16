@@ -25,7 +25,6 @@
 	<classpathentry exported="true" kind="lib" path="build/hadoopcore/hadoop-@HADOOPVER@/lib/@JETTYUTILJAR@"/>
 	<classpathentry exported="true" kind="lib" path="cli/lib/jline-@jline.version@.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/json.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/asm-@asm.version@.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-cli-@commons-cli.version@.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-codec-@commons-code.version@.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/commons-lang-@commons-lang.version@.jar"/>

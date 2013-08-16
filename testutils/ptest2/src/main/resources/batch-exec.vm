@@ -40,7 +40,7 @@ cd $localDir/$instanceName/${repositoryName}-source && \
 ret=$?
 if [[ $ret -ne 0 ]]
 then
-  if [[ $numOfFailedTests -lt 5 ]]
+  if [[ $numOfFailedTests -lt $maxSourceDirs ]]
   then
     cp -R $localDir/$instanceName/${repositoryName}-source $logDir/source
   else

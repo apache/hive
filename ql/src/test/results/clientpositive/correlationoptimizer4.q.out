@@ -428,8 +428,8 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-7 is a root stage
-  Stage-6 depends on stages: Stage-7
-  Stage-3 depends on stages: Stage-6
+  Stage-2 depends on stages: Stage-7
+  Stage-3 depends on stages: Stage-2
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -472,7 +472,7 @@ STAGE PLANS:
                 2 [Column[key]]
               Position of Big Table: 0
 
-  Stage: Stage-6
+  Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
         tmp:x 

@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.util.LinkedList;
 import java.util.List;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -145,5 +146,25 @@ public class TestFunctionRegistry extends TestCase {
 
   @Override
   protected void tearDown() {
+  }
+
+  public void testIsRankingFunction() {
+    Assert.assertTrue(FunctionRegistry.isRankingFunction("rank"));
+    Assert.assertTrue(FunctionRegistry.isRankingFunction("dense_rank"));
+    Assert.assertTrue(FunctionRegistry.isRankingFunction("percent_rank"));
+    Assert.assertTrue(FunctionRegistry.isRankingFunction("cume_dist"));
+    Assert.assertFalse(FunctionRegistry.isRankingFunction("min"));
+  }
+
+  public void testImpliesOrder() {
+    Assert.assertTrue(FunctionRegistry.impliesOrder("rank"));
+    Assert.assertTrue(FunctionRegistry.impliesOrder("dense_rank"));
+    Assert.assertTrue(FunctionRegistry.impliesOrder("percent_rank"));
+    Assert.assertTrue(FunctionRegistry.impliesOrder("cume_dist"));
+    Assert.assertTrue(FunctionRegistry.impliesOrder("first_value"));
+    Assert.assertTrue(FunctionRegistry.impliesOrder("last_value"));
+    Assert.assertTrue(FunctionRegistry.impliesOrder("lead"));
+    Assert.assertTrue(FunctionRegistry.impliesOrder("lag"));
+    Assert.assertFalse(FunctionRegistry.impliesOrder("min"));
   }
 }

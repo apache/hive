@@ -392,6 +392,27 @@ public class ParseContext {
   }
 
   /**
+   * Remove the OpParseContext of a specific operator op
+   * @param op
+   * @return
+   */
+  public OpParseContext removeOpParseCtx(Operator<? extends OperatorDesc> op) {
+    return opParseCtx.remove(op);
+  }
+
+  /**
+   * Update the OpParseContext of operator op to newOpParseContext.
+   * If op is not in opParseCtx, a new entry will be added into opParseCtx.
+   * The key is op, and the value is newOpParseContext.
+   * @param op
+   * @param newOpParseContext
+   */
+  public void updateOpParseCtx(Operator<? extends OperatorDesc> op,
+      OpParseContext newOpParseContext) {
+    opParseCtx.put(op, newOpParseContext);
+  }
+
+  /**
    * @param opParseCtx
    *          the opParseCtx to set
    */
@@ -619,8 +640,7 @@ public class ParseContext {
       throws HiveException {
     PrunedPartitionList partsList = opToPartList.get(ts);
     if (partsList == null) {
-      partsList = PartitionPruner.prune(topToTable.get(ts),
-          opToPartPruner.get(ts), conf, alias, prunedPartitions);
+      partsList = PartitionPruner.prune(ts, this, alias);
       opToPartList.put(ts, partsList);
     }
     return partsList;

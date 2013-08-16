@@ -58,6 +58,7 @@ import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -905,6 +906,40 @@ public class TestOrcFile {
       compareList(expectedList, actualList);
       compareList(expected.list, (List) row.getFieldValue(10));
     }
+    rows.close();
+    Iterator<StripeInformation> stripeIterator =
+      reader.getStripes().iterator();
+    long offsetOfStripe2 = 0;
+    long offsetOfStripe4 = 0;
+    long lastRowOfStripe2 = 0;
+    for(int i = 0; i < 5; ++i) {
+      StripeInformation stripe = stripeIterator.next();
+      if (i < 2) {
+        lastRowOfStripe2 += stripe.getNumberOfRows();
+      } else if (i == 2) {
+        offsetOfStripe2 = stripe.getOffset();
+        lastRowOfStripe2 += stripe.getNumberOfRows() - 1;
+      } else if (i == 4) {
+        offsetOfStripe4 = stripe.getOffset();
+      }
+    }
+    boolean[] columns = new boolean[reader.getStatistics().length];
+    columns[5] = true; // long colulmn
+    columns[9] = true; // text column
+    rows = reader.rows(offsetOfStripe2, offsetOfStripe4 - offsetOfStripe2,
+                       columns);
+    rows.seekToRow(lastRowOfStripe2);
+    for(int i = 0; i < 2; ++i) {
+      row = (OrcStruct) rows.next(row);
+      BigRow expected = createRandomRow(intValues, doubleValues,
+                                        stringValues, byteValues, words,
+                                        (int) (lastRowOfStripe2 + i));
+
+      assertEquals(expected.long1.longValue(),
+          ((LongWritable) row.getFieldValue(4)).get());
+      assertEquals(expected.string1, row.getFieldValue(8));
+    }
+    rows.close();
   }
 
   private void compareInner(InnerStruct expect,
@@ -993,7 +1028,7 @@ public class TestOrcFile {
               ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
     MyMemoryManager memory = new MyMemoryManager(conf, 10000, 0.1);
-    Writer writer = new WriterImpl(fs, testFilePath, inspector,
+    Writer writer = new WriterImpl(fs, testFilePath, conf, inspector,
         50000, CompressionKind.NONE, 100, 0, memory);
     assertEquals(testFilePath, memory.path);
     for(int i=0; i < 2500; ++i) {

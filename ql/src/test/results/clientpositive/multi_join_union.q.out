@@ -41,7 +41,7 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-8 is a root stage
-  Stage-7 depends on stages: Stage-8
+  Stage-6 depends on stages: Stage-8
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -125,7 +125,7 @@ STAGE PLANS:
                       1 [Column[_col1]]
                     Position of Big Table: 0
 
-  Stage: Stage-7
+  Stage: Stage-6
     Map Reduce
       Alias -> Map Operator Tree:
         b 

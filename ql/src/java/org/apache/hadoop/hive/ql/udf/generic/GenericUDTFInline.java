@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
+import java.util.ArrayList;
+
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -26,13 +28,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
-import java.util.ArrayList;
-
 @Description(name ="inline", value= "_FUNC_( ARRAY( STRUCT()[,STRUCT()] "
 + "- explodes and array and struct into a table")
 public class GenericUDTFInline extends GenericUDTF {
 
-  private ListObjectInspector li;
+  private transient ListObjectInspector li;
 
   public GenericUDTFInline(){
   }

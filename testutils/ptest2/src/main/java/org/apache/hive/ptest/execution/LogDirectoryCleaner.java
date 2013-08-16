@@ -41,7 +41,7 @@ public class LogDirectoryCleaner extends Thread {
   }
 
   @Override
-public void run() {
+  public void run() {
     try {
       File[] logDirs = mLogDir.listFiles();
       if(logDirs != null &&  logDirs.length > 0) {
@@ -81,10 +81,10 @@ public void run() {
     File getOldest() {
       Preconditions.checkState(!dirs.isEmpty(), "Cannot be called unless dirs.size() >= 1");
       File eldestDir = null;
-      int eldestId = Integer.MAX_VALUE;
+      long eldestId = Long.MAX_VALUE;
       for(File dir : dirs) {
         try {
-          int id = Integer.parseInt(dir.getName().substring(name.length() + 1));
+          long id = Long.parseLong(dir.getName().substring(name.length() + 1));
           if(id < eldestId) {
             eldestId = id;
             eldestDir = dir;

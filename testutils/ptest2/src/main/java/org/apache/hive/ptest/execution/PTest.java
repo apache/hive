@@ -20,12 +20,16 @@ package org.apache.hive.ptest.execution;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
@@ -47,7 +51,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -72,13 +75,13 @@ public class PTest {
   private final List<Phase> mPhases;
   private final ExecutionContext mExecutionContext;
   private final Logger mLogger;
-  private final ImmutableList<HostExecutor> mHostExecutors;
+  private final List<HostExecutor> mHostExecutors;
   private final String mBuildTag;
 
-  public PTest(final TestConfiguration configuration, ExecutionContext executionContext,
-      String buildTag, File logDir, LocalCommandFactory localCommandFactory, SSHCommandExecutor sshCommandExecutor,
-      RSyncCommandExecutor rsyncCommandExecutor, Logger logger)
-    throws Exception {
+  public PTest(final TestConfiguration configuration, final ExecutionContext executionContext,
+      final String buildTag, final File logDir, final LocalCommandFactory localCommandFactory,
+      final SSHCommandExecutor sshCommandExecutor, final  RSyncCommandExecutor rsyncCommandExecutor,
+      final Logger logger) throws Exception {
     mConfiguration = configuration;
     mLogger = logger;
     mBuildTag = buildTag;
@@ -86,9 +89,9 @@ public class PTest {
     mFailedTests = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
     mExecutionContext = executionContext;
     mExecutor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
-    File failedLogDir = Dirs.create(new File(logDir, "failed"));
-    File succeededLogDir = Dirs.create(new File(logDir, "succeeded"));
-    File scratchDir = Dirs.createEmpty(new File(mExecutionContext.getLocalWorkingDirectory(), "scratch"));
+    final File failedLogDir = Dirs.create(new File(logDir, "failed"));
+    final File succeededLogDir = Dirs.create(new File(logDir, "succeeded"));
+    final File scratchDir = Dirs.createEmpty(new File(mExecutionContext.getLocalWorkingDirectory(), "scratch"));
     File patchDir = Dirs.createEmpty(new File(logDir, "patches"));
     File patchFile = null;
     if(!configuration.getPatch().isEmpty()) {
@@ -97,32 +100,38 @@ public class PTest {
     }
     ImmutableMap.Builder<String, String> templateDefaultsBuilder = ImmutableMap.builder();
     templateDefaultsBuilder.
-        put("repository", configuration.getRepository()).
-        put("repositoryName", configuration.getRepositoryName()).
-        put("repositoryType", configuration.getRepositoryType()).
-        put("branch", configuration.getBranch()).
-        put("clearLibraryCache", String.valueOf(configuration.isClearLibraryCache())).
-        put("workingDir", mExecutionContext.getLocalWorkingDirectory()).
-        put("antArgs", configuration.getAntArgs()).
-        put("buildTag", buildTag).
-        put("logDir", logDir.getAbsolutePath()).
-        put("javaHome", configuration.getJavaHome()).
-        put("antEnvOpts", configuration.getAntEnvOpts());
-    ImmutableMap<String, String> templateDefaults = templateDefaultsBuilder.build();
+    put("repository", configuration.getRepository()).
+    put("repositoryName", configuration.getRepositoryName()).
+    put("repositoryType", configuration.getRepositoryType()).
+    put("branch", configuration.getBranch()).
+    put("clearLibraryCache", String.valueOf(configuration.isClearLibraryCache())).
+    put("workingDir", mExecutionContext.getLocalWorkingDirectory()).
+    put("antArgs", configuration.getAntArgs()).
+    put("buildTag", buildTag).
+    put("logDir", logDir.getAbsolutePath()).
+    put("javaHome", configuration.getJavaHome()).
+    put("antEnvOpts", configuration.getAntEnvOpts());
+    final ImmutableMap<String, String> templateDefaults = templateDefaultsBuilder.build();
     TestParser testParser = new TestParser(configuration.getContext(),
         new File(mExecutionContext.getLocalWorkingDirectory(), configuration.getRepositoryName() + "-source"),
         logger);
 
-    ImmutableList.Builder<HostExecutor> hostExecutorsBuilder = ImmutableList.builder();
+    HostExecutorBuilder hostExecutorBuilder = new HostExecutorBuilder() {
+      @Override
+      public HostExecutor build(Host host) {
+        return new HostExecutor(host, executionContext.getPrivateKey(), mExecutor, sshCommandExecutor,
+            rsyncCommandExecutor, templateDefaults, scratchDir, succeededLogDir, failedLogDir, 10, logger);
+      }
+
+    };
+    List<HostExecutor> hostExecutors = new ArrayList<HostExecutor>();
     for(Host host : mExecutionContext.getHosts()) {
-      hostExecutorsBuilder.add(new HostExecutor(host, executionContext.getPrivateKey(), mExecutor, sshCommandExecutor,
-          rsyncCommandExecutor, templateDefaults, scratchDir, succeededLogDir, failedLogDir, 10, logger));
+      hostExecutors.add(hostExecutorBuilder.build(host));
     }
-    mHostExecutors = hostExecutorsBuilder.build();
+    mHostExecutors = new CopyOnWriteArrayList<HostExecutor>(hostExecutors);
     mPhases = Lists.newArrayList();
-    mPhases.add(new CleanupPhase(mHostExecutors, localCommandFactory, templateDefaults, logger));
     mPhases.add(new PrepPhase(mHostExecutors, localCommandFactory, templateDefaults, scratchDir, patchFile, logger));
-    mPhases.add(new ExecutionPhase(mHostExecutors, localCommandFactory, templateDefaults,
+    mPhases.add(new ExecutionPhase(mHostExecutors, mExecutionContext, hostExecutorBuilder, localCommandFactory, templateDefaults,
         succeededLogDir, failedLogDir, testParser.parse(), mExecutedTests, mFailedTests, logger));
     mPhases.add(new ReportingPhase(mHostExecutors, localCommandFactory, templateDefaults, logger));
   }
@@ -155,24 +164,25 @@ public class PTest {
       error = true;
     } finally {
       for(HostExecutor hostExecutor : mHostExecutors) {
-        if(hostExecutor.remainingDrones() == 0) {
+        if(hostExecutor.isBad()) {
           mExecutionContext.addBadHost(hostExecutor.getHost());
         }
       }
       mExecutor.shutdownNow();
-      if(mFailedTests.isEmpty()) {
-        mLogger.info(String.format("%d failed tests", mFailedTests.size()));
+      SortedSet<String> failedTests = new TreeSet<String>(mFailedTests);
+      if(failedTests.isEmpty()) {
+        mLogger.info(String.format("%d failed tests", failedTests.size()));
       } else {
-        mLogger.warn(String.format("%d failed tests", mFailedTests.size()));
+        mLogger.warn(String.format("%d failed tests", failedTests.size()));
       }
-      for(String failingTestName : mFailedTests) {
+      for(String failingTestName : failedTests) {
         mLogger.warn(failingTestName);
       }
       mLogger.info("Executed " + mExecutedTests.size() + " tests");
       for(Map.Entry<String, Long> entry : elapsedTimes.entrySet()) {
         mLogger.info(String.format("PERF: Phase %s took %d minutes", entry.getKey(), entry.getValue()));
       }
-      publishJiraComment(error, messages);
+      publishJiraComment(error, messages, failedTests);
       if(error || !mFailedTests.isEmpty()) {
         result = 1;
       }
@@ -180,7 +190,7 @@ public class PTest {
     return result;
   }
 
-  private void publishJiraComment(boolean error, List<String> messages) {
+  private void publishJiraComment(boolean error, List<String> messages, SortedSet<String> failedTests) {
     if(mConfiguration.getJiraName().isEmpty()) {
       mLogger.info("Skipping JIRA comment as name is empty.");
       return;
@@ -198,7 +208,7 @@ public class PTest {
       return;
     }
     JIRAService jira = new JIRAService(mLogger, mConfiguration, mBuildTag);
-    jira.postComment(error, mExecutedTests.size(), mFailedTests, messages);
+    jira.postComment(error, mExecutedTests.size(), failedTests, messages);
   }
 
   public static class Builder {
@@ -245,65 +255,65 @@ public class PTest {
         fromFile(testConfigurationFile);
     String buildTag = System.getenv("BUILD_TAG") == null ? "undefined-"
         + System.currentTimeMillis() : System.getenv("BUILD_TAG");
-    File logDir = Dirs.create(new File(executionContextConfiguration.getGlobalLogDirectory(), buildTag));
-    LogDirectoryCleaner cleaner = new LogDirectoryCleaner(new File(executionContextConfiguration.
-        getGlobalLogDirectory()), 5);
-    cleaner.setName("LogCleaner-" + executionContextConfiguration.getGlobalLogDirectory());
-    cleaner.setDaemon(true);
-    cleaner.start();
-    TestConfiguration conf = TestConfiguration.fromFile(testConfigurationFile, LOG);
-    String repository = Strings.nullToEmpty(commandLine.getOptionValue(REPOSITORY)).trim();
-    if(!repository.isEmpty()) {
-      conf.setRepository(repository);
-    }
-    String repositoryName = Strings.nullToEmpty(commandLine.getOptionValue(REPOSITORY_NAME)).trim();
-    if(!repositoryName.isEmpty()) {
-      conf.setRepositoryName(repositoryName);
-    }
-    String branch = Strings.nullToEmpty(commandLine.getOptionValue(BRANCH)).trim();
-    if(!branch.isEmpty()) {
-      conf.setBranch(branch);
-    }
-    String patch = Strings.nullToEmpty(commandLine.getOptionValue(PATCH)).trim();
-    if(!patch.isEmpty()) {
-      conf.setPatch(patch);
-    }
-    String javaHome = Strings.nullToEmpty(commandLine.getOptionValue(JAVA_HOME)).trim();
-    if(!javaHome.isEmpty()) {
-      conf.setJavaHome(javaHome);
-    }
-    String antEnvOpts = Strings.nullToEmpty(commandLine.getOptionValue(ANT_ENV_OPTS)).trim();
-    if(!antEnvOpts.isEmpty()) {
-      conf.setAntEnvOpts(antEnvOpts);
-    }
-    String[] supplementalAntArgs = commandLine.getOptionValues(ANT_ARG);
-    if(supplementalAntArgs != null && supplementalAntArgs.length > 0) {
-      String antArgs = Strings.nullToEmpty(conf.getAntArgs());
-      if(!(antArgs.isEmpty() || antArgs.endsWith(" "))) {
-        antArgs += " ";
-      }
-      antArgs += "-" + ANT_ARG + Joiner.on(" -" + ANT_ARG).join(supplementalAntArgs);
-      conf.setAntArgs(antArgs);
-    }
-    ExecutionContextProvider executionContextProvider = null;
-    ExecutionContext executionContext = null;
-    int exitCode = 0;
-    try {
-      executionContextProvider = executionContextConfiguration
-          .getExecutionContextProvider();
-      executionContext = executionContextProvider.createExecutionContext();
-      PTest ptest = new PTest(conf, executionContext, buildTag, logDir,
-          new LocalCommandFactory(LOG), new SSHCommandExecutor(LOG),
-          new RSyncCommandExecutor(LOG), LOG);
-      exitCode = ptest.run();
-    } finally {
-      if(executionContext != null) {
-        executionContext.terminate();
-      }
-      if(executionContextProvider != null) {
-        executionContextProvider.close();
-      }
-    }
-    System.exit(exitCode);
+        File logDir = Dirs.create(new File(executionContextConfiguration.getGlobalLogDirectory(), buildTag));
+        LogDirectoryCleaner cleaner = new LogDirectoryCleaner(new File(executionContextConfiguration.
+            getGlobalLogDirectory()), 5);
+        cleaner.setName("LogCleaner-" + executionContextConfiguration.getGlobalLogDirectory());
+        cleaner.setDaemon(true);
+        cleaner.start();
+        TestConfiguration conf = TestConfiguration.fromFile(testConfigurationFile, LOG);
+        String repository = Strings.nullToEmpty(commandLine.getOptionValue(REPOSITORY)).trim();
+        if(!repository.isEmpty()) {
+          conf.setRepository(repository);
+        }
+        String repositoryName = Strings.nullToEmpty(commandLine.getOptionValue(REPOSITORY_NAME)).trim();
+        if(!repositoryName.isEmpty()) {
+          conf.setRepositoryName(repositoryName);
+        }
+        String branch = Strings.nullToEmpty(commandLine.getOptionValue(BRANCH)).trim();
+        if(!branch.isEmpty()) {
+          conf.setBranch(branch);
+        }
+        String patch = Strings.nullToEmpty(commandLine.getOptionValue(PATCH)).trim();
+        if(!patch.isEmpty()) {
+          conf.setPatch(patch);
+        }
+        String javaHome = Strings.nullToEmpty(commandLine.getOptionValue(JAVA_HOME)).trim();
+        if(!javaHome.isEmpty()) {
+          conf.setJavaHome(javaHome);
+        }
+        String antEnvOpts = Strings.nullToEmpty(commandLine.getOptionValue(ANT_ENV_OPTS)).trim();
+        if(!antEnvOpts.isEmpty()) {
+          conf.setAntEnvOpts(antEnvOpts);
+        }
+        String[] supplementalAntArgs = commandLine.getOptionValues(ANT_ARG);
+        if(supplementalAntArgs != null && supplementalAntArgs.length > 0) {
+          String antArgs = Strings.nullToEmpty(conf.getAntArgs());
+          if(!(antArgs.isEmpty() || antArgs.endsWith(" "))) {
+            antArgs += " ";
+          }
+          antArgs += "-" + ANT_ARG + Joiner.on(" -" + ANT_ARG).join(supplementalAntArgs);
+          conf.setAntArgs(antArgs);
+        }
+        ExecutionContextProvider executionContextProvider = null;
+        ExecutionContext executionContext = null;
+        int exitCode = 0;
+        try {
+          executionContextProvider = executionContextConfiguration
+              .getExecutionContextProvider();
+          executionContext = executionContextProvider.createExecutionContext();
+          PTest ptest = new PTest(conf, executionContext, buildTag, logDir,
+              new LocalCommandFactory(LOG), new SSHCommandExecutor(LOG),
+              new RSyncCommandExecutor(LOG), LOG);
+          exitCode = ptest.run();
+        } finally {
+          if(executionContext != null) {
+            executionContext.terminate();
+          }
+          if(executionContextProvider != null) {
+            executionContextProvider.close();
+          }
+        }
+        System.exit(exitCode);
   }
 }

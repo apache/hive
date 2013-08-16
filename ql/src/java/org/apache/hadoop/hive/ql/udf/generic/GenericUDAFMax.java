@@ -53,8 +53,8 @@ public class GenericUDAFMax extends AbstractGenericUDAFResolver {
   @UDFType(distinctLike=true)
   public static class GenericUDAFMaxEvaluator extends GenericUDAFEvaluator {
 
-    ObjectInspector inputOI;
-    ObjectInspector outputOI;
+    private transient ObjectInspector inputOI;
+    private transient ObjectInspector outputOI;
 
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters)

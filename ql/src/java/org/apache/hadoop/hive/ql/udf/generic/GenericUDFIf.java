@@ -34,8 +34,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInsp
  * on the context in which it is used.
  */
 public class GenericUDFIf extends GenericUDF {
-  private ObjectInspector[] argumentOIs;
-  private GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
+  private transient ObjectInspector[] argumentOIs;
+  private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {

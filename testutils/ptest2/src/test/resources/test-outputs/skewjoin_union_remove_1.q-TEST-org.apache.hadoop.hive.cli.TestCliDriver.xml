@@ -30,6 +30,9 @@ See build/ql/tmp/hive.log, or try &quot;ant test ... -Dtest.silent=false&quot; t
 	at org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner.main(JUnitTestRunner.java:911)
 </failure>
   </testcase>
+  <testcase classname="org.apache.hadoop.hive.cli.TestCliDriver" name="this_test_was_skipped" time="0">
+    <skipped />
+  </testcase>
   <testcase classname="org.apache.hadoop.hive.cli.TestCliDriver" name="testCliDriver_shutdown" time="36.577" />
   <system-out><![CDATA[Begin query: skewjoin_union_remove_1.q
 Deleted /data/6/hive-local/p0415.mtv.cloudera.com-hiveptest-15/source/build/ql/test/data/warehouse/dest1

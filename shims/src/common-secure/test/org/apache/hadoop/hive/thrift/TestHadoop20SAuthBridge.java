@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 
 import junit.framework.TestCase;
 
@@ -72,20 +73,18 @@ public class TestHadoop20SAuthBridge extends TestCase {
       return new Server();
     }
 
-
-
     static class Server extends HadoopThriftAuthBridge20S.Server {
       public Server() throws TTransportException {
         super();
       }
       @Override
-      public TTransportFactory createTransportFactory()
+      public TTransportFactory createTransportFactory(Map<String, String> saslProps)
       throws TTransportException {
         TSaslServerTransport.Factory transFactory =
           new TSaslServerTransport.Factory();
         transFactory.addServerDefinition(AuthMethod.DIGEST.getMechanismName(),
             null, SaslRpcServer.SASL_DEFAULT_REALM,
-            SaslRpcServer.SASL_PROPS,
+            saslProps,
             new SaslDigestCallbackHandler(secretManager));
 
         return new TUGIAssumingTransportFactory(transFactory, realUgi);
@@ -98,9 +97,9 @@ public class TestHadoop20SAuthBridge extends TestCase {
       }
 
       @Override
-      public void startDelegationTokenSecretManager(Configuration conf)
+      public void startDelegationTokenSecretManager(Configuration conf, Object hms)
       throws IOException{
-        super.startDelegationTokenSecretManager(conf);
+        super.startDelegationTokenSecretManager(conf, hms);
         isMetastoreTokenManagerInited = true;
       }
 

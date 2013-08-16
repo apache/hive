@@ -97,7 +97,7 @@ public final class OrcFile {
                                     CompressionKind compress,
                                     int bufferSize,
                                     int rowIndexStride) throws IOException {
-    return new WriterImpl(fs, path, inspector, stripeSize, compress,
+    return new WriterImpl(fs, path, conf, inspector, stripeSize, compress,
       bufferSize, rowIndexStride, getMemoryManager(conf));
   }
 

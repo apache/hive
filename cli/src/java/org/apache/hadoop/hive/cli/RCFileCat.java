@@ -22,6 +22,7 @@ import java.io.BufferedOutputStream;
 import java.io.FileDescriptor;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
@@ -53,6 +54,8 @@ public class RCFileCat implements Tool{
   // In verbose mode, print an update per RECORD_PRINT_INTERVAL records
   private static final int RECORD_PRINT_INTERVAL = (1024*1024);
 
+  protected static boolean test=false;
+
   public RCFileCat() {
     super();
     decoder = Charset.forName("UTF-8").newDecoder().
@@ -81,6 +84,7 @@ public class RCFileCat implements Tool{
     //get options from arguments
     if (args.length < 1 || args.length > 3) {
       printUsage(null);
+      return -1;
     }
     Path fileName = null;
     for (int i = 0; i < args.length; i++) {
@@ -102,6 +106,7 @@ public class RCFileCat implements Tool{
         fileName = new Path(arg);
       } else {
         printUsage(null);
+        return -1;
       }
     }
 
@@ -253,14 +258,19 @@ public class RCFileCat implements Tool{
       e.printStackTrace();
       System.err.println("\n\n\n");
       printUsage(e.getMessage());
+      System.exit(1);
     }
   }
 
   private static void setupBufferedOutput() {
-    FileOutputStream fdout =
-        new FileOutputStream(FileDescriptor.out);
+    OutputStream pdataOut;
+    if (test) {
+      pdataOut = System.out;
+    } else {
+      pdataOut = new FileOutputStream(FileDescriptor.out);
+    }
     BufferedOutputStream bos =
-        new BufferedOutputStream(fdout, STDOUT_BUFFER_SIZE);
+        new BufferedOutputStream(pdataOut, STDOUT_BUFFER_SIZE);
     PrintStream ps =
         new PrintStream(bos, false);
     System.setOut(ps);
@@ -270,7 +280,6 @@ public class RCFileCat implements Tool{
     if(errorMsg != null) {
       System.err.println(errorMsg);
     }
-    System.exit(1);
   }
 
 }

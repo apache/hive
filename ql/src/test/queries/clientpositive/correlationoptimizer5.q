@@ -52,7 +52,6 @@ ON b.key = d.key;
 
 set hive.optimize.correlation=true;
 set hive.auto.convert.join=true;
-set hive.optimize.mapjoin.mapreduce=true;
 set hive.auto.convert.join.noconditionaltask.size=10000000000;
 -- Enable hive.auto.convert.join.
 EXPLAIN

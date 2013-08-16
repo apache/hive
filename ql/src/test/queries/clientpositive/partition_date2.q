@@ -3,12 +3,10 @@ drop table partition_date2_1;
 create table partition_date2_1 (key string, value string) partitioned by (dt date, region int);
 
 -- test date literal syntax
-insert overwrite table partition_date2_1 partition(dt=date '2000-01-01', region=1)
-  select * from src limit 1;
-insert overwrite table partition_date2_1 partition(dt=date '2000-01-01', region=2)
-  select * from src limit 1;
-insert overwrite table partition_date2_1 partition(dt=date '1999-01-01', region=2)
-  select * from src limit 1;
+from (select * from src limit 1) x
+insert overwrite table partition_date2_1 partition(dt=date '2000-01-01', region=1) select *
+insert overwrite table partition_date2_1 partition(dt=date '2000-01-01', region=2) select *
+insert overwrite table partition_date2_1 partition(dt=date '1999-01-01', region=2) select *;
 
 select distinct dt from partition_date2_1;
 select * from partition_date2_1;
@@ -44,7 +42,7 @@ describe extended partition_date2_1  partition(dt=date '1980-01-02', region=3);
 
 insert overwrite table partition_date2_1 partition(dt=date '1980-01-02', region=3)
   select * from src limit 2;
-select * from partition_date2_1;
+select * from partition_date2_1 order by key,value,dt,region;
 
 -- alter table set location
 alter table partition_date2_1 partition(dt=date '1980-01-02', region=3)

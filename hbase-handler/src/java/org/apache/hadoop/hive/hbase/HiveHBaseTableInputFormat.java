@@ -109,6 +109,9 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     Scan scan = new Scan();
     boolean empty = true;
 
+    // The list of families that have been added to the scan
+    List<String> addedFamilies = new ArrayList<String>();
+
     if (!addAll) {
       for (int i : readColIDs) {
         ColumnMapping colMap = columnsMapping.get(i);
@@ -118,8 +121,12 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
 
         if (colMap.qualifierName == null) {
           scan.addFamily(colMap.familyNameBytes);
+          addedFamilies.add(colMap.familyName);
         } else {
-          scan.addColumn(colMap.familyNameBytes, colMap.qualifierNameBytes);
+          if(!addedFamilies.contains(colMap.familyName)){
+            // add only if the corresponding family has not already been added
+            scan.addColumn(colMap.familyNameBytes, colMap.qualifierNameBytes);
+          }
         }
 
         empty = false;
@@ -458,6 +465,9 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
 
     Scan scan = new Scan();
 
+    // The list of families that have been added to the scan
+    List<String> addedFamilies = new ArrayList<String>();
+
     // REVIEW:  are we supposed to be applying the getReadColumnIDs
     // same as in getRecordReader?
     for (int i = 0; i <columnsMapping.size(); i++) {
@@ -468,8 +478,12 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
 
       if (colMap.qualifierName == null) {
         scan.addFamily(colMap.familyNameBytes);
+        addedFamilies.add(colMap.familyName);
       } else {
-        scan.addColumn(colMap.familyNameBytes, colMap.qualifierNameBytes);
+        if(!addedFamilies.contains(colMap.familyName)){
+          // add the column only if the family has not already been added
+          scan.addColumn(colMap.familyNameBytes, colMap.qualifierNameBytes);
+        }
       }
     }
 

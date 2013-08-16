@@ -30,7 +30,7 @@ import org.junit.Test;
  * test for znodenames. This class is taken as-is from zookeeper lock recipe test.
  * The package name has been changed.
  */
-public class ZNodeNameTest extends TestCase {
+public class TestZNodeName extends TestCase {
     @Test
     public void testOrderWithSamePrefix() throws Exception {
         String[] names = { "x-3", "x-5", "x-11", "x-1" };

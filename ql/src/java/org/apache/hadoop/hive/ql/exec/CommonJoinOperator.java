@@ -112,8 +112,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   // to RowContainer
   int joinEmitInterval = -1;
   int joinCacheSize = 0;
-  int nextSz = 0;
-  transient Byte lastAlias = null;
+  long nextSz = 0;
 
   transient boolean handleSkewJoin = false;
 
@@ -251,6 +250,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
     joinEmitInterval = HiveConf.getIntVar(hconf,
         HiveConf.ConfVars.HIVEJOINEMITINTERVAL);
+    nextSz = joinEmitInterval;
     joinCacheSize = HiveConf.getIntVar(hconf,
         HiveConf.ConfVars.HIVEJOINCACHESIZE);
 
@@ -334,7 +334,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     super.startGroup();
   }
 
-  protected int getNextSize(int sz) {
+  protected long getNextSize(long sz) {
     // A very simple counter to keep track of join entries for a key
     if (sz >= 100000) {
       return sz + 100000;

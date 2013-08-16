@@ -33,6 +33,7 @@ import java.sql.SQLXML;
 import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
+import java.util.HashMap;
 import java.util.concurrent.Executor;
 import java.util.LinkedList;
 import java.util.List;
@@ -40,11 +41,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.auth.KerberosSaslHelper;
 import org.apache.hive.service.auth.PlainSaslHelper;
+import org.apache.hive.service.auth.SaslQOP;
 import org.apache.hive.service.cli.thrift.EmbeddedThriftCLIService;
 import org.apache.hive.service.cli.thrift.TCLIService;
 import org.apache.hive.service.cli.thrift.TCloseSessionReq;
@@ -65,6 +68,7 @@ import org.apache.thrift.transport.TTransportException;
  */
 public class HiveConnection implements java.sql.Connection {
   private static final String HIVE_AUTH_TYPE= "auth";
+  private static final String HIVE_AUTH_QOP = "sasl.qop";
   private static final String HIVE_AUTH_SIMPLE = "noSasl";
   private static final String HIVE_AUTH_USER = "user";
   private static final String HIVE_AUTH_PRINCIPAL = "principal";
@@ -132,8 +136,19 @@ public class HiveConnection implements java.sql.Connection {
         || !sessConf.get(HIVE_AUTH_TYPE).equals(HIVE_AUTH_SIMPLE)){
       try {
         if (sessConf.containsKey(HIVE_AUTH_PRINCIPAL)) {
+          Map<String, String> saslProps = new HashMap<String, String>();
+          SaslQOP saslQOP = SaslQOP.AUTH;
+          if(sessConf.containsKey(HIVE_AUTH_QOP)) {
+            try {
+              saslQOP = SaslQOP.fromString(sessConf.get(HIVE_AUTH_QOP));
+            } catch (IllegalArgumentException e) {
+              throw new SQLException("Invalid " + HIVE_AUTH_QOP + " parameter. " + e.getMessage(), "42000", e);
+            }
+          }
+          saslProps.put(Sasl.QOP, saslQOP.toString());
+          saslProps.put(Sasl.SERVER_AUTH, "true");
           transport = KerberosSaslHelper.getKerberosTransport(
-                  sessConf.get(HIVE_AUTH_PRINCIPAL), host, transport);
+                  sessConf.get(HIVE_AUTH_PRINCIPAL), host, transport, saslProps);
         } else {
           String userName = sessConf.get(HIVE_AUTH_USER);
           if ((userName == null) || userName.isEmpty()) {
