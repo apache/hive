@@ -33,6 +33,7 @@ import javax.jdo.Query;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -340,7 +341,7 @@ class MetaStoreDirectSql {
             if (currentListId == null || fieldsListId != currentListId) {
               currentList = new ArrayList<String>();
               currentListId = fieldsListId;
-              t.getSkewedInfo().addToSkewedColValues(currentList);
+              t.getSkewedInfo().addToSkewedColValues(currentList); // TODO#: here
             }
             currentList.add((String)fields[2]);
           }
@@ -356,28 +357,35 @@ class MetaStoreDirectSql {
           + "where SKEWED_COL_VALUE_LOC_MAP.SD_ID in (" + sdIds + ")"
           + "  and SKEWED_COL_VALUE_LOC_MAP.STRING_LIST_ID_KID is not null "
           + "order by SKEWED_COL_VALUE_LOC_MAP.SD_ID asc,"
+          + "  SKEWED_STRING_LIST_VALUES.STRING_LIST_ID asc,"
           + "  SKEWED_STRING_LIST_VALUES.INTEGER_IDX asc";
+
       loopJoinOrderedResult(sds, queryText, 0, new ApplyFunc<StorageDescriptor>() {
         private Long currentListId;
         private SkewedValueList currentList;
         public void apply(StorageDescriptor t, Object[] fields) {
-          if (!t.isSetSkewedInfo()) t.setSkewedInfo(new SkewedInfo());
+          if (!t.isSetSkewedInfo()) {
+            SkewedInfo skewedInfo = new SkewedInfo();
+            skewedInfo.setSkewedColValueLocationMaps(new HashMap<SkewedValueList, String>());
+            t.setSkewedInfo(skewedInfo);
+          }
+          Map<SkewedValueList, String> skewMap = t.getSkewedInfo().getSkewedColValueLocationMaps();
           // Note that this is not a typical list accumulator - there's no call to finalize
           // the last list. Instead we add list to SD first, as well as locally to add elements.
           if (fields[1] == null) {
-            currentList = null; // left outer join produced a list with no values
+            currentList = new SkewedValueList(); // left outer join produced a list with no values
             currentListId = null;
-            t.getSkewedInfo().putToSkewedColValueLocationMaps(
-                new SkewedValueList(), (String)fields[2]);
           } else {
             long fieldsListId = (Long)fields[1];
             if (currentListId == null || fieldsListId != currentListId) {
               currentList = new SkewedValueList();
               currentListId = fieldsListId;
-              t.getSkewedInfo().putToSkewedColValueLocationMaps(currentList, (String)fields[2]);
+            } else {
+              skewMap.remove(currentList); // value based compare.. remove first
             }
             currentList.addToSkewedValueList((String)fields[3]);
           }
+          skewMap.put(currentList, (String)fields[2]);
         }});
     } // if (hasSkewedColumns)
 
