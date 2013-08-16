@@ -18,31 +18,21 @@
 
 package org.apache.hadoop.hive.ql.exec.persistence;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
+import java.util.Collections;
+import java.util.Map;
 
-/**
- * Map Join Object used for both key.
- */
-public abstract class AbstractMapJoinKey implements Externalizable {
+public abstract class AbstractMapJoinTableContainer implements MapJoinTableContainer {
+  private final Map<String, String> metaData;
 
-  protected static int metadataTag = -1;
-
-  public AbstractMapJoinKey() {
+  protected AbstractMapJoinTableContainer(Map<String, String> metaData) {
+    this.metaData = metaData;
   }
-
   @Override
-  public abstract boolean equals(Object o);
-
-  @Override
-  public abstract int hashCode();
-
-  public abstract void readExternal(ObjectInput in) throws IOException, ClassNotFoundException;
-
-  public abstract void writeExternal(ObjectOutput out) throws IOException;
-
-  public abstract boolean hasAnyNulls(boolean[] nullsafes);
-
+  public Map<String, String> getMetaData() {
+    return Collections.unmodifiableMap(metaData);
+  }
+  
+  protected void putMetaData(String key, String value) {
+    metaData.put(key, value);
+  }
 }

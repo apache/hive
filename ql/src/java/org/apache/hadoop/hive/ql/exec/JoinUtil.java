@@ -23,10 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.exec.persistence.AbstractMapJoinKey;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinDoubleKeys;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectKey;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinSingleKey;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -147,42 +144,22 @@ public class JoinUtil {
 
   /**
    * Return the key as a standard object. StandardObject can be inspected by a
-   * standard ObjectInspector.
+   * standard ObjectInspector. The first parameter a MapJoinKey can
+   * be null if the caller would like a new object to be instantiated.
    */
-  public static AbstractMapJoinKey computeMapJoinKeys(Object row,
+  public static MapJoinKey computeMapJoinKeys(MapJoinKey key, Object row,
       List<ExprNodeEvaluator> keyFields, List<ObjectInspector> keyFieldsOI)
       throws HiveException {
-
     int size = keyFields.size();
-    if(size == 1){
-      Object obj = (ObjectInspectorUtils.copyToStandardObject(keyFields.get(0)
-          .evaluate(row), keyFieldsOI.get(0),
-          ObjectInspectorCopyOption.WRITABLE));
-      MapJoinSingleKey key = new MapJoinSingleKey(obj);
-      return key;
-    }else if(size == 2){
-      Object obj1 = (ObjectInspectorUtils.copyToStandardObject(keyFields.get(0)
-          .evaluate(row), keyFieldsOI.get(0),
-          ObjectInspectorCopyOption.WRITABLE));
-
-      Object obj2 = (ObjectInspectorUtils.copyToStandardObject(keyFields.get(1)
-          .evaluate(row), keyFieldsOI.get(1),
-          ObjectInspectorCopyOption.WRITABLE));
-
-      MapJoinDoubleKeys key = new MapJoinDoubleKeys(obj1,obj2);
-      return key;
-    }else{
-      // Compute the keys
-      Object[] nr = new Object[keyFields.size()];
-      for (int i = 0; i < keyFields.size(); i++) {
-
-        nr[i] = (ObjectInspectorUtils.copyToStandardObject(keyFields.get(i)
-            .evaluate(row), keyFieldsOI.get(i),
-            ObjectInspectorCopyOption.WRITABLE));
-      }
-      MapJoinObjectKey key = new MapJoinObjectKey(nr);
-      return key;
-      }
+    if(key == null || key.getKey().length != size) {
+      key = new MapJoinKey(new Object[size]);
+    }
+    Object[] array = key.getKey();
+    for (int keyIndex = 0; keyIndex < size; keyIndex++) {
+      array[keyIndex] = (ObjectInspectorUtils.copyToStandardObject(keyFields.get(keyIndex)
+          .evaluate(row), keyFieldsOI.get(keyIndex), ObjectInspectorCopyOption.WRITABLE));
+    }
+    return key;
   }
 
 
@@ -354,7 +331,7 @@ public class JoinUtil {
   }
 
 
-  public static RowContainer getRowContainer(Configuration hconf,
+  public static RowContainer<List<Object>> getRowContainer(Configuration hconf,
       List<ObjectInspector> structFieldObjectInspectors,
       Byte alias,int containerSize, TableDesc[] spillTableDesc,
       JoinDesc conf,boolean noFilter, Reporter reporter) throws HiveException {
@@ -366,7 +343,7 @@ public class JoinUtil {
       containerSize = -1;
     }
 
-    RowContainer rc = new RowContainer(containerSize, hconf, reporter);
+    RowContainer<List<Object>> rc = new RowContainer<List<Object>>(containerSize, hconf, reporter);
     StructObjectInspector rcOI = null;
     if (tblDesc != null) {
       // arbitrary column names used internally for serializing to spill table
