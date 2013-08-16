@@ -60,17 +60,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] == scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] == scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] == scalarValue) {
             assertEquals(
@@ -123,17 +121,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] == scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] == scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] == scalarValue) {
             assertEquals(
@@ -186,17 +182,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] == scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] == scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] == scalarValue) {
             assertEquals(
@@ -249,17 +243,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] == scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] == scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] == scalarValue) {
             assertEquals(
@@ -312,17 +304,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] == scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] == scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] == scalarValue) {
             assertEquals(
@@ -375,17 +365,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] == scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] == scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] == scalarValue) {
             assertEquals(
@@ -438,17 +426,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] == scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] == scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] == scalarValue) {
             assertEquals(
@@ -501,17 +487,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] == scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] == scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] == scalarValue) {
             assertEquals(
@@ -564,17 +548,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] != scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] != scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] != scalarValue) {
             assertEquals(
@@ -627,17 +609,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] != scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] != scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] != scalarValue) {
             assertEquals(
@@ -690,17 +670,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] != scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] != scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] != scalarValue) {
             assertEquals(
@@ -753,17 +731,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] != scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] != scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] != scalarValue) {
             assertEquals(
@@ -816,17 +792,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] != scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] != scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] != scalarValue) {
             assertEquals(
@@ -879,17 +853,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] != scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] != scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] != scalarValue) {
             assertEquals(
@@ -942,17 +914,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] != scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] != scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] != scalarValue) {
             assertEquals(
@@ -1005,17 +975,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] != scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] != scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] != scalarValue) {
             assertEquals(
@@ -1068,17 +1036,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] < scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] < scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] < scalarValue) {
             assertEquals(
@@ -1131,17 +1097,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] < scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] < scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] < scalarValue) {
             assertEquals(
@@ -1194,17 +1158,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] < scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] < scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] < scalarValue) {
             assertEquals(
@@ -1257,17 +1219,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] < scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] < scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] < scalarValue) {
             assertEquals(
@@ -1320,17 +1280,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] < scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] < scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] < scalarValue) {
             assertEquals(
@@ -1383,17 +1341,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] < scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] < scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] < scalarValue) {
             assertEquals(
@@ -1446,17 +1402,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] < scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] < scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] < scalarValue) {
             assertEquals(
@@ -1509,17 +1463,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] < scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] < scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] < scalarValue) {
             assertEquals(
@@ -1572,17 +1524,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] <= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] <= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] <= scalarValue) {
             assertEquals(
@@ -1635,17 +1585,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] <= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] <= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] <= scalarValue) {
             assertEquals(
@@ -1698,17 +1646,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] <= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] <= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] <= scalarValue) {
             assertEquals(
@@ -1761,17 +1707,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] <= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] <= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] <= scalarValue) {
             assertEquals(
@@ -1824,17 +1768,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] <= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] <= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] <= scalarValue) {
             assertEquals(
@@ -1887,17 +1829,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] <= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] <= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] <= scalarValue) {
             assertEquals(
@@ -1950,17 +1890,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] <= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] <= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] <= scalarValue) {
             assertEquals(
@@ -2013,17 +1951,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] <= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] <= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] <= scalarValue) {
             assertEquals(
@@ -2076,17 +2012,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] > scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] > scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] > scalarValue) {
             assertEquals(
@@ -2139,17 +2073,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] > scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] > scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] > scalarValue) {
             assertEquals(
@@ -2202,17 +2134,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] > scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] > scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] > scalarValue) {
             assertEquals(
@@ -2265,17 +2195,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] > scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] > scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] > scalarValue) {
             assertEquals(
@@ -2328,17 +2256,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] > scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] > scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] > scalarValue) {
             assertEquals(
@@ -2391,17 +2317,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] > scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] > scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] > scalarValue) {
             assertEquals(
@@ -2454,17 +2378,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] > scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] > scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] > scalarValue) {
             assertEquals(
@@ -2517,17 +2439,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] > scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] > scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] > scalarValue) {
             assertEquals(
@@ -2580,17 +2500,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] >= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] >= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] >= scalarValue) {
             assertEquals(
@@ -2643,17 +2561,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] >= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] >= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] >= scalarValue) {
             assertEquals(
@@ -2706,17 +2622,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] >= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] >= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] >= scalarValue) {
             assertEquals(
@@ -2769,17 +2683,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] >= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] >= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] >= scalarValue) {
             assertEquals(
@@ -2832,17 +2744,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] >= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] >= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] >= scalarValue) {
             assertEquals(
@@ -2895,17 +2805,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] >= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] >= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] >= scalarValue) {
             assertEquals(
@@ -2958,17 +2866,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] >= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] >= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] >= scalarValue) {
             assertEquals(
@@ -3021,17 +2927,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] >= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] >= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] >= scalarValue) {
             assertEquals(
@@ -3084,17 +2988,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] == scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] == scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] == scalarValue) {
             assertEquals(
@@ -3147,17 +3049,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] == scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] == scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] == scalarValue) {
             assertEquals(
@@ -3210,17 +3110,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] == scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] == scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] == scalarValue) {
             assertEquals(
@@ -3273,17 +3171,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] == scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] == scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] == scalarValue) {
             assertEquals(
@@ -3336,17 +3232,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] == scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] == scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] == scalarValue) {
             assertEquals(
@@ -3399,17 +3293,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] == scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] == scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] == scalarValue) {
             assertEquals(
@@ -3462,17 +3354,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] == scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] == scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] == scalarValue) {
             assertEquals(
@@ -3525,17 +3415,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] == scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] == scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] == scalarValue) {
             assertEquals(
@@ -3588,17 +3476,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] != scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] != scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] != scalarValue) {
             assertEquals(
@@ -3651,17 +3537,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] != scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] != scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] != scalarValue) {
             assertEquals(
@@ -3714,17 +3598,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] != scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] != scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] != scalarValue) {
             assertEquals(
@@ -3777,17 +3659,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] != scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] != scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] != scalarValue) {
             assertEquals(
@@ -3840,17 +3720,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] != scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] != scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] != scalarValue) {
             assertEquals(
@@ -3903,17 +3781,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] != scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] != scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] != scalarValue) {
             assertEquals(
@@ -3966,17 +3842,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] != scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] != scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] != scalarValue) {
             assertEquals(
@@ -4029,17 +3903,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] != scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] != scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] != scalarValue) {
             assertEquals(
@@ -4092,17 +3964,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] < scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] < scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] < scalarValue) {
             assertEquals(
@@ -4155,17 +4025,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] < scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] < scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] < scalarValue) {
             assertEquals(
@@ -4218,17 +4086,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] < scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] < scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] < scalarValue) {
             assertEquals(
@@ -4281,17 +4147,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] < scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] < scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] < scalarValue) {
             assertEquals(
@@ -4344,17 +4208,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] < scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] < scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] < scalarValue) {
             assertEquals(
@@ -4407,17 +4269,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] < scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] < scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] < scalarValue) {
             assertEquals(
@@ -4470,17 +4330,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] < scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] < scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] < scalarValue) {
             assertEquals(
@@ -4533,17 +4391,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] < scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] < scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] < scalarValue) {
             assertEquals(
@@ -4596,17 +4452,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] <= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] <= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] <= scalarValue) {
             assertEquals(
@@ -4659,17 +4513,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] <= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] <= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] <= scalarValue) {
             assertEquals(
@@ -4722,17 +4574,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] <= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] <= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] <= scalarValue) {
             assertEquals(
@@ -4785,17 +4635,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] <= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] <= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] <= scalarValue) {
             assertEquals(
@@ -4848,17 +4696,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] <= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] <= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] <= scalarValue) {
             assertEquals(
@@ -4911,17 +4757,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] <= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] <= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] <= scalarValue) {
             assertEquals(
@@ -4974,17 +4818,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] <= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] <= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] <= scalarValue) {
             assertEquals(
@@ -5037,17 +4879,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] <= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] <= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] <= scalarValue) {
             assertEquals(
@@ -5100,17 +4940,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] > scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] > scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] > scalarValue) {
             assertEquals(
@@ -5163,17 +5001,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] > scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] > scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] > scalarValue) {
             assertEquals(
@@ -5226,17 +5062,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] > scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] > scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] > scalarValue) {
             assertEquals(
@@ -5289,17 +5123,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] > scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] > scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] > scalarValue) {
             assertEquals(
@@ -5352,17 +5184,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] > scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] > scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] > scalarValue) {
             assertEquals(
@@ -5415,17 +5245,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] > scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] > scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] > scalarValue) {
             assertEquals(
@@ -5478,17 +5306,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] > scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] > scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] > scalarValue) {
             assertEquals(
@@ -5541,17 +5367,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] > scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] > scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] > scalarValue) {
             assertEquals(
@@ -5604,17 +5428,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] >= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] >= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] >= scalarValue) {
             assertEquals(
@@ -5667,17 +5489,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] >= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] >= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] >= scalarValue) {
             assertEquals(
@@ -5730,17 +5550,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] >= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] >= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] >= scalarValue) {
             assertEquals(
@@ -5793,17 +5611,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] >= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] >= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] >= scalarValue) {
             assertEquals(
@@ -5856,17 +5672,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] >= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] >= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] >= scalarValue) {
             assertEquals(
@@ -5919,17 +5733,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] >= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] >= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] >= scalarValue) {
             assertEquals(
@@ -5982,17 +5794,15 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] >= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] >= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] >= scalarValue) {
             assertEquals(
@@ -6045,6071 +5855,21 @@ public class TestColumnScalarFilterVectorExpressionEvaluation{
 
     vectorExpression.evaluate(rowBatch);
 
-    
     int selectedIndex = 0;
-    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[i] && inputColumnVector.vector[i] >= scalarValue
+        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] >= scalarValue
           ? BATCH_SIZE : 0;
     } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
+      for(int i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
           if(inputColumnVector.vector[i] >= scalarValue) {
             assertEquals(
               "Vector index that passes filter "
               + inputColumnVector.vector[i] + ">="
               + scalarValue + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarEqualDoubleColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarEqualDoubleColumn vectorExpression =
-      new FilterLongScalarEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue == inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue == inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "=="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarEqualDoubleColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarEqualDoubleColumn vectorExpression =
-      new FilterLongScalarEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue == inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue == inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "=="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarEqualDoubleColumn() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarEqualDoubleColumn vectorExpression =
-      new FilterLongScalarEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue == inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue == inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "=="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarEqualDoubleColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarEqualDoubleColumn vectorExpression =
-      new FilterLongScalarEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue == inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue == inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "=="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarEqualDoubleColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarEqualDoubleColumn vectorExpression =
-      new FilterDoubleScalarEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue == inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue == inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "=="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarEqualDoubleColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarEqualDoubleColumn vectorExpression =
-      new FilterDoubleScalarEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue == inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue == inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "=="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarEqualDoubleColumn() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarEqualDoubleColumn vectorExpression =
-      new FilterDoubleScalarEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue == inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue == inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "=="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarEqualDoubleColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarEqualDoubleColumn vectorExpression =
-      new FilterDoubleScalarEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue == inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue == inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "=="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarNotEqualDoubleColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarNotEqualDoubleColumn vectorExpression =
-      new FilterLongScalarNotEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue != inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue != inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "!="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarNotEqualDoubleColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarNotEqualDoubleColumn vectorExpression =
-      new FilterLongScalarNotEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue != inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue != inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "!="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarNotEqualDoubleColumn() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarNotEqualDoubleColumn vectorExpression =
-      new FilterLongScalarNotEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue != inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue != inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "!="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarNotEqualDoubleColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarNotEqualDoubleColumn vectorExpression =
-      new FilterLongScalarNotEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue != inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue != inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "!="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarNotEqualDoubleColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarNotEqualDoubleColumn vectorExpression =
-      new FilterDoubleScalarNotEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue != inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue != inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "!="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarNotEqualDoubleColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarNotEqualDoubleColumn vectorExpression =
-      new FilterDoubleScalarNotEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue != inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue != inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "!="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarNotEqualDoubleColumn() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarNotEqualDoubleColumn vectorExpression =
-      new FilterDoubleScalarNotEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue != inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue != inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "!="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarNotEqualDoubleColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarNotEqualDoubleColumn vectorExpression =
-      new FilterDoubleScalarNotEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue != inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue != inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "!="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarLessDoubleColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarLessDoubleColumn vectorExpression =
-      new FilterLongScalarLessDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue < inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue < inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarLessDoubleColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarLessDoubleColumn vectorExpression =
-      new FilterLongScalarLessDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue < inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue < inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarLessDoubleColumn() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarLessDoubleColumn vectorExpression =
-      new FilterLongScalarLessDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue < inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue < inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarLessDoubleColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarLessDoubleColumn vectorExpression =
-      new FilterLongScalarLessDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue < inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue < inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarLessDoubleColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarLessDoubleColumn vectorExpression =
-      new FilterDoubleScalarLessDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue < inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue < inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarLessDoubleColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarLessDoubleColumn vectorExpression =
-      new FilterDoubleScalarLessDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue < inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue < inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarLessDoubleColumn() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarLessDoubleColumn vectorExpression =
-      new FilterDoubleScalarLessDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue < inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue < inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarLessDoubleColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarLessDoubleColumn vectorExpression =
-      new FilterDoubleScalarLessDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue < inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue < inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarLessEqualDoubleColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarLessEqualDoubleColumn vectorExpression =
-      new FilterLongScalarLessEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue <= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue <= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarLessEqualDoubleColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarLessEqualDoubleColumn vectorExpression =
-      new FilterLongScalarLessEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue <= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue <= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarLessEqualDoubleColumn() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarLessEqualDoubleColumn vectorExpression =
-      new FilterLongScalarLessEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue <= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue <= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarLessEqualDoubleColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarLessEqualDoubleColumn vectorExpression =
-      new FilterLongScalarLessEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue <= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue <= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarLessEqualDoubleColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarLessEqualDoubleColumn vectorExpression =
-      new FilterDoubleScalarLessEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue <= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue <= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarLessEqualDoubleColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarLessEqualDoubleColumn vectorExpression =
-      new FilterDoubleScalarLessEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue <= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue <= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarLessEqualDoubleColumn() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarLessEqualDoubleColumn vectorExpression =
-      new FilterDoubleScalarLessEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue <= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue <= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarLessEqualDoubleColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarLessEqualDoubleColumn vectorExpression =
-      new FilterDoubleScalarLessEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue <= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue <= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarGreaterDoubleColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarGreaterDoubleColumn vectorExpression =
-      new FilterLongScalarGreaterDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue > inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue > inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarGreaterDoubleColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarGreaterDoubleColumn vectorExpression =
-      new FilterLongScalarGreaterDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue > inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue > inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarGreaterDoubleColumn() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarGreaterDoubleColumn vectorExpression =
-      new FilterLongScalarGreaterDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue > inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue > inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarGreaterDoubleColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarGreaterDoubleColumn vectorExpression =
-      new FilterLongScalarGreaterDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue > inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue > inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarGreaterDoubleColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarGreaterDoubleColumn vectorExpression =
-      new FilterDoubleScalarGreaterDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue > inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue > inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarGreaterDoubleColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarGreaterDoubleColumn vectorExpression =
-      new FilterDoubleScalarGreaterDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue > inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue > inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarGreaterDoubleColumn() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarGreaterDoubleColumn vectorExpression =
-      new FilterDoubleScalarGreaterDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue > inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue > inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarGreaterDoubleColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarGreaterDoubleColumn vectorExpression =
-      new FilterDoubleScalarGreaterDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue > inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue > inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarGreaterEqualDoubleColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarGreaterEqualDoubleColumn vectorExpression =
-      new FilterLongScalarGreaterEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue >= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue >= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarGreaterEqualDoubleColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarGreaterEqualDoubleColumn vectorExpression =
-      new FilterLongScalarGreaterEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue >= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue >= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarGreaterEqualDoubleColumn() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarGreaterEqualDoubleColumn vectorExpression =
-      new FilterLongScalarGreaterEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue >= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue >= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarGreaterEqualDoubleColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarGreaterEqualDoubleColumn vectorExpression =
-      new FilterLongScalarGreaterEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue >= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue >= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarGreaterEqualDoubleColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarGreaterEqualDoubleColumn vectorExpression =
-      new FilterDoubleScalarGreaterEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue >= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue >= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarGreaterEqualDoubleColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarGreaterEqualDoubleColumn vectorExpression =
-      new FilterDoubleScalarGreaterEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue >= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue >= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarGreaterEqualDoubleColumn() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarGreaterEqualDoubleColumn vectorExpression =
-      new FilterDoubleScalarGreaterEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue >= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue >= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarGreaterEqualDoubleColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    DoubleColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateDoubleColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarGreaterEqualDoubleColumn vectorExpression =
-      new FilterDoubleScalarGreaterEqualDoubleColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue >= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue >= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarEqualLongColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarEqualLongColumn vectorExpression =
-      new FilterLongScalarEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue == inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue == inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "=="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarEqualLongColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarEqualLongColumn vectorExpression =
-      new FilterLongScalarEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue == inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue == inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "=="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarEqualLongColumn() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarEqualLongColumn vectorExpression =
-      new FilterLongScalarEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue == inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue == inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "=="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarEqualLongColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarEqualLongColumn vectorExpression =
-      new FilterLongScalarEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue == inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue == inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "=="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarEqualLongColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarEqualLongColumn vectorExpression =
-      new FilterDoubleScalarEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue == inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue == inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "=="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarEqualLongColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarEqualLongColumn vectorExpression =
-      new FilterDoubleScalarEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue == inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue == inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "=="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarEqualLongColumn() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarEqualLongColumn vectorExpression =
-      new FilterDoubleScalarEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue == inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue == inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "=="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarEqualLongColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarEqualLongColumn vectorExpression =
-      new FilterDoubleScalarEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue == inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue == inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "=="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarNotEqualLongColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarNotEqualLongColumn vectorExpression =
-      new FilterLongScalarNotEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue != inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue != inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "!="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarNotEqualLongColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarNotEqualLongColumn vectorExpression =
-      new FilterLongScalarNotEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue != inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue != inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "!="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarNotEqualLongColumn() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarNotEqualLongColumn vectorExpression =
-      new FilterLongScalarNotEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue != inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue != inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "!="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarNotEqualLongColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarNotEqualLongColumn vectorExpression =
-      new FilterLongScalarNotEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue != inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue != inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "!="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarNotEqualLongColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarNotEqualLongColumn vectorExpression =
-      new FilterDoubleScalarNotEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue != inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue != inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "!="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarNotEqualLongColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarNotEqualLongColumn vectorExpression =
-      new FilterDoubleScalarNotEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue != inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue != inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "!="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarNotEqualLongColumn() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarNotEqualLongColumn vectorExpression =
-      new FilterDoubleScalarNotEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue != inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue != inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "!="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarNotEqualLongColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarNotEqualLongColumn vectorExpression =
-      new FilterDoubleScalarNotEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue != inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue != inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "!="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarLessLongColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarLessLongColumn vectorExpression =
-      new FilterLongScalarLessLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue < inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue < inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarLessLongColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarLessLongColumn vectorExpression =
-      new FilterLongScalarLessLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue < inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue < inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarLessLongColumn() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarLessLongColumn vectorExpression =
-      new FilterLongScalarLessLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue < inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue < inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarLessLongColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarLessLongColumn vectorExpression =
-      new FilterLongScalarLessLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue < inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue < inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarLessLongColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarLessLongColumn vectorExpression =
-      new FilterDoubleScalarLessLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue < inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue < inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarLessLongColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarLessLongColumn vectorExpression =
-      new FilterDoubleScalarLessLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue < inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue < inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarLessLongColumn() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarLessLongColumn vectorExpression =
-      new FilterDoubleScalarLessLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue < inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue < inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarLessLongColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarLessLongColumn vectorExpression =
-      new FilterDoubleScalarLessLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue < inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue < inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarLessEqualLongColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarLessEqualLongColumn vectorExpression =
-      new FilterLongScalarLessEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue <= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue <= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarLessEqualLongColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarLessEqualLongColumn vectorExpression =
-      new FilterLongScalarLessEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue <= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue <= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarLessEqualLongColumn() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarLessEqualLongColumn vectorExpression =
-      new FilterLongScalarLessEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue <= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue <= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarLessEqualLongColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarLessEqualLongColumn vectorExpression =
-      new FilterLongScalarLessEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue <= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue <= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarLessEqualLongColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarLessEqualLongColumn vectorExpression =
-      new FilterDoubleScalarLessEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue <= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue <= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarLessEqualLongColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarLessEqualLongColumn vectorExpression =
-      new FilterDoubleScalarLessEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue <= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue <= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarLessEqualLongColumn() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarLessEqualLongColumn vectorExpression =
-      new FilterDoubleScalarLessEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue <= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue <= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarLessEqualLongColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarLessEqualLongColumn vectorExpression =
-      new FilterDoubleScalarLessEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue <= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue <= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + "<="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarGreaterLongColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarGreaterLongColumn vectorExpression =
-      new FilterLongScalarGreaterLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue > inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue > inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarGreaterLongColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarGreaterLongColumn vectorExpression =
-      new FilterLongScalarGreaterLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue > inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue > inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarGreaterLongColumn() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarGreaterLongColumn vectorExpression =
-      new FilterLongScalarGreaterLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue > inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue > inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarGreaterLongColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarGreaterLongColumn vectorExpression =
-      new FilterLongScalarGreaterLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue > inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue > inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarGreaterLongColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarGreaterLongColumn vectorExpression =
-      new FilterDoubleScalarGreaterLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue > inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue > inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarGreaterLongColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarGreaterLongColumn vectorExpression =
-      new FilterDoubleScalarGreaterLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue > inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue > inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarGreaterLongColumn() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarGreaterLongColumn vectorExpression =
-      new FilterDoubleScalarGreaterLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue > inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue > inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarGreaterLongColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarGreaterLongColumn vectorExpression =
-      new FilterDoubleScalarGreaterLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue > inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue > inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">"
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarGreaterEqualLongColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarGreaterEqualLongColumn vectorExpression =
-      new FilterLongScalarGreaterEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue >= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue >= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarGreaterEqualLongColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarGreaterEqualLongColumn vectorExpression =
-      new FilterLongScalarGreaterEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue >= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue >= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarGreaterEqualLongColumn() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarGreaterEqualLongColumn vectorExpression =
-      new FilterLongScalarGreaterEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue >= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue >= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterLongScalarGreaterEqualLongColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    long scalarValue = 0;
-    do {
-      scalarValue = rand.nextLong();
-    } while(scalarValue == 0);
-
-    FilterLongScalarGreaterEqualLongColumn vectorExpression =
-      new FilterLongScalarGreaterEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue >= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue >= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarGreaterEqualLongColumnColNullsRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarGreaterEqualLongColumn vectorExpression =
-      new FilterDoubleScalarGreaterEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue >= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue >= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarGreaterEqualLongColumnColNulls() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(true,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarGreaterEqualLongColumn vectorExpression =
-      new FilterDoubleScalarGreaterEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue >= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue >= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarGreaterEqualLongColumn() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      false, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarGreaterEqualLongColumn vectorExpression =
-      new FilterDoubleScalarGreaterEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue >= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue >= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
-              i,
-              rowBatch.selected[selectedIndex]);
-            selectedIndex++;
-          }
-        }
-      }
-    }
-
-    assertEquals("Row batch size not set to number of selected rows: " + selectedIndex,
-      selectedIndex, rowBatch.size);
-
-    if(selectedIndex > 0 && selectedIndex < BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should be set when > 0 and < entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        true, rowBatch.selectedInUse);
-    } else if(selectedIndex == BATCH_SIZE) {
-      assertEquals(
-        "selectedInUse should not be set when entire batch(" + BATCH_SIZE + ") is selected: "
-        + selectedIndex,
-        false, rowBatch.selectedInUse);
-    }
-  }
-
-  @Test
-  public void testFilterDoubleScalarGreaterEqualLongColumnColRepeats() {
-
-    Random rand = new Random(SEED);
-
-    LongColumnVector inputColumnVector =
-      VectorizedRowGroupGenUtil.generateLongColumnVector(false,
-      true, BATCH_SIZE, rand);
-
-    VectorizedRowBatch rowBatch = new VectorizedRowBatch(1, BATCH_SIZE);
-    rowBatch.cols[0] = inputColumnVector;
-
-    double scalarValue = 0;
-    do {
-      scalarValue = rand.nextDouble();
-    } while(scalarValue == 0);
-
-    FilterDoubleScalarGreaterEqualLongColumn vectorExpression =
-      new FilterDoubleScalarGreaterEqualLongColumn(0, scalarValue);
-
-    vectorExpression.evaluate(rowBatch);
-
-    
-    int selectedIndex = 0;
-    int i=0;
-    //check for isRepeating optimization
-    if(inputColumnVector.isRepeating) {
-      //null vector is safe to check, as it is always initialized to match the data vector
-      selectedIndex =
-        !inputColumnVector.isNull[i] && scalarValue >= inputColumnVector.vector[i]
-          ? BATCH_SIZE : 0;
-    } else {
-      for(i = 0; i < BATCH_SIZE; i++) {
-        if(!inputColumnVector.isNull[i]) {
-          if(scalarValue >= inputColumnVector.vector[i]) {
-            assertEquals(
-              "Vector index that passes filter "
-              + scalarValue + ">="
-              + inputColumnVector.vector[i] + " is not in rowBatch selected index",
               i,
               rowBatch.selected[selectedIndex]);
             selectedIndex++;
