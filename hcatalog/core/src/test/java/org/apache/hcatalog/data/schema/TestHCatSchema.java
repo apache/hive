@@ -76,4 +76,21 @@ public class TestHCatSchema extends TestCase {
             assertTrue(iae.getMessage().contains("Field named memberID already exists"));
         }
     }
+    public void testRemoveAddField() throws HCatException {
+        List<HCatFieldSchema> fieldSchemaList = new ArrayList<HCatFieldSchema>();
+
+        fieldSchemaList.add(new HCatFieldSchema("memberID", HCatFieldSchema.Type.INT, "as a number"));
+        HCatFieldSchema locationField = new HCatFieldSchema("location", HCatFieldSchema.Type.STRING, "there's Waldo");
+        fieldSchemaList.add(locationField);
+        HCatSchema schema = new HCatSchema(fieldSchemaList);
+        schema.remove(locationField);
+        Integer position = schema.getPosition(locationField.getName());
+        assertTrue("position is not null after remove" , position == null);
+        try {
+            schema.append(locationField);
+        }
+        catch (HCatException ex) {
+            assertFalse(ex.getMessage(), true);
+        }
+    }
 }
