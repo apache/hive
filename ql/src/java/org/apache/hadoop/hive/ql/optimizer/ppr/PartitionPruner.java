@@ -88,8 +88,6 @@ public class PartitionPruner implements Transform {
     /* Move logic to PrunerUtils.walkOperatorTree() so that it can be reused. */
     PrunerUtils.walkOperatorTree(pctx, opWalkerCtx, OpProcFactory.getFilterProc(),
         OpProcFactory.getDefaultProc());
-    pctx.setHasNonPartCols(opWalkerCtx.getHasNonPartCols());
-
     return pctx;
   }
 

@@ -64,7 +64,6 @@ public final class ExprProcFactory extends PrunerExpressionOperatorFactory {
         newcd = cd.clone();
       } else {
         newcd = new ExprNodeConstantDesc(cd.getTypeInfo(), null);
-        epc.setHasNonPartCols(true);
       }
       return newcd;
     }
@@ -88,20 +87,16 @@ public final class ExprProcFactory extends PrunerExpressionOperatorFactory {
    * @param pred
    *          The predicate from which the partition pruner needs to be
    *          generated
-   * @return hasNonPartCols returns true/false depending upon whether this pred
-   *         has a non partition column
-   * @throws SemanticException
+   * @return The pruner expression.
    */
-  public static ExprNodeDesc genPruner(String tabAlias, ExprNodeDesc pred,
-      boolean hasNonPartCols) throws SemanticException {
+  public static ExprNodeDesc genPruner(
+      String tabAlias, ExprNodeDesc pred) throws SemanticException {
     // Create the walker, the rules dispatcher and the context.
     ExprProcCtx pprCtx = new ExprProcCtx(tabAlias);
 
     /* Move common logic to PrunerUtils.walkExprTree(...) so that it can be reused. */
     Map<Node, Object> outputMap = PrunerUtils.walkExprTree(pred, pprCtx, getColumnProcessor(),
         getFieldProcessor(), getGenericFuncProcessor(), getDefaultExprProcessor());
-
-    hasNonPartCols = pprCtx.getHasNonPartCols();
 
     // Get the exprNodeDesc corresponding to the first start node;
     return (ExprNodeDesc) outputMap.get(pred);
