@@ -57,6 +57,13 @@ public class TestHCatSchema extends TestCase {
         assertEquals(2, schema.getFields().size());
     }
 
+    public void testHashCodeEquals() throws HCatException {
+        HCatFieldSchema memberID1 = new HCatFieldSchema("memberID", HCatFieldSchema.Type.INT, "as a number");
+        HCatFieldSchema memberID2 = new HCatFieldSchema("memberID", HCatFieldSchema.Type.INT, "as a number");
+        assertTrue("Expected objects to be equal", memberID1.equals(memberID2));
+        assertTrue("Expected hash codes to be equal", memberID1.hashCode() == memberID2.hashCode());
+    }
+
     public void testCannotInstantiateSchemaWithRepeatedFieldNames() throws HCatException {
         List<HCatFieldSchema> fieldSchemaList = new ArrayList<HCatFieldSchema>();
 
