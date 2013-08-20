@@ -46,11 +46,11 @@ Retention:          	0
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
-	numFiles            	0                   
+	numFiles            	1                   
 	numPartitions       	0                   
 	numRows             	6                   
 	rawDataSize         	6                   
-	totalSize           	0                   
+	totalSize           	11                  
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -88,11 +88,11 @@ Retention:          	0
 Table Type:         	EXTERNAL_TABLE      	 
 Table Parameters:	 	 
 	EXTERNAL            	TRUE                
-	numFiles            	0                   
+	numFiles            	1                   
 	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
-	totalSize           	0                   
+	totalSize           	11                  
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
