@@ -17,11 +17,13 @@ STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test_orc
-PREHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT key FROM src limit 10
+PREHOOK: query: -- should be single split
+INSERT OVERWRITE TABLE test_orc SELECT key FROM src TABLESAMPLE (10 ROWS)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_orc
-POSTHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT key FROM src limit 10
+POSTHOOK: query: -- should be single split
+INSERT OVERWRITE TABLE test_orc SELECT key FROM src TABLESAMPLE (10 ROWS)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_orc
