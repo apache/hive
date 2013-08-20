@@ -6472,7 +6472,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       children[1] = alias;
       joinTree.setBaseSrc(children);
-      aliasToOpInfo.get(alias);
       joinTree.setId(qb.getId());
       joinTree.getAliasToOpInfo().put(
           getModifiedAlias(qb, alias), aliasToOpInfo.get(alias));
