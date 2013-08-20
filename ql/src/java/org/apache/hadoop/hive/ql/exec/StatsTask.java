@@ -19,12 +19,16 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.Serializable;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,12 +38,12 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
-import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
@@ -271,8 +275,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     try {
       // Stats setup:
       Warehouse wh = new Warehouse(conf);
-      FileSystem fileSys;
-      FileStatus[] fileStatus;
 
       if (!this.getWork().getNoStatsAggregator()) {
         String statsImplementationClass = HiveConf.getVar(conf, HiveConf.ConfVars.HIVESTATSDBCLASS);
@@ -322,16 +324,9 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         if (!tableStatsExist && atomic) {
           return 0;
         }
-        Path tablePath = wh.getTablePath(db.getDatabase(table.getDbName()), table.getTableName());
-        fileSys = tablePath.getFileSystem(conf);
-        fileStatus = Utilities.getFileStatusRecurse(tablePath, 1, fileSys);
-
-        tblStats.setStat(StatsSetupConst.NUM_FILES, fileStatus.length);
-        long tableSize = 0L;
-        for (int i = 0; i < fileStatus.length; i++) {
-          tableSize += fileStatus[i].getLen();
-        }
-        tblStats.setStat(StatsSetupConst.TOTAL_SIZE, tableSize);
+        long[] summary = summary(conf, table);
+        tblStats.setStat(StatsSetupConst.NUM_FILES, summary[0]);
+        tblStats.setStat(StatsSetupConst.TOTAL_SIZE, summary[1]);
 
         // In case of a non-partitioned table, the key for stats temporary store is "rootDir"
         if (statsAggregator != null) {
@@ -403,18 +398,9 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
             }
           }
 
-          fileSys = partn.getPartitionPath().getFileSystem(conf);
-          /* consider sub-directory created from list bucketing. */
-          int listBucketingDepth = calculateListBucketingDMLDepth(partn);
-          fileStatus = Utilities.getFileStatusRecurse(partn.getPartitionPath(),
-              (1 + listBucketingDepth), fileSys);
-          newPartStats.setStat(StatsSetupConst.NUM_FILES, fileStatus.length);
-
-          long partitionSize = 0L;
-          for (int i = 0; i < fileStatus.length; i++) {
-            partitionSize += fileStatus[i].getLen();
-          }
-          newPartStats.setStat(StatsSetupConst.TOTAL_SIZE, partitionSize);
+          long[] summary = summary(conf, partn);
+          newPartStats.setStat(StatsSetupConst.NUM_FILES, summary[0]);
+          newPartStats.setStat(StatsSetupConst.TOTAL_SIZE, summary[1]);
 
           if (hasStats) {
             PartitionStatistics oldPartStats = new PartitionStatistics(currentValues);
@@ -478,26 +464,103 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     return ret;
   }
 
-  /**
-   * List bucketing will introduce sub-directories.
-   *
-   * calculate it here in order to go to the leaf directory
-   *
-   * so that we can count right number of files.
-   *
-   * @param partn
-   * @return
-   */
-  private int calculateListBucketingDMLDepth(Partition partn) {
-    // list bucketing will introduce more files
-    int listBucketingDepth = 0;
-    if ((partn.getSkewedColNames() != null) && (partn.getSkewedColNames().size() > 0)
-        && (partn.getSkewedColValues() != null) && (partn.getSkewedColValues().size() > 0)
-        && (partn.getSkewedColValueLocationMaps() != null)
-        && (partn.getSkewedColValueLocationMaps().size() > 0)) {
-      listBucketingDepth = partn.getSkewedColNames().size();
+  private long[] summary(HiveConf conf, Partition partn) throws IOException {
+    Path path = partn.getPartitionPath();
+    FileSystem fs = path.getFileSystem(conf);
+    List<String> skewedColNames = partn.getSkewedColNames();
+    if (skewedColNames == null || skewedColNames.isEmpty()) {
+      return summary(fs, path);
     }
-    return listBucketingDepth;
+    List<List<String>> skewColValues = table.getSkewedColValues();
+    if (skewColValues == null || skewColValues.isEmpty()) {
+      return summary(fs, toDefaultLBPath(path));
+    }
+    return summary(fs, path, skewedColNames);
+  }
+
+  private long[] summary(HiveConf conf, Table table) throws IOException {
+    Path path = table.getPath();
+    FileSystem fs = path.getFileSystem(conf);
+    List<String> skewedColNames = table.getSkewedColNames();
+    if (skewedColNames == null || skewedColNames.isEmpty()) {
+      return summary(fs, path);
+    }
+    List<List<String>> skewColValues = table.getSkewedColValues();
+    if (skewColValues == null || skewColValues.isEmpty()) {
+      return summary(fs, toDefaultLBPath(path));
+    }
+    return summary(fs, path, table.getSkewedColNames());
+  }
+
+  private Path toDefaultLBPath(Path path) {
+    return new Path(path, ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME);
+  }
+
+  private long[] summary(FileSystem fs, Path path) throws IOException {
+    try {
+      FileStatus status = fs.getFileStatus(path);
+      if (!status.isDir()) {
+        return new long[] {1, status.getLen()};
+      }
+    } catch (FileNotFoundException e) {
+      return new long[] {0, 0};
+    }
+    FileStatus[] children = fs.listStatus(path);  // can be null
+    if (children == null) {
+      return new long[] {0, 0};
+    }
+    long numFiles = 0L;
+    long tableSize = 0L;
+    for (FileStatus child : children) {
+      if (!child.isDir()) {
+        tableSize += child.getLen();
+        numFiles++;
+      }
+    }
+    return new long[] {numFiles, tableSize};
+  }
+
+  private Pattern toPattern(List<String> skewCols) {
+    StringBuilder builder = new StringBuilder();
+    for (String skewCol : skewCols) {
+      if (builder.length() > 0) {
+        builder.append(Path.SEPARATOR_CHAR);
+      }
+      builder.append(skewCol).append('=');
+      builder.append("[^").append(Path.SEPARATOR_CHAR).append("]*");
+    }
+    builder.append(Path.SEPARATOR_CHAR);
+    builder.append("[^").append(Path.SEPARATOR_CHAR).append("]*$");
+    return Pattern.compile(builder.toString());
+  }
+
+  private long[] summary(FileSystem fs, Path path, List<String> skewCols) throws IOException {
+    long numFiles = 0L;
+    long tableSize = 0L;
+    Pattern pattern = toPattern(skewCols);
+    for (FileStatus status : Utilities.getFileStatusRecurse(path, skewCols.size() + 1, fs)) {
+      if (status.isDir()) {
+        continue;
+      }
+      String relative = toRelativePath(path, status.getPath());
+      if (relative == null) {
+        continue;
+      }
+      if (relative.startsWith(ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME) ||
+        pattern.matcher(relative).matches()) {
+        tableSize += status.getLen();
+        numFiles++;
+      }
+    }
+    return new long[] {numFiles, tableSize};
+  }
+
+  private String toRelativePath(Path path1, Path path2) {
+    URI relative = path1.toUri().relativize(path2.toUri());
+    if (relative == path2.toUri()) {
+      return null;
+    }
+    return relative.getPath();
   }
 
   private boolean existStats(Map<String, String> parameters) {
