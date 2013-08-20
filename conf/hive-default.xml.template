@@ -1948,8 +1948,13 @@
 <property>
   <name>hive.server2.thrift.sasl.qop</name>
   <value>auth</auth>
-  <description>Sasl QOP value; one of 'auth', 'auth-int' and 'auth-conf'</description>
+  <description>Sasl QOP value; Set it to one of following values to enable higher levels of
+     protection for hive server2 communication with clients.
+      "auth" - authentication only (default)
+      "auth-int" - authentication plus integrity protection
+      "auth-conf" - authentication plus integrity and confidentiality protection
+     This is applicable only hive server2 is configured to use kerberos authentication.
+ </description>
 </property>
 
 </configuration>
-
