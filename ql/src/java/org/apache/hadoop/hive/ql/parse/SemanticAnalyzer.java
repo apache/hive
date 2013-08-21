@@ -71,7 +71,6 @@ import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.WindowFunctionInfo;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
@@ -360,29 +359,39 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private LinkedHashMap<String, ASTNode> doPhase1GetAggregationsFromSelect(
-      ASTNode selExpr, QB qb, String dest) {
+      ASTNode selExpr, QB qb, String dest) throws SemanticException {
 
     // Iterate over the selects search for aggregation Trees.
     // Use String as keys to eliminate duplicate trees.
     LinkedHashMap<String, ASTNode> aggregationTrees = new LinkedHashMap<String, ASTNode>();
+    List<ASTNode> wdwFns = new ArrayList<ASTNode>();
     for (int i = 0; i < selExpr.getChildCount(); ++i) {
-      ASTNode sel = (ASTNode) selExpr.getChild(i);
-      doPhase1GetAllAggregations((ASTNode) sel.getChild(0), aggregationTrees);
+      ASTNode function = (ASTNode) selExpr.getChild(i).getChild(0);
+      doPhase1GetAllAggregations((ASTNode) function, aggregationTrees, wdwFns);
     }
 
-    /*
-     * remove any aggregation to be handled by Windowing.
-     */
-    if ( queryProperties.hasWindowing() && qb.getWindowingSpec(dest) != null ) {
-      HashMap<String, ASTNode> aliasToWdwExprs = qb.getParseInfo().getWindowingExprsForClause(dest);
-      LinkedHashMap<String, ASTNode> aggTreesMinusWindowing = new LinkedHashMap<String, ASTNode>();
-      for(Map.Entry<String,ASTNode> entry : aggregationTrees.entrySet()) {
-        if ( !aliasToWdwExprs.containsKey(entry.getKey())) {
-          aggTreesMinusWindowing.put(entry.getKey(), entry.getValue());
-        }
+    // window based aggregations are handled differently
+    for (ASTNode wdwFn : wdwFns) {
+      WindowingSpec spec = qb.getWindowingSpec(dest);
+      if(spec == null) {
+        queryProperties.setHasWindowing(true);
+        spec = new WindowingSpec();
+        qb.addDestToWindowingSpec(dest, spec);
       }
-      aggregationTrees = aggTreesMinusWindowing;
+      HashMap<String, ASTNode> wExprsInDest = qb.getParseInfo().getWindowingExprsForClause(dest);
+      int wColIdx = spec.getWindowExpressions() == null ? 0 : spec.getWindowExpressions().size();
+      WindowFunctionSpec wFnSpec = processWindowFunction(wdwFn,
+        (ASTNode)wdwFn.getChild(wdwFn.getChildCount()-1));
+      // If this is a duplicate invocation of a function; don't add to WindowingSpec.
+      if ( wExprsInDest != null &&
+          wExprsInDest.containsKey(wFnSpec.getExpression().toStringTree())) {
+        continue;
+      }
+      wFnSpec.setAlias("_wcol" + wColIdx++);
+      spec.addWindowFunction(wFnSpec);
+      qb.getParseInfo().addWindowingExprToClause(dest, wFnSpec.getExpression());
     }
+
     return aggregationTrees;
   }
 
@@ -406,18 +415,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @param aggregations
    *          the key to the HashTable is the toStringTree() representation of
    *          the aggregation subtree.
+   * @throws SemanticException
    */
   private void doPhase1GetAllAggregations(ASTNode expressionTree,
-      HashMap<String, ASTNode> aggregations) {
+      HashMap<String, ASTNode> aggregations, List<ASTNode> wdwFns) throws SemanticException {
     int exprTokenType = expressionTree.getToken().getType();
     if (exprTokenType == HiveParser.TOK_FUNCTION
         || exprTokenType == HiveParser.TOK_FUNCTIONDI
         || exprTokenType == HiveParser.TOK_FUNCTIONSTAR) {
       assert (expressionTree.getChildCount() != 0);
+      if (expressionTree.getChild(expressionTree.getChildCount()-1).getType()
+          == HiveParser.TOK_WINDOWSPEC) {
+        wdwFns.add(expressionTree);
+        return;
+      }
       if (expressionTree.getChild(0).getType() == HiveParser.Identifier) {
         String functionName = unescapeIdentifier(expressionTree.getChild(0)
             .getText());
+        if(FunctionRegistry.impliesOrder(functionName)) {
+          throw new SemanticException(ErrorMsg.MISSING_OVER_CLAUSE.getMsg(functionName));
+        }
         if (FunctionRegistry.getGenericUDAFResolver(functionName) != null) {
+          if(containsLeadLagUDF(expressionTree)) {
+            throw new SemanticException(ErrorMsg.MISSING_OVER_CLAUSE.getMsg(functionName));
+          }
           aggregations.put(expressionTree.toStringTree(), expressionTree);
           FunctionInfo fi = FunctionRegistry.getFunctionInfo(functionName);
           if (!fi.isNative()) {
@@ -430,7 +451,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     for (int i = 0; i < expressionTree.getChildCount(); i++) {
       doPhase1GetAllAggregations((ASTNode) expressionTree.getChild(i),
-          aggregations);
+          aggregations, wdwFns);
     }
   }
 
@@ -767,8 +788,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (((ASTNode) ast.getChild(0)).getToken().getType() == HiveParser.TOK_HINTLIST) {
           qbp.setHints((ASTNode) ast.getChild(0));
         }
-
-        handleWindowingExprsInSelectList(qb, ctx_1.dest, ast);
 
         LinkedHashMap<String, ASTNode> aggregations = doPhase1GetAggregationsFromSelect(ast,
             qb, ctx_1.dest);
@@ -9484,159 +9503,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     qb.addPTFNodeToSpec(ptf, spec);
   }
 
-//--------------------------- Windowing handling -----------------------------------
-
-  /*
-   * - A Select Item form is: ^(TOK_SELEXPR selectExpression Identifier* window_specification?)
-   * What makes a UDAF invocation a Windowing Function invocation:
-   * 1. It appears in a SelectExpr that as a WindowSpec
-   * 2. It is a UDAF that implies order (FunctionRegistry.impliesOrder)
-   * 3. It contains lead/lag UDF invocations in its args.
-   */
-  private boolean checkAndExtractWindowFunctionsInSelect(QB qb, ASTNode selectExpr, String dest)
-      throws SemanticException {
-
-    int childCount = selectExpr.getChildCount();
-    ASTNode windowSpec = (ASTNode) selectExpr.getChild(childCount - 1);
-
-    boolean hasWindowSpec = windowSpec.getType() == HiveParser.TOK_WINDOWSPEC;
-
-    ArrayList<ASTNode> functions =
-        extractWindowingUDAFs((ASTNode) selectExpr.getChild(0), !hasWindowSpec);
-    if ( functions.size() == 0 ) {
-      return false;
-    }
-
-    WindowingSpec spec = qb.getWindowingSpec(dest);
-    if(spec == null) {
-      queryProperties.setHasWindowing(true);
-      spec = new WindowingSpec();
-      qb.addDestToWindowingSpec(dest, spec);
-    }
-
-    HashMap<String, ASTNode> wExprsInDest = qb.getParseInfo().getWindowingExprsForClause(dest);
-    int wColIdx = spec.getWindowExpressions() == null ? 0 : spec.getWindowExpressions().size();
-    for(ASTNode function : functions) {
-      WindowFunctionSpec wFnSpec = processWindowFunction(function,
-          hasWindowSpec ? windowSpec : null);
-
-      /*
-       * If this is a duplicate invocation of a function; don't add to WindowingSpec.
-       */
-      if ( wExprsInDest != null &&
-          wExprsInDest.containsKey(wFnSpec.getExpression().toStringTree())) {
-        continue;
-      }
-      wFnSpec.setAlias("_wcol" + wColIdx++);
-      spec.addWindowFunction(wFnSpec);
-      qb.getParseInfo().addWindowingExprToClause(dest, wFnSpec.getExpression());
-    }
-    return true;
-  }
-
-  /*
-   * return the UDAFs within the expressionTree.
-   * If implyOrder is true, then only return the invocations that:
-   * - are for UDAFs that implyOrder (FunctionRegistry.implyOrder)
-   * - or contain a Lead/Lag UDF invocation in their arguments
-   * If implyOrder is false, then return all UDAF invocations.
-   */
-  private ArrayList<ASTNode> extractWindowingUDAFs(ASTNode expressionTree, boolean implyOrder) {
-    ArrayList<ASTNode> aggregations = new ArrayList<ASTNode>();
-    extractWindowingUDAFs(expressionTree, aggregations);
-    if (!implyOrder) {
-      return aggregations;
-    }
-    ArrayList<ASTNode> wdwUDAFs = new ArrayList<ASTNode>();
-    for(ASTNode function : aggregations) {
-      String fnName = function.getChild(0).getText().toLowerCase();
-      if ( FunctionRegistry.impliesOrder(fnName)) {
-        wdwUDAFs.add(function);
-        continue;
-      }
-      boolean hasLLInArgs = false;
-      for(int i=1; i < function.getChildCount(); i++) {
-        ASTNode child = (ASTNode) function.getChild(i);
-        hasLLInArgs = containsLeadLagUDF(child);
-        if (hasLLInArgs) {
-          break;
-        }
-      }
-      if (hasLLInArgs) {
-        wdwUDAFs.add(function);
-      }
-    }
-    return wdwUDAFs;
-  }
-
-  private void extractWindowingUDAFs(ASTNode expressionTree,
-      ArrayList<ASTNode> aggregations) {
-    int exprTokenType = expressionTree.getToken().getType();
-    if (exprTokenType == HiveParser.TOK_FUNCTION
-        || exprTokenType == HiveParser.TOK_FUNCTIONDI
-        || exprTokenType == HiveParser.TOK_FUNCTIONSTAR) {
-      assert (expressionTree.getChildCount() != 0);
-      if (expressionTree.getChild(0).getType() == HiveParser.Identifier) {
-        String functionName = unescapeIdentifier(expressionTree.getChild(0)
-            .getText());
-        WindowFunctionInfo fi = FunctionRegistry.getWindowFunctionInfo(functionName);
-        if (fi != null) {
-          aggregations.add(expressionTree);
-          return;
-        }
-      }
-    }
-    for (int i = 0; i < expressionTree.getChildCount(); i++) {
-      extractWindowingUDAFs((ASTNode) expressionTree.getChild(i),
-          aggregations);
-    }
-  }
-
-  private boolean containsLeadLagUDF(ASTNode expressionTree) {
-    int exprTokenType = expressionTree.getToken().getType();
-    if (exprTokenType == HiveParser.TOK_FUNCTION) {
-      assert (expressionTree.getChildCount() != 0);
-      if (expressionTree.getChild(0).getType() == HiveParser.Identifier) {
-        String functionName = unescapeIdentifier(expressionTree.getChild(0)
-            .getText());
-        functionName = functionName.toLowerCase();
-        if ( FunctionRegistry.LAG_FUNC_NAME.equals(functionName) ||
-            FunctionRegistry.LEAD_FUNC_NAME.equals(functionName)
-            ) {
-          return true;
-        }
-      }
-    }
-    for (int i = 0; i < expressionTree.getChildCount(); i++) {
-      if ( containsLeadLagUDF((ASTNode) expressionTree.getChild(i))) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  /*
-   * - Invoked during Phase1 when a TOK_SELECT is encountered.
-   * - Select tree form is: ^(TOK_SELECT ^(TOK_SELECTEXPR...) ^(TOK_SELECTEXPR...) ...)
-   * - A Select Item form is: ^(TOK_SELEXPR selectExpression Identifier* window_specification?)
-   *
-   * See checkAndExtractWindowFunctionsInSelect for rules on what makes a UDAF invocation
-   * a Windowing Function invocation
-   */
-  private void handleWindowingExprsInSelectList(QB qb, String dest, ASTNode selectNode)
-      throws SemanticException {
-    for(int i=0; i < selectNode.getChildCount(); i++)
-    {
-      ASTNode selectExpr = (ASTNode) selectNode.getChild(i);
-      if ( selectExpr.getType() != HiveParser.TOK_SELEXPR )
-      {
-        continue;
-      }
-      boolean hasWindowingExprs = checkAndExtractWindowFunctionsInSelect(qb, selectExpr, dest);
-
-    }
-  }
-
   private void handleQueryWindowClauses(QB qb, Phase1Ctx ctx_1, ASTNode node)
       throws SemanticException {
     WindowingSpec spec = qb.getWindowingSpec(ctx_1.dest);
@@ -9723,7 +9589,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ASTNode nameNode = (ASTNode) node.getChild(0);
     wfSpec.setName(nameNode.getText());
 
-    for(int i=1; i < node.getChildCount(); i++) {
+    for(int i=1; i < node.getChildCount()-1; i++) {
       ASTNode child = (ASTNode) node.getChild(i);
       wfSpec.addArg(child);
     }
@@ -9733,16 +9599,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       wfSpec.setWindowSpec(ws);
     }
 
-    /*
-     * In order to distinguish between different UDAF invocations on the same UDAF but different Windows
-     * add the WdwSpec node as a child of the Function Node.
-     * It is safe to do this after the function node has been converetd to a WdwFuncSpec.
-     */
-    if ( wsNode != null ) {
-      node.addChild(wsNode);
-    }
-
     return wfSpec;
+  }
+
+  private boolean containsLeadLagUDF(ASTNode expressionTree) {
+    int exprTokenType = expressionTree.getToken().getType();
+    if (exprTokenType == HiveParser.TOK_FUNCTION) {
+      assert (expressionTree.getChildCount() != 0);
+      if (expressionTree.getChild(0).getType() == HiveParser.Identifier) {
+        String functionName = unescapeIdentifier(expressionTree.getChild(0)
+            .getText());
+        functionName = functionName.toLowerCase();
+        if ( FunctionRegistry.LAG_FUNC_NAME.equals(functionName) ||
+            FunctionRegistry.LEAD_FUNC_NAME.equals(functionName)
+            ) {
+          return true;
+        }
+      }
+    }
+    for (int i = 0; i < expressionTree.getChildCount(); i++) {
+      if ( containsLeadLagUDF((ASTNode) expressionTree.getChild(i))) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private void processQueryWindowClause(WindowingSpec spec, ASTNode node)

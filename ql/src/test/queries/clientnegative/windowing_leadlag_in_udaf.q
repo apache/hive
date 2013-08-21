@@ -12,10 +12,4 @@ CREATE TABLE part(
     p_comment STRING
 );
 
--- testWhereWithRankCond
-select  p_mfgr,p_name, p_size, 
-rank() over() as r 
-from part 
-where r < 4 
-distribute by p_mfgr 
-sort by p_mfgr;
+select sum(lead(p_retailprice,1)) as s1  from part;
