@@ -218,14 +218,14 @@ group by p_mfgr, p_brand;
 select * 
 from (
 select p_mfgr, p_brand, s, 
-round(sum(s),2) over w1  as s1
+round(sum(s) over w1 , 2)  as s1
 from mfgr_price_view 
 window w1 as (distribute by p_mfgr sort by p_mfgr )
 ) sq
 order by p_mfgr, p_brand;
 
 select p_mfgr, p_brand, s, 
-round(sum(s),2) over w1  as s1
+round(sum(s) over w1 ,2)  as s1
 from mfgr_price_view 
 window w1 as (distribute by p_mfgr sort by p_brand rows between 2 preceding and current row);
 
@@ -283,7 +283,7 @@ select  p_mfgr,p_name, p_size,
 rank() over(distribute by p_mfgr sort by p_name) as r, 
 dense_rank() over(distribute by p_mfgr sort by p_name) as dr, 
 cume_dist() over(distribute by p_mfgr sort by p_name) as cud, 
-round(sum(p_size),1) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row) as s2, 
+round(sum(p_size) over (distribute by p_mfgr sort by p_size range between 5 preceding and current row),1) as s2, 
 first_value(p_size) over w1  as fv1
 window w1 as (distribute by p_mfgr sort by p_mfgr, p_name rows between 2 preceding and 2 following) 
 INSERT OVERWRITE TABLE part_3 
@@ -387,10 +387,10 @@ from part;
 
 -- 37. testPartitioningVariousForms
 select p_mfgr,
-round(sum(p_retailprice),2) over (partition by p_mfgr order by p_mfgr) as s1,
+round(sum(p_retailprice) over (partition by p_mfgr order by p_mfgr),2) as s1,
 min(p_retailprice) over (partition by p_mfgr) as s2,
 max(p_retailprice) over (distribute by p_mfgr sort by p_mfgr) as s3,
-round(avg(p_retailprice),2) over (distribute by p_mfgr) as s4,
+round(avg(p_retailprice) over (distribute by p_mfgr),2) as s4,
 count(p_retailprice) over (cluster by p_mfgr ) as s5
 from part;
 
@@ -428,7 +428,7 @@ select p_mfgr, p_name, p_size,
         
 -- 44. testOverNoPartitionSingleAggregate
 select p_name, p_retailprice,
-round(avg(p_retailprice),2) over()
+round(avg(p_retailprice) over(),2)
 from part
 order by p_name;
         

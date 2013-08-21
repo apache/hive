@@ -27,4 +27,4 @@ POSTHOOK: query: CREATE TABLE part(
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@part
-FAILED: SemanticException HAVING specified without GROUP BY
+FAILED: SemanticException [Error 10247]: Missing over clause for function :  sum
