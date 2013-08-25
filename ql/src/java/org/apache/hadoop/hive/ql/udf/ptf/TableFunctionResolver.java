@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.udf.ptf;
 import java.util.ArrayList;
 
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -69,16 +68,11 @@ public abstract class TableFunctionResolver
       throws SemanticException
   {
     this.ptfDesc = ptfDesc;
-    String partitionClass = HiveConf.getVar(cfg, ConfVars.HIVE_PTF_PARTITION_PERSISTENCE_CLASS);
-    int partitionMemSize = HiveConf.getIntVar(cfg, ConfVars.HIVE_PTF_PARTITION_PERSISTENT_SIZE);
 
     evaluator = createEvaluator(ptfDesc, tDef);
     evaluator.setTransformsRawInput(transformsRawInput());
     evaluator.setTableDef(tDef);
     evaluator.setQueryDef(ptfDesc);
-    evaluator.setPartitionClass(partitionClass);
-    evaluator.setPartitionMemSize(partitionMemSize);
-
   }
 
   /*

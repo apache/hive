@@ -194,7 +194,7 @@ public abstract class GenericUDFLeadLag extends GenericUDF
 
 	protected abstract String _getFnName();
 
-	protected abstract Object getRow(int amt);
+	protected abstract Object getRow(int amt) throws HiveException;
 
 	protected abstract int getIndex(int amt);
 
@@ -214,7 +214,7 @@ public abstract class GenericUDFLeadLag extends GenericUDF
 		}
 
 		@Override
-		protected Object getRow(int amt)
+		protected Object getRow(int amt) throws HiveException
 		{
 			return pItr.lead(amt - 1);
 		}
@@ -236,7 +236,7 @@ public abstract class GenericUDFLeadLag extends GenericUDF
     }
 
 		@Override
-		protected Object getRow(int amt)
+		protected Object getRow(int amt) throws HiveException
 		{
 			return pItr.lag(amt + 1);
 		}
