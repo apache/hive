@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.exec.WindowFunctionInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderExpression;
@@ -131,6 +132,7 @@ public class PTFTranslator {
     init(semAly, hCfg, inputRR, unparseT);
     ptfInvocation = qSpec;
     ptfDesc = new PTFDesc();
+    ptfDesc.setCfg(hCfg);
     ptfDesc.setLlInfo(llInfo);
     translatePTFChain();
     return ptfDesc;
@@ -143,6 +145,7 @@ public class PTFTranslator {
     init(semAly, hCfg, inputRR, unparseT);
     windowingSpec = wdwSpec;
     ptfDesc = new PTFDesc();
+    ptfDesc.setCfg(hCfg);
     ptfDesc.setLlInfo(llInfo);
     WindowTableFunctionDef wdwTFnDef = new WindowTableFunctionDef();
     ptfDesc.setFuncDef(wdwTFnDef);
@@ -693,7 +696,8 @@ public class PTFTranslator {
 
     try {
       serde = PTFTranslator.createLazyBinarySerDe(hCfg, OI, serdePropsMap);
-      shp.setOI((StructObjectInspector) serde.getObjectInspector());
+      StructObjectInspector outOI = PTFPartition.setupPartitionOutputOI(serde, OI);
+      shp.setOI(outOI);
     } catch (SerDeException se) {
       throw new SemanticException(se);
     }

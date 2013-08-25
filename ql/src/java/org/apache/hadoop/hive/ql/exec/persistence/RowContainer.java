@@ -30,8 +30,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -142,7 +142,7 @@ public class RowContainer<ROW extends List<Object>> extends AbstractRowContainer
       this.reporter = reporter;
     }
   }
-  
+
   private JobConf getLocalFSJobConfClone(Configuration jc) {
     if (this.jobCloneUsingLocalFs == null) {
       this.jobCloneUsingLocalFs = new JobConf(jc);
@@ -160,7 +160,7 @@ public class RowContainer<ROW extends List<Object>> extends AbstractRowContainer
   @Override
   public void add(ROW t) throws HiveException {
     if (this.tblDesc != null) {
-      if (addCursor >= blockSize) { // spill the current block to tmp file
+      if (willSpill()) { // spill the current block to tmp file
         spillBlock(currentWriteBlock, addCursor);
         addCursor = 0;
         if (numFlushedBlocks == 1) {
@@ -221,7 +221,7 @@ public class RowContainer<ROW extends List<Object>> extends AbstractRowContainer
           localJc, reporter);
         currentSplitPointer++;
 
-        nextBlock();
+        nextBlock(0);
       }
       // we are guaranteed that we can get data here (since 'size' is not zero)
       ROW ret = currentReadBlock[itrCursor++];
@@ -258,13 +258,10 @@ public class RowContainer<ROW extends List<Object>> extends AbstractRowContainer
       removeKeys(ret);
       return ret;
     } else {
-      nextBlock();
+      nextBlock(0);
       if (this.readBlockSize == 0) {
         if (currentWriteBlock != null && currentReadBlock != currentWriteBlock) {
-          this.itrCursor = 0;
-          this.readBlockSize = this.addCursor;
-          this.firstReadBlockPointer = this.currentReadBlock;
-          currentReadBlock = currentWriteBlock;
+          setWriteBlockAsReadBlock();
         } else {
           return null;
         }
@@ -288,36 +285,7 @@ public class RowContainer<ROW extends List<Object>> extends AbstractRowContainer
   private void spillBlock(ROW[] block, int length) throws HiveException {
     try {
       if (tmpFile == null) {
-
-        String suffix = ".tmp";
-        if (this.keyObject != null) {
-          suffix = "." + this.keyObject.toString() + suffix;
-        }
-
-        while (true) {
-          parentFile = File.createTempFile("hive-rowcontainer", "");
-          boolean success = parentFile.delete() && parentFile.mkdir();
-          if (success) {
-            break;
-          }
-          LOG.debug("retry creating tmp row-container directory...");
-        }
-
-        tmpFile = File.createTempFile("RowContainer", suffix, parentFile);
-        LOG.info("RowContainer created temp file " + tmpFile.getAbsolutePath());
-        // Delete the temp file if the JVM terminate normally through Hadoop job
-        // kill command.
-        // Caveat: it won't be deleted if JVM is killed by 'kill -9'.
-        parentFile.deleteOnExit();
-        tmpFile.deleteOnExit();
-
-        // rFile = new RandomAccessFile(tmpFile, "rw");
-        HiveOutputFormat<?, ?> hiveOutputFormat = tblDesc.getOutputFileFormatClass().newInstance();
-        tempOutPath = new Path(tmpFile.toString());
-        JobConf localJc = getLocalFSJobConfClone(jc);
-        rw = HiveFileFormatUtils.getRecordWriter(this.jobCloneUsingLocalFs,
-            hiveOutputFormat, serde.getSerializedClass(), false,
-            tblDesc.getProperties(), tempOutPath, reporter);
+        setupWriter();
       } else if (rw == null) {
         throw new HiveException("RowContainer has already been closed for writing.");
       }
@@ -350,6 +318,9 @@ public class RowContainer<ROW extends List<Object>> extends AbstractRowContainer
     } catch (Exception e) {
       clear();
       LOG.error(e.toString(), e);
+      if ( e instanceof HiveException ) {
+        throw (HiveException) e;
+      }
       throw new HiveException(e);
     }
   }
@@ -364,7 +335,7 @@ public class RowContainer<ROW extends List<Object>> extends AbstractRowContainer
     return size;
   }
 
-  private boolean nextBlock() throws HiveException {
+  protected boolean nextBlock(int readIntoOffset) throws HiveException {
     itrCursor = 0;
     this.readBlockSize = 0;
     if (this.numFlushedBlocks == 0) {
@@ -376,7 +347,7 @@ public class RowContainer<ROW extends List<Object>> extends AbstractRowContainer
         val = serde.getSerializedClass().newInstance();
       }
       boolean nextSplit = true;
-      int i = 0;
+      int i = readIntoOffset;
 
       if (rr != null) {
         Object key = rr.createKey();
@@ -393,7 +364,7 @@ public class RowContainer<ROW extends List<Object>> extends AbstractRowContainer
         rr = inputFormat.getRecordReader(inputSplits[currentSplitPointer], jobCloneUsingLocalFs,
             reporter);
         currentSplitPointer++;
-        return nextBlock();
+        return nextBlock(0);
       }
 
       this.readBlockSize = i;
@@ -502,6 +473,121 @@ public class RowContainer<ROW extends List<Object>> extends AbstractRowContainer
 
   public void setTableDesc(TableDesc tblDesc) {
     this.tblDesc = tblDesc;
+  }
+
+  protected int getAddCursor() {
+    return addCursor;
+  }
+
+  protected final boolean willSpill() {
+    return addCursor >= blockSize;
+  }
+
+  protected int getBlockSize() {
+    return blockSize;
+  }
+
+  protected void setupWriter() throws HiveException {
+    try {
+
+      if ( tmpFile != null ) {
+        return;
+      }
+
+      String suffix = ".tmp";
+      if (this.keyObject != null) {
+        suffix = "." + this.keyObject.toString() + suffix;
+      }
+
+      while (true) {
+        parentFile = File.createTempFile("hive-rowcontainer", "");
+        boolean success = parentFile.delete() && parentFile.mkdir();
+        if (success) {
+          break;
+        }
+        LOG.debug("retry creating tmp row-container directory...");
+      }
+
+      tmpFile = File.createTempFile("RowContainer", suffix, parentFile);
+      LOG.info("RowContainer created temp file " + tmpFile.getAbsolutePath());
+      // Delete the temp file if the JVM terminate normally through Hadoop job
+      // kill command.
+      // Caveat: it won't be deleted if JVM is killed by 'kill -9'.
+      parentFile.deleteOnExit();
+      tmpFile.deleteOnExit();
+
+      // rFile = new RandomAccessFile(tmpFile, "rw");
+      HiveOutputFormat<?, ?> hiveOutputFormat = tblDesc.getOutputFileFormatClass().newInstance();
+      tempOutPath = new Path(tmpFile.toString());
+      JobConf localJc = getLocalFSJobConfClone(jc);
+      rw = HiveFileFormatUtils.getRecordWriter(this.jobCloneUsingLocalFs,
+          hiveOutputFormat, serde.getSerializedClass(), false,
+          tblDesc.getProperties(), tempOutPath, reporter);
+    } catch (Exception e) {
+      clear();
+      LOG.error(e.toString(), e);
+      throw new HiveException(e);
+    }
+
+  }
+
+  protected RecordWriter getRecordWriter() {
+    return rw;
+  }
+
+  protected InputSplit[] getInputSplits() {
+    return inputSplits;
+  }
+
+  protected boolean endOfCurrentReadBlock() {
+    if (tblDesc == null) {
+      return false;
+    }
+    return itrCursor >= this.readBlockSize;
+  }
+
+  protected int getCurrentReadBlockSize() {
+    return readBlockSize;
+  }
+
+  protected void setWriteBlockAsReadBlock() {
+    this.itrCursor = 0;
+    this.readBlockSize = this.addCursor;
+    this.firstReadBlockPointer = this.currentReadBlock;
+    currentReadBlock = currentWriteBlock;
+  }
+
+  protected org.apache.hadoop.mapred.RecordReader setReaderAtSplit(int splitNum)
+      throws IOException {
+    JobConf localJc = getLocalFSJobConfClone(jc);
+    currentSplitPointer = splitNum;
+    if ( rr != null ) {
+      rr.close();
+    }
+    // open record reader to read next split
+    rr = inputFormat.getRecordReader(inputSplits[currentSplitPointer], jobCloneUsingLocalFs,
+        reporter);
+    currentSplitPointer++;
+    return rr;
+  }
+
+  protected ROW getReadBlockRow(int rowOffset) {
+    itrCursor = rowOffset + 1;
+    return currentReadBlock[rowOffset];
+  }
+
+  protected void resetCurrentReadBlockToFirstReadBlock() {
+    currentReadBlock = firstReadBlockPointer;
+  }
+
+  protected void resetReadBlocks() {
+    this.currentReadBlock = this.currentWriteBlock;
+    this.firstReadBlockPointer = currentReadBlock;
+  }
+
+  protected void close() throws HiveException {
+    clear();
+    currentReadBlock = firstReadBlockPointer = currentWriteBlock = null;
   }
 
 }

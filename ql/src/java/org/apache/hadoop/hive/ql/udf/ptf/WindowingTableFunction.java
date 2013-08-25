@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowTableFunctionDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -59,8 +58,9 @@ public class WindowingTableFunction extends TableFunctionEvaluator
     PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, pItr);
 
     if ( outputPartition == null ) {
-      outputPartition = new PTFPartition(getPartitionClass(),
-          getPartitionMemSize(), wFnDef.getOutputFromWdwFnProcessing().getSerde(), OI);
+      outputPartition = PTFPartition.create(ptfDesc.getCfg(),
+          wFnDef.getOutputFromWdwFnProcessing().getSerde(),
+          OI, wFnDef.getOutputFromWdwFnProcessing().getOI());
     }
     else {
       outputPartition.reset();
@@ -77,11 +77,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator
     ArrayList<List<?>> oColumns = new ArrayList<List<?>>();
     PTFPartition iPart = pItr.getPartition();
     StructObjectInspector inputOI;
-    try {
-      inputOI = (StructObjectInspector) iPart.getSerDe().getObjectInspector();
-    } catch (SerDeException se) {
-      throw new HiveException(se);
-    }
+    inputOI = (StructObjectInspector) iPart.getOutputOI();
 
     WindowTableFunctionDef wTFnDef = (WindowTableFunctionDef) getTableDef();
     Order order = wTFnDef.getOrder().getExpressions().get(0).getOrder();

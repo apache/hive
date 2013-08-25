@@ -27,6 +27,7 @@ import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
+import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.PTFTranslator.LeadLagInfo;
 import org.apache.hadoop.hive.ql.parse.WindowingExprNodeEvaluatorFactory;
@@ -71,6 +72,7 @@ public class PTFDeserializer {
   public PTFDeserializer(PTFDesc ptfDesc, StructObjectInspector inputOI, HiveConf hConf) {
     super();
     this.ptfDesc = ptfDesc;
+    ptfDesc.setCfg(hConf);
     this.inputOI = inputOI;
     this.hConf = hConf;
     llInfo = new LeadLagInfo();
@@ -292,7 +294,8 @@ public class PTFDeserializer {
       SerDe serDe = (SerDe) SerDeUtils.lookupDeserializer(serdeClassName);
       serDe.initialize(hConf, serDeProps);
       shp.setSerde(serDe);
-      shp.setOI((StructObjectInspector) serDe.getObjectInspector());
+      StructObjectInspector outOI = PTFPartition.setupPartitionOutputOI(serDe, OI);
+      shp.setOI(outOI);
     } catch (SerDeException se)
     {
       throw new HiveException(se);
