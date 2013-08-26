@@ -61,8 +61,6 @@ public class GlobalLimitOptimizer implements Transform {
     Map<String, Operator<? extends OperatorDesc>> topOps = pctx.getTopOps();
     GlobalLimitCtx globalLimitCtx = pctx.getGlobalLimitCtx();
     Map<TableScanOperator, ExprNodeDesc> opToPartPruner = pctx.getOpToPartPruner();
-    Map<TableScanOperator, PrunedPartitionList> opToPartList = pctx.getOpToPartList();
-    Map<String, PrunedPartitionList> prunedPartitions = pctx.getPrunedPartitions();
     Map<String, SplitSample> nameToSplitSample = pctx.getNameToSplitSample();
     Map<TableScanOperator, Table> topToTable = pctx.getTopToTable();
 
@@ -106,15 +104,10 @@ public class GlobalLimitOptimizer implements Transform {
           if (PartitionPruner.onlyContainsPartnCols(tab,
               opToPartPruner.get(ts))) {
 
-            PrunedPartitionList partsList = null;
+            PrunedPartitionList partsList;
             try {
-              partsList = opToPartList.get(ts);
-              if (partsList == null) {
-                partsList = PartitionPruner.prune(tab,
-                    opToPartPruner.get(ts), conf, (String) topOps.keySet()
-                    .toArray()[0], prunedPartitions);
-                opToPartList.put(ts, partsList);
-              }
+              String alias = (String) topOps.keySet().toArray()[0];
+              partsList = PartitionPruner.prune(ts, pctx, alias);
             } catch (HiveException e) {
               // Has to use full name to make sure it does not conflict with
               // org.apache.commons.lang.StringUtils
@@ -124,7 +117,7 @@ public class GlobalLimitOptimizer implements Transform {
 
             // If there is any unknown partition, create a map-reduce job for
             // the filter to prune correctly
-            if ((partsList.getUnknownPartns().size() == 0)) {
+            if (!partsList.hasUnknownPartitions()) {
               globalLimitCtx.enableOpt(tempGlobalLimit);
             }
           }

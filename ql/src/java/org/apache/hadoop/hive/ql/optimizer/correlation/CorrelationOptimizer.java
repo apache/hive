@@ -166,7 +166,7 @@ public class CorrelationOptimizer implements Transform {
       JoinDesc joinDesc = joinOp.getConf();
       Byte[] order = joinDesc.getTagOrder();
       int numAliases = order.length;
-      HashSet<Integer> bigTableCandidates =
+      Set<Integer> bigTableCandidates =
           MapJoinProcessor.getBigTableCandidates(joinDesc.getConds());
       if (bigTableCandidates == null) {
         continue;

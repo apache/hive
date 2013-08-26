@@ -38,6 +38,52 @@ STAGE PLANS:
         z 
           Fetch Operator
             limit: -1
+            Partition Description:
+                Partition
+                  base file name: hr=11
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 2008-04-08
+                    hr 11
+                  properties:
+                    bucket_count -1
+                    columns key,value
+                    columns.types string:string
+#### A masked pattern was here ####
+                    name default.srcpart
+                    numFiles 1
+                    numRows 0
+                    partition_columns ds/hr
+                    rawDataSize 0
+                    serialization.ddl struct srcpart { string key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 5812
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucket_count -1
+                      columns key,value
+                      columns.types string:string
+#### A masked pattern was here ####
+                      name default.srcpart
+                      numFiles 4
+                      numPartitions 4
+                      numRows 0
+                      partition_columns ds/hr
+                      rawDataSize 0
+                      serialization.ddl struct srcpart { string key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 23248
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcpart
+                  name: default.srcpart
       Alias -> Map Local Operator Tree:
         x 
           TableScan

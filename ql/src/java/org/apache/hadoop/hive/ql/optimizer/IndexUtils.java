@@ -74,18 +74,10 @@ public final class IndexUtils {
       Map<Table, List<Index>> indexes)
     throws HiveException {
     Hive hive = Hive.get(pctx.getConf());
-    Set<Partition> queryPartitions = null;
     // make sure each partition exists on the index table
     PrunedPartitionList queryPartitionList = pctx.getOpToPartList().get(tableScan);
-    if(queryPartitionList.getConfirmedPartns() != null
-        && !queryPartitionList.getConfirmedPartns().isEmpty()){
-      queryPartitions = queryPartitionList.getConfirmedPartns();
-    }else if(queryPartitionList.getUnknownPartns() != null
-        && !queryPartitionList.getUnknownPartns().isEmpty()){
-      queryPartitions = queryPartitionList.getUnknownPartns();
-    }
-
-    if(queryPartitions == null) {
+    Set<Partition> queryPartitions = queryPartitionList.getPartitions();
+    if (queryPartitions == null || queryPartitions.isEmpty()) {
       return null;
     }
 

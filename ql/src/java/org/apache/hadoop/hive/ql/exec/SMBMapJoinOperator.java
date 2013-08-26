@@ -64,10 +64,10 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   private MapredLocalWork localWork = null;
   private Map<String, MergeQueue> aliasToMergeQueue = Collections.emptyMap();
 
-  transient ArrayList<Object>[] keyWritables;
-  transient ArrayList<Object>[] nextKeyWritables;
-  RowContainer<ArrayList<Object>>[] nextGroupStorage;
-  RowContainer<ArrayList<Object>>[] candidateStorage;
+  transient List<Object>[] keyWritables;
+  transient List<Object>[] nextKeyWritables;
+  RowContainer<List<Object>>[] nextGroupStorage;
+  RowContainer<List<Object>>[] candidateStorage;
 
   transient String[] tagToAlias;
   private transient boolean[] fetchDone;
@@ -136,12 +136,12 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     }
 
     for (byte pos = 0; pos < order.length; pos++) {
-      RowContainer rc = JoinUtil.getRowContainer(hconf,
+      RowContainer<List<Object>> rc = JoinUtil.getRowContainer(hconf,
           rowContainerStandardObjectInspectors[pos],
           pos, bucketSize,spillTableDesc, conf, !hasFilter(pos),
           reporter);
       nextGroupStorage[pos] = rc;
-      RowContainer candidateRC = JoinUtil.getRowContainer(hconf,
+      RowContainer<List<Object>> candidateRC = JoinUtil.getRowContainer(hconf,
           rowContainerStandardObjectInspectors[pos],
           pos, bucketSize,spillTableDesc, conf, !hasFilter(pos),
           reporter);
@@ -435,7 +435,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   private void promoteNextGroupToCandidate(Byte t) throws HiveException {
     this.keyWritables[t] = this.nextKeyWritables[t];
     this.nextKeyWritables[t] = null;
-    RowContainer<ArrayList<Object>> oldRowContainer = this.candidateStorage[t];
+    RowContainer<List<Object>> oldRowContainer = this.candidateStorage[t];
     oldRowContainer.clear();
     this.candidateStorage[t] = this.nextGroupStorage[t];
     this.nextGroupStorage[t] = oldRowContainer;
@@ -479,10 +479,10 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
 
   private int[] findSmallestKey() {
     int[] result = new int[order.length];
-    ArrayList<Object> smallestOne = null;
+    List<Object> smallestOne = null;
 
     for (byte pos = 0; pos < order.length; pos++) {
-      ArrayList<Object> key = keyWritables[pos];
+      List<Object> key = keyWritables[pos];
       if (key == null) {
         continue;
       }
@@ -501,7 +501,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
 
   private boolean processKey(byte alias, ArrayList<Object> key)
       throws HiveException {
-    ArrayList<Object> keyWritable = keyWritables[alias];
+    List<Object> keyWritable = keyWritables[alias];
     if (keyWritable == null) {
       //the first group.
       keyWritables[alias] = key;

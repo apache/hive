@@ -447,6 +447,12 @@
 </property>
 
 <property>
+  <name>hive.session.history.enabled</name>
+  <value>false</value>
+  <description>Whether to log hive query, query plan, runtime statistics etc </description>
+</property>
+
+<property>
   <name>hive.map.aggr.hash.min.reduction</name>
   <value>0.5</value>
   <description>Hash aggregation will be turned off if the ratio between hash
@@ -1701,6 +1707,15 @@
 </property>
 
 <property>
+  <name>hive.exec.orc.dictionary.key.size.threshold</name>
+  <value>0.8</value>
+  <description>
+    If the number of keys in a dictionary is greater than this fraction of the total number of
+    non-null rows, turn off dictionary encoding.  Use 1 to always use dictionary encoding.
+  </description>
+</property>
+
+<property>
   <name>hive.multi.insert.move.tasks.share.dependencies</name>
   <value>false</value>
   <description>
@@ -1928,5 +1943,27 @@
   </description>
 </property>
 
-</configuration>
+<property>
+  <name>hive.server2.table.type.mapping</name>
+  <value>HIVE</value>
+  <description>
+   This setting reflects how HiveServer will report the table types for JDBC and other
+   client implementations that retrieves the available tables and supported table types
+     HIVE : Exposes the hive's native table tyes like MANAGED_TABLE, EXTERNAL_TABLE, VIRTUAL_VIEW
+     CLASSIC : More generic types like TABLE and VIEW
+  </description>
+</property>
 
+<property>
+  <name>hive.server2.thrift.sasl.qop</name>
+  <value>auth</auth>
+  <description>Sasl QOP value; Set it to one of following values to enable higher levels of
+     protection for hive server2 communication with clients.
+      "auth" - authentication only (default)
+      "auth-int" - authentication plus integrity protection
+      "auth-conf" - authentication plus integrity and confidentiality protection
+     This is applicable only hive server2 is configured to use kerberos authentication.
+ </description>
+</property>
+
+</configuration>

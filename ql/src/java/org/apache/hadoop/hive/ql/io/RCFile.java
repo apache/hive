@@ -1601,7 +1601,7 @@ public class RCFile {
             }
           }
           /* move the last 16 bytes to the prefix area */
-          System.arraycopy(buffer, buffer.length - prefix - 1, buffer, 0, prefix);
+          System.arraycopy(buffer, buffer.length - prefix, buffer, 0, prefix);
           n = (int)Math.min(n, end - in.getPos());
         }
       } catch (ChecksumException e) { // checksum failure

@@ -32,7 +32,7 @@ public class DBTokenStore implements DelegationTokenStore {
 
   @Override
   public String[] getMasterKeys() throws TokenStoreException {
-    return (String[])invokeOnRawStore("getMasterKeys", null, null);
+    return (String[])invokeOnRawStore("getMasterKeys", new Object[0]);
   }
 
   @Override
@@ -75,7 +75,7 @@ public class DBTokenStore implements DelegationTokenStore {
   @Override
   public List<DelegationTokenIdentifier> getAllDelegationTokenIdentifiers() throws TokenStoreException{
 
-    List<String> tokenIdents = (List<String>)invokeOnRawStore("getAllTokenIdentifiers", null, null);
+    List<String> tokenIdents = (List<String>)invokeOnRawStore("getAllTokenIdentifiers", new Object[0]);
     List<DelegationTokenIdentifier> delTokenIdents = new ArrayList<DelegationTokenIdentifier>(tokenIdents.size());
 
     for (String tokenIdent : tokenIdents) {

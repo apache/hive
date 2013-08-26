@@ -104,7 +104,19 @@ public class NGramEstimator {
     Collections.sort(list, new Comparator<Map.Entry<ArrayList<String>, Double>>() {
       public int compare(Map.Entry<ArrayList<String>, Double> o1,
                          Map.Entry<ArrayList<String>, Double> o2) {
-        return o2.getValue().compareTo(o1.getValue());
+        int result = o2.getValue().compareTo(o1.getValue());
+        if (result != 0)
+          return result;
+        
+        ArrayList<String> key1 = o1.getKey();
+        ArrayList<String> key2 = o2.getKey();
+        for (int i = 0; i < key1.size() && i < key2.size(); i++) {
+          result = key1.get(i).compareTo(key2.get(i));
+          if (result != 0)
+            return result;
+        }
+        
+        return key1.size() - key2.size();
       }
     });
 

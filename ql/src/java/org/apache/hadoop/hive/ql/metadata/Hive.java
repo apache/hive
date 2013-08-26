@@ -1814,6 +1814,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     List<Partition> partitions = new ArrayList<Partition>(partNames.size());
 
     int batchSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.METASTORE_BATCH_RETRIEVE_MAX);
+    // TODO: might want to increase the default batch size. 1024 is viable; MS gets OOM if too high.
     int nParts = partNames.size();
     int nBatches = nParts / batchSize;
 

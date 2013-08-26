@@ -38,6 +38,7 @@ import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 import org.apache.hadoop.hive.ql.optimizer.ppr.PartExprEvalUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -57,7 +58,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
  * It also generates node by Modifying expr trees with partition conditions removed
  */
 public final class PcrExprProcFactory {
-  static Object evalExprWithPart(ExprNodeDesc expr, Partition p) throws SemanticException {
+  static Object evalExprWithPart(ExprNodeDesc expr, Partition p, List<VirtualColumn> vcs)
+      throws SemanticException {
     StructObjectInspector rowObjectInspector;
     Table tbl = p.getTable();
     LinkedHashMap<String, String> partSpec = p.getSpec();
@@ -70,7 +72,7 @@ public final class PcrExprProcFactory {
     }
 
     try {
-      return PartExprEvalUtils.evalExprWithPart(expr, partSpec, rowObjectInspector);
+      return PartExprEvalUtils.evalExprWithPart(expr, partSpec, vcs, rowObjectInspector);
     } catch (HiveException e) {
       throw new SemanticException(e);
     }
@@ -323,7 +325,8 @@ public final class PcrExprProcFactory {
             // a result, we update the state of the node to be TRUE of FALSE
             Boolean[] results = new Boolean[ctx.getPartList().size()];
             for (int i = 0; i < ctx.getPartList().size(); i++) {
-              results[i] = (Boolean) evalExprWithPart(fd, ctx.getPartList().get(i));
+              results[i] = (Boolean) evalExprWithPart(fd, ctx.getPartList().get(i),
+                  ctx.getVirtualColumns());
             }
             return getResultWrapFromResults(results, fd, nodeOutputs);
           }
@@ -333,7 +336,7 @@ public final class PcrExprProcFactory {
           // to be a CONSTANT node with value to be the agreed result.
           Object[] results = new Object[ctx.getPartList().size()];
           for (int i = 0; i < ctx.getPartList().size(); i++) {
-            results[i] = evalExprWithPart(fd, ctx.getPartList().get(i));
+            results[i] = evalExprWithPart(fd, ctx.getPartList().get(i), ctx.getVirtualColumns());
           }
           Object result = ifResultsAgree(results);
           if (result == null) {
@@ -421,17 +424,19 @@ public final class PcrExprProcFactory {
    * @param tabAlias
    *          the table alias
    * @param parts
-   *          the list of all pruned partitions for the
+   *          the list of all pruned partitions for the table
+   * @param vcs
+   *          virtual columns referenced
    * @param pred
    *          expression tree of the target filter operator
    * @return the node information of the root expression
    * @throws SemanticException
    */
   public static NodeInfoWrapper walkExprTree(
-      String tabAlias, ArrayList<Partition> parts, ExprNodeDesc pred)
+      String tabAlias, ArrayList<Partition> parts, List<VirtualColumn> vcs, ExprNodeDesc pred)
       throws SemanticException {
     // Create the walker, the rules dispatcher and the context.
-    PcrExprProcCtx pprCtx = new PcrExprProcCtx(tabAlias, parts);
+    PcrExprProcCtx pprCtx = new PcrExprProcCtx(tabAlias, parts, vcs);
 
     Map<Rule, NodeProcessor> exprRules = new LinkedHashMap<Rule, NodeProcessor>();
     exprRules.put(

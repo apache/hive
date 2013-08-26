@@ -23,10 +23,10 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.ObjectPair;
@@ -417,7 +417,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
       long aliasTotalKnownInputSize =
           getTotalKnownInputSize(context, currWork, pathToAliases, aliasToSize);
 
-      HashSet<Integer> bigTableCandidates = MapJoinProcessor.getBigTableCandidates(joinDesc
+      Set<Integer> bigTableCandidates = MapJoinProcessor.getBigTableCandidates(joinDesc
           .getConds());
 
       // no table could be the big table; there is no need to convert

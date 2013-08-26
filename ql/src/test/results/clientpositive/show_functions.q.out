@@ -29,6 +29,7 @@ asin
 assert_true
 atan
 avg
+base64
 between
 bin
 case
@@ -53,11 +54,13 @@ date_sub
 datediff
 day
 dayofmonth
+decode
 degrees
 dense_rank
 div
 e
 elt
+encode
 ewah_bitmap
 ewah_bitmap_and
 ewah_bitmap_empty
@@ -169,6 +172,7 @@ to_utc_timestamp
 translate
 trim
 ucase
+unbase64
 unhex
 unix_timestamp
 upper
@@ -218,7 +222,9 @@ POSTHOOK: type: SHOWFUNCTIONS
 assert_true
 case
 coalesce
+decode
 e
+encode
 explode
 first_value
 from_unixtime

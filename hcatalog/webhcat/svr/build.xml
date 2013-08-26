@@ -41,14 +41,17 @@
     <fileset dir="${build.dir}/lib/compile"/>
   </path>
 
-  <target name="compile-resource">
+  <target name="compile-resource" depends="javadoc">
     <echo message="${ant.project.name}"/>
     <property name="resources.dir"  location="${path.to.basedir}/conf"/>
     <copy todir="${build.classes}/">
       <fileset dir="${basedir}/src/main/config/"/>
     </copy>
+  </target>
+  
+  <target name="javadoc" unless="skip.javadoc">
     <echo message="Generating wadl xml file"/>
-    <javadoc access="public" classpathref="compile.class.path">
+    <javadoc access="public" classpathref="compile.class.path" useexternalfile="yes">
       <fileset dir="${basedir}/src/main/java" defaultexcludes="yes"/>
       <doclet name="com.sun.jersey.wadl.resourcedoc.ResourceDoclet"
               pathref="compile.class.path">

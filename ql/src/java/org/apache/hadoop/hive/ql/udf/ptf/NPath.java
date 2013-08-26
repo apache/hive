@@ -891,7 +891,7 @@ public class NPath extends TableFunctionEvaluator
   }
 
   public static Object getSelectListInput(Object currRow, ObjectInspector rowOI,
-      PTFPartitionIterator<Object> pItr, int sz) {
+      PTFPartitionIterator<Object> pItr, int sz)  throws HiveException {
     ArrayList<Object> oRow = new ArrayList<Object>();
     List<?> currRowAsStdObject = (List<?>) ObjectInspectorUtils
         .copyToStandardObject(currRow, rowOI);
@@ -901,7 +901,7 @@ public class NPath extends TableFunctionEvaluator
   }
 
   public static ArrayList<Object> getPath(Object currRow, ObjectInspector rowOI,
-      PTFPartitionIterator<Object> pItr, int sz) {
+      PTFPartitionIterator<Object> pItr, int sz)  throws HiveException {
     int idx = pItr.getIndex() - 1;
     ArrayList<Object> path = new ArrayList<Object>();
     path.add(ObjectInspectorUtils.copyToStandardObject(currRow, rowOI));

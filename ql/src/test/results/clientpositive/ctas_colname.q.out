@@ -159,7 +159,7 @@ explain
 create table x4 as select *, rank() over(partition by key order by value) as rr from src1
 POSTHOOK: type: CREATETABLE_AS_SELECT
 ABSTRACT SYNTAX TREE:
-  (TOK_CREATETABLE (TOK_TABNAME x4) TOK_LIKETABLE (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF) (TOK_SELEXPR (TOK_FUNCTION rank (TOK_WINDOWSPEC (TOK_PARTITIONINGSPEC (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))) rr (TOK_WINDOWSPEC (TOK_PARTITIONINGSPEC (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))))))))))
+  (TOK_CREATETABLE (TOK_TABNAME x4) TOK_LIKETABLE (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF) (TOK_SELEXPR (TOK_FUNCTION rank (TOK_WINDOWSPEC (TOK_PARTITIONINGSPEC (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))) rr)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -307,13 +307,13 @@ POSTHOOK: Input: default@x4
 66	val_66	1
 98	val_98	1
 PREHOOK: query: explain
-create table x5 as select *, lead(key,1) over(partition by key order by value) from src limit 20
+create table x5 as select *, lead(key,1) over(partition by key order by value) as lead1 from src limit 20
 PREHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: query: explain
-create table x5 as select *, lead(key,1) over(partition by key order by value) from src limit 20
+create table x5 as select *, lead(key,1) over(partition by key order by value) as lead1 from src limit 20
 POSTHOOK: type: CREATETABLE_AS_SELECT
 ABSTRACT SYNTAX TREE:
-  (TOK_CREATETABLE (TOK_TABNAME x5) TOK_LIKETABLE (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF) (TOK_SELEXPR (TOK_FUNCTION lead (TOK_TABLE_OR_COL key) 1 (TOK_WINDOWSPEC (TOK_PARTITIONINGSPEC (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))) (TOK_WINDOWSPEC (TOK_PARTITIONINGSPEC (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value))))))) (TOK_LIMIT 20))))
+  (TOK_CREATETABLE (TOK_TABNAME x5) TOK_LIKETABLE (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF) (TOK_SELEXPR (TOK_FUNCTION lead (TOK_TABLE_OR_COL key) 1 (TOK_WINDOWSPEC (TOK_PARTITIONINGSPEC (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL key)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))) lead1)) (TOK_LIMIT 20))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -399,7 +399,7 @@ STAGE PLANS:
   Stage: Stage-4
       Create Table Operator:
         Create Table
-          columns: key string, value string, tok_windowspec string
+          columns: key string, value string, lead1 string
           if not exists: false
           input format: org.apache.hadoop.mapred.TextInputFormat
           # buckets: -1
@@ -411,10 +411,10 @@ STAGE PLANS:
     Stats-Aggr Operator
 
 
-PREHOOK: query: create table x5 as select *, lead(key,1) over(partition by key order by value) from src limit 20
+PREHOOK: query: create table x5 as select *, lead(key,1) over(partition by key order by value) as lead1 from src limit 20
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
-POSTHOOK: query: create table x5 as select *, lead(key,1) over(partition by key order by value) from src limit 20
+POSTHOOK: query: create table x5 as select *, lead(key,1) over(partition by key order by value) as lead1 from src limit 20
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@x5
@@ -426,7 +426,7 @@ POSTHOOK: type: DESCTABLE
 	 	 
 key                 	string              	None                
 value               	string              	None                
-tok_windowspec      	string              	None                
+lead1               	string              	None                
 	 	 
 # Detailed Table Information	 	 
 Database:           	default             	 
@@ -453,11 +453,11 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: select * from x5 order by key, value, tok_windowspec
+PREHOOK: query: select * from x5 order by key, value, lead1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@x5
 #### A masked pattern was here ####
-POSTHOOK: query: select * from x5 order by key, value, tok_windowspec
+POSTHOOK: query: select * from x5 order by key, value, lead1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@x5
 #### A masked pattern was here ####

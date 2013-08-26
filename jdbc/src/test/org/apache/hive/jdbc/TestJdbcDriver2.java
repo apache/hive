@@ -42,7 +42,12 @@ import junit.framework.TestCase;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hive.common.util.HiveVersionInfo;
+import org.apache.hive.service.cli.operation.ClassicTableTypeMapping;
+import org.apache.hive.service.cli.operation.ClassicTableTypeMapping.ClassicTableTypes;
+import org.apache.hive.service.cli.operation.HiveTableTypeMapping;
+import org.apache.hive.service.cli.operation.TableTypeMappingFactory.TableTypeMappings;
 
 
 /**
@@ -384,6 +389,46 @@ public class TestJdbcDriver2 extends TestCase {
         expectedException);
   }
 
+  /**
+   * Execute non-select statements using execute() and executeUpdated() APIs
+   * of PreparedStatement interface
+   * @throws Exception
+   */
+  public void testExecutePreparedStatement() throws Exception {
+    String key = "testKey";
+    String val1 = "val1";
+    String val2 = "val2";
+    PreparedStatement ps = con.prepareStatement("set " + key + " = ?");
+
+    // execute() of Prepared statement
+    ps.setString(1, val1);
+    ps.execute();
+    verifyConfValue(key, val1);
+
+    // executeUpdate() of Prepared statement
+    ps.clearParameters();
+    ps.setString(1, val2);
+    ps.executeUpdate();
+    verifyConfValue(key, val2);
+  }
+
+  /**
+   * Execute "set x" and extract value from key=val format result
+   * Verify the extracted value
+   * @param stmt
+   * @return
+   * @throws Exception
+   */
+  private void verifyConfValue(String key, String expectedVal) throws Exception {
+    Statement stmt = con.createStatement();
+    ResultSet res = stmt.executeQuery("set " + key);
+    assertTrue(res.next());
+    String resultValues[] = res.getString(1).split("="); // "key = 'val'"
+    assertEquals("Result not in key = val format", 2, resultValues.length);
+    String result = resultValues[1].substring(1, resultValues[1].length() -1); // remove '
+    assertEquals("Conf value should be set by execute()", expectedVal, result);
+  }
+
   public final void testSelectAll() throws Exception {
     doTestSelectAll(tableName, -1, -1); // tests not setting maxRows (return all)
     doTestSelectAll(tableName, 0, -1); // tests setting maxRows to 0 (return all)
@@ -664,6 +709,25 @@ public class TestJdbcDriver2 extends TestCase {
   }
 
   public void testMetaDataGetTables() throws SQLException {
+    getTablesTest(TableType.MANAGED_TABLE.toString(), TableType.VIRTUAL_VIEW.toString());
+  }
+
+  public  void testMetaDataGetTablesHive() throws SQLException {
+    Statement stmt = con.createStatement();
+    stmt.execute("set " + HiveConf.ConfVars.HIVE_SERVER2_TABLE_TYPE_MAPPING.varname +
+        " = " + TableTypeMappings.HIVE.toString());
+    getTablesTest(TableType.MANAGED_TABLE.toString(), TableType.VIRTUAL_VIEW.toString());
+  }
+
+  public  void testMetaDataGetTablesClassic() throws SQLException {
+    Statement stmt = con.createStatement();
+    stmt.execute("set " + HiveConf.ConfVars.HIVE_SERVER2_TABLE_TYPE_MAPPING.varname +
+        " = " + TableTypeMappings.CLASSIC.toString());
+    stmt.close();
+    getTablesTest(ClassicTableTypes.TABLE.toString(), ClassicTableTypes.VIEW.toString());
+  }
+
+  private void getTablesTest(String tableTypeName, String viewTypeName) throws SQLException {
     Map<String, Object[]> tests = new HashMap<String, Object[]>();
     tests.put("test%jdbc%", new Object[]{"testhivejdbcdriver_table"
             , "testhivejdbcdriverpartitionedtable"
@@ -698,7 +762,9 @@ public class TestJdbcDriver2 extends TestCase {
         assertTrue("Missing comment on the table.", resultTableComment.length()>0);
         String tableType = rs.getString("TABLE_TYPE");
         if (resultTableName.endsWith("view")) {
-          assertEquals("Expected a tabletype view but got something else.", "VIRTUAL_VIEW", tableType);
+          assertEquals("Expected a tabletype view but got something else.", viewTypeName, tableType);
+        } else {
+          assertEquals("Expected a tabletype table but got something else.", tableTypeName, tableType);
         }
         cnt++;
       }
@@ -708,7 +774,7 @@ public class TestJdbcDriver2 extends TestCase {
 
     // only ask for the views.
     ResultSet rs = (ResultSet)con.getMetaData().getTables("default", null, null
-            , new String[]{"VIRTUAL_VIEW"});
+            , new String[]{viewTypeName});
     int cnt=0;
     while (rs.next()) {
       cnt++;
@@ -742,13 +808,28 @@ public class TestJdbcDriver2 extends TestCase {
   }
 
   public void testMetaDataGetTableTypes() throws SQLException {
-    ResultSet rs = (ResultSet)con.getMetaData().getTableTypes();
+    metaDataGetTableTypeTest(new HiveTableTypeMapping().getTableTypeNames());
+  }
 
-    Set<String> tabletypes = new HashSet();
-    tabletypes.add("MANAGED_TABLE");
-    tabletypes.add("EXTERNAL_TABLE");
-    tabletypes.add("VIRTUAL_VIEW");
-    tabletypes.add("INDEX_TABLE");
+  public void testMetaDataGetHiveTableTypes() throws SQLException {
+    Statement stmt = con.createStatement();
+    stmt.execute("set " + HiveConf.ConfVars.HIVE_SERVER2_TABLE_TYPE_MAPPING.varname +
+        " = " + TableTypeMappings.HIVE.toString());
+    stmt.close();
+    metaDataGetTableTypeTest(new HiveTableTypeMapping().getTableTypeNames());
+  }
+
+  public void testMetaDataGetClassicTableTypes() throws SQLException {
+    Statement stmt = con.createStatement();
+    stmt.execute("set " + HiveConf.ConfVars.HIVE_SERVER2_TABLE_TYPE_MAPPING.varname +
+        " = " + TableTypeMappings.CLASSIC.toString());
+    stmt.close();
+    metaDataGetTableTypeTest(new ClassicTableTypeMapping().getTableTypeNames());
+  }
+
+  private void metaDataGetTableTypeTest(Set<String> tabletypes)
+      throws SQLException {
+    ResultSet rs = (ResultSet)con.getMetaData().getTableTypes();
 
     int cnt = 0;
     while (rs.next()) {

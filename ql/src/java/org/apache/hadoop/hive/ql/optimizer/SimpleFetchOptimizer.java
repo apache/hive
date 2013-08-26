@@ -142,8 +142,8 @@ public class SimpleFetchOptimizer implements Transform {
     }
     if (aggressive || bypassFilter) {
       PrunedPartitionList pruned = pctx.getPrunedPartitions(alias, ts);
-      if (aggressive || pruned.getUnknownPartns().isEmpty()) {
-        bypassFilter &= pruned.getUnknownPartns().isEmpty();
+      if (aggressive || !pruned.hasUnknownPartitions()) {
+        bypassFilter &= !pruned.hasUnknownPartitions();
         return checkOperators(new FetchData(pruned, splitSample), ts, aggressive, bypassFilter);
       }
     }

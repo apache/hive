@@ -12,7 +12,7 @@ FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
                   FROM src1) tmp1 ) tmp2
       JOIN (SELECT count(*) as count
             FROM src1) tmp3
-      ) tmp4;
+      ) tmp4 order by key, value, count;
 
 SELECT tmp4.key as key, tmp4.value as value, tmp4.count as count
 FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
@@ -21,7 +21,7 @@ FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
                   FROM src1) tmp1 ) tmp2
       JOIN (SELECT count(*) as count
             FROM src1) tmp3
-      ) tmp4;
+      ) tmp4 order by key, value, count;
 
 set hive.auto.convert.join=true;
 -- Then, we convert the join to MapJoin.
@@ -33,7 +33,7 @@ FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
                   FROM src1) tmp1 ) tmp2
       JOIN (SELECT count(*) as count
             FROM src1) tmp3
-      ) tmp4;
+      ) tmp4 order by key, value, count;
 
 SELECT tmp4.key as key, tmp4.value as value, tmp4.count as count
 FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
@@ -42,4 +42,4 @@ FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
                   FROM src1) tmp1 ) tmp2
       JOIN (SELECT count(*) as count
             FROM src1) tmp3
-      ) tmp4;
+      ) tmp4 order by key, value, count;

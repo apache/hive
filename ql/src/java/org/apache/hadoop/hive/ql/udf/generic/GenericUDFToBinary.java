@@ -34,8 +34,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspect
              extended = "Currently only string or binary can be cast into binary")
 public class GenericUDFToBinary extends GenericUDF {
 
-  private PrimitiveObjectInspector argumentOI;
-  private BinaryConverter baConverter;
+  private transient PrimitiveObjectInspector argumentOI;
+  private transient BinaryConverter baConverter;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {

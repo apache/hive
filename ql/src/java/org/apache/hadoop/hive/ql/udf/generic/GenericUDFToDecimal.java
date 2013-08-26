@@ -29,8 +29,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 @Description(name = "decimal", value = "_FUNC_(a) - cast a to decimal")
 public class GenericUDFToDecimal extends GenericUDF {
 
-  private PrimitiveObjectInspector argumentOI;
-  private HiveDecimalConverter bdConverter;
+  private transient PrimitiveObjectInspector argumentOI;
+  private transient HiveDecimalConverter bdConverter;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {

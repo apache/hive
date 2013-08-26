@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
@@ -38,9 +39,10 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
  */
 public class TableSizeBasedBigTableSelectorForAutoSMJ extends SizeBasedBigTableSelectorForAutoSMJ
 implements BigTableSelectorForAutoSMJ {
-  public int getBigTablePosition(ParseContext parseCtx, JoinOperator joinOp)
+  public int getBigTablePosition(ParseContext parseCtx, JoinOperator joinOp,
+      Set<Integer> bigTableCandidates)
     throws SemanticException {
-    int bigTablePos = 0;
+    int bigTablePos = -1;
     long maxSize = -1;
     HiveConf conf = parseCtx.getConf();
 
@@ -49,8 +51,14 @@ implements BigTableSelectorForAutoSMJ {
       getListTopOps(joinOp, topOps);
       int currentPos = 0;
       for (TableScanOperator topOp : topOps) {
+
         if (topOp == null) {
           return -1;
+        }
+
+        if (!bigTableCandidates.contains(currentPos)) {
+          currentPos++;
+          continue;
         }
         Table table = parseCtx.getTopToTable().get(topOp);
         long currentSize = 0;
@@ -60,10 +68,7 @@ implements BigTableSelectorForAutoSMJ {
         }
         else {
           // For partitioned tables, get the size of all the partitions
-          PrunedPartitionList partsList =
-            PartitionPruner.prune(parseCtx.getTopToTable().get(topOp),
-              parseCtx.getOpToPartPruner().get(topOp), parseCtx.getConf(),
-              null, parseCtx.getPrunedPartitions());
+          PrunedPartitionList partsList = PartitionPruner.prune(topOp, parseCtx, null);
           for (Partition part : partsList.getNotDeniedPartns()) {
             currentSize += getSize(conf, part);
           }

@@ -17,7 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.File;
+import java.io.BufferedOutputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,11 +29,13 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.persistence.AbstractMapJoinKey;
+import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionHandler;
 import org.apache.hadoop.hive.ql.exec.persistence.HashMapWrapper;
-import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectValue;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinRowContainer;
-import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
+import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.HashTableSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -41,10 +44,8 @@ import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.util.ReflectionUtils;
 
@@ -54,128 +55,51 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   private static final long serialVersionUID = 1L;
   private static final Log LOG = LogFactory.getLog(HashTableSinkOperator.class.getName());
 
-  protected static MapJoinMetaData metadata = new MapJoinMetaData();
-  // from abstract map join operator
   /**
    * The expressions for join inputs's join keys.
    */
-  protected transient List<ExprNodeEvaluator>[] joinKeys;
+  private transient List<ExprNodeEvaluator>[] joinKeys;
   /**
    * The ObjectInspectors for the join inputs's join keys.
    */
-  protected transient List<ObjectInspector>[] joinKeysObjectInspectors;
-  /**
-   * The standard ObjectInspectors for the join inputs's join keys.
-   */
-  protected transient List<ObjectInspector>[] joinKeysStandardObjectInspectors;
+  private transient List<ObjectInspector>[] joinKeysObjectInspectors;
 
-  protected transient int posBigTableAlias = -1; // one of the tables that is not in memory
+  private transient int posBigTableAlias = -1; // one of the tables that is not in memory
 
-  protected transient RowContainer<ArrayList<Object>> emptyList = null;
-
-  transient int numMapRowsRead;
-  protected transient int totalSz; // total size of the composite object
-  transient boolean firstRow;
   /**
    * The filters for join
    */
-  protected transient List<ExprNodeEvaluator>[] joinFilters;
+  private transient List<ExprNodeEvaluator>[] joinFilters;  
 
-  protected transient int[][] filterMaps;
+  private transient int[][] filterMaps;
 
-  protected transient int numAliases; // number of aliases
   /**
    * The expressions for join outputs.
    */
-  protected transient List<ExprNodeEvaluator>[] joinValues;
+  private transient List<ExprNodeEvaluator>[] joinValues;
   /**
    * The ObjectInspectors for the join inputs.
    */
-  protected transient List<ObjectInspector>[] joinValuesObjectInspectors;
+  private transient List<ObjectInspector>[] joinValuesObjectInspectors;
   /**
    * The ObjectInspectors for join filters.
    */
-  protected transient List<ObjectInspector>[] joinFilterObjectInspectors;
-  /**
-   * The standard ObjectInspectors for the join inputs.
-   */
-  protected transient List<ObjectInspector>[] joinValuesStandardObjectInspectors;
+  private transient List<ObjectInspector>[] joinFilterObjectInspectors;
 
-  protected transient List<ObjectInspector>[] rowContainerStandardObjectInspectors;
+  private transient Byte[] order; // order in which the results should
+  private Configuration hconf;
+  private transient Byte alias;
 
-  protected transient Byte[] order; // order in which the results should
-  Configuration hconf;
-  protected transient Byte alias;
-  protected transient TableDesc[] spillTableDesc; // spill tables are
-
-  protected transient HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue>[] mapJoinTables;
-  protected transient boolean noOuterJoin;
+  private transient MapJoinTableContainer[] mapJoinTables;
+  private transient MapJoinTableContainerSerDe[] mapJoinTableSerdes;  
+  
+  private transient boolean noOuterJoin;
 
   private long rowNumber = 0;
-  protected transient LogHelper console;
+  private transient LogHelper console;
   private long hashTableScale;
-  private boolean isAbort = false;
-
-  public static class HashTableSinkObjectCtx {
-    ObjectInspector standardOI;
-    SerDe serde;
-    TableDesc tblDesc;
-    Configuration conf;
-    boolean hasFilter;
-
-    /**
-     * @param standardOI
-     * @param serde
-     */
-    public HashTableSinkObjectCtx(ObjectInspector standardOI, SerDe serde, TableDesc tblDesc,
-        boolean hasFilter, Configuration conf) {
-      this.standardOI = standardOI;
-      this.serde = serde;
-      this.tblDesc = tblDesc;
-      this.hasFilter = hasFilter;
-      this.conf = conf;
-    }
-
-    /**
-     * @return the standardOI
-     */
-    public ObjectInspector getStandardOI() {
-      return standardOI;
-    }
-
-    /**
-     * @return the serde
-     */
-    public SerDe getSerDe() {
-      return serde;
-    }
-
-    public TableDesc getTblDesc() {
-      return tblDesc;
-    }
-
-    public boolean hasFilterTag() {
-      return hasFilter;
-    }
-
-    public Configuration getConf() {
-      return conf;
-    }
-
-  }
-
-  public static MapJoinMetaData getMetadata() {
-    return metadata;
-  }
-
-  private static final transient String[] FATAL_ERR_MSG = {
-      null, // counter value 0 means no error
-      "Mapside join exceeds available memory. "
-          + "Please try removing the mapjoin hint."};
-  private final int metadataKeyTag = -1;
-  transient int[] metadataValueTag;
-
-
+  private MapJoinMemoryExhaustionHandler memoryExhaustionHandler;
+  
   public HashTableSinkOperator() {
   }
 
@@ -189,8 +113,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
   protected void initializeOp(Configuration hconf) throws HiveException {
     boolean isSilent = HiveConf.getBoolVar(hconf, HiveConf.ConfVars.HIVESESSIONSILENT);
     console = new LogHelper(LOG, isSilent);
-    numMapRowsRead = 0;
-    firstRow = true;
+    memoryExhaustionHandler = new MapJoinMemoryExhaustionHandler(console, conf.getHashtableMemoryUsage());
 
     // for small tables only; so get the big table position first
     posBigTableAlias = conf.getPosBigTable();
@@ -198,9 +121,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     order = conf.getTagOrder();
 
     // initialize some variables, which used to be initialized in CommonJoinOperator
-    numAliases = conf.getExprs().size();
     this.hconf = hconf;
-    totalSz = 0;
 
     noOuterJoin = conf.isNoOuterJoin();
     filterMaps = conf.getFilterMap();
@@ -212,16 +133,12 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     JoinUtil.populateJoinKeyValue(joinKeys, conf.getKeys(), posBigTableAlias);
     joinKeysObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinKeys,
         inputObjInspectors, posBigTableAlias, tagLen);
-    joinKeysStandardObjectInspectors = JoinUtil.getStandardObjectInspectors(
-        joinKeysObjectInspectors, posBigTableAlias, tagLen);
 
     // process join values
     joinValues = new List[tagLen];
     JoinUtil.populateJoinKeyValue(joinValues, conf.getExprs(), posBigTableAlias);
     joinValuesObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinValues,
         inputObjInspectors, posBigTableAlias, tagLen);
-    joinValuesStandardObjectInspectors = JoinUtil.getStandardObjectInspectors(
-        joinValuesObjectInspectors, posBigTableAlias, tagLen);
 
     // process join filters
     joinFilters = new List[tagLen];
@@ -229,9 +146,7 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     joinFilterObjectInspectors = JoinUtil.getObjectInspectorsFromEvaluators(joinFilters,
         inputObjInspectors, posBigTableAlias, tagLen);
 
-    if (noOuterJoin) {
-      rowContainerStandardObjectInspectors = joinValuesStandardObjectInspectors;
-    } else {
+    if (!noOuterJoin) {
       List<ObjectInspector>[] rowContainerObjectInspectors = new List[tagLen];
       for (Byte alias : order) {
         if (alias == posBigTableAlias) {
@@ -245,43 +160,43 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
         }
         rowContainerObjectInspectors[alias] = rcOIs;
       }
-      rowContainerStandardObjectInspectors = getStandardObjectInspectors(
-          rowContainerObjectInspectors, tagLen);
     }
-
-    metadataValueTag = new int[numAliases];
-    for (int pos = 0; pos < numAliases; pos++) {
-      metadataValueTag[pos] = -1;
-    }
-    mapJoinTables = new HashMapWrapper[tagLen];
-
+    mapJoinTables = new MapJoinTableContainer[tagLen];
+    mapJoinTableSerdes = new MapJoinTableContainerSerDe[tagLen];
     int hashTableThreshold = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEHASHTABLETHRESHOLD);
     float hashTableLoadFactor = HiveConf.getFloatVar(hconf,
         HiveConf.ConfVars.HIVEHASHTABLELOADFACTOR);
-    float hashTableMaxMemoryUsage = this.getConf().getHashtableMemoryUsage();
-
     hashTableScale = HiveConf.getLongVar(hconf, HiveConf.ConfVars.HIVEHASHTABLESCALE);
     if (hashTableScale <= 0) {
       hashTableScale = 1;
     }
-
-    // initialize the hash tables for other tables
-    for (Byte pos : order) {
-      if (pos == posBigTableAlias) {
-        continue;
+    try {
+      TableDesc keyTableDesc = conf.getKeyTblDesc();
+      SerDe keySerde = (SerDe) ReflectionUtils.newInstance(keyTableDesc.getDeserializerClass(),
+          null);
+      keySerde.initialize(null, keyTableDesc.getProperties());
+      MapJoinObjectSerDeContext keyContext = new MapJoinObjectSerDeContext(keySerde, false);
+      for (Byte pos : order) {
+        if (pos == posBigTableAlias) {
+          continue;
+        }
+        mapJoinTables[pos] = new HashMapWrapper(hashTableThreshold, hashTableLoadFactor);        
+        TableDesc valueTableDesc = conf.getValueTblFilteredDescs().get(pos);
+        SerDe valueSerDe = (SerDe) ReflectionUtils.newInstance(valueTableDesc.getDeserializerClass(), null);
+        valueSerDe.initialize(null, valueTableDesc.getProperties());
+        mapJoinTableSerdes[pos] = new MapJoinTableContainerSerDe(keyContext, new MapJoinObjectSerDeContext(
+            valueSerDe, hasFilter(pos)));
       }
-
-      HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashTable = new HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue>(
-          hashTableThreshold, hashTableLoadFactor, hashTableMaxMemoryUsage);
-
-      mapJoinTables[pos] = hashTable;
+    } catch (SerDeException e) {
+      throw new HiveException(e);
     }
   }
 
 
 
-  protected static List<ObjectInspector>[] getStandardObjectInspectors(
+  private static List<ObjectInspector>[] getStandardObjectInspectors(
       List<ObjectInspector>[] aliasToObjectInspectors, int maxTag) {
+    @SuppressWarnings("unchecked")
     List<ObjectInspector>[] result = new List[maxTag];
     for (byte alias = 0; alias < aliasToObjectInspectors.length; alias++) {
       List<ObjectInspector> oiList = aliasToObjectInspectors[alias];
@@ -299,104 +214,34 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
 
   }
 
-  private void setKeyMetaData() throws SerDeException {
-    TableDesc keyTableDesc = conf.getKeyTblDesc();
-    SerDe keySerializer = (SerDe) ReflectionUtils.newInstance(keyTableDesc.getDeserializerClass(),
-        null);
-    keySerializer.initialize(null, keyTableDesc.getProperties());
-
-    metadata.put(Integer.valueOf(metadataKeyTag), new HashTableSinkObjectCtx(
-        ObjectInspectorUtils.getStandardObjectInspector(keySerializer.getObjectInspector(),
-            ObjectInspectorCopyOption.WRITABLE), keySerializer, keyTableDesc, false, hconf));
-  }
-
-  private boolean hasFilter(int alias) {
-    return filterMaps != null && filterMaps[alias] != null;
-  }
   /*
    * This operator only process small tables Read the key/value pairs Load them into hashtable
    */
   @Override
   public void processOp(Object row, int tag) throws HiveException {
-    // let the mapJoinOp process these small tables
-    try {
-      if (firstRow) {
-        // generate the map metadata
-        setKeyMetaData();
-        firstRow = false;
+    alias = (byte)tag;
+    // compute keys and values as StandardObjects
+    MapJoinKey key = JoinUtil.computeMapJoinKeys(null, row, joinKeys[alias],
+        joinKeysObjectInspectors[alias]);
+    Object[] value = JoinUtil.computeMapJoinValues(row, joinValues[alias],
+        joinValuesObjectInspectors[alias], joinFilters[alias], joinFilterObjectInspectors[alias],
+        filterMaps == null ? null : filterMaps[alias]);
+    MapJoinTableContainer tableContainer = mapJoinTables[alias];
+    MapJoinRowContainer rowContainer = tableContainer.get(key);
+    if (rowContainer == null) {
+      rowContainer = new MapJoinRowContainer();
+      rowContainer.add(value);
+      rowNumber++;
+      if (rowNumber > hashTableScale && rowNumber % hashTableScale == 0) {
+        memoryExhaustionHandler.checkMemoryStatus(tableContainer.size(), rowNumber);
       }
-      alias = (byte)tag;
-
-      // compute keys and values as StandardObjects
-      AbstractMapJoinKey keyMap = JoinUtil.computeMapJoinKeys(row, joinKeys[alias],
-          joinKeysObjectInspectors[alias]);
-
-      Object[] value = JoinUtil.computeMapJoinValues(row, joinValues[alias],
-          joinValuesObjectInspectors[alias], joinFilters[alias], joinFilterObjectInspectors[alias],
-          filterMaps == null ? null : filterMaps[alias]);
-
-      HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashTable = mapJoinTables[alias];
-
-      MapJoinObjectValue o = hashTable.get(keyMap);
-      MapJoinRowContainer<Object[]> res = null;
-
-      boolean needNewKey = true;
-      if (o == null) {
-        res = new MapJoinRowContainer<Object[]>();
-        res.add(value);
-
-        if (metadataValueTag[tag] == -1) {
-          metadataValueTag[tag] = order[tag];
-          setValueMetaData(tag);
-        }
-
-        // Construct externalizable objects for key and value
-        if (needNewKey) {
-          MapJoinObjectValue valueObj = new MapJoinObjectValue(
-              metadataValueTag[tag], res);
-
-          rowNumber++;
-          if (rowNumber > hashTableScale && rowNumber % hashTableScale == 0) {
-            isAbort = hashTable.isAbort(rowNumber, console);
-            if (isAbort) {
-              throw new HiveException("RunOutOfMeomoryUsage");
-            }
-          }
-          hashTable.put(keyMap, valueObj);
-        }
-
-      } else {
-        res = o.getObj();
-        res.add(value);
-      }
-
-
-    } catch (SerDeException e) {
-      throw new HiveException(e);
+      tableContainer.put(key, rowContainer);
+    } else {
+      rowContainer.add(value);
     }
-
   }
-
-  private void setValueMetaData(int tag) throws SerDeException {
-    TableDesc valueTableDesc = conf.getValueTblFilteredDescs().get(tag);
-    SerDe valueSerDe = (SerDe) ReflectionUtils.newInstance(valueTableDesc.getDeserializerClass(),
-        null);
-
-    valueSerDe.initialize(null, valueTableDesc.getProperties());
-
-    List<ObjectInspector> newFields = rowContainerStandardObjectInspectors[alias];
-    int length = newFields.size();
-    List<String> newNames = new ArrayList<String>(length);
-    for (int i = 0; i < length; i++) {
-      String tmp = new String("tmp_" + i);
-      newNames.add(tmp);
-    }
-    StandardStructObjectInspector standardOI = ObjectInspectorFactory
-        .getStandardStructObjectInspector(newNames, newFields);
-
-    int alias = Integer.valueOf(metadataValueTag[tag]);
-    metadata.put(Integer.valueOf(metadataValueTag[tag]), new HashTableSinkObjectCtx(
-        standardOI, valueSerDe, valueTableDesc, hasFilter(alias), hconf));
+  private boolean hasFilter(int alias) {
+    return filterMaps != null && filterMaps[alias] != null;
   }
 
   @Override
@@ -405,42 +250,36 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
       if (mapJoinTables != null) {
         // get tmp file URI
         String tmpURI = this.getExecContext().getLocalWork().getTmpFileURI();
-        LOG.info("Get TMP URI: " + tmpURI);
-        long fileLength;
+        LOG.info("Temp URI for side table: " + tmpURI);
         for (byte tag = 0; tag < mapJoinTables.length; tag++) {
           // get the key and value
-          HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashTable = mapJoinTables[tag];
-          if (hashTable == null) {
+          MapJoinTableContainer tableContainer = mapJoinTables[tag];
+          if (tableContainer == null) {
             continue;
           }
-
           // get current input file name
           String bigBucketFileName = getExecContext().getCurrentBigBucketFile();
-
           String fileName = getExecContext().getLocalWork().getBucketFileName(bigBucketFileName);
-
           // get the tmp URI path; it will be a hdfs path if not local mode
           String dumpFilePrefix = conf.getDumpFilePrefix();
           String tmpURIPath = Utilities.generatePath(tmpURI, dumpFilePrefix, tag, fileName);
-          hashTable.isAbort(rowNumber, console);
-          console.printInfo(Utilities.now() + "\tDump the hashtable into file: " + tmpURIPath);
+          console.printInfo(Utilities.now() + "\tDump the side-table into file: " + tmpURIPath);
           // get the hashtable file and path
           Path path = new Path(tmpURIPath);
           FileSystem fs = path.getFileSystem(hconf);
-          File file = new File(path.toUri().getPath());
-          fs.create(path);
-          fileLength = hashTable.flushMemoryCacheToPersistent(file);
-          console.printInfo(Utilities.now() + "\tUpload 1 File to: " + tmpURIPath + " File size: "
-              + fileLength);
-
-          hashTable.close();
+          ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(fs.create(path), 4096));
+          try {
+            mapJoinTableSerdes[tag].persist(out, tableContainer);
+          } finally {
+            out.close();
+          }
+          tableContainer.clear();
+          console.printInfo(Utilities.now() + "\tUpload 1 File to: " + tmpURIPath);
         }
       }
-
       super.closeOp(abort);
     } catch (Exception e) {
-      LOG.error("Generate Hashtable error", e);
-      e.printStackTrace();
+      LOG.error("Error generating side-table", e);
     }
   }
 

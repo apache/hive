@@ -103,6 +103,51 @@ STAGE PLANS:
         b 
           Fetch Operator
             limit: -1
+            Partition Description:
+                Partition
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    part 1
+                  properties:
+                    bucket_count 2
+                    bucket_field_name key
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.srcbucket_mapjoin_part_2
+                    numFiles 2
+                    numRows 0
+                    partition_columns part
+                    rawDataSize 0
+                    serialization.ddl struct srcbucket_mapjoin_part_2 { i32 key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 2750
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucket_count -1
+                      columns key,value
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.srcbucket_mapjoin_part_2
+                      numFiles 2
+                      numPartitions 1
+                      numRows 0
+                      partition_columns part
+                      rawDataSize 0
+                      serialization.ddl struct srcbucket_mapjoin_part_2 { i32 key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 2750
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcbucket_mapjoin_part_2
+                  name: default.srcbucket_mapjoin_part_2
       Alias -> Map Local Operator Tree:
         b 
           TableScan
@@ -296,6 +341,51 @@ STAGE PLANS:
         b 
           Fetch Operator
             limit: -1
+            Partition Description:
+                Partition
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    part 1
+                  properties:
+                    bucket_count -1
+                    columns key,value
+                    columns.types int:string
+#### A masked pattern was here ####
+                    name default.srcbucket_mapjoin_part_3
+                    numFiles 2
+                    numRows 0
+                    partition_columns part
+                    rawDataSize 0
+                    serialization.ddl struct srcbucket_mapjoin_part_3 { i32 key, string value}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 2750
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucket_count 2
+                      bucket_field_name key
+                      columns key,value
+                      columns.types int:string
+#### A masked pattern was here ####
+                      name default.srcbucket_mapjoin_part_3
+                      numFiles 2
+                      numPartitions 1
+                      numRows 0
+                      partition_columns part
+                      rawDataSize 0
+                      serialization.ddl struct srcbucket_mapjoin_part_3 { i32 key, string value}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 2750
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.srcbucket_mapjoin_part_3
+                  name: default.srcbucket_mapjoin_part_3
       Alias -> Map Local Operator Tree:
         b 
           TableScan

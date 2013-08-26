@@ -62,12 +62,11 @@ import org.apache.hadoop.io.IntWritable;
     + "passed to the PreparedStatement object\n")
 @UDFType(deterministic = false)
 public class GenericUDFDBOutput extends GenericUDF {
-  private static Log LOG = LogFactory
+  private static final Log LOG = LogFactory
       .getLog(GenericUDFDBOutput.class.getName());
 
-  ObjectInspector[] argumentOI;
-  GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
-  Connection connection = null;
+  private transient ObjectInspector[] argumentOI;
+  private transient Connection connection = null;
   private String url;
   private String user;
   private String pass;

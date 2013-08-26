@@ -5695,10 +5695,14 @@ public final class OrcProto {
         implements com.google.protobuf.ProtocolMessageEnum {
       DIRECT(0, 0),
       DICTIONARY(1, 1),
+      DIRECT_V2(2, 2),
+      DICTIONARY_V2(3, 3),
       ;
       
       public static final int DIRECT_VALUE = 0;
       public static final int DICTIONARY_VALUE = 1;
+      public static final int DIRECT_V2_VALUE = 2;
+      public static final int DICTIONARY_V2_VALUE = 3;
       
       
       public final int getNumber() { return value; }
@@ -5707,6 +5711,8 @@ public final class OrcProto {
         switch (value) {
           case 0: return DIRECT;
           case 1: return DICTIONARY;
+          case 2: return DIRECT_V2;
+          case 3: return DICTIONARY_V2;
           default: return null;
         }
       }
@@ -5737,7 +5743,7 @@ public final class OrcProto {
       }
       
       private static final Kind[] VALUES = {
-        DIRECT, DICTIONARY, 
+        DIRECT, DICTIONARY, DIRECT_V2, DICTIONARY_V2, 
       };
       
       public static Kind valueOf(
@@ -11117,42 +11123,42 @@ public final class OrcProto {
       "eam.Kind\022\016\n\006column\030\002 \001(\r\022\016\n\006length\030\003 \001(\004",
       "\"r\n\004Kind\022\013\n\007PRESENT\020\000\022\010\n\004DATA\020\001\022\n\n\006LENGT" +
       "H\020\002\022\023\n\017DICTIONARY_DATA\020\003\022\024\n\020DICTIONARY_C" +
-      "OUNT\020\004\022\r\n\tSECONDARY\020\005\022\r\n\tROW_INDEX\020\006\"\221\001\n" +
+      "OUNT\020\004\022\r\n\tSECONDARY\020\005\022\r\n\tROW_INDEX\020\006\"\263\001\n" +
       "\016ColumnEncoding\022C\n\004kind\030\001 \002(\01625.org.apac" +
       "he.hadoop.hive.ql.io.orc.ColumnEncoding." +
-      "Kind\022\026\n\016dictionarySize\030\002 \001(\r\"\"\n\004Kind\022\n\n\006" +
-      "DIRECT\020\000\022\016\n\nDICTIONARY\020\001\"\214\001\n\014StripeFoote" +
-      "r\0229\n\007streams\030\001 \003(\0132(.org.apache.hadoop.h" +
-      "ive.ql.io.orc.Stream\022A\n\007columns\030\002 \003(\01320." +
-      "org.apache.hadoop.hive.ql.io.orc.ColumnE",
-      "ncoding\"\250\002\n\004Type\0229\n\004kind\030\001 \002(\0162+.org.apa" +
-      "che.hadoop.hive.ql.io.orc.Type.Kind\022\024\n\010s" +
-      "ubtypes\030\002 \003(\rB\002\020\001\022\022\n\nfieldNames\030\003 \003(\t\"\272\001" +
-      "\n\004Kind\022\013\n\007BOOLEAN\020\000\022\010\n\004BYTE\020\001\022\t\n\005SHORT\020\002" +
-      "\022\007\n\003INT\020\003\022\010\n\004LONG\020\004\022\t\n\005FLOAT\020\005\022\n\n\006DOUBLE" +
-      "\020\006\022\n\n\006STRING\020\007\022\n\n\006BINARY\020\010\022\r\n\tTIMESTAMP\020" +
-      "\t\022\010\n\004LIST\020\n\022\007\n\003MAP\020\013\022\n\n\006STRUCT\020\014\022\t\n\005UNIO" +
-      "N\020\r\022\013\n\007DECIMAL\020\016\022\010\n\004DATE\020\017\"x\n\021StripeInfo" +
-      "rmation\022\016\n\006offset\030\001 \001(\004\022\023\n\013indexLength\030\002" +
-      " \001(\004\022\022\n\ndataLength\030\003 \001(\004\022\024\n\014footerLength",
-      "\030\004 \001(\004\022\024\n\014numberOfRows\030\005 \001(\004\"/\n\020UserMeta" +
-      "dataItem\022\014\n\004name\030\001 \002(\t\022\r\n\005value\030\002 \002(\014\"\356\002" +
-      "\n\006Footer\022\024\n\014headerLength\030\001 \001(\004\022\025\n\rconten" +
-      "tLength\030\002 \001(\004\022D\n\007stripes\030\003 \003(\01323.org.apa" +
-      "che.hadoop.hive.ql.io.orc.StripeInformat" +
-      "ion\0225\n\005types\030\004 \003(\0132&.org.apache.hadoop.h" +
-      "ive.ql.io.orc.Type\022D\n\010metadata\030\005 \003(\01322.o" +
-      "rg.apache.hadoop.hive.ql.io.orc.UserMeta" +
-      "dataItem\022\024\n\014numberOfRows\030\006 \001(\004\022F\n\nstatis" +
-      "tics\030\007 \003(\01322.org.apache.hadoop.hive.ql.i",
-      "o.orc.ColumnStatistics\022\026\n\016rowIndexStride" +
-      "\030\010 \001(\r\"\255\001\n\nPostScript\022\024\n\014footerLength\030\001 " +
-      "\001(\004\022F\n\013compression\030\002 \001(\01621.org.apache.ha" +
-      "doop.hive.ql.io.orc.CompressionKind\022\034\n\024c" +
-      "ompressionBlockSize\030\003 \001(\004\022\023\n\007version\030\004 \003" +
-      "(\rB\002\020\001\022\016\n\005magic\030\300> \001(\t*:\n\017CompressionKin" +
-      "d\022\010\n\004NONE\020\000\022\010\n\004ZLIB\020\001\022\n\n\006SNAPPY\020\002\022\007\n\003LZO" +
-      "\020\003"
+      "Kind\022\026\n\016dictionarySize\030\002 \001(\r\"D\n\004Kind\022\n\n\006" +
+      "DIRECT\020\000\022\016\n\nDICTIONARY\020\001\022\r\n\tDIRECT_V2\020\002\022" +
+      "\021\n\rDICTIONARY_V2\020\003\"\214\001\n\014StripeFooter\0229\n\007s" +
+      "treams\030\001 \003(\0132(.org.apache.hadoop.hive.ql" +
+      ".io.orc.Stream\022A\n\007columns\030\002 \003(\01320.org.ap",
+      "ache.hadoop.hive.ql.io.orc.ColumnEncodin" +
+      "g\"\250\002\n\004Type\0229\n\004kind\030\001 \002(\0162+.org.apache.ha" +
+      "doop.hive.ql.io.orc.Type.Kind\022\024\n\010subtype" +
+      "s\030\002 \003(\rB\002\020\001\022\022\n\nfieldNames\030\003 \003(\t\"\272\001\n\004Kind" +
+      "\022\013\n\007BOOLEAN\020\000\022\010\n\004BYTE\020\001\022\t\n\005SHORT\020\002\022\007\n\003IN" +
+      "T\020\003\022\010\n\004LONG\020\004\022\t\n\005FLOAT\020\005\022\n\n\006DOUBLE\020\006\022\n\n\006" +
+      "STRING\020\007\022\n\n\006BINARY\020\010\022\r\n\tTIMESTAMP\020\t\022\010\n\004L" +
+      "IST\020\n\022\007\n\003MAP\020\013\022\n\n\006STRUCT\020\014\022\t\n\005UNION\020\r\022\013\n" +
+      "\007DECIMAL\020\016\022\010\n\004DATE\020\017\"x\n\021StripeInformatio" +
+      "n\022\016\n\006offset\030\001 \001(\004\022\023\n\013indexLength\030\002 \001(\004\022\022",
+      "\n\ndataLength\030\003 \001(\004\022\024\n\014footerLength\030\004 \001(\004" +
+      "\022\024\n\014numberOfRows\030\005 \001(\004\"/\n\020UserMetadataIt" +
+      "em\022\014\n\004name\030\001 \002(\t\022\r\n\005value\030\002 \002(\014\"\356\002\n\006Foot" +
+      "er\022\024\n\014headerLength\030\001 \001(\004\022\025\n\rcontentLengt" +
+      "h\030\002 \001(\004\022D\n\007stripes\030\003 \003(\01323.org.apache.ha" +
+      "doop.hive.ql.io.orc.StripeInformation\0225\n" +
+      "\005types\030\004 \003(\0132&.org.apache.hadoop.hive.ql" +
+      ".io.orc.Type\022D\n\010metadata\030\005 \003(\01322.org.apa" +
+      "che.hadoop.hive.ql.io.orc.UserMetadataIt" +
+      "em\022\024\n\014numberOfRows\030\006 \001(\004\022F\n\nstatistics\030\007",
+      " \003(\01322.org.apache.hadoop.hive.ql.io.orc." +
+      "ColumnStatistics\022\026\n\016rowIndexStride\030\010 \001(\r" +
+      "\"\255\001\n\nPostScript\022\024\n\014footerLength\030\001 \001(\004\022F\n" +
+      "\013compression\030\002 \001(\01621.org.apache.hadoop.h" +
+      "ive.ql.io.orc.CompressionKind\022\034\n\024compres" +
+      "sionBlockSize\030\003 \001(\004\022\023\n\007version\030\004 \003(\rB\002\020\001" +
+      "\022\016\n\005magic\030\300> \001(\t*:\n\017CompressionKind\022\010\n\004N" +
+      "ONE\020\000\022\010\n\004ZLIB\020\001\022\n\n\006SNAPPY\020\002\022\007\n\003LZO\020\003"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

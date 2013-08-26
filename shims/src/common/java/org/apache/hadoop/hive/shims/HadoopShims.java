@@ -343,11 +343,18 @@ public interface HadoopShims {
   public String getJobLauncherHttpAddress(Configuration conf);
 
 
- /**
-  *  Perform kerberos login using the given principal and keytab
- * @throws IOException
-  */
+  /**
+   *  Perform kerberos login using the given principal and keytab
+   * @throws IOException
+   */
   public void loginUserFromKeytab(String principal, String keytabFile) throws IOException;
+
+  /**
+   * Perform kerberos re-login using the given principal and keytab, to renew
+   * the credentials
+   * @throws IOException
+   */
+  public void reLoginUserFromKeytab() throws IOException;
 
   /**
    * Move the directory/file to trash. In case of the symlinks or mount points, the file is
@@ -386,6 +393,13 @@ public interface HadoopShims {
    */
   UserGroupInformation createProxyUser(String userName) throws IOException;
 
+  /**
+   * The method sets to set the partition file has a different signature between
+   * hadoop versions.
+   * @param jobConf
+   * @param partition
+   */
+  void setTotalOrderPartitionFile(JobConf jobConf, Path partition);
   /**
    * InputSplitShim.
    *

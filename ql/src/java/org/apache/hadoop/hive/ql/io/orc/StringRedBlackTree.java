@@ -17,10 +17,10 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import org.apache.hadoop.io.Text;
-
 import java.io.IOException;
 import java.io.OutputStream;
+
+import org.apache.hadoop.io.Text;
 
 /**
  * A red-black tree that stores strings. The strings are stored as UTF-8 bytes
@@ -147,7 +147,7 @@ class StringRedBlackTree extends RedBlackTree {
 
   /**
    * Visit all of the nodes in the tree in sorted order.
-   * @param visitor the action to be applied to each ndoe
+   * @param visitor the action to be applied to each node
    * @throws IOException
    */
   public void visit(Visitor visitor) throws IOException {
@@ -161,6 +161,17 @@ class StringRedBlackTree extends RedBlackTree {
     super.clear();
     byteArray.clear();
     keyOffsets.clear();
+  }
+
+  public void getText(Text result, int originalPosition) {
+    int offset = keyOffsets.get(originalPosition);
+    int length;
+    if (originalPosition + 1 == keyOffsets.size()) {
+      length = byteArray.size() - offset;
+    } else {
+      length = keyOffsets.get(originalPosition + 1) - offset;
+    }
+    byteArray.setText(result, offset, length);
   }
 
   /**

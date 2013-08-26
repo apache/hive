@@ -125,9 +125,9 @@ selectItem
 @init { gParent.msgs.push("selection target"); }
 @after { gParent.msgs.pop(); }
     :
-    ( selectExpression (KW_OVER ws=window_specification )?
+    ( selectExpression
       ((KW_AS? identifier) | (KW_AS LPAREN identifier (COMMA identifier)* RPAREN))?
-    ) -> ^(TOK_SELEXPR selectExpression identifier* $ws?)
+    ) -> ^(TOK_SELEXPR selectExpression identifier*)
     ;
 
 trfmClause

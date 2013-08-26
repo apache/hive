@@ -27,10 +27,4 @@ POSTHOOK: query: CREATE TABLE part(
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@part
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part
-PREHOOK: type: LOAD
-PREHOOK: Output: default@part
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part
-POSTHOOK: type: LOAD
-POSTHOOK: Output: default@part
 FAILED: SemanticException HAVING specified without GROUP BY

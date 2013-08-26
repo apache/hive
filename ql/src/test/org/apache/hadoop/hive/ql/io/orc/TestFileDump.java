@@ -18,15 +18,8 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -35,8 +28,14 @@ import java.io.FileReader;
 import java.io.PrintStream;
 import java.util.Random;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.junit.Before;
+import org.junit.Test;
 
 public class TestFileDump {
 
@@ -68,9 +67,6 @@ public class TestFileDump {
       this.s = s;
     }
   }
-
-  private static final String outputFilename =
-      File.separator + "orc-file-dump.out";
 
   private static void checkOutput(String expected,
                                   String actual) throws Exception {
@@ -114,8 +110,62 @@ public class TestFileDump {
     }
     writer.close();
     PrintStream origOut = System.out;
-    FileOutputStream myOut = new FileOutputStream(workDir + File.separator +
-        "orc-file-dump.out");
+    String outputFilename = File.separator + "orc-file-dump.out";
+    FileOutputStream myOut = new FileOutputStream(workDir + outputFilename);
+
+    // replace stdout and run command
+    System.setOut(new PrintStream(myOut));
+    FileDump.main(new String[]{testFilePath.toString()});
+    System.out.flush();
+    System.setOut(origOut);
+
+
+    checkOutput(resourceDir + outputFilename, workDir + outputFilename);
+  }
+
+  // Test that if the fraction of rows that have distinct strings is greater than the configured
+  // threshold dictionary encoding is turned off.  If dictionary encoding is turned off the length
+  // of the dictionary stream for the column will be 0 in the ORC file dump.
+  @Test
+  public void testDictionaryThreshold() throws Exception {
+    ObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = ObjectInspectorFactory.getReflectionObjectInspector
+          (MyRecord.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+    Configuration conf = new Configuration();
+    conf.setFloat(HiveConf.ConfVars.HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD.varname, 0.49f);
+    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
+        100000, CompressionKind.ZLIB, 10000, 10000);
+    Random r1 = new Random(1);
+    String[] words = new String[]{"It", "was", "the", "best", "of", "times,",
+        "it", "was", "the", "worst", "of", "times,", "it", "was", "the", "age",
+        "of", "wisdom,", "it", "was", "the", "age", "of", "foolishness,", "it",
+        "was", "the", "epoch", "of", "belief,", "it", "was", "the", "epoch",
+        "of", "incredulity,", "it", "was", "the", "season", "of", "Light,",
+        "it", "was", "the", "season", "of", "Darkness,", "it", "was", "the",
+        "spring", "of", "hope,", "it", "was", "the", "winter", "of", "despair,",
+        "we", "had", "everything", "before", "us,", "we", "had", "nothing",
+        "before", "us,", "we", "were", "all", "going", "direct", "to",
+        "Heaven,", "we", "were", "all", "going", "direct", "the", "other",
+        "way"};
+    int nextInt = 0;
+    for(int i=0; i < 21000; ++i) {
+      // Write out the same string twice, this guarantees the fraction of rows with
+      // distinct strings is 0.5
+      if (i % 2 == 0) {
+        nextInt = r1.nextInt(words.length);
+        // Append the value of i to the word, this guarantees when an index or word is repeated
+        // the actual string is unique.
+        words[nextInt] += "-" + i;
+      }
+      writer.addRow(new MyRecord(r1.nextInt(), r1.nextLong(),
+          words[nextInt]));
+    }
+    writer.close();
+    PrintStream origOut = System.out;
+    String outputFilename = File.separator + "orc-file-dump-dictionary-threshold.out";
+    FileOutputStream myOut = new FileOutputStream(workDir + outputFilename);
 
     // replace stdout and run command
     System.setOut(new PrintStream(myOut));
