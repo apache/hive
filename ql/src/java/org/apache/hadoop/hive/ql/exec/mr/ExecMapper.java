@@ -31,6 +31,8 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
+import org.apache.hadoop.hive.ql.exec.ObjectCache;
+import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -57,6 +59,7 @@ import org.apache.hadoop.util.StringUtils;
  */
 public class ExecMapper extends MapReduceBase implements Mapper {
 
+  private static final String PLAN_KEY = "__MAP_PLAN__";
   private MapOperator mo;
   private Map<String, FetchOperator> fetchOperators;
   private OutputCollector oc;
@@ -92,11 +95,20 @@ public class ExecMapper extends MapReduceBase implements Mapper {
     } catch (Exception e) {
       l4j.info("cannot get classpath: " + e.getMessage());
     }
+
+    setDone(false);
+
+    ObjectCache cache = ObjectCacheFactory.getCache(job);
+
     try {
       jc = job;
       execContext.setJc(jc);
       // create map and fetch operators
-      MapWork mrwork = Utilities.getMapWork(job);
+      MapWork mrwork = (MapWork) cache.retrieve(PLAN_KEY);
+      if (mrwork == null) {
+        mrwork = Utilities.getMapWork(job);
+        cache.cache(PLAN_KEY, mrwork);
+      }
       mo = new MapOperator();
       mo.setConf(mrwork);
       // initialize map operator
