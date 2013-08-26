@@ -52,6 +52,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   private static final Log LOG = LogFactory.getLog(MapJoinOperator.class.getName());
 
 
+  private transient String hashMapKey;
+  private transient ObjectCache cache;
   protected transient HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue>[] mapJoinTables;
 
   protected static MapJoinMetaData metadata = new MapJoinMetaData();
@@ -82,6 +84,9 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
     super.initializeOp(hconf);
 
+    hashMapKey = "__HASH_MAP_"+this.getOperatorId();
+    cache = ObjectCacheFactory.getCache(hconf);
+
     metadataValueTag = new int[numAliases];
     for (int pos = 0; pos < numAliases; pos++) {
       metadataValueTag[pos] = -1;
@@ -91,22 +96,29 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
     int tagLen = conf.getTagLength();
 
-    mapJoinTables = new HashMapWrapper[tagLen];
     rowContainerMap = new MapJoinRowContainer[tagLen];
-    // initialize the hash tables for other tables
-    for (int pos = 0; pos < numAliases; pos++) {
-      if (pos == posBigTable) {
-        continue;
+
+    mapJoinTables = (HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue>[]) cache.retrieve(hashMapKey);
+    hashTblInitedOnce = true;
+
+    if (mapJoinTables == null) {
+      mapJoinTables = new HashMapWrapper[tagLen];
+
+      // initialize the hash tables for other tables
+      for (int pos = 0; pos < numAliases; pos++) {
+        if (pos == posBigTable) {
+          continue;
+        }
+
+        HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashTable = new HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue>();
+
+        mapJoinTables[pos] = hashTable;
+        MapJoinRowContainer<ArrayList<Object>> rowContainer = new MapJoinRowContainer<ArrayList<Object>>();
+        rowContainerMap[pos] = rowContainer;
       }
 
-      HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue> hashTable = new HashMapWrapper<AbstractMapJoinKey, MapJoinObjectValue>();
-
-      mapJoinTables[pos] = hashTable;
-      MapJoinRowContainer<ArrayList<Object>> rowContainer = new MapJoinRowContainer<ArrayList<Object>>();
-      rowContainerMap[pos] = rowContainer;
+      hashTblInitedOnce = false;
     }
-
-    hashTblInitedOnce = false;
   }
 
   @Override
@@ -197,6 +209,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       LOG.error("Load Distributed Cache Error", e);
       throw new HiveException(e);
     }
+    cache.cache(hashMapKey, mapJoinTables);
   }
 
   // Load the hash table

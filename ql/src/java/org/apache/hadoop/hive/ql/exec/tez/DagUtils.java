@@ -578,7 +578,7 @@ public class DagUtils {
    * createTezDir creates a temporary directory in the scratchDir folder to
    * be used with Tez. Assumes scratchDir exists.
    */
-  public static Path createTezDir(Path scratchDir, Configuration conf) 
+  public static Path createTezDir(Path scratchDir, Configuration conf)
       throws IOException {
     Path tezDir = getTezDir(scratchDir);
     FileSystem fs = tezDir.getFileSystem(conf);
