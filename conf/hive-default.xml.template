@@ -1919,6 +1919,14 @@
   </description>
 </property>
 
+<property>
+  <name>hive.optimize.tez</name>
+  <value>false</value>
+  <description>
+    Setting this property turns on Tez execution. Needs tez installed on the
+    cluster. (Only availble on hadoop 2)
+  </description>
+</property>
 
 </configuration>
 

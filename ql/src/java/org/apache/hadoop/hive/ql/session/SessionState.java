@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.tez.TezSessionState;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -131,6 +132,8 @@ public class SessionState {
 
   private Map<String, List<String>> localMapRedErrors;
 
+  private final TezSessionState tezSessionState;
+
   /**
    * Lineage state.
    */
@@ -189,6 +192,7 @@ public class SessionState {
     this.conf = conf;
     isSilent = conf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
     ls = new LineageState();
+    tezSessionState = new TezSessionState();
     overriddenConfigurations = new HashMap<String, String>();
     overriddenConfigurations.putAll(HiveConf.getConfSystemProperties());
     // if there isn't already a session name, go ahead and create it.
@@ -279,6 +283,16 @@ public class SessionState {
           .getConf());
     } catch (HiveException e) {
       throw new RuntimeException(e);
+    }
+
+    if (HiveConf.getBoolVar(startSs.getConf(), HiveConf.ConfVars.HIVE_OPTIMIZE_TEZ)) {
+      try {
+        startSs.tezSessionState.open(startSs.getSessionId(), startSs.conf);
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
+    } else {
+       LOG.info("No Tez session required at this point. hive.optimize.tez is false.");
     }
 
     return startSs;
@@ -749,6 +763,12 @@ public class SessionState {
     } catch (IOException e) {
       LOG.info("Error removing session resource dir " + resourceDir, e);
     }
+
+    try {
+      tezSessionState.close();
+    } catch (Exception e) {
+      LOG.info("Error closing tez session", e);
+    }
   }
 
   /**
@@ -769,6 +789,10 @@ public class SessionState {
       }
     }
     return perfLogger;
+  }
+
+  public TezSessionState getTezSession() {
+    return tezSessionState;
   }
 
 }
