@@ -36,17 +36,16 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.LocalResource;
-import org.apache.tez.client.TezClient;
+import org.apache.tez.client.TezSession;
 import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.Edge;
-import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.client.DAGClient;
-import org.apache.tez.mapreduce.hadoop.MRHelpers;
 
 /**
  *
@@ -67,6 +66,7 @@ public class TezTask extends Task<TezWork> {
     boolean cleanContext = false;
     Context ctx = null;
     DAGClient client = null;
+    TezSessionState session = null;
 
     try {
       // Get or create Context object. If we create it we have to clean
@@ -75,6 +75,16 @@ public class TezTask extends Task<TezWork> {
       if (ctx == null) {
         ctx = new Context(conf);
         cleanContext = true;
+      }
+
+      // Need to remove this static hack. But this is the way currently to
+      // get a session.
+      SessionState ss = SessionState.get();
+      session = ss.getTezSession();
+      if (!session.isOpen()) {
+        // can happen if the user sets the tez flag after the session was
+        // established
+        session.open(ss.getSessionId(), conf);
       }
 
       // we will localize all the files (jars, plans, hashtables) to the
@@ -89,13 +99,13 @@ public class TezTask extends Task<TezWork> {
 
       // unless already installed on all the cluster nodes, we'll have to
       // localize hive-exec.jar as well.
-      LocalResource appJarLr = DagUtils.createHiveExecLocalResource(conf);
+      LocalResource appJarLr = session.getAppJarLr();
 
       // next we translate the TezWork to a Tez DAG
       DAG dag = build(jobConf, work, scratchDir, appJarLr, ctx);
 
       // submit will send the job to the cluster and start executing
-      client = submit(jobConf, dag, scratchDir, appJarLr);
+      client = submit(jobConf, dag, scratchDir, appJarLr, session.getSession());
 
       // finally monitor will print progress until the job is done
       TezJobMonitor monitor = new TezJobMonitor();
@@ -151,7 +161,7 @@ public class TezTask extends Task<TezWork> {
 
       // translate work to vertex
       JobConf wxConf = DagUtils.initializeVertexConf(conf, w);
-      Vertex wx = DagUtils.createVertex(wxConf, w, tezDir, 
+      Vertex wx = DagUtils.createVertex(wxConf, w, tezDir,
           i--, appJarLr, additionalLr, fs, ctx);
       dag.addVertex(wx);
       workToVertex.put(w, wx);
@@ -168,25 +178,12 @@ public class TezTask extends Task<TezWork> {
     return dag;
   }
 
-  private DAGClient submit(JobConf conf, DAG dag, Path scratchDir, LocalResource appJarLr)
+  private DAGClient submit(JobConf conf, DAG dag, Path scratchDir,
+      LocalResource appJarLr, TezSession session)
       throws IOException, TezException, InterruptedException {
 
-    TezClient tezClient = new TezClient(new TezConfiguration(conf));
-
-    // environment variables used by application master
-    Map<String,String> amEnv = new HashMap<String, String>();
-    MRHelpers.updateEnvironmentForMRTasks(conf, amEnv, false);
-
-    // setup local resources used by application master
-    Map<String, LocalResource> amLrs = new HashMap<String, LocalResource>();
-    amLrs.put(DagUtils.getBaseName(appJarLr), appJarLr);
-
-    Path tezDir = DagUtils.getTezDir(scratchDir);
-
     // ready to start execution on the cluster
-    DAGClient dagClient = tezClient.submitDAGApplication(dag, tezDir,
-        null, "default", Collections.singletonList(""), amEnv, amLrs,
-        new TezConfiguration(conf));
+    DAGClient dagClient = session.submitDAG(dag);
 
     return dagClient;
   }
@@ -209,7 +206,7 @@ public class TezTask extends Task<TezWork> {
       // jobClose needs to execute successfully otherwise fail task
       if (rc == 0) {
         rc = 3;
-        String mesg = "Job Commit failed with exception '" 
+        String mesg = "Job Commit failed with exception '"
           + Utilities.getNameMessage(e) + "'";
         console.printError(mesg, "\n" + StringUtils.stringifyException(e));
       }

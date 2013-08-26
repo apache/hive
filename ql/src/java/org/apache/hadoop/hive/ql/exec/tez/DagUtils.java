@@ -27,8 +27,8 @@ import java.util.Map;
 
 import javax.security.auth.login.LoginException;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -143,7 +143,7 @@ public class DagUtils {
    * @param w The second vertex (sink)
    * @return
    */
-  public static Edge createEdge(JobConf vConf, Vertex v, JobConf wConf, Vertex w) 
+  public static Edge createEdge(JobConf vConf, Vertex v, JobConf wConf, Vertex w)
       throws IOException {
 
     // Tez needs to setup output subsequent input pairs correctly
@@ -180,18 +180,18 @@ public class DagUtils {
     }
 
     // write out the operator plan
-    Path planPath = Utilities.setMapWork(conf, mapWork, 
+    Path planPath = Utilities.setMapWork(conf, mapWork,
         mrScratchDir.toUri().toString(), false);
     LocalResource planLr = createLocalResource(fs,
         planPath, LocalResourceType.FILE,
         LocalResourceVisibility.APPLICATION);
 
     // setup input paths and split info
-    List<Path> inputPaths = Utilities.getInputPaths(conf, mapWork, 
+    List<Path> inputPaths = Utilities.getInputPaths(conf, mapWork,
         mrScratchDir.toUri().toString(), ctx);
     Utilities.setInputPaths(conf, inputPaths);
 
-    InputSplitInfo inputSplitInfo = MRHelpers.generateInputSplits(conf, 
+    InputSplitInfo inputSplitInfo = MRHelpers.generateInputSplits(conf,
         new Path(tezDir, ""+seqNo));
 
     // create the directories FileSinkOperators need
@@ -332,7 +332,7 @@ public class DagUtils {
    * @throws LoginException if we are unable to figure user information
    * @throws IOException when any dfs operation fails.
    */
-  private static Path getDefaultDestDir(Configuration conf) throws LoginException, IOException {
+  public static Path getDefaultDestDir(Configuration conf) throws LoginException, IOException {
     UserGroupInformation ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
     String userName = ShimLoader.getHadoopShims().getShortUserName(ugi);
     String userPathStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_USER_INSTALL_DIR);
@@ -409,11 +409,11 @@ public class DagUtils {
   }
 
   // the api that finds the jar being used by this class on disk
-  private static String getExecJarPathLocal () throws URISyntaxException {
+  public static String getExecJarPathLocal () throws URISyntaxException {
       // returns the location on disc of the jar of this class.
     return DagUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI().toString();
   }
-  
+
   /*
    * Helper function to retrieve the basename of a local resource
    */
@@ -425,7 +425,7 @@ public class DagUtils {
    * @param pathStr - the string from which we try to determine the resource base name
    * @return the name of the resource from a given path string.
    */
-  private static String getResourceBaseName(String pathStr) {
+  public static String getResourceBaseName(String pathStr) {
     String[] splits = pathStr.split("/");
     return splits[splits.length - 1];
   }
@@ -466,7 +466,7 @@ public class DagUtils {
    * @return localresource from tez localization.
    * @throws IOException when any file system related calls fails.
    */
-  private static LocalResource localizeResource(Path src, Path dest, Configuration conf)
+  public static LocalResource localizeResource(Path src, Path dest, Configuration conf)
       throws IOException {
     FileSystem destFS = dest.getFileSystem(conf);
     if (!(destFS instanceof DistributedFileSystem)) {
@@ -483,79 +483,6 @@ public class DagUtils {
 
     return createLocalResource(destFS, dest, LocalResourceType.FILE,
         LocalResourceVisibility.APPLICATION);
-  }
-
-  /**
-   * Returns a local resource representing the hive-exec jar. This resource will
-   * be used to execute the plan on the cluster.
-   * @param conf
-   * @return LocalResource corresponding to the localized hive exec resource.
-   * @throws IOException when any file system related call fails.
-   * @throws LoginException when we are unable to determine the user.
-   * @throws URISyntaxException when current jar location cannot be determined.
-   */
-  public static LocalResource createHiveExecLocalResource(HiveConf conf)
-      throws IOException, LoginException, URISyntaxException {
-    String hiveJarDir = conf.getVar(HiveConf.ConfVars.HIVE_JAR_DIRECTORY);
-    String currentVersionPathStr = getExecJarPathLocal();
-    String currentJarName = getResourceBaseName(currentVersionPathStr);
-    FileSystem fs = null;
-    Path jarPath = null;
-    FileStatus dirStatus = null;
-
-    if (hiveJarDir != null) {
-      // check if it is a valid directory in HDFS
-      Path hiveJarDirPath = new Path(hiveJarDir);
-      fs = hiveJarDirPath.getFileSystem(conf);
-
-      if (!(fs instanceof DistributedFileSystem)) {
-        throw new IOException(ErrorMsg.INVALID_HDFS_URI.format(hiveJarDir));
-      }
-
-      try {
-        dirStatus = fs.getFileStatus(hiveJarDirPath);
-      } catch (FileNotFoundException fe) {
-        // do nothing
-      }
-      if ((dirStatus != null) && (dirStatus.isDir())) {
-        FileStatus[] listFileStatus = fs.listStatus(hiveJarDirPath);
-        for (FileStatus fstatus : listFileStatus) {
-          String jarName = getResourceBaseName(fstatus.getPath().toString());
-          if (jarName.equals(currentJarName)) {
-            // we have found the jar we need.
-            jarPath = fstatus.getPath();
-            return localizeResource(null, jarPath, conf);
-          }
-        }
-
-        // jar wasn't in the directory, copy the one in current use
-        if (jarPath == null) {
-          return localizeResource(new Path(currentVersionPathStr), hiveJarDirPath, conf);
-        }
-      }
-    }
-
-    /*
-     * specified location does not exist or is not a directory
-     * try to push the jar to the hdfs location pointed by
-     * config variable HIVE_INSTALL_DIR. Path will be
-     * HIVE_INSTALL_DIR/{username}/.hiveJars/
-     */
-    if ((hiveJarDir == null) || (dirStatus == null) ||
-        ((dirStatus != null) && (!dirStatus.isDir()))) {
-      Path dest = getDefaultDestDir(conf);
-      String destPathStr = dest.toString();
-      String jarPathStr = destPathStr + "/" + currentJarName;
-      dirStatus = fs.getFileStatus(dest);
-      if (dirStatus.isDir()) {
-        return localizeResource(new Path(currentVersionPathStr), new Path(jarPathStr), conf);
-      } else {
-        throw new IOException(ErrorMsg.INVALID_DIR.format(dest.toString()));
-      }
-    }
-
-    // we couldn't find any valid locations. Throw exception
-    throw new IOException(ErrorMsg.NO_VALID_LOCATIONS.getMsg());
   }
 
   /**
