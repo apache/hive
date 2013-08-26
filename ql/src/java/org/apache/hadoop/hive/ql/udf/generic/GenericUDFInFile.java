@@ -24,7 +24,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
 import java.util.HashSet;
 
 import org.apache.hadoop.hive.ql.exec.Description;
@@ -48,9 +47,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
     value = "_FUNC_(str, filename) - Returns true if str appears in the file")
 public class GenericUDFInFile extends GenericUDF {
 
-  HashSet<String> set;
-  ObjectInspector strObjectInspector;
-  ObjectInspector fileObjectInspector;
+  private HashSet<String> set;
+  private transient ObjectInspector strObjectInspector;
+  private transient ObjectInspector fileObjectInspector;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)

@@ -33,7 +33,7 @@ import org.apache.hadoop.io.BooleanWritable;
 @Description(name = "or", value = "a _FUNC_ b - Logical or")
 public class GenericUDFOPOr extends GenericUDF {
   private final BooleanWritable result = new BooleanWritable();
-  BooleanObjectInspector boi0,boi1;
+  private transient BooleanObjectInspector boi0,boi1;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)

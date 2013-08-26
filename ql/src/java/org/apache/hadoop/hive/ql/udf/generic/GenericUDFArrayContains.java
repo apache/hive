@@ -23,8 +23,8 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.io.BooleanWritable;
 
@@ -44,9 +44,9 @@ public class GenericUDFArrayContains extends GenericUDF {
   private static final int ARG_COUNT = 2; // Number of arguments to this UDF
   private static final String FUNC_NAME = "ARRAY_CONTAINS"; // External Name
 
-  private ObjectInspector valueOI;
-  private ListObjectInspector arrayOI;
-  private ObjectInspector arrayElementOI;
+  private transient ObjectInspector valueOI;
+  private transient ListObjectInspector arrayOI;
+  private transient ObjectInspector arrayElementOI;
   private BooleanWritable result;
 
   @Override

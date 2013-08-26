@@ -49,7 +49,6 @@ import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -389,17 +388,9 @@ public class GroupByOptimizer implements Transform {
         List<String> bucketCols = table.getBucketCols();
         return matchBucketSortCols(groupByCols, bucketCols, sortCols);
       } else {
-        PrunedPartitionList partsList = null;
+        PrunedPartitionList partsList;
         try {
-          partsList = pGraphContext.getOpToPartList().get(tableScanOp);
-          if (partsList == null) {
-            partsList = PartitionPruner.prune(table,
-                pGraphContext.getOpToPartPruner().get(tableScanOp),
-                pGraphContext.getConf(),
-                table.getTableName(),
-                pGraphContext.getPrunedPartitions());
-            pGraphContext.getOpToPartList().put(tableScanOp, partsList);
-          }
+          partsList = pGraphContext.getPrunedPartitions(table.getTableName(), tableScanOp);
         } catch (HiveException e) {
           LOG.error(StringUtils.stringifyException(e));
           throw new SemanticException(e.getMessage(), e);

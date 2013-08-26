@@ -61,9 +61,7 @@ public class ListBucketingPruner implements Transform {
 
     PrunedPartitionList partsList = ((LBOpPartitionWalkerCtx) opPartWalkerCtx).getPartitions();
     if (partsList != null) {
-      Set<Partition> parts = null;
-      parts = partsList.getConfirmedPartns();
-      parts.addAll(partsList.getUnknownPartns());
+      Set<Partition> parts = partsList.getPartitions();
       if ((parts != null) && (parts.size() > 0)) {
         for (Partition part : parts) {
           // only process partition which is skewed and list bucketed

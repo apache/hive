@@ -117,9 +117,11 @@ public class FosterStorageHandler extends HCatStorageHandler {
 
             String outputLocation;
 
-            if (Boolean.valueOf((String)tableDesc.getProperties().get("EXTERNAL"))
+            if ((dynHash == null)
+                   && Boolean.valueOf((String)tableDesc.getProperties().get("EXTERNAL"))
                    && jobInfo.getLocation() != null && jobInfo.getLocation().length() > 0) {
-                // honor external table that specifies the location
+                // honor custom location for external table apart from what metadata specifies
+                // only if we're not using dynamic partitioning - see HIVE-5011
                 outputLocation = jobInfo.getLocation();
             } else if (dynHash == null && jobInfo.getPartitionValues().size() == 0) {
                 // For non-partitioned tables, we send them to the temp dir

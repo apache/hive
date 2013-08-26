@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 public abstract class AbstractPrimitiveObjectInspector implements
     PrimitiveObjectInspector {
 
-  PrimitiveTypeEntry typeEntry;
+  transient PrimitiveTypeEntry typeEntry;
 
   /**
    * Construct a AbstractPrimitiveObjectInspector.

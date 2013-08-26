@@ -112,18 +112,15 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     /* Object Inspectors corresponding to the struct returned by TerminatePartial and the long
      * field within the struct - "count"
      */
-    private StructObjectInspector soi;
+    private transient StructObjectInspector soi;
 
-    private StructField columnTypeField;
-    private WritableStringObjectInspector columnTypeFieldOI;
-
-    private StructField countTruesField;
+    private transient StructField countTruesField;
     private WritableLongObjectInspector countTruesFieldOI;
 
-    private StructField countFalsesField;
+    private transient StructField countFalsesField;
     private WritableLongObjectInspector countFalsesFieldOI;
 
-    private StructField countNullsField;
+    private transient StructField countNullsField;
     private WritableLongObjectInspector countNullsFieldOI;
 
     /* Output of final result of the aggregation
@@ -140,10 +137,6 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
         inputOI = (PrimitiveObjectInspector) parameters[0];
       } else {
         soi = (StructObjectInspector) parameters[0];
-
-        columnTypeField = soi.getStructFieldRef("ColumnType");
-        columnTypeFieldOI = (WritableStringObjectInspector)
-                              columnTypeField.getFieldObjectInspector();
 
         countTruesField = soi.getStructFieldRef("CountTrues");
         countTruesFieldOI = (WritableLongObjectInspector)
@@ -313,7 +306,7 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     /* Object Inspector corresponding to the input parameter.
      */
     private PrimitiveObjectInspector inputOI;
-    private PrimitiveObjectInspector numVectorsOI;
+    private transient PrimitiveObjectInspector numVectorsOI;
 
     /* Partial aggregation result returned by TerminatePartial. Partial result is a struct
      * containing a long field named "count".
@@ -323,24 +316,21 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     /* Object Inspectors corresponding to the struct returned by TerminatePartial and the long
      * field within the struct - "count"
      */
-    private StructObjectInspector soi;
+    private transient StructObjectInspector soi;
 
-    private StructField columnType;
-    private WritableStringObjectInspector columnTypeFieldOI;
-
-    private StructField minField;
+    private transient StructField minField;
     private WritableLongObjectInspector minFieldOI;
 
-    private StructField maxField;
+    private transient StructField maxField;
     private WritableLongObjectInspector maxFieldOI;
 
-    private StructField countNullsField;
+    private transient StructField countNullsField;
     private WritableLongObjectInspector countNullsFieldOI;
 
-    private StructField ndvField;
+    private transient StructField ndvField;
     private WritableStringObjectInspector ndvFieldOI;
 
-    private StructField numBitVectorsField;
+    private transient StructField numBitVectorsField;
     private WritableIntObjectInspector numBitVectorsFieldOI;
 
     /* Output of final result of the aggregation
@@ -357,9 +347,6 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
         numVectorsOI = (PrimitiveObjectInspector) parameters[1];
       } else {
         soi = (StructObjectInspector) parameters[0];
-
-        columnType = soi.getStructFieldRef("ColumnType");
-        columnTypeFieldOI = (WritableStringObjectInspector) columnType.getFieldObjectInspector();
 
         minField = soi.getStructFieldRef("Min");
         minFieldOI = (WritableLongObjectInspector) minField.getFieldObjectInspector();
@@ -473,23 +460,6 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     }
 
     boolean warned = false;
-
-    private void printDebugOutput(String functionName, AggregationBuffer agg) {
-      LongStatsAgg myagg = (LongStatsAgg) agg;
-
-      LOG.debug(functionName);
-
-      LOG.debug("Max Value:");
-      LOG.debug(myagg.max);
-
-      LOG.debug("Min Value:");
-      LOG.debug(myagg.min);
-
-      LOG.debug("Count of Null Values:");
-      LOG.debug(myagg.countNulls);
-
-      myagg.numDV.printNumDistinctValueEstimator();
-    }
 
     @Override
     public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
@@ -632,7 +602,7 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     /* Object Inspector corresponding to the input parameter.
      */
     private PrimitiveObjectInspector inputOI;
-    private PrimitiveObjectInspector numVectorsOI;
+    private transient PrimitiveObjectInspector numVectorsOI;
 
     /* Partial aggregation result returned by TerminatePartial. Partial result is a struct
      * containing a long field named "count".
@@ -642,24 +612,21 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     /* Object Inspectors corresponding to the struct returned by TerminatePartial and the long
      * field within the struct - "count"
      */
-    private StructObjectInspector soi;
+    private transient StructObjectInspector soi;
 
-    private StructField columnTypeField;
-    private WritableStringObjectInspector columnTypeFieldOI;
-
-    private StructField minField;
+    private transient StructField minField;
     private WritableDoubleObjectInspector minFieldOI;
 
-    private StructField maxField;
+    private transient StructField maxField;
     private WritableDoubleObjectInspector maxFieldOI;
 
-    private StructField countNullsField;
+    private transient StructField countNullsField;
     private WritableLongObjectInspector countNullsFieldOI;
 
-    private StructField ndvField;
+    private transient StructField ndvField;
     private WritableStringObjectInspector ndvFieldOI;
 
-    private StructField numBitVectorsField;
+    private transient StructField numBitVectorsField;
     private WritableIntObjectInspector numBitVectorsFieldOI;
 
     /* Output of final result of the aggregation
@@ -676,10 +643,6 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
         numVectorsOI = (PrimitiveObjectInspector) parameters[1];
       } else {
         soi = (StructObjectInspector) parameters[0];
-
-        columnTypeField = soi.getStructFieldRef("ColumnType");
-        columnTypeFieldOI = (WritableStringObjectInspector)
-                               columnTypeField.getFieldObjectInspector();
 
         minField = soi.getStructFieldRef("Min");
         minFieldOI = (WritableDoubleObjectInspector) minField.getFieldObjectInspector();
@@ -793,23 +756,6 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     }
 
     boolean warned = false;
-
-    private void printDebugOutput(String functionName, AggregationBuffer agg) {
-      DoubleStatsAgg myagg = (DoubleStatsAgg) agg;
-
-      LOG.debug(functionName);
-
-      LOG.debug("Max Value:");
-      LOG.debug(myagg.max);
-
-      LOG.debug("Min Value:");
-      LOG.debug(myagg.min);
-
-      LOG.debug("Count of Null Values:");
-      LOG.debug(myagg.countNulls);
-
-      myagg.numDV.printNumDistinctValueEstimator();
-    }
 
     @Override
     public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
@@ -953,7 +899,7 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     /* Object Inspector corresponding to the input parameter.
      */
     private PrimitiveObjectInspector inputOI;
-    private PrimitiveObjectInspector numVectorsOI;
+    private transient PrimitiveObjectInspector numVectorsOI;
 
     /* Partial aggregation result returned by TerminatePartial. Partial result is a struct
      * containing a long field named "count".
@@ -963,27 +909,24 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     /* Object Inspectors corresponding to the struct returned by TerminatePartial and the
      * fields within the struct - "maxLength", "sumLength", "count", "countNulls", "ndv"
      */
-    private StructObjectInspector soi;
+    private transient StructObjectInspector soi;
 
-    private StructField columnTypeField;
-    private WritableStringObjectInspector columnTypeFieldOI;
-
-    private StructField maxLengthField;
+    private transient StructField maxLengthField;
     private WritableLongObjectInspector maxLengthFieldOI;
 
-    private StructField sumLengthField;
+    private transient StructField sumLengthField;
     private WritableLongObjectInspector sumLengthFieldOI;
 
-    private StructField countField;
+    private transient StructField countField;
     private WritableLongObjectInspector countFieldOI;
 
-    private StructField countNullsField;
+    private transient StructField countNullsField;
     private WritableLongObjectInspector countNullsFieldOI;
 
-    private StructField ndvField;
+    private transient StructField ndvField;
     private WritableStringObjectInspector ndvFieldOI;
 
-    private StructField numBitVectorsField;
+    private transient StructField numBitVectorsField;
     private WritableIntObjectInspector numBitVectorsFieldOI;
 
     /* Output of final result of the aggregation
@@ -1000,10 +943,6 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
         numVectorsOI = (PrimitiveObjectInspector) parameters[1];
       } else {
         soi = (StructObjectInspector) parameters[0];
-
-        columnTypeField = soi.getStructFieldRef("ColumnType");
-        columnTypeFieldOI = (WritableStringObjectInspector)
-                               columnTypeField.getFieldObjectInspector();
 
         maxLengthField = soi.getStructFieldRef("MaxLength");
         maxLengthFieldOI = (WritableLongObjectInspector) maxLengthField.getFieldObjectInspector();
@@ -1125,26 +1064,6 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     }
 
     boolean warned = false;
-
-    private void printDebugOutput(String functionName, AggregationBuffer agg) {
-      StringStatsAgg myagg = (StringStatsAgg) agg;
-
-      LOG.debug(functionName);
-
-      LOG.debug("Max Length:");
-      LOG.debug(myagg.maxLength);
-
-      LOG.debug("Sum of Length:");
-      LOG.debug(myagg.sumLength);
-
-      LOG.debug("Count of non-Null Values:");
-      LOG.debug(myagg.count);
-
-      LOG.debug("Count of Null Values:");
-      LOG.debug(myagg.countNulls);
-
-      myagg.numDV.printNumDistinctValueEstimator();
-    }
 
     @Override
     public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
@@ -1308,21 +1227,18 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     /* Object Inspectors corresponding to the struct returned by TerminatePartial and the
      * fields within the struct - "maxLength", "sumLength", "count", "countNulls"
      */
-    private StructObjectInspector soi;
+    private transient StructObjectInspector soi;
 
-    private StructField columnTypeField;
-    private WritableStringObjectInspector columnTypeFieldOI;
-
-    private StructField maxLengthField;
+    private transient StructField maxLengthField;
     private WritableLongObjectInspector maxLengthFieldOI;
 
-    private StructField sumLengthField;
+    private transient StructField sumLengthField;
     private WritableLongObjectInspector sumLengthFieldOI;
 
-    private StructField countField;
+    private transient StructField countField;
     private WritableLongObjectInspector countFieldOI;
 
-    private StructField countNullsField;
+    private transient StructField countNullsField;
     private WritableLongObjectInspector countNullsFieldOI;
 
     /* Output of final result of the aggregation
@@ -1338,10 +1254,6 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
         inputOI = (PrimitiveObjectInspector) parameters[0];
       } else {
         soi = (StructObjectInspector) parameters[0];
-
-        columnTypeField = soi.getStructFieldRef("ColumnType");
-        columnTypeFieldOI = (WritableStringObjectInspector)
-                               columnTypeField.getFieldObjectInspector();
 
         maxLengthField = soi.getStructFieldRef("MaxLength");
         maxLengthFieldOI = (WritableLongObjectInspector) maxLengthField.getFieldObjectInspector();
@@ -1481,24 +1393,6 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
           }
         }
       }
-    }
-
-    private void printDebugOutput(String functionName, AggregationBuffer agg) {
-      BinaryStatsAgg myagg = (BinaryStatsAgg) agg;
-
-      LOG.debug(functionName);
-
-      LOG.debug("Max Length:");
-      LOG.debug(myagg.maxLength);
-
-      LOG.debug("Sum of Length:");
-      LOG.debug(myagg.sumLength);
-
-      LOG.debug("Count of non-Null Values:");
-      LOG.debug(myagg.count);
-
-      LOG.debug("Count of Null Values:");
-      LOG.debug(myagg.countNulls);
     }
 
     @Override

@@ -475,13 +475,8 @@ public final class GenMapRedUtils {
 
     if (partsList == null) {
       try {
-        partsList = parseCtx.getOpToPartList().get((TableScanOperator) topOp);
-        if (partsList == null) {
-          partsList = PartitionPruner.prune(parseCtx.getTopToTable().get(topOp),
-              parseCtx.getOpToPartPruner().get(topOp), conf,
-              alias_id, parseCtx.getPrunedPartitions());
-          parseCtx.getOpToPartList().put((TableScanOperator) topOp, partsList);
-        }
+        TableScanOperator tsOp = (TableScanOperator) topOp;
+        partsList = PartitionPruner.prune(tsOp, parseCtx, alias_id);
       } catch (SemanticException e) {
         throw e;
       } catch (HiveException e) {
@@ -491,12 +486,9 @@ public final class GenMapRedUtils {
     }
 
     // Generate the map work for this alias_id
-    Set<Partition> parts = null;
     // pass both confirmed and unknown partitions through the map-reduce
     // framework
-
-    parts = partsList.getConfirmedPartns();
-    parts.addAll(partsList.getUnknownPartns());
+    Set<Partition> parts = partsList.getPartitions();
     PartitionDesc aliasPartnDesc = null;
     try {
       if (!parts.isEmpty()) {

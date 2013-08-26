@@ -103,17 +103,17 @@ public class GenericUDFTranslate extends GenericUDF {
   /**
    * If a code point needs to be replaced with another code point, this map with store the mapping.
    */
-  private Map<Integer, Integer> replacementMap = new HashMap<Integer, Integer>();
+  private final Map<Integer, Integer> replacementMap = new HashMap<Integer, Integer>();
 
   /**
    * This set stores all the code points which needed to be deleted from the input string. The
    * objects in deletionSet and keys in replacementMap are mutually exclusive
    */
-  private Set<Integer> deletionSet = new HashSet<Integer>();
+  private final Set<Integer> deletionSet = new HashSet<Integer>();
   /**
    * A placeholder for result.
    */
-  private Text result = new Text();
+  private final Text result = new Text();
 
   /**
    * The values of from parameter from the previous evaluate() call.
@@ -126,7 +126,7 @@ public class GenericUDFTranslate extends GenericUDF {
   /**
    * Converters for retrieving the arguments to the UDF.
    */
-  private ObjectInspectorConverters.Converter[] converters;
+  private transient ObjectInspectorConverters.Converter[] converters;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {

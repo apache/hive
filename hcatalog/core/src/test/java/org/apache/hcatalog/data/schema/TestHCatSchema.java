@@ -57,6 +57,13 @@ public class TestHCatSchema extends TestCase {
         assertEquals(2, schema.getFields().size());
     }
 
+    public void testHashCodeEquals() throws HCatException {
+        HCatFieldSchema memberID1 = new HCatFieldSchema("memberID", HCatFieldSchema.Type.INT, "as a number");
+        HCatFieldSchema memberID2 = new HCatFieldSchema("memberID", HCatFieldSchema.Type.INT, "as a number");
+        assertTrue("Expected objects to be equal", memberID1.equals(memberID2));
+        assertTrue("Expected hash codes to be equal", memberID1.hashCode() == memberID2.hashCode());
+    }
+
     public void testCannotInstantiateSchemaWithRepeatedFieldNames() throws HCatException {
         List<HCatFieldSchema> fieldSchemaList = new ArrayList<HCatFieldSchema>();
 
@@ -74,6 +81,23 @@ public class TestHCatSchema extends TestCase {
             fail("Able to add duplicate field name");
         } catch (IllegalArgumentException iae) {
             assertTrue(iae.getMessage().contains("Field named memberID already exists"));
+        }
+    }
+    public void testRemoveAddField() throws HCatException {
+        List<HCatFieldSchema> fieldSchemaList = new ArrayList<HCatFieldSchema>();
+
+        fieldSchemaList.add(new HCatFieldSchema("memberID", HCatFieldSchema.Type.INT, "as a number"));
+        HCatFieldSchema locationField = new HCatFieldSchema("location", HCatFieldSchema.Type.STRING, "there's Waldo");
+        fieldSchemaList.add(locationField);
+        HCatSchema schema = new HCatSchema(fieldSchemaList);
+        schema.remove(locationField);
+        Integer position = schema.getPosition(locationField.getName());
+        assertTrue("position is not null after remove" , position == null);
+        try {
+            schema.append(locationField);
+        }
+        catch (HCatException ex) {
+            assertFalse(ex.getMessage(), true);
         }
     }
 }

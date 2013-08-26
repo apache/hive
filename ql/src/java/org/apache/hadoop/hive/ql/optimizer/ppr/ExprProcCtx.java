@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 /**
  * The processor context for partition pruner. This contains the table alias
  * that is being currently processed.
+ * TODO: this class may be not useful.
  */
 public class ExprProcCtx implements NodeProcessorCtx {
 
@@ -31,15 +32,8 @@ public class ExprProcCtx implements NodeProcessorCtx {
    */
   String tabAlias;
 
-  /**
-   * Flag to hold whether there are any non partition columns accessed in the
-   * expression.
-   */
-  boolean hasNonPartCols;
-
   public ExprProcCtx(String tabAlias) {
     this.tabAlias = tabAlias;
-    hasNonPartCols = false;
   }
 
   public String getTabAlias() {
@@ -48,13 +42,5 @@ public class ExprProcCtx implements NodeProcessorCtx {
 
   public void setTabAlias(String tabAlias) {
     this.tabAlias = tabAlias;
-  }
-
-  public boolean getHasNonPartCols() {
-    return hasNonPartCols;
-  }
-
-  public void setHasNonPartCols(boolean val) {
-    hasNonPartCols = val;
   }
 }

@@ -30,14 +30,13 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.index.bitmap.BitmapObjectInput;
 import org.apache.hadoop.hive.ql.index.bitmap.BitmapObjectOutput;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableVoidObjectInspector;
 import org.apache.hadoop.io.LongWritable;
 
 /**
@@ -46,8 +45,7 @@ import org.apache.hadoop.io.LongWritable;
  */
 abstract public class AbstractGenericUDFEWAHBitmapBop extends GenericUDF {
   protected final ArrayList<Object> ret = new ArrayList<Object>();
-  private ObjectInspector b1OI;
-  private ObjectInspector b2OI;
+  private transient ObjectInspector b1OI;
   private final String name;
 
   AbstractGenericUDFEWAHBitmapBop(String name) {
@@ -70,15 +68,13 @@ abstract public class AbstractGenericUDFEWAHBitmapBop extends GenericUDF {
           + arguments[0].getTypeName() + "\" is found");
     }
 
-    if (arguments[1].getCategory().equals(Category.LIST)) {
-      b2OI = (ListObjectInspector) arguments[1];
-    } else {
+    if (!arguments[1].getCategory().equals(Category.LIST)) {
         throw new UDFArgumentTypeException(1, "\""
           + Category.LIST.toString().toLowerCase()
           + "\" is expected at function " + name + ", but \""
           + arguments[1].getTypeName() + "\" is found");
-    }
 
+    }
     return ObjectInspectorFactory
         .getStandardListObjectInspector(PrimitiveObjectInspectorFactory
             .writableLongObjectInspector);

@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order;
@@ -51,8 +52,11 @@ public class PTFDesc extends AbstractOperatorDesc
    */
   boolean isMapSide = false;
 
+  HiveConf cfg;
+
   static{
     PTFUtils.makeTransient(PTFDesc.class, "llInfo");
+    PTFUtils.makeTransient(PTFDesc.class, "cfg");
   }
 
   public PartitionedTableFunctionDef getFuncDef() {
@@ -85,6 +89,14 @@ public class PTFDesc extends AbstractOperatorDesc
 
   public void setMapSide(boolean isMapSide) {
     this.isMapSide = isMapSide;
+  }
+
+  public HiveConf getCfg() {
+    return cfg;
+  }
+
+  public void setCfg(HiveConf cfg) {
+    this.cfg = cfg;
   }
 
   public abstract static class PTFInputDef {

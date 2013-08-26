@@ -279,4 +279,14 @@ public class HCatFieldSchema implements Serializable {
         return true;
     }
 
+    @Override
+    public int hashCode() {
+        //result could be cached if this object were to be made immutable... 
+        int result = 17;
+        result = 31 * result + (category == null ? 0 : category.hashCode());
+        result = 31 * result + (fieldName == null ? 0 : fieldName.hashCode());
+        result = 31 * result + (getTypeString() == null ? 0 : 
+                getTypeString().hashCode());
+        return result;
+    }
 }

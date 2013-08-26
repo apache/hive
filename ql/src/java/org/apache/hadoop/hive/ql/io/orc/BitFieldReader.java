@@ -39,7 +39,7 @@ class BitFieldReader {
       current = 0xff & input.next();
       bitsLeft = 8;
     } else {
-      throw new EOFException("Read past end of bit field from " + input);
+      throw new EOFException("Read past end of bit field from " + this);
     }
   }
 
@@ -84,5 +84,11 @@ class BitFieldReader {
       current = input.next();
       bitsLeft = (int) (8 - (totalBits % 8));
     }
+  }
+
+  @Override
+  public String toString() {
+    return "bit reader current: " + current + " bits left: " + bitsLeft +
+        " bit size: " + bitSize + " from " + input;
   }
 }

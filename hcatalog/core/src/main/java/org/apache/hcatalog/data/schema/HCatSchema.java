@@ -36,6 +36,7 @@ public class HCatSchema implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private final List<HCatFieldSchema> fieldSchemas;
+    //HCatFieldSchema.getName()->position
     private final Map<String, Integer> fieldPositionMap;
     private final List<String> fieldNames;
 
@@ -118,7 +119,7 @@ public class HCatSchema implements Serializable {
         }
 
         fieldSchemas.remove(hcatFieldSchema);
-        fieldPositionMap.remove(hcatFieldSchema);
+        fieldPositionMap.remove(hcatFieldSchema.getName());
         fieldNames.remove(hcatFieldSchema.getName());
     }
 

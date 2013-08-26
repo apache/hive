@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
-import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
+import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -100,27 +100,15 @@ public final class PcrOpProcFactory {
       }
 
 
-      PrunedPartitionList prunedPartList = owc.getParseContext().getOpToPartList().get(top);
-      if (prunedPartList == null) {
-        // We never pruned the partition. Try to prune it.
-        ExprNodeDesc ppr_pred = owc.getParseContext().getOpToPartPruner().get(top);
-        if (ppr_pred == null) {
-          // no partition predicate found, skip.
-          return null;
-        }
-        try {
-          prunedPartList = PartitionPruner.prune(owc.getParseContext().getTopToTable().get(top),
-              ppr_pred, owc.getParseContext().getConf(),
-              (String) owc.getParseContext().getTopOps().keySet()
-              .toArray()[0], owc.getParseContext().getPrunedPartitions());
-          if (prunedPartList != null) {
-            owc.getParseContext().getOpToPartList().put(top, prunedPartList);
-          }
-        } catch (HiveException e) {
-          // Has to use full name to make sure it does not conflict with
-          // org.apache.commons.lang.StringUtils
-          throw new SemanticException(e.getMessage(), e);
-        }
+      ParseContext pctx = owc.getParseContext();
+      PrunedPartitionList prunedPartList;
+      try {
+        String alias = (String) owc.getParseContext().getTopOps().keySet().toArray()[0];
+        prunedPartList = pctx.getPrunedPartitions(alias, top);
+      } catch (HiveException e) {
+        // Has to use full name to make sure it does not conflict with
+        // org.apache.commons.lang.StringUtils
+        throw new SemanticException(e.getMessage(), e);
       }
 
       // Otherwise this is not a sampling predicate. We need to process it.
@@ -132,22 +120,16 @@ public final class PcrOpProcFactory {
         return null;
       }
 
-      for (Partition p : prunedPartList.getConfirmedPartns()) {
-        if (!p.getTable().isPartitioned()) {
-          return null;
-        }
-      }
-      for (Partition p : prunedPartList.getUnknownPartns()) {
+      for (Partition p : prunedPartList.getPartitions()) {
         if (!p.getTable().isPartitioned()) {
           return null;
         }
       }
 
-      partitions.addAll(prunedPartList.getConfirmedPartns());
-      partitions.addAll(prunedPartList.getUnknownPartns());
+      partitions.addAll(prunedPartList.getPartitions());
 
       PcrExprProcFactory.NodeInfoWrapper wrapper = PcrExprProcFactory.walkExprTree(
-          alias, partitions, predicate);
+          alias, partitions, top.getConf().getVirtualCols(), predicate);
 
       if (wrapper.state == PcrExprProcFactory.WalkState.TRUE) {
         owc.getOpToRemove().add(new PcrOpWalkerCtx.OpToDeleteInfo(pop, fop));

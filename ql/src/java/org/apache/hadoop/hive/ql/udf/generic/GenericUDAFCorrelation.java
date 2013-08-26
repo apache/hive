@@ -157,13 +157,13 @@ public class GenericUDAFCorrelation extends AbstractGenericUDAFResolver {
     private PrimitiveObjectInspector yInputOI;
 
     // For PARTIAL2 and FINAL
-    private StructObjectInspector soi;
-    private StructField countField;
-    private StructField xavgField;
-    private StructField yavgField;
-    private StructField xvarField;
-    private StructField yvarField;
-    private StructField covarField;
+    private transient StructObjectInspector soi;
+    private transient StructField countField;
+    private transient StructField xavgField;
+    private transient StructField yavgField;
+    private transient StructField xvarField;
+    private transient StructField yvarField;
+    private transient StructField covarField;
     private LongObjectInspector countFieldOI;
     private DoubleObjectInspector xavgFieldOI;
     private DoubleObjectInspector yavgFieldOI;

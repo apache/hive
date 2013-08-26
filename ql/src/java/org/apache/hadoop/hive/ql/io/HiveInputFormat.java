@@ -428,6 +428,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         } else {
           ColumnProjectionUtils.setFullyReadColumns(jobConf);
         }
+        ColumnProjectionUtils.appendReadColumnNames(jobConf,
+            tableScan.getNeededColumns());
 
         pushFilters(jobConf, tableScan);
       }

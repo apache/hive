@@ -63,6 +63,22 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
 
   private Warehouse wh;
 
+  /**
+   * Make sure that the warehouse variable is set up properly.
+   * @throws MetaException if unable to instantiate
+   */
+  private void initWh() throws MetaException {
+    if (wh == null){
+      if(!hive_db.isRunFromMetaStore()){
+        this.wh = new Warehouse(getConf());
+      }else{
+        // not good if we reach here, this was initialized at setMetaStoreHandler() time.
+        // this means handler.getWh() is returning null. Error out.
+        throw new IllegalStateException("Unitialized Warehouse from MetastoreHandler");
+      }
+    }
+  }
+
   @Override
   public void init(Configuration conf) throws HiveException {
     hive_db = new HiveProxy();
@@ -100,6 +116,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     // we try to determine what the path would be after the create table is issued.
     Path path = null;
     try {
+      initWh();
       String location = table.getTTable().getSd().getLocation();
       if (location == null || location.isEmpty()) {
         path = wh.getTablePath(hive_db.getDatabase(table.getDbName()), table.getTableName());
@@ -305,6 +322,7 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
 
   protected Path getDbLocation(Database db) throws HiveException {
     try {
+      initWh();
       String location = db.getLocationUri();
       if (location == null) {
         return wh.getDefaultDatabasePath(db.getName());
@@ -317,15 +335,11 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
   }
 
   private HiveException hiveException(Exception e) {
-    HiveException ex = new HiveException(e);
-    ex.initCause(e);
-    return ex;
+    return new HiveException(e);
   }
 
   private AuthorizationException authorizationException(Exception e) {
-    AuthorizationException ex = new AuthorizationException(e);
-    ex.initCause(e);
-    return ex;
+    return new AuthorizationException(e);
   }
 
   private static AccessControlException accessControlException(

@@ -2,14 +2,14 @@ PREHOOK: query: DESCRIBE FUNCTION hex
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION hex
 POSTHOOK: type: DESCFUNCTION
-hex(n or str) - Convert the argument to hexadecimal 
+hex(n, bin, or str) - Convert the argument to hexadecimal 
 PREHOOK: query: DESCRIBE FUNCTION EXTENDED hex
 PREHOOK: type: DESCFUNCTION
 POSTHOOK: query: DESCRIBE FUNCTION EXTENDED hex
 POSTHOOK: type: DESCFUNCTION
-hex(n or str) - Convert the argument to hexadecimal 
+hex(n, bin, or str) - Convert the argument to hexadecimal 
 If the argument is a string, returns two hex digits for each character in the string.
-If the argument is a number, returns the hexadecimal representation.
+If the argument is a number or binary, returns the hexadecimal representation.
 Example:
   > SELECT hex(17) FROM src LIMIT 1;
   'H1'

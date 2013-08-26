@@ -100,15 +100,6 @@ public class ParseContext {
    */
   private LineageInfo lInfo;
 
-  // is set to true if the expression only contains partitioning columns and not
-  // any other column reference.
-  // This is used to optimize select * from table where ... scenario, when the
-  // where condition only references
-  // partitioning columns - the partitions are identified and streamed directly
-  // to the client without requiring
-  // a map-reduce job
-  private boolean hasNonPartCols;
-
   private GlobalLimitCtx globalLimitCtx;
 
   private HashSet<ReadEntity> semanticInputs;
@@ -206,7 +197,6 @@ public class ParseContext {
     this.destTableId = destTableId;
     this.uCtx = uCtx;
     this.listMapJoinOpsNoReducer = listMapJoinOpsNoReducer;
-    hasNonPartCols = false;
     this.groupOpToInputTables = groupOpToInputTables;
     this.prunedPartitions = prunedPartitions;
     this.opToSamplePruner = opToSamplePruner;
@@ -515,22 +505,6 @@ public class ParseContext {
   }
 
   /**
-   * Sets the hasNonPartCols flag.
-   *
-   * @param val
-   */
-  public void setHasNonPartCols(boolean val) {
-    hasNonPartCols = val;
-  }
-
-  /**
-   * Gets the value of the hasNonPartCols flag.
-   */
-  public boolean getHasNonPartCols() {
-    return hasNonPartCols;
-  }
-
-  /**
    * @return the opToSamplePruner
    */
   public HashMap<TableScanOperator, sampleDesc> getOpToSamplePruner() {
@@ -640,8 +614,7 @@ public class ParseContext {
       throws HiveException {
     PrunedPartitionList partsList = opToPartList.get(ts);
     if (partsList == null) {
-      partsList = PartitionPruner.prune(topToTable.get(ts),
-          opToPartPruner.get(ts), conf, alias, prunedPartitions);
+      partsList = PartitionPruner.prune(ts, this, alias);
       opToPartList.put(ts, partsList);
     }
     return partsList;

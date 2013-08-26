@@ -32,7 +32,7 @@ import org.apache.hadoop.io.IntWritable;
  */
 @Description(name = "hash", value = "_FUNC_(a1, a2, ...) - Returns a hash value of the arguments")
 public class GenericUDFHash extends GenericUDF {
-  private ObjectInspector[] argumentOIs;
+  private transient ObjectInspector[] argumentOIs;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentTypeException {
@@ -41,7 +41,7 @@ public class GenericUDFHash extends GenericUDF {
     return PrimitiveObjectInspectorFactory.writableIntObjectInspector;
   }
 
-  private IntWritable result = new IntWritable();
+  private final IntWritable result = new IntWritable();
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {

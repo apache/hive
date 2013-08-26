@@ -22,21 +22,30 @@ import java.util.List;
 
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.Partition;
+import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 
 /**
  * The processor context for partition condition remover. This contains
  * partition pruned for the table scan and table alias.
  */
 public class PcrExprProcCtx implements NodeProcessorCtx {
+
   /**
    * The table alias that is being currently processed.
    */
   private final String tabAlias;
   private final List<Partition> partList;
+  private final List<VirtualColumn> vcs;
 
   public PcrExprProcCtx(String tabAlias, List<Partition> partList) {
+    this(tabAlias, partList, null);
+  }
+
+  public PcrExprProcCtx(String tabAlias, List<Partition> partList, List<VirtualColumn> vcs) {
+    super();
     this.tabAlias = tabAlias;
     this.partList = partList;
+    this.vcs = vcs;
   }
 
   public String getTabAlias() {
@@ -45,5 +54,9 @@ public class PcrExprProcCtx implements NodeProcessorCtx {
 
   public List<Partition> getPartList() {
     return partList;
+  }
+
+  public List<VirtualColumn> getVirtualColumns() {
+    return vcs;
   }
 }

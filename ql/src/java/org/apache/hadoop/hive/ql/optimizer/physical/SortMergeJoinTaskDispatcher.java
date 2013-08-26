@@ -284,11 +284,6 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
     Set<Integer> bigTableCandidates =
         MapJoinProcessor.getBigTableCandidates(originalSMBJoinDesc.getConds());
 
-    // no table could be the big table; there is no need to convert
-    if (bigTableCandidates == null) {
-      return null;
-    }
-
     HashMap<String, Long> aliasToSize = new HashMap<String, Long>();
     Configuration conf = context.getConf();
     try {

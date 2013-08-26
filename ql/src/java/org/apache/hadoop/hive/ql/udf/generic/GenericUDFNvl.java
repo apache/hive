@@ -22,8 +22,6 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 @Description(name = "nvl",
@@ -31,8 +29,8 @@ value = "_FUNC_(value,default_value) - Returns default value if value is null el
 extended = "Example:\n"
 + "  > SELECT _FUNC_(null,'bla') FROM src LIMIT 1;\n" + "  bla")
 public class GenericUDFNvl extends GenericUDF{
-  private GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
-  private ObjectInspector[] argumentOIs;
+  private transient GenericUDFUtils.ReturnObjectInspectorResolver returnOIResolver;
+  private transient ObjectInspector[] argumentOIs;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {

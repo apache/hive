@@ -173,8 +173,9 @@ function
         (star=STAR)
         | (dist=KW_DISTINCT)? (selectExpression (COMMA selectExpression)*)?
       )
-    RPAREN -> {$star != null}? ^(TOK_FUNCTIONSTAR functionName)
-           -> {$dist == null}? ^(TOK_FUNCTION functionName (selectExpression+)?)
+    RPAREN (KW_OVER ws=window_specification)?
+           -> {$star != null}? ^(TOK_FUNCTIONSTAR functionName $ws?)
+           -> {$dist == null}? ^(TOK_FUNCTION functionName (selectExpression+)? $ws?)
                             -> ^(TOK_FUNCTIONDI functionName (selectExpression+)?)
     ;
 

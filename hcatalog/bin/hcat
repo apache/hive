@@ -78,7 +78,7 @@ fi
 HIVE_HOME=${HIVE_HOME:-$HIVE_DIR}
 
 #if hive is not in path and not set by env, set it to default in build tree
-if [ -n ${HIVE_HOME} ]; then
+if [ ! -n "${HIVE_HOME}" ]; then
   HIVE_HOME="${bin}/../.."
   echoerr "HIVE_HOME is not defined; assuming ${HIVE_HOME}";
 fi

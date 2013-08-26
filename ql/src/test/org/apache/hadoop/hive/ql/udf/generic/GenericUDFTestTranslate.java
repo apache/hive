@@ -35,7 +35,7 @@ import org.apache.hadoop.io.Text;
  * Mimics oracle's function translate(str1, str2, str3).
  */
 public class GenericUDFTestTranslate extends GenericUDF {
-  ObjectInspector[] argumentOIs;
+  private transient ObjectInspector[] argumentOIs;
 
   /**
    * Return a corresponding ordinal from an integer.

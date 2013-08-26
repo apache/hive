@@ -25,7 +25,7 @@ import java.io.IOException;
  * repetition is offset by a delta. If the control byte is -1 to -128, 1 to 128
  * literal vint values follow.
  */
-class RunLengthIntegerWriter {
+class RunLengthIntegerWriter implements IntegerWriter {
   static final int MIN_REPEAT_SIZE = 3;
   static final int MAX_DELTA = 127;
   static final int MIN_DELTA = -128;
@@ -71,12 +71,14 @@ class RunLengthIntegerWriter {
     }
   }
 
-  void flush() throws IOException {
+  @Override
+  public void flush() throws IOException {
     writeValues();
     output.flush();
   }
 
-  void write(long value) throws IOException {
+  @Override
+  public void write(long value) throws IOException {
     if (numLiterals == 0) {
       literals[numLiterals++] = value;
       tailRunLength = 1;
@@ -130,8 +132,10 @@ class RunLengthIntegerWriter {
     }
   }
 
-  void getPosition(PositionRecorder recorder) throws IOException {
+  @Override
+  public void getPosition(PositionRecorder recorder) throws IOException {
     output.getPosition(recorder);
     recorder.addPosition(numLiterals);
   }
+
 }

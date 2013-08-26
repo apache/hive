@@ -591,12 +591,12 @@
                     <void property="typeInfo"> 
                      <object class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                       <void property="typeName"> 
-                       <string>int</string>
+                       <string>int</string> 
                       </void> 
                      </object> 
                     </void> 
                     <void property="value"> 
-                     <int>100</int>
+                     <int>100</int> 
                     </void> 
                    </object> 
                   </void> 
@@ -739,6 +739,16 @@
           </void> 
           <void method="add"> 
            <int>1</int> 
+          </void> 
+         </object> 
+        </void> 
+        <void property="neededColumns"> 
+         <object class="java.util.ArrayList"> 
+          <void method="add"> 
+           <string>key</string> 
+          </void> 
+          <void method="add"> 
+           <string>value</string> 
           </void> 
          </object> 
         </void> 

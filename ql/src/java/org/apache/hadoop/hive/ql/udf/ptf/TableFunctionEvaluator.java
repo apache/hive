@@ -61,8 +61,6 @@ public abstract class TableFunctionEvaluator
   transient protected StructObjectInspector rawInputOI;
   protected PartitionedTableFunctionDef tDef;
   protected PTFDesc ptfDesc;
-  String partitionClass;
-  int partitionMemSize;
   boolean transformsRawInput;
   transient protected PTFPartition outputPartition;
 
@@ -100,26 +98,6 @@ public abstract class TableFunctionEvaluator
     this.ptfDesc = ptfDesc;
   }
 
-  public String getPartitionClass()
-  {
-    return partitionClass;
-  }
-
-  public void setPartitionClass(String partitionClass)
-  {
-    this.partitionClass = partitionClass;
-  }
-
-  public int getPartitionMemSize()
-  {
-    return partitionMemSize;
-  }
-
-  public void setPartitionMemSize(int partitionMemSize)
-  {
-    this.partitionMemSize = partitionMemSize;
-  }
-
   public StructObjectInspector getRawInputOI()
   {
     return rawInputOI;
@@ -145,8 +123,9 @@ public abstract class TableFunctionEvaluator
     PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, pItr);
 
     if ( outputPartition == null ) {
-      outputPartition = new PTFPartition(getPartitionClass(),
-          getPartitionMemSize(), tDef.getOutputShape().getSerde(), OI);
+      outputPartition = PTFPartition.create(ptfDesc.getCfg(),
+          tDef.getOutputShape().getSerde(),
+          OI, tDef.getOutputShape().getOI());
     }
     else {
       outputPartition.reset();

@@ -122,7 +122,7 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable
        *  - reset input Partition
        * - set currentKey to the newKey if it is null or has changed.
        */
-      newKeys.getNewKey(row, inputPart.getOI());
+      newKeys.getNewKey(row, inputPart.getInputOI());
       boolean keysAreEqual = (currentKeys != null && newKeys != null)?
               newKeys.equals(currentKeys) : false;
 
@@ -394,14 +394,17 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable
   {
     PartitionedTableFunctionDef tabDef = conf.getStartOfChain();
     TableFunctionEvaluator tEval = tabDef.getTFunction();
-    String partClassName = tEval.getPartitionClass();
-    int partMemSize = tEval.getPartitionMemSize();
 
     PTFPartition part = null;
     SerDe serde = isMapSide ? tabDef.getInput().getOutputShape().getSerde() :
       tabDef.getRawInputShape().getSerde();
-    part = new PTFPartition(partClassName, partMemSize, serde,
-        (StructObjectInspector) oi);
+    StructObjectInspector outputOI = isMapSide ? tabDef.getInput().getOutputShape().getOI() :
+      tabDef.getRawInputShape().getOI();
+    part = PTFPartition.create(conf.getCfg(),
+        serde,
+        (StructObjectInspector) oi,
+        outputOI);
+
     return part;
 
   }

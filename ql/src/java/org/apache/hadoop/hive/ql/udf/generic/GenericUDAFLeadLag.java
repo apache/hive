@@ -94,10 +94,10 @@ public abstract class GenericUDAFLeadLag extends AbstractGenericUDAFResolver {
 
   public static abstract class GenericUDAFLeadLagEvaluator extends GenericUDAFEvaluator {
 
-    ObjectInspector[] inputOI;
-    int amt;
+    private transient ObjectInspector[] inputOI;
+    private int amt;
     String fnName;
-    Converter defaultValueConverter;
+    private transient Converter defaultValueConverter;
 
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException

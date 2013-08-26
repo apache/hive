@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardListObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -74,12 +73,11 @@ public class GenericUDAFEWAHBitmap extends AbstractGenericUDAFResolver {
 
     // For PARTIAL1 and COMPLETE: ObjectInspectors for original data
     private PrimitiveObjectInspector inputOI;
-    private LongObjectInspector bitmapLongOI;
 
     // For PARTIAL2 and FINAL: ObjectInspectors for partial aggregations
     // (lists of bitmaps)
-    private StandardListObjectInspector loi;
-    private StandardListObjectInspector internalMergeOI;
+    private transient StandardListObjectInspector loi;
+    private transient StandardListObjectInspector internalMergeOI;
 
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters)
@@ -93,13 +91,11 @@ public class GenericUDAFEWAHBitmap extends AbstractGenericUDAFResolver {
             .getStandardListObjectInspector(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
       } else if (m == Mode.PARTIAL2 || m == Mode.FINAL) {
         internalMergeOI = (StandardListObjectInspector) parameters[0];
-        bitmapLongOI = PrimitiveObjectInspectorFactory.writableLongObjectInspector;
         inputOI = PrimitiveObjectInspectorFactory.writableByteObjectInspector;
         loi = (StandardListObjectInspector) ObjectInspectorFactory
             .getStandardListObjectInspector(PrimitiveObjectInspectorFactory.writableLongObjectInspector);
         return loi;
       } else { // Mode.COMPLETE, ie. no map-side aggregation, requires ordering
-        bitmapLongOI = PrimitiveObjectInspectorFactory.writableLongObjectInspector;
         inputOI = PrimitiveObjectInspectorFactory.writableByteObjectInspector;
         loi = (StandardListObjectInspector) ObjectInspectorFactory
             .getStandardListObjectInspector(PrimitiveObjectInspectorFactory.writableLongObjectInspector);

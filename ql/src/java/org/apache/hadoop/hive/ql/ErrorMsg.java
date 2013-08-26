@@ -144,7 +144,7 @@ public enum ErrorMsg {
   COLUMN_ALIAS_ALREADY_EXISTS(10074, "Column alias already exists:", "42S02"),
   UDTF_MULTIPLE_EXPR(10075, "Only a single expression in the SELECT clause is "
       + "supported with UDTF's"),
-  UDTF_REQUIRE_AS(10076, "UDTF's require an AS clause"),
+  @Deprecated UDTF_REQUIRE_AS(10076, "UDTF's require an AS clause"),
   UDTF_NO_GROUP_BY(10077, "GROUP BY is not supported with a UDTF in the SELECT clause"),
   UDTF_NO_SORT_BY(10078, "SORT BY is not supported with a UDTF in the SELECT clause"),
   UDTF_NO_CLUSTER_BY(10079, "CLUSTER BY is not supported with a UDTF in the SELECT clause"),
@@ -360,9 +360,12 @@ public enum ErrorMsg {
   CANNOT_REPLACE_COLUMNS(10243, "Replace columns is not supported for table {0}. SerDe may be incompatible.", true),
   BAD_LOCATION_VALUE(10244, "{0}  is not absolute or has no scheme information.  Please specify a complete absolute uri with scheme information."),
   UNSUPPORTED_ALTER_TBL_OP(10245, "{0} alter table options is not supported"),
-  INVALID_HDFS_URI(10247, "{0} is not a hdfs uri", true),
-  INVALID_DIR(10248, "{0} is not a directory", true),
-  NO_VALID_LOCATIONS(10249, "Could not find any valid location to place the jars. " +
+  INVALID_BIGTABLE_MAPJOIN(10246, "{0} table chosen for streaming is not valid", true),
+  MISSING_OVER_CLAUSE(10247, "Missing over clause for function : "),
+
+  INVALID_HDFS_URI(10248, "{0} is not a hdfs uri", true),
+  INVALID_DIR(10249, "{0} is not a directory", true),
+  NO_VALID_LOCATIONS(10250, "Could not find any valid location to place the jars. " +
   "Please update hive.jar.directory or hive.user.install.directory with a valid location", false),
 
   SCRIPT_INIT_ERROR(20000, "Unable to initialize custom script."),

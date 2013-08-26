@@ -37,8 +37,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
     + "  '2009-01-01'")
 public class GenericUDFToDate extends GenericUDF {
 
-  private PrimitiveObjectInspector argumentOI;
-  private DateConverter dc;
+  private transient PrimitiveObjectInspector argumentOI;
+  private transient DateConverter dc;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {

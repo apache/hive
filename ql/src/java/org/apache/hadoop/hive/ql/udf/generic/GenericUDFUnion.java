@@ -35,8 +35,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspecto
    extended = "Example:\n"
    + "  > SELECT _FUNC_(1, 1, \"one\") FROM src LIMIT 1;\n" + "  one")
 public class GenericUDFUnion extends GenericUDF {
-  Log LOG = LogFactory.getLog("GenericUDFUnion");
-  ObjectInspector tagOI;
+  private transient ObjectInspector tagOI;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)

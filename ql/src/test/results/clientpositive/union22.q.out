@@ -104,6 +104,51 @@ STAGE PLANS:
         null-subquery2:subq-subquery2:b:dst_union22_delta 
           Fetch Operator
             limit: -1
+            Partition Description:
+                Partition
+                  base file name: ds=1
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  partition values:
+                    ds 1
+                  properties:
+                    bucket_count -1
+                    columns k0,k1,k2,k3,k4,k5
+                    columns.types string:string:string:string:string:string
+#### A masked pattern was here ####
+                    name default.dst_union22_delta
+                    numFiles 1
+                    numRows 500
+                    partition_columns ds
+                    rawDataSize 16936
+                    serialization.ddl struct dst_union22_delta { string k0, string k1, string k2, string k3, string k4, string k5}
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    totalSize 17436
+#### A masked pattern was here ####
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    properties:
+                      bucket_count -1
+                      columns k0,k1,k2,k3,k4,k5
+                      columns.types string:string:string:string:string:string
+#### A masked pattern was here ####
+                      name default.dst_union22_delta
+                      numFiles 1
+                      numPartitions 1
+                      numRows 500
+                      partition_columns ds
+                      rawDataSize 16936
+                      serialization.ddl struct dst_union22_delta { string k0, string k1, string k2, string k3, string k4, string k5}
+                      serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      totalSize 17436
+#### A masked pattern was here ####
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.dst_union22_delta
+                  name: default.dst_union22_delta
       Alias -> Map Local Operator Tree:
         null-subquery2:subq-subquery2:b:dst_union22_delta 
           TableScan

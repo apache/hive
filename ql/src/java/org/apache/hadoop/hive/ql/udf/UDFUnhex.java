@@ -27,18 +27,14 @@ import org.apache.hadoop.io.Text;
  *
  */
 @Description(name = "unhex",
-    value = "_FUNC_(str) - Converts hexadecimal argument to string",
+    value = "_FUNC_(str) - Converts hexadecimal argument to binary",
     extended = "Performs the inverse operation of HEX(str). That is, it interprets\n"
     + "each pair of hexadecimal digits in the argument as a number and\n"
-    + "converts it to the character represented by the number. The\n"
+    + "converts it to the byte representation of the number. The\n"
     + "resulting characters are returned as a binary string.\n\n"
     + "Example:\n"
-    + "> SELECT UNHEX('4D7953514C') from src limit 1;\n"
-    + "'MySQL'\n"
-    + "> SELECT UNHEX(HEX('string')) from src limit 1;\n"
-    + "'string'\n"
-    + "> SELECT HEX(UNHEX('1267')) from src limit 1;\n"
-    + "'1267'\n\n"
+    + "> SELECT DECODE(UNHEX('4D7953514C'), 'UTF-8') from src limit 1;\n"
+    + "'MySQL'\n\n"
     + "The characters in the argument string must be legal hexadecimal\n"
     + "digits: '0' .. '9', 'A' .. 'F', 'a' .. 'f'. If UNHEX() encounters\n"
     + "any nonhexadecimal digits in the argument, it returns NULL. Also,\n"
@@ -47,9 +43,9 @@ public class UDFUnhex extends UDF {
 
   /**
    * Convert every two hex digits in s into.
-   * 
+   *
    */
-  public Text evaluate(Text s) {
+  public byte[] evaluate(Text s) {
     if (s == null) {
       return null;
     }
@@ -72,6 +68,6 @@ public class UDFUnhex extends UDF {
       }
     }
 
-    return new Text(result);
+    return result;
   }
 }

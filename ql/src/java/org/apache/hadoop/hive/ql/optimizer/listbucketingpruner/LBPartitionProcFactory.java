@@ -31,7 +31,6 @@ import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 
 /**
  * Walk through top operators in tree to find all partitions.
@@ -55,25 +54,14 @@ public class LBPartitionProcFactory extends PrunerOperatorFactory {
 
       //Run partition pruner to get partitions
       ParseContext parseCtx = owc.getParseContext();
-      PrunedPartitionList prunedPartList = parseCtx.getOpToPartList().get(top);
-      if (prunedPartList == null) {
-        // We never pruned the partition. Try to prune it.
-        ExprNodeDesc ppr_pred = parseCtx.getOpToPartPruner().get(top);
-        if (ppr_pred != null) {
-          try {
-            prunedPartList = PartitionPruner.prune(parseCtx.getTopToTable().get(top),
-                ppr_pred, parseCtx.getConf(),
-                (String) parseCtx.getTopOps().keySet()
-                .toArray()[0], parseCtx.getPrunedPartitions());
-            if (prunedPartList != null) {
-              owc.getParseContext().getOpToPartList().put(top, prunedPartList);
-            }
-          } catch (HiveException e) {
-            // Has to use full name to make sure it does not conflict with
-            // org.apache.commons.lang.StringUtils
-            throw new SemanticException(e.getMessage(), e);
-          }
-        }
+      PrunedPartitionList prunedPartList;
+      try {
+        String alias = (String) parseCtx.getTopOps().keySet().toArray()[0];
+        prunedPartList = PartitionPruner.prune(top, parseCtx, alias);
+      } catch (HiveException e) {
+        // Has to use full name to make sure it does not conflict with
+        // org.apache.commons.lang.StringUtils
+        throw new SemanticException(e.getMessage(), e);
       }
 
       if (prunedPartList != null) {

@@ -20,17 +20,17 @@ package org.apache.hadoop.hive.ql.exec.persistence;
 
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
-public abstract class AbstractRowContainer<Row> {
+public abstract class AbstractRowContainer<ROW> {
 
   public AbstractRowContainer() {
 
   }
 
-  public abstract void add(Row t) throws HiveException;
+  public abstract void add(ROW t) throws HiveException;
 
-  public abstract Row first() throws HiveException;
+  public abstract ROW first() throws HiveException;
 
-  public abstract Row next() throws HiveException;
+  public abstract ROW next() throws HiveException;
 
   /**
    * Get the number of elements in the RowContainer.
