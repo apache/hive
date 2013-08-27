@@ -92,6 +92,12 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
 
   private transient MapJoinTableContainer[] mapJoinTables;
   private transient MapJoinTableContainerSerDe[] mapJoinTableSerdes;  
+
+  private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+  private static final MapJoinRowContainer EMPTY_ROW_CONTAINER = new MapJoinRowContainer();
+  static {
+    EMPTY_ROW_CONTAINER.add(EMPTY_OBJECT_ARRAY);
+  }
   
   private transient boolean noOuterJoin;
 
@@ -223,18 +229,29 @@ public class HashTableSinkOperator extends TerminalOperator<HashTableSinkDesc> i
     // compute keys and values as StandardObjects
     MapJoinKey key = JoinUtil.computeMapJoinKeys(null, row, joinKeys[alias],
         joinKeysObjectInspectors[alias]);
-    Object[] value = JoinUtil.computeMapJoinValues(row, joinValues[alias],
+    Object[] value = EMPTY_OBJECT_ARRAY;
+    if((hasFilter(alias) && filterMaps[alias].length > 0) || joinValues[alias].size() > 0) {
+      value = JoinUtil.computeMapJoinValues(row, joinValues[alias],
         joinValuesObjectInspectors[alias], joinFilters[alias], joinFilterObjectInspectors[alias],
         filterMaps == null ? null : filterMaps[alias]);
+    }
     MapJoinTableContainer tableContainer = mapJoinTables[alias];
     MapJoinRowContainer rowContainer = tableContainer.get(key);
     if (rowContainer == null) {
-      rowContainer = new MapJoinRowContainer();
-      rowContainer.add(value);
+      if(value.length != 0) {
+        rowContainer = new MapJoinRowContainer();
+        rowContainer.add(value);
+      } else {
+        rowContainer = EMPTY_ROW_CONTAINER;
+      }
       rowNumber++;
       if (rowNumber > hashTableScale && rowNumber % hashTableScale == 0) {
         memoryExhaustionHandler.checkMemoryStatus(tableContainer.size(), rowNumber);
       }
+      tableContainer.put(key, rowContainer);
+    } else if (rowContainer == EMPTY_ROW_CONTAINER) {
+      rowContainer = rowContainer.copy();
+      rowContainer.add(value);
       tableContainer.put(key, rowContainer);
     } else {
       rowContainer.add(value);
