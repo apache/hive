@@ -19,10 +19,6 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
@@ -386,29 +382,22 @@ public class TestVectorLogicalExpressions {
     }
 
     assertEquals(5, batch1.size);
-    Set<Integer> expectedSet = new HashSet<Integer>();
-    expectedSet.add(0);
-    expectedSet.add(2);
-    expectedSet.add(3);
-    expectedSet.add(4);
-    expectedSet.add(7);
-
-    assertTrue(expectedSet.contains(batch1.selected[0]));
-    assertTrue(expectedSet.contains(batch1.selected[1]));
-    assertTrue(expectedSet.contains(batch1.selected[2]));
-    assertTrue(expectedSet.contains(batch1.selected[3]));
-    assertTrue(expectedSet.contains(batch1.selected[4]));
+    assertEquals(0, batch1.selected[0]);
+    assertEquals(2, batch1.selected[1]);
+    assertEquals(3, batch1.selected[2]);
+    assertEquals(4, batch1.selected[3]);
+    assertEquals(7, batch1.selected[4]);
 
     // Repeat the expression on the same batch,
     // the result must be unchanged.
     orExpr.evaluate(batch1);
 
     assertEquals(5, batch1.size);
-    assertTrue(expectedSet.contains(batch1.selected[0]));
-    assertTrue(expectedSet.contains(batch1.selected[1]));
-    assertTrue(expectedSet.contains(batch1.selected[2]));
-    assertTrue(expectedSet.contains(batch1.selected[3]));
-    assertTrue(expectedSet.contains(batch1.selected[4]));
+    assertEquals(0, batch1.selected[0]);
+    assertEquals(2, batch1.selected[1]);
+    assertEquals(3, batch1.selected[2]);
+    assertEquals(4, batch1.selected[3]);
+    assertEquals(7, batch1.selected[4]);
   }
 
   @Test
@@ -437,18 +426,11 @@ public class TestVectorLogicalExpressions {
     orExpr.evaluate(batch1);
 
     assertEquals(5, batch1.size);
-    Set<Integer> expectedSet = new HashSet<Integer>();
-    expectedSet.add(0);
-    expectedSet.add(1);
-    expectedSet.add(3);
-    expectedSet.add(5);
-    expectedSet.add(6);
-
-    assertTrue(expectedSet.contains(batch1.selected[0]));
-    assertTrue(expectedSet.contains(batch1.selected[1]));
-    assertTrue(expectedSet.contains(batch1.selected[2]));
-    assertTrue(expectedSet.contains(batch1.selected[3]));
-    assertTrue(expectedSet.contains(batch1.selected[4]));
+    assertEquals(0, batch1.selected[0]);
+    assertEquals(1, batch1.selected[1]);
+    assertEquals(3, batch1.selected[2]);
+    assertEquals(5, batch1.selected[3]);
+    assertEquals(6, batch1.selected[4]);
   }
 
   @Test
@@ -475,14 +457,9 @@ public class TestVectorLogicalExpressions {
     orExpr.evaluate(batch1);
 
     assertEquals(3, batch1.size);
-    Set<Integer> expectedSet = new HashSet<Integer>();
-    expectedSet.add(0);
-    expectedSet.add(3);
-    expectedSet.add(7);
-
-    assertTrue(expectedSet.contains(batch1.selected[0]));
-    assertTrue(expectedSet.contains(batch1.selected[1]));
-    assertTrue(expectedSet.contains(batch1.selected[2]));
+    assertEquals(0, batch1.selected[0]);
+    assertEquals(3, batch1.selected[1]);
+    assertEquals(7, batch1.selected[2]);
   }
 
   @Test
