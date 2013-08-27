@@ -28,6 +28,9 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * expressions between columns.
  */
 public class LongColModuloDoubleColumn extends VectorExpression {
+
+  private static final long serialVersionUID = 1L;
+  
   private int colNum1;
   private int colNum2;
   private int outputColumn;
@@ -36,6 +39,9 @@ public class LongColModuloDoubleColumn extends VectorExpression {
     this.colNum1 = colNum1;
     this.colNum2 = colNum2;
     this.outputColumn = outputColumn;
+  }
+
+  public LongColModuloDoubleColumn() {
   }
 
   @Override
@@ -127,5 +133,25 @@ public class LongColModuloDoubleColumn extends VectorExpression {
   @Override
   public String getOutputType() {
     return "double";
+  }
+  
+  public int getColNum1() {
+    return colNum1;
+  }
+
+  public void setColNum1(int colNum1) {
+    this.colNum1 = colNum1;
+  }
+
+  public int getColNum2() {
+    return colNum2;
+  }
+
+  public void setColNum2(int colNum2) {
+    this.colNum2 = colNum2;
+  }
+
+  public void setOutputColumn(int outputColumn) {
+    this.outputColumn = outputColumn;
   }
 }

@@ -28,12 +28,18 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * Do not edit the generated code directly. 
  */
 public class FilterStringScalarEqualStringColumn extends VectorExpression {
+
+  private static final long serialVersionUID = 1L;
+
   private int colNum;
   private byte[] value;
 
   public FilterStringScalarEqualStringColumn(int colNum, byte[] value) {
     this.colNum = colNum;
     this.value = value;
+  }
+
+  public FilterStringScalarEqualStringColumn() {
   }
 
   @Override
@@ -136,5 +142,21 @@ public class FilterStringScalarEqualStringColumn extends VectorExpression {
   @Override
   public String getOutputType() {
     return "boolean";
+  }
+  
+  public int getColNum() {
+    return colNum;
+  }
+
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
+  }
+
+  public byte[] getValue() {
+    return value;
+  }
+
+  public void setValue(byte[] value) {
+    this.value = value;
   }
 }

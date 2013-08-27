@@ -38,13 +38,18 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 @Description(name = "min", 
     value = "_FUNC_(expr) - Returns the minimum value of expr (vectorized, type: long)")
 public class VectorUDAFMinLong extends VectorAggregateExpression {
+   
+    private static final long serialVersionUID = 1L;
     
     /** 
      * class for storing the current aggregate value.
      */
     static private final class Aggregation implements AggregationBuffer {
-      private long value;
-      private boolean isNull;
+
+      private static final long serialVersionUID = 1L;
+
+      transient private long value;
+      transient private boolean isNull;
 
       public void checkValue(long value) {
         if (isNull) {
@@ -62,11 +67,15 @@ public class VectorUDAFMinLong extends VectorAggregateExpression {
     }
     
     private VectorExpression inputExpression;
-    private VectorExpressionWriter resultWriter;
+    private transient VectorExpressionWriter resultWriter;
     
     public VectorUDAFMinLong(VectorExpression inputExpression) {
-      super();
+      this();
       this.inputExpression = inputExpression;
+    }
+
+    public VectorUDAFMinLong() {
+      super();
     }
     
     @Override
@@ -421,5 +430,12 @@ public class VectorUDAFMinLong extends VectorAggregateExpression {
       model.memoryAlign());
   }
 
+  public VectorExpression getInputExpression() {
+    return inputExpression;
+  }
+
+  public void setInputExpression(VectorExpression inputExpression) {
+    this.inputExpression = inputExpression;
+  }
 }
 

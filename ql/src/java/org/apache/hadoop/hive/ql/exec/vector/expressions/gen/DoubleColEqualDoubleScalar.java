@@ -29,6 +29,9 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * separate boolean column.
  */
 public class DoubleColEqualDoubleScalar extends VectorExpression {
+
+  private static final long serialVersionUID = 1L;
+
   private int colNum;
   private double value;
   private int outputColumn;
@@ -37,6 +40,9 @@ public class DoubleColEqualDoubleScalar extends VectorExpression {
     this.colNum = colNum;
     this.value = value;
     this.outputColumn = outputColumn;
+  }
+
+  public DoubleColEqualDoubleScalar() {
   }
 
   @Override
@@ -119,5 +125,25 @@ public class DoubleColEqualDoubleScalar extends VectorExpression {
   @Override
   public String getOutputType() {
     return "long";
+  }
+  
+  public int getColNum() {
+    return colNum;
+  }
+  
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
+  }
+
+  public double getValue() {
+    return value;
+  }
+
+  public void setValue(double value) {
+    this.value = value;
+  }
+
+  public void setOutputColumn(int outputColumn) {
+    this.outputColumn = outputColumn;
   }
 }

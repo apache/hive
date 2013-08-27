@@ -35,12 +35,17 @@ import org.apache.hadoop.io.LongWritable;
 @Description(name = "count", value = "_FUNC_(expr) - Returns count(*) (vectorized)")
 public class VectorUDAFCountStar extends VectorAggregateExpression {
 
+  private static final long serialVersionUID = 1L;
+
     /**
      * class for storing the current aggregate value.
      */
     static class Aggregation implements AggregationBuffer {
-      private long value;
-      private boolean isNull;
+
+      private static final long serialVersionUID = 1L;
+
+      transient private long value;
+      transient private boolean isNull;
 
       @Override
       public int getVariableSize() {
@@ -48,9 +53,13 @@ public class VectorUDAFCountStar extends VectorAggregateExpression {
       }
     }
 
-    private final LongWritable result;
+    transient private final LongWritable result;
 
     public VectorUDAFCountStar(VectorExpression inputExpression) {
+      this();
+    }
+
+    public VectorUDAFCountStar() {
       super();
       result = new LongWritable(0);
     }

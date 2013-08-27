@@ -24,14 +24,22 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * Evaluate AND of two boolean columns and store result in the output boolean column.
  */
 public class ColAndCol extends VectorExpression {
-  private final int colNum1;
-  private final int colNum2;
-  private final int outputColumn;
+
+  private static final long serialVersionUID = 1L;
+
+  private int colNum1;
+  private int colNum2;
+  private int outputColumn;
 
   public ColAndCol(int colNum1, int colNum2, int outputColumn) {
+    this();
     this.colNum1 = colNum1;
     this.colNum2 = colNum2;
     this.outputColumn = outputColumn;
+  }
+
+  public ColAndCol() {
+    super();
   }
 
   @Override
@@ -135,5 +143,25 @@ public class ColAndCol extends VectorExpression {
   @Override
   public String getOutputType() {
     return "boolean";
+  }
+
+  public int getColNum1() {
+    return colNum1;
+  }
+
+  public void setColNum1(int colNum1) {
+    this.colNum1 = colNum1;
+  }
+
+  public int getColNum2() {
+    return colNum2;
+  }
+
+  public void setColNum2(int colNum2) {
+    this.colNum2 = colNum2;
+  }
+
+  public void setOutputColumn(int outputColumn) {
+    this.outputColumn = outputColumn;
   }
 }

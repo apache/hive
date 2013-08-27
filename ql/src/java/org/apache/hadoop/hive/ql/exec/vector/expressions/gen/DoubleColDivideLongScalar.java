@@ -29,6 +29,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
  * expressions between a column and a scalar.
  */
 public class DoubleColDivideLongScalar extends VectorExpression {
+
+  private static final long serialVersionUID = 1L;
+
   private int colNum;
   private long value;
   private int outputColumn;
@@ -37,6 +40,9 @@ public class DoubleColDivideLongScalar extends VectorExpression {
     this.colNum = colNum;
     this.value = value;
     this.outputColumn = outputColumn;
+  }
+
+  public DoubleColDivideLongScalar() {
   }
 
   @Override
@@ -104,5 +110,25 @@ public class DoubleColDivideLongScalar extends VectorExpression {
   @Override
   public String getOutputType() {
     return "double";
+  }
+  
+  public int getColNum() {
+    return colNum;
+  }
+  
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
+  }
+
+  public long getValue() {
+    return value;
+  }
+
+  public void setValue(long value) {
+    this.value = value;
+  }
+
+  public void setOutputColumn(int outputColumn) {
+    this.outputColumn = outputColumn;
   }
 }

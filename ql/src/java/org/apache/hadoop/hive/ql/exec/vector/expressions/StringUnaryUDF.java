@@ -29,15 +29,21 @@ import org.apache.hadoop.io.Text;
  * the vector.
  */
 public class StringUnaryUDF extends VectorExpression {
-  private final int colNum;
-  private final int outputColumn;
-  private final IUDFUnaryString func;
-  private final Text s;
+  private static final long serialVersionUID = 1L;
+  private int colNum;
+  private int outputColumn;
+  private IUDFUnaryString func;
+  private transient final Text s;
 
   StringUnaryUDF(int colNum, int outputColumn, IUDFUnaryString func) {
+    this();
     this.colNum = colNum;
     this.outputColumn = outputColumn;
     this.func = func;
+  }
+
+  public StringUnaryUDF() {
+    super();
     s = new Text();
   }
 
@@ -138,5 +144,23 @@ public class StringUnaryUDF extends VectorExpression {
     return "String";
   }
 
+  public int getColNum() {
+    return colNum;
+  }
 
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
+  }
+
+  public IUDFUnaryString getFunc() {
+    return func;
+  }
+
+  public void setFunc(IUDFUnaryString func) {
+    this.func = func;
+  }
+
+  public void setOutputColumn(int outputColumn) {
+    this.outputColumn = outputColumn;
+  }
 }

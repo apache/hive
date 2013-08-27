@@ -44,12 +44,17 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 @Description(name = "avg",
     value = "_FUNC_(expr) - Returns the average value of expr (vectorized, type: <ValueType>)")
 public class <ClassName> extends VectorAggregateExpression {
+
+    private static final long serialVersionUID = 1L;
     
     /** class for storing the current aggregate value. */
     static class Aggregation implements AggregationBuffer {
-      private double sum;
-      private long count;
-      private boolean isNull;
+
+      private static final long serialVersionUID = 1L;
+
+      transient private double sum;
+      transient private long count;
+      transient private boolean isNull;
       
       public void sumValue(<ValueType> value) {
         if (isNull) {
@@ -69,20 +74,23 @@ public class <ClassName> extends VectorAggregateExpression {
     }
     
     private VectorExpression inputExpression;
-    private Object[] partialResult;
-    private LongWritable resultCount;
-    private DoubleWritable resultSum;
-    private StructObjectInspector soi;
+    transient private Object[] partialResult;
+    transient private LongWritable resultCount;
+    transient private DoubleWritable resultSum;
+    transient private StructObjectInspector soi;
         
     public <ClassName>(VectorExpression inputExpression) {
-      super();
+      this();
       this.inputExpression = inputExpression;
+    }
+
+    public <ClassName>() {
+      super();
       partialResult = new Object[2];
       resultCount = new LongWritable();
       resultSum = new DoubleWritable();
       partialResult[0] = resultCount;
       partialResult[1] = resultSum;
-      
       initPartialResultInspector();
     }
 
@@ -453,6 +461,14 @@ public class <ClassName> extends VectorAggregateExpression {
   @Override
   public void init(AggregationDesc desc) throws HiveException {
     // No-op
+  }
+  
+  public VectorExpression getInputExpression() {
+    return inputExpression;
+  }
+
+  public void setInputExpression(VectorExpression inputExpression) {
+    this.inputExpression = inputExpression;
   }
 }
 

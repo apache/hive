@@ -26,8 +26,14 @@ import java.util.Calendar;
  */
 public final class VectorUDFHourLong extends VectorUDFTimestampFieldLong {
 
+  private static final long serialVersionUID = 1L;
+
   public VectorUDFHourLong(int colNum, int outputColumn) {
     super(Calendar.HOUR_OF_DAY, colNum, outputColumn);
+  }
+
+  public VectorUDFHourLong() {
+    super();
   }
 
 }

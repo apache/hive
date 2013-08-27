@@ -29,6 +29,9 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * separate boolean column.
  */
 public class <ClassName> extends VectorExpression {
+
+  private static final long serialVersionUID = 1L;
+
   private int colNum;
   private <OperandType2> value;
   private int outputColumn;
@@ -37,6 +40,9 @@ public class <ClassName> extends VectorExpression {
     this.colNum = colNum;
     this.value = value;
     this.outputColumn = outputColumn;
+  }
+
+  public <ClassName>() {
   }
 
   @Override
@@ -119,5 +125,25 @@ public class <ClassName> extends VectorExpression {
   @Override
   public String getOutputType() {
     return "<ReturnType>";
+  }
+  
+  public int getColNum() {
+    return colNum;
+  }
+  
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
+  }
+
+  public <OperandType2> getValue() {
+    return value;
+  }
+
+  public void setValue(<OperandType2> value) {
+    this.value = value;
+  }
+
+  public void setOutputColumn(int outputColumn) {
+    this.outputColumn = outputColumn;
   }
 }

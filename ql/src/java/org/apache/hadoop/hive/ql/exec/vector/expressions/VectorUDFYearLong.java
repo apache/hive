@@ -27,10 +27,11 @@ import java.util.Calendar;
  */
 public final class VectorUDFYearLong extends VectorUDFTimestampFieldLong {
 
+  private static final long serialVersionUID = 1L;
   /* year boundaries in nanoseconds */
-  static final long[] YEAR_BOUNDARIES;
-  static final int MIN_YEAR = 1901;
-  static final int MAX_YEAR = 2038;
+  static transient final long[] YEAR_BOUNDARIES;
+  static transient final int MIN_YEAR = 1901;
+  static transient final int MAX_YEAR = 2038;
 
   static {
     YEAR_BOUNDARIES = new long[MAX_YEAR-MIN_YEAR];
@@ -60,4 +61,7 @@ public final class VectorUDFYearLong extends VectorUDFTimestampFieldLong {
     super(Calendar.YEAR, colNum, outputColumn);
   }
 
+  public VectorUDFYearLong() {
+    super();
+  }
 }

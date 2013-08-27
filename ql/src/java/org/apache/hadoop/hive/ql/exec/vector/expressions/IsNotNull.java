@@ -26,12 +26,18 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * The boolean output is stored in the specified output column.
  */
 public class IsNotNull extends VectorExpression {
-  private final int colNum;
-  private final int outputColumn;
+  private static final long serialVersionUID = 1L;
+  private int colNum;
+  private int outputColumn;
 
   public IsNotNull(int colNum, int outputColumn) {
+    this();
     this.colNum = colNum;
     this.outputColumn = outputColumn;
+  }
+
+  public IsNotNull() {
+    super();
   }
 
   @Override
@@ -85,5 +91,17 @@ public class IsNotNull extends VectorExpression {
   @Override
   public String getOutputType() {
     return "boolean";
+  }
+
+  public int getColNum() {
+    return colNum;
+  }
+
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
+  }
+
+  public void setOutputColumn(int outputColumn) {
+    this.outputColumn = outputColumn;
   }
 }

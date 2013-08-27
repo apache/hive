@@ -38,13 +38,18 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 @Description(name = "min", 
     value = "_FUNC_(expr) - Returns the minimum value of expr (vectorized, type: double)")
 public class VectorUDAFMinDouble extends VectorAggregateExpression {
+   
+    private static final long serialVersionUID = 1L;
     
     /** 
      * class for storing the current aggregate value.
      */
     static private final class Aggregation implements AggregationBuffer {
-      private double value;
-      private boolean isNull;
+
+      private static final long serialVersionUID = 1L;
+
+      transient private double value;
+      transient private boolean isNull;
 
       public void checkValue(double value) {
         if (isNull) {
@@ -62,11 +67,15 @@ public class VectorUDAFMinDouble extends VectorAggregateExpression {
     }
     
     private VectorExpression inputExpression;
-    private VectorExpressionWriter resultWriter;
+    private transient VectorExpressionWriter resultWriter;
     
     public VectorUDAFMinDouble(VectorExpression inputExpression) {
-      super();
+      this();
       this.inputExpression = inputExpression;
+    }
+
+    public VectorUDAFMinDouble() {
+      super();
     }
     
     @Override
@@ -421,5 +430,12 @@ public class VectorUDAFMinDouble extends VectorAggregateExpression {
       model.memoryAlign());
   }
 
+  public VectorExpression getInputExpression() {
+    return inputExpression;
+  }
+
+  public void setInputExpression(VectorExpression inputExpression) {
+    this.inputExpression = inputExpression;
+  }
 }
 

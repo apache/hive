@@ -26,14 +26,20 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * the result in an output column.
  */
 public class StringConcatScalarCol extends VectorExpression {
+  private static final long serialVersionUID = 1L;
   private int colNum;
   private int outputColumn;
   private byte[] value;
 
   StringConcatScalarCol(byte[] value, int colNum, int outputColumn) {
+    this();
     this.colNum = colNum;
     this.outputColumn = outputColumn;
     this.value = value;
+  }
+
+  public StringConcatScalarCol() {
+    super();
   }
 
   @Override
@@ -114,5 +120,25 @@ public class StringConcatScalarCol extends VectorExpression {
   @Override
   public String getOutputType() {
     return "String";
+  }
+
+  public int getColNum() {
+    return colNum;
+  }
+
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
+  }
+
+  public byte[] getValue() {
+    return value;
+  }
+
+  public void setValue(byte[] value) {
+    this.value = value;
+  }
+
+  public void setOutputColumn(int outputColumn) {
+    this.outputColumn = outputColumn;
   }
 }

@@ -25,10 +25,16 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * This expression selects a row if the given boolean column is true.
  */
 public class SelectColumnIsTrue extends VectorExpression {
-  private final int colNum1;
+  private static final long serialVersionUID = 1L;
+  private int colNum1;
 
   public SelectColumnIsTrue(int colNum1) {
+    this();
     this.colNum1 = colNum1;
+  }
+
+  public SelectColumnIsTrue() {
+    super();
   }
 
   @Override
@@ -120,5 +126,13 @@ public class SelectColumnIsTrue extends VectorExpression {
   @Override
   public String getOutputType() {
     return "boolean";
+  }
+
+  public int getColNum1() {
+    return colNum1;
+  }
+
+  public void setColNum1(int colNum1) {
+    this.colNum1 = colNum1;
   }
 }

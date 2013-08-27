@@ -24,12 +24,18 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * Evaluates the boolean complement of the input.
  */
 public class NotCol extends VectorExpression {
-  private final int colNum;
-  private final int outputColumn;
+  private static final long serialVersionUID = 1L;
+  private int colNum;
+  private int outputColumn;
 
   public NotCol(int colNum, int outputColumn) {
+    this();
     this.colNum = colNum;
     this.outputColumn = outputColumn;
+  }
+
+  public NotCol() {
+    super();
   }
 
   @Override
@@ -100,5 +106,17 @@ public class NotCol extends VectorExpression {
   @Override
   public String getOutputType() {
     return "boolean";
+  }
+
+  public int getColNum() {
+    return colNum;
+  }
+
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
+  }
+
+  public void setOutputColumn(int outputColumn) {
+    this.outputColumn = outputColumn;
   }
 }

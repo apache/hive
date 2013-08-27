@@ -27,12 +27,18 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * This is a generated class to evaluate a > comparison on a vector of strings.
  */
 public class FilterStringColGreaterStringScalar extends VectorExpression {
+
+  private static final long serialVersionUID = 1L;
+
   private int colNum;
   private byte[] value;
 
   public FilterStringColGreaterStringScalar(int colNum, byte[] value) {
     this.colNum = colNum;
     this.value = value;
+  }
+
+  public FilterStringColGreaterStringScalar() {
   }
 
   @Override
@@ -135,5 +141,21 @@ public class FilterStringColGreaterStringScalar extends VectorExpression {
   @Override
   public String getOutputType() {
     return "boolean";
+  }
+  
+  public int getColNum() {
+    return colNum;
+  }
+
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
+  }
+
+  public byte[] getValue() {
+    return value;
+  }
+
+  public void setValue(byte[] value) {
+    this.value = value;
   }
 }

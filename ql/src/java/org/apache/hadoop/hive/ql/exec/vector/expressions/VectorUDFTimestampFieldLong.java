@@ -29,17 +29,23 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  */
 public abstract class VectorUDFTimestampFieldLong extends VectorExpression {
 
-  protected final int colNum;
-  protected final int outputColumn;
-  protected final int field;
-  protected final Calendar calendar = Calendar.getInstance();
-  protected final Timestamp ts = new Timestamp(0);
+  private static final long serialVersionUID = 1L;
+
+  protected int colNum;
+  protected int outputColumn;
+  protected int field;
+  protected transient final Calendar calendar = Calendar.getInstance();
+  protected transient final Timestamp ts = new Timestamp(0);
 
   public VectorUDFTimestampFieldLong(int field, int colNum, int outputColumn) {
-    super();
+    this();
     this.colNum = colNum;
     this.outputColumn = outputColumn;
     this.field = field;
+  }
+
+  public VectorUDFTimestampFieldLong() {
+    super();
   }
 
   protected final Timestamp getTimestamp(long nanos) {
@@ -132,6 +138,26 @@ public abstract class VectorUDFTimestampFieldLong extends VectorExpression {
   @Override
   public String getOutputType() {
     return "long";
+  }
+
+  public int getColNum() {
+    return colNum;
+  }
+
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
+  }
+
+  public int getField() {
+    return field;
+  }
+
+  public void setField(int field) {
+    this.field = field;
+  }
+
+  public void setOutputColumn(int outputColumn) {
+    this.outputColumn = outputColumn;
   }
 
 }

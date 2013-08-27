@@ -23,8 +23,14 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * An expression representing a column, only children are evaluated.
  */
 public class IdentityExpression extends VectorExpression {
-	private final int colNum;
-  private final String type;
+
+  private static final long serialVersionUID = 1L;
+
+  private int colNum = -1;
+  private String type = null;
+
+  public IdentityExpression() {
+  }
 
 	public IdentityExpression(int colNum, String type) {
 		this.colNum = colNum;
@@ -46,5 +52,21 @@ public class IdentityExpression extends VectorExpression {
   @Override
   public String getOutputType() {
     return type;
+  }
+
+  public int getColNum() {
+    return getOutputColumn();
+  }
+
+  public String getType() {
+    return getOutputType();
+  }
+
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
+  }
+
+  public void setType(String type) {
+    this.type = type;
   }
 }

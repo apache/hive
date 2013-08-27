@@ -26,8 +26,14 @@ import java.util.Calendar;
  */
 public final class VectorUDFMonthLong extends VectorUDFTimestampFieldLong {
 
+  private static final long serialVersionUID = 1L;
+
   public VectorUDFMonthLong(int colNum, int outputColumn) {
     super(Calendar.MONTH, colNum, outputColumn);
+  }
+
+  public VectorUDFMonthLong() {
+    super();
   }
 
   @Override

@@ -28,30 +28,31 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  */
 public class ConstantVectorExpression extends VectorExpression {
 
+  private static final long serialVersionUID = 1L;
+
   private static enum Type {
     LONG,
     DOUBLE,
     BYTES
   }
 
-  private final Type type;
-  private final int outputColumn;
-  private long longValue = 0;
+  private int outputColumn;
+  protected long longValue = 0;
   private double doubleValue = 0;
   private byte[] bytesValue = null;
-  private int bytesValueLength = 0;
-  private final String typeString;
+  private String typeString;
+
+  private transient Type type;
+  private transient int bytesValueLength = 0;
+
+  public ConstantVectorExpression() {
+    super();
+  }
 
   ConstantVectorExpression(int outputColumn, String typeString) {
+    this();
     this.outputColumn = outputColumn;
-    this.typeString = typeString;
-    if ("string".equalsIgnoreCase(typeString)) {
-      this.type = Type.BYTES;
-    } else if ("double".equalsIgnoreCase(typeString)) {
-      this.type = Type.DOUBLE;
-    } else {
-      this.type = Type.LONG;
-    }
+    setTypeString(typeString);
   }
 
   public ConstantVectorExpression(int outputColumn, long value) {
@@ -66,8 +67,7 @@ public class ConstantVectorExpression extends VectorExpression {
 
   public ConstantVectorExpression(int outputColumn, byte[] value) {
     this(outputColumn, "string");
-    this.bytesValue = value;
-    this.bytesValueLength = this.bytesValue.length;
+    setBytesValue(value);
   }
 
   private void evaluateLong(VectorizedRowBatch vrg) {
@@ -113,6 +113,50 @@ public class ConstantVectorExpression extends VectorExpression {
 
   @Override
   public String getOutputType() {
+    return getTypeString();
+  }
+
+  public long getLongValue() {
+    return longValue;
+  }
+
+  public void setLongValue(long longValue) {
+    this.longValue = longValue;
+  }
+
+  public double getDoubleValue() {
+    return doubleValue;
+  }
+
+  public void setDoubleValue(double doubleValue) {
+    this.doubleValue = doubleValue;
+  }
+
+  public byte[] getBytesValue() {
+    return bytesValue;
+  }
+
+  public void setBytesValue(byte[] bytesValue) {
+    this.bytesValue = bytesValue;
+    this.bytesValueLength = bytesValue.length;
+  }
+
+  public String getTypeString() {
     return typeString;
+  }
+
+  public void setTypeString(String typeString) {
+    this.typeString = typeString;
+    if ("string".equalsIgnoreCase(typeString)) {
+      this.type = Type.BYTES;
+    } else if ("double".equalsIgnoreCase(typeString)) {
+      this.type = Type.DOUBLE;
+    } else {
+      this.type = Type.LONG;
+    }
+  }
+
+  public void setOutputColumn(int outputColumn) {
+    this.outputColumn = outputColumn;
   }
 }

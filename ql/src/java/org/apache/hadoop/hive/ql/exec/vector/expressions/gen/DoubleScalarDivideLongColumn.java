@@ -36,6 +36,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
  * column vector on the right. The result is output to an output column vector.
  */
 public class DoubleScalarDivideLongColumn extends VectorExpression {
+
+  private static final long serialVersionUID = 1L;
+
   private int colNum;
   private double value;
   private int outputColumn;
@@ -44,6 +47,9 @@ public class DoubleScalarDivideLongColumn extends VectorExpression {
     this.colNum = colNum;
     this.value = value;
     this.outputColumn = outputColumn;
+  }
+
+  public DoubleScalarDivideLongColumn() {
   }
 
   @Override
@@ -117,4 +123,25 @@ public class DoubleScalarDivideLongColumn extends VectorExpression {
   public String getOutputType() {
     return "double";
   }
+  
+  public int getColNum() {
+    return colNum;
+  }
+
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
+  }
+
+  public double getValue() {
+    return value;
+  }
+
+  public void setValue(double value) {
+    this.value = value;
+  }
+
+  public void setOutputColumn(int outputColumn) {
+    this.outputColumn = outputColumn;
+  }
+  
 }
