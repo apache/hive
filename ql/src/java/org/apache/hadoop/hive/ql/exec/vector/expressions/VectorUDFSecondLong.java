@@ -26,8 +26,13 @@ import java.util.Calendar;
  */
 public final class VectorUDFSecondLong extends VectorUDFTimestampFieldLong {
 
+  private static final long serialVersionUID = 1L;
+
   public VectorUDFSecondLong(int colNum, int outputColumn) {
     super(Calendar.SECOND, colNum, outputColumn);
   }
 
+  public VectorUDFSecondLong() {
+    super();
+  }
 }

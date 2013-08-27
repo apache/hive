@@ -28,12 +28,18 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * The selected vector of the input {@link VectorizedRowBatch} is updated for in-place filtering.
  */
 public class FilterDoubleScalarLessEqualDoubleColumn extends VectorExpression {
+
+  private static final long serialVersionUID = 1L;
+
   private int colNum;
   private double value;
 
   public FilterDoubleScalarLessEqualDoubleColumn(int colNum, double value) { 
     this.colNum = colNum;
     this.value = value;
+  }
+
+  public FilterDoubleScalarLessEqualDoubleColumn() {
   }
 
   @Override
@@ -132,5 +138,21 @@ public class FilterDoubleScalarLessEqualDoubleColumn extends VectorExpression {
   @Override
   public String getOutputType() {
     return "boolean";
+  }
+  
+  public int getColNum() {
+    return colNum;
+  }
+
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
+  }
+
+  public double getValue() {
+    return value;
+  }
+
+  public void setValue(double value) {
+    this.value = value;
   }
 }

@@ -18,9 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.io.Text;
+import static org.apache.hadoop.hive.ql.udf.UDFLike.likePatternToRegExp;
 
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -29,23 +27,28 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CodingErrorAction;
 import java.util.regex.Pattern;
 
-import static org.apache.hadoop.hive.ql.udf.UDFLike.likePatternToRegExp;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.io.Text;
 
 /**
  * Evaluate LIKE filter on a batch for a vector of strings.
  */
 public class FilterStringColLikeStringScalar extends VectorExpression {
+  private static final long serialVersionUID = 1L;
   private int colNum;
   private Pattern compiledPattern;
-  private final Text simplePattern = new Text();
-  private ByteBuffer byteBuffer;
-  private CharBuffer charBuffer;
-  private CharsetDecoder decoder;
   private PatternType type = PatternType.NONE;
+  private String simpleStringPattern;
+
+  private transient Text simplePattern = new Text();
+  private transient ByteBuffer byteBuffer;
+  private transient CharBuffer charBuffer;
+  private transient CharsetDecoder decoder;
 
   // Doing characters comparison directly instead of regular expression
   // matching for simple patterns like "%abc%".
-  enum PatternType {
+  public enum PatternType {
     NONE, // "abc"
     BEGIN, // "abc%"
     END, // "%abc"
@@ -54,12 +57,17 @@ public class FilterStringColLikeStringScalar extends VectorExpression {
   }
 
   public FilterStringColLikeStringScalar(int colNum, Text likePattern) {
+    this();
     this.colNum = colNum;
     String stringLikePattern = likePattern.toString();
     parseSimplePattern(stringLikePattern);
     if (type == PatternType.COMPLEX) {
       compiledPattern = Pattern.compile(likePatternToRegExp(stringLikePattern));
     }
+  }
+
+  public FilterStringColLikeStringScalar() {
+    super();
     decoder = Charset.forName("UTF-8").newDecoder()
         .onMalformedInput(CodingErrorAction.REPLACE)
         .onUnmappableCharacter(CodingErrorAction.REPLACE);
@@ -67,7 +75,7 @@ public class FilterStringColLikeStringScalar extends VectorExpression {
     charBuffer = CharBuffer.allocate(4);
   }
 
-  PatternType getType() {
+  public PatternType getType() {
     return type;
   }
 
@@ -259,16 +267,17 @@ public class FilterStringColLikeStringScalar extends VectorExpression {
     }
 
     strPattern += likePattern.substring(beginIndex, endIndex);
-    simplePattern.set(strPattern);
+    simpleStringPattern = strPattern;
+    simplePattern.set(simpleStringPattern);
   }
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
-    
+
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
-  
+
     BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[colNum];
     int[] sel = batch.selected;
     boolean[] nullPos = inputColVector.isNull;
@@ -527,5 +536,34 @@ public class FilterStringColLikeStringScalar extends VectorExpression {
   @Override
   public String getOutputType() {
     return "boolean";
+  }
+
+  public int getColNum() {
+    return colNum;
+  }
+
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
+  }
+
+  public Pattern getCompiledPattern() {
+    return compiledPattern;
+  }
+
+  public void setCompiledPattern(Pattern compiledPattern) {
+    this.compiledPattern = compiledPattern;
+  }
+
+  public void setType(PatternType type) {
+    this.type = type;
+  }
+
+  public String getSimpleStringPattern() {
+    return simpleStringPattern;
+  }
+
+  public void setSimpleStringPattern(String simpleStringPattern) {
+    this.simpleStringPattern = simpleStringPattern;
+    simplePattern.set(simpleStringPattern);
   }
 }

@@ -26,7 +26,13 @@ import org.apache.hadoop.hive.ql.udf.UDFLower;
  * Extends {@link StringUnaryUDF}.
  */
 public class StringLower extends StringUnaryUDF {
+  private static final long serialVersionUID = 1L;
+
   public StringLower(int colNum, int outputColumn) {
     super(colNum, outputColumn, (IUDFUnaryString) new UDFLower());
+  }
+
+  public StringLower() {
+    super();
   }
 }

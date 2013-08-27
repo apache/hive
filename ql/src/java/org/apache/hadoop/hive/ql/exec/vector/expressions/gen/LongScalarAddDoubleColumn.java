@@ -36,6 +36,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
  * column vector on the right. The result is output to an output column vector.
  */
 public class LongScalarAddDoubleColumn extends VectorExpression {
+
+  private static final long serialVersionUID = 1L;
+
   private int colNum;
   private long value;
   private int outputColumn;
@@ -44,6 +47,9 @@ public class LongScalarAddDoubleColumn extends VectorExpression {
     this.colNum = colNum;
     this.value = value;
     this.outputColumn = outputColumn;
+  }
+
+  public LongScalarAddDoubleColumn() {
   }
 
   @Override
@@ -117,4 +123,25 @@ public class LongScalarAddDoubleColumn extends VectorExpression {
   public String getOutputType() {
     return "double";
   }
+  
+  public int getColNum() {
+    return colNum;
+  }
+
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
+  }
+
+  public long getValue() {
+    return value;
+  }
+
+  public void setValue(long value) {
+    this.value = value;
+  }
+
+  public void setOutputColumn(int outputColumn) {
+    this.outputColumn = outputColumn;
+  }
+  
 }

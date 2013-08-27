@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates;
 
+import java.io.Serializable;
+
 import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -27,12 +29,14 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 /**
  * Base class for aggregation expressions.
  */
-public abstract class VectorAggregateExpression  {
+public abstract class VectorAggregateExpression  implements Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   /**
    * Buffer interface to store aggregates.
    */
-  public static interface AggregationBuffer {
+  public static interface AggregationBuffer extends Serializable {
     int getVariableSize();
   };
 

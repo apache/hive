@@ -38,13 +38,18 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 @Description(name = "<DescriptionName>", 
     value = "<DescriptionValue>")
 public class <ClassName> extends VectorAggregateExpression {
+   
+    private static final long serialVersionUID = 1L;
     
     /** 
      * class for storing the current aggregate value.
      */
     static private final class Aggregation implements AggregationBuffer {
-      private <ValueType> value;
-      private boolean isNull;
+
+      private static final long serialVersionUID = 1L;
+
+      transient private <ValueType> value;
+      transient private boolean isNull;
 
       public void checkValue(<ValueType> value) {
         if (isNull) {
@@ -62,11 +67,15 @@ public class <ClassName> extends VectorAggregateExpression {
     }
     
     private VectorExpression inputExpression;
-    private VectorExpressionWriter resultWriter;
+    private transient VectorExpressionWriter resultWriter;
     
     public <ClassName>(VectorExpression inputExpression) {
-      super();
+      this();
       this.inputExpression = inputExpression;
+    }
+
+    public <ClassName>() {
+      super();
     }
     
     @Override
@@ -421,5 +430,12 @@ public class <ClassName> extends VectorAggregateExpression {
       model.memoryAlign());
   }
 
+  public VectorExpression getInputExpression() {
+    return inputExpression;
+  }
+
+  public void setInputExpression(VectorExpression inputExpression) {
+    this.inputExpression = inputExpression;
+  }
 }
 

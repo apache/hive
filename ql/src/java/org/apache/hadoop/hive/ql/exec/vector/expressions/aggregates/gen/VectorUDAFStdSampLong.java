@@ -43,15 +43,20 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 @Description(name = "stddev_samp",
     value = "_FUNC_(x) - Returns the sample standard deviation of a set of numbers (vectorized, long)")
 public class VectorUDAFStdSampLong extends VectorAggregateExpression {
+
+    private static final long serialVersionUID = 1L;
     
     /** 
     /* class for storing the current aggregate value. 
     */
     private static final class Aggregation implements AggregationBuffer {
-      private double sum;
-      private long count;
-      private double variance;
-      private boolean isNull;
+
+      private static final long serialVersionUID = 1L;
+
+      transient private double sum;
+      transient private long count;
+      transient private double variance;
+      transient private boolean isNull;
       
       public void init() {
         isNull = false;
@@ -67,17 +72,21 @@ public class VectorUDAFStdSampLong extends VectorAggregateExpression {
     }
     
     private VectorExpression inputExpression;
-    private LongWritable resultCount;
-    private DoubleWritable resultSum;
-    private DoubleWritable resultVariance;
-    private Object[] partialResult;
+    transient private LongWritable resultCount;
+    transient private DoubleWritable resultSum;
+    transient private DoubleWritable resultVariance;
+    transient private Object[] partialResult;
     
-    private ObjectInspector soi;
+    transient private ObjectInspector soi;
     
     
     public VectorUDAFStdSampLong(VectorExpression inputExpression) {
-      super();
+      this();
       this.inputExpression = inputExpression;
+    }
+
+    public VectorUDAFStdSampLong() {
+      super();
       partialResult = new Object[3];
       resultCount = new LongWritable();
       resultSum = new DoubleWritable();
@@ -500,6 +509,12 @@ public class VectorUDAFStdSampLong extends VectorAggregateExpression {
     // No-op
   }
 
+  public VectorExpression getInputExpression() {
+    return inputExpression;
+  }
 
+  public void setInputExpression(VectorExpression inputExpression) {
+    this.inputExpression = inputExpression;
+  } 
 }
 

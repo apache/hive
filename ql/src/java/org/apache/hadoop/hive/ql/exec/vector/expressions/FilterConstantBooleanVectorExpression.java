@@ -18,32 +18,25 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-/**
- * Return Unix Timestamp.
- * Extends {@link VectorUDFTimestampFieldLong}
- */
-public final class VectorUDFUnixTimeStampLong extends VectorUDFTimestampFieldLong {
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+
+public class FilterConstantBooleanVectorExpression extends ConstantVectorExpression {
 
   private static final long serialVersionUID = 1L;
 
-  @Override
-  protected long getField(long time) {
-    long ms = (time / (1000*1000*1000)) * 1000;
-    long remainder = time % (1000*1000*1000);
-    /* negative timestamps need to be adjusted */
-    if(remainder < 0) {
-      ms -= 1000;
-    }
-    return ms/1000;
-  }
-
-  public VectorUDFUnixTimeStampLong(int colNum, int outputColumn) {
-    /* not a real field */
-    super(-1, colNum, outputColumn);
-  }
-
-  public VectorUDFUnixTimeStampLong() {
+  public FilterConstantBooleanVectorExpression() {
     super();
   }
 
+  public FilterConstantBooleanVectorExpression(long value) {
+    super(-1, value);
+  }
+
+  @Override
+  public void evaluate(VectorizedRowBatch vrg) {
+    if (longValue == 0) {
+      // All values are filtered out
+      vrg.size = 0;
+    }
+  }
 }

@@ -37,12 +37,17 @@ import org.apache.hadoop.io.LongWritable;
 @Description(name = "count", value = "_FUNC_(expr) - Returns the count (vectorized)")
 public class VectorUDAFCount extends VectorAggregateExpression {
 
+  private static final long serialVersionUID = 1L;
+
     /**
      * class for storing the current aggregate value.
      */
     static class Aggregation implements AggregationBuffer {
-      private long value;
-      private boolean isNull;
+
+      private static final long serialVersionUID = 1L;
+
+      transient private long value;
+      transient private boolean isNull;
 
       public void initIfNull() {
         if (isNull) {
@@ -57,12 +62,16 @@ public class VectorUDAFCount extends VectorAggregateExpression {
       }
     }
 
-    private final VectorExpression inputExpression;
-  private final LongWritable result;
+    private VectorExpression inputExpression = null;
+    transient private final LongWritable result;
 
     public VectorUDAFCount(VectorExpression inputExpression) {
-      super();
+      this();
       this.inputExpression = inputExpression;
+    }
+
+    public VectorUDAFCount() {
+      super();
       result = new LongWritable(0);
     }
 
@@ -264,6 +273,14 @@ public class VectorUDAFCount extends VectorAggregateExpression {
     @Override
     public void init(AggregationDesc desc) throws HiveException {
       // No-op
+    }
+
+    public VectorExpression getInputExpression() {
+      return inputExpression;
+    }
+
+    public void setInputExpression(VectorExpression inputExpression) {
+      this.inputExpression = inputExpression;
     }
 }
 

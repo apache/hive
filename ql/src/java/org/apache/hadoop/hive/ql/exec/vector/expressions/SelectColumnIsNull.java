@@ -25,11 +25,18 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * This expression selects a row if the given column is null.
  */
 public class SelectColumnIsNull extends VectorExpression {
-  private final int colNum;
+  private static final long serialVersionUID = 1L;
+  private int colNum;
 
   public SelectColumnIsNull(int colNum) {
+    this();
     this.colNum = colNum;
   }
+
+  public SelectColumnIsNull() {
+    super();
+  }
+
 
   @Override
   public void evaluate(VectorizedRowBatch batch) {
@@ -87,5 +94,13 @@ public class SelectColumnIsNull extends VectorExpression {
   @Override
   public String getOutputType() {
     return "boolean";
+  }
+
+  public int getColNum() {
+    return colNum;
+  }
+
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
   }
 }

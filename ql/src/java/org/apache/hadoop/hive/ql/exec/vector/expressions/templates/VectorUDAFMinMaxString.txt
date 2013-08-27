@@ -41,15 +41,19 @@ import org.apache.hadoop.io.Text;
     value = "<DescriptionValue>")
 public class <ClassName> extends VectorAggregateExpression {
 
+    private static final long serialVersionUID = 1L;
+
     /** 
      * class for storing the current aggregate value.
      */
     static private final class Aggregation implements AggregationBuffer {
 
-      private final static int MIN_BUFFER_SIZE = 16;
-      private byte[] bytes = new byte[MIN_BUFFER_SIZE];
-      private int length;
-      private boolean isNull;
+      private static final long serialVersionUID = 1L;
+
+      transient private final static int MIN_BUFFER_SIZE = 16;
+      transient private byte[] bytes = new byte[MIN_BUFFER_SIZE];
+      transient private int length;
+      transient private boolean isNull;
 
       public void checkValue(byte[] bytes, int start, int length) {
         if (isNull) {
@@ -75,15 +79,18 @@ public class <ClassName> extends VectorAggregateExpression {
         JavaDataModel model = JavaDataModel.get();
         return model.lengthForByteArrayOfSize(bytes.length);
       }
-
     }
     
     private VectorExpression inputExpression;
-    private Text result;
+    transient private Text result;
     
     public <ClassName>(VectorExpression inputExpression) {
-      super();
+      this();
       this.inputExpression = inputExpression;
+    }
+
+    public <ClassName>() {
+      super();
       result = new Text();
     }
     
@@ -380,6 +387,14 @@ public class <ClassName> extends VectorAggregateExpression {
     @Override
     public void init(AggregationDesc desc) throws HiveException {
       // No-op
+    }
+
+    public VectorExpression getInputExpression() {
+      return inputExpression;
+    }
+
+    public void setInputExpression(VectorExpression inputExpression) {
+      this.inputExpression = inputExpression;
     }
 }
 

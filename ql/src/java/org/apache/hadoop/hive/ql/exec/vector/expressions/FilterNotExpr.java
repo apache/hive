@@ -24,13 +24,18 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * This class represents an NOT filter expression. This applies short circuit optimization.
  */
 public class FilterNotExpr extends VectorExpression {
-  private final VectorExpression childExpr1;
-  private final int[] initialSelected = new int[VectorizedRowBatch.DEFAULT_SIZE];
-  private int[] unselected = new int[VectorizedRowBatch.DEFAULT_SIZE];
-  private final int[] tmp = new int[VectorizedRowBatch.DEFAULT_SIZE];
+  private static final long serialVersionUID = 1L;
+  private transient final int[] initialSelected = new int[VectorizedRowBatch.DEFAULT_SIZE];
+  private transient int[] unselected = new int[VectorizedRowBatch.DEFAULT_SIZE];
+  private transient final int[] tmp = new int[VectorizedRowBatch.DEFAULT_SIZE];
 
   public FilterNotExpr(VectorExpression childExpr1) {
-    this.childExpr1 = childExpr1;
+    this();
+    this.childExpressions = new VectorExpression[] {childExpr1};
+  }
+
+  public FilterNotExpr() {
+    super();
   }
 
   @Override
@@ -53,6 +58,7 @@ public class FilterNotExpr extends VectorExpression {
       batch.selectedInUse = true;
     }
 
+    VectorExpression childExpr1 = this.childExpressions[0];
     childExpr1.evaluate(batch);
 
     // Calculate unselected ones in last evaluate.

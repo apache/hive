@@ -18,13 +18,16 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.io.Serializable;
+
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
 /**
  * Base class for expressions.
  */
-public abstract class VectorExpression {
+public abstract class VectorExpression implements Serializable {
 
+  private static final long serialVersionUID = 1L;
   /**
    * Child expressions are evaluated post order.
    */

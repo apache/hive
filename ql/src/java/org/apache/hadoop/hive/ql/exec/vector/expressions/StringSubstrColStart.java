@@ -29,10 +29,11 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * string will be in the output.
  */
 public class StringSubstrColStart extends VectorExpression {
-  private final int startIdx;
-  private final int colNum;
-  private final int outputColumn;
-  private static byte[] EMPTYSTRING;
+  private static final long serialVersionUID = 1L;
+  private int startIdx;
+  private int colNum;
+  private int outputColumn;
+  private transient static byte[] EMPTYSTRING;
 
   // Populating the Empty string bytes. Putting it as static since it should be immutable and can
   // be shared.
@@ -45,9 +46,14 @@ public class StringSubstrColStart extends VectorExpression {
   }
 
   public StringSubstrColStart(int colNum, int startIdx, int outputColumn) {
+    this();
     this.colNum = colNum;
     this.startIdx = startIdx;
     this.outputColumn = outputColumn;
+  }
+
+  public StringSubstrColStart() {
+    super();
   }
 
   /**
@@ -195,5 +201,25 @@ public class StringSubstrColStart extends VectorExpression {
   @Override
   public String getOutputType() {
     return "string";
+  }
+
+  public int getStartIdx() {
+    return startIdx;
+  }
+
+  public void setStartIdx(int startIdx) {
+    this.startIdx = startIdx;
+  }
+
+  public int getColNum() {
+    return colNum;
+  }
+
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
+  }
+
+  public void setOutputColumn(int outputColumn) {
+    this.outputColumn = outputColumn;
   }
 }

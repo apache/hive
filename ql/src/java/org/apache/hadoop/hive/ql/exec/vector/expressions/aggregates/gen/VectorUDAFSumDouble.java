@@ -39,13 +39,18 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 @Description(name = "sum", 
     value = "_FUNC_(expr) - Returns the sum value of expr (vectorized, type: double)")
 public class VectorUDAFSumDouble extends VectorAggregateExpression {
+   
+    private static final long serialVersionUID = 1L;
     
     /** 
      * class for storing the current aggregate value.
      */
     private static final class Aggregation implements AggregationBuffer {
-      private double sum;
-      private boolean isNull;
+
+      private static final long serialVersionUID = 1L;
+
+      transient private double sum;
+      transient private boolean isNull;
       
       public void sumValue(double value) {
         if (isNull) {
@@ -62,12 +67,16 @@ public class VectorUDAFSumDouble extends VectorAggregateExpression {
       }
     }
     
-    private final VectorExpression inputExpression;
-    private final DoubleWritable result;
+    private VectorExpression inputExpression;
+    transient private final DoubleWritable result;
     
     public VectorUDAFSumDouble(VectorExpression inputExpression) {
-      super();
+      this();
       this.inputExpression = inputExpression;
+    }
+
+    public VectorUDAFSumDouble() {
+      super();
       result = new DoubleWritable();
     }
 
@@ -416,6 +425,12 @@ public class VectorUDAFSumDouble extends VectorAggregateExpression {
     // No-op
   }
 
+  public VectorExpression getInputExpression() {
+    return inputExpression;
+  }
 
+  public void setInputExpression(VectorExpression inputExpression) {
+    this.inputExpression = inputExpression;
+  }
 }
 

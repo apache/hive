@@ -27,12 +27,18 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * it in the output column vector.
  */
 public class StringLength extends VectorExpression {
-  private final int colNum;
-  private final int outputColumn;
+  private static final long serialVersionUID = 1L;
+  private int colNum;
+  private int outputColumn;
 
   public StringLength(int colNum, int outputColumn) {
+    this();
     this.colNum = colNum;
     this.outputColumn = outputColumn;
+  }
+
+  public StringLength() {
+    super();
   }
 
   // Calculate the length of the UTF-8 strings in input vector and place results in output vector.
@@ -137,5 +143,15 @@ public class StringLength extends VectorExpression {
     return "Long";
   }
 
+  public int getColNum() {
+    return colNum;
+  }
 
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
+  }
+
+  public void setOutputColumn(int outputColumn) {
+    this.outputColumn = outputColumn;
+  }
 }

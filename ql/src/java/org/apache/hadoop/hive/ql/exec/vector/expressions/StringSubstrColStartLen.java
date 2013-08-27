@@ -31,12 +31,13 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * ending index.
  */
 public class StringSubstrColStartLen extends VectorExpression {
-  private final int startIdx;
-  private final int colNum;
-  private final int length;
-  private final int outputColumn;
-  private final int[] offsetArray;
-  private static byte[] EMPTYSTRING;
+  private static final long serialVersionUID = 1L;
+  private int startIdx;
+  private int colNum;
+  private int length;
+  private int outputColumn;
+  private transient final int[] offsetArray;
+  private transient static byte[] EMPTYSTRING;
 
   // Populating the Empty string bytes. Putting it as static since it should be immutable and can be
   // shared
@@ -49,10 +50,15 @@ public class StringSubstrColStartLen extends VectorExpression {
   }
 
   public StringSubstrColStartLen(int colNum, int startIdx, int length, int outputColumn) {
+    this();
     this.colNum = colNum;
     this.startIdx = startIdx;
     this.length = length;
     this.outputColumn = outputColumn;
+  }
+
+  public StringSubstrColStartLen() {
+    super();
     offsetArray = new int[2];
   }
 
@@ -214,6 +220,34 @@ public class StringSubstrColStartLen extends VectorExpression {
   @Override
   public String getOutputType() {
     return "string";
+  }
+
+  public int getStartIdx() {
+    return startIdx;
+  }
+
+  public void setStartIdx(int startIdx) {
+    this.startIdx = startIdx;
+  }
+
+  public int getColNum() {
+    return colNum;
+  }
+
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
+  }
+
+  public int getLength() {
+    return length;
+  }
+
+  public void setLength(int length) {
+    this.length = length;
+  }
+
+  public void setOutputColumn(int outputColumn) {
+    this.outputColumn = outputColumn;
   }
 
 }

@@ -26,12 +26,18 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * Generated from template ColumnUnaryMinus.txt, which covers unary negation operator. 
  */
 public class LongColUnaryMinus extends VectorExpression {
+
+  private static final long serialVersionUID = 1L;
+
   private int colNum;
   private int outputColumn;
 
   public LongColUnaryMinus(int colNum, int outputColumn) {
     this.colNum = colNum;
     this.outputColumn = outputColumn;
+  }
+
+  public LongColUnaryMinus() {
   }
 
   @Override
@@ -100,5 +106,17 @@ public class LongColUnaryMinus extends VectorExpression {
   @Override
   public String getOutputType() {
     return "long";
+  }
+  
+  public int getColNum() {
+    return colNum;
+  }
+
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
+  }
+
+  public void setOutputColumn(int outputColumn) {
+    this.outputColumn = outputColumn;
   }
 }

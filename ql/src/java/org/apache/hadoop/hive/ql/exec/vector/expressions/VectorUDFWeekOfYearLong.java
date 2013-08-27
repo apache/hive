@@ -26,11 +26,21 @@ import java.util.Calendar;
  */
 public final class VectorUDFWeekOfYearLong extends VectorUDFTimestampFieldLong {
 
+  private static final long serialVersionUID = 1L;
+
   public VectorUDFWeekOfYearLong(int colNum, int outputColumn) {
     super(Calendar.WEEK_OF_YEAR, colNum, outputColumn);
+    initCalendar();
+  }
+
+  public VectorUDFWeekOfYearLong() {
+    super();
+    initCalendar();
+  }
+
+  private void initCalendar() {
     /* code copied over from UDFWeekOfYear implementation */
     calendar.setFirstDayOfWeek(Calendar.MONDAY);
     calendar.setMinimalDaysInFirstWeek(4);
   }
-
 }

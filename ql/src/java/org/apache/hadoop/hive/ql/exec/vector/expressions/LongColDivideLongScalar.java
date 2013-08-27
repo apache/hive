@@ -28,14 +28,20 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * from a template like the other arithmetic operations are.
  */
 public class LongColDivideLongScalar extends VectorExpression {
-  private final int colNum;
-  private final long value;
-  private final int outputColumn;
+  private static final long serialVersionUID = 1L;
+  private int colNum;
+  private long value;
+  private int outputColumn;
 
   public LongColDivideLongScalar(int colNum, long value, int outputColumn) {
+    this();
     this.colNum = colNum;
     this.value = value;
     this.outputColumn = outputColumn;
+  }
+
+  public LongColDivideLongScalar() {
+    super();
   }
 
   @Override
@@ -107,5 +113,25 @@ public class LongColDivideLongScalar extends VectorExpression {
   @Override
   public String getOutputType() {
     return "double";
+  }
+
+  public int getColNum() {
+    return colNum;
+  }
+
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
+  }
+
+  public long getValue() {
+    return value;
+  }
+
+  public void setValue(long value) {
+    this.value = value;
+  }
+
+  public void setOutputColumn(int outputColumn) {
+    this.outputColumn = outputColumn;
   }
 }

@@ -26,7 +26,13 @@ import org.apache.hadoop.hive.ql.udf.UDFUpper;
  * Extends {@link StringUnaryUDF}.
  */
 public class StringUpper extends StringUnaryUDF {
+  private static final long serialVersionUID = 1L;
+
   public StringUpper(int colNum, int outputColumn) {
     super(colNum, outputColumn, (IUDFUnaryString) new UDFUpper());
+  }
+
+  public StringUpper() {
+    super();
   }
 }
