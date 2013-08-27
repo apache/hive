@@ -92,7 +92,7 @@ public class SessionManager extends CompositeService {
       handleToSession.put(session.getSessionHandle(), session);
     }
     try {
-      executeSessionHooks(session, HiveSessionHookContext.State.OPEN);
+      executeSessionHooks(session);
     } catch (Exception e) {
       throw new HiveSQLException("Failed to execute session hooks", e);
     }
@@ -106,11 +106,6 @@ public class SessionManager extends CompositeService {
     }
     if (session == null) {
       throw new HiveSQLException("Session does not exist!");
-    }
-    try {
-      executeSessionHooks(session, HiveSessionHookContext.State.CLOSE);
-    } catch (Exception e) {
-      throw new HiveSQLException("Failed to execute session hooks", e);
     }
     session.close();
   }
@@ -162,12 +157,11 @@ public class SessionManager extends CompositeService {
   }
 
   // execute session hooks
-  private void executeSessionHooks(HiveSession session, HiveSessionHookContext.State state)
-      throws Exception {
+  private void executeSessionHooks(HiveSession session) throws Exception {
     List<HiveSessionHook> sessionHooks = HookUtils.getHooks(hiveConf,
         HiveConf.ConfVars.HIVE_SERVER2_SESSION_HOOK, HiveSessionHook.class);
     for (HiveSessionHook sessionHook : sessionHooks) {
-      sessionHook.run(new HiveSessionHookContextImpl(session, state));
+      sessionHook.run(new HiveSessionHookContextImpl(session));
     }
   }
 }

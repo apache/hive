@@ -26,10 +26,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
  */
 public interface HiveSessionHookContext {
 
-  enum State {OPEN, CLOSE}
-
-  public State getState();
-
   /**
    * Retrieve session conf
    * @return
