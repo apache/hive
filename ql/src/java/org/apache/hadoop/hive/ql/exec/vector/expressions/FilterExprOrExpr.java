@@ -88,7 +88,18 @@ public class FilterExprOrExpr extends VectorExpression {
 
     // Merge the result of last evaluate to previous evaluate.
     int newSize = batch.size + sizeAfterFirstChild;
-    System.arraycopy(selectedAfterFirstChild, 0, batch.selected, batch.size, sizeAfterFirstChild);
+    for (int i = 0; i < batch.size; i++) {
+      tmp[batch.selected[i]] = 1;
+    }
+    int k = 0;
+    for (int j = 0; j < n; j++) {
+      int i = initialSelected[j];
+      if (tmp[i] == 1) {
+        batch.selected[k++] = i;
+      }
+    }
+
+
     batch.size = newSize;
     if (newSize == n) {
       // Filter didn't do anything
