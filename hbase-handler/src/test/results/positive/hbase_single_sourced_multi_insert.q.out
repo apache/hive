@@ -1,0 +1,251 @@
+PREHOOK: query: -- HIVE-4375 Single sourced multi insert consists of native and non-native table mixed throws NPE
+CREATE TABLE src_x1(key string, value string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- HIVE-4375 Single sourced multi insert consists of native and non-native table mixed throws NPE
+CREATE TABLE src_x1(key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@src_x1
+PREHOOK: query: CREATE TABLE src_x2(key string, value string)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key, cf:value")
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE src_x2(key string, value string)
+STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
+WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key, cf:value")
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@src_x2
+PREHOOK: query: explain
+from src a
+insert overwrite table src_x1
+select key,"" where a.key > 0 AND a.key < 50
+insert overwrite table src_x2
+select value,"" where a.key > 50 AND a.key < 100
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+from src a
+insert overwrite table src_x1
+select key,"" where a.key > 0 AND a.key < 50
+insert overwrite table src_x2
+select value,"" where a.key > 50 AND a.key < 100
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src) a)) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_x1))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR "")) (TOK_WHERE (AND (> (. (TOK_TABLE_OR_COL a) key) 0) (< (. (TOK_TABLE_OR_COL a) key) 50)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME src_x2))) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR "")) (TOK_WHERE (AND (> (. (TOK_TABLE_OR_COL a) key) 50) (< (. (TOK_TABLE_OR_COL a) key) 100)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
+  Stage-2 depends on stages: Stage-0
+  Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        a 
+          TableScan
+            alias: a
+            Filter Operator
+              predicate:
+                  expr: ((key > 0) and (key < 50))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                      expr: ''
+                      type: string
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 1
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      name: default.src_x1
+            Filter Operator
+              predicate:
+                  expr: ((key > 50) and (key < 100))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: value
+                      type: string
+                      expr: ''
+                      type: string
+                outputColumnNames: _col0, _col1
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 2
+                  table:
+                      input format: org.apache.hadoop.hive.hbase.HiveHBaseTableInputFormat
+                      output format: org.apache.hadoop.hive.hbase.HiveHBaseTableOutputFormat
+                      serde: org.apache.hadoop.hive.hbase.HBaseSerDe
+                      name: default.src_x2
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-0
+    Move Operator
+      tables:
+          replace: true
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.src_x1
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.src_x1
+
+  Stage: Stage-5
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.src_x1
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+
+PREHOOK: query: from src a
+insert overwrite table src_x1
+select key,"" where a.key > 0 AND a.key < 50
+insert overwrite table src_x2
+select value,"" where a.key > 50 AND a.key < 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_x1
+PREHOOK: Output: default@src_x2
+POSTHOOK: query: from src a
+insert overwrite table src_x1
+select key,"" where a.key > 0 AND a.key < 50
+insert overwrite table src_x2
+select value,"" where a.key > 50 AND a.key < 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_x1
+POSTHOOK: Output: default@src_x2
+POSTHOOK: Lineage: src_x1.key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_x1.value SIMPLE []
+PREHOOK: query: select * from src_x1 order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_x1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from src_x1 order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_x1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: src_x1.key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_x1.value SIMPLE []
+10	
+11	
+12	
+12	
+15	
+15	
+17	
+18	
+18	
+19	
+2	
+20	
+24	
+24	
+26	
+26	
+27	
+28	
+30	
+33	
+34	
+35	
+35	
+35	
+37	
+37	
+4	
+41	
+42	
+42	
+43	
+44	
+47	
+5	
+5	
+5	
+8	
+9	
+PREHOOK: query: select * from src_x2 order by key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src_x2
+#### A masked pattern was here ####
+POSTHOOK: query: select * from src_x2 order by key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src_x2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: src_x1.key SIMPLE [(src)a.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_x1.value SIMPLE []
+val_51	
+val_53	
+val_54	
+val_57	
+val_58	
+val_64	
+val_65	
+val_66	
+val_67	
+val_69	
+val_70	
+val_72	
+val_74	
+val_76	
+val_77	
+val_78	
+val_80	
+val_82	
+val_83	
+val_84	
+val_85	
+val_86	
+val_87	
+val_90	
+val_92	
+val_95	
+val_96	
+val_97	
+val_98	
