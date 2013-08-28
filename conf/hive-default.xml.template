@@ -431,19 +431,19 @@
 <property>
   <name>hive.mapjoin.followby.map.aggr.hash.percentmemory</name>
   <value>0.3</value>
-  <description>Portion of total memory to be used by map-side grup aggregation hash table, when this group by is followed by map join</description>
+  <description>Portion of total memory to be used by map-side group aggregation hash table, when this group by is followed by map join</description>
 </property>
 
 <property>
   <name>hive.map.aggr.hash.force.flush.memory.threshold</name>
   <value>0.9</value>
-  <description>The max memory to be used by map-side grup aggregation hash table, if the memory usage is higher than this number, force to flush data</description>
+  <description>The max memory to be used by map-side group aggregation hash table, if the memory usage is higher than this number, force to flush data</description>
 </property>
 
 <property>
   <name>hive.map.aggr.hash.percentmemory</name>
   <value>0.5</value>
-  <description>Portion of total memory to be used by map-side grup aggregation hash table</description>
+  <description>Portion of total memory to be used by map-side group aggregation hash table</description>
 </property>
 
 <property>
@@ -1581,6 +1581,12 @@
   <value>50000</value>
   <description>Maximum number of rows allowed for a smaller subset of data for simple LIMIT, if it is a fetch query.
    Insert queries are not restricted by this limit.</description>
+</property>
+
+<property>
+  <name>hive.limit.pushdown.memory.usage</name>
+  <value>0.3f</value>
+  <description>The max memory to be used for hash in RS operator for top K selection.</description>
 </property>
 
 <property>

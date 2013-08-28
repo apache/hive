@@ -33,7 +33,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -44,13 +43,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 
 /**
  * Reduce Sink Operator sends output to the reduce stage.
  **/
 public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
-    implements Serializable {
+    implements Serializable, TopNHash.BinaryCollector {
 
   private static final long serialVersionUID = 1L;
 
@@ -89,6 +87,9 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   public String getInputAlias() {
     return inputAlias;
   }
+
+  // picks topN K:V pairs from input. can be null
+  private transient TopNHash reducerHash;
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
@@ -131,6 +132,8 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
           .newInstance();
       valueSerializer.initialize(null, valueTableDesc.getProperties());
 
+      reducerHash = createTopKHash();
+
       firstRow = true;
       initializeChildren(hconf);
     } catch (Exception e) {
@@ -139,14 +142,44 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     }
   }
 
+  private TopNHash createTopKHash() {
+    int limit = conf.getTopN();
+    float percent = conf.getTopNMemoryUsage();
+    if (limit < 0 || percent <= 0) {
+      return null;
+    }
+    if (limit == 0) {
+      return TopNHash.create0();
+    }
+    // limit * 64 : compensation of arrays for key/value/hashcodes
+    long threshold = (long) (percent * Runtime.getRuntime().maxMemory()) - limit * 64;
+    if (threshold < 0) {
+      return null;
+    }
+    return TopNHash.create(conf.isMapGroupBy(), limit, threshold, this);
+  }
+
   transient InspectableObject tempInspectableObject = new InspectableObject();
   transient HiveKey keyWritable = new HiveKey();
-  transient Writable value;
 
   transient StructObjectInspector keyObjectInspector;
   transient StructObjectInspector valueObjectInspector;
   transient ObjectInspector[] partitionObjectInspectors;
 
+  /**
+   * This two dimensional array holds key data and a corresponding Union object
+   * which contains the tag identifying the aggregate expression for distinct columns.
+   *
+   * If there is no distict expression, cachedKeys is simply like this.
+   * cachedKeys[0] = [col0][col1]
+   *
+   * with two distict expression, union(tag:key) is attatched for each distinct expression
+   * cachedKeys[0] = [col0][col1][0:dist1]
+   * cachedKeys[1] = [col0][col1][1:dist2]
+   *
+   * in this case, child GBY evaluates distict values with expression like KEY.col2:0.dist1
+   * see {@link ExprNodeColumnEvaluator}
+   */
   transient Object[][] cachedKeys;
   transient Object[] cachedValues;
   transient List<List<Integer>> distinctColIndices;
@@ -198,6 +231,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   }
 
   @Override
+  @SuppressWarnings("unchecked")
   public void processOp(Object row, int tag) throws HiveException {
     try {
       ObjectInspector rowInspector = inputObjInspectors[tag];
@@ -241,8 +275,6 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       for (int i = 0; i < valueEval.length; i++) {
         cachedValues[i] = valueEval[i].evaluate(row);
       }
-      // Serialize the value
-      value = valueSerializer.serialize(cachedValues, valueObjectInspector);
 
       // Evaluate the keys
       Object[] distributionKeys = new Object[numDistributionKeys];
@@ -267,6 +299,8 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
         // no distinct key
         System.arraycopy(distributionKeys, 0, cachedKeys[0], 0, numDistributionKeys);
       }
+
+      BytesWritable value = null;
       // Serialize the keys and append the tag
       for (int i = 0; i < cachedKeys.length; i++) {
         if (keyIsText) {
@@ -294,24 +328,83 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
           }
         }
         keyWritable.setHashCode(keyHashCode);
-        if (out != null) {
-          out.collect(keyWritable, value);
-          // Since this is a terminal operator, update counters explicitly -
-          // forward is not called
-          if (counterNameToEnum != null) {
-            ++outputRows;
-            if (outputRows % 1000 == 0) {
-              incrCounter(numOutputRowsCntr, outputRows);
-              outputRows = 0;
+
+        if (reducerHash == null) {
+          if (null != out) {
+            collect(keyWritable, value = getValue(row, value));
+          }
+       } else {
+          int index = reducerHash.indexOf(keyWritable);
+          if (index == TopNHash.EXCLUDED) {
+            continue;
+          }
+          value = getValue(row, value);
+          if (index >= 0) {
+            reducerHash.set(index, value);
+          } else {
+            if (index == TopNHash.FORWARD) {
+              collect(keyWritable, value);
+            } else if (index == TopNHash.FLUSH) {
+              LOG.info("Top-N hash is flushed");
+              reducerHash.flush();
+              // we can now retry adding key/value into hash, which is flushed.
+              // but for simplicity, just forward them
+              collect(keyWritable, value);
+            } else if (index == TopNHash.DISABLE) {
+              LOG.info("Top-N hash is disabled");
+              reducerHash.flush();
+              collect(keyWritable, value);
+              reducerHash = null;
             }
           }
         }
       }
-    } catch (SerDeException e) {
-      throw new HiveException(e);
-    } catch (IOException e) {
+    } catch (HiveException e) {
+      throw e;
+    } catch (Exception e) {
       throw new HiveException(e);
     }
+  }
+
+  public void collect(BytesWritable key, BytesWritable value) throws IOException {
+    // Since this is a terminal operator, update counters explicitly -
+    // forward is not called
+    out.collect(key, value);
+    if (++outputRows % 1000 == 0) {
+      if (counterNameToEnum != null) {
+        incrCounter(numOutputRowsCntr, outputRows);
+      }
+      increaseForward(outputRows);
+      outputRows = 0;
+    }
+  }
+
+  // evaluate value lazily
+  private BytesWritable getValue(Object row, BytesWritable value) throws Exception {
+    if (value != null) {
+      return value;
+    }
+    // Evaluate the value
+    for (int i = 0; i < valueEval.length; i++) {
+      cachedValues[i] = valueEval[i].evaluate(row);
+    }
+    // Serialize the value
+    return (BytesWritable) valueSerializer.serialize(cachedValues, valueObjectInspector);
+  }
+
+  @Override
+  protected void closeOp(boolean abort) throws HiveException {
+    if (!abort && reducerHash != null) {
+      try {
+        reducerHash.flush();
+      } catch (IOException e) {
+        throw new HiveException(e);
+      } finally {
+        reducerHash = null;
+      }
+    }
+    reducerHash = null;
+    super.closeOp(abort);
   }
 
   /**

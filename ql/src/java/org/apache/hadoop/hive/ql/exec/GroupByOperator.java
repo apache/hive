@@ -1181,4 +1181,15 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   public OperatorType getType() {
     return OperatorType.GROUPBY;
   }
+
+  /**
+   * we can push the limit above GBY (running in Reducer), since that will generate single row
+   * for each group. This doesn't necessarily hold for GBY (running in Mappers),
+   * so we don't push limit above it.
+   */
+  @Override
+  public boolean acceptLimitPushdown() {
+    return getConf().getMode() == GroupByDesc.Mode.MERGEPARTIAL ||
+        getConf().getMode() == GroupByDesc.Mode.COMPLETE;
+  }
 }

@@ -68,6 +68,10 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
 
   private int numReducers;
 
+  private int topN = -1;
+  private float topNMemoryUsage = -1;
+  private boolean mapGroupBy;  // for group-by, values with same key on top-K should be forwarded
+
   public ReduceSinkDesc() {
   }
 
@@ -176,6 +180,40 @@ public class ReduceSinkDesc extends AbstractOperatorDesc {
 
   public void setTag(int tag) {
     this.tag = tag;
+  }
+
+  public int getTopN() {
+    return topN;
+  }
+
+  public void setTopN(int topN) {
+    this.topN = topN;
+  }
+
+  @Explain(displayName = "TopN")
+  public Integer getTopNExplain() {
+    return topN > 0 ? topN : null;
+  }
+
+  public float getTopNMemoryUsage() {
+    return topNMemoryUsage;
+  }
+
+  public void setTopNMemoryUsage(float topNMemoryUsage) {
+    this.topNMemoryUsage = topNMemoryUsage;
+  }
+
+  @Explain(displayName = "TopN Hash Memory Usage")
+  public Float getTopNMemoryUsageExplain() {
+    return topN > 0 && topNMemoryUsage > 0 ? topNMemoryUsage : null;
+  }
+
+  public boolean isMapGroupBy() {
+    return mapGroupBy;
+  }
+
+  public void setMapGroupBy(boolean mapGroupBy) {
+    this.mapGroupBy = mapGroupBy;
   }
 
   /**

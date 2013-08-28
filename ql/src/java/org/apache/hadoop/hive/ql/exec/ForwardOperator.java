@@ -41,6 +41,11 @@ public class ForwardOperator extends Operator<ForwardDesc> implements
     return OperatorType.FORWARD;
   }
 
+  @Override
+  public boolean acceptLimitPushdown() {
+    return true;
+  }
+
   /**
    * @return the name of the operator
    */
