@@ -159,6 +159,8 @@ public class HCatOutputFormat extends HCatBaseOutputFormat {
                 outputJobInfo.setPartitionValues(valueMap);
             }
 
+            // To get around hbase failure on single node, see BUG-4383
+            conf.set("dfs.client.read.shortcircuit", "false");
             HCatSchema tableSchema = HCatUtil.extractSchema(table);
             StorerInfo storerInfo =
                 InternalUtil.extractStorerInfo(table.getTTable().getSd(), table.getParameters());
