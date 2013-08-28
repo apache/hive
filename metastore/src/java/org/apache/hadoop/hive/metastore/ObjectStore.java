@@ -1755,7 +1755,7 @@ public class ObjectStore implements RawStore, Configurable {
       if (doUseDirectSql) {
         try {
           Table table = convertToTable(mtable);
-          results = directSql.getPartitionsViaSqlFilter(table, dbName, tblName, parser);
+          results = directSql.getPartitionsViaSqlFilter(table, parser);
         } catch (Exception ex) {
           LOG.error("Direct SQL failed, falling back to ORM", ex);
           doUseDirectSql = false;
