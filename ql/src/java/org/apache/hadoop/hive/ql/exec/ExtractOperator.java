@@ -50,6 +50,11 @@ public class ExtractOperator extends Operator<ExtractDesc> implements
     return OperatorType.EXTRACT;
   }
 
+  @Override
+  public boolean acceptLimitPushdown() {
+    return true;
+  }
+
   /**
    * @return the name of the operator
    */

@@ -47,7 +47,6 @@
     <dependency org="org.iq80.snappy" name="snappy" 
                 rev="${snappy.version}" transitive="false"/>
 
-    <!-- hadoop specific guava -->
     <dependency org="org.json" name="json" rev="${json.version}"/>
     <dependency org="commons-collections" name="commons-collections" rev="${commons-collections.version}"/>
     <dependency org="commons-configuration" name="commons-configuration" rev="${commons-configuration.version}"
@@ -79,6 +78,8 @@
       <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
       <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
     </dependency>
+
+    <dependency org="com.google.guava" name="guava" rev="${guava.version}" transitive="false"/>
 
     <!-- Test Dependencies -->
     <dependency org="junit" name="junit" rev="${junit.version}" conf="test->default" />
