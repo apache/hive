@@ -32,6 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -1502,6 +1504,25 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    */
   public boolean opAllowedBeforeSortMergeJoin() {
     return true;
+  }
+
+  /**
+   * Computes and retrieves the stats for this operator. Default implementation assumes same
+   * input/output size for operator.
+   *
+   * @return Statistics for this operator
+   */
+  public Statistics getStatistics(HiveConf conf) throws HiveException {
+    Statistics stats = this.getConf().getStatistics();
+
+    if (stats == null) {
+      stats = new Statistics();
+      for (Operator<? extends OperatorDesc> parent: this.getParentOperators()) {
+        stats.addNumberOfBytes(parent.getStatistics(conf).getNumberOfBytes());
+      }
+      this.getConf().setStatistics(stats);
+    }
+    return stats;
   }
 
   @Override

@@ -28,9 +28,11 @@ import java.util.Map.Entry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.DemuxDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -303,6 +305,16 @@ public class DemuxOperator extends Operator<DemuxDesc>
       }
       lastChildIndex = currentChildIndex;
     }
+  }
+
+  @Override
+  public Statistics getStatistics(HiveConf conf) throws HiveException {
+    Statistics stats = this.getConf().getStatistics();
+    if (stats == null) {
+      super.getStatistics(conf);
+      stats.setNumberOfBytes(stats.getNumberOfBytes()/this.getParentOperators().size());
+    }
+    return stats;
   }
 
   @Override

@@ -22,6 +22,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.ql.exec.PTFUtils;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
 
 /**
@@ -52,6 +54,10 @@ public class TableScanDesc extends AbstractOperatorDesc {
    */
   private int rowLimit = -1;
 
+  private transient Table table;
+
+  private transient ExprNodeDesc pruningPredicate;
+
   /**
    * A boolean variable set to true by the semantic analyzer only in case of the analyze command.
    *
@@ -71,8 +77,30 @@ public class TableScanDesc extends AbstractOperatorDesc {
   // input file name (big) to bucket number
   private Map<String, Integer> bucketFileNameMapping;
 
+  static{
+    PTFUtils.makeTransient(TableScanDesc.class, "pruningPredicate");
+    PTFUtils.makeTransient(TableScanDesc.class, "table");
+  }
+
+
   @SuppressWarnings("nls")
   public TableScanDesc() {
+  }
+
+  public Table getTable() {
+    return table;
+  }
+
+  public void setTable(Table t) {
+    table = t;
+  }
+
+  public ExprNodeDesc getPruningPredicate() {
+    return pruningPredicate;
+  }
+
+  public void setPruningPredicate(ExprNodeDesc expr) {
+    pruningPredicate = expr;
   }
 
   public TableScanDesc(final String alias) {

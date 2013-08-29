@@ -116,6 +116,8 @@ import org.apache.hadoop.hive.ql.io.ReworkMapredInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.ppr.PartitionPruner;
+import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
@@ -2588,22 +2590,30 @@ public final class Utilities {
         + maxReducers + " totalInputFileSize=" + totalInputFileSize);
     }
 
+    // If this map reduce job writes final data to a table and bucketing is being inferred,
+    // and the user has configured Hive to do this, make sure the number of reducers is a
+    // power of two
+    boolean powersOfTwo = conf.getBoolVar(HiveConf.ConfVars.HIVE_INFER_BUCKET_SORT_NUM_BUCKETS_POWER_TWO) &&
+        finalMapRed && !work.getBucketedColsByDirectory().isEmpty();
+
+    return estimateReducers(totalInputFileSize, bytesPerReducer, maxReducers, powersOfTwo);
+  }
+
+  public static int estimateReducers(long totalInputFileSize, long bytesPerReducer,
+      int maxReducers, boolean powersOfTwo) {
+
     int reducers = (int) ((totalInputFileSize + bytesPerReducer - 1) / bytesPerReducer);
     reducers = Math.max(1, reducers);
     reducers = Math.min(maxReducers, reducers);
 
-    // If this map reduce job writes final data to a table and bucketing is being inferred,
-    // and the user has configured Hive to do this, make sure the number of reducers is a
-    // power of two
-    if (conf.getBoolVar(HiveConf.ConfVars.HIVE_INFER_BUCKET_SORT_NUM_BUCKETS_POWER_TWO) &&
-        finalMapRed && !work.getBucketedColsByDirectory().isEmpty()) {
 
-      int reducersLog = (int)(Math.log(reducers) / Math.log(2)) + 1;
-      int reducersPowerTwo = (int)Math.pow(2, reducersLog);
+    int reducersLog = (int)(Math.log(reducers) / Math.log(2)) + 1;
+    int reducersPowerTwo = (int)Math.pow(2, reducersLog);
 
+    if (powersOfTwo) {
       // If the original number of reducers was a power of two, use that
       if (reducersPowerTwo / 2 == reducers) {
-        return reducers;
+        // nothing to do
       } else if (reducersPowerTwo > maxReducers) {
         // If the next power of two greater than the original number of reducers is greater
         // than the max number of reducers, use the preceding power of two, which is strictly
@@ -2614,7 +2624,6 @@ public final class Utilities {
         reducers = reducersPowerTwo;
       }
     }
-
     return reducers;
   }
 
@@ -2969,6 +2978,59 @@ public final class Utilities {
         ops.addAll(op.getChildOperators());
       }
     }
+  }
+
+  public static long getSize(String alias, Table table, HiveConf conf,
+      TableScanOperator topOp, ExprNodeDesc expr) throws HiveException {
+    long result = 0;
+    int numPartitions = 0;
+    Map<String, PrunedPartitionList> prunedPartitionsMap
+      = new HashMap<String, PrunedPartitionList>();
+
+    if (!table.isPartitioned()) {
+      result = getSize(conf, table);
+    }
+    else {
+      // For partitioned tables, get the size of all the partitions
+      PrunedPartitionList partsList = PartitionPruner.prune(table, expr, conf,
+          alias, prunedPartitionsMap);
+      numPartitions = partsList.getNotDeniedPartns().size();
+      for (Partition part : partsList.getNotDeniedPartns()) {
+        result += getSize(conf, part);
+      }
+    }
+    return result;
+  }
+
+  private static long getSize(HiveConf conf, String size, Path path) {
+    // If the size is present in the metastore, use it
+    if (size != null) {
+      try {
+        return Long.valueOf(size);
+      } catch (NumberFormatException e) {
+        return -1;
+      }
+    }
+
+    try {
+      FileSystem fs = path.getFileSystem(conf);
+      return fs.getContentSummary(path).getLength();
+    } catch (Exception e) {
+      return -1;
+    }
+  }
+
+  private static long getSize(HiveConf conf, Table table) {
+    Path path = table.getPath();
+    String size = table.getProperty("totalSize");
+    return getSize(conf, size, path);
+  }
+
+  private static long getSize(HiveConf conf, Partition partition) {
+    Path path = partition.getPartitionPath();
+    String size = partition.getParameters().get("totalSize");
+
+    return getSize(conf, size, path);
   }
 }
 

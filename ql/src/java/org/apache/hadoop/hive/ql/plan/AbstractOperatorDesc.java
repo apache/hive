@@ -19,6 +19,19 @@
 package org.apache.hadoop.hive.ql.plan;
 
 public class AbstractOperatorDesc implements OperatorDesc {
+  protected transient Statistics statistics;
+
+  @Override
+  @Explain(displayName = "Statistics", normalExplain = false)
+  public Statistics getStatistics() {
+    return statistics;
+  }
+
+  @Override
+  public void setStatistics(Statistics statistics) {
+    this.statistics = statistics;
+  }
+
   @Override
   public Object clone() throws CloneNotSupportedException {
     throw new CloneNotSupportedException("clone not supported");
