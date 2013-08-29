@@ -38,7 +38,6 @@ import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFQueryInputDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.ShapeDetails;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.ValueBoundaryDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowExpressionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFrameDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowTableFunctionDef;
@@ -53,7 +52,6 @@ import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
@@ -114,67 +112,37 @@ public class PTFDeserializer {
     /*
      * 2. initialize WFns.
      */
-    if (def.getWindowFunctions() != null) {
-      for (WindowFunctionDef wFnDef : def.getWindowFunctions()) {
-
-        if (wFnDef.getArgs() != null) {
-          for (PTFExpressionDef arg : wFnDef.getArgs()) {
-            initialize(arg, inpShape);
-          }
+    for (WindowFunctionDef wFnDef : def.getWindowFunctions()) {
+      if (wFnDef.getArgs() != null) {
+        for (PTFExpressionDef arg : wFnDef.getArgs()) {
+          initialize(arg, inpShape);
         }
 
-        if (wFnDef.getWindowFrame() != null) {
-          WindowFrameDef wFrmDef = wFnDef.getWindowFrame();
-          initialize(wFrmDef.getStart(), inpShape);
-          initialize(wFrmDef.getEnd(), inpShape);
-        }
-        setupWdwFnEvaluator(wFnDef);
       }
-      ArrayList<String> aliases = new ArrayList<String>();
-      ArrayList<ObjectInspector> fieldOIs = new ArrayList<ObjectInspector>();
-      for (WindowFunctionDef wFnDef : def.getWindowFunctions()) {
-        aliases.add(wFnDef.getAlias());
-        if (wFnDef.isPivotResult()) {
-          fieldOIs.add(((ListObjectInspector) wFnDef.getOI()).getListElementObjectInspector());
-        } else {
-          fieldOIs.add(wFnDef.getOI());
-        }
+      if (wFnDef.getWindowFrame() != null) {
+        WindowFrameDef wFrmDef = wFnDef.getWindowFrame();
+        initialize(wFrmDef.getStart(), inpShape);
+        initialize(wFrmDef.getEnd(), inpShape);
       }
-      PTFDeserializer.addInputColumnsToList(inpShape, aliases, fieldOIs);
-      StructObjectInspector wdwOutOI = ObjectInspectorFactory.getStandardStructObjectInspector(
-          aliases, fieldOIs);
-      tResolver.setWdwProcessingOutputOI(wdwOutOI);
-      initialize(def.getOutputFromWdwFnProcessing(), wdwOutOI);
-    } else {
-      def.setOutputFromWdwFnProcessing(inpShape);
+      setupWdwFnEvaluator(wFnDef);
     }
-
-    inpShape = def.getOutputFromWdwFnProcessing();
-
-    /*
-     * 3. initialize WExprs. + having clause
-     */
-    if (def.getWindowExpressions() != null) {
-      for (WindowExpressionDef wEDef : def.getWindowExpressions()) {
-        initialize(wEDef, inpShape);
+    ArrayList<String> aliases = new ArrayList<String>();
+    ArrayList<ObjectInspector> fieldOIs = new ArrayList<ObjectInspector>();
+    for (WindowFunctionDef wFnDef : def.getWindowFunctions()) {
+      aliases.add(wFnDef.getAlias());
+      if (wFnDef.isPivotResult()) {
+        fieldOIs.add(((ListObjectInspector) wFnDef.getOI()).getListElementObjectInspector());
+      } else {
+        fieldOIs.add(wFnDef.getOI());
       }
     }
 
-    /*
-     * 4. give Evaluator chance to setup for Output execution; setup Output shape.
-     */
+    PTFDeserializer.addInputColumnsToList(inpShape, aliases, fieldOIs);
+    StructObjectInspector wdwOutOI = ObjectInspectorFactory.getStandardStructObjectInspector(
+        aliases, fieldOIs);
+    tResolver.setWdwProcessingOutputOI(wdwOutOI);
+    initialize(def.getOutputShape(), wdwOutOI);
     tResolver.initializeOutputOI();
-    initialize(def.getOutputShape(), tEval.getOutputOI());
-
-    /*
-     * If we have windowExpressions then we convert to Std. Object to process;
-     * we just stream these rows; no need to put in an output Partition.
-     */
-    if (def.getWindowExpressions().size() > 0) {
-      StructObjectInspector oi = (StructObjectInspector)
-          ObjectInspectorUtils.getStandardObjectInspector(def.getOutputShape().getOI());
-      def.getOutputShape().setOI(oi);
-    }
   }
 
   protected void initialize(PTFQueryInputDef def, StructObjectInspector OI) throws HiveException {
