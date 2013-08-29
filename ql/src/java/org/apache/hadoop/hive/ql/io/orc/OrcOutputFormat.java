@@ -47,32 +47,20 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
       implements RecordWriter<NullWritable, OrcSerdeRow>,
                  FileSinkOperator.RecordWriter {
     private Writer writer = null;
-    private final FileSystem fs;
     private final Path path;
-    private final Configuration conf;
-    private final long stripeSize;
-    private final int compressionSize;
-    private final CompressionKind compress;
-    private final int rowIndexStride;
+    private final OrcFile.WriterOptions options;
 
-    OrcRecordWriter(FileSystem fs, Path path, Configuration conf,
-                    String stripeSize, String compress,
-                    String compressionSize, String rowIndexStride) {
-      this.fs = fs;
+    OrcRecordWriter(Path path, OrcFile.WriterOptions options) {
       this.path = path;
-      this.conf = conf;
-      this.stripeSize = Long.valueOf(stripeSize);
-      this.compress = CompressionKind.valueOf(compress);
-      this.compressionSize = Integer.valueOf(compressionSize);
-      this.rowIndexStride = Integer.valueOf(rowIndexStride);
+      this.options = options;
     }
 
     @Override
     public void write(NullWritable nullWritable,
                       OrcSerdeRow row) throws IOException {
       if (writer == null) {
-        writer = OrcFile.createWriter(fs, path, this.conf, row.getInspector(),
-            stripeSize, compress, compressionSize, rowIndexStride);
+        options.inspector(row.getInspector());
+        writer = OrcFile.createWriter(path, options);
       }
       writer.addRow(row.getRow());
     }
@@ -81,9 +69,8 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
     public void write(Writable row) throws IOException {
       OrcSerdeRow serdeRow = (OrcSerdeRow) row;
       if (writer == null) {
-        writer = OrcFile.createWriter(fs, path, this.conf,
-            serdeRow.getInspector(), stripeSize, compress, compressionSize,
-            rowIndexStride);
+        options.inspector(serdeRow.getInspector());
+        writer = OrcFile.createWriter(path, options);
       }
       writer.addRow(serdeRow.getRow());
     }
@@ -102,8 +89,8 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
         ObjectInspector inspector = ObjectInspectorFactory.
             getStandardStructObjectInspector(new ArrayList<String>(),
                 new ArrayList<ObjectInspector>());
-        writer = OrcFile.createWriter(fs, path, this.conf, inspector,
-            stripeSize, compress, compressionSize, rowIndexStride);
+        options.inspector(inspector);
+        writer = OrcFile.createWriter(path, options);
       }
       writer.close();
     }
@@ -113,9 +100,8 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
   public RecordWriter<NullWritable, OrcSerdeRow>
       getRecordWriter(FileSystem fileSystem, JobConf conf, String name,
                       Progressable reporter) throws IOException {
-    return new OrcRecordWriter(fileSystem,  new Path(name), conf,
-      OrcFile.DEFAULT_STRIPE_SIZE, OrcFile.DEFAULT_COMPRESSION,
-      OrcFile.DEFAULT_COMPRESSION_BLOCK_SIZE, OrcFile.DEFAULT_ROW_INDEX_STRIDE);
+    return new
+      OrcRecordWriter(new Path(name), OrcFile.writerOptions(conf));
   }
 
   @Override
@@ -126,20 +112,42 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
                          boolean isCompressed,
                          Properties tableProperties,
                          Progressable reporter) throws IOException {
-    String stripeSize = tableProperties.getProperty(OrcFile.STRIPE_SIZE,
-        OrcFile.DEFAULT_STRIPE_SIZE);
-    String compression = tableProperties.getProperty(OrcFile.COMPRESSION,
-        OrcFile.DEFAULT_COMPRESSION);
-    String compressionSize =
-      tableProperties.getProperty(OrcFile.COMPRESSION_BLOCK_SIZE,
-        OrcFile.DEFAULT_COMPRESSION_BLOCK_SIZE);
-    String rowIndexStride =
-        tableProperties.getProperty(OrcFile.ROW_INDEX_STRIDE,
-            OrcFile.DEFAULT_ROW_INDEX_STRIDE);
-    if ("false".equals(tableProperties.getProperty(OrcFile.ENABLE_INDEXES))) {
-      rowIndexStride = "0";
+    OrcFile.WriterOptions options = OrcFile.writerOptions(conf);
+    if (tableProperties.containsKey(OrcFile.STRIPE_SIZE)) {
+      options.stripeSize(Long.parseLong
+                           (tableProperties.getProperty(OrcFile.STRIPE_SIZE)));
     }
-    return new OrcRecordWriter(path.getFileSystem(conf), path, conf,
-      stripeSize, compression, compressionSize, rowIndexStride);
+
+    if (tableProperties.containsKey(OrcFile.COMPRESSION)) {
+      options.compress(CompressionKind.valueOf
+                           (tableProperties.getProperty(OrcFile.COMPRESSION)));
+    }
+
+    if (tableProperties.containsKey(OrcFile.COMPRESSION_BLOCK_SIZE)) {
+      options.bufferSize(Integer.parseInt
+                         (tableProperties.getProperty
+                            (OrcFile.COMPRESSION_BLOCK_SIZE)));
+    }
+
+    if (tableProperties.containsKey(OrcFile.ROW_INDEX_STRIDE)) {
+      options.rowIndexStride(Integer.parseInt
+                             (tableProperties.getProperty
+                              (OrcFile.ROW_INDEX_STRIDE)));
+    }
+
+    if (tableProperties.containsKey(OrcFile.ENABLE_INDEXES)) {
+      if ("false".equals(tableProperties.getProperty
+                         (OrcFile.ENABLE_INDEXES))) {
+        options.rowIndexStride(0);
+      }
+    }
+
+    if (tableProperties.containsKey(OrcFile.BLOCK_PADDING)) {
+      options.blockPadding(Boolean.parseBoolean
+                           (tableProperties.getProperty
+                            (OrcFile.BLOCK_PADDING)));
+    }
+
+    return new OrcRecordWriter(path, options);
   }
 }
