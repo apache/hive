@@ -108,8 +108,12 @@ public class TestNewIntegerEncoding {
           Row.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
     }
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.NONE, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .compress(CompressionKind.NONE)
+                                         .bufferSize(10000));
     writer.addRow(new Row(111, 1111L));
     writer.addRow(new Row(111, 1111L));
     writer.addRow(new Row(111, 1111L));
@@ -138,9 +142,12 @@ public class TestNewIntegerEncoding {
         9, 2, 6, 3, 7, 1, 9, 2, 6, 2000, 2, 1, 1, 1, 1, 1, 3, 7, 1, 9, 2, 6, 1,
         1, 1, 1, 1 };
     List<Long> input = Lists.newArrayList(Longs.asList(inp));
-    conf.set("hive.exec.orc.write.format", "0.11");
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.NONE, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .compress(CompressionKind.NONE)
+                                         .version(OrcFile.Version.V_0_11)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -170,8 +177,12 @@ public class TestNewIntegerEncoding {
         1, 1, 1, 1 };
     List<Long> input = Lists.newArrayList(Longs.asList(inp));
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.NONE, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .compress(CompressionKind.NONE)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -197,8 +208,12 @@ public class TestNewIntegerEncoding {
     long[] inp = new long[] { -500, -400, -350, -325, -310 };
     List<Long> input = Lists.newArrayList(Longs.asList(inp));
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.NONE, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .compress(CompressionKind.NONE)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -224,8 +239,12 @@ public class TestNewIntegerEncoding {
     long[] inp = new long[] { -500, -600, -650, -675, -710 };
     List<Long> input = Lists.newArrayList(Longs.asList(inp));
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.NONE, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .compress(CompressionKind.NONE)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -251,8 +270,12 @@ public class TestNewIntegerEncoding {
     long[] inp = new long[] { 500, 400, 350, 325, 310 };
     List<Long> input = Lists.newArrayList(Longs.asList(inp));
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.NONE, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .compress(CompressionKind.NONE)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -278,8 +301,12 @@ public class TestNewIntegerEncoding {
     long[] inp = new long[] { 500, 600, 650, 675, 710 };
     List<Long> input = Lists.newArrayList(Longs.asList(inp));
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.NONE, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .compress(CompressionKind.NONE)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -305,8 +332,11 @@ public class TestNewIntegerEncoding {
     List<Long> input = Lists.newArrayList();
     input.add((long) Integer.MIN_VALUE);
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.ZLIB, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -332,8 +362,12 @@ public class TestNewIntegerEncoding {
     List<Long> input = Lists.newArrayList();
     input.add((long) Integer.MAX_VALUE);
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.NONE, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .compress(CompressionKind.NONE)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -359,8 +393,12 @@ public class TestNewIntegerEncoding {
     List<Long> input = Lists.newArrayList();
     input.add(Long.MIN_VALUE);
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.NONE, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .compress(CompressionKind.NONE)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -386,8 +424,12 @@ public class TestNewIntegerEncoding {
     List<Long> input = Lists.newArrayList();
     input.add(Long.MAX_VALUE);
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.NONE, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .compress(CompressionKind.NONE)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -416,8 +458,12 @@ public class TestNewIntegerEncoding {
       input.add((long) rand.nextInt());
     }
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.NONE, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .compress(CompressionKind.NONE)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -446,8 +492,12 @@ public class TestNewIntegerEncoding {
       input.add(rand.nextLong());
     }
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.NONE, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .compress(CompressionKind.NONE)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -484,8 +534,12 @@ public class TestNewIntegerEncoding {
         2, 16 };
     List<Long> input = Lists.newArrayList(Longs.asList(inp));
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.NONE, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .compress(CompressionKind.NONE)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -522,8 +576,12 @@ public class TestNewIntegerEncoding {
         2, 16 };
     List<Long> input = Lists.newArrayList(Longs.asList(inp));
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.NONE, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .compress(CompressionKind.NONE)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -560,8 +618,12 @@ public class TestNewIntegerEncoding {
         2, 16 };
     List<Long> input = Lists.newArrayList(Longs.asList(inp));
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.NONE, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .compress(CompressionKind.NONE)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -589,8 +651,12 @@ public class TestNewIntegerEncoding {
         6, 8, 7, 9, 9, 11, 33, 11, 3, 7, 4, 6, 10, 14, 12, 5, 14, 7, 6 };
     List<Long> input = Lists.newArrayList(Longs.asList(inp));
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.NONE, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .compress(CompressionKind.NONE)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -620,8 +686,12 @@ public class TestNewIntegerEncoding {
     }
     input.set(0, 20000L);
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.NONE, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .compress(CompressionKind.NONE)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -651,8 +721,12 @@ public class TestNewIntegerEncoding {
     }
     input.set(1, 20000L);
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.NONE, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .compress(CompressionKind.NONE)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -682,8 +756,11 @@ public class TestNewIntegerEncoding {
     }
     input.set(255, 20000L);
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.ZLIB, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -713,8 +790,11 @@ public class TestNewIntegerEncoding {
     }
     input.set(256, 20000L);
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.ZLIB, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -744,8 +824,11 @@ public class TestNewIntegerEncoding {
     }
     input.set(510, 20000L);
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.ZLIB, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -775,8 +858,11 @@ public class TestNewIntegerEncoding {
     }
     input.set(511, 20000L);
 
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.ZLIB, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .bufferSize(10000));
     for(Long l : input) {
       writer.addRow(l);
     }
@@ -804,9 +890,13 @@ public class TestNewIntegerEncoding {
     for(int i = 0; i < 100000; i++) {
       input.add((long) rand.nextInt());
     }
-    conf.set("hive.exec.orc.write.format", "0.11");
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.NONE, 10000, 10000);
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .compress(CompressionKind.NONE)
+                                         .stripeSize(100000)
+                                         .bufferSize(10000)
+                                         .version(OrcFile.Version.V_0_11));
     for(Long l : input) {
       writer.addRow(l);
     }
