@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 /**
  * Walks the operator tree in DFS fashion.
  */
-public class GenTezTaskWalker extends DefaultGraphWalker {
+public class TezWalker extends DefaultGraphWalker {
 
   /**
    * constructor of the walker - the dispatcher is passed.
@@ -35,7 +35,7 @@ public class GenTezTaskWalker extends DefaultGraphWalker {
    * @param disp
    *          the dispatcher to be called for each node visited
    */
-  public GenTezTaskWalker(Dispatcher disp) {
+  public TezWalker(Dispatcher disp) {
     super(disp);
   }
 
@@ -51,11 +51,13 @@ public class GenTezTaskWalker extends DefaultGraphWalker {
 
     // maintain the stack of operators encountered
     opStack.push(nd);
-    Boolean result = dispatchAndReturn(nd, opStack);
+    Boolean skip = dispatchAndReturn(nd, opStack);
 
-    // move all the children to the front of queue
-    for (Node ch : children) {
-      walk(ch);
+    if (skip == null || !skip) {
+      // move all the children to the front of queue
+      for (Node ch : children) {
+        walk(ch);
+      }
     }
 
     // done with this operator

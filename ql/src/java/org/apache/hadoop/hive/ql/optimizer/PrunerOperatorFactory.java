@@ -125,6 +125,9 @@ public abstract class PrunerOperatorFactory {
       // Put the mapping from table scan operator to pruner_pred
       opToPrunner.put(top, pruner_pred);
 
+      // Set the predicate in the table directly
+      top.getConf().setPruningPredicate(pruner_pred);
+
       return;
     }
 
@@ -164,6 +167,9 @@ public abstract class PrunerOperatorFactory {
 
       // Put the mapping from table scan operator to part-pruner map
       opToPrunner.put(top, partToPruner);
+
+      // Set the predicate in the table directly
+      top.getConf().setPruningPredicate(pruner_pred);
 
       return;
     }

@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,9 +27,11 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
+import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -313,6 +314,18 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
         throw new HiveException(ErrorMsg.STATSPUBLISHER_CLOSING_ERROR.getErrorCodedMsg());
       }
     }
+  }
+
+  @Override
+  public Statistics getStatistics(HiveConf conf) throws HiveException {
+    Statistics stats = this.getConf().getStatistics();
+    if (stats == null) {
+      stats = new Statistics();
+      stats.addNumberOfBytes(Utilities.getSize(alias, getConf().getTable(), conf,
+          this, getConf().getPruningPredicate()));
+      this.getConf().setStatistics(stats);
+    }
+    return stats;
   }
 
   @Override

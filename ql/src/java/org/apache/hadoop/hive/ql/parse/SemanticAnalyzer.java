@@ -7756,6 +7756,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
       // Add a mapping from the table scan operator to Table
       topToTable.put((TableScanOperator) top, tab);
+
+      // set the table in the tablescan descriptor directly
+      ((TableScanOperator) top).getConf().setTable(tab);
+
       Map<String, String> props = qb.getTabPropsForAlias(alias);
       if (props != null) {
         topToTableProps.put((TableScanOperator) top, props);

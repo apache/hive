@@ -62,13 +62,49 @@ public class TezCompiler extends TaskCompiler {
   }
 
   @Override
+  protected void optimizeOperatorPlan(ParseContext pCtx, Set<ReadEntity> inputs,
+      Set<WriteEntity> outputs) throws SemanticException {
+
+    // Sequence of TableScan operators to be walked
+    Deque<Operator<?>> deque = new LinkedList<Operator<?>>();
+    deque.addAll(pCtx.getTopOps().values());
+
+    // Create the context for the walker
+    OptimizeTezProcContext procCtx
+      = new OptimizeTezProcContext(conf, pCtx, inputs, outputs, deque);
+
+    // create a walker which walks the tree in a DFS manner while maintaining
+    // the operator stack.
+    Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
+    opRules.put(new RuleRegExp(new String("Set parallelism - ReduceSink"),
+        ReduceSinkOperator.getOperatorName() + "%"),
+        new SetReducerParallelism());
+
+    // if this is an explain statement add rule to generate statistics for
+    // the whole tree.
+    if (pCtx.getContext().getExplain()) {
+      opRules.put(new RuleRegExp(new String("Set statistics - FileSink"),
+          FileSinkOperator.getOperatorName() + "%"),
+          new SetStatistics());
+    }
+
+    // The dispatcher fires the processor corresponding to the closest matching
+    // rule and passes the context along
+    Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
+    List<Node> topNodes = new ArrayList<Node>();
+    topNodes.addAll(pCtx.getTopOps().values());
+    GraphWalker ogw = new TezWalker(disp);
+    ogw.startWalking(topNodes, null);
+  }
+
+  @Override
   protected void generateTaskTree(List<Task<? extends Serializable>> rootTasks, ParseContext pCtx,
       List<Task<MoveWork>> mvTask, Set<ReadEntity> inputs, Set<WriteEntity> outputs)
       throws SemanticException {
 
-    // generate map reduce plans
     ParseContext tempParseContext = getParseContext(pCtx, rootTasks);
 
+    // Sequence of TableScan operators to be walked
     Deque<Operator<?>> deque = new LinkedList<Operator<?>>();
     deque.addAll(pCtx.getTopOps().values());
 
@@ -92,7 +128,7 @@ public class TezCompiler extends TaskCompiler {
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
     List<Node> topNodes = new ArrayList<Node>();
     topNodes.addAll(pCtx.getTopOps().values());
-    GraphWalker ogw = new GenTezTaskWalker(disp);
+    GraphWalker ogw = new TezWalker(disp);
     ogw.startWalking(topNodes, null);
   }
 

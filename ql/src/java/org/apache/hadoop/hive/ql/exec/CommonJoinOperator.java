@@ -34,6 +34,8 @@ import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
@@ -814,6 +816,25 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
    */
   public void setPosToAliasMap(Map<Integer, Set<String>> posToAliasMap) {
     this.posToAliasMap = posToAliasMap;
+  }
+
+  @Override
+  public Statistics getStatistics(HiveConf conf) throws HiveException {
+    Statistics stats = this.getConf().getStatistics();
+    if (stats == null) {
+      long maxSize = 0;
+      stats = new Statistics();
+      for (Operator<? extends OperatorDesc> parent: this.getParentOperators()) {
+        long size = parent.getStatistics(conf).getNumberOfBytes();
+        if (maxSize < size) {
+          maxSize = size;
+        }
+      }
+      
+      stats.setNumberOfBytes(maxSize*this.getParentOperators().size());
+      this.getConf().setStatistics(stats);
+    }
+    return stats;
   }
 
   @Override

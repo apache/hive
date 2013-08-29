@@ -20,8 +20,32 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
-public interface OperatorDesc extends Serializable, Cloneable {
-  public Object clone() throws CloneNotSupportedException;
-  public Statistics getStatistics();
-  public void setStatistics(Statistics statistics);
+/**
+ * Statistics. Describes the output of an operator in terms of size, rows, etc
+ * based on estimates.
+ *
+ */
+@SuppressWarnings("serial")
+public class Statistics implements Serializable {
+
+  // only available stat right now is the amount of data flowing out of an
+  // operator;
+  private long numberOfBytes = -1;
+
+  @Explain(displayName = "Estimated data size in bytes")
+  public long getNumberOfBytes() {
+    return numberOfBytes;
+  }
+
+  public void addNumberOfBytes(long numberOfBytes) {
+    if (this.numberOfBytes < 0) {
+      this.numberOfBytes = 0;
+    }
+
+    this.numberOfBytes += numberOfBytes;
+  }
+
+  public void setNumberOfBytes(long l) {
+    this.numberOfBytes = l;
+  }
 }
