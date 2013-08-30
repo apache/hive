@@ -22,10 +22,11 @@ import java.io.IOException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.shims.HadoopShims.WebHCatJTShim;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.JobProfile;
 import org.apache.hadoop.mapred.JobStatus;
-import org.apache.hadoop.mapred.TempletonJobTracker;
 import org.apache.hcatalog.templeton.tool.JobState;
 
 /**
@@ -41,10 +42,10 @@ public class StatusDelegator extends TempletonDelegator {
     public QueueStatusBean run(String user, String id)
         throws NotAuthorizedException, BadParam, IOException, InterruptedException
     {
-        TempletonJobTracker tracker = null;
+        WebHCatJTShim tracker = null;
         JobState state = null;
         try {
-            tracker = new TempletonJobTracker(appConf);
+            tracker = ShimLoader.getHadoopShims().getWebHCatShim(appConf);
             JobID jobid = StatusDelegator.StringToJobID(id);
             if (jobid == null)
                 throw new BadParam("Invalid jobid: " + id);
@@ -60,7 +61,7 @@ public class StatusDelegator extends TempletonDelegator {
         }
     }
 
-    public static QueueStatusBean makeStatus(TempletonJobTracker tracker,
+    public static QueueStatusBean makeStatus(WebHCatJTShim tracker,
                                              JobID jobid,
                                              String childid,
                                              JobState state)
@@ -87,7 +88,7 @@ public class StatusDelegator extends TempletonDelegator {
         return new QueueStatusBean(state, status, profile);
     }
 
-    public static QueueStatusBean makeStatus(TempletonJobTracker tracker,
+    public static QueueStatusBean makeStatus(WebHCatJTShim tracker,
                                              JobID jobid,
                                              JobState state)
         throws BadParam, IOException {

@@ -27,7 +27,7 @@ public class UgiFactory {
     private static ConcurrentHashMap<String, UserGroupInformation> userUgiMap =
         new ConcurrentHashMap<String, UserGroupInformation>();
 
-    static UserGroupInformation getUgi(String user) throws IOException {
+    public static UserGroupInformation getUgi(String user) throws IOException {
         UserGroupInformation ugi = userUgiMap.get(user);
         if (ugi == null) {
             //create new ugi and add to map

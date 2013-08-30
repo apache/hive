@@ -19,6 +19,9 @@
 package org.apache.hcatalog.templeton;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
@@ -54,6 +58,7 @@ import org.apache.hcatalog.templeton.tool.TempletonUtils;
 @Path("/v1")
 public class Server {
     public static final String VERSION = "v1";
+    public static final String DO_AS_PARAM = "doAs";
 
     /**
      * The status message.  Always "ok"
@@ -113,6 +118,8 @@ public class Server {
     private
     @Context
     UriInfo theUriInfo;
+    private @QueryParam(DO_AS_PARAM) String doAs;
+    private @Context HttpServletRequest request;
 
     private static final Log LOG = LogFactory.getLog(Server.class);
 
@@ -161,7 +168,7 @@ public class Server {
         verifyParam(exec, "exec");
 
         HcatDelegator d = new HcatDelegator(appConf, execService);
-        return d.run(getUser(), exec, false, group, permissions);
+        return d.run(getDoAsUser(), exec, false, group, permissions);
     }
 
     /**
@@ -180,7 +187,7 @@ public class Server {
         HcatDelegator d = new HcatDelegator(appConf, execService);
         if (!TempletonUtils.isset(tablePattern))
             tablePattern = "*";
-        return d.listTables(getUser(), db, tablePattern);
+        return d.listTables(getDoAsUser(), db, tablePattern);
     }
 
     /**
@@ -200,7 +207,7 @@ public class Server {
         desc.table = table;
 
         HcatDelegator d = new HcatDelegator(appConf, execService);
-        return d.createTable(getUser(), db, desc);
+        return d.createTable(getDoAsUser(), db, desc);
     }
 
     /**
@@ -223,7 +230,7 @@ public class Server {
         desc.newTable = newTable;
 
         HcatDelegator d = new HcatDelegator(appConf, execService);
-        return d.createTableLike(getUser(), db, desc);
+        return d.createTableLike(getDoAsUser(), db, desc);
     }
 
     /**
@@ -245,9 +252,9 @@ public class Server {
 
         HcatDelegator d = new HcatDelegator(appConf, execService);
         if ("extended".equals(format))
-            return d.descExtendedTable(getUser(), db, table);
+            return d.descExtendedTable(getDoAsUser(), db, table);
         else
-            return d.descTable(getUser(), db, table, false);
+            return d.descTable(getDoAsUser(), db, table, false);
     }
 
     /**
@@ -268,7 +275,7 @@ public class Server {
         verifyDdlParam(table, ":table");
 
         HcatDelegator d = new HcatDelegator(appConf, execService);
-        return d.dropTable(getUser(), db, table, ifExists, group, permissions);
+        return d.dropTable(getDoAsUser(), db, table, ifExists, group, permissions);
     }
 
     /**
@@ -290,7 +297,7 @@ public class Server {
         verifyDdlParam(newTable, "rename");
 
         HcatDelegator d = new HcatDelegator(appConf, execService);
-        return d.renameTable(getUser(), db, oldTable, newTable, group, permissions);
+        return d.renameTable(getDoAsUser(), db, oldTable, newTable, group, permissions);
     }
 
     /**
@@ -310,7 +317,7 @@ public class Server {
         verifyDdlParam(property, ":property");
 
         HcatDelegator d = new HcatDelegator(appConf, execService);
-        return d.descTableProperty(getUser(), db, table, property);
+        return d.descTableProperty(getDoAsUser(), db, table, property);
     }
 
     /**
@@ -328,7 +335,7 @@ public class Server {
         verifyDdlParam(table, ":table");
 
         HcatDelegator d = new HcatDelegator(appConf, execService);
-        return d.listTableProperties(getUser(), db, table);
+        return d.listTableProperties(getDoAsUser(), db, table);
     }
 
     /**
@@ -350,7 +357,7 @@ public class Server {
         desc.name = property;
 
         HcatDelegator d = new HcatDelegator(appConf, execService);
-        return d.addOneTableProperty(getUser(), db, table, desc);
+        return d.addOneTableProperty(getDoAsUser(), db, table, desc);
     }
 
     /**
@@ -368,7 +375,7 @@ public class Server {
         verifyDdlParam(table, ":table");
 
         HcatDelegator d = new HcatDelegator(appConf, execService);
-        return d.listPartitions(getUser(), db, table);
+        return d.listPartitions(getDoAsUser(), db, table);
     }
 
     /**
@@ -388,7 +395,7 @@ public class Server {
         verifyParam(partition, ":partition");
 
         HcatDelegator d = new HcatDelegator(appConf, execService);
-        return d.descOnePartition(getUser(), db, table, partition);
+        return d.descOnePartition(getDoAsUser(), db, table, partition);
     }
 
     /**
@@ -409,7 +416,7 @@ public class Server {
         verifyParam(partition, ":partition");
         desc.partition = partition;
         HcatDelegator d = new HcatDelegator(appConf, execService);
-        return d.addOnePartition(getUser(), db, table, desc);
+        return d.addOnePartition(getDoAsUser(), db, table, desc);
     }
 
     /**
@@ -431,8 +438,8 @@ public class Server {
         verifyDdlParam(table, ":table");
         verifyParam(partition, ":partition");
         HcatDelegator d = new HcatDelegator(appConf, execService);
-        return d.dropPartition(getUser(), db, table, partition, ifExists,
-            group, permissions);
+        return d.dropPartition(getDoAsUser(), db, table, partition, ifExists,
+                group, permissions);
     }
 
     /**
@@ -449,7 +456,7 @@ public class Server {
         HcatDelegator d = new HcatDelegator(appConf, execService);
         if (!TempletonUtils.isset(dbPattern))
             dbPattern = "*";
-        return d.listDatabases(getUser(), dbPattern);
+        return d.listDatabases(getDoAsUser(), dbPattern);
     }
 
     /**
@@ -465,7 +472,7 @@ public class Server {
         verifyUser();
         verifyDdlParam(db, ":db");
         HcatDelegator d = new HcatDelegator(appConf, execService);
-        return d.descDatabase(getUser(), db, "extended".equals(format));
+        return d.descDatabase(getDoAsUser(), db, "extended".equals(format));
     }
 
     /**
@@ -482,7 +489,7 @@ public class Server {
         verifyDdlParam(db, ":db");
         desc.database = db;
         HcatDelegator d = new HcatDelegator(appConf, execService);
-        return d.createDatabase(getUser(), desc);
+        return d.createDatabase(getDoAsUser(), desc);
     }
 
     /**
@@ -503,8 +510,8 @@ public class Server {
         if (TempletonUtils.isset(option))
             verifyDdlParam(option, "option");
         HcatDelegator d = new HcatDelegator(appConf, execService);
-        return d.dropDatabase(getUser(), db, ifExists, option,
-            group, permissions);
+        return d.dropDatabase(getDoAsUser(), db, ifExists, option,
+                group, permissions);
     }
 
     /**
@@ -523,7 +530,7 @@ public class Server {
         verifyDdlParam(table, ":table");
 
         HcatDelegator d = new HcatDelegator(appConf, execService);
-        return d.listColumns(getUser(), db, table);
+        return d.listColumns(getDoAsUser(), db, table);
     }
 
     /**
@@ -543,7 +550,7 @@ public class Server {
         verifyParam(column, ":column");
 
         HcatDelegator d = new HcatDelegator(appConf, execService);
-        return d.descOneColumn(getUser(), db, table, column);
+        return d.descOneColumn(getDoAsUser(), db, table, column);
     }
 
     /**
@@ -566,7 +573,7 @@ public class Server {
         desc.name = column;
 
         HcatDelegator d = new HcatDelegator(appConf, execService);
-        return d.addOneColumn(getUser(), db, table, desc);
+        return d.addOneColumn(getDoAsUser(), db, table, desc);
     }
 
     /**
@@ -593,7 +600,7 @@ public class Server {
         verifyParam(reducer, "reducer");
 
         StreamingDelegator d = new StreamingDelegator(appConf);
-        return d.run(getUser(), inputs, output, mapper, reducer,
+        return d.run(getDoAsUser(), inputs, output, mapper, reducer,
             files, defines, cmdenvs, args,
             statusdir, callback, getCompletedUrl());
     }
@@ -619,7 +626,7 @@ public class Server {
         verifyParam(mainClass, "class");
 
         JarDelegator d = new JarDelegator(appConf);
-        return d.run(getUser(),
+        return d.run(getDoAsUser(),
             jar, mainClass,
             libjars, files, args, defines,
             statusdir, callback, getCompletedUrl());
@@ -644,7 +651,7 @@ public class Server {
             throw new BadParam("Either execute or file parameter required");
 
         PigDelegator d = new PigDelegator(appConf);
-        return d.run(getUser(),
+        return d.run(getDoAsUser(),
             execute, srcFile,
             pigArgs, otherFiles,
             statusdir, callback, getCompletedUrl());
@@ -668,7 +675,7 @@ public class Server {
             throw new BadParam("Either execute or file parameter required");
 
         HiveDelegator d = new HiveDelegator(appConf);
-        return d.run(getUser(), execute, srcFile, defines,
+        return d.run(getDoAsUser(), execute, srcFile, defines,
             statusdir, callback, getCompletedUrl());
     }
 
@@ -685,7 +692,7 @@ public class Server {
         verifyParam(jobid, ":jobid");
 
         StatusDelegator d = new StatusDelegator(appConf);
-        return d.run(getUser(), jobid);
+        return d.run(getDoAsUser(), jobid);
     }
 
     /**
@@ -701,7 +708,7 @@ public class Server {
         verifyParam(jobid, ":jobid");
 
         DeleteDelegator d = new DeleteDelegator(appConf);
-        return d.run(getUser(), jobid);
+        return d.run(getDoAsUser(), jobid);
     }
 
     /**
@@ -716,7 +723,7 @@ public class Server {
         verifyUser();
 
         ListDelegator d = new ListDelegator(appConf);
-        return d.run(getUser());
+        return d.run(getDoAsUser());
     }
 
     /**
@@ -734,16 +741,30 @@ public class Server {
     /**
      * Verify that we have a valid user.  Throw an exception if invalid.
      */
-    public void verifyUser()
-        throws NotAuthorizedException {
-        if (getUser() == null) {
+    public void verifyUser() throws NotAuthorizedException {
+        String requestingUser = getRequestingUser();
+        if (requestingUser == null) {
             String msg = "No user found.";
             if (!UserGroupInformation.isSecurityEnabled())
                 msg += "  Missing " + PseudoAuthenticator.USER_NAME + " parameter.";
             throw new NotAuthorizedException(msg);
         }
+        if(doAs != null && !doAs.equals(requestingUser)) {
+            /*if doAs user is different than logged in user, need to check that
+            that logged in user is authorized to run as 'doAs'*/
+            ProxyUserSupport.validate(requestingUser, getRequestingHost(requestingUser, request), doAs);
+        }
     }
-
+    /**
+     * All 'tasks' spawned by WebHCat should be run as this user.  W/o doAs query parameter
+     * this is just the user making the request (or 
+     * {@link org.apache.hadoop.security.authentication.client.PseudoAuthenticator#USER_NAME}
+     * query param).
+     * @return value of doAs query parameter or {@link #getRequestingUser()}
+     */
+    private String getDoAsUser() {
+        return doAs != null && !doAs.equals(getRequestingUser()) ? doAs : getRequestingUser();
+    }
     /**
      * Verify that the parameter exists.  Throw an exception if invalid.
      */
@@ -777,16 +798,20 @@ public class Server {
         if (!m.matches())
             throw new BadParam("Invalid DDL identifier " + name);
     }
-
     /**
-     * Get the user name from the security context.
+     * Get the user name from the security context, i.e. the user making the HTTP request.
+     * With simple/pseudo security mode this should return the
+     * value of user.name query param, in kerberos mode it's the kinit'ed user.
      */
-    public String getUser() {
+    private String getRequestingUser() {
         if (theSecurityContext == null)
             return null;
         if (theSecurityContext.getUserPrincipal() == null)
             return null;
-        return theSecurityContext.getUserPrincipal().getName();
+        //map hue/foo.bar@something.com->hue since user group checks 
+        // and config files are in terms of short name
+        return UserGroupInformation.createRemoteUser(
+                theSecurityContext.getUserPrincipal().getName()).getShortUserName();
     }
 
     /**
@@ -799,5 +824,33 @@ public class Server {
             return null;
         return theUriInfo.getBaseUri() + VERSION
             + "/internal/complete/$jobId";
+    }
+    /**
+     * Returns canonical host name from which the request is made; used for doAs validation  
+     */
+    private static String getRequestingHost(String requestingUser, HttpServletRequest request) {
+        final String unkHost = "???";
+        if(request == null) {
+            LOG.warn("request is null; cannot determine hostname");
+            return unkHost;
+        }
+        try {
+            String address = request.getRemoteAddr();//returns IP addr
+            if(address == null) {
+                LOG.warn(MessageFormat.format("Request remote address is NULL for user [{0}]", requestingUser));
+                return unkHost;
+            }
+
+            //Inet4Address/Inet6Address
+            String hostName = InetAddress.getByName(address).getCanonicalHostName();
+            if(LOG.isDebugEnabled()) {
+                LOG.debug(MessageFormat.format("Resolved remote hostname: [{0}]", hostName));
+            }
+            return hostName;
+            
+        } catch (UnknownHostException ex) {
+            LOG.warn(MessageFormat.format("Request remote address could not be resolved, {0}", ex.toString(), ex));
+            return unkHost;
+        }
     }
 }

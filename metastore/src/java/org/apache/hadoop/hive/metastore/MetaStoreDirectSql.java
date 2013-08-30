@@ -79,23 +79,39 @@ class MetaStoreDirectSql {
   public List<Partition> getPartitionsViaSqlFilter(
       String dbName, String tblName, List<String> partNames) throws MetaException {
     String list = repeat(",?", partNames.size()).substring(1);
-    return getPartitionsViaSqlFilterInternal(dbName, tblName,
-        "and PARTITIONS.PART_NAME in (" + list + ")" , partNames, new ArrayList<String>());
+    return getPartitionsViaSqlFilterInternal(dbName, tblName, null,
+        "and PARTITIONS.PART_NAME in (" + list + ")", partNames, new ArrayList<String>());
   }
 
   /**
    * Gets partitions by using direct SQL queries.
-   * @param dbName Metastore db name.
-   * @param tblName Metastore table name.
+   * @param table The table.
    * @param parser The parsed filter from which the SQL filter will be generated.
    * @return List of partitions.
    */
-  public List<Partition> getPartitionsViaSqlFilter(Table table, String dbName,
-      String tblName, FilterParser parser) throws MetaException {
+  public List<Partition> getPartitionsViaSqlFilter(
+      Table table, FilterParser parser) throws MetaException {
     List<String> params = new ArrayList<String>(), joins = new ArrayList<String>();
     String sqlFilter = (parser == null) ? null
         : PartitionFilterGenerator.generateSqlFilter(table, parser.tree, params, joins);
-    return getPartitionsViaSqlFilterInternal(dbName, tblName, sqlFilter, params, joins);
+    return getPartitionsViaSqlFilterInternal(table.getDbName(), table.getTableName(),
+        isViewTable(table), sqlFilter, params, joins);
+  }
+
+  private static Boolean isViewTable(Table t) {
+    return t.isSetTableType() ?
+        t.getTableType().equals(TableType.VIRTUAL_VIEW.toString()) : null;
+  }
+
+  private boolean isViewTable(String dbName, String tblName) throws MetaException {
+    String queryText = "select TBL_TYPE from TBLS" +
+        " inner join DBS on TBLS.DB_ID = DBS.DB_ID " +
+        " where TBLS.TBL_NAME = ? and DBS.NAME = ?";
+    Object[] params = new Object[] { tblName, dbName };
+    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    query.setUnique(true);
+    Object result = query.executeWithArray(params);
+    return (result != null) && result.toString().equals(TableType.VIRTUAL_VIEW.toString());
   }
 
   /**
@@ -103,14 +119,16 @@ class MetaStoreDirectSql {
    * queries created by DN retrieving stuff for each object individually.
    * @param dbName Metastore db name.
    * @param tblName Metastore table name.
+   * @param isView Whether table is a view. Can be passed as null if not immediately
+   *               known, then this method will get it only if necessary.
    * @param sqlFilter SQL filter to use. Better be SQL92-compliant. Can be null.
    * @param paramsForFilter params for ?-s in SQL filter text. Params must be in order.
    * @param joinsForFilter if the filter needs additional join statement, they must be in
    *                       this list. Better be SQL92-compliant.
    * @return List of partition objects. FieldSchema is currently not populated.
    */
-  private List<Partition> getPartitionsViaSqlFilterInternal(String dbName,
-      String tblName, String sqlFilter, List<String> paramsForFilter,
+  private List<Partition> getPartitionsViaSqlFilterInternal(String dbName, String tblName,
+      Boolean isView, String sqlFilter, List<String> paramsForFilter,
       List<String> joinsForFilter) throws MetaException {
     boolean doTrace = LOG.isDebugEnabled();
     // Get all simple fields for partitions and related objects, which we can map one-on-one.
@@ -191,9 +209,15 @@ class MetaStoreDirectSql {
       Long sdId = (Long)fields[1];
       Long colId = (Long)fields[2];
       Long serdeId = (Long)fields[3];
+      // A partition must have either everything set, or nothing set if it's a view.
       if (sdId == null || colId == null || serdeId == null) {
-        throw new MetaException("Unexpected null for one of the IDs, SD " + sdId
-            + ", column " + colId + ", serde " + serdeId);
+        if (isView == null) {
+          isView = isViewTable(dbName, tblName);
+        }
+        if ((sdId != null || colId != null || serdeId != null) || !isView) {
+          throw new MetaException("Unexpected null for one of the IDs, SD " + sdId + ", column "
+              + colId + ", serde " + serdeId + " for a " + (isView ? "" : "non-") + " view");
+        }
       }
 
       Partition part = new Partition();
@@ -206,6 +230,9 @@ class MetaStoreDirectSql {
       if (fields[4] != null) part.setCreateTime((Integer)fields[4]);
       if (fields[5] != null) part.setLastAccessTime((Integer)fields[5]);
       partitions.put(partitionId, part);
+
+      if (sdId == null) continue; // Probably a view.
+      assert colId != null && serdeId != null;
 
       // We assume each partition has an unique SD.
       StorageDescriptor sd = new StorageDescriptor();
@@ -257,10 +284,6 @@ class MetaStoreDirectSql {
           (System.nanoTime() - queryTime) / 1000000.0 + "ms, the query is [ " + queryText + "]");
     }
 
-    // Prepare IN (blah) lists for the following queries. Cut off the final ','s.
-    String sdIds = trimCommaList(sdSb), serdeIds = trimCommaList(serdeSb),
-        colIds = trimCommaList(colsSb);
-
     // Now get all the one-to-many things. Start with partitions.
     queryText = "select PART_ID, PARAM_KEY, PARAM_VALUE from PARTITION_PARAMS where PART_ID in ("
         + partIds + ") and PARAM_KEY is not null order by PART_ID asc";
@@ -275,6 +298,14 @@ class MetaStoreDirectSql {
       public void apply(Partition t, Object[] fields) {
         t.addToValues((String)fields[1]);
       }});
+
+    // Prepare IN (blah) lists for the following queries. Cut off the final ','s.
+    if (sdSb.length() == 0) {
+      assert serdeSb.length() == 0 && colsSb.length() == 0;
+      return orderedResult; // No SDs, probably a view.
+    }
+    String sdIds = trimCommaList(sdSb), serdeIds = trimCommaList(serdeSb),
+        colIds = trimCommaList(colsSb);
 
     // Get all the stuff for SD. Don't do empty-list check - we expect partitions do have SDs.
     queryText = "select SD_ID, PARAM_KEY, PARAM_VALUE from SD_PARAMS where SD_ID in ("
@@ -341,7 +372,7 @@ class MetaStoreDirectSql {
             if (currentListId == null || fieldsListId != currentListId) {
               currentList = new ArrayList<String>();
               currentListId = fieldsListId;
-              t.getSkewedInfo().addToSkewedColValues(currentList); // TODO#: here
+              t.getSkewedInfo().addToSkewedColValues(currentList);
             }
             currentList.add((String)fields[2]);
           }

@@ -23,7 +23,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.util.List;
 
+import org.apache.commons.lang.ClassUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -70,8 +72,19 @@ public class RetryingRawStore implements InvocationHandler {
 
     RetryingRawStore handler = new RetryingRawStore(hiveConf, conf, baseClass, id);
 
-    return (RawStore) Proxy.newProxyInstance(RetryingRawStore.class.getClassLoader()
-        , baseClass.getInterfaces(), handler);
+    // Look for interfaces on both the class and all base classes.
+    return (RawStore) Proxy.newProxyInstance(RetryingRawStore.class.getClassLoader(),
+        getAllInterfaces(baseClass), handler);
+  }
+
+  private static Class<?>[] getAllInterfaces(Class<?> baseClass) {
+    List interfaces = ClassUtils.getAllInterfaces(baseClass);
+    Class<?>[] result = new Class<?>[interfaces.size()];
+    int i = 0;
+    for (Object o : interfaces) {
+      result[i++] = (Class<?>)o;
+    }
+    return result;
   }
 
   private void init() throws MetaException {

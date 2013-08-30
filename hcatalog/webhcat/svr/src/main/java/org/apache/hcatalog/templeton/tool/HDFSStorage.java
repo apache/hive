@@ -19,6 +19,7 @@
 package org.apache.hcatalog.templeton.tool;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -68,31 +69,29 @@ public class HDFSStorage implements TempletonStorage {
             return;
         }
         PrintWriter out = null;
+        //todo: FileSystem#setPermission() - should this make sure to set 777 on jobs/ ?
+        Path keyfile= new Path(getPath(type) + "/" + id + "/" + key); 
         try {
-            Path keyfile = new Path(getPath(type) + "/" + id + "/" + key);
             // This will replace the old value if there is one
             // Overwrite the existing file
             out = new PrintWriter(new OutputStreamWriter(fs.create(keyfile)));
             out.write(val);
-        } catch (IOException e) {
-            LOG.info("Couldn't write to " + getPath(type) + "/" + id + ": "
-                + e.getMessage());
+            out.flush();
+        } catch (Exception e) {
+            String errMsg = "Couldn't write to " + keyfile + ": " + e.getMessage();
+            LOG.error(errMsg, e);
+            throw new NotFoundException(errMsg, e);
         } finally {
-            try {
-                out.flush();
-                out.close();
-            } catch (Exception e) {
-                // fail
-            }
+            close(out);
         }
     }
 
     @Override
     public String getField(Type type, String id, String key) {
         BufferedReader in = null;
+        Path p = new Path(getPath(type) + "/" + id + "/" + key);
         try {
-            in = new BufferedReader(new InputStreamReader(fs.open(new Path(getPath(type) + "/" +
-                id + "/" + key))));
+            in = new BufferedReader(new InputStreamReader(fs.open(p)));
             String line = null;
             String val = "";
             while ((line = in.readLine()) != null) {
@@ -102,15 +101,10 @@ public class HDFSStorage implements TempletonStorage {
                 val += line;
             }
             return val;
-        } catch (IOException e) {
-            LOG.trace("Couldn't find " + getPath(type) + "/" + id + "/" + key
-                + ": " + e.getMessage());
+        } catch (Exception e) {
+            LOG.info("Couldn't find " + p + ": " + e.getMessage(), e);
         } finally {
-            try {
-                in.close();
-            } catch (Exception e) {
-                // fail
-            }
+            close(in);
         }
         return null;
     }
@@ -119,8 +113,9 @@ public class HDFSStorage implements TempletonStorage {
     public Map<String, String> getFields(Type type, String id) {
         HashMap<String, String> map = new HashMap<String, String>();
         BufferedReader in = null;
+        Path p = new Path(getPath(type) + "/" + id);
         try {
-            for (FileStatus status : fs.listStatus(new Path(getPath(type) + "/" + id))) {
+            for (FileStatus status : fs.listStatus(p)) {
                 in = new BufferedReader(new InputStreamReader(fs.open(status.getPath())));
                 String line = null;
                 String val = "";
@@ -133,23 +128,20 @@ public class HDFSStorage implements TempletonStorage {
                 map.put(status.getPath().getName(), val);
             }
         } catch (IOException e) {
-            LOG.trace("Couldn't find " + getPath(type) + "/" + id);
+            LOG.trace("Couldn't find " + p);
         } finally {
-            try {
-                in.close();
-            } catch (Exception e) {
-                // fail
-            }
+            close(in);
         }
         return map;
     }
 
     @Override
     public boolean delete(Type type, String id) throws NotFoundException {
+        Path p = new Path(getPath(type) + "/" + id);
         try {
-            fs.delete(new Path(getPath(type) + "/" + id), true);
+            fs.delete(p, true);
         } catch (IOException e) {
-            throw new NotFoundException("Node " + id + " was not found: " +
+            throw new NotFoundException("Node " + p + " was not found: " +
                 e.getMessage());
         }
         return false;
@@ -250,5 +242,16 @@ public class HDFSStorage implements TempletonStorage {
             break;
         }
         return typepath;
+    }
+    private void close(Closeable is) {
+        if(is == null) {
+            return;
+        }
+        try {
+            is.close();
+        }
+        catch (IOException ex) {
+            LOG.trace("Failed to close InputStream: " + ex.getMessage());
+        }
     }
 }
