@@ -38,6 +38,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.hcatalog.templeton.UgiFactory;
 
 /**
  * General utility methods.
@@ -210,23 +211,19 @@ public class TempletonUtils {
         }
     }
 
-    public static Path hadoopFsPath(String fname, Configuration conf, String user)
-        throws URISyntaxException, FileNotFoundException, IOException,
+    public static Path hadoopFsPath(final String fname, final Configuration conf, String user)
+        throws URISyntaxException, IOException,
         InterruptedException {
         if (fname == null || conf == null) {
             return null;
         }
 
-        final Configuration fConf = new Configuration(conf);
-        final String finalFName = new String(fname);
-
-        UserGroupInformation ugi = UserGroupInformation.getLoginUser();
+        UserGroupInformation ugi = UgiFactory.getUgi(user);
         final FileSystem defaultFs = 
                 ugi.doAs(new PrivilegedExceptionAction<FileSystem>() {
                     public FileSystem run() 
-                        throws URISyntaxException, FileNotFoundException, IOException,
-                            InterruptedException {
-                        return FileSystem.get(new URI(finalFName), fConf);
+                        throws URISyntaxException, IOException, InterruptedException {
+                        return FileSystem.get(new URI(fname), conf);
                     }
                 });
 
