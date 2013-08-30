@@ -41,8 +41,7 @@ import org.apache.hcatalog.templeton.tool.ZooKeeperStorage;
  * launch child jobs.
  */
 public class LauncherDelegator extends TempletonDelegator {
-    private static final Log LOG = LogFactory.getLog(Server.class);
-    public static final String JAR_CLASS = TempletonControllerJob.class.getName();
+    private static final Log LOG = LogFactory.getLog(LauncherDelegator.class);
     protected String runAs = null;
 
     public LauncherDelegator(AppConfig appConf) {

@@ -83,11 +83,15 @@
 
     <target name="test" depends="property-check, init-test">
         <!-- fork (parallelization) factors for e2e tests execution.
-             Defaults are 1, which means *no* parellelization: -->
-        <property name="fork.factor.group" value="1"/>
-        <property name="fork.factor.conf.file" value="1"/>
+             Defaults are 1, which means *no* parellelization: 
+             if group=3, then 3 .conf files will be processed in parallel
+             if conf.file=2 there will be 2 thread per .conf file, each thread 
+             executing a single group (identified by 'name' element) -->
+        <property name="fork.factor.group" value="5"/>
+        <property name="fork.factor.conf.file" value="5"/>
         <property name="e2e.debug" value="false"/>
         <property name="tests.to.run" value=""/>
+
         <exec executable="./test_harness.pl" dir="${test.location}" failonerror="true">
             <env key="HARNESS_ROOT" value="."/>
             <env key="TH_WORKING_DIR" value="${test.location}"/>
@@ -139,6 +143,42 @@
             <env key="KEYTAB_DIR" value="${keytab.dir}"/>
             <arg line="${tests.to.run}"/>
             <arg value="${basedir}/tests/hcatperms.conf"/>
+        </exec>
+    </target>
+    <target name="test-doas" depends="property-check, init-test" description="See README.txt for instructions">
+        <!-- fork (parallelization) factors for e2e tests execution.
+             Defaults are 1, which means *no* parellelization: 
+             if group=3, then 3 .conf files will be processed in parallel
+             if conf.file=2 there will be 2 thread per .conf file, each thread 
+             executing a single group (identified by 'name' element) -->
+        <property name="fork.factor.group" value="1"/>
+        <property name="fork.factor.conf.file" value="1"/>
+        <property name="e2e.debug" value="false"/>
+        <property name="tests.to.run" value=""/>
+        <property name="doas.user.tmp" value="${doas.user}" />
+        <condition property="doas.user" value="${test.user.name}">
+            <!--default doas.user (if not set) to test.user.name-->
+            <isset property="doas.user.tmp"/>
+        </condition>
+
+        <exec executable="./test_harness.pl" dir="${test.location}" failonerror="true">
+            <env key="HARNESS_ROOT" value="."/>
+            <env key="TH_WORKING_DIR" value="${test.location}"/>
+            <env key="TH_INPDIR_LOCAL" value="${inpdir.local}"/>
+            <env key="TH_INPDIR_HDFS" value="${inpdir.hdfs}"/>
+            <env key="TH_OUT" value="."/>
+            <env key="TH_ROOT" value="."/>
+            <env key="FORK_FACTOR_GROUP" value="${fork.factor.group}"/>
+            <env key="FORK_FACTOR_FILE" value="${fork.factor.conf.file}"/>
+            <env key="E2E_DEBUG" value="${e2e.debug}"/>
+            <env key="WEBHDFS_URL" value="${harness.webhdfs.url}"/>
+            <env key="TEMPLETON_URL" value="${harness.templeton.url}"/>
+            <env key="USER_NAME" value="${test.user.name}"/>
+            <env key="DOAS_USER" value="${doas.user}"/>
+            <env key="HARNESS_CONF" value="${basedir}/conf/default.conf"/>
+            <env key="SECURE_MODE" value="${secure.mode}"/>
+            <arg line="${tests.to.run}"/>
+            <arg value="${basedir}/tests/doas.conf"/>
         </exec>
     </target>
 

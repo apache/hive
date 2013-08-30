@@ -174,6 +174,7 @@ sub globalSetup
     $globalHash->{'webhdfs_url'} = $ENV{'WEBHDFS_URL'};
     $globalHash->{'templeton_url'} = $ENV{'TEMPLETON_URL'};
     $globalHash->{'current_user'} = $ENV{'USER_NAME'};
+    $globalHash->{'DOAS_USER'} = $ENV{'DOAS_USER'};
     $globalHash->{'current_group_user'} = $ENV{'GROUP_USER_NAME'};
     $globalHash->{'current_other_user'} = $ENV{'OTHER_USER_NAME'};
     $globalHash->{'current_group'} = $ENV{'GROUP_NAME'};
@@ -317,6 +318,7 @@ sub replaceParametersInArg
     }
     my $outdir = $testCmd->{'outpath'} . $testCmd->{'group'} . "_" . $testCmd->{'num'};
     $arg =~ s/:UNAME:/$testCmd->{'current_user'}/g;
+    $arg =~ s/:DOAS:/$testCmd->{'DOAS_USER'}/g;
     $arg =~ s/:UNAME_GROUP:/$testCmd->{'current_group_user'}/g;
     $arg =~ s/:UNAME_OTHER:/$testCmd->{'current_other_user'}/g;
     $arg =~ s/:UGROUP:/$testCmd->{'current_group'}/g;
