@@ -29,16 +29,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 public class HiveSessionHookContextImpl implements HiveSessionHookContext {
 
   private final HiveSession hiveSession;
-  private final State state;
 
-  HiveSessionHookContextImpl(HiveSession hiveSession, State state) {
+  HiveSessionHookContextImpl(HiveSession hiveSession) {
     this.hiveSession = hiveSession;
-    this.state = state;
-  }
-
-  @Override
-  public State getState() {
-    return state;
   }
 
   @Override

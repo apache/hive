@@ -24,6 +24,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobStatus.State;
@@ -40,7 +41,6 @@ import org.apache.hcatalog.data.transfer.WriterContext;
 import org.apache.hcatalog.data.transfer.state.StateProvider;
 import org.apache.hcatalog.mapreduce.HCatOutputFormat;
 import org.apache.hcatalog.mapreduce.OutputJobInfo;
-import org.apache.hcatalog.shims.HCatHadoopShims;
 
 /**
  * This writer writes via {@link HCatOutputFormat}
@@ -67,8 +67,8 @@ public class HCatOutputFormatWriter extends HCatWriter {
             HCatOutputFormat.setSchema(job, HCatOutputFormat.getTableSchema(job));
             HCatOutputFormat outFormat = new HCatOutputFormat();
             outFormat.checkOutputSpecs(job);
-            outFormat.getOutputCommitter(HCatHadoopShims.Instance.get().createTaskAttemptContext
-                (job.getConfiguration(), HCatHadoopShims.Instance.get().createTaskAttemptID())).setupJob(job);
+            outFormat.getOutputCommitter(ShimLoader.getHadoopShims().getHCatShim().createTaskAttemptContext(
+                    job.getConfiguration(), ShimLoader.getHadoopShims().getHCatShim().createTaskAttemptID())).setupJob(job);
         } catch (IOException e) {
             throw new HCatException(ErrorType.ERROR_NOT_INITIALIZED, e);
         } catch (InterruptedException e) {
@@ -85,8 +85,8 @@ public class HCatOutputFormatWriter extends HCatWriter {
         int id = sp.getId();
         setVarsInConf(id);
         HCatOutputFormat outFormat = new HCatOutputFormat();
-        TaskAttemptContext cntxt = HCatHadoopShims.Instance.get().createTaskAttemptContext
-            (conf, new TaskAttemptID(HCatHadoopShims.Instance.get().createTaskID(), id));
+        TaskAttemptContext cntxt = ShimLoader.getHadoopShims().getHCatShim().createTaskAttemptContext(
+                conf, new TaskAttemptID(ShimLoader.getHadoopShims().getHCatShim().createTaskID(), id));
         OutputCommitter committer = null;
         RecordWriter<WritableComparable<?>, HCatRecord> writer;
         try {
@@ -125,9 +125,9 @@ public class HCatOutputFormatWriter extends HCatWriter {
     @Override
     public void commit(WriterContext context) throws HCatException {
         try {
-            new HCatOutputFormat().getOutputCommitter(HCatHadoopShims.Instance.get().createTaskAttemptContext
-                (context.getConf(), HCatHadoopShims.Instance.get().createTaskAttemptID()))
-                .commitJob(HCatHadoopShims.Instance.get().createJobContext(context.getConf(), null));
+            new HCatOutputFormat().getOutputCommitter(ShimLoader.getHadoopShims().getHCatShim().createTaskAttemptContext(
+                    context.getConf(), ShimLoader.getHadoopShims().getHCatShim().createTaskAttemptID()))
+                .commitJob(ShimLoader.getHadoopShims().getHCatShim().createJobContext(context.getConf(), null));
         } catch (IOException e) {
             throw new HCatException(ErrorType.ERROR_NOT_INITIALIZED, e);
         } catch (InterruptedException e) {
@@ -138,9 +138,10 @@ public class HCatOutputFormatWriter extends HCatWriter {
     @Override
     public void abort(WriterContext context) throws HCatException {
         try {
-            new HCatOutputFormat().getOutputCommitter(HCatHadoopShims.Instance.get().createTaskAttemptContext
-                (context.getConf(), HCatHadoopShims.Instance.get().createTaskAttemptID()))
-                .abortJob(HCatHadoopShims.Instance.get().createJobContext(context.getConf(), null), State.FAILED);
+            new HCatOutputFormat().getOutputCommitter(ShimLoader.getHadoopShims().getHCatShim().createTaskAttemptContext(
+                context.getConf(), ShimLoader.getHadoopShims().getHCatShim().createTaskAttemptID()))
+                .abortJob(ShimLoader.getHadoopShims().getHCatShim().createJobContext(
+                        context.getConf(), null), State.FAILED);
         } catch (IOException e) {
             throw new HCatException(ErrorType.ERROR_NOT_INITIALIZED, e);
         } catch (InterruptedException e) {

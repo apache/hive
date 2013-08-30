@@ -123,6 +123,29 @@ ant test-hcat-authorization -Dkeytab.dir=<keytab files dir>
 
 The <keytab files dir> is expected to have keytab filenames of the form - user_name.*keytab .
 
+Running WebHCat doas tests
+--------------------------
+ant clean test-doas -Dinpdir.hdfs=/user/ekoifman/webhcate2e -Dsecure.mode=no   
+    -Dharness.webhdfs.url=http://localhost:8085  -Dharness.templeton.url=http://localhost:50111 
+    -Dtests.to.run='-t doAsTests' -Dtest.user.name=hue -Ddoas.user=joe
+    
+The canonical example, is WebHCat server is running as user 'hcat', end user 'joe' is using Hue,
+which generates a request to WebHCat.  If Hue specifies doAs=joe, then the commands that WebHCat
+submits to Hadoop will be run as user 'joe'.
+
+In order for this test suite to work, webhcat-site.xml should have webhcat.proxyuser.hue.groups
+and webhcat.proxyuser.hue.hosts defined, i.e. 'hue' should be allowed to impersonate 'joe'.
+[Of course, 'hcat' proxyuser should be configured in core-site.xml for the command to succeed.]
+
+Furthermore, metastore side file based security should be enabled.  To do this 3 properties in
+hive-site.xml should be configured:
+1) hive.security.metastore.authorization.manager set to 
+    org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider
+2) hive.security.metastore.authenticator.manager set to 
+    org.apache.hadoop.hive.ql.security.HadoopDefaultMetastoreAuthenticator
+3) hive.metastore.pre.event.listeners set to
+    org.apache.hadoop.hive.ql.security.authorization.AuthorizationPreEventListener
+4) hive.metastore.execute.setugi set to true
 
 Notes
 -----

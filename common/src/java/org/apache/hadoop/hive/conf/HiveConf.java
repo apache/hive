@@ -505,9 +505,8 @@ public class HiveConf extends Configuration {
 
     // Maximum fraction of heap that can be used by ORC file writers
     HIVE_ORC_FILE_MEMORY_POOL("hive.exec.orc.memory.pool", 0.5f), // 50%
-    // use 0.11 version of RLE encoding. if this conf is not defined or any
-    // other value specified, ORC will use the new RLE encoding
-    HIVE_ORC_WRITE_FORMAT("hive.exec.orc.write.format", "0.11"),
+    // Define the version of the file to write
+    HIVE_ORC_WRITE_FORMAT("hive.exec.orc.write.format", null),
 
     HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD("hive.exec.orc.dictionary.key.size.threshold", 0.8f),
 
@@ -525,6 +524,8 @@ public class HiveConf extends Configuration {
     HIVELIMITOPTLIMITFILE("hive.limit.optimize.limit.file", 10),
     HIVELIMITOPTENABLE("hive.limit.optimize.enable", false),
     HIVELIMITOPTMAXFETCH("hive.limit.optimize.fetch.max", 50000),
+    HIVELIMITPUSHDOWNMEMORYUSAGE("hive.limit.pushdown.memory.usage", -1f),
+
     HIVEHASHTABLETHRESHOLD("hive.hashtable.initialCapacity", 100000),
     HIVEHASHTABLELOADFACTOR("hive.hashtable.loadfactor", (float) 0.75),
     HIVEHASHTABLEFOLLOWBYGBYMAXMEMORYUSAGE("hive.mapjoin.followby.gby.localtask.max.memory.usage", (float) 0.55),

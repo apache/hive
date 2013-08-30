@@ -248,11 +248,13 @@ final class ReaderImpl implements Reader {
       if (version.size() >= 2) {
         minor = version.get(1);
       }
-      if (major > OrcFile.MAJOR_VERSION ||
-          (major == OrcFile.MAJOR_VERSION && minor > OrcFile.MINOR_VERSION)) {
-        log.warn("ORC file " + path + " was written by a future Hive version " +
-            versionString(version) + ". This file may not be readable by " +
-            "this version of Hive.");
+      if (major > OrcFile.Version.CURRENT.getMajor() ||
+          (major == OrcFile.Version.CURRENT.getMajor() &&
+           minor > OrcFile.Version.CURRENT.getMinor())) {
+        log.warn("ORC file " + path +
+                 " was written by a future Hive version " +
+                 versionString(version) +
+                 ". This file may not be readable by this version of Hive.");
       }
     }
   }

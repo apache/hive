@@ -67,19 +67,6 @@ public class WindowingSpec {
     windowSpecs.put(name, wdwSpec);
   }
 
-  public void addExpression(ASTNode expr, String alias) {
-    windowExpressions = windowExpressions == null ?
-        new ArrayList<WindowExpressionSpec>() : windowExpressions;
-    aliasToWdwExpr = aliasToWdwExpr == null ?
-        new HashMap<String, WindowExpressionSpec>() : aliasToWdwExpr;
-    WindowExpressionSpec wExprSpec = new WindowExpressionSpec();
-    wExprSpec.setAlias(alias);
-    wExprSpec.setExpression(expr);
-
-    windowExpressions.add(wExprSpec);
-    aliasToWdwExpr.put(alias, wExprSpec);
-  }
-
   public void addWindowFunction(WindowFunctionSpec wFn) {
     windowExpressions = windowExpressions == null ?
         new ArrayList<WindowExpressionSpec>() : windowExpressions;

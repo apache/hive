@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.DelegationTokenSelector;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -39,7 +40,6 @@ import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.security.token.TokenSelector;
 import org.apache.hcatalog.common.HCatConstants;
 import org.apache.hcatalog.common.HCatUtil;
-import org.apache.hcatalog.shims.HCatHadoopShims;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -142,7 +142,7 @@ final class Security {
                     TokenSelector<? extends TokenIdentifier> jtTokenSelector =
                         new org.apache.hadoop.mapreduce.security.token.delegation.DelegationTokenSelector();
                     Token jtToken = jtTokenSelector.selectToken(org.apache.hadoop.security.SecurityUtil.buildTokenService(
-                        HCatHadoopShims.Instance.get().getResourceManagerAddress(conf)), ugi.getTokens());
+                        ShimLoader.getHadoopShims().getHCatShim().getResourceManagerAddress(conf)), ugi.getTokens());
                     if (jtToken == null) {
                         //we don't need to cancel this token as the TokenRenewer for JT tokens
                         //takes care of cancelling them

@@ -110,6 +110,9 @@ public class Optimizer {
         !HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVE_OPTIMIZE_SKEWJOIN_COMPILETIME)) {
       transformations.add(new CorrelationOptimizer());
     }
+    if (HiveConf.getFloatVar(hiveConf, HiveConf.ConfVars.HIVELIMITPUSHDOWNMEMORYUSAGE) > 0) {
+      transformations.add(new LimitPushdownOptimizer());
+    }
     transformations.add(new SimpleFetchOptimizer());  // must be called last
   }
 

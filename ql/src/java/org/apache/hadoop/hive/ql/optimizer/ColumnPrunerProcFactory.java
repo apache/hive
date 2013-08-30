@@ -68,7 +68,6 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFExpressionDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowExpressionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowTableFunctionDef;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
@@ -221,12 +220,6 @@ public final class ColumnPrunerProcFactory {
             ExprNodeDesc exprNode = arg.getExprNode();
             Utilities.mergeUniqElems(prunedCols, exprNode.getCols());
           }
-        }
-      }
-      if ( tDef.getWindowExpressions() != null ) {
-        for(WindowExpressionDef expr : tDef.getWindowExpressions()) {
-          ExprNodeDesc exprNode = expr.getExprNode();
-          Utilities.mergeUniqElems(prunedCols, exprNode.getCols());
         }
       }
      if(tDef.getPartition() != null){

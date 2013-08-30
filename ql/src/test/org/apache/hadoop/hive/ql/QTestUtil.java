@@ -217,6 +217,10 @@ public class QTestUtil {
       convertPathsFromWindowsToHdfs();
     }
 
+    // Plug verifying metastore in for testing.
+    conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
+        "org.apache.hadoop.hive.metastore.VerifyingObjectStore");
+
     if (miniMr) {
       assert dfs != null;
       assert mr != null;
