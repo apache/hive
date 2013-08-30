@@ -1659,9 +1659,17 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<Partition> getPartitionsByNames(String dbName, String tblName,
       List<String> partNames) throws MetaException, NoSuchObjectException {
+    return getPartitionsByNamesInternal(dbName, tblName, partNames, true, true);
+  }
+
+  protected List<Partition> getPartitionsByNamesInternal(String dbName, String tblName,
+      List<String> partNames, boolean allowSql, boolean allowJdo)
+          throws MetaException, NoSuchObjectException {
+    assert allowSql || allowJdo;
     boolean doTrace = LOG.isDebugEnabled();
     List<Partition> results = null;
-    boolean doUseDirectSql = HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL);
+    boolean doUseDirectSql = allowSql
+        && HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL);
 
     boolean success = false;
     try {
@@ -1671,7 +1679,13 @@ public class ObjectStore implements RawStore, Configurable {
         try {
           results = directSql.getPartitionsViaSqlFilter(dbName, tblName, partNames);
         } catch (Exception ex) {
-          LOG.error("Direct SQL failed, falling back to ORM", ex);
+          LOG.error("Direct SQL failed" + (allowJdo ? ", falling back to ORM" : ""), ex);
+          if (!allowJdo) {
+            if (ex instanceof MetaException) {
+              throw (MetaException)ex;
+            }
+            throw new MetaException(ex.getMessage());
+          }
           doUseDirectSql = false;
           rollbackTransaction();
           start = doTrace ? System.nanoTime() : 0;
@@ -1734,9 +1748,16 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<Partition> getPartitionsByFilter(String dbName, String tblName,
       String filter, short maxParts) throws MetaException, NoSuchObjectException {
+    return getPartitionsByFilterInternal(dbName, tblName, filter, maxParts, true, true);
+  }
+
+  protected List<Partition> getPartitionsByFilterInternal(String dbName, String tblName,
+      String filter, short maxParts, boolean allowSql, boolean allowJdo)
+      throws MetaException, NoSuchObjectException {
+    assert allowSql || allowJdo;
     boolean doTrace = LOG.isDebugEnabled();
     // There's no portable SQL limit. It doesn't make a lot of sense w/o offset anyway.
-    boolean doUseDirectSql = (maxParts < 0)
+    boolean doUseDirectSql = allowSql && (maxParts < 0)
         && HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL);
     dbName = dbName.toLowerCase();
     tblName = tblName.toLowerCase();
@@ -1757,7 +1778,13 @@ public class ObjectStore implements RawStore, Configurable {
           Table table = convertToTable(mtable);
           results = directSql.getPartitionsViaSqlFilter(table, parser);
         } catch (Exception ex) {
-          LOG.error("Direct SQL failed, falling back to ORM", ex);
+          LOG.error("Direct SQL failed" + (allowJdo ? ", falling back to ORM" : ""), ex);
+          if (!allowJdo) {
+            if (ex instanceof MetaException) {
+              throw (MetaException)ex;
+            }
+            throw new MetaException(ex.getMessage());
+          }
           doUseDirectSql = false;
           rollbackTransaction();
           start = doTrace ? System.nanoTime() : 0;
