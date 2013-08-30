@@ -22,8 +22,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 
+import org.apache.hadoop.hive.shims.HadoopShims.WebHCatJTShim;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobStatus;
-import org.apache.hadoop.mapred.TempletonJobTracker;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hcatalog.templeton.tool.JobState;
 
@@ -39,9 +40,9 @@ public class ListDelegator extends TempletonDelegator {
         throws NotAuthorizedException, BadParam, IOException, InterruptedException {
         
         UserGroupInformation ugi = UserGroupInformation.createRemoteUser(user);
-        TempletonJobTracker tracker = null;
+        WebHCatJTShim tracker = null;
         try {
-            tracker = new TempletonJobTracker(appConf);
+            tracker = ShimLoader.getHadoopShims().getWebHCatShim(appConf);
 
             ArrayList<String> ids = new ArrayList<String>();
 

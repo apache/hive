@@ -36,6 +36,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Job;
@@ -48,7 +50,6 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskInputOutputContext;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hcatalog.common.HCatUtil;
-import org.apache.hcatalog.shims.HCatHadoopShims;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -146,13 +147,16 @@ public class MultiOutputFormat extends OutputFormat<Writable, Writable> {
 
     static {
         configsToOverride.add("mapred.output.dir");
-        configsToOverride.add(HCatHadoopShims.Instance.get().getPropertyName(HCatHadoopShims.PropertyName.CACHE_SYMLINK));
+        configsToOverride.add(ShimLoader.getHadoopShims().getHCatShim().getPropertyName(
+                HadoopShims.HCatHadoopShims.PropertyName.CACHE_SYMLINK));
         configsToMerge.put(JobContext.JOB_NAMENODES, COMMA_DELIM);
         configsToMerge.put("tmpfiles", COMMA_DELIM);
         configsToMerge.put("tmpjars", COMMA_DELIM);
         configsToMerge.put("tmparchives", COMMA_DELIM);
-        configsToMerge.put(HCatHadoopShims.Instance.get().getPropertyName(HCatHadoopShims.PropertyName.CACHE_ARCHIVES), COMMA_DELIM);
-        configsToMerge.put(HCatHadoopShims.Instance.get().getPropertyName(HCatHadoopShims.PropertyName.CACHE_FILES), COMMA_DELIM);
+        configsToMerge.put(ShimLoader.getHadoopShims().getHCatShim().getPropertyName(
+                HadoopShims.HCatHadoopShims.PropertyName.CACHE_ARCHIVES), COMMA_DELIM);
+        configsToMerge.put(ShimLoader.getHadoopShims().getHCatShim().getPropertyName(
+                HadoopShims.HCatHadoopShims.PropertyName.CACHE_FILES), COMMA_DELIM);
         String fileSep;
         if (HCatUtil.isHadoop23()) {
             fileSep = ",";
@@ -183,7 +187,8 @@ public class MultiOutputFormat extends OutputFormat<Writable, Writable> {
      */
     public static JobContext getJobContext(String alias, JobContext context) {
         String aliasConf = context.getConfiguration().get(getAliasConfName(alias));
-        JobContext aliasContext = HCatHadoopShims.Instance.get().createJobContext(context.getConfiguration(), context.getJobID());
+        JobContext aliasContext = ShimLoader.getHadoopShims().getHCatShim().createJobContext(
+                context.getConfiguration(), context.getJobID());
         addToConfig(aliasConf, aliasContext.getConfiguration());
         return aliasContext;
     }
@@ -197,7 +202,7 @@ public class MultiOutputFormat extends OutputFormat<Writable, Writable> {
      */
     public static TaskAttemptContext getTaskAttemptContext(String alias, TaskAttemptContext context) {
         String aliasConf = context.getConfiguration().get(getAliasConfName(alias));
-        TaskAttemptContext aliasContext = HCatHadoopShims.Instance.get().createTaskAttemptContext(
+        TaskAttemptContext aliasContext = ShimLoader.getHadoopShims().getHCatShim().createTaskAttemptContext(
                 context.getConfiguration(), context.getTaskAttemptID());
         addToConfig(aliasConf, aliasContext.getConfiguration());
         return aliasContext;
