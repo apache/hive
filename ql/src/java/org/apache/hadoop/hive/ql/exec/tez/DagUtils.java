@@ -60,8 +60,9 @@ import org.apache.hadoop.yarn.util.ConverterUtils;
 import org.apache.hadoop.yarn.util.Records;
 import org.apache.tez.dag.api.Edge;
 import org.apache.tez.dag.api.EdgeProperty;
-import org.apache.tez.dag.api.EdgeProperty.ConnectionPattern;
-import org.apache.tez.dag.api.EdgeProperty.SourceType;
+import org.apache.tez.dag.api.EdgeProperty.DataMovementType;
+import org.apache.tez.dag.api.EdgeProperty.DataSourceType;
+import org.apache.tez.dag.api.EdgeProperty.SchedulingType;
 import org.apache.tez.dag.api.InputDescriptor;
 import org.apache.tez.dag.api.OutputDescriptor;
 import org.apache.tez.dag.api.ProcessorDescriptor;
@@ -155,7 +156,9 @@ public class DagUtils {
 
     // all edges are of the same type right now
     EdgeProperty edgeProperty =
-        new EdgeProperty(ConnectionPattern.BIPARTITE, SourceType.STABLE,
+        new EdgeProperty(DataMovementType.SCATTER_GATHER,
+            DataSourceType.PERSISTED,
+            SchedulingType.SEQUENTIAL,
             new OutputDescriptor(OnFileSortedOutput.class.getName()),
             new InputDescriptor(ShuffledMergedInput.class.getName()));
     return new Edge(v, w, edgeProperty);
