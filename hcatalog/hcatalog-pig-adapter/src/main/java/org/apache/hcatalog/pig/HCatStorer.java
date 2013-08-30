@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.security.Credentials;
@@ -36,7 +37,6 @@ import org.apache.hcatalog.common.HCatException;
 import org.apache.hcatalog.data.schema.HCatSchema;
 import org.apache.hcatalog.mapreduce.HCatOutputFormat;
 import org.apache.hcatalog.mapreduce.OutputJobInfo;
-import org.apache.hcatalog.shims.HCatHadoopShims;
 import org.apache.pig.PigException;
 import org.apache.pig.ResourceSchema;
 import org.apache.pig.impl.logicalLayer.FrontendException;
@@ -157,11 +157,11 @@ public class HCatStorer extends HCatBaseStorer {
 
     @Override
     public void storeSchema(ResourceSchema schema, String arg1, Job job) throws IOException {
-        HCatHadoopShims.Instance.get().commitJob(getOutputFormat(), job);
+        ShimLoader.getHadoopShims().getHCatShim().commitJob(getOutputFormat(), job);
     }
 
     @Override
     public void cleanupOnFailure(String location, Job job) throws IOException {
-        HCatHadoopShims.Instance.get().abortJob(getOutputFormat(), job);
+        ShimLoader.getHadoopShims().getHCatShim().abortJob(getOutputFormat(), job);
     }
 }

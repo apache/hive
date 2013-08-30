@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.HCatMapRedUtil;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.JobContext;
@@ -56,7 +57,6 @@ import org.apache.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hcatalog.data.schema.HCatSchema;
 import org.apache.hcatalog.data.schema.HCatSchemaUtils;
 import org.apache.hcatalog.har.HarOutputCommitterPostProcessor;
-import org.apache.hcatalog.shims.HCatHadoopShims;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -304,7 +304,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
         // Apply the group and permissions to the leaf partition and files.
         // Need not bother in case of HDFS as permission is taken care of by setting UMask
-        if (!HCatHadoopShims.Instance.get().isFileInHDFS(fs, partPath)) {
+        if (!ShimLoader.getHadoopShims().getHCatShim().isFileInHDFS(fs, partPath)) {
             applyGroupAndPerms(fs, partPath, perms, grpName, true);
         }
 
@@ -578,7 +578,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
                         jobConf,
                         context.getJobID(),
                         InternalUtil.createReporter(HCatMapRedUtil.createTaskAttemptContext(jobConf,
-                            HCatHadoopShims.Instance.get().createTaskAttemptID())));
+                            ShimLoader.getHadoopShims().getHCatShim().createTaskAttemptID())));
                     HCatOutputFormat.configureOutputStorageHandler(currContext, jobInfo, fullPartSpec);
                     contextDiscoveredByPath.put(st.getPath().toString(), currContext);
                 }

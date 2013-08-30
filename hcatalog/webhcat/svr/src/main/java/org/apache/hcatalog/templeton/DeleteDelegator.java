@@ -19,8 +19,10 @@
 package org.apache.hcatalog.templeton;
 
 import java.io.IOException;
+
+import org.apache.hadoop.hive.shims.HadoopShims.WebHCatJTShim;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobID;
-import org.apache.hadoop.mapred.TempletonJobTracker;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hcatalog.templeton.tool.JobState;
 
@@ -36,10 +38,10 @@ public class DeleteDelegator extends TempletonDelegator {
         throws NotAuthorizedException, BadParam, IOException, InterruptedException
     {
         UserGroupInformation ugi = UserGroupInformation.createRemoteUser(user);
-        TempletonJobTracker tracker = null;
+        WebHCatJTShim tracker = null;
         JobState state = null;
         try {
-            tracker = new TempletonJobTracker(appConf);
+            tracker = ShimLoader.getHadoopShims().getWebHCatShim(appConf);
             JobID jobid = StatusDelegator.StringToJobID(id);
             if (jobid == null)
                 throw new BadParam("Invalid jobid: " + id);

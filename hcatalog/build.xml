@@ -186,7 +186,6 @@
         <ant target="clean" dir="webhcat/svr" inheritAll="false"/>
         <ant target="clean" dir="webhcat/java-client" inheritAll="false"/>
         <ant target="clean" dir="storage-handlers/hbase" inheritAll="false"/>
-        <ant target="clean" dir="shims" inheritAll="false"/>
     </target>
 
     <!-- Clean up children -->
@@ -200,7 +199,6 @@
         <ant target="clean-test" dir="webhcat/svr" inheritAll="false"/>
         <ant target="clean-test" dir="webhcat/java-client" inheritAll="false"/>
         <ant target="clean-test" dir="storage-handlers/hbase" inheritAll="false"/>
-        <ant target="clean-test" dir="shims" inheritAll="false"/>
     </target>
 
     <!--
@@ -480,7 +478,6 @@
                 <include name="server-extensions/**"/>
                 <include name="webhcat/**"/>
                 <include name="license/**"/>
-                <include name="shims/**"/>
                 <include name="src/**"/>
                 <include name="storage-handlers/**"/>
                 <include name="*.properties"/>
