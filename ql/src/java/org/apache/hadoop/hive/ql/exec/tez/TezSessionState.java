@@ -33,6 +33,9 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.metadata.Hive;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.tez.client.AMConfiguration;
 import org.apache.tez.client.TezSession;
@@ -76,12 +79,19 @@ public class TezSessionState {
    * @throws URISyntaxException
    * @throws LoginException
    * @throws TezException
+   * @throws HiveException
    */
   public void open(String sessionId, HiveConf conf)
-      throws IOException, LoginException, URISyntaxException, TezException {
+      throws IOException, LoginException, URISyntaxException, TezException, HiveException {
 
     this.sessionId = sessionId;
     this.conf = conf;
+
+    // Get the following out of the way when you start the session these take a
+    // while and should be done when we start up.
+    FileSystem.get(conf);
+    ShimLoader.getHadoopShims().getUGIForConf(conf);
+    Hive.get(conf).getAllDatabases();
 
     // create the tez tmp dir
     tezScratchDir = createTezDir(sessionId);
