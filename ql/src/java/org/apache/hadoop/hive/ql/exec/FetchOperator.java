@@ -75,7 +75,7 @@ public class FetchOperator implements Serializable {
 
   private boolean isNativeTable;
   private FetchWork work;
-  private Operator<?> operator;    // operator tree for processing row further (option)
+  protected Operator<?> operator;    // operator tree for processing row further (option)
   private int splitNum;
   private PartitionDesc currPart;
   private TableDesc currTbl;
@@ -489,6 +489,8 @@ public class FetchOperator implements Serializable {
     InspectableObject row = getNextRow();
     if (row != null) {
       pushRow(row);
+    } else {
+      operator.flush();
     }
     return row != null;
   }
