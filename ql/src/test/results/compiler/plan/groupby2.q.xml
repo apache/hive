@@ -197,8 +197,26 @@
                        </object> 
                       </void> 
                       <void method="put"> 
-                       <string>KEY._col1:0._col0</string> 
+                       <string>VALUE._col1</string> 
                        <object id="ExprNodeColumnDesc1" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                        <void property="column"> 
+                         <string>_col3</string> 
+                        </void> 
+                        <void property="tabAlias"> 
+                         <string></string> 
+                        </void> 
+                        <void property="typeInfo"> 
+                         <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                          <void property="typeName"> 
+                           <string>double</string> 
+                          </void> 
+                         </object> 
+                        </void> 
+                       </object> 
+                      </void> 
+                      <void method="put"> 
+                       <string>KEY._col1:0._col0</string> 
+                       <object id="ExprNodeColumnDesc2" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                         <void property="column"> 
                          <string>_col1</string> 
                         </void> 
@@ -207,6 +225,24 @@
                         </void> 
                         <void property="typeInfo"> 
                          <object idref="PrimitiveTypeInfo0"/> 
+                        </void> 
+                       </object> 
+                      </void> 
+                      <void method="put"> 
+                       <string>VALUE._col0</string> 
+                       <object id="ExprNodeColumnDesc3" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                        <void property="column"> 
+                         <string>_col2</string> 
+                        </void> 
+                        <void property="tabAlias"> 
+                         <string></string> 
+                        </void> 
+                        <void property="typeInfo"> 
+                         <object id="PrimitiveTypeInfo2" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                          <void property="typeName"> 
+                           <string>bigint</string> 
+                          </void> 
+                         </object> 
                         </void> 
                        </object> 
                       </void> 
@@ -231,7 +267,7 @@
                          <object idref="ExprNodeColumnDesc0"/> 
                         </void> 
                         <void method="add"> 
-                         <object idref="ExprNodeColumnDesc1"/> 
+                         <object idref="ExprNodeColumnDesc2"/> 
                         </void> 
                        </object> 
                       </void> 
@@ -303,38 +339,10 @@
                       <void property="valueCols"> 
                        <object class="java.util.ArrayList"> 
                         <void method="add"> 
-                         <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                          <void property="column"> 
-                           <string>_col2</string> 
-                          </void> 
-                          <void property="tabAlias"> 
-                           <string></string> 
-                          </void> 
-                          <void property="typeInfo"> 
-                           <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                            <void property="typeName"> 
-                             <string>bigint</string> 
-                            </void> 
-                           </object> 
-                          </void> 
-                         </object> 
+                         <object idref="ExprNodeColumnDesc3"/> 
                         </void> 
                         <void method="add"> 
-                         <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                          <void property="column"> 
-                           <string>_col3</string> 
-                          </void> 
-                          <void property="tabAlias"> 
-                           <string></string> 
-                          </void> 
-                          <void property="typeInfo"> 
-                           <object id="PrimitiveTypeInfo2" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                            <void property="typeName"> 
-                             <string>double</string> 
-                            </void> 
-                           </object> 
-                          </void> 
-                         </object> 
+                         <object idref="ExprNodeColumnDesc1"/> 
                         </void> 
                        </object> 
                       </void> 
@@ -425,7 +433,7 @@
                            <string>VALUE._col0</string> 
                           </void> 
                           <void property="type"> 
-                           <object idref="PrimitiveTypeInfo1"/> 
+                           <object idref="PrimitiveTypeInfo2"/> 
                           </void> 
                          </object> 
                         </void> 
@@ -435,7 +443,7 @@
                            <string>VALUE._col1</string> 
                           </void> 
                           <void property="type"> 
-                           <object idref="PrimitiveTypeInfo2"/> 
+                           <object idref="PrimitiveTypeInfo1"/> 
                           </void> 
                          </object> 
                         </void> 
@@ -816,7 +824,7 @@
                        <string></string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="PrimitiveTypeInfo1"/> 
+                       <object idref="PrimitiveTypeInfo2"/> 
                       </void> 
                      </object> 
                     </void> 
@@ -829,7 +837,7 @@
                        <string></string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="PrimitiveTypeInfo2"/> 
+                       <object idref="PrimitiveTypeInfo1"/> 
                       </void> 
                      </object> 
                     </void> 
@@ -856,7 +864,7 @@
                  <string>src</string> 
                 </void> 
                 <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo1"/> 
+                 <object idref="PrimitiveTypeInfo2"/> 
                 </void> 
                </object> 
               </void> 
@@ -1089,7 +1097,7 @@
                <string>src</string> 
               </void> 
               <void property="type"> 
-               <object idref="PrimitiveTypeInfo1"/> 
+               <object idref="PrimitiveTypeInfo2"/> 
               </void> 
              </object> 
             </void> 
@@ -1430,7 +1438,7 @@
                        <string></string> 
                       </void> 
                       <void property="type"> 
-                       <object idref="PrimitiveTypeInfo1"/> 
+                       <object idref="PrimitiveTypeInfo2"/> 
                       </void> 
                      </object> 
                     </void> 
@@ -1484,7 +1492,7 @@
                      <string></string> 
                     </void> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo2"/> 
+                     <object idref="PrimitiveTypeInfo1"/> 
                     </void> 
                    </object> 
                   </void> 
@@ -1510,7 +1518,7 @@
               </void> 
               <void method="put"> 
                <string>_col1</string> 
-               <object id="ExprNodeColumnDesc2" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+               <object id="ExprNodeColumnDesc4" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                 <void property="column"> 
                  <string>_col1</string> 
                 </void> 
@@ -1518,13 +1526,13 @@
                  <string></string> 
                 </void> 
                 <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo1"/> 
+                 <object idref="PrimitiveTypeInfo2"/> 
                 </void> 
                </object> 
               </void> 
               <void method="put"> 
                <string>_col0</string> 
-               <object id="ExprNodeColumnDesc3" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+               <object id="ExprNodeColumnDesc5" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                 <void property="column"> 
                  <string>_col0</string> 
                 </void> 
@@ -1543,10 +1551,10 @@
               <void property="colList"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <object idref="ExprNodeColumnDesc3"/> 
+                 <object idref="ExprNodeColumnDesc5"/> 
                 </void> 
                 <void method="add"> 
-                 <object idref="ExprNodeColumnDesc2"/> 
+                 <object idref="ExprNodeColumnDesc4"/> 
                 </void> 
                 <void method="add"> 
                  <object idref="ExprNodeGenericFuncDesc2"/> 
@@ -1620,7 +1628,7 @@
                    <string>_col1</string> 
                   </void> 
                   <void property="type"> 
-                   <object idref="PrimitiveTypeInfo1"/> 
+                   <object idref="PrimitiveTypeInfo2"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -1649,7 +1657,7 @@
          <object class="java.util.HashMap"> 
           <void method="put"> 
            <string>_col0</string> 
-           <object id="ExprNodeColumnDesc4" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+           <object id="ExprNodeColumnDesc6" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
             <void property="column"> 
              <string>KEY._col0</string> 
             </void> 
@@ -1717,7 +1725,7 @@
                    <string>VALUE._col1</string> 
                   </void> 
                   <void property="typeInfo"> 
-                   <object idref="PrimitiveTypeInfo2"/> 
+                   <object idref="PrimitiveTypeInfo1"/> 
                   </void> 
                  </object> 
                 </void> 
@@ -1736,7 +1744,7 @@
           <void property="keys"> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
-             <object idref="ExprNodeColumnDesc4"/> 
+             <object idref="ExprNodeColumnDesc6"/> 
             </void> 
            </object> 
           </void> 
@@ -1821,7 +1829,7 @@
                <string></string> 
               </void> 
               <void property="type"> 
-               <object idref="PrimitiveTypeInfo1"/> 
+               <object idref="PrimitiveTypeInfo2"/> 
               </void> 
              </object> 
             </void> 
@@ -1834,7 +1842,7 @@
                <string></string> 
               </void> 
               <void property="type"> 
-               <object idref="PrimitiveTypeInfo2"/> 
+               <object idref="PrimitiveTypeInfo1"/> 
               </void> 
              </object> 
             </void> 
