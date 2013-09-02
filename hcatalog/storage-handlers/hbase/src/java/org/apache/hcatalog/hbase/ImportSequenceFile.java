@@ -46,6 +46,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hcatalog.mapreduce.HCatMapRedUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -236,7 +237,7 @@ class ImportSequenceFile {
             fs.delete(workDir, true);
             //We only cleanup on success because failure might've been caused by existence of target directory
             if (localMode && success) {
-                new ImporterOutputFormat().getOutputCommitter(org.apache.hadoop.mapred.HCatMapRedUtil.createTaskAttemptContext(conf, new TaskAttemptID())).commitJob(job);
+                new ImporterOutputFormat().getOutputCommitter(HCatMapRedUtil.createTaskAttemptContext(conf, new TaskAttemptID())).commitJob(job);
             }
         } catch (InterruptedException e) {
             LOG.error("ImportSequenceFile Failed", e);
