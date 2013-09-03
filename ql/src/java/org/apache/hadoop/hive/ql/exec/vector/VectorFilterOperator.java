@@ -48,11 +48,11 @@ public class VectorFilterOperator extends FilterOperator {
     vContext.setOperatorType(OperatorType.FILTER);
     ExprNodeDesc oldExpression = ((FilterDesc) conf).getPredicate();
     conditionEvaluator = vContext.getVectorExpression(oldExpression);
+    this.conf = (FilterDesc) conf;
   }
 
   public VectorFilterOperator() {
     super();
-    this.conf = (FilterDesc) conf;
   }
 
 
