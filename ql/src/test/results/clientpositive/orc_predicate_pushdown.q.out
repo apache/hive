@@ -1,0 +1,1530 @@
+PREHOOK: query: CREATE TABLE orc_pred(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal,
+           bin binary)
+STORED AS ORC
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE orc_pred(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal,
+           bin binary)
+STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@orc_pred
+PREHOOK: query: ALTER TABLE orc_pred SET SERDEPROPERTIES ('orc.row.index.stride' = '1000')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@orc_pred
+PREHOOK: Output: default@orc_pred
+POSTHOOK: query: ALTER TABLE orc_pred SET SERDEPROPERTIES ('orc.row.index.stride' = '1000')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@orc_pred
+POSTHOOK: Output: default@orc_pred
+PREHOOK: query: CREATE TABLE staging(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal,
+           bin binary)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE staging(t tinyint,
+           si smallint,
+           i int,
+           b bigint,
+           f float,
+           d double,
+           bo boolean,
+           s string,
+           ts timestamp,
+           dec decimal,
+           bin binary)
+ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@staging
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/over1k' OVERWRITE INTO TABLE staging
+PREHOOK: type: LOAD
+PREHOOK: Output: default@staging
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/over1k' OVERWRITE INTO TABLE staging
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@staging
+PREHOOK: query: INSERT INTO TABLE orc_pred select * from staging
+PREHOOK: type: QUERY
+PREHOOK: Input: default@staging
+PREHOOK: Output: default@orc_pred
+POSTHOOK: query: INSERT INTO TABLE orc_pred select * from staging
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@staging
+POSTHOOK: Output: default@orc_pred
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+PREHOOK: query: -- no predicate case. the explain plan should not have filter expression in table scan operator
+
+SELECT SUM(HASH(t)) FROM orc_pred
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: query: -- no predicate case. the explain plan should not have filter expression in table scan operator
+
+SELECT SUM(HASH(t)) FROM orc_pred
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+62430
+PREHOOK: query: SELECT SUM(HASH(t)) FROM orc_pred
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(t)) FROM orc_pred
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+62430
+PREHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME orc_pred))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION SUM (TOK_FUNCTION HASH (TOK_TABLE_OR_COL t)))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        orc_pred 
+          TableScan
+            alias: orc_pred
+            Select Operator
+              expressions:
+                    expr: t
+                    type: tinyint
+              outputColumnNames: t
+              Group By Operator
+                aggregations:
+                      expr: sum(hash(t))
+                bucketGroup: false
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: sum(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME orc_pred))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION SUM (TOK_FUNCTION HASH (TOK_TABLE_OR_COL t)))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        orc_pred 
+          TableScan
+            alias: orc_pred
+            Select Operator
+              expressions:
+                    expr: t
+                    type: tinyint
+              outputColumnNames: t
+              Group By Operator
+                aggregations:
+                      expr: sum(hash(t))
+                bucketGroup: false
+                mode: hash
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: sum(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: -- all the following queries have predicates which are pushed down to table scan operator if
+-- hive.optimize.index.filter is set to true. the explain plan should show filter expression
+-- in table scan operator.
+
+SELECT SUM(HASH(t)) FROM orc_pred
+  WHERE t IS NOT NULL
+  AND t < 0
+  AND t > -2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: query: -- all the following queries have predicates which are pushed down to table scan operator if
+-- hive.optimize.index.filter is set to true. the explain plan should show filter expression
+-- in table scan operator.
+
+SELECT SUM(HASH(t)) FROM orc_pred
+  WHERE t IS NOT NULL
+  AND t < 0
+  AND t > -2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+-8
+PREHOOK: query: SELECT SUM(HASH(t)) FROM orc_pred
+  WHERE t IS NOT NULL
+  AND t < 0
+  AND t > -2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(t)) FROM orc_pred
+  WHERE t IS NOT NULL
+  AND t < 0
+  AND t > -2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+-8
+PREHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
+  WHERE t IS NOT NULL
+  AND t < 0
+  AND t > -2
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
+  WHERE t IS NOT NULL
+  AND t < 0
+  AND t > -2
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME orc_pred))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION SUM (TOK_FUNCTION HASH (TOK_TABLE_OR_COL t))))) (TOK_WHERE (AND (AND (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL t)) (< (TOK_TABLE_OR_COL t) 0)) (> (TOK_TABLE_OR_COL t) (- 2))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        orc_pred 
+          TableScan
+            alias: orc_pred
+            Filter Operator
+              predicate:
+                  expr: ((t is not null and (t < 0)) and (t > (- 2)))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: t
+                      type: tinyint
+                outputColumnNames: t
+                Group By Operator
+                  aggregations:
+                        expr: sum(hash(t))
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: sum(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
+  WHERE t IS NOT NULL
+  AND t < 0
+  AND t > -2
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
+  WHERE t IS NOT NULL
+  AND t < 0
+  AND t > -2
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME orc_pred))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION SUM (TOK_FUNCTION HASH (TOK_TABLE_OR_COL t))))) (TOK_WHERE (AND (AND (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL t)) (< (TOK_TABLE_OR_COL t) 0)) (> (TOK_TABLE_OR_COL t) (- 2))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        orc_pred 
+          TableScan
+            alias: orc_pred
+            filterExpr:
+                expr: ((t is not null and (t < 0)) and (t > (- 2)))
+                type: boolean
+            Filter Operator
+              predicate:
+                  expr: ((t is not null and (t < 0)) and (t > (- 2)))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: t
+                      type: tinyint
+                outputColumnNames: t
+                Group By Operator
+                  aggregations:
+                        expr: sum(hash(t))
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: sum(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: bigint
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT t, s FROM orc_pred
+  WHERE t <=> -1
+  AND s IS NOT NULL
+  AND s LIKE 'bob%'
+  ORDER BY s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t, s FROM orc_pred
+  WHERE t <=> -1
+  AND s IS NOT NULL
+  AND s LIKE 'bob%'
+  ORDER BY s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+-1	bob laertes
+-1	bob young
+PREHOOK: query: SELECT t, s FROM orc_pred
+  WHERE t <=> -1
+  AND s IS NOT NULL
+  AND s LIKE 'bob%'
+  ORDER BY s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t, s FROM orc_pred
+  WHERE t <=> -1
+  AND s IS NOT NULL
+  AND s LIKE 'bob%'
+  ORDER BY s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+-1	bob laertes
+-1	bob young
+PREHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
+  WHERE t <=> -1
+  AND s IS NOT NULL
+  AND s LIKE 'bob%'
+  ORDER BY s
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
+  WHERE t <=> -1
+  AND s IS NOT NULL
+  AND s LIKE 'bob%'
+  ORDER BY s
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME orc_pred))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL t)) (TOK_SELEXPR (TOK_TABLE_OR_COL s))) (TOK_WHERE (AND (AND (<=> (TOK_TABLE_OR_COL t) (- 1)) (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL s))) (LIKE (TOK_TABLE_OR_COL s) 'bob%'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL s)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        orc_pred 
+          TableScan
+            alias: orc_pred
+            Filter Operator
+              predicate:
+                  expr: (((t = (- 1)) and s is not null) and (s like 'bob%'))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: t
+                      type: tinyint
+                      expr: s
+                      type: string
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col1
+                        type: string
+                  sort order: +
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: tinyint
+                        expr: _col1
+                        type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
+  WHERE t <=> -1
+  AND s IS NOT NULL
+  AND s LIKE 'bob%'
+  ORDER BY s
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
+  WHERE t <=> -1
+  AND s IS NOT NULL
+  AND s LIKE 'bob%'
+  ORDER BY s
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME orc_pred))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL t)) (TOK_SELEXPR (TOK_TABLE_OR_COL s))) (TOK_WHERE (AND (AND (<=> (TOK_TABLE_OR_COL t) (- 1)) (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL s))) (LIKE (TOK_TABLE_OR_COL s) 'bob%'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL s)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        orc_pred 
+          TableScan
+            alias: orc_pred
+            filterExpr:
+                expr: (((t = (- 1)) and s is not null) and (s like 'bob%'))
+                type: boolean
+            Filter Operator
+              predicate:
+                  expr: (((t = (- 1)) and s is not null) and (s like 'bob%'))
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: t
+                      type: tinyint
+                      expr: s
+                      type: string
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col1
+                        type: string
+                  sort order: +
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: tinyint
+                        expr: _col1
+                        type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT t, s FROM orc_pred
+  WHERE s IS NOT NULL
+  AND s LIKE 'bob%'
+  AND t NOT IN (-1,-2,-3)
+  AND t BETWEEN 25 AND 30
+  SORT BY t,s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t, s FROM orc_pred
+  WHERE s IS NOT NULL
+  AND s LIKE 'bob%'
+  AND t NOT IN (-1,-2,-3)
+  AND t BETWEEN 25 AND 30
+  SORT BY t,s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+26	bob ovid
+26	bob quirinius
+27	bob ovid
+PREHOOK: query: SELECT t, s FROM orc_pred
+  WHERE s IS NOT NULL
+  AND s LIKE 'bob%'
+  AND t NOT IN (-1,-2,-3)
+  AND t BETWEEN 25 AND 30
+  SORT BY t,s
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t, s FROM orc_pred
+  WHERE s IS NOT NULL
+  AND s LIKE 'bob%'
+  AND t NOT IN (-1,-2,-3)
+  AND t BETWEEN 25 AND 30
+  SORT BY t,s
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+26	bob ovid
+26	bob quirinius
+27	bob ovid
+PREHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
+  WHERE s IS NOT NULL
+  AND s LIKE 'bob%'
+  AND t NOT IN (-1,-2,-3)
+  AND t BETWEEN 25 AND 30
+  SORT BY t,s
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
+  WHERE s IS NOT NULL
+  AND s LIKE 'bob%'
+  AND t NOT IN (-1,-2,-3)
+  AND t BETWEEN 25 AND 30
+  SORT BY t,s
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME orc_pred))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL t)) (TOK_SELEXPR (TOK_TABLE_OR_COL s))) (TOK_WHERE (AND (AND (AND (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL s)) (LIKE (TOK_TABLE_OR_COL s) 'bob%')) (NOT (TOK_FUNCTION IN (TOK_TABLE_OR_COL t) (- 1) (- 2) (- 3)))) (TOK_FUNCTION between KW_FALSE (TOK_TABLE_OR_COL t) 25 30))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL t)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL s)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        orc_pred 
+          TableScan
+            alias: orc_pred
+            Filter Operator
+              predicate:
+                  expr: (((s is not null and (s like 'bob%')) and (not (t) IN ((- 1), (- 2), (- 3)))) and t BETWEEN 25 AND 30)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: t
+                      type: tinyint
+                      expr: s
+                      type: string
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: tinyint
+                        expr: _col1
+                        type: string
+                  sort order: ++
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: tinyint
+                        expr: _col1
+                        type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
+  WHERE s IS NOT NULL
+  AND s LIKE 'bob%'
+  AND t NOT IN (-1,-2,-3)
+  AND t BETWEEN 25 AND 30
+  SORT BY t,s
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
+  WHERE s IS NOT NULL
+  AND s LIKE 'bob%'
+  AND t NOT IN (-1,-2,-3)
+  AND t BETWEEN 25 AND 30
+  SORT BY t,s
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME orc_pred))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL t)) (TOK_SELEXPR (TOK_TABLE_OR_COL s))) (TOK_WHERE (AND (AND (AND (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL s)) (LIKE (TOK_TABLE_OR_COL s) 'bob%')) (NOT (TOK_FUNCTION IN (TOK_TABLE_OR_COL t) (- 1) (- 2) (- 3)))) (TOK_FUNCTION between KW_FALSE (TOK_TABLE_OR_COL t) 25 30))) (TOK_SORTBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL t)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL s)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        orc_pred 
+          TableScan
+            alias: orc_pred
+            filterExpr:
+                expr: (((s is not null and (s like 'bob%')) and (not (t) IN ((- 1), (- 2), (- 3)))) and t BETWEEN 25 AND 30)
+                type: boolean
+            Filter Operator
+              predicate:
+                  expr: (((s is not null and (s like 'bob%')) and (not (t) IN ((- 1), (- 2), (- 3)))) and t BETWEEN 25 AND 30)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: t
+                      type: tinyint
+                      expr: s
+                      type: string
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: tinyint
+                        expr: _col1
+                        type: string
+                  sort order: ++
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: tinyint
+                        expr: _col1
+                        type: string
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT t, si, d, s FROM orc_pred
+  WHERE d >= ROUND(9.99)
+  AND d < 12
+  AND t IS NOT NULL
+  AND s LIKE '%son'
+  AND s NOT LIKE '%car%'
+  AND t > 0
+  AND si BETWEEN 300 AND 400
+  ORDER BY s DESC
+  LIMIT 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t, si, d, s FROM orc_pred
+  WHERE d >= ROUND(9.99)
+  AND d < 12
+  AND t IS NOT NULL
+  AND s LIKE '%son'
+  AND s NOT LIKE '%car%'
+  AND t > 0
+  AND si BETWEEN 300 AND 400
+  ORDER BY s DESC
+  LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+15	334	11.12	jessica robinson
+101	327	11.48	gabriella ellison
+7	320	11.54	bob ellison
+PREHOOK: query: SELECT t, si, d, s FROM orc_pred
+  WHERE d >= ROUND(9.99)
+  AND d < 12
+  AND t IS NOT NULL
+  AND s LIKE '%son'
+  AND s NOT LIKE '%car%'
+  AND t > 0
+  AND si BETWEEN 300 AND 400
+  ORDER BY s DESC
+  LIMIT 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t, si, d, s FROM orc_pred
+  WHERE d >= ROUND(9.99)
+  AND d < 12
+  AND t IS NOT NULL
+  AND s LIKE '%son'
+  AND s NOT LIKE '%car%'
+  AND t > 0
+  AND si BETWEEN 300 AND 400
+  ORDER BY s DESC
+  LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+15	334	11.12	jessica robinson
+101	327	11.48	gabriella ellison
+7	320	11.54	bob ellison
+PREHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
+  WHERE d >= ROUND(9.99)
+  AND d < 12
+  AND t IS NOT NULL
+  AND s LIKE '%son'
+  AND s NOT LIKE '%car%'
+  AND t > 0
+  AND si BETWEEN 300 AND 400
+  ORDER BY s DESC
+  LIMIT 3
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
+  WHERE d >= ROUND(9.99)
+  AND d < 12
+  AND t IS NOT NULL
+  AND s LIKE '%son'
+  AND s NOT LIKE '%car%'
+  AND t > 0
+  AND si BETWEEN 300 AND 400
+  ORDER BY s DESC
+  LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME orc_pred))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL t)) (TOK_SELEXPR (TOK_TABLE_OR_COL si)) (TOK_SELEXPR (TOK_TABLE_OR_COL d)) (TOK_SELEXPR (TOK_TABLE_OR_COL s))) (TOK_WHERE (AND (AND (AND (AND (AND (AND (>= (TOK_TABLE_OR_COL d) (TOK_FUNCTION ROUND 9.99)) (< (TOK_TABLE_OR_COL d) 12)) (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL t))) (LIKE (TOK_TABLE_OR_COL s) '%son')) (NOT (LIKE (TOK_TABLE_OR_COL s) '%car%'))) (> (TOK_TABLE_OR_COL t) 0)) (TOK_FUNCTION between KW_FALSE (TOK_TABLE_OR_COL si) 300 400))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL s))) (TOK_LIMIT 3)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        orc_pred 
+          TableScan
+            alias: orc_pred
+            Filter Operator
+              predicate:
+                  expr: (((((((d >= round(9.99)) and (d < 12.0)) and t is not null) and (s like '%son')) and (not (s like '%car%'))) and (t > 0)) and si BETWEEN 300 AND 400)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: t
+                      type: tinyint
+                      expr: si
+                      type: smallint
+                      expr: d
+                      type: double
+                      expr: s
+                      type: string
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col3
+                        type: string
+                  sort order: -
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: tinyint
+                        expr: _col1
+                        type: smallint
+                        expr: _col2
+                        type: double
+                        expr: _col3
+                        type: string
+      Reduce Operator Tree:
+        Extract
+          Limit
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 3
+
+
+PREHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
+  WHERE d >= ROUND(9.99)
+  AND d < 12
+  AND t IS NOT NULL
+  AND s LIKE '%son'
+  AND s NOT LIKE '%car%'
+  AND t > 0
+  AND si BETWEEN 300 AND 400
+  ORDER BY s DESC
+  LIMIT 3
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
+  WHERE d >= ROUND(9.99)
+  AND d < 12
+  AND t IS NOT NULL
+  AND s LIKE '%son'
+  AND s NOT LIKE '%car%'
+  AND t > 0
+  AND si BETWEEN 300 AND 400
+  ORDER BY s DESC
+  LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME orc_pred))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL t)) (TOK_SELEXPR (TOK_TABLE_OR_COL si)) (TOK_SELEXPR (TOK_TABLE_OR_COL d)) (TOK_SELEXPR (TOK_TABLE_OR_COL s))) (TOK_WHERE (AND (AND (AND (AND (AND (AND (>= (TOK_TABLE_OR_COL d) (TOK_FUNCTION ROUND 9.99)) (< (TOK_TABLE_OR_COL d) 12)) (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL t))) (LIKE (TOK_TABLE_OR_COL s) '%son')) (NOT (LIKE (TOK_TABLE_OR_COL s) '%car%'))) (> (TOK_TABLE_OR_COL t) 0)) (TOK_FUNCTION between KW_FALSE (TOK_TABLE_OR_COL si) 300 400))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL s))) (TOK_LIMIT 3)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        orc_pred 
+          TableScan
+            alias: orc_pred
+            filterExpr:
+                expr: (((((((d >= round(9.99)) and (d < 12.0)) and t is not null) and (s like '%son')) and (not (s like '%car%'))) and (t > 0)) and si BETWEEN 300 AND 400)
+                type: boolean
+            Filter Operator
+              predicate:
+                  expr: (((((((d >= round(9.99)) and (d < 12.0)) and t is not null) and (s like '%son')) and (not (s like '%car%'))) and (t > 0)) and si BETWEEN 300 AND 400)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: t
+                      type: tinyint
+                      expr: si
+                      type: smallint
+                      expr: d
+                      type: double
+                      expr: s
+                      type: string
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col3
+                        type: string
+                  sort order: -
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: tinyint
+                        expr: _col1
+                        type: smallint
+                        expr: _col2
+                        type: double
+                        expr: _col3
+                        type: string
+      Reduce Operator Tree:
+        Extract
+          Limit
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 3
+
+
+PREHOOK: query: SELECT t, si, d, s FROM orc_pred
+  WHERE t > 10
+  AND t <> 101
+  AND d >= ROUND(9.99)
+  AND d < 12
+  AND t IS NOT NULL
+  AND s LIKE '%son'
+  AND s NOT LIKE '%car%'
+  AND t > 0
+  AND si BETWEEN 300 AND 400
+  SORT BY s DESC
+  LIMIT 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t, si, d, s FROM orc_pred
+  WHERE t > 10
+  AND t <> 101
+  AND d >= ROUND(9.99)
+  AND d < 12
+  AND t IS NOT NULL
+  AND s LIKE '%son'
+  AND s NOT LIKE '%car%'
+  AND t > 0
+  AND si BETWEEN 300 AND 400
+  SORT BY s DESC
+  LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+15	334	11.12	jessica robinson
+PREHOOK: query: SELECT t, si, d, s FROM orc_pred
+  WHERE t > 10
+  AND t <> 101
+  AND d >= ROUND(9.99)
+  AND d < 12
+  AND t IS NOT NULL
+  AND s LIKE '%son'
+  AND s NOT LIKE '%car%'
+  AND t > 0
+  AND si BETWEEN 300 AND 400
+  SORT BY s DESC
+  LIMIT 3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT t, si, d, s FROM orc_pred
+  WHERE t > 10
+  AND t <> 101
+  AND d >= ROUND(9.99)
+  AND d < 12
+  AND t IS NOT NULL
+  AND s LIKE '%son'
+  AND s NOT LIKE '%car%'
+  AND t > 0
+  AND si BETWEEN 300 AND 400
+  SORT BY s DESC
+  LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+15	334	11.12	jessica robinson
+PREHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
+  WHERE t > 10
+  AND t <> 101
+  AND d >= ROUND(9.99)
+  AND d < 12
+  AND t IS NOT NULL
+  AND s LIKE '%son'
+  AND s NOT LIKE '%car%'
+  AND t > 0
+  AND si BETWEEN 300 AND 400
+  SORT BY s DESC
+  LIMIT 3
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
+  WHERE t > 10
+  AND t <> 101
+  AND d >= ROUND(9.99)
+  AND d < 12
+  AND t IS NOT NULL
+  AND s LIKE '%son'
+  AND s NOT LIKE '%car%'
+  AND t > 0
+  AND si BETWEEN 300 AND 400
+  SORT BY s DESC
+  LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME orc_pred))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL t)) (TOK_SELEXPR (TOK_TABLE_OR_COL si)) (TOK_SELEXPR (TOK_TABLE_OR_COL d)) (TOK_SELEXPR (TOK_TABLE_OR_COL s))) (TOK_WHERE (AND (AND (AND (AND (AND (AND (AND (AND (> (TOK_TABLE_OR_COL t) 10) (<> (TOK_TABLE_OR_COL t) 101)) (>= (TOK_TABLE_OR_COL d) (TOK_FUNCTION ROUND 9.99))) (< (TOK_TABLE_OR_COL d) 12)) (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL t))) (LIKE (TOK_TABLE_OR_COL s) '%son')) (NOT (LIKE (TOK_TABLE_OR_COL s) '%car%'))) (> (TOK_TABLE_OR_COL t) 0)) (TOK_FUNCTION between KW_FALSE (TOK_TABLE_OR_COL si) 300 400))) (TOK_SORTBY (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL s))) (TOK_LIMIT 3)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        orc_pred 
+          TableScan
+            alias: orc_pred
+            Filter Operator
+              predicate:
+                  expr: (((((((((t > 10) and (t <> 101)) and (d >= round(9.99))) and (d < 12.0)) and t is not null) and (s like '%son')) and (not (s like '%car%'))) and (t > 0)) and si BETWEEN 300 AND 400)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: t
+                      type: tinyint
+                      expr: si
+                      type: smallint
+                      expr: d
+                      type: double
+                      expr: s
+                      type: string
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col3
+                        type: string
+                  sort order: -
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: tinyint
+                        expr: _col1
+                        type: smallint
+                        expr: _col2
+                        type: double
+                        expr: _col3
+                        type: string
+      Reduce Operator Tree:
+        Extract
+          Limit
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              key expressions:
+                    expr: _col3
+                    type: string
+              sort order: -
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: tinyint
+                    expr: _col1
+                    type: smallint
+                    expr: _col2
+                    type: double
+                    expr: _col3
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          Limit
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 3
+
+
+PREHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
+  WHERE t > 10
+  AND t <> 101
+  AND d >= ROUND(9.99)
+  AND d < 12
+  AND t IS NOT NULL
+  AND s LIKE '%son'
+  AND s NOT LIKE '%car%'
+  AND t > 0
+  AND si BETWEEN 300 AND 400
+  SORT BY s DESC
+  LIMIT 3
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
+  WHERE t > 10
+  AND t <> 101
+  AND d >= ROUND(9.99)
+  AND d < 12
+  AND t IS NOT NULL
+  AND s LIKE '%son'
+  AND s NOT LIKE '%car%'
+  AND t > 0
+  AND si BETWEEN 300 AND 400
+  SORT BY s DESC
+  LIMIT 3
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME orc_pred))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL t)) (TOK_SELEXPR (TOK_TABLE_OR_COL si)) (TOK_SELEXPR (TOK_TABLE_OR_COL d)) (TOK_SELEXPR (TOK_TABLE_OR_COL s))) (TOK_WHERE (AND (AND (AND (AND (AND (AND (AND (AND (> (TOK_TABLE_OR_COL t) 10) (<> (TOK_TABLE_OR_COL t) 101)) (>= (TOK_TABLE_OR_COL d) (TOK_FUNCTION ROUND 9.99))) (< (TOK_TABLE_OR_COL d) 12)) (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL t))) (LIKE (TOK_TABLE_OR_COL s) '%son')) (NOT (LIKE (TOK_TABLE_OR_COL s) '%car%'))) (> (TOK_TABLE_OR_COL t) 0)) (TOK_FUNCTION between KW_FALSE (TOK_TABLE_OR_COL si) 300 400))) (TOK_SORTBY (TOK_TABSORTCOLNAMEDESC (TOK_TABLE_OR_COL s))) (TOK_LIMIT 3)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        orc_pred 
+          TableScan
+            alias: orc_pred
+            filterExpr:
+                expr: (((((((((t > 10) and (t <> 101)) and (d >= round(9.99))) and (d < 12.0)) and t is not null) and (s like '%son')) and (not (s like '%car%'))) and (t > 0)) and si BETWEEN 300 AND 400)
+                type: boolean
+            Filter Operator
+              predicate:
+                  expr: (((((((((t > 10) and (t <> 101)) and (d >= round(9.99))) and (d < 12.0)) and t is not null) and (s like '%son')) and (not (s like '%car%'))) and (t > 0)) and si BETWEEN 300 AND 400)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: t
+                      type: tinyint
+                      expr: si
+                      type: smallint
+                      expr: d
+                      type: double
+                      expr: s
+                      type: string
+                outputColumnNames: _col0, _col1, _col2, _col3
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col3
+                        type: string
+                  sort order: -
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: tinyint
+                        expr: _col1
+                        type: smallint
+                        expr: _col2
+                        type: double
+                        expr: _col3
+                        type: string
+      Reduce Operator Tree:
+        Extract
+          Limit
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+            Reduce Output Operator
+              key expressions:
+                    expr: _col3
+                    type: string
+              sort order: -
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: tinyint
+                    expr: _col1
+                    type: smallint
+                    expr: _col2
+                    type: double
+                    expr: _col3
+                    type: string
+      Reduce Operator Tree:
+        Extract
+          Limit
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 3
+
+
