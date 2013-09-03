@@ -26,6 +26,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.eclipse.jetty.http.HttpStatus;
 
+import com.sun.jersey.api.NotFoundException;
+
 /**
  * Map all exceptions to the Jersey response.  This lets us have nice
  * results in the error body.
@@ -37,6 +39,9 @@ public class CatchallExceptionMapper
 
     public Response toResponse(Exception e) {
         LOG.error(e.getMessage(), e);
+        if (e instanceof NotFoundException) {
+            return SimpleWebException.buildMessage(HttpStatus.NOT_FOUND_404, null, e.getMessage());
+        }
         return SimpleWebException.buildMessage(HttpStatus.INTERNAL_SERVER_ERROR_500, null, e.getMessage());
     }
 }
