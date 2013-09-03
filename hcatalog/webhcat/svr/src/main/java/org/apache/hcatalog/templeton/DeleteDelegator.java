@@ -37,11 +37,11 @@ public class DeleteDelegator extends TempletonDelegator {
     public QueueStatusBean run(String user, String id)
         throws NotAuthorizedException, BadParam, IOException, InterruptedException
     {
-        UserGroupInformation ugi = UserGroupInformation.createRemoteUser(user);
+        UserGroupInformation ugi = UgiFactory.getUgi(user);
         WebHCatJTShim tracker = null;
         JobState state = null;
         try {
-            tracker = ShimLoader.getHadoopShims().getWebHCatShim(appConf);
+            tracker = ShimLoader.getHadoopShims().getWebHCatShim(appConf, ugi);
             JobID jobid = StatusDelegator.StringToJobID(id);
             if (jobid == null)
                 throw new BadParam("Invalid jobid: " + id);

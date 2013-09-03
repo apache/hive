@@ -717,13 +717,13 @@ public class Server {
     @GET
     @Path("queue")
     @Produces({MediaType.APPLICATION_JSON})
-    public List<String> showQueueList()
+    public List<String> showQueueList(@QueryParam("showall") boolean showall)
         throws NotAuthorizedException, BadParam, IOException, InterruptedException {
         
         verifyUser();
 
         ListDelegator d = new ListDelegator(appConf);
-        return d.run(getDoAsUser());
+        return d.run(getDoAsUser(), showall);
     }
 
     /**

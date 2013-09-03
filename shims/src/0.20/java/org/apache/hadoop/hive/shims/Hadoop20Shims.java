@@ -740,7 +740,7 @@ public class Hadoop20Shims implements HadoopShims {
       throw new UnsupportedOperationException("HCatalog does not support Hadoop 0.20.x");
   }
   @Override
-  public WebHCatJTShim getWebHCatShim(Configuration conf) throws IOException {
+  public WebHCatJTShim getWebHCatShim(Configuration conf, UserGroupInformation ugi) throws IOException {
       throw new UnsupportedOperationException("WebHCat does not support Hadoop 0.20.x");
   }
 }

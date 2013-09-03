@@ -49,6 +49,7 @@ import org.apache.hadoop.mapreduce.util.HostUtil;
 import org.apache.hadoop.net.NetUtils;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
+import org.apache.hadoop.security.UserGroupInformation;
 
 
 /**
@@ -335,7 +336,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
   }
   @Override
-  public WebHCatJTShim getWebHCatShim(Configuration conf) throws IOException {
-    return new WebHCatJTShim23(conf);//this has state, so can't be cached
+  public WebHCatJTShim getWebHCatShim(Configuration conf, UserGroupInformation ugi) throws IOException {
+    return new WebHCatJTShim23(conf, ugi);//this has state, so can't be cached
   }
 }

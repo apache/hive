@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.shims.HadoopShims.WebHCatJTShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.JobProfile;
 import org.apache.hadoop.mapred.JobStatus;
@@ -45,7 +46,8 @@ public class StatusDelegator extends TempletonDelegator {
         WebHCatJTShim tracker = null;
         JobState state = null;
         try {
-            tracker = ShimLoader.getHadoopShims().getWebHCatShim(appConf);
+            UserGroupInformation ugi = UgiFactory.getUgi(user);
+            tracker = ShimLoader.getHadoopShims().getWebHCatShim(appConf, ugi);
             JobID jobid = StatusDelegator.StringToJobID(id);
             if (jobid == null)
                 throw new BadParam("Invalid jobid: " + id);
