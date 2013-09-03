@@ -17,11 +17,16 @@
  * under the License.
  */
 
-package org.apache.hadoop.mapred;
+package org.apache.hcatalog.mapreduce;
 
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.Progressable;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.JobContext;
+import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.TaskAttemptContext;
+import org.apache.hadoop.mapred.TaskAttemptID;
 
 public class HCatMapRedUtil {
 
