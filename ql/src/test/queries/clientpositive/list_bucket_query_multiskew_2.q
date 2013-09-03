@@ -30,21 +30,21 @@ SELECT count(1) FROM fact_daily WHERE ds='1' and hr='4';
 
 -- pruner only pick up default directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484';
+explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484' ORDER BY key, value;
 -- List Bucketing Query
-SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484';
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484' ORDER BY key, value;
 
 -- pruner only pick up default directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended SELECT key FROM fact_daily WHERE ds='1' and hr='4' and key= '406';
+explain extended SELECT key FROM fact_daily WHERE ds='1' and hr='4' and key= '406' ORDER BY key;
 -- List Bucketing Query
-SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and key= '406';
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and key= '406' ORDER BY key;
 
 -- pruner only pick up skewed-value directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238')) ;
+explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238')) ORDER BY key, value;
 -- List Bucketing Query
-SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238')) ;
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238')) ORDER BY key, value;
 
 -- clean up
 drop table fact_daily;
