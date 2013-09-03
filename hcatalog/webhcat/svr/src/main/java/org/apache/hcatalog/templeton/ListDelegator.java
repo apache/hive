@@ -36,13 +36,13 @@ public class ListDelegator extends TempletonDelegator {
         super(appConf);
     }
 
-    public List<String> run(String user)
+    public List<String> run(String user, boolean showall)
         throws NotAuthorizedException, BadParam, IOException, InterruptedException {
         
-        UserGroupInformation ugi = UserGroupInformation.createRemoteUser(user);
+        UserGroupInformation ugi = UgiFactory.getUgi(user);
         WebHCatJTShim tracker = null;
         try {
-            tracker = ShimLoader.getHadoopShims().getWebHCatShim(appConf);
+            tracker = ShimLoader.getHadoopShims().getWebHCatShim(appConf, ugi);
 
             ArrayList<String> ids = new ArrayList<String>();
 
@@ -54,7 +54,7 @@ public class ListDelegator extends TempletonDelegator {
                     try {
                         String id = job.getJobID().toString();
                         state = new JobState(id, Main.getAppConfigInstance());
-                        if (user.equals(state.getUser()))
+                        if (showall || user.equals(state.getUser()))
                             ids.add(id);
                     } finally {
                         if (state != null) {

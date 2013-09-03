@@ -1,6 +1,7 @@
 package org.apache.hadoop.mapred;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.hive.shims.HadoopShims.WebHCatJTShim;
 
 import java.io.IOException;
@@ -11,7 +12,7 @@ public class WebHCatJTShim23 implements WebHCatJTShim {
   /**
    * Create a connection to the Job Tracker.
    */
-  public WebHCatJTShim23(Configuration conf)
+  public WebHCatJTShim23(Configuration conf, final UserGroupInformation ugi)
           throws IOException {
 
     jc = new JobClient(conf);

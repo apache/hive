@@ -509,7 +509,7 @@ public interface HadoopShims {
    * Provides a Hadoop JobTracker shim.
    * @param conf not {@code null}
    */
-  public WebHCatJTShim getWebHCatShim(Configuration conf) throws IOException;
+  public WebHCatJTShim getWebHCatShim(Configuration conf, UserGroupInformation ugi) throws IOException;
   public interface WebHCatJTShim {
     /**
      * Grab a handle to a job that is already known to the JobTracker.

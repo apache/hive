@@ -19,9 +19,8 @@ public class WebHCatJTShim20S implements WebHCatJTShim {
     /**
      * Create a connection to the Job Tracker.
      */
-    public WebHCatJTShim20S(Configuration conf)
+    public WebHCatJTShim20S(Configuration conf, UserGroupInformation ugi)
             throws IOException {
-      UserGroupInformation ugi = UserGroupInformation.getLoginUser();
       cnx = (JobSubmissionProtocol)
               RPC.getProxy(JobSubmissionProtocol.class,
                       JobSubmissionProtocol.versionID,
