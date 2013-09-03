@@ -7049,12 +7049,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     List<Operator<? extends OperatorDesc>> inputOperators =
         new ArrayList<Operator<? extends OperatorDesc>>(ks.size());
     List<List<ExprNodeDesc>> sprayKeyLists = new ArrayList<List<ExprNodeDesc>>(ks.size());
+    List<List<ExprNodeDesc>> distinctKeyLists = new ArrayList<List<ExprNodeDesc>>(ks.size());
 
     // Iterate over each clause
     for (String dest : ks) {
       Operator input = inputs.get(dest);
       RowResolver inputRR = opParseCtx.get(input).getRowResolver();
-      List<ExprNodeDesc> sprayKeys = getDistinctExprs(qbp, dest, inputRR);
+
+      List<ExprNodeDesc> distinctKeys = getDistinctExprs(qbp, dest, inputRR);
+      List<ExprNodeDesc> sprayKeys = new ArrayList<ExprNodeDesc>();
 
       // Add the group by expressions
       List<ASTNode> grpByExprs = getGroupByForClause(qbp, dest);
@@ -7071,10 +7074,43 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (!input.equals(inputOperators.get(i))) {
           continue;
         }
-        if (!matchExprLists(sprayKeyLists.get(i), sprayKeys)) {
-          continue;
+
+        if (distinctKeys.isEmpty()) {
+          // current dest has no distinct keys.
+          List<ExprNodeDesc> combinedList = new ArrayList<ExprNodeDesc>();
+          combineExprNodeLists(sprayKeyLists.get(i), distinctKeyLists.get(i), combinedList);
+          if (!matchExprLists(combinedList, sprayKeys)) {
+            continue;
+          } // else do the common code at the end.
+        } else {
+          if (distinctKeyLists.get(i).isEmpty()) {
+            List<ExprNodeDesc> combinedList = new ArrayList<ExprNodeDesc>();
+            combineExprNodeLists(sprayKeys, distinctKeys, combinedList);
+            if (!matchExprLists(combinedList, sprayKeyLists.get(i))) {
+              continue;
+            } else {
+              // we have found a match. insert this distinct clause to head.
+              distinctKeyLists.remove(i);
+              sprayKeyLists.remove(i);
+              distinctKeyLists.add(i, distinctKeys);
+              sprayKeyLists.add(i, sprayKeys);
+              commonGroupByDestGroups.get(i).add(0, dest);
+              found = true;
+              break;
+            }
+          } else {
+            if (!matchExprLists(distinctKeyLists.get(i), distinctKeys)) {
+              continue;
+            }
+
+            if (!matchExprLists(sprayKeyLists.get(i), sprayKeys)) {
+              continue;
+            }
+            // else do common code
+          }
         }
 
+        // common code
         // A match was found, so add the clause to the corresponding list
         commonGroupByDestGroups.get(i).add(dest);
         found = true;
@@ -7085,6 +7121,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (!found) {
         inputOperators.add(input);
         sprayKeyLists.add(sprayKeys);
+        distinctKeyLists.add(distinctKeys);
         List<String> destGroup = new ArrayList<String>();
         destGroup.add(dest);
         commonGroupByDestGroups.add(destGroup);
@@ -7092,6 +7129,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     return commonGroupByDestGroups;
+  }
+
+  private void combineExprNodeLists(List<ExprNodeDesc> list, List<ExprNodeDesc> list2,
+      List<ExprNodeDesc> combinedList) {
+    combinedList.addAll(list);
+    for (ExprNodeDesc elem : list2) {
+      if (!combinedList.contains(elem)) {
+        combinedList.add(elem);
+      }
+    }
   }
 
   // Returns whether or not two lists contain the same elements independent of order
