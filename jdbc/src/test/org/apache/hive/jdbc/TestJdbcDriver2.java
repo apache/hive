@@ -31,8 +31,9 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -458,6 +459,85 @@ public class TestJdbcDriver2 extends TestCase {
     } finally {
       stmt.close();
     }
+  }
+
+  // executeQuery should always throw a SQLException,
+  // when it executes a non-ResultSet query (like create)
+  public void testExecuteQueryException() throws Exception {
+    Statement stmt = con.createStatement();
+    try {
+      stmt.executeQuery("create table test_t2 (under_col int, value string)");
+      fail("Expecting SQLException");
+    }
+    catch (SQLException e) {
+      System.out.println("Caught an expected SQLException: " + e.getMessage());
+    }
+    finally {
+      stmt.close();
+    }
+  }
+
+  private void checkResultSetExpected(Statement stmt, List<String> setupQueries, String testQuery,
+      boolean isExpectedResultSet) throws Exception {
+    boolean hasResultSet;
+    // execute the setup queries
+    for(String setupQuery: setupQueries) {
+      try {
+        stmt.execute(setupQuery);
+      } catch (Exception e) {
+        failWithExceptionMsg(e);
+      }
+    }
+    // execute the test query
+    try {
+      hasResultSet = stmt.execute(testQuery);
+      assertEquals(hasResultSet, isExpectedResultSet);
+    }
+    catch(Exception e) {
+      failWithExceptionMsg(e);
+    }
+  }
+
+  private void failWithExceptionMsg(Exception e) {
+    e.printStackTrace();
+    fail(e.toString());
+  }
+
+  public void testNullResultSet() throws Exception {
+    List<String> setupQueries = new ArrayList<String>();
+    String testQuery;
+    boolean hasResultSet;
+    Statement stmt = con.createStatement();
+
+    // -select- should return a ResultSet
+    try {
+      stmt.executeQuery("select * from " + tableName);
+      System.out.println("select: success");
+    }
+    catch(SQLException e) {
+      failWithExceptionMsg(e);
+    }
+
+    // -create- should not return a ResultSet
+    setupQueries.add("drop table test_t1");
+    testQuery = "create table test_t1 (under_col int, value string)";
+    checkResultSetExpected(stmt, setupQueries, testQuery, false);
+    setupQueries.clear();
+
+    // -create table as select- should not return a ResultSet
+    setupQueries.add("drop table test_t1");
+    testQuery = "create table test_t1 as select * from " + tableName;
+    checkResultSetExpected(stmt, setupQueries, testQuery, false);
+    setupQueries.clear();
+
+    // -insert table as select- should not return a ResultSet
+    setupQueries.add("drop table test_t1");
+    setupQueries.add("create table test_t1 (under_col int, value string)");
+    testQuery = "insert into table test_t1 select under_col, value from "  + tableName;
+    checkResultSetExpected(stmt, setupQueries, testQuery, false);
+    setupQueries.clear();
+
+    stmt.close();
   }
 
   public void testDataTypes() throws Exception {
