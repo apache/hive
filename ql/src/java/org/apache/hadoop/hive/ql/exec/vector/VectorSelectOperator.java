@@ -18,12 +18,11 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.SelectOperator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
@@ -39,8 +38,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 /**
  * Select operator implementation.
  */
-public class VectorSelectOperator extends Operator<SelectDesc> implements
-    Serializable {
+public class VectorSelectOperator extends SelectOperator {
 
   private static final long serialVersionUID = 1L;
 
@@ -128,21 +126,8 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
     vrg.valueWriters = originalValueWriters;
   }
 
-  /**
-   * @return the name of the operator
-   */
-  @Override
-  public String getName() {
-    return getOperatorName();
-  }
-
   static public String getOperatorName() {
     return "SEL";
-  }
-
-  @Override
-  public OperatorType getType() {
-    return OperatorType.SELECT;
   }
 
   @Explain (displayName = "vector expressions")

@@ -18,11 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.io.Serializable;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ConstantVectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -30,27 +28,15 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.io.LongWritable;
 
 /**
  * Filter operator implementation.
  **/
-public class VectorFilterOperator extends Operator<FilterDesc> implements
-    Serializable {
+public class VectorFilterOperator extends FilterOperator {
 
   private static final long serialVersionUID = 1L;
 
-  /**
-   * Counter.
-   *
-   */
-  public static enum Counter {
-    FILTERED, PASSED
-  }
-
-  private final transient LongWritable filtered_count, passed_count;
   private VectorExpression conditionEvaluator = null;
-  transient int heartbeatInterval;
 
   // filterMode is 1 if condition is always true, -1 if always false
   // and 0 if condition needs to be computed.
@@ -66,8 +52,6 @@ public class VectorFilterOperator extends Operator<FilterDesc> implements
 
   public VectorFilterOperator() {
     super();
-    filtered_count = new LongWritable();
-    passed_count = new LongWritable();
     this.conf = (FilterDesc) conf;
   }
 
@@ -120,21 +104,8 @@ public class VectorFilterOperator extends Operator<FilterDesc> implements
     }
   }
 
-  /**
-   * @return the name of the operator
-   */
-  @Override
-  public String getName() {
-    return getOperatorName();
-  }
-
   static public String getOperatorName() {
     return "FIL";
-  }
-
-  @Override
-  public OperatorType getType() {
-    return OperatorType.FILTER;
   }
 
   public VectorExpression getConditionEvaluator() {

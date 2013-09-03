@@ -142,8 +142,16 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   transient StructObjectInspector newKeyObjectInspector;
   transient StructObjectInspector currentKeyObjectInspector;
   public static MemoryMXBean memoryMXBean;
-  private long maxMemory;
-  private float memoryThreshold;
+
+  /**
+   * Total amount of memory allowed for JVM heap.
+   */
+  protected long maxMemory;
+
+  /**
+   * configure percent of memory threshold usable by QP.
+   */
+  protected float memoryThreshold;
 
   private boolean groupingSetsPresent;
   private int groupingSetsPosition;
@@ -160,10 +168,18 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   transient List<Field>[] aggrPositions;
 
   transient int fixedRowSize;
-  transient long maxHashTblMemory;
+
+  /**
+   * Max memory usable by the hashtable before it should flush.
+   */
+  protected transient long maxHashTblMemory;
   transient int totalVariableSize;
   transient int numEntriesVarSize;
-  transient int numEntriesHashTable;
+
+  /**
+   * Current number of entries in the hash table.
+   */
+  protected transient int numEntriesHashTable;
   transient int countAfterReport;
   transient int heartbeatInterval;
 
