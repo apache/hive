@@ -102,7 +102,7 @@ public class TestWebHCatE2e {
     @Test
     public void invalidPath() throws IOException {
         MethodCallRetVal p = doHttpCall(templetonBaseUrl + "/no_such_mapping/database", HTTP_METHOD_TYPE.GET);
-        Assert.assertEquals(p.getAssertMsg(), HttpStatus.INTERNAL_SERVER_ERROR_500, p.httpStatusCode);
+        Assert.assertEquals(p.getAssertMsg(), HttpStatus.NOT_FOUND_404, p.httpStatusCode);
     }
     /**
      * tries to drop table in a DB that doesn't exist
