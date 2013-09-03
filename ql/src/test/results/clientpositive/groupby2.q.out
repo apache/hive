@@ -43,8 +43,6 @@ STAGE PLANS:
                 Map-reduce partition columns:
                       expr: substr(key, 1, 1)
                       type: string
-                      expr: substr(value, 5)
-                      type: string
                 tag: -1
       Reduce Operator Tree:
         Group By Operator
