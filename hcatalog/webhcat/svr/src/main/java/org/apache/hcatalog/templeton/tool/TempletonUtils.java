@@ -229,7 +229,7 @@ public class TempletonUtils {
         return result;
     }
 
-    public static Path hadoopFsPath(final String fname, final Configuration conf, String user)
+    public static Path hadoopFsPath(String fname, final Configuration conf, String user)
         throws URISyntaxException, IOException,
         InterruptedException {
         if (fname == null || conf == null) {
@@ -237,11 +237,13 @@ public class TempletonUtils {
         }
 
         UserGroupInformation ugi = UgiFactory.getUgi(user);
+        final String finalFName = new String(fname);
+
         final FileSystem defaultFs = 
                 ugi.doAs(new PrivilegedExceptionAction<FileSystem>() {
                     public FileSystem run() 
                         throws URISyntaxException, IOException, InterruptedException {
-                        return FileSystem.get(new URI(fname), conf);
+                        return FileSystem.get(new URI(finalFName), conf);
                     }
                 });
 
