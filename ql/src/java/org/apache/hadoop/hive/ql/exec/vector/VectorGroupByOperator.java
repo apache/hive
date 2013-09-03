@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
-import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.util.ArrayList;
@@ -31,8 +30,8 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.KeyWrapper;
-import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
@@ -52,7 +51,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
  * stores the aggregate operators' intermediate states. Emits row mode output.
  *
  */
-public class VectorGroupByOperator extends Operator<GroupByDesc> implements Serializable {
+public class VectorGroupByOperator extends GroupByOperator {
 
   private static final Log LOG = LogFactory.getLog(
       VectorGroupByOperator.class.getName());
@@ -83,21 +82,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements Seri
   private transient VectorHashKeyWrapperBatch keyWrappersBatch;
 
   /**
-   * Total amount of memory allowed for JVM heap.
-   */
-  private transient long maxMemory;
-
-  /**
-   * configure percent of memory threshold usable by QP.
-   */
-  private transient float memoryThreshold;
-
-  /**
-   * Max memory usable by the hashtable before it should flush.
-   */
-  private transient long maxHashTblMemory;
-
-  /**
    * Total per hashtable entry fixed memory (does not depend on key/agg values).
    */
   private transient int fixedHashEntrySize;
@@ -106,11 +90,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements Seri
    * Average per hashtable entry variable size memory (depends on key/agg value).
    */
   private transient int avgVariableSize;
-
-  /**
-   * Current number of entries in the hash table.
-   */
-  private transient int numEntriesHashTable;
 
   /**
    * Number of entries added to the hashtable since the last check if it should flush.
@@ -434,21 +413,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements Seri
     }
   }
 
-  /**
-   * @return the name of the operator
-   */
-  @Override
-  public String getName() {
-    return getOperatorName();
-  }
-
   static public String getOperatorName() {
     return "GBY";
-  }
-
-  @Override
-  public OperatorType getType() {
-    return OperatorType.GROUPBY;
   }
 
   public VectorExpression[] getKeyExpressions() {

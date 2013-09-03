@@ -19,18 +19,15 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.io.IOException;
-import java.io.Serializable;
-import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.exec.TerminalOperator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
-import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
@@ -42,10 +39,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 
-public class VectorReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
-  implements Serializable {
+public class VectorReduceSinkOperator extends ReduceSinkOperator {
 
   private static final Log LOG = LogFactory.getLog(
       VectorReduceSinkOperator.class.getName());
@@ -89,28 +84,8 @@ public class VectorReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
    */
   protected transient VectorExpressionWriter[] partitionWriters;
 
-  private transient int numDistributionKeys;
-
-  private transient List<List<Integer>> distinctColIndices;
-
-  private transient int numDistinctExprs;
-
-  transient HiveKey keyWritable = new HiveKey();
-  transient Writable value;
-
-  transient Object[] cachedValues;
-  transient Object[][] cachedKeys;
-  transient Random random;
-
-  transient Serializer keySerializer;
-  transient boolean keyIsText;
-  transient Serializer valueSerializer;
-  transient int tag;
-  transient byte[] tagByte = new byte[1];
-
   transient ObjectInspector keyObjectInspector;
   transient ObjectInspector valueObjectInspector;
-  transient ObjectInspector[] partitionObjectInspectors;
   transient int [] keyHashCode = new int [VectorizedRowBatch.DEFAULT_SIZE];
 
   public VectorReduceSinkOperator(VectorizationContext vContext, OperatorDesc conf)
@@ -331,26 +306,8 @@ public class VectorReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     }
   }
 
-  /**
-   * @return the name of the operator
-   */
-  @Override
-  public String getName() {
-    return getOperatorName();
-  }
-
   static public String getOperatorName() {
     return "RS";
-  }
-
-  @Override
-  public OperatorType getType() {
-    return OperatorType.REDUCESINK;
-  }
-
-  @Override
-  public boolean opAllowedBeforeMapJoin() {
-    return false;
   }
 
   public VectorExpression[] getPartitionEval() {
@@ -376,5 +333,4 @@ public class VectorReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   public void setKeyEval(VectorExpression[] keyEval) {
     this.keyEval = keyEval;
   }
-
 }

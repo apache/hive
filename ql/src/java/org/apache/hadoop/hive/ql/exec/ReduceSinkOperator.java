@@ -73,11 +73,11 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
 
   // TODO: we use MetadataTypedColumnsetSerDe for now, till DynamicSerDe is
   // ready
-  transient Serializer keySerializer;
-  transient boolean keyIsText;
-  transient Serializer valueSerializer;
+  protected transient Serializer keySerializer;
+  protected transient boolean keyIsText;
+  protected transient Serializer valueSerializer;
   transient int tag;
-  transient byte[] tagByte = new byte[1];
+  protected transient byte[] tagByte = new byte[1];
   transient protected int numDistributionKeys;
   transient protected int numDistinctExprs;
   transient String inputAlias;  // input alias of this RS for join (used for PPD)
@@ -140,20 +140,20 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   }
 
   transient InspectableObject tempInspectableObject = new InspectableObject();
-  transient HiveKey keyWritable = new HiveKey();
-  transient Writable value;
+  protected transient HiveKey keyWritable = new HiveKey();
+  protected transient Writable value;
 
   transient StructObjectInspector keyObjectInspector;
   transient StructObjectInspector valueObjectInspector;
   transient ObjectInspector[] partitionObjectInspectors;
 
-  transient Object[][] cachedKeys;
-  transient Object[] cachedValues;
-  transient List<List<Integer>> distinctColIndices;
+  protected transient Object[][] cachedKeys;
+  protected transient Object[] cachedValues;
+  protected transient List<List<Integer>> distinctColIndices;
 
   boolean firstRow;
 
-  transient Random random;
+  protected transient Random random;
 
   /**
    * Initializes array of ExprNodeEvaluator. Adds Union field for distinct
