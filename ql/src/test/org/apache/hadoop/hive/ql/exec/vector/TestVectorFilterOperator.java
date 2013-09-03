@@ -18,6 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import junit.framework.Assert;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
@@ -25,6 +28,8 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColEqualDoubleScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongColumn;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
+import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.junit.Test;
 
 /**
@@ -76,9 +81,19 @@ public class TestVectorFilterOperator {
     }
   }
 
+  private VectorFilterOperator getAVectorFilterOperator() throws HiveException {
+    ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(Long.class, "col1", "table", false);
+    Map<String, Integer> columnMap = new HashMap<String, Integer>();
+    columnMap.put("col1", 1);
+    VectorizationContext vc = new VectorizationContext(columnMap, 1);
+    FilterDesc fdesc = new FilterDesc();
+    fdesc.setPredicate(col1Expr);
+    return new VectorFilterOperator(vc, fdesc);
+  }
+
   @Test
   public void testBasicFilterOperator() throws HiveException {
-    VectorFilterOperator vfo = new VectorFilterOperator(null, null);
+    VectorFilterOperator vfo = getAVectorFilterOperator();
     VectorExpression ve1 = new FilterLongColGreaterLongColumn(0,1);
     VectorExpression ve2 = new FilterLongColEqualDoubleScalar(2, 0);
     VectorExpression ve3 = new FilterExprAndExpr(ve1,ve2);
@@ -105,7 +120,7 @@ public class TestVectorFilterOperator {
 
   @Test
   public void testBasicFilterLargeData() throws HiveException {
-    VectorFilterOperator vfo = new VectorFilterOperator(null, null);
+    VectorFilterOperator vfo = getAVectorFilterOperator();
     VectorExpression ve1 = new FilterLongColGreaterLongColumn(0,1);
     VectorExpression ve2 = new FilterLongColEqualDoubleScalar(2, 0);
     VectorExpression ve3 = new FilterExprAndExpr(ve1,ve2);

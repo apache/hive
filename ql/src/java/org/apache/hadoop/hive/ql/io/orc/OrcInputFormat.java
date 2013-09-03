@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
@@ -166,10 +167,8 @@ public class OrcInputFormat  extends FileInputFormat<NullWritable, OrcStruct>
   public RecordReader<NullWritable, OrcStruct>
       getRecordReader(InputSplit inputSplit, JobConf conf,
                       Reporter reporter) throws IOException {
-
-    boolean vectorPath = conf.getBoolean(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.toString(),
-        false);
-    if (vectorPath) {
+    if (Utilities
+        .getMapRedWork(conf).getMapWork().getVectorMode()) {
       RecordReader<NullWritable, VectorizedRowBatch> vorr = voif.getRecordReader(inputSplit, conf,
           reporter);
       return (RecordReader) vorr;
@@ -187,10 +186,9 @@ public class OrcInputFormat  extends FileInputFormat<NullWritable, OrcStruct>
   public boolean validateInput(FileSystem fs, HiveConf conf,
                                ArrayList<FileStatus> files
                               ) throws IOException {
-    boolean vectorPath = conf.getBoolean(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED.toString(),
-        false);
 
-    if (vectorPath) {
+    if (Utilities
+        .getMapRedWork(conf).getMapWork().getVectorMode()) {
       return voif.validateInput(fs, conf, files);
     }
 

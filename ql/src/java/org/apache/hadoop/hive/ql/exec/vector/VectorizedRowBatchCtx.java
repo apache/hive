@@ -68,6 +68,8 @@ public class VectorizedRowBatchCtx {
   // list does not contain partition columns
   private List<Integer> colsToInclude;
 
+  private Map<Integer, String> columnTypeMap = null;
+
   /**
    * Constructor for VectorizedRowBatchCtx
    *
@@ -123,6 +125,11 @@ public class VectorizedRowBatchCtx {
         .getPartitionDescFromPathRecursively(pathToPartitionInfo,
             split.getPath(), IOPrepareCache.get().getPartitionDescMap());
     Class serdeclass = part.getDeserializerClass();
+
+    String partitionPath = split.getPath().getParent().toString();
+    columnTypeMap = Utilities
+        .getMapRedWork(hiveConf).getMapWork().getScratchColumnVectorTypes()
+        .get(partitionPath);
 
     if (serdeclass == null) {
       String className = part.getSerdeClassName();
@@ -253,6 +260,7 @@ public class VectorizedRowBatchCtx {
       }
     }
     result.numCols = fieldRefs.size();
+    this.addScratchColumnsToBatch(result);
     return result;
   }
 
@@ -328,6 +336,29 @@ public class VectorizedRowBatchCtx {
         bcv.isNull[0] = false;
         bcv.noNulls = true;
       }
+    }
+  }
+
+  private void addScratchColumnsToBatch(VectorizedRowBatch vrb) {
+    if (columnTypeMap != null && !columnTypeMap.isEmpty()) {
+      int origNumCols = vrb.numCols;
+      int newNumCols = vrb.cols.length+columnTypeMap.keySet().size();
+      vrb.cols = Arrays.copyOf(vrb.cols, newNumCols);
+      for (int i = origNumCols; i < newNumCols; i++) {
+        vrb.cols[i] = allocateColumnVector(columnTypeMap.get(i),
+            VectorizedRowBatch.DEFAULT_SIZE);
+      }
+      vrb.numCols = vrb.cols.length;
+    }
+  }
+
+  private ColumnVector allocateColumnVector(String type, int defaultSize) {
+    if (type.equalsIgnoreCase("double")) {
+      return new DoubleColumnVector(defaultSize);
+    } else if (type.equalsIgnoreCase("string")) {
+      return new BytesColumnVector(defaultSize);
+    } else {
+      return new LongColumnVector(defaultSize);
     }
   }
 }

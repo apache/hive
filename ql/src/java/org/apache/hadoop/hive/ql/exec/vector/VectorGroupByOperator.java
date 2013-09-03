@@ -57,21 +57,19 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements Seri
   private static final Log LOG = LogFactory.getLog(
       VectorGroupByOperator.class.getName());
 
-  private final VectorizationContext vContext;
-
   /**
    * This is the vector of aggregators. They are stateless and only implement
    * the algorithm of how to compute the aggregation. state is kept in the
    * aggregation buffers and is our responsibility to match the proper state for each key.
    */
-  private transient VectorAggregateExpression[] aggregators;
+  private VectorAggregateExpression[] aggregators;
 
   /**
    * Key vector expressions.
    */
-  private transient VectorExpression[] keyExpressions;
+  private VectorExpression[] keyExpressions;
 
-  private VectorExpressionWriter[] keyOutputWriters;
+  private transient VectorExpressionWriter[] keyOutputWriters;
 
   /**
    * The aggregation buffers to use for the current batch.
@@ -141,10 +139,24 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements Seri
 
   private static final long serialVersionUID = 1L;
 
-  public VectorGroupByOperator(VectorizationContext ctxt, OperatorDesc conf) {
+  public VectorGroupByOperator(VectorizationContext vContext, OperatorDesc conf)
+      throws HiveException {
+    this();
+    GroupByDesc desc = (GroupByDesc) conf;
+    this.conf = desc;
+    vContext.setOperatorType(OperatorType.GROUPBY);
+    List<ExprNodeDesc> keysDesc = desc.getKeys();
+    keyExpressions = vContext.getVectorExpressions(keysDesc);
+    ArrayList<AggregationDesc> aggrDesc = desc.getAggregators();
+    aggregators = new VectorAggregateExpression[aggrDesc.size()];
+    for (int i = 0; i < aggrDesc.size(); ++i) {
+      AggregationDesc aggDesc = aggrDesc.get(i);
+      aggregators[i] = vContext.getAggregatorExpression(aggDesc);
+    }
+  }
+
+  public VectorGroupByOperator() {
     super();
-    this.vContext = ctxt;
-    this.conf = (GroupByDesc) conf;
   }
 
   @Override
@@ -152,11 +164,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements Seri
 
     List<ObjectInspector> objectInspectors = new ArrayList<ObjectInspector>();
 
+    List<ExprNodeDesc> keysDesc = conf.getKeys();
     try {
-      vContext.setOperatorType(OperatorType.GROUPBY);
-
-      List<ExprNodeDesc> keysDesc = conf.getKeys();
-      keyExpressions = vContext.getVectorExpressions(keysDesc);
 
       keyOutputWriters = new VectorExpressionWriter[keyExpressions.length];
 
@@ -166,11 +175,8 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements Seri
         objectInspectors.add(keyOutputWriters[i].getObjectInspector());
       }
 
-      ArrayList<AggregationDesc> aggrDesc = conf.getAggregators();
-      aggregators = new VectorAggregateExpression[aggrDesc.size()];
-      for (int i = 0; i < aggrDesc.size(); ++i) {
-        AggregationDesc desc = aggrDesc.get(i);
-        aggregators[i] = vContext.getAggregatorExpression (desc);
+      for (int i = 0; i < aggregators.length; ++i) {
+        aggregators[i].init(conf.getAggregators().get(i));
         objectInspectors.add(aggregators[i].getOutputObjectInspector());
       }
 
@@ -215,13 +221,15 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements Seri
 
     maxHashTblMemory = (int)(maxMemory * memoryThreshold);
 
-    LOG.info(String.format("maxMemory:%dMb (%d * %f) fixSize:%d (key:%d agg:%d)",
-        maxHashTblMemory/1024/1024,
-        maxMemory/1024/1024,
-        memoryThreshold,
-        fixedHashEntrySize,
-        keyWrappersBatch.getKeysFixedSize(),
-        aggregationBatchInfo.getAggregatorsFixedSize()));
+    if (LOG.isDebugEnabled()) {
+      LOG.debug(String.format("maxMemory:%dMb (%d * %f) fixSize:%d (key:%d agg:%d)",
+          maxHashTblMemory/1024/1024,
+          maxMemory/1024/1024,
+          memoryThreshold,
+          fixedHashEntrySize,
+          keyWrappersBatch.getKeysFixedSize(),
+          aggregationBatchInfo.getAggregatorsFixedSize()));
+    }
 
   }
 
@@ -264,15 +272,16 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements Seri
       (int)(numEntriesHashTable * PERCENT_ENTRIES_TO_FLUSH);
     int entriesFlushed = 0;
 
-    LOG.info(String.format("Flush %d %s entries:%d fixed:%d variable:%d (used:%dMb max:%dMb)",
-        entriesToFlush, all ? "(all)" : "",
-        numEntriesHashTable, fixedHashEntrySize, avgVariableSize,
-        numEntriesHashTable * (fixedHashEntrySize + avgVariableSize)/1024/1024,
-        maxHashTblMemory/1024/1024));
+    if (LOG.isDebugEnabled()) {
+      LOG.debug(String.format("Flush %d %s entries:%d fixed:%d variable:%d (used:%dMb max:%dMb)",
+          entriesToFlush, all ? "(all)" : "",
+          numEntriesHashTable, fixedHashEntrySize, avgVariableSize,
+          numEntriesHashTable * (fixedHashEntrySize + avgVariableSize)/1024/1024,
+          maxHashTblMemory/1024/1024));
+    }
 
     Object[] forwardCache = new Object[keyExpressions.length + aggregators.length];
     if (keyExpressions.length == 0 && mapKeysAggregationBuffers.isEmpty()) {
-
       // if this is a global aggregation (no keys) and empty set, must still emit NULLs
       VectorAggregationBufferRow emptyBuffers = allocateAggregationBuffer();
       for (int i = 0; i < aggregators.length; ++i) {
@@ -280,7 +289,6 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements Seri
       }
       forward(forwardCache, outputObjInspector);
     } else {
-
       /* Iterate the global (keywrapper,aggregationbuffers) map and emit
        a row for each key */
       Iterator<Map.Entry<KeyWrapper, VectorAggregationBufferRow>> iter =
@@ -297,8 +305,10 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements Seri
           forwardCache[fi++] = aggregators[i].evaluateOutput(pair.getValue()
               .getAggregationBuffer(i));
         }
-        LOG.debug(String.format("forwarding keys: %s: %s",
-            pair.getKey().toString(), Arrays.toString(forwardCache)));
+        if (LOG.isDebugEnabled()) {
+          LOG.debug(String.format("forwarding keys: %s: %s",
+              pair.getKey().toString(), Arrays.toString(forwardCache)));
+        }
         forward(forwardCache, outputObjInspector);
 
         if (!all) {
@@ -439,6 +449,22 @@ public class VectorGroupByOperator extends Operator<GroupByDesc> implements Seri
   @Override
   public OperatorType getType() {
     return OperatorType.GROUPBY;
+  }
+
+  public VectorExpression[] getKeyExpressions() {
+    return keyExpressions;
+  }
+
+  public void setKeyExpressions(VectorExpression[] keyExpressions) {
+    this.keyExpressions = keyExpressions;
+  }
+
+  public VectorAggregateExpression[] getAggregators() {
+    return aggregators;
+  }
+
+  public void setAggregators(VectorAggregateExpression[] aggregators) {
+    this.aggregators = aggregators;
   }
 
 }

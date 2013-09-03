@@ -52,26 +52,24 @@ public class VectorReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
 
   private static final long serialVersionUID = 1L;
 
-  private final VectorizationContext vContext;
-
   /**
    * The evaluators for the key columns. Key columns decide the sort order on
    * the reducer side. Key columns are passed to the reducer in the "key".
    */
-  protected transient VectorExpression[] keyEval;
-  
+  protected VectorExpression[] keyEval;
+
   /**
    * The key value writers. These know how to write the necessary writable type
    * based on key column metadata, from the primitive vector type.
    */
   protected transient VectorExpressionWriter[] keyWriters;
-  
+
   /**
    * The evaluators for the value columns. Value columns are passed to reducer
    * in the "value".
    */
-  protected transient VectorExpression[] valueEval;
-  
+  protected VectorExpression[] valueEval;
+
   /**
    * The output value writers. These know how to write the necessary writable type
    * based on value column metadata, from the primitive vector type.
@@ -83,19 +81,19 @@ public class VectorReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
    * Hive language). Partition columns decide the reducer that the current row
    * goes to. Partition columns are not passed to reducer.
    */
-  protected transient VectorExpression[] partitionEval;
-  
+  protected VectorExpression[] partitionEval;
+
   /**
    * The partition value writers. These know how to write the necessary writable type
    * based on partition column metadata, from the primitive vector type.
-   */  
+   */
   protected transient VectorExpressionWriter[] partitionWriters;
 
-  private int numDistributionKeys;
+  private transient int numDistributionKeys;
 
-  private List<List<Integer>> distinctColIndices;
+  private transient List<List<Integer>> distinctColIndices;
 
-  private int numDistinctExprs;
+  private transient int numDistinctExprs;
 
   transient HiveKey keyWritable = new HiveKey();
   transient Writable value;
@@ -115,14 +113,24 @@ public class VectorReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   transient ObjectInspector[] partitionObjectInspectors;
   transient int [] keyHashCode = new int [VectorizedRowBatch.DEFAULT_SIZE];
 
+  public VectorReduceSinkOperator(VectorizationContext vContext, OperatorDesc conf)
+      throws HiveException {
+    this();
+    ReduceSinkDesc desc = (ReduceSinkDesc) conf;
+    this.conf = desc;
+    vContext.setOperatorType(OperatorType.REDUCESINK);
+    keyEval = vContext.getVectorExpressions(desc.getKeyCols());
+    valueEval = vContext.getVectorExpressions(desc.getValueCols());
+    partitionEval = vContext.getVectorExpressions(desc.getPartitionCols());
+  }
+
+  public VectorReduceSinkOperator() {
+    super();
+  }
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     try {
-      vContext.setOperatorType(OperatorType.REDUCESINK);
-      keyEval = vContext.getVectorExpressions(conf.getKeyCols());
-      valueEval = vContext.getVectorExpressions(conf.getValueCols());
-      partitionEval = vContext.getVectorExpressions(conf.getPartitionCols());
 
       numDistributionKeys = conf.getNumDistributionKeys();
       distinctColIndices = conf.getDistinctColumnIndices();
@@ -133,12 +141,12 @@ public class VectorReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
           .newInstance();
       keySerializer.initialize(null, keyTableDesc.getProperties());
       keyIsText = keySerializer.getSerializedClass().equals(Text.class);
-      
+
       /*
-       * Compute and assign the key writers and the key object inspector 
+       * Compute and assign the key writers and the key object inspector
        */
       VectorExpressionWriterFactory.processVectorExpressions(
-          conf.getKeyCols(), 
+          conf.getKeyCols(),
           conf.getOutputKeyColumnNames(),
           new VectorExpressionWriterFactory.Closure() {
             @Override
@@ -148,7 +156,7 @@ public class VectorReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
               keyObjectInspector = objectInspector;
             }
           });
-      
+
       String colNames = "";
       for(String colName : conf.getOutputKeyColumnNames()) {
         colNames = String.format("%s %s", colNames, colName);
@@ -160,12 +168,12 @@ public class VectorReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
           colNames));
 
       partitionWriters = VectorExpressionWriterFactory.getExpressionWriters(conf.getPartitionCols());
-      
+
       TableDesc valueTableDesc = conf.getValueSerializeInfo();
       valueSerializer = (Serializer) valueTableDesc.getDeserializerClass()
           .newInstance();
       valueSerializer.initialize(null, valueTableDesc.getProperties());
-      
+
       /*
        * Compute and assign the value writers and the value object inspector
        */
@@ -323,13 +331,6 @@ public class VectorReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     }
   }
 
-  public VectorReduceSinkOperator (
-      VectorizationContext context,
-      OperatorDesc conf) {
-    this.vContext = context;
-    this.conf = (ReduceSinkDesc) conf;
-  }
-
   /**
    * @return the name of the operator
    */
@@ -350,6 +351,30 @@ public class VectorReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   @Override
   public boolean opAllowedBeforeMapJoin() {
     return false;
+  }
+
+  public VectorExpression[] getPartitionEval() {
+    return partitionEval;
+  }
+
+  public void setPartitionEval(VectorExpression[] partitionEval) {
+    this.partitionEval = partitionEval;
+  }
+
+  public VectorExpression[] getValueEval() {
+    return valueEval;
+  }
+
+  public void setValueEval(VectorExpression[] valueEval) {
+    this.valueEval = valueEval;
+  }
+
+  public VectorExpression[] getKeyEval() {
+    return keyEval;
+  }
+
+  public void setKeyEval(VectorExpression[] keyEval) {
+    this.keyEval = keyEval;
   }
 
 }
