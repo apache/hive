@@ -25,7 +25,6 @@ import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -57,10 +56,6 @@ import org.apache.hadoop.hive.ql.exec.PartitionKeySampler;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.vector.VectorExecMapper;
-import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.io.BucketizedHiveInputFormat;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormatImpl;
@@ -243,22 +238,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     //See the javadoc on HiveOutputFormatImpl and HadoopShims.prepareJobOutput()
     job.setOutputFormat(HiveOutputFormatImpl.class);
 
-
-    boolean vectorPath = HiveConf.getBoolVar(job,
-        HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED);
-
-    if (vectorPath) {
-      if (validateVectorPath()) {
-        LOG.info("Going down the vectorization path");
-        job.setMapperClass(VectorExecMapper.class);
-      } else {
-        //fall back to non-vector mode
-        HiveConf.setBoolVar(job, HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED, false);
-        job.setMapperClass(ExecMapper.class);
-      }
-    } else {
-      job.setMapperClass(ExecMapper.class);
-    }
+    job.setMapperClass(ExecMapper.class);
 
     job.setMapOutputKeyClass(HiveKey.class);
     job.setMapOutputValueClass(BytesWritable.class);
@@ -508,59 +488,6 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     }
 
     return (returnVal);
-  }
-
-  private boolean validateVectorPath() {
-    LOG.debug("Validating if vectorized execution is applicable");
-    MapWork thePlan = this.getWork().getMapWork();
-
-    for (String path : thePlan.getPathToPartitionInfo().keySet()) {
-      PartitionDesc pd = thePlan.getPathToPartitionInfo().get(path);
-      List<Class<?>> interfaceList =
-          Arrays.asList(pd.getInputFileFormatClass().getInterfaces());
-      if (!interfaceList.contains(VectorizedInputFormatInterface.class)) {
-        LOG.debug("Input format: " + pd.getInputFileFormatClassName()
-            + ", doesn't provide vectorized input");
-        return false;
-      }
-    }
-    VectorizationContext vc = new VectorizationContext(null, 0);
-    for (String onefile : thePlan.getPathToAliases().keySet()) {
-      List<String> aliases = thePlan.getPathToAliases().get(onefile);
-      for (String onealias : aliases) {
-        Operator<? extends OperatorDesc> op = thePlan.getAliasToWork().get(
-            onealias);
-        Operator<? extends OperatorDesc> vectorOp = null;
-        try {
-          vectorOp = VectorMapOperator.vectorizeOperator(op, vc);
-        } catch (Exception e) {
-          LOG.debug("Cannot vectorize the plan", e);
-          return false;
-        }
-        if (vectorOp == null) {
-          LOG.debug("Cannot vectorize the plan");
-          return false;
-        }
-        //verify the expressions contained in the operators
-        try {
-          validateVectorOperator(vectorOp);
-        } catch (HiveException e) {
-          LOG.debug("Cannot vectorize the plan", e);
-          return false;
-        }
-      }
-    }
-    return true;
-  }
-
-  private void validateVectorOperator(Operator<? extends OperatorDesc> vectorOp)
-      throws HiveException {
-    vectorOp.initialize(job, null);
-    if (vectorOp.getChildOperators() != null) {
-      for (Operator<? extends OperatorDesc> vop : vectorOp.getChildOperators()) {
-        validateVectorOperator(vop);
-      }
-    }
   }
 
   private void handleSampling(DriverContext context, MapWork mWork, JobConf job, HiveConf conf)

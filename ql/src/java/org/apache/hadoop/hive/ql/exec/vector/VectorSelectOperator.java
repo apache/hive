@@ -28,6 +28,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
@@ -43,17 +44,27 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
 
   private static final long serialVersionUID = 1L;
 
-  protected transient VectorExpression[] vExpressions;
+  protected VectorExpression[] vExpressions = null;
 
-  private final VectorizationContext vContext;
+  private transient int [] projectedColumns = null;
 
-  private int [] projectedColumns = null;
+  private transient VectorExpressionWriter [] valueWriters = null;
 
-  private VectorExpressionWriter [] valueWriters = null;
-
-  public VectorSelectOperator(VectorizationContext ctxt, OperatorDesc conf) {
-    this.vContext = ctxt;
+  public VectorSelectOperator(VectorizationContext vContext, OperatorDesc conf)
+      throws HiveException {
     this.conf = (SelectDesc) conf;
+    List<ExprNodeDesc> colList = this.conf.getColList();
+    vContext.setOperatorType(OperatorType.SELECT);
+    vExpressions = new VectorExpression[colList.size()];
+    for (int i = 0; i < colList.size(); i++) {
+      vExpressions[i] = vContext.getVectorExpression(colList.get(i));
+      String columnName = this.conf.getOutputColumnNames().get(i);
+      // Update column map with output column names
+      vContext.addToColumnMap(columnName, vExpressions[i].getOutputColumn());
+    }
+  }
+
+  public VectorSelectOperator() {
   }
 
   @Override
@@ -67,14 +78,6 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
     List<ObjectInspector> objectInspectors = new ArrayList<ObjectInspector>();
 
     List<ExprNodeDesc> colList = conf.getColList();
-    vContext.setOperatorType(OperatorType.SELECT);
-    vExpressions = new VectorExpression[colList.size()];
-    for (int i = 0; i < colList.size(); i++) {
-      vExpressions[i] = vContext.getVectorExpression(colList.get(i));
-      String columnName = conf.getOutputColumnNames().get(i);
-      // Update column map with output column names
-      vContext.addToColumnMap(columnName, vExpressions[i].getOutputColumn());
-    }
     valueWriters = VectorExpressionWriterFactory.getExpressionWriters(colList);
     for (VectorExpressionWriter vew : valueWriters) {
       objectInspectors.add(vew.getObjectInspector());
@@ -140,5 +143,22 @@ public class VectorSelectOperator extends Operator<SelectDesc> implements
   @Override
   public OperatorType getType() {
     return OperatorType.SELECT;
+  }
+
+  @Explain (displayName = "vector expressions")
+  public VectorExpression[] getvExpressions() {
+    return vExpressions;
+  }
+
+  public VectorExpression[] getVExpressions() {
+    return vExpressions;
+  }
+
+  public void setvExpressions(VectorExpression[] vExpressions) {
+    this.vExpressions = vExpressions;
+  }
+
+  public void setVExpressions(VectorExpression[] vExpressions) {
+    this.vExpressions = vExpressions;
   }
 }

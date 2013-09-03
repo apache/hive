@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ConstantVectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterConstantBooleanVectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprOrExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterStringColLikeStringScalar;
@@ -157,7 +158,8 @@ public class VectorizationContext {
     private final Set<Integer> usedOutputColumns = new HashSet<Integer>();
 
     int allocateOutputColumn(String columnType) {
-      return initialOutputCol + allocateOutputColumnInternal(columnType);
+      int relativeCol = allocateOutputColumnInternal(columnType);
+      return initialOutputCol + relativeCol;
     }
 
     private int allocateOutputColumnInternal(String columnType) {
@@ -191,14 +193,6 @@ public class VectorizationContext {
       if (colIndex >= 0) {
         usedOutputColumns.remove(index-initialOutputCol);
       }
-    }
-
-    String getOutputColumnType(int index) {
-      return outputColumnsTypes[index-initialOutputCol];
-    }
-
-    int getNumOfOutputColumn() {
-      return outputColCount;
     }
   }
 
@@ -311,8 +305,22 @@ public class VectorizationContext {
       return new ConstantVectorExpression(outCol, ((Number) exprDesc.getValue()).doubleValue());
     } else if (type.equalsIgnoreCase("string")) {
       return new ConstantVectorExpression(outCol, ((String) exprDesc.getValue()).getBytes());
+    } else if (type.equalsIgnoreCase("boolean")) {
+      if (this.opType == OperatorType.FILTER) {
+        if (((Boolean) exprDesc.getValue()).booleanValue()) {
+          return new FilterConstantBooleanVectorExpression(1);
+        } else {
+          return new FilterConstantBooleanVectorExpression(0);
+        }
+      } else {
+        if (((Boolean) exprDesc.getValue()).booleanValue()) {
+          return new ConstantVectorExpression(outCol, 1);
+        } else {
+          return new ConstantVectorExpression(outCol, 0);
+        }
+      }
     } else {
-      throw new HiveException("Unsupported constant type");
+      throw new HiveException("Unsupported constant type: "+type.toString());
     }
   }
 
@@ -339,8 +347,7 @@ public class VectorizationContext {
        + outputColumnType + "ColUnaryMinus";
     VectorExpression expr;
     try {
-      expr = (VectorExpression) Class.forName(className).
-          getDeclaredConstructors()[0].newInstance(inputCol, outputCol);
+      expr = (VectorExpression) getConstructor(className).newInstance(inputCol, outputCol);
     } catch (Exception ex) {
       throw new HiveException(ex);
     }
@@ -470,14 +477,14 @@ public class VectorizationContext {
   /* Return a unary string vector expression. This is used for functions like
    * UPPER() and LOWER().
    */
-  private VectorExpression getUnaryStringExpression(String vectorExprClassName, 
+  private VectorExpression getUnaryStringExpression(String vectorExprClassName,
       String resultType, // result type name
       List<ExprNodeDesc> childExprList) throws HiveException {
-    
+
     /* Create an instance of the class vectorExprClassName for the input column or expression result
      * and return it.
      */
-    
+
     ExprNodeDesc childExpr = childExprList.get(0);
     int inputCol;
     VectorExpression v1 = null;
@@ -497,8 +504,7 @@ public class VectorizationContext {
        + vectorExprClassName;
     VectorExpression expr;
     try {
-      expr = (VectorExpression) Class.forName(className).
-          getDeclaredConstructors()[0].newInstance(inputCol, outputCol);
+      expr = (VectorExpression) getConstructor(className).newInstance(inputCol, outputCol);
     } catch (Exception ex) {
       throw new HiveException(ex);
     }
@@ -517,23 +523,23 @@ public class VectorizationContext {
     VectorExpression expr = null;
     int inputCol;
     ExprNodeConstantDesc constDesc;
-    
+
     if ((leftExpr instanceof ExprNodeColumnDesc) &&
         (rightExpr instanceof ExprNodeConstantDesc) ) {
       ExprNodeColumnDesc leftColDesc = (ExprNodeColumnDesc) leftExpr;
       constDesc = (ExprNodeConstantDesc) rightExpr;
       inputCol = getInputColumnIndex(leftColDesc.getColumn());
-      expr = (VectorExpression) new FilterStringColLikeStringScalar(inputCol, 
-          new Text((byte[]) getScalarValue(constDesc)));  
+      expr = (VectorExpression) new FilterStringColLikeStringScalar(inputCol,
+          new Text((byte[]) getScalarValue(constDesc)));
     } else if ((leftExpr instanceof ExprNodeGenericFuncDesc) &&
                (rightExpr instanceof ExprNodeConstantDesc)) {
       v1 = getVectorExpression(leftExpr);
       inputCol = v1.getOutputColumn();
       constDesc = (ExprNodeConstantDesc) rightExpr;
-      expr = (VectorExpression) new FilterStringColLikeStringScalar(inputCol, 
-          new Text((byte[]) getScalarValue(constDesc)));  
+      expr = (VectorExpression) new FilterStringColLikeStringScalar(inputCol,
+          new Text((byte[]) getScalarValue(constDesc)));
     }
-    // TODO add logic to handle cases where left input is an expression. 
+    // TODO add logic to handle cases where left input is an expression.
     if (expr == null) {
       throw new HiveException("Vector LIKE filter expression could not be initialized");
     }
@@ -558,8 +564,8 @@ public class VectorizationContext {
         // org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFYearLong
         String vectorUDF = pkg + ".Vector"+udf+"Long";
         try {
-          VectorExpression v2 = (VectorExpression)Class.forName(vectorUDF).
-              getDeclaredConstructors()[0].newInstance(inputCol,outputCol);
+          VectorExpression v2 = (VectorExpression) getConstructor(vectorUDF).
+              newInstance(inputCol,outputCol);
           return v2;
         } catch(Exception e) {
           e.printStackTrace();
@@ -594,8 +600,7 @@ public class VectorizationContext {
       int outputCol = ocm.allocateOutputColumn(getOutputColType(colType,
           scalarType, method));
       try {
-        expr = (VectorExpression) Class.forName(className).
-            getDeclaredConstructors()[0].newInstance(inputCol,
+        expr = (VectorExpression) getConstructor(className).newInstance(inputCol,
             getScalarValue(constDesc), outputCol);
       } catch (Exception ex) {
         throw new HiveException(ex);
@@ -612,8 +617,7 @@ public class VectorizationContext {
       String outputColType = getOutputColType(colType, scalarType, method);
       int outputCol = ocm.allocateOutputColumn(outputColType);
       try {
-        expr = (VectorExpression) Class.forName(className).
-            getDeclaredConstructors()[0].newInstance(getScalarValue(constDesc),
+        expr = (VectorExpression) getConstructor(className).newInstance(getScalarValue(constDesc),
             inputCol, outputCol);
       } catch (Exception ex) {
         throw new HiveException("Could not instantiate: "+className, ex);
@@ -631,8 +635,7 @@ public class VectorizationContext {
           colType2, method);
       int outputCol = ocm.allocateOutputColumn(outputColType);
       try {
-        expr = (VectorExpression) Class.forName(className).
-            getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2,
+        expr = (VectorExpression) getConstructor(className).newInstance(inputCol1, inputCol2,
             outputCol);
       } catch (Exception ex) {
         throw new HiveException(ex);
@@ -650,8 +653,7 @@ public class VectorizationContext {
           colType2, method);
       int outputCol = ocm.allocateOutputColumn(outputColType);
       try {
-        expr = (VectorExpression) Class.forName(className).
-            getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2,
+        expr = (VectorExpression) getConstructor(className).newInstance(inputCol1, inputCol2,
             outputCol);
       } catch (Exception ex) {
         throw new HiveException((ex));
@@ -669,8 +671,7 @@ public class VectorizationContext {
       String className = getBinaryColumnScalarExpressionClassName(colType1,
           scalarType, method);
       try {
-        expr = (VectorExpression) Class.forName(className).
-            getDeclaredConstructors()[0].newInstance(inputCol1,
+        expr = (VectorExpression) getConstructor(className).newInstance(inputCol1,
             getScalarValue(constDesc), outputCol);
       } catch (Exception ex) {
         throw new HiveException((ex));
@@ -689,8 +690,7 @@ public class VectorizationContext {
       String className = getBinaryColumnColumnExpressionClassName(colType1,
           colType2, method);
       try {
-        expr = (VectorExpression) Class.forName(className).
-            getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2,
+        expr = (VectorExpression) getConstructor(className).newInstance(inputCol1, inputCol2,
             outputCol);
       } catch (Exception ex) {
         throw new HiveException(ex);
@@ -708,8 +708,7 @@ public class VectorizationContext {
       String className = getBinaryScalarColumnExpressionClassName(colType2,
           scalarType, method);
       try {
-        expr = (VectorExpression) Class.forName(className).
-            getDeclaredConstructors()[0].newInstance(getScalarValue(constDesc), 
+        expr = (VectorExpression) getConstructor(className).newInstance(getScalarValue(constDesc),
                 inputCol2, outputCol);
       } catch (Exception ex) {
         throw new HiveException(ex);
@@ -730,8 +729,7 @@ public class VectorizationContext {
       String className = getBinaryColumnColumnExpressionClassName(colType1,
           colType2, method);
       try {
-        expr = (VectorExpression) Class.forName(className).
-            getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2,
+        expr = (VectorExpression) getConstructor(className).newInstance(inputCol1, inputCol2,
             outputCol);
       } catch (Exception ex) {
         throw new HiveException(ex);
@@ -864,13 +862,13 @@ public class VectorizationContext {
       String className = getFilterColumnScalarExpressionClassName(colType,
           scalarType, opName);
       try {
-        expr = (VectorExpression) Class.forName(className).
-            getDeclaredConstructors()[0].newInstance(inputCol,
+        Constructor<?> ctor = getConstructor(className);
+        expr = (VectorExpression) ctor.newInstance(inputCol,
             getScalarValue(constDesc));
       } catch (Exception ex) {
         throw new HiveException(ex);
       }
-    } else if ((leftExpr instanceof ExprNodeConstantDesc) && 
+    } else if ((leftExpr instanceof ExprNodeConstantDesc) &&
         (rightExpr instanceof ExprNodeColumnDesc)) {
       ExprNodeConstantDesc constDesc = (ExprNodeConstantDesc) leftExpr;
       ExprNodeColumnDesc rightColDesc = (ExprNodeColumnDesc) rightExpr;
@@ -880,8 +878,8 @@ public class VectorizationContext {
       String className = getFilterScalarColumnExpressionClassName(colType,
           scalarType, opName);
       try {
-        expr = (VectorExpression) Class.forName(className).
-            getDeclaredConstructors()[0].newInstance(inputCol,
+        //Constructor<?>
+        expr = (VectorExpression) getConstructor(className).newInstance(inputCol,
             getScalarValue(constDesc));
       } catch (Exception ex) {
         throw new HiveException(ex);
@@ -897,8 +895,7 @@ public class VectorizationContext {
       String className = getFilterColumnColumnExpressionClassName(colType1,
           colType2, opName);
       try {
-        expr = (VectorExpression) Class.forName(className).
-            getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2);
+        expr = (VectorExpression) getConstructor(className).newInstance(inputCol1, inputCol2);
       } catch (Exception ex) {
         throw new HiveException(ex);
       }
@@ -913,8 +910,7 @@ public class VectorizationContext {
       String className = getFilterColumnColumnExpressionClassName(colType1,
           colType2, opName);
       try {
-        expr = (VectorExpression) Class.forName(className).
-            getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2);
+        expr = (VectorExpression) getConstructor(className).newInstance(inputCol1, inputCol2);
       } catch (Exception ex) {
         throw new HiveException(ex);
       }
@@ -930,8 +926,7 @@ public class VectorizationContext {
       String className = getFilterColumnColumnExpressionClassName(colType1,
           colType2, opName);
       try {
-        expr = (VectorExpression) Class.forName(className).
-            getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2);
+        expr = (VectorExpression) getConstructor(className).newInstance(inputCol1, inputCol2);
       } catch (Exception ex) {
         throw new HiveException(ex);
       }
@@ -946,8 +941,7 @@ public class VectorizationContext {
       String className = getFilterColumnScalarExpressionClassName(colType1,
           scalarType, opName);
       try {
-        expr = (VectorExpression) Class.forName(className).
-            getDeclaredConstructors()[0].newInstance(inputCol1,
+        expr = (VectorExpression) getConstructor(className).newInstance(inputCol1,
             getScalarValue(constDesc));
       } catch (Exception ex) {
         throw new HiveException(ex);
@@ -963,8 +957,7 @@ public class VectorizationContext {
       String className = getFilterScalarColumnExpressionClassName(colType,
           scalarType, opName);
       try {
-        expr = (VectorExpression) Class.forName(className).
-            getDeclaredConstructors()[0].newInstance(inputCol2,
+        expr = (VectorExpression) getConstructor(className).newInstance(inputCol2,
             getScalarValue(constDesc));
       } catch (Exception ex) {
         throw new HiveException(ex);
@@ -982,8 +975,7 @@ public class VectorizationContext {
       String className = getFilterColumnColumnExpressionClassName(colType1,
           colType2, opName);
       try {
-        expr = (VectorExpression) Class.forName(className).
-            getDeclaredConstructors()[0].newInstance(inputCol1, inputCol2);
+        expr = (VectorExpression) getConstructor(className).newInstance(inputCol1, inputCol2);
       } catch (Exception ex) {
         throw new HiveException(ex);
       }
@@ -996,6 +988,22 @@ public class VectorizationContext {
       ocm.freeOutputColumn(v2.getOutputColumn());
     }
     return expr;
+  }
+
+  private Constructor<?> getConstructor(String className) throws HiveException {
+    try {
+      Class<?> cl = Class.forName(className);
+      Constructor<?> [] ctors = cl.getDeclaredConstructors();
+      Constructor<?> defaultCtor = cl.getConstructor();
+      for (Constructor<?> ctor : ctors) {
+        if (!ctor.equals(defaultCtor)) {
+          return ctor;
+        }
+      }
+      throw new HiveException("Only default constructor found");
+    } catch (Exception ex) {
+      throw new HiveException(ex);
+    }
   }
 
   private String getNormalizedTypeName(String colType) throws HiveException {
@@ -1243,31 +1251,6 @@ public class VectorizationContext {
     {"Long",    LongColumnVector.class},
     {"String",  BytesColumnVector.class},
   };
-
-  private VectorizedRowBatch allocateRowBatch(int rowCount) throws HiveException {
-    int columnCount = firstOutputColumnIndex + ocm.getNumOfOutputColumn();
-    VectorizedRowBatch ret = new VectorizedRowBatch(columnCount, rowCount);
-    for (int i=0; i < columnCount; ++i) {
-      String columnTypeName = ocm.getOutputColumnType(i);
-      for (Object[] columnType: columnTypes) {
-        if (columnTypeName.equalsIgnoreCase((String)columnType[0])) {
-          Class<? extends ColumnVector> columnTypeClass = (Class<? extends ColumnVector>)columnType[1];
-          try {
-            Constructor<? extends ColumnVector> ctor = columnTypeClass.getConstructor(int.class);
-            ret.cols[i] = ctor.newInstance(rowCount);
-          }
-          catch(Exception e) {
-            throw new HiveException (
-                String.format(
-                    "Internal exception occured trying to allocate a vectorized column %d of type %s",
-                    i, columnTypeName),
-                e);
-          }
-        }
-      }
-    }
-    return ret;
-  }
 
   public Map<Integer, String> getOutputColumnTypeMap() {
     Map<Integer, String> map = new HashMap<Integer, String>();

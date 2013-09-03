@@ -52,7 +52,7 @@ import org.apache.hadoop.mapred.JobConf;
  * distributed on the cluster. The ExecMapper will ultimately deserialize this
  * class on the data nodes and setup it's operator pipeline accordingly.
  *
- * This class is also used in the explain command any property with the 
+ * This class is also used in the explain command any property with the
  * appropriate annotation will be displayed in the explain output.
  */
 @SuppressWarnings({"serial", "deprecation"})
@@ -111,6 +111,9 @@ public class MapWork extends BaseWork {
   private boolean inputFormatSorted = false;
 
   private transient boolean useBucketizedHiveInputFormat;
+
+  private Map<String, Map<Integer, String>> scratchColumnVectorTypes = null;
+  private boolean vectorMode = false;
 
   public MapWork() {
   }
@@ -478,5 +481,22 @@ public class MapWork extends BaseWork {
     for (FileSinkOperator fs : OperatorUtils.findOperators(mappers, FileSinkOperator.class)) {
       PlanUtils.configureJobConf(fs.getConf().getTableInfo(), job);
     }
+  }
+
+  public Map<String, Map<Integer, String>> getScratchColumnVectorTypes() {
+    return scratchColumnVectorTypes;
+  }
+
+  public void setScratchColumnVectorTypes(
+      Map<String, Map<Integer, String>> scratchColumnVectorTypes) {
+    this.scratchColumnVectorTypes = scratchColumnVectorTypes;
+  }
+
+  public boolean getVectorMode() {
+    return vectorMode;
+  }
+
+  public void setVectorMode(boolean vectorMode) {
+    this.vectorMode = vectorMode;
   }
 }
