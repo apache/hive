@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.google.common.collect.Lists;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Job;
@@ -53,6 +52,10 @@ import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
 import org.apache.pig.impl.util.ObjectSerializer;
 import org.apache.pig.impl.util.UDFContext;
 import org.apache.pig.impl.util.Utils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 /**
  * Base class for HCatStorer and HCatEximStorer
@@ -60,6 +63,8 @@ import org.apache.pig.impl.util.Utils;
  */
 
 abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
+
+    private static final Logger LOG = LoggerFactory.getLogger( HCatBaseStorer.class );
 
     private static final List<Type> SUPPORTED_INTEGER_CONVERSIONS =
         Lists.newArrayList(Type.TINYINT, Type.SMALLINT, Type.INT);
@@ -174,6 +179,9 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
 
         case DataType.BYTEARRAY:
             return new HCatFieldSchema(fSchema.alias, Type.BINARY, null);
+
+        case DataType.BOOLEAN:
+            return new HCatFieldSchema(fSchema.alias, Type.BOOLEAN, null);
 
         case DataType.BAG:
             Schema bagSchema = fSchema.schema;
@@ -328,10 +336,30 @@ abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {
                 }
                 return ((Integer) pigObj).byteValue();
             case BOOLEAN:
-                // would not pass schema validation anyway
-                throw new BackendException("Incompatible type " + type + " found in hcat table schema: " + hcatFS, PigHCatUtil.PIG_EXCEPTION_CODE);
+                if (pigObj == null) {
+                    LOG.debug( "HCatBaseStorer.getJavaObj(BOOLEAN): obj null, bailing early" );
+                    return null;
+                }
+
+                if( pigObj instanceof String ) {
+                    if( ((String)pigObj).trim().compareTo("0") == 0 ) {
+                        return Boolean.FALSE;
+                    }
+                    if( ((String)pigObj).trim().compareTo("1") == 0 ) {
+                        return Boolean.TRUE;
+                    }
+
+                    throw new BackendException(
+                        "Unexpected type " + type + " for value " + pigObj
+                        + (pigObj == null ? "" : " of class "
+                        + pigObj.getClass().getName()), PigHCatUtil.PIG_EXCEPTION_CODE);
+                }
+
+                return Boolean.parseBoolean( pigObj.toString() );
             default:
-                throw new BackendException("Unexpected type " + type + " for value " + pigObj + (pigObj == null ? "" : " of class " + pigObj.getClass().getName()), PigHCatUtil.PIG_EXCEPTION_CODE);
+                throw new BackendException("Unexpected type " + type + " for value " + pigObj
+                    + (pigObj == null ? "" : " of class "
+                    + pigObj.getClass().getName()), PigHCatUtil.PIG_EXCEPTION_CODE);
             }
         } catch (BackendException e) {
             // provide the path to the field in the error message
