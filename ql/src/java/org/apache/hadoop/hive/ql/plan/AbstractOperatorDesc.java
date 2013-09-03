@@ -19,8 +19,20 @@
 package org.apache.hadoop.hive.ql.plan;
 
 public class AbstractOperatorDesc implements OperatorDesc {
+
+  private boolean vectorMode = false;
+
   @Override
   public Object clone() throws CloneNotSupportedException {
     throw new CloneNotSupportedException("clone not supported");
+  }
+
+  @Explain(displayName = "Vectorized execution", displayOnlyOnTrue = true)
+  public boolean getVectorModeOn() {
+    return vectorMode;
+  }
+
+  public void setVectorMode(boolean vm) {
+    this.vectorMode = vm;
   }
 }
