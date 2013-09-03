@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hcatalog.templeton.UgiFactory;
@@ -210,6 +211,23 @@ public class TempletonUtils {
             return false;
         }
     }
+    
+    public static String addUserHomeDirectoryIfApplicable(String origPathStr, String user, Configuration conf) throws IOException {
+        Path path = new Path(origPathStr);
+        String result = origPathStr;
+
+        // shortcut for s3/asv
+        // If path contains scheme, user should mean an absolute path,
+        // However, path.isAbsolute tell us otherwise.
+        // So we skip conversion for non-hdfs.
+        if (!(path.getFileSystem(conf) instanceof DistributedFileSystem)) {
+            return result;
+        }
+        if (!path.isAbsolute()) {
+            result = "/user/" + user + "/" + origPathStr;
+        }
+        return result;
+    }
 
     public static Path hadoopFsPath(final String fname, final Configuration conf, String user)
         throws URISyntaxException, IOException,
@@ -227,6 +245,7 @@ public class TempletonUtils {
                     }
                 });
 
+        fname = addUserHomeDirectoryIfApplicable(fname, user, conf);
         URI u = new URI(fname);
         Path p = new Path(u).makeQualified(defaultFs);
 

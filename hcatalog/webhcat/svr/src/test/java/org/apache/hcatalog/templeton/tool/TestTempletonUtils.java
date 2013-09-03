@@ -118,6 +118,16 @@ public class TestTempletonUtils {
             // This is our problem -- it means the configuration was wrong.
             e.printStackTrace();
         }
+        try {
+            TempletonUtils.hadoopFsPath("a", new Configuration(), "teddybear");
+            Assert.fail("Should not have found /user/teddybear/a");
+        } catch (FileNotFoundException e) {
+            Assert.assertTrue(e.getMessage().contains("/user/teddybear/a"));
+        } catch (Exception e) {
+            // This is our problem -- it means the configuration was wrong.
+            e.printStackTrace();
+            Assert.fail("Get wrong exception: " + e.getMessage());
+        }
     }
 
     @Test

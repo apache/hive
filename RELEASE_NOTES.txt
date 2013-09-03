@@ -15,6 +15,7 @@ Release Notes - Hive - Version 0.11.0
     * [HIVE-4326] - Clean up remaining items in hive/hcatalog/historical/trunk
 
 ** Bug
+    * [HIVE-4441] - WebHCat does not honor user home directory
     * [HIVE-4442] - WebHCat should not override user.name parameter for Queue call
     * [HIVE-4586] - WebHCat should return 404 error for undefined resource
     * [HIVE-4820] - webhcat_config.sh should set default values for HIVE_HOME and HCAT_PREFIX that work with default build tree structure
