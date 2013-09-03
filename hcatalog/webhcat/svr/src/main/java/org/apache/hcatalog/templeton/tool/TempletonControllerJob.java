@@ -154,6 +154,10 @@ public class TempletonControllerJob extends Configured implements Tool {
 
             String statusdir = conf.get(STATUSDIR_NAME);
 
+            if (statusdir != null) {
+                statusdir = TempletonUtils.addUserHomeDirectoryIfApplicable(statusdir, conf.get("user.name"), conf);
+            }
+
             ExecutorService pool = Executors.newCachedThreadPool();
             executeWatcher(pool, conf, context.getJobID(),
                 proc.getInputStream(), statusdir, STDOUT_FNAME);
