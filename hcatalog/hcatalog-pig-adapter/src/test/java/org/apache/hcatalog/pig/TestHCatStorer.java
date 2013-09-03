@@ -403,7 +403,7 @@ public class TestHCatStorer extends HCatBaseTest {
     public void testStoreFuncAllSimpleTypes() throws IOException, CommandNeedRetryException {
 
         driver.run("drop table junit_unparted");
-        String createTable = "create table junit_unparted(a int, b float, c double, d bigint, e string, f binary, g binary) stored as RCFILE";
+        String createTable = "create table junit_unparted(a int, b float, c double, d bigint, e string, h boolean, f binary, g binary) stored as RCFILE";
         int retCode = driver.run(createTable).getResponseCode();
         if (retCode != 0) {
             throw new IOException("Failed to create table.");
@@ -411,16 +411,16 @@ public class TestHCatStorer extends HCatBaseTest {
 
         int i = 0;
         String[] input = new String[3];
-        input[i++] = "0\t\t\t\t\t\t"; //Empty values except first column
-        input[i++] = "\t" + i * 2.1f + "\t" + i * 1.1d + "\t" + i * 2L + "\t" + "lets hcat" + "\tbinary-data"; //First column empty
-        input[i++] = i + "\t" + i * 2.1f + "\t" + i * 1.1d + "\t" + i * 2L + "\t" + "lets hcat" + "\tbinary-data";
+        input[i++] = "0\t\t\t\t\t\t\t"; //Empty values except first column
+        input[i++] = "\t" + i * 2.1f + "\t" + i * 1.1d + "\t" + i * 2L + "\t" + "lets hcat" + "\t" + "true" + "\tbinary-data"; //First column empty
+        input[i++] = i + "\t" + i * 2.1f + "\t" + i * 1.1d + "\t" + i * 2L + "\t" + "lets hcat" + "\t" + "false" + "\tbinary-data";
 
         HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, input);
         PigServer server = new PigServer(ExecType.LOCAL);
         server.setBatchOn();
-        server.registerQuery("A = load '" + INPUT_FILE_NAME + "' as (a:int, b:float, c:double, d:long, e:chararray, f:bytearray);");
+        server.registerQuery("A = load '" + INPUT_FILE_NAME + "' as (a:int, b:float, c:double, d:long, e:chararray, h:boolean, f:bytearray);");
         //null gets stored into column g which is a binary field.
-        server.registerQuery("store A into 'default.junit_unparted' using " + HCatStorer.class.getName() + "('','a:int, b:float, c:double, d:long, e:chararray,f:bytearray');");
+        server.registerQuery("store A into 'default.junit_unparted' using " + HCatStorer.class.getName() + "('','a:int, b:float, c:double, d:long, e:chararray, h:boolean, f:bytearray');");
         server.executeBatch();
 
 
@@ -429,9 +429,10 @@ public class TestHCatStorer extends HCatBaseTest {
         driver.getResults(res);
 
         Iterator<String> itr = res.iterator();
-        Assert.assertEquals("0\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL", itr.next());
-        Assert.assertEquals("NULL\t4.2\t2.2\t4\tlets hcat\tbinary-data\tNULL", itr.next());
-        Assert.assertEquals("3\t6.2999997\t3.3000000000000003\t6\tlets hcat\tbinary-data\tNULL", itr.next()); 
+        String next = itr.next();
+        Assert.assertEquals("0\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL\tNULL", next );
+        Assert.assertEquals("NULL\t4.2\t2.2\t4\tlets hcat\ttrue\tbinary-data\tNULL", itr.next());
+        Assert.assertEquals("3\t6.2999997\t3.3000000000000003\t6\tlets hcat\tfalse\tbinary-data\tNULL", itr.next());
         Assert.assertFalse(itr.hasNext());
 
         server.registerQuery("B = load 'junit_unparted' using " + HCatLoader.class.getName() + ";");
@@ -440,12 +441,12 @@ public class TestHCatStorer extends HCatBaseTest {
         int num5nulls = 0;
         while (iter.hasNext()) {
             Tuple t = iter.next();
-            if (t.get(5) == null) {
+            if (t.get(6) == null) {
                 num5nulls++;
             } else {
-                Assert.assertTrue(t.get(5) instanceof DataByteArray);
+                Assert.assertTrue(t.get(6) instanceof DataByteArray);
             }
-            Assert.assertNull(t.get(6));
+            Assert.assertNull(t.get(7));
             count++;
         }
         Assert.assertEquals(3, count);
