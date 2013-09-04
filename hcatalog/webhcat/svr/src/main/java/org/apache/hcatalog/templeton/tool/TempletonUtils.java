@@ -35,6 +35,7 @@ import java.util.regex.Pattern;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -220,7 +221,8 @@ public class TempletonUtils {
         // If path contains scheme, user should mean an absolute path,
         // However, path.isAbsolute tell us otherwise.
         // So we skip conversion for non-hdfs.
-        if (!(path.getFileSystem(conf) instanceof DistributedFileSystem)) {
+        if (!(path.getFileSystem(conf) instanceof DistributedFileSystem)&&
+                !(path.getFileSystem(conf) instanceof LocalFileSystem)) {
             return result;
         }
         if (!path.isAbsolute()) {
@@ -236,7 +238,12 @@ public class TempletonUtils {
             return null;
         }
 
-        UserGroupInformation ugi = UgiFactory.getUgi(user);
+        UserGroupInformation ugi;
+        if (user!=null) {
+            ugi = UgiFactory.getUgi(user);
+        } else {
+            ugi = UserGroupInformation.getLoginUser();
+        }
         final String finalFName = new String(fname);
 
         final FileSystem defaultFs = 
