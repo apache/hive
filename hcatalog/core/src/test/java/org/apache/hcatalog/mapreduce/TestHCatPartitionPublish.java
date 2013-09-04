@@ -24,12 +24,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import junit.framework.Assert;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
@@ -51,6 +53,7 @@ import org.apache.hadoop.mapred.MiniMRCluster;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.util.Shell;
 import org.apache.hcatalog.NoExitSecurityManager;
 import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hcatalog.data.DefaultHCatRecord;
@@ -74,13 +77,17 @@ public class TestHCatPartitionPublish {
 
     @BeforeClass
     public static void setup() throws Exception {
+        String testDir = System.getProperty("test.data.dir", "./");
+        testDir = testDir + "/test_hcat_partitionpublish_" + Math.abs(new Random().nextLong()) + "/";
+        File workDir = new File(new File(testDir).getCanonicalPath());
+        FileUtil.fullyDelete(workDir);
+        workDir.mkdirs();
         Configuration conf = new Configuration(true);
         conf.set("yarn.scheduler.capacity.root.queues", "default");
         conf.set("yarn.scheduler.capacity.root.default.capacity", "100");
         
         fs = FileSystem.get(conf);
-        System.setProperty("hadoop.log.dir", new File(fs.getWorkingDirectory()
-                .toString(), "/logs").getAbsolutePath());
+        System.setProperty("hadoop.log.dir", new File(workDir, "/logs").getAbsolutePath());
         // LocalJobRunner does not work with mapreduce OutputCommitter. So need
         // to use MiniMRCluster. MAPREDUCE-2350
         mrCluster = new MiniMRCluster(1, fs.getUri().toString(), 1, null, null,
@@ -93,6 +100,7 @@ public class TestHCatPartitionPublish {
 
         MetaStoreUtils.startMetaStore(msPort, ShimLoader
                 .getHadoopThriftAuthBridge());
+        Thread.sleep(10000);
         isServerRunning = true;
         securityManager = System.getSecurityManager();
         System.setSecurityManager(new NoExitSecurityManager());
@@ -144,10 +152,12 @@ public class TestHCatPartitionPublish {
         Assert.assertEquals(0, ptns.size());
         Table table = msc.getTable(dbName, tableName);
         Assert.assertTrue(table != null);
-        // Also make sure that the directory has been deleted in the table
-        // location.
-        Assert.assertFalse(fs.exists(new Path(table.getSd().getLocation()
-                + "/part1=p1value1/part0=p0value1")));
+        // In Windows, we cannot remove the output directory when job fail. See
+        // FileOutputCommitterContainer.abortJob
+        if (!Shell.WINDOWS) {
+            Assert.assertFalse(fs.exists(new Path(table.getSd().getLocation()
+                    + "/part1=p1value1/part0=p0value1")));
+        }
     }
 
     void runMRCreateFail(

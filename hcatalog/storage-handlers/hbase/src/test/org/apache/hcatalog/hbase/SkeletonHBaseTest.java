@@ -43,7 +43,7 @@ import org.junit.BeforeClass;
  */
 public abstract class SkeletonHBaseTest {
 
-    protected static String TEST_DIR = System.getProperty("test.data.dir", "./");
+    protected static String TEST_DIR = "/tmp/build/test/data/";
 
     protected final static String DEFAULT_CONTEXT_HANDLE = "default";
 
@@ -172,11 +172,7 @@ public abstract class SkeletonHBaseTest {
         protected int usageCount = 0;
 
         public Context(String handle) {
-            try {
-                testDir = new File(TEST_DIR + "/test_" + handle + "_" + Math.abs(new Random().nextLong()) + "/").getCanonicalPath();
-            } catch (IOException e) {
-                throw new IllegalStateException("Failed to generate testDir", e);
-            }
+            testDir = new File(TEST_DIR + "/test_" + handle + "_" + Math.abs(new Random().nextLong()) + "/").getPath();
             System.out.println("Cluster work directory: " + testDir);
         }
 

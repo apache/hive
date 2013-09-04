@@ -121,8 +121,12 @@ public class TestHCatClient {
         assertTrue(testDb.getProperties().size() == 0);
         String warehouseDir = System
             .getProperty(ConfVars.METASTOREWAREHOUSE.varname, "/user/hive/warehouse");
+        String expectedDir = warehouseDir.replaceAll("\\\\", "/");
+        if (!expectedDir.startsWith("/")) {
+            expectedDir = "/" + expectedDir;
+        }
         assertTrue(testDb.getLocation().equals(
-            "file:" + warehouseDir + "/" + db + ".db"));
+            "file:" + expectedDir + "/" + db + ".db"));
         ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
         cols.add(new HCatFieldSchema("id", Type.INT, "id comment"));
         cols.add(new HCatFieldSchema("value", Type.STRING, "value comment"));
@@ -157,7 +161,7 @@ public class TestHCatClient {
         assertTrue(table2.getOutputFileFormat().equalsIgnoreCase(
             IgnoreKeyTextOutputFormat.class.getName()));
         assertTrue(table2.getLocation().equalsIgnoreCase(
-            "file:" + warehouseDir + "/" + db + ".db/" + tableTwo));
+            "file:" + expectedDir + "/" + db + ".db/" + tableTwo));
         client.close();
     }
 

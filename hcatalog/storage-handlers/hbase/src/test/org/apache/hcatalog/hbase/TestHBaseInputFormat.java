@@ -181,7 +181,7 @@ public class TestHBaseInputFormat extends SkeletonHBaseTest {
         String databaseName = newTableName("MyDatabase");
         //Table name will be lower case unless specified by hbase.table.name property
         String hbaseTableName = (databaseName + "." + tableName).toLowerCase();
-        String db_dir = getTestDir() + "/hbasedb";
+        String db_dir = new Path(getTestDir(), "hbasedb").toString();
 
         String dbquery = "CREATE DATABASE IF NOT EXISTS " + databaseName + " LOCATION '"
             + db_dir + "'";
