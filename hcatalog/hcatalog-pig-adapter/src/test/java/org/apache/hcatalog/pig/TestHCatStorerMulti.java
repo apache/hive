@@ -38,8 +38,8 @@ import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 
 public class TestHCatStorerMulti extends TestCase {
-    private static final String TEST_DATA_DIR = System.getProperty("user.dir") +
-        "/build/test/data/" + TestHCatStorerMulti.class.getCanonicalName();
+    private static final String TEST_DATA_DIR =
+        "/tmp/build/test/data/" + TestHCatStorerMulti.class.getCanonicalName();
     private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
     private static final String INPUT_FILE_NAME = TEST_DATA_DIR + "/input.data";
 

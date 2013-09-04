@@ -40,8 +40,8 @@ import java.io.IOException;
  */
 public class HCatBaseTest {
     protected static final Logger LOG = LoggerFactory.getLogger(HCatBaseTest.class);
-    protected static final String TEST_DATA_DIR = System.getProperty("user.dir") +
-            "/build/test/data/" + HCatBaseTest.class.getCanonicalName();
+    protected static final String TEST_DATA_DIR =
+            "/tmp/build/test/data/" + HCatBaseTest.class.getCanonicalName();
     protected static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
 
     protected HiveConf hiveConf = null;

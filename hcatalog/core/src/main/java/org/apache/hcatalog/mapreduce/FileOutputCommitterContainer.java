@@ -169,7 +169,12 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
                 src = new Path(jobInfo.getLocation());
             }
             FileSystem fs = src.getFileSystem(jobContext.getConfiguration());
-            LOG.info("Job failed. Cleaning up temporary directory [{}].", src);
+            // Note fs.delete will fail on Windows. The reason is in OutputCommitter,
+            // Hadoop is still writing to _logs/history. On Linux, OS don't care file is still
+            // open and remove the directory anyway, but on Windows, OS refuse to remove a
+            // directory containing open files. So on Windows, we will leave output directory
+            // behind when job fail. User needs to remove the output directory manually
+            LOG.info("Job failed. Try cleaning up temporary directory [{}].", src);
             fs.delete(src, true);
         } finally {
             cancelDelegationTokens(jobContext);

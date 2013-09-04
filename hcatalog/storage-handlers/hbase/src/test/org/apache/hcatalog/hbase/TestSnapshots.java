@@ -76,7 +76,7 @@ public class TestSnapshots extends SkeletonHBaseTest {
         String tableName = newTableName("mytableOne");
         String databaseName = newTableName("mydatabase");
         String fullyQualTableName = databaseName + "." + tableName;
-        String db_dir = getTestDir() + "/hbasedb";
+        String db_dir = new Path(getTestDir(), "hbasedb").toString();
         String dbquery = "CREATE DATABASE IF NOT EXISTS " + databaseName + " LOCATION '"
             + db_dir + "'";
         String tableQuery = "CREATE TABLE " + fullyQualTableName

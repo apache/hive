@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.UUID;
 
-import org.apache.commons.lang.SystemUtils;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hcatalog.HcatTestUtils;
 import org.apache.hcatalog.mapreduce.HCatBaseTest;
@@ -47,7 +46,7 @@ public class TestHCatStorerWrapper extends HCatBaseTest {
     @Test
     public void testStoreExternalTableWithExternalDir() throws IOException, CommandNeedRetryException{
 
-	File tmpExternalDir = new File(SystemUtils.getJavaIoTmpDir(), UUID.randomUUID().toString());
+	File tmpExternalDir = new File(TEST_DATA_DIR, UUID.randomUUID().toString());
 	tmpExternalDir.deleteOnExit();
 
 	String part_val = "100";
@@ -70,11 +69,11 @@ public class TestHCatStorerWrapper extends HCatBaseTest {
 	server.setBatchOn();
 	logAndRegister(server, "A = load '"+INPUT_FILE_NAME+"' as (a:int, b:chararray);");
 	logAndRegister(server, "store A into 'default.junit_external' using " + HCatStorerWrapper.class.getName()
-		+ "('c=" + part_val + "','" + tmpExternalDir.getAbsolutePath() + "');");
+		+ "('c=" + part_val + "','" + tmpExternalDir.getPath().replaceAll("\\\\", "/") + "');");
 	server.executeBatch();
 
 	Assert.assertTrue(tmpExternalDir.exists());
-	Assert.assertTrue(new File(tmpExternalDir.getAbsoluteFile() + "/" + "part-m-00000").exists());
+	Assert.assertTrue(new File(tmpExternalDir.getPath().replaceAll("\\\\", "/") + "/" + "part-m-00000").exists());
 
 	driver.run("select * from junit_external");
 	ArrayList<String> res = new ArrayList<String>();

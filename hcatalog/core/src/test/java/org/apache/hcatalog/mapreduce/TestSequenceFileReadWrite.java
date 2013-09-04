@@ -54,8 +54,8 @@ import org.apache.pig.data.Tuple;
 import org.junit.Test;
 
 public class TestSequenceFileReadWrite extends TestCase {
-    private static final String TEST_DATA_DIR = System.getProperty("user.dir") +
-            "/build/test/data/" + TestSequenceFileReadWrite.class.getCanonicalName();
+    private static final String TEST_DATA_DIR =
+            "/tmp/build/test/data/" + TestSequenceFileReadWrite.class.getCanonicalName();
     private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
     private static final String INPUT_FILE_NAME = TEST_DATA_DIR + "/input.data";
 

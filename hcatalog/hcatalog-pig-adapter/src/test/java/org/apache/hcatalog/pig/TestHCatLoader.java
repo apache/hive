@@ -50,8 +50,8 @@ import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
 
 public class TestHCatLoader extends TestCase {
-    private static final String TEST_DATA_DIR = System.getProperty("user.dir") +
-        "/build/test/data/" + TestHCatLoader.class.getCanonicalName();
+    private static final String TEST_DATA_DIR =
+        "/tmp/build/test/data/" + TestHCatLoader.class.getCanonicalName();
     private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
     private static final String BASIC_FILE_NAME = TEST_DATA_DIR + "/basic.input.data";
     private static final String COMPLEX_FILE_NAME = TEST_DATA_DIR + "/complex.input.data";
@@ -420,7 +420,7 @@ public class TestHCatLoader extends TestCase {
         assertEquals(0, driver.run("create external table " + tbl +
             " (a string, b boolean) row format delimited fields terminated by '\t'" +
             " stored as textfile location 'file://" +
-            inputDataDir.getAbsolutePath() + "'").getResponseCode());
+            inputDataDir.getPath().replaceAll("\\\\", "/") + "'").getResponseCode());
 
         Properties properties = new Properties();
         properties.setProperty(HCatConstants.HCAT_DATA_CONVERT_BOOLEAN_TO_INTEGER, "true");

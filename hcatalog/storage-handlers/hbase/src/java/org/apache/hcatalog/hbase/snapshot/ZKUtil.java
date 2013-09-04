@@ -307,6 +307,12 @@ class ZKUtil {
                 if (zkSession == null || zkSession.getState() == States.CLOSED) {
                     zkSession = new ZooKeeper(this.connectString,
                         this.DEFAULT_SESSION_TIMEOUT, new ZKWatcher());
+                    while (zkSession.getState() == States.CONNECTING) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                        }
+                    }
                 }
             }
         }
