@@ -48,6 +48,7 @@ import org.apache.hcatalog.data.schema.HCatSchema;
 import org.apache.hcatalog.mapreduce.HCatInputFormat;
 import org.apache.hcatalog.mapreduce.HCatOutputFormat;
 import org.apache.hcatalog.mapreduce.OutputJobInfo;
+import org.apache.hcatalog.mapreduce.HCatMapRedUtil;
 import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.apache.pig.data.Tuple;
@@ -193,7 +194,7 @@ public class TestE2EScenarios extends TestCase {
         TaskAttemptID taskId = new TaskAttemptID();
         conf.setInt("mapred.task.partition", taskId.getId());
         conf.set("mapred.task.id", "attempt__0000_r_000000_" + taskId.getId());
-        TaskAttemptContext rtaskContext = new TaskAttemptContext(conf , taskId );
+        TaskAttemptContext rtaskContext = HCatMapRedUtil.createTaskAttemptContext(conf , taskId);
         return rtaskContext;
     }
 
