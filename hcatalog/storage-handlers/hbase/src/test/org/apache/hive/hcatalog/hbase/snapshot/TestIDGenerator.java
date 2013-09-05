@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.hbase.snapshot;
+package org.apache.hive.hcatalog.hbase.snapshot;
 
 import static org.junit.Assert.assertTrue;
 
@@ -24,7 +24,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
-import org.apache.hcatalog.hbase.SkeletonHBaseTest;
+import org.apache.hive.hcatalog.hbase.SkeletonHBaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 

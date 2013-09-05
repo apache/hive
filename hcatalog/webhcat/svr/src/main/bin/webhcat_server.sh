@@ -223,7 +223,7 @@ fi
 export HADOOP_USER_CLASSPATH_FIRST=true
 export HADOOP_OPTS="${HADOOP_OPTS} -Dwebhcat.log.dir=$WEBHCAT_LOG_DIR -Dlog4j.configuration=$WEBHCAT_LOG4J"
 
-start_cmd="$HADOOP_PREFIX/bin/hadoop jar $JAR org.apache.hcatalog.templeton.Main  "
+start_cmd="$HADOOP_PREFIX/bin/hadoop jar $JAR org.apache.hive.hcatalog.templeton.Main  "
 
 
 cmd=$1

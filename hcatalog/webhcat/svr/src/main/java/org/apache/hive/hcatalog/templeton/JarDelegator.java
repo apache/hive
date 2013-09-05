@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.templeton;
+package org.apache.hive.hcatalog.templeton;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -25,8 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.exec.ExecuteException;
-import org.apache.hcatalog.templeton.tool.TempletonControllerJob;
-import org.apache.hcatalog.templeton.tool.TempletonUtils;
+import org.apache.hive.hcatalog.templeton.tool.TempletonControllerJob;
+import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
 
 /**
  * Submit a job to the MapReduce queue.

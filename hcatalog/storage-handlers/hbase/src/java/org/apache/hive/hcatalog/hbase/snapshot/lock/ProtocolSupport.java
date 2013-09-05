@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.hbase.snapshot.lock;
+package org.apache.hive.hcatalog.hbase.snapshot.lock;
 
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;

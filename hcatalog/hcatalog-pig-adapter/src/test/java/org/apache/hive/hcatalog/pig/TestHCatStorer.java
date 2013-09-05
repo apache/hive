@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.pig;
+package org.apache.hive.hcatalog.pig;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,8 +25,8 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
-import org.apache.hcatalog.HcatTestUtils;
-import org.apache.hcatalog.mapreduce.HCatBaseTest;
+import org.apache.hive.hcatalog.HcatTestUtils;
+import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
 import org.apache.pig.EvalFunc;
 import org.apache.pig.ExecType;
 import org.apache.pig.PigException;

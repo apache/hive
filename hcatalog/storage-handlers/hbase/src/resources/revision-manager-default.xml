@@ -23,14 +23,14 @@
 <configuration>
   <property>
     <name>revision.manager.impl.class</name>
-    <value>org.apache.hcatalog.hbase.snapshot.ZKBasedRevisionManager</value>
+    <value>org.apache.hive.hcatalog.hbase.snapshot.ZKBasedRevisionManager</value>
     <description>
         Which revision manager implementation to use.
     </description>
   </property>
   <property>
     <name>revision.manager.endpoint.impl.class</name>
-    <value>org.apache.hcatalog.hbase.snapshot.ZKBasedRevisionManager</value>
+    <value>org.apache.hive.hcatalog.hbase.snapshot.ZKBasedRevisionManager</value>
     <description> </description>
   </property>
   <property>

@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.mapreduce;
+package org.apache.hive.hcatalog.mapreduce;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.FileStatus;
@@ -41,11 +41,11 @@ import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputCommitter;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hcatalog.common.ErrorType;
-import org.apache.hcatalog.common.HCatConstants;
-import org.apache.hcatalog.common.HCatException;
-import org.apache.hcatalog.common.HCatUtil;
-import org.apache.hcatalog.data.HCatRecord;
+import org.apache.hive.hcatalog.common.ErrorType;
+import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.common.HCatUtil;
+import org.apache.hive.hcatalog.data.HCatRecord;
 import org.apache.thrift.TException;
 
 import java.io.IOException;

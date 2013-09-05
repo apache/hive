@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.api;
+package org.apache.hive.hcatalog.api;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,9 +41,9 @@ import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
-import org.apache.hcatalog.common.HCatException;
-import org.apache.hcatalog.data.schema.HCatFieldSchema;
-import org.apache.hcatalog.data.schema.HCatSchemaUtils;
+import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
+import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

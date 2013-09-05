@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.pig;
+package org.apache.hive.hcatalog.pig;
 
 import java.io.IOException;
 import java.util.Enumeration;
@@ -32,13 +32,13 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.mapreduce.InputFormat;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.security.Credentials;
-import org.apache.hcatalog.common.HCatConstants;
-import org.apache.hcatalog.common.HCatContext;
-import org.apache.hcatalog.common.HCatUtil;
-import org.apache.hcatalog.data.Pair;
-import org.apache.hcatalog.data.schema.HCatSchema;
-import org.apache.hcatalog.mapreduce.HCatInputFormat;
-import org.apache.hcatalog.mapreduce.InputJobInfo;
+import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.common.HCatContext;
+import org.apache.hive.hcatalog.common.HCatUtil;
+import org.apache.hive.hcatalog.data.Pair;
+import org.apache.hive.hcatalog.data.schema.HCatSchema;
+import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
+import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
 import org.apache.pig.Expression;
 import org.apache.pig.Expression.BinaryExpression;
 import org.apache.pig.PigException;

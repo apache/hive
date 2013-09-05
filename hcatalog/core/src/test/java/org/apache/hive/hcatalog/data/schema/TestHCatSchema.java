@@ -16,10 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.data.schema;
+package org.apache.hive.hcatalog.data.schema;
 
 import junit.framework.TestCase;
-import org.apache.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.common.HCatException;
 
 import java.util.ArrayList;
 import java.util.List;

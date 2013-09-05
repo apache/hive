@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.mapreduce;
+package org.apache.hive.hcatalog.mapreduce;
 
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Properties;
 
-import org.apache.hcatalog.data.schema.HCatSchema;
+import org.apache.hive.hcatalog.data.schema.HCatSchema;
 
 /** The Class used to serialize the partition information read from the metadata server that maps to a partition. */
 public class PartInfo implements Serializable {

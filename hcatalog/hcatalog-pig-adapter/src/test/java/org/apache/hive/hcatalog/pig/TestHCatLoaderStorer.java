@@ -17,11 +17,11 @@
  * under the License.
  */
 
-package org.apache.hcatalog.pig;
+package org.apache.hive.hcatalog.pig;
 
 import org.apache.hadoop.fs.FileUtil;
-import org.apache.hcatalog.HcatTestUtils;
-import org.apache.hcatalog.mapreduce.HCatBaseTest;
+import org.apache.hive.hcatalog.HcatTestUtils;
+import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
 import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.apache.pig.backend.executionengine.ExecJob;
@@ -72,7 +72,7 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
 
         PigServer server = new PigServer(ExecType.LOCAL);
         server.registerQuery(
-            "data = load '" + readTblName + "' using org.apache.hcatalog.pig.HCatLoader();");
+            "data = load '" + readTblName + "' using org.apache.hive.hcatalog.pig.HCatLoader();");
 
         // Ensure Pig schema is correct.
         Schema schema = server.dumpSchema("data");
@@ -134,7 +134,7 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
         server.registerQuery("data = load '" + data +
             "' using PigStorage('\t') as (my_small_int:int, my_tiny_int:int);");
         server.registerQuery(
-            "store data into 'test_tbl' using org.apache.hcatalog.pig.HCatStorer();");
+            "store data into 'test_tbl' using org.apache.hive.hcatalog.pig.HCatStorer();");
         List<ExecJob> jobs = server.executeBatch();
         Assert.assertEquals(expectedStatus, jobs.get(0).getStatus());
     }

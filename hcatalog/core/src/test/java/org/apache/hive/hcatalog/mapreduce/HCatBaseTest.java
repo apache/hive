@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.mapreduce;
+package org.apache.hive.hcatalog.mapreduce;
 
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.cli.CliSessionState;

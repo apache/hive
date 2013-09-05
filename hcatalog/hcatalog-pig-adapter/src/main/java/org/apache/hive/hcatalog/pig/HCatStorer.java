@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.pig;
+package org.apache.hive.hcatalog.pig;
 
 import java.io.IOException;
 import java.util.Enumeration;
@@ -31,12 +31,12 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.security.Credentials;
-import org.apache.hcatalog.common.HCatConstants;
-import org.apache.hcatalog.common.HCatContext;
-import org.apache.hcatalog.common.HCatException;
-import org.apache.hcatalog.data.schema.HCatSchema;
-import org.apache.hcatalog.mapreduce.HCatOutputFormat;
-import org.apache.hcatalog.mapreduce.OutputJobInfo;
+import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.common.HCatContext;
+import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.data.schema.HCatSchema;
+import org.apache.hive.hcatalog.mapreduce.HCatOutputFormat;
+import org.apache.hive.hcatalog.mapreduce.OutputJobInfo;
 import org.apache.pig.PigException;
 import org.apache.pig.ResourceSchema;
 import org.apache.pig.impl.logicalLayer.FrontendException;

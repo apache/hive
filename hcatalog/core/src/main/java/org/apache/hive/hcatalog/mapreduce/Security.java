@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.mapreduce;
+package org.apache.hive.hcatalog.mapreduce;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -38,8 +38,8 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.TokenIdentifier;
 import org.apache.hadoop.security.token.TokenSelector;
-import org.apache.hcatalog.common.HCatConstants;
-import org.apache.hcatalog.common.HCatUtil;
+import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.data.schema;
+package org.apache.hive.hcatalog.data.schema;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,8 +31,8 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hcatalog.common.HCatException;
-import org.apache.hcatalog.data.schema.HCatFieldSchema.Type;
+import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.data.schema.HCatFieldSchema.Type;
 
 
 public class HCatSchemaUtils {

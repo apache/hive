@@ -16,13 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.hbase.snapshot;
+package org.apache.hive.hcatalog.hbase.snapshot;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
 
-import org.apache.hcatalog.hbase.snapshot.lock.LockListener;
-import org.apache.hcatalog.hbase.snapshot.lock.WriteLock;
+import org.apache.hive.hcatalog.hbase.snapshot.lock.LockListener;
+import org.apache.hive.hcatalog.hbase.snapshot.lock.WriteLock;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
 import org.apache.zookeeper.ZooKeeper;
@@ -125,7 +125,7 @@ class IDGenerator implements LockListener {
     }
 
     /*
-     * @see org.apache.hcatalog.hbase.snapshot.lock.LockListener#lockAcquired()
+     * @see org.apache.hive.hcatalog.hbase.snapshot.lock.LockListener#lockAcquired()
      */
     @Override
     public void lockAcquired() {
@@ -134,7 +134,7 @@ class IDGenerator implements LockListener {
     }
 
     /*
-     * @see org.apache.hcatalog.hbase.snapshot.lock.LockListener#lockReleased()
+     * @see org.apache.hive.hcatalog.hbase.snapshot.lock.LockListener#lockReleased()
      */
     @Override
     public void lockReleased() {

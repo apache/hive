@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.mapreduce;
+package org.apache.hive.hcatalog.mapreduce;
 
 import junit.framework.Assert;
 import org.apache.hadoop.conf.Configuration;
@@ -30,8 +30,8 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
-import org.apache.hcatalog.common.HCatConstants;
-import org.apache.hcatalog.data.HCatRecord;
+import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.data.HCatRecord;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TIOStreamTransport;
 import org.junit.Before;

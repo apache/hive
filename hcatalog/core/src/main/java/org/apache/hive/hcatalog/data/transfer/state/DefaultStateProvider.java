@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.data.transfer.state;
+package org.apache.hive.hcatalog.data.transfer.state;
 
 import java.text.NumberFormat;
 import java.util.Random;

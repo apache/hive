@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.data;
+package org.apache.hive.hcatalog.data;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +25,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hcatalog.data.schema.HCatSchema;
-import org.apache.hcatalog.data.schema.HCatSchemaUtils;
+import org.apache.hive.hcatalog.data.schema.HCatSchema;
+import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -153,7 +153,7 @@ public class TestLazyHCatRecord {
         Assert.assertEquals(LONG_CONST, ((Long) r.get(1)).longValue());
         Assert.assertEquals(DOUBLE_CONST, ((Double) r.get(2)).doubleValue(), 0);
         Assert.assertEquals(STRING_CONST, (String) r.get(3));
-        Assert.assertEquals("org.apache.hcatalog.data.DefaultHCatRecord", r.getClass().getName());
+        Assert.assertEquals("org.apache.hive.hcatalog.data.DefaultHCatRecord", r.getClass().getName());
     }
 
     private HCatRecord getHCatRecord() throws Exception {

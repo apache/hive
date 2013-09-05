@@ -17,12 +17,12 @@
  * under the License.
  */
 
-package org.apache.hcatalog.fileformats;
+package org.apache.hive.hcatalog.fileformats;
 
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
-import org.apache.hcatalog.mapreduce.TestHCatDynamicPartitioned;
+import org.apache.hive.hcatalog.mapreduce.TestHCatDynamicPartitioned;
 import org.junit.BeforeClass;
 
 public class TestOrcDynamicPartitioned extends TestHCatDynamicPartitioned {

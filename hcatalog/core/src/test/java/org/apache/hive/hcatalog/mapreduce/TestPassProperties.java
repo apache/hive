@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.mapreduce;
+package org.apache.hive.hcatalog.mapreduce;
 
 import static org.junit.Assert.assertTrue;
 
@@ -37,11 +37,11 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-import org.apache.hcatalog.HcatTestUtils;
-import org.apache.hcatalog.common.HCatException;
-import org.apache.hcatalog.data.DefaultHCatRecord;
-import org.apache.hcatalog.data.schema.HCatFieldSchema;
-import org.apache.hcatalog.data.schema.HCatSchema;
+import org.apache.hive.hcatalog.HcatTestUtils;
+import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.data.DefaultHCatRecord;
+import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
+import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.junit.Test;

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.oozie;
+package org.apache.hive.hcatalog.oozie;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.cli.CliDriver;
@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
+import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 
 public class JavaAction {
 

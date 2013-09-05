@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.templeton.tool;
+package org.apache.hive.hcatalog.templeton.tool;
 
 import java.io.IOException;
 import java.util.Date;
@@ -25,7 +25,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hcatalog.templeton.tool.TempletonStorage.Type;
+import org.apache.hive.hcatalog.templeton.tool.TempletonStorage.Type;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;

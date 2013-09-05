@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.storagehandler;
+package org.apache.hive.hcatalog.storagehandler;
 
 import java.util.List;
 

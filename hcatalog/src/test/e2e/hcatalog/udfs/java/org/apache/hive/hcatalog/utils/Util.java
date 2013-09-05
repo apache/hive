@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.utils;
+package org.apache.hive.hcatalog.utils;
 
 import java.io.IOException;
 import java.util.HashMap;

@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog;
+package org.apache.hive.hcatalog;
 
 public class ExitException extends SecurityException {
     private static final long serialVersionUID = -1982617086752946683L;

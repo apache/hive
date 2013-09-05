@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.utils;
+package org.apache.hive.hcatalog.utils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -30,11 +30,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import org.apache.hcatalog.common.HCatException;
-import org.apache.hcatalog.data.transfer.DataTransferFactory;
-import org.apache.hcatalog.data.transfer.HCatReader;
-import org.apache.hcatalog.data.transfer.ReadEntity;
-import org.apache.hcatalog.data.transfer.ReaderContext;
+import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.data.transfer.DataTransferFactory;
+import org.apache.hive.hcatalog.data.transfer.HCatReader;
+import org.apache.hive.hcatalog.data.transfer.ReadEntity;
+import org.apache.hive.hcatalog.data.transfer.ReaderContext;
 
 public class DataReaderMaster {
 

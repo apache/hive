@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.cli;
+package org.apache.hive.hcatalog.cli;
 
 import java.io.IOException;
 import java.util.List;
@@ -48,8 +48,8 @@ import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Progressable;
-import org.apache.hcatalog.data.HCatRecord;
-import org.apache.hcatalog.mapreduce.HCatStorageHandler;
+import org.apache.hive.hcatalog.data.HCatRecord;
+import org.apache.hive.hcatalog.mapreduce.HCatStorageHandler;
 
 class DummyStorageHandler extends HCatStorageHandler {
 

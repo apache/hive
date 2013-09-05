@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.listener;
+package org.apache.hive.hcatalog.listener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -57,9 +57,9 @@ import org.apache.hadoop.hive.metastore.events.DropPartitionEvent;
 import org.apache.hadoop.hive.metastore.events.DropTableEvent;
 import org.apache.hadoop.hive.metastore.events.ListenerEvent;
 import org.apache.hadoop.hive.metastore.events.LoadPartitionDoneEvent;
-import org.apache.hcatalog.common.HCatConstants;
-import org.apache.hcatalog.messaging.HCatEventMessage;
-import org.apache.hcatalog.messaging.MessageFactory;
+import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.messaging.HCatEventMessage;
+import org.apache.hive.hcatalog.messaging.MessageFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -153,8 +153,8 @@ public class NotificationListener extends MetaStoreEventListener {
     /**
      * Send dropped partition notifications. Subscribers can receive these notifications for a
      * particular table by listening on a topic named "dbName.tableName" with message selector
-     * string {@value org.apache.hcatalog.common.HCatConstants#HCAT_EVENT} =
-     * {@value org.apache.hcatalog.common.HCatConstants#HCAT_DROP_PARTITION_EVENT}.
+     * string {@value org.apache.hive.hcatalog.common.HCatConstants#HCAT_EVENT} =
+     * {@value org.apache.hive.hcatalog.common.HCatConstants#HCAT_DROP_PARTITION_EVENT}.
      * </br>
      * TODO: DataNucleus 2.0.3, currently used by the HiveMetaStore for persistence, has been
      * found to throw NPE when serializing objects that contain null. For this reason we override
@@ -249,8 +249,8 @@ public class NotificationListener extends MetaStoreEventListener {
     /**
      * Send dropped table notifications. Subscribers can receive these notifications for
      * dropped tables by listening on topic "HCAT" with message selector string
-     * {@value org.apache.hcatalog.common.HCatConstants#HCAT_EVENT} =
-     * {@value org.apache.hcatalog.common.HCatConstants#HCAT_DROP_TABLE_EVENT}
+     * {@value org.apache.hive.hcatalog.common.HCatConstants#HCAT_EVENT} =
+     * {@value org.apache.hive.hcatalog.common.HCatConstants#HCAT_DROP_TABLE_EVENT}
      * </br>
      * TODO: DataNucleus 2.0.3, currently used by the HiveMetaStore for persistence, has been
      * found to throw NPE when serializing objects that contain null. For this reason we override

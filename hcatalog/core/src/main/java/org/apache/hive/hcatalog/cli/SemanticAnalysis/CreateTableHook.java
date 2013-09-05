@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.cli.SemanticAnalysis;
+package org.apache.hive.hcatalog.cli.SemanticAnalysis;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -42,9 +42,9 @@ import org.apache.hadoop.hive.ql.parse.HiveSemanticAnalyzerHookContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
-import org.apache.hcatalog.common.HCatConstants;
-import org.apache.hcatalog.common.HCatUtil;
-import org.apache.hcatalog.mapreduce.HCatStorageHandler;
+import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.common.HCatUtil;
+import org.apache.hive.hcatalog.mapreduce.HCatStorageHandler;
 
 final class CreateTableHook extends HCatSemanticAnalyzerBase {
 

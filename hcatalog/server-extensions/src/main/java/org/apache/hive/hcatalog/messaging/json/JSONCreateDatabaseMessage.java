@@ -17,9 +17,9 @@
  * under the License.
  */
 
-package org.apache.hcatalog.messaging.json;
+package org.apache.hive.hcatalog.messaging.json;
 
-import org.apache.hcatalog.messaging.CreateDatabaseMessage;
+import org.apache.hive.hcatalog.messaging.CreateDatabaseMessage;
 import org.codehaus.jackson.annotate.JsonProperty;
 
 /**

@@ -17,19 +17,19 @@
  * under the License.
  */
 
-package org.apache.hcatalog.messaging.json;
+package org.apache.hive.hcatalog.messaging.json;
 
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hcatalog.messaging.AddPartitionMessage;
-import org.apache.hcatalog.messaging.CreateDatabaseMessage;
-import org.apache.hcatalog.messaging.CreateTableMessage;
-import org.apache.hcatalog.messaging.DropDatabaseMessage;
-import org.apache.hcatalog.messaging.DropPartitionMessage;
-import org.apache.hcatalog.messaging.DropTableMessage;
-import org.apache.hcatalog.messaging.MessageDeserializer;
-import org.apache.hcatalog.messaging.MessageFactory;
+import org.apache.hive.hcatalog.messaging.AddPartitionMessage;
+import org.apache.hive.hcatalog.messaging.CreateDatabaseMessage;
+import org.apache.hive.hcatalog.messaging.CreateTableMessage;
+import org.apache.hive.hcatalog.messaging.DropDatabaseMessage;
+import org.apache.hive.hcatalog.messaging.DropPartitionMessage;
+import org.apache.hive.hcatalog.messaging.DropTableMessage;
+import org.apache.hive.hcatalog.messaging.MessageDeserializer;
+import org.apache.hive.hcatalog.messaging.MessageFactory;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;

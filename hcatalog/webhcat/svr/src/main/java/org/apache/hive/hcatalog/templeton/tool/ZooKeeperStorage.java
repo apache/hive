@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.templeton.tool;
+package org.apache.hive.hcatalog.templeton.tool;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

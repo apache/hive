@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.api;
+package org.apache.hive.hcatalog.api;
 
 import java.util.Map;
 

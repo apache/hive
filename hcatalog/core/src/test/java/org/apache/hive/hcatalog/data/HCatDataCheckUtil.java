@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.data;
+package org.apache.hive.hcatalog.data;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,7 +28,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hcatalog.MiniCluster;
+import org.apache.hive.hcatalog.MiniCluster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

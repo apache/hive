@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.api;
+package org.apache.hive.hcatalog.api;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,11 +41,11 @@ import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.api.UnknownDBException;
 import org.apache.hadoop.hive.metastore.api.UnknownTableException;
-import org.apache.hcatalog.common.HCatConstants;
-import org.apache.hcatalog.common.HCatException;
-import org.apache.hcatalog.common.HCatUtil;
-import org.apache.hcatalog.data.schema.HCatFieldSchema;
-import org.apache.hcatalog.data.schema.HCatSchemaUtils;
+import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.common.HCatUtil;
+import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
+import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
 import org.apache.thrift.TException;
 
 /**
@@ -584,7 +584,7 @@ public class HCatClientHMSImpl extends HCatClient {
      * @param conf /* @throws HCatException,ConnectionFailureException
      *
      * @see
-     * org.apache.hcatalog.api.HCatClient#initialize(org.apache.hadoop.conf.
+     * org.apache.hive.hcatalog.api.HCatClient#initialize(org.apache.hadoop.conf.
      * Configuration)
      */
     @Override
@@ -649,7 +649,7 @@ public class HCatClientHMSImpl extends HCatClient {
     /*
      * @throws HCatException
      *
-     * @see org.apache.hcatalog.api.HCatClient#closeClient()
+     * @see org.apache.hive.hcatalog.api.HCatClient#closeClient()
      */
     @Override
     public void close() throws HCatException {
@@ -668,7 +668,7 @@ public class HCatClientHMSImpl extends HCatClient {
      * @param partInfoList
      *  @return The size of the list of partitions.
      * @throws HCatException,ConnectionFailureException
-     * @see org.apache.hcatalog.api.HCatClient#addPartitions(java.util.List)
+     * @see org.apache.hive.hcatalog.api.HCatClient#addPartitions(java.util.List)
      */
     @Override
     public int addPartitions(List<HCatAddPartitionDesc> partInfoList)

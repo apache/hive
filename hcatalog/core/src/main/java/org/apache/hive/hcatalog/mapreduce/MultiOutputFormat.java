@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.mapreduce;
+package org.apache.hive.hcatalog.mapreduce;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -49,7 +49,7 @@ import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskInputOutputContext;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hcatalog.common.HCatUtil;
+import org.apache.hive.hcatalog.common.HCatUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

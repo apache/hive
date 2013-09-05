@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.pig;
+package org.apache.hive.hcatalog.pig;
 
 
 import java.io.IOException;
@@ -35,14 +35,14 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hcatalog.common.HCatConstants;
-import org.apache.hcatalog.common.HCatException;
-import org.apache.hcatalog.common.HCatUtil;
-import org.apache.hcatalog.data.HCatRecord;
-import org.apache.hcatalog.data.Pair;
-import org.apache.hcatalog.data.schema.HCatFieldSchema;
-import org.apache.hcatalog.data.schema.HCatFieldSchema.Type;
-import org.apache.hcatalog.data.schema.HCatSchema;
+import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.common.HCatUtil;
+import org.apache.hive.hcatalog.data.HCatRecord;
+import org.apache.hive.hcatalog.data.Pair;
+import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
+import org.apache.hive.hcatalog.data.schema.HCatFieldSchema.Type;
+import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.apache.pig.LoadPushDown.RequiredField;
 import org.apache.pig.PigException;
 import org.apache.pig.ResourceSchema;

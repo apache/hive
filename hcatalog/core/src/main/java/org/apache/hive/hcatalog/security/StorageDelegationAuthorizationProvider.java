@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.security;
+package org.apache.hive.hcatalog.security;
 
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +37,7 @@ import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvide
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProviderBase;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hcatalog.mapreduce.HCatStorageHandler;
+import org.apache.hive.hcatalog.mapreduce.HCatStorageHandler;
 
 /**
  * A HiveAuthorizationProvider which delegates the authorization requests to 
@@ -68,9 +68,9 @@ public class StorageDelegationAuthorizationProvider extends HiveAuthorizationPro
 
     static {
         registerAuthProvider("org.apache.hadoop.hive.hbase.HBaseStorageHandler",
-            "org.apache.hcatalog.hbase.HBaseAuthorizationProvider");
-        registerAuthProvider("org.apache.hcatalog.hbase.HBaseHCatStorageHandler",
-            "org.apache.hcatalog.hbase.HBaseAuthorizationProvider");
+            "org.apache.hive.hcatalog.hbase.HBaseAuthorizationProvider");
+        registerAuthProvider("org.apache.hive.hcatalog.hbase.HBaseHCatStorageHandler",
+            "org.apache.hive.hcatalog.hbase.HBaseAuthorizationProvider");
     }
 
     //workaround until Hive adds StorageHandler.getAuthorizationProvider(). Remove these parts afterwards

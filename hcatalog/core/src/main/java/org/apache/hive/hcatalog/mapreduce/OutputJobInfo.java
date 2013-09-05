@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.mapreduce;
+package org.apache.hive.hcatalog.mapreduce;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
-import org.apache.hcatalog.data.schema.HCatSchema;
+import org.apache.hive.hcatalog.data.schema.HCatSchema;
 
 /** The class used to serialize and store the output related information  */
 public class OutputJobInfo implements Serializable {

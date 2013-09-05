@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.messaging;
+package org.apache.hive.hcatalog.messaging;
 
 /**
  * HCat message sent when a Table is dropped in HCatalog.

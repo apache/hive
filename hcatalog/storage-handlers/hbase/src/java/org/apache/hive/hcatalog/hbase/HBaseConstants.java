@@ -17,9 +17,9 @@
  * under the License.
  */
 
-package org.apache.hcatalog.hbase;
+package org.apache.hive.hcatalog.hbase;
 
-import org.apache.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.common.HCatConstants;
 
 /**
  * Constants class for constants used in HBase storage handler.

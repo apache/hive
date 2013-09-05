@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.templeton.tool;
+package org.apache.hive.hcatalog.templeton.tool;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -40,7 +40,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hcatalog.templeton.UgiFactory;
+import org.apache.hive.hcatalog.templeton.UgiFactory;
 
 /**
  * General utility methods.

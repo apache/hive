@@ -17,9 +17,9 @@
  * under the License.
  */
 
-package org.apache.hcatalog.api;
+package org.apache.hive.hcatalog.api;
 
-import org.apache.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.common.HCatException;
 
 /**
  * This exception is thrown when a Database, Table or Partition

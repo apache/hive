@@ -17,13 +17,13 @@
  * under the License.
  */
 
-package org.apache.hcatalog.security;
+package org.apache.hive.hcatalog.security;
 
-import static org.apache.hcatalog.HcatTestUtils.perm300;
-import static org.apache.hcatalog.HcatTestUtils.perm500;
-import static org.apache.hcatalog.HcatTestUtils.perm555;
-import static org.apache.hcatalog.HcatTestUtils.perm700;
-import static org.apache.hcatalog.HcatTestUtils.perm755;
+import static org.apache.hive.hcatalog.HcatTestUtils.perm300;
+import static org.apache.hive.hcatalog.HcatTestUtils.perm500;
+import static org.apache.hive.hcatalog.HcatTestUtils.perm555;
+import static org.apache.hive.hcatalog.HcatTestUtils.perm700;
+import static org.apache.hive.hcatalog.HcatTestUtils.perm755;
 
 import java.io.IOException;
 import java.util.Random;
@@ -45,9 +45,9 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hcatalog.HcatTestUtils;
-import org.apache.hcatalog.cli.HCatDriver;
-import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
+import org.apache.hive.hcatalog.HcatTestUtils;
+import org.apache.hive.hcatalog.cli.HCatDriver;
+import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

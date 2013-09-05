@@ -17,11 +17,11 @@
  * under the License.
  */
 
-package org.apache.hcatalog.hbase;
+package org.apache.hive.hcatalog.hbase;
 
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
-import org.apache.hcatalog.data.HCatRecord;
+import org.apache.hive.hcatalog.data.HCatRecord;
 
 import java.io.IOException;
 

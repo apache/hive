@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.templeton;
+package org.apache.hive.hcatalog.templeton;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
@@ -30,11 +30,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.hcatalog.templeton.tool.JobState;
-import org.apache.hcatalog.templeton.tool.TempletonControllerJob;
-import org.apache.hcatalog.templeton.tool.TempletonStorage;
-import org.apache.hcatalog.templeton.tool.TempletonUtils;
-import org.apache.hcatalog.templeton.tool.ZooKeeperStorage;
+import org.apache.hive.hcatalog.templeton.tool.JobState;
+import org.apache.hive.hcatalog.templeton.tool.TempletonControllerJob;
+import org.apache.hive.hcatalog.templeton.tool.TempletonStorage;
+import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
+import org.apache.hive.hcatalog.templeton.tool.ZooKeeperStorage;
 
 /**
  * The helper class for all the Templeton delegator classes that

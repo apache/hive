@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.hbase.snapshot;
+package org.apache.hive.hcatalog.hbase.snapshot;
 
 public class RMConstants {
     public static final String REVISION_MGR_ENDPOINT_IMPL_CLASS = "revision.manager.endpoint.impl.class";

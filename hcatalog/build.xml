@@ -224,7 +224,7 @@
         <mkdir dir="${build.javadoc}"/>
         <record name="${build.dir}/javadoc.log" action="start"/>
         <javadoc overview="${src.dir}/../docs/overview.html"
-                 packagenames="org.apache.hcatalog.*"
+                 packagenames="org.apache.hive.hcatalog.*"
                  destdir="${build.javadoc}"
                  author="true"
                  version="true"
@@ -249,7 +249,7 @@
                 <fileset dir="webhcat/svr/build/lib/provided" includes="hcatalog-core*.jar"/>
                 <fileset dir="webhcat/svr/build/lib/compile" includes="jetty*.jar,jersey*.jar,commons-exec*.jar,jul-to-slf4j*.jar"/>
             </classpath>
-            <group title="hcatalog" packages="org.apache.hcatalog.*"/>
+            <group title="hcatalog" packages="org.apache.hive.hcatalog.*"/>
         </javadoc>
         <record name="${build.dir}/javadoc.log" action="stop"/>
         <condition property="javadoc.warnings">

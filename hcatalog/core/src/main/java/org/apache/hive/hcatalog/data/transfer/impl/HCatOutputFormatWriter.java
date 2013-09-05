@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.data.transfer.impl;
+package org.apache.hive.hcatalog.data.transfer.impl;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -32,15 +32,15 @@ import org.apache.hadoop.mapreduce.OutputCommitter;
 import org.apache.hadoop.mapreduce.RecordWriter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
-import org.apache.hcatalog.common.ErrorType;
-import org.apache.hcatalog.common.HCatException;
-import org.apache.hcatalog.data.HCatRecord;
-import org.apache.hcatalog.data.transfer.HCatWriter;
-import org.apache.hcatalog.data.transfer.WriteEntity;
-import org.apache.hcatalog.data.transfer.WriterContext;
-import org.apache.hcatalog.data.transfer.state.StateProvider;
-import org.apache.hcatalog.mapreduce.HCatOutputFormat;
-import org.apache.hcatalog.mapreduce.OutputJobInfo;
+import org.apache.hive.hcatalog.common.ErrorType;
+import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.data.HCatRecord;
+import org.apache.hive.hcatalog.data.transfer.HCatWriter;
+import org.apache.hive.hcatalog.data.transfer.WriteEntity;
+import org.apache.hive.hcatalog.data.transfer.WriterContext;
+import org.apache.hive.hcatalog.data.transfer.state.StateProvider;
+import org.apache.hive.hcatalog.mapreduce.HCatOutputFormat;
+import org.apache.hive.hcatalog.mapreduce.OutputJobInfo;
 
 /**
  * This writer writes via {@link HCatOutputFormat}

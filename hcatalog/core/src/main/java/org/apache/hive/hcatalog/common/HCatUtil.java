@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.common;
+package org.apache.hive.hcatalog.common;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -57,17 +57,17 @@ import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.security.token.delegation.AbstractDelegationTokenIdentifier;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hcatalog.data.Pair;
-import org.apache.hcatalog.data.schema.HCatFieldSchema;
-import org.apache.hcatalog.data.schema.HCatSchema;
-import org.apache.hcatalog.data.schema.HCatSchemaUtils;
-import org.apache.hcatalog.mapreduce.FosterStorageHandler;
-import org.apache.hcatalog.mapreduce.HCatOutputFormat;
-import org.apache.hcatalog.mapreduce.HCatStorageHandler;
-import org.apache.hcatalog.mapreduce.InputJobInfo;
-import org.apache.hcatalog.mapreduce.OutputJobInfo;
-import org.apache.hcatalog.mapreduce.PartInfo;
-import org.apache.hcatalog.mapreduce.StorerInfo;
+import org.apache.hive.hcatalog.data.Pair;
+import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
+import org.apache.hive.hcatalog.data.schema.HCatSchema;
+import org.apache.hive.hcatalog.data.schema.HCatSchemaUtils;
+import org.apache.hive.hcatalog.mapreduce.FosterStorageHandler;
+import org.apache.hive.hcatalog.mapreduce.HCatOutputFormat;
+import org.apache.hive.hcatalog.mapreduce.HCatStorageHandler;
+import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
+import org.apache.hive.hcatalog.mapreduce.OutputJobInfo;
+import org.apache.hive.hcatalog.mapreduce.PartInfo;
+import org.apache.hive.hcatalog.mapreduce.StorerInfo;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

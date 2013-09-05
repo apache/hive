@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.data;
+package org.apache.hive.hcatalog.data;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -30,8 +30,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hcatalog.common.HCatException;
-import org.apache.hcatalog.data.schema.HCatSchema;
+import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

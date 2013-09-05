@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.templeton;
+package org.apache.hive.hcatalog.templeton;
 
 /**
  * The helper class for all the Templeton delegator classes. A

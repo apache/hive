@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.utils;
+package org.apache.hive.hcatalog.utils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -32,15 +32,15 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.hcatalog.common.HCatConstants;
-import org.apache.hcatalog.data.DefaultHCatRecord;
-import org.apache.hcatalog.data.HCatRecord;
-import org.apache.hcatalog.data.schema.HCatSchema;
-import org.apache.hcatalog.data.schema.HCatFieldSchema;
-import org.apache.hcatalog.mapreduce.HCatInputFormat;
-import org.apache.hcatalog.mapreduce.HCatOutputFormat;
-import org.apache.hcatalog.mapreduce.InputJobInfo;
-import org.apache.hcatalog.mapreduce.OutputJobInfo;
+import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.data.DefaultHCatRecord;
+import org.apache.hive.hcatalog.data.HCatRecord;
+import org.apache.hive.hcatalog.data.schema.HCatSchema;
+import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
+import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
+import org.apache.hive.hcatalog.mapreduce.HCatOutputFormat;
+import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
+import org.apache.hive.hcatalog.mapreduce.OutputJobInfo;
 
 /**
  * This is a map reduce test for testing hcat writing to partitioned tables.
@@ -48,7 +48,7 @@ import org.apache.hcatalog.mapreduce.OutputJobInfo;
  * other columns. This is to simulate a typical operation in a map reduce
  * program to test that hcat hands the right data to the map reduce program
  *
- * Usage: hadoop jar org.apache.hcatalog.utils.HBaseReadWrite -libjars
+ * Usage: hadoop jar org.apache.hive.hcatalog.utils.HBaseReadWrite -libjars
  * &lt;hcat_jar&gt; * &lt;serveruri&gt; &lt;input_tablename&gt; &lt;output_tablename&gt; [filter]
  * If filter is given it will be provided as the partition to write to.
  */

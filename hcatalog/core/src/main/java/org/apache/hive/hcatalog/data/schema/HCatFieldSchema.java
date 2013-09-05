@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.data.schema;
+package org.apache.hive.hcatalog.data.schema;
 
 import java.io.Serializable;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.common.HCatException;
 
 public class HCatFieldSchema implements Serializable {
 

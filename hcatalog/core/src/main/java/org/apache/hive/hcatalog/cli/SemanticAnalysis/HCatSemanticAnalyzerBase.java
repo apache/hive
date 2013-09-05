@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.cli.SemanticAnalysis;
+package org.apache.hive.hcatalog.cli.SemanticAnalysis;
 
 import java.io.Serializable;
 import java.util.List;

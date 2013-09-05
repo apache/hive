@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.api;
+package org.apache.hive.hcatalog.api;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -35,13 +35,13 @@ import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.mapred.TextInputFormat;
-import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
+import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hcatalog.common.HCatConstants;
-import org.apache.hcatalog.common.HCatException;
-import org.apache.hcatalog.data.schema.HCatFieldSchema;
-import org.apache.hcatalog.data.schema.HCatFieldSchema.Type;
-import org.apache.hcatalog.NoExitSecurityManager;
+import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
+import org.apache.hive.hcatalog.data.schema.HCatFieldSchema.Type;
+import org.apache.hive.hcatalog.NoExitSecurityManager;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;

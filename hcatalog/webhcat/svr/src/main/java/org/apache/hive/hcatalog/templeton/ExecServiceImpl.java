@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.templeton;
+package org.apache.hive.hcatalog.templeton;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

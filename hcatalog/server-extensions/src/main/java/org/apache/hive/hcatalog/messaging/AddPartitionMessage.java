@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.messaging;
+package org.apache.hive.hcatalog.messaging;
 
 import java.util.List;
 import java.util.Map;

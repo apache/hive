@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.data.transfer;
+package org.apache.hive.hcatalog.data.transfer;
 
 import java.io.Externalizable;
 import java.io.IOException;

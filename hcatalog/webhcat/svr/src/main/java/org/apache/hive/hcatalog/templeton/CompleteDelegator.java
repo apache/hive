@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.templeton;
+package org.apache.hive.hcatalog.templeton;
 
 import java.io.IOException;
 import java.net.URL;
@@ -25,8 +25,8 @@ import java.util.Date;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hcatalog.templeton.tool.JobState;
-import org.apache.hcatalog.templeton.tool.TempletonUtils;
+import org.apache.hive.hcatalog.templeton.tool.JobState;
+import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
 
 /**
  * Complete a job.  This will run the callback if

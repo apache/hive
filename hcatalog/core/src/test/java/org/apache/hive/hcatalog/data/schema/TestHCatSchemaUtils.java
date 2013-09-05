@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.data.schema;
+package org.apache.hive.hcatalog.data.schema;
 
 import java.io.PrintStream;
 
@@ -24,8 +24,8 @@ import junit.framework.TestCase;
 
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hcatalog.common.HCatException;
-import org.apache.hcatalog.data.schema.HCatFieldSchema.Category;
+import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.data.schema.HCatFieldSchema.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

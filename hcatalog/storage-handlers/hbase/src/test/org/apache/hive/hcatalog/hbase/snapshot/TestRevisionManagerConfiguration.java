@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.hbase.snapshot;
+package org.apache.hive.hcatalog.hbase.snapshot;
 
 import org.apache.hadoop.conf.Configuration;
 import org.junit.Assert;
@@ -28,7 +28,7 @@ public class TestRevisionManagerConfiguration {
     @Test
     public void testDefault() {
         Configuration conf = RevisionManagerConfiguration.create();
-        Assert.assertEquals("org.apache.hcatalog.hbase.snapshot.ZKBasedRevisionManager",
+        Assert.assertEquals("org.apache.hive.hcatalog.hbase.snapshot.ZKBasedRevisionManager",
             conf.get(RevisionManagerFactory.REVISION_MGR_IMPL_CLASS));
     }
 }

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.api;
+package org.apache.hive.hcatalog.api;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.common.HCatException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

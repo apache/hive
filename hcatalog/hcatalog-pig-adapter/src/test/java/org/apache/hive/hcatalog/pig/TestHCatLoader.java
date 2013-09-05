@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.pig;
+package org.apache.hive.hcatalog.pig;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,9 +38,9 @@ import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hcatalog.HcatTestUtils;
-import org.apache.hcatalog.common.HCatConstants;
-import org.apache.hcatalog.data.Pair;
+import org.apache.hive.hcatalog.HcatTestUtils;
+import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.data.Pair;
 import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.apache.pig.ResourceStatistics;
@@ -69,8 +69,8 @@ public class TestHCatLoader extends TestCase {
     private static Map<Integer, Pair<Integer, String>> basicInputData;
 
     protected String storageFormat() {
-        return "RCFILE tblproperties('hcat.isd'='org.apache.hcatalog.rcfile.RCFileInputDriver'," +
-            "'hcat.osd'='org.apache.hcatalog.rcfile.RCFileOutputDriver')";
+        return "RCFILE tblproperties('hcat.isd'='org.apache.hive.hcatalog.rcfile.RCFileInputDriver'," +
+            "'hcat.osd'='org.apache.hive.hcatalog.rcfile.RCFileOutputDriver')";
     }
 
     private void dropTable(String tablename) throws IOException, CommandNeedRetryException {
@@ -153,18 +153,18 @@ public class TestHCatLoader extends TestCase {
         server.setBatchOn();
         server.registerQuery("A = load '" + BASIC_FILE_NAME + "' as (a:int, b:chararray);");
 
-        server.registerQuery("store A into '" + BASIC_TABLE + "' using org.apache.hcatalog.pig.HCatStorer();");
-        server.registerQuery("store A into '" + SPECIFIC_SIZE_TABLE + "' using org.apache.hcatalog.pig.HCatStorer();");
+        server.registerQuery("store A into '" + BASIC_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer();");
+        server.registerQuery("store A into '" + SPECIFIC_SIZE_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer();");
         server.registerQuery("B = foreach A generate a,b;");
         server.registerQuery("B2 = filter B by a < 2;");
-        server.registerQuery("store B2 into '" + PARTITIONED_TABLE + "' using org.apache.hcatalog.pig.HCatStorer('bkt=0');");
+        server.registerQuery("store B2 into '" + PARTITIONED_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer('bkt=0');");
 
         server.registerQuery("C = foreach A generate a,b;");
         server.registerQuery("C2 = filter C by a >= 2;");
-        server.registerQuery("store C2 into '" + PARTITIONED_TABLE + "' using org.apache.hcatalog.pig.HCatStorer('bkt=1');");
+        server.registerQuery("store C2 into '" + PARTITIONED_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer('bkt=1');");
 
         server.registerQuery("D = load '" + COMPLEX_FILE_NAME + "' as (name:chararray, studentid:int, contact:tuple(phno:chararray,email:chararray), currently_registered_courses:bag{innertup:tuple(course:chararray)}, current_grades:map[ ] , phnos :bag{innertup:tuple(phno:chararray,type:chararray)});");
-        server.registerQuery("store D into '" + COMPLEX_TABLE + "' using org.apache.hcatalog.pig.HCatStorer();");
+        server.registerQuery("store D into '" + COMPLEX_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer();");
         server.executeBatch();
 
     }
@@ -199,7 +199,7 @@ public class TestHCatLoader extends TestCase {
         PigServer server = new PigServer(ExecType.LOCAL);
 
         // test that schema was loaded correctly
-        server.registerQuery("X = load '" + BASIC_TABLE + "' using org.apache.hcatalog.pig.HCatLoader();");
+        server.registerQuery("X = load '" + BASIC_TABLE + "' using org.apache.hive.hcatalog.pig.HCatLoader();");
         Schema dumpedXSchema = server.dumpSchema("X");
         List<FieldSchema> Xfields = dumpedXSchema.getFields();
         assertEquals(2, Xfields.size());
@@ -213,7 +213,7 @@ public class TestHCatLoader extends TestCase {
     public void testReadDataBasic() throws IOException {
         PigServer server = new PigServer(ExecType.LOCAL);
 
-        server.registerQuery("X = load '" + BASIC_TABLE + "' using org.apache.hcatalog.pig.HCatLoader();");
+        server.registerQuery("X = load '" + BASIC_TABLE + "' using org.apache.hive.hcatalog.pig.HCatLoader();");
         Iterator<Tuple> XIter = server.openIterator("X");
         int numTuplesRead = 0;
         while (XIter.hasNext()) {
@@ -233,7 +233,7 @@ public class TestHCatLoader extends TestCase {
         PigServer server = new PigServer(ExecType.LOCAL);
 
         // test that schema was loaded correctly
-        server.registerQuery("K = load '" + COMPLEX_TABLE + "' using org.apache.hcatalog.pig.HCatLoader();");
+        server.registerQuery("K = load '" + COMPLEX_TABLE + "' using org.apache.hive.hcatalog.pig.HCatLoader();");
         Schema dumpedKSchema = server.dumpSchema("K");
         List<FieldSchema> Kfields = dumpedKSchema.getFields();
         assertEquals(6, Kfields.size());
@@ -293,7 +293,7 @@ public class TestHCatLoader extends TestCase {
         driver.getResults(valuesReadFromHiveDriver);
         assertEquals(basicInputData.size(), valuesReadFromHiveDriver.size());
 
-        server.registerQuery("W = load '" + PARTITIONED_TABLE + "' using org.apache.hcatalog.pig.HCatLoader();");
+        server.registerQuery("W = load '" + PARTITIONED_TABLE + "' using org.apache.hive.hcatalog.pig.HCatLoader();");
         Schema dumpedWSchema = server.dumpSchema("W");
         List<FieldSchema> Wfields = dumpedWSchema.getFields();
         assertEquals(3, Wfields.size());
@@ -321,7 +321,7 @@ public class TestHCatLoader extends TestCase {
         }
         assertEquals(valuesReadFromHiveDriver.size(), valuesRead.size());
 
-        server.registerQuery("P1 = load '" + PARTITIONED_TABLE + "' using org.apache.hcatalog.pig.HCatLoader();");
+        server.registerQuery("P1 = load '" + PARTITIONED_TABLE + "' using org.apache.hive.hcatalog.pig.HCatLoader();");
         server.registerQuery("P1filter = filter P1 by bkt == '0';");
         Iterator<Tuple> P1Iter = server.openIterator("P1filter");
         int count1 = 0;
@@ -334,7 +334,7 @@ public class TestHCatLoader extends TestCase {
         }
         assertEquals(3, count1);
 
-        server.registerQuery("P2 = load '" + PARTITIONED_TABLE + "' using org.apache.hcatalog.pig.HCatLoader();");
+        server.registerQuery("P2 = load '" + PARTITIONED_TABLE + "' using org.apache.hive.hcatalog.pig.HCatLoader();");
         server.registerQuery("P2filter = filter P2 by bkt == '1';");
         Iterator<Tuple> P2Iter = server.openIterator("P2filter");
         int count2 = 0;
@@ -354,7 +354,7 @@ public class TestHCatLoader extends TestCase {
 
         // projections are handled by using generate, not "as" on the Load
 
-        server.registerQuery("Y1 = load '" + BASIC_TABLE + "' using org.apache.hcatalog.pig.HCatLoader();");
+        server.registerQuery("Y1 = load '" + BASIC_TABLE + "' using org.apache.hive.hcatalog.pig.HCatLoader();");
         server.registerQuery("Y2 = foreach Y1 generate a;");
         server.registerQuery("Y3 = foreach Y1 generate b,a;");
         Schema dumpedY2Schema = server.dumpSchema("Y2");
@@ -426,7 +426,7 @@ public class TestHCatLoader extends TestCase {
         properties.setProperty(HCatConstants.HCAT_DATA_CONVERT_BOOLEAN_TO_INTEGER, "true");
         PigServer server = new PigServer(ExecType.LOCAL, properties);
         server.registerQuery(
-            "data = load 'test_convert_boolean_to_int' using org.apache.hcatalog.pig.HCatLoader();");
+            "data = load 'test_convert_boolean_to_int' using org.apache.hive.hcatalog.pig.HCatLoader();");
         Schema schema = server.dumpSchema("data");
         assertEquals(2, schema.getFields().size());
 

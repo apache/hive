@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.utils;
+package org.apache.hive.hcatalog.utils;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.Obje
 /**
  * A hive udf to check types of the fields read from hcat. A sample hive query which can use this is:
  *
- * create temporary function typecheck as 'org.apache.hcatalog.utils.HCatTypeCheckHive';
+ * create temporary function typecheck as 'org.apache.hive.hcatalog.utils.HCatTypeCheckHive';
  * select typecheck('map<string,string>+struct<num:int,str:string,dbl:double>+array<map<string,string>>+int', 
  * mymap, mytuple, bagofmap, rownum) from complex;
  *

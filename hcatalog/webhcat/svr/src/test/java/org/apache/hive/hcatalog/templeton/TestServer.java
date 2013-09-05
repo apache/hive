@@ -16,11 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.templeton;
+package org.apache.hive.hcatalog.templeton;
 
 import junit.framework.TestCase;
 
-import org.apache.hcatalog.templeton.mock.MockServer;
+import org.apache.hive.hcatalog.templeton.mock.MockServer;
 import java.util.List;
 
 /*

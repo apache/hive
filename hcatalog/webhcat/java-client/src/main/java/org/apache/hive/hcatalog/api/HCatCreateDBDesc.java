@@ -16,12 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.api;
+package org.apache.hive.hcatalog.api;
 
 import java.util.Map;
 
 import org.apache.hadoop.hive.metastore.api.Database;
-import org.apache.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.common.HCatException;
 
 /**
  * The Class HCatCreateDBDesc for defining database attributes.

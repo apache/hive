@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.hbase;
+package org.apache.hive.hcatalog.hbase;
 
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileSystem;
@@ -46,7 +46,7 @@ import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hcatalog.mapreduce.HCatMapRedUtil;
+import org.apache.hive.hcatalog.mapreduce.HCatMapRedUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

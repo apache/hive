@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.hbase;
+package org.apache.hive.hcatalog.hbase;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
@@ -48,21 +48,21 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
-import org.apache.hcatalog.cli.HCatDriver;
-import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
-import org.apache.hcatalog.common.HCatConstants;
-import org.apache.hcatalog.common.HCatUtil;
-import org.apache.hcatalog.data.DefaultHCatRecord;
-import org.apache.hcatalog.data.HCatRecord;
-import org.apache.hcatalog.data.schema.HCatSchema;
-import org.apache.hcatalog.hbase.snapshot.FamilyRevision;
-import org.apache.hcatalog.hbase.snapshot.RevisionManager;
-import org.apache.hcatalog.hbase.snapshot.RevisionManagerConfiguration;
-import org.apache.hcatalog.hbase.snapshot.TableSnapshot;
-import org.apache.hcatalog.hbase.snapshot.Transaction;
-import org.apache.hcatalog.mapreduce.HCatInputFormat;
-import org.apache.hcatalog.mapreduce.HCatOutputFormat;
-import org.apache.hcatalog.mapreduce.OutputJobInfo;
+import org.apache.hive.hcatalog.cli.HCatDriver;
+import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
+import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.common.HCatUtil;
+import org.apache.hive.hcatalog.data.DefaultHCatRecord;
+import org.apache.hive.hcatalog.data.HCatRecord;
+import org.apache.hive.hcatalog.data.schema.HCatSchema;
+import org.apache.hive.hcatalog.hbase.snapshot.FamilyRevision;
+import org.apache.hive.hcatalog.hbase.snapshot.RevisionManager;
+import org.apache.hive.hcatalog.hbase.snapshot.RevisionManagerConfiguration;
+import org.apache.hive.hcatalog.hbase.snapshot.TableSnapshot;
+import org.apache.hive.hcatalog.hbase.snapshot.Transaction;
+import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
+import org.apache.hive.hcatalog.mapreduce.HCatOutputFormat;
+import org.apache.hive.hcatalog.mapreduce.OutputJobInfo;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -207,7 +207,7 @@ public class TestHBaseDirectOutputFormat extends SkeletonHBaseTest {
         String dbquery = "CREATE DATABASE IF NOT EXISTS " + databaseName + " LOCATION '" + dbDir + "'";
         String tableQuery = "CREATE TABLE " + databaseName + "." + tableName +
             "(key int, english string, spanish string) STORED BY " +
-            "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'" +
+            "'org.apache.hive.hcatalog.hbase.HBaseHCatStorageHandler'" +
             "TBLPROPERTIES (" +
             "'hbase.columns.mapping'=':key," + familyName + ":english," + familyName + ":spanish')";
 
@@ -285,7 +285,7 @@ public class TestHBaseDirectOutputFormat extends SkeletonHBaseTest {
             + "'";
         String tableQuery = "CREATE TABLE " + databaseName + "." + tableName +
             "(key int, english string, spanish string) STORED BY " +
-            "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'" +
+            "'org.apache.hive.hcatalog.hbase.HBaseHCatStorageHandler'" +
             "TBLPROPERTIES (" +
             "'hbase.columns.mapping'=':key," + familyName + ":english," + familyName +
             ":spanish','hbase.table.name'='" + hbaseTableName + "')";

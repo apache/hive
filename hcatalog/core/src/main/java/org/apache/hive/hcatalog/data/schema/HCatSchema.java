@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.data.schema;
+package org.apache.hive.hcatalog.data.schema;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.common.HCatException;
 
 /**
  * HCatSchema. This class is NOT thread-safe.
