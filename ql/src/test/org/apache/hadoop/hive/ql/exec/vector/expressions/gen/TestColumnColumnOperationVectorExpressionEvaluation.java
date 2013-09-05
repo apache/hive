@@ -76,6 +76,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -124,6 +125,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -172,6 +174,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -220,6 +223,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -268,6 +272,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -316,6 +321,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -364,6 +370,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -412,6 +419,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -460,6 +468,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -508,6 +517,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -556,6 +566,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -604,6 +615,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -652,6 +664,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -700,6 +713,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -748,6 +762,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -796,6 +811,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -844,6 +860,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -892,6 +909,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -940,6 +958,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -988,6 +1007,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -1036,6 +1056,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -1084,6 +1105,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -1132,6 +1154,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -1180,6 +1203,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -1228,6 +1252,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -1276,6 +1301,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -1324,6 +1350,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -1372,6 +1399,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -1420,6 +1448,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -1468,6 +1497,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -1516,6 +1546,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -1564,6 +1595,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -1612,6 +1644,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -1660,6 +1693,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -1708,6 +1742,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -1756,6 +1791,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -1804,6 +1840,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -1852,6 +1889,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -1900,6 +1938,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -1948,6 +1987,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -1996,6 +2036,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -2044,6 +2085,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -2092,6 +2134,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -2140,6 +2183,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -2188,6 +2232,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -2236,6 +2281,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -2284,6 +2330,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -2332,6 +2379,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -2380,6 +2428,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -2428,6 +2477,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -2476,6 +2526,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -2524,6 +2575,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -2572,6 +2624,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -2620,6 +2673,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -2668,6 +2722,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -2716,6 +2771,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -2764,6 +2820,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -2812,6 +2869,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -2860,6 +2918,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -2908,6 +2967,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -2956,6 +3016,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -3004,6 +3065,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -3052,6 +3114,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -3100,6 +3163,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -3148,6 +3212,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -3196,6 +3261,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -3244,6 +3310,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -3292,6 +3359,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -3340,6 +3408,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -3388,6 +3457,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -3436,6 +3506,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -3484,6 +3555,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -3532,6 +3604,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -3580,6 +3653,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -3628,6 +3702,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -3676,6 +3751,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -3724,6 +3800,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -3772,6 +3849,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -3820,6 +3898,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -3868,6 +3947,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -3916,6 +3996,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -3964,6 +4045,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -4012,6 +4094,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -4060,6 +4143,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -4108,6 +4192,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -4156,6 +4241,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -4204,6 +4290,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -4252,6 +4339,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -4300,6 +4388,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -4348,6 +4437,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -4396,6 +4486,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -4444,6 +4535,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -4492,6 +4584,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -4540,6 +4633,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -4588,6 +4682,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -4636,6 +4731,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -4684,6 +4780,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -4732,6 +4829,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -4780,6 +4878,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -4828,6 +4927,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -4876,6 +4976,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -4924,6 +5025,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -4972,6 +5074,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -5020,6 +5123,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -5068,6 +5172,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -5116,6 +5221,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -5164,6 +5270,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -5212,6 +5319,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -5260,6 +5368,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -5308,6 +5417,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -5356,6 +5466,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -5404,6 +5515,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -5452,6 +5564,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector
@@ -5500,6 +5613,7 @@ public class TestColumnColumnOperationVectorExpressionEvaluation{
         "Output column vector no nulls state does not match operand columns",
         inputColumnVector1.noNulls && inputColumnVector2.noNulls, outputColumnVector.noNulls);
 
+    //if repeating, only the first value matters
     if(!outputColumnVector.noNulls && !outputColumnVector.isRepeating) {
       for(int i = 0; i < BATCH_SIZE; i++) {
         //null vectors are safe to check, as they are always initialized to match the data vector

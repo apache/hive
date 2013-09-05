@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.vector.expressions.templates;
+package org.apache.hadoop.hive.ql.exec.vector.gen;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -267,8 +267,10 @@ public class CodeGen {
     };
 
 
-  private final String templateDirectory;
-  private final String outputDirectory;
+  private final String expressionOutputDirectory;
+  private final String expressionTemplateDirectory;
+  private final String udafOutputDirectory;
+  private final String udafTemplateDirectory;
   private final TestCodeGen testCodeGen;
 
   static String joinPath(String...parts) {
@@ -280,16 +282,35 @@ public class CodeGen {
   }
 
   public CodeGen() {
-    templateDirectory = System.getProperty("user.dir");
-    File f = new File(templateDirectory);
-    outputDirectory = joinPath(f.getParent(), "gen");
-    testCodeGen =  new TestCodeGen(joinPath(f.getParent(), "test"), templateDirectory);
-  }
+    File generationDirectory = new File(System.getProperty("user.dir"));
 
-  public CodeGen(String templateDirectory, String outputDirectory, String testOutputDirectory) {
-    this.templateDirectory = templateDirectory;
-    this.outputDirectory = outputDirectory;
-    testCodeGen =  new TestCodeGen(testOutputDirectory, templateDirectory);
+    expressionOutputDirectory =
+      new File(
+        joinPath(
+          generationDirectory.getAbsolutePath(),"..", "..", "java", "org",
+          "apache", "hadoop", "hive", "ql", "exec", "vector",
+          "expressions", "gen")).getAbsolutePath();
+
+    expressionTemplateDirectory =
+      joinPath(generationDirectory.getAbsolutePath(), "ExpressionTemplates");
+
+    udafOutputDirectory =
+      new File(
+        joinPath(
+          generationDirectory.getAbsolutePath(),"..", "..", "java", "org",
+          "apache", "hadoop", "hive", "ql", "exec", "vector",
+          "expressions", "aggregates", "gen")).getAbsolutePath();
+
+    udafTemplateDirectory =
+      joinPath(generationDirectory.getAbsolutePath(), "udafTemplates");
+
+    testCodeGen =  new TestCodeGen(
+      new File(
+        joinPath(
+          generationDirectory.getAbsolutePath(), "..", "..","test", "org",
+          "apache", "hadoop", "hive", "ql", "exec", "vector",
+          "expressions", "gen")).getAbsolutePath(),
+      joinPath(generationDirectory.getAbsolutePath(), "TestTemplates"));
   }
 
   /**
@@ -297,15 +318,7 @@ public class CodeGen {
    * @throws Exception
    */
   public static void main(String[] args) throws Exception {
-    CodeGen gen;
-    if (args == null || args.length==0) {
-      gen = new CodeGen();
-    } else if (args.length==3) {
-      gen = new CodeGen(args[0], args[1], args[2]);
-    }else{
-      System.out.println("args: <templateDir> <outputDir> <testOutputDir>");
-      return;
-    }
+    CodeGen gen = new CodeGen();
     gen.generate();
   }
 
@@ -361,8 +374,8 @@ public class CodeGen {
     String writableType = getOutputWritableType(valueType);
     String inspectorType = getOutputObjectInspector(valueType);
 
-    String outputFile = joinPath(this.outputDirectory, className + ".java");
-    String templateFile = joinPath(this.templateDirectory, tdesc[0] + ".txt");
+    String outputFile = joinPath(this.udafOutputDirectory, className + ".java");
+    String templateFile = joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt");
 
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
@@ -383,8 +396,8 @@ public class CodeGen {
     String descName = tdesc[3];
     String descValue = tdesc[4];
 
-    String outputFile = joinPath(this.outputDirectory, className + ".java");
-    String templateFile = joinPath(this.templateDirectory, tdesc[0] + ".txt");
+    String outputFile = joinPath(this.udafOutputDirectory, className + ".java");
+    String templateFile = joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt");
 
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
@@ -403,8 +416,8 @@ public class CodeGen {
     String writableType = getOutputWritableType(valueType);
     String inspectorType = getOutputObjectInspector(valueType);
 
-    String outputFile = joinPath(this.outputDirectory, className + ".java");
-    String templateFile = joinPath(this.templateDirectory, tdesc[0] + ".txt");
+    String outputFile = joinPath(this.udafOutputDirectory, className + ".java");
+    String templateFile = joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt");
 
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
@@ -420,8 +433,8 @@ public class CodeGen {
     String valueType = tdesc[2];
     String columnType = getColumnVectorType(valueType);
 
-    String outputFile = joinPath(this.outputDirectory, className + ".java");
-    String templateFile = joinPath(this.templateDirectory, tdesc[0] + ".txt");
+    String outputFile = joinPath(this.udafOutputDirectory, className + ".java");
+    String templateFile = joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt");
 
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
@@ -438,8 +451,8 @@ public class CodeGen {
     String descriptionValue = tdesc[5];
     String columnType = getColumnVectorType(valueType);
 
-    String outputFile = joinPath(this.outputDirectory, className + ".java");
-    String templateFile = joinPath(this.templateDirectory, tdesc[0] + ".txt");
+    String outputFile = joinPath(this.udafOutputDirectory, className + ".java");
+    String templateFile = joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt");
 
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
@@ -474,9 +487,9 @@ public class CodeGen {
   private void generateFilterStringColumnCompareScalar(String[] tdesc, String className)
       throws IOException {
    String operatorSymbol = tdesc[2];
-   String outputFile = joinPath(this.outputDirectory, className + ".java");
+   String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
    // Read the template into a string;
-   String templateFile = joinPath(this.templateDirectory, tdesc[0] + ".txt");
+   String templateFile = joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt");
    String templateString = readFile(templateFile);
    // Expand, and write result
    templateString = templateString.replaceAll("<ClassName>", className);
@@ -501,8 +514,8 @@ public class CodeGen {
     String outputColumnVectorType = inputColumnVectorType;
     String returnType = operandType;
     String className = getCamelCaseType(operandType) + "ColUnaryMinus";
-    String outputFile = joinPath(this.outputDirectory, className + ".java");
-    String templateFile = joinPath(this.templateDirectory, tdesc[0] + ".txt");
+    String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
+    String templateFile = joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt");
     String templateString = readFile(templateFile);
     // Expand, and write result
     templateString = templateString.replaceAll("<ClassName>", className);
@@ -562,10 +575,10 @@ public class CodeGen {
     String inputColumnVectorType1 = this.getColumnVectorType(operandType1);
     String inputColumnVectorType2 = this.getColumnVectorType(operandType2);
     String operatorSymbol = tdesc[4];
-    String outputFile = joinPath(this.outputDirectory, className + ".java");
+    String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
 
     //Read the template into a string;
-    String templateFile = joinPath(this.templateDirectory, tdesc[0] + ".txt");
+    String templateFile = joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt");
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<InputColumnVectorType1>", inputColumnVectorType1);
@@ -600,10 +613,10 @@ public class CodeGen {
     String outputColumnVectorType = this.getColumnVectorType(returnType);
     String inputColumnVectorType = this.getColumnVectorType(operandType1);
     String operatorSymbol = tdesc[4];
-    String outputFile = joinPath(this.outputDirectory, className + ".java");
+    String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
 
     //Read the template into a string;
-    String templateFile = joinPath(this.templateDirectory, tdesc[0] + ".txt");
+    String templateFile = joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt");
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
@@ -638,10 +651,10 @@ public class CodeGen {
      String outputColumnVectorType = this.getColumnVectorType(returnType);
      String inputColumnVectorType = this.getColumnVectorType(operandType2);
      String operatorSymbol = tdesc[4];
-     String outputFile = joinPath(this.outputDirectory, className + ".java");
+     String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
 
      //Read the template into a string;
-     String templateFile = joinPath(this.templateDirectory, tdesc[0] + ".txt");
+     String templateFile = joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt");
      String templateString = readFile(templateFile);
      templateString = templateString.replaceAll("<ClassName>", className);
      templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);

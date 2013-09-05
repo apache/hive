@@ -22,20 +22,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
+import org.apache.hadoop.hive.ql.exec.vector.VectorAggregationBufferRow;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.io.LongWritable;
 
 /**
  * Generated from template VectorUDAFAvg.txt.
@@ -45,19 +46,19 @@ import org.apache.hadoop.io.LongWritable;
 public class VectorUDAFAvgLong extends VectorAggregateExpression {
 
     private static final long serialVersionUID = 1L;
-
+    
     /** class for storing the current aggregate value. */
     static class Aggregation implements AggregationBuffer {
 
       private static final long serialVersionUID = 1L;
 
-      transient private double sum = 0;
-      transient private long count = 0;
+      transient private double sum;
+      transient private long count;
       transient private boolean isNull;
-
+      
       public void sumValue(long value) {
         if (isNull) {
-          sum = value;
+          sum = value; 
           count = 1;
           isNull = false;
         } else {
@@ -71,13 +72,13 @@ public class VectorUDAFAvgLong extends VectorAggregateExpression {
         throw new UnsupportedOperationException();
       }
     }
-
+    
     private VectorExpression inputExpression;
     transient private Object[] partialResult;
     transient private LongWritable resultCount;
     transient private DoubleWritable resultSum;
     transient private StructObjectInspector soi;
-
+        
     public VectorUDAFAvgLong(VectorExpression inputExpression) {
       this();
       this.inputExpression = inputExpression;
@@ -102,7 +103,7 @@ public class VectorUDAFAvgLong extends VectorAggregateExpression {
         fname.add("sum");
         soi = ObjectInspectorFactory.getStandardStructObjectInspector(fname, foi);
     }
-
+    
     private Aggregation getCurrentAggregationBuffer(
         VectorAggregationBufferRow[] aggregationBufferSets,
         int bufferIndex,
@@ -111,21 +112,21 @@ public class VectorUDAFAvgLong extends VectorAggregateExpression {
       Aggregation myagg = (Aggregation) mySet.getAggregationBuffer(bufferIndex);
       return myagg;
     }
-
+    
     @Override
     public void aggregateInputSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
-      int bufferIndex,
+      int bufferIndex, 
       VectorizedRowBatch batch) throws HiveException {
-
+      
       int batchSize = batch.size;
-
+      
       if (batchSize == 0) {
         return;
       }
-
+      
       inputExpression.evaluate(batch);
-
+      
        LongColumnVector inputVector = ( LongColumnVector)batch.
         cols[this.inputExpression.getOutputColumn()];
       long[] vector = inputVector.vector;
@@ -179,12 +180,12 @@ public class VectorUDAFAvgLong extends VectorAggregateExpression {
 
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
-          aggregationBufferSets,
+          aggregationBufferSets, 
           bufferIndex,
           i);
         myagg.sumValue(value);
       }
-    }
+    } 
 
     private void iterateNoNullsSelectionWithAggregationSelection(
       VectorAggregationBufferRow[] aggregationBufferSets,
@@ -192,10 +193,10 @@ public class VectorUDAFAvgLong extends VectorAggregateExpression {
       long[] values,
       int[] selection,
       int batchSize) {
-
+      
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
-          aggregationBufferSets,
+          aggregationBufferSets, 
           bufferIndex,
           i);
         myagg.sumValue(values[selection[i]]);
@@ -209,7 +210,7 @@ public class VectorUDAFAvgLong extends VectorAggregateExpression {
       int batchSize) {
       for (int i=0; i < batchSize; ++i) {
         Aggregation myagg = getCurrentAggregationBuffer(
-          aggregationBufferSets,
+          aggregationBufferSets, 
           bufferIndex,
           i);
         myagg.sumValue(values[i]);
@@ -223,17 +224,17 @@ public class VectorUDAFAvgLong extends VectorAggregateExpression {
       int batchSize,
       int[] selection,
       boolean[] isNull) {
-
+      
       for (int i=0; i < batchSize; ++i) {
         if (!isNull[selection[i]]) {
           Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets,
+            aggregationBufferSets, 
             bufferIndex,
             i);
           myagg.sumValue(value);
         }
       }
-
+      
     }
 
     private void iterateHasNullsRepeatingWithAggregationSelection(
@@ -246,7 +247,7 @@ public class VectorUDAFAvgLong extends VectorAggregateExpression {
       for (int i=0; i < batchSize; ++i) {
         if (!isNull[i]) {
           Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets,
+            aggregationBufferSets, 
             bufferIndex,
             i);
           myagg.sumValue(value);
@@ -266,7 +267,7 @@ public class VectorUDAFAvgLong extends VectorAggregateExpression {
         int i = selection[j];
         if (!isNull[i]) {
           Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets,
+            aggregationBufferSets, 
             bufferIndex,
             j);
           myagg.sumValue(values[i]);
@@ -284,7 +285,7 @@ public class VectorUDAFAvgLong extends VectorAggregateExpression {
       for (int i=0; i < batchSize; ++i) {
         if (!isNull[i]) {
           Aggregation myagg = getCurrentAggregationBuffer(
-            aggregationBufferSets,
+            aggregationBufferSets, 
             bufferIndex,
             i);
           myagg.sumValue(values[i]);
@@ -292,26 +293,26 @@ public class VectorUDAFAvgLong extends VectorAggregateExpression {
       }
    }
 
-
+    
     @Override
-    public void aggregateInput(AggregationBuffer agg, VectorizedRowBatch batch)
+    public void aggregateInput(AggregationBuffer agg, VectorizedRowBatch batch) 
         throws HiveException {
-
+        
         inputExpression.evaluate(batch);
-
-        LongColumnVector inputVector =
+        
+        LongColumnVector inputVector = 
             (LongColumnVector)batch.cols[this.inputExpression.getOutputColumn()];
-
+        
         int batchSize = batch.size;
-
+        
         if (batchSize == 0) {
           return;
         }
-
+        
         Aggregation myagg = (Aggregation)agg;
-
+  
         long[] vector = inputVector.vector;
-
+        
         if (inputVector.isRepeating) {
           if (inputVector.noNulls) {
             if (myagg.isNull) {
@@ -324,7 +325,7 @@ public class VectorUDAFAvgLong extends VectorAggregateExpression {
           }
           return;
         }
-
+        
         if (!batch.selectedInUse && inputVector.noNulls) {
           iterateNoSelectionNoNulls(myagg, vector, batchSize);
         }
@@ -338,14 +339,14 @@ public class VectorUDAFAvgLong extends VectorAggregateExpression {
           iterateSelectionHasNulls(myagg, vector, batchSize, inputVector.isNull, batch.selected);
         }
     }
-
+  
     private void iterateSelectionHasNulls(
-        Aggregation myagg,
-        long[] vector,
+        Aggregation myagg, 
+        long[] vector, 
         int batchSize,
-        boolean[] isNull,
+        boolean[] isNull, 
         int[] selected) {
-
+      
       for (int j=0; j< batchSize; ++j) {
         int i = selected[j];
         if (!isNull[i]) {
@@ -362,17 +363,17 @@ public class VectorUDAFAvgLong extends VectorAggregateExpression {
     }
 
     private void iterateSelectionNoNulls(
-        Aggregation myagg,
-        long[] vector,
-        int batchSize,
+        Aggregation myagg, 
+        long[] vector, 
+        int batchSize, 
         int[] selected) {
-
+      
       if (myagg.isNull) {
         myagg.isNull = false;
         myagg.sum = 0;
         myagg.count = 0;
       }
-
+      
       for (int i=0; i< batchSize; ++i) {
         long value = vector[selected[i]];
         myagg.sum += value;
@@ -381,15 +382,15 @@ public class VectorUDAFAvgLong extends VectorAggregateExpression {
     }
 
     private void iterateNoSelectionHasNulls(
-        Aggregation myagg,
-        long[] vector,
+        Aggregation myagg, 
+        long[] vector, 
         int batchSize,
         boolean[] isNull) {
-
+      
       for(int i=0;i<batchSize;++i) {
         if (!isNull[i]) {
           long value = vector[i];
-          if (myagg.isNull) {
+          if (myagg.isNull) { 
             myagg.isNull = false;
             myagg.sum = 0;
             myagg.count = 0;
@@ -401,15 +402,15 @@ public class VectorUDAFAvgLong extends VectorAggregateExpression {
     }
 
     private void iterateNoSelectionNoNulls(
-        Aggregation myagg,
-        long[] vector,
+        Aggregation myagg, 
+        long[] vector, 
         int batchSize) {
       if (myagg.isNull) {
         myagg.isNull = false;
         myagg.sum = 0;
         myagg.count = 0;
       }
-
+      
       for (int i=0;i<batchSize;++i) {
         long value = vector[i];
         myagg.sum += value;
@@ -442,11 +443,11 @@ public class VectorUDAFAvgLong extends VectorAggregateExpression {
         return partialResult;
       }
     }
-
+    
   @Override
     public ObjectInspector getOutputObjectInspector() {
     return soi;
-  }
+  }     
 
   @Override
   public int getAggregationBufferFixedSize() {
@@ -461,7 +462,7 @@ public class VectorUDAFAvgLong extends VectorAggregateExpression {
   public void init(AggregationDesc desc) throws HiveException {
     // No-op
   }
-
+  
   public VectorExpression getInputExpression() {
     return inputExpression;
   }

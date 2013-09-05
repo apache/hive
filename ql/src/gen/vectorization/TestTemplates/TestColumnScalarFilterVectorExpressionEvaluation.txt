@@ -32,25 +32,27 @@
     } while(scalarValue == 0);
 
     <VectorExpClassName> vectorExpression =
-      new <VectorExpClassName>(<ConstructorParams>);
+      new <VectorExpClassName>(0, scalarValue);
 
     vectorExpression.evaluate(rowBatch);
 
+    
     int selectedIndex = 0;
+    int i=0;
     //check for isRepeating optimization
     if(inputColumnVector.isRepeating) {
       //null vector is safe to check, as it is always initialized to match the data vector
       selectedIndex =
-        !inputColumnVector.isNull[0] && inputColumnVector.vector[0] <Operator> scalarValue
+        !inputColumnVector.isNull[i] && <Operand1> <Operator> <Operand2>
           ? BATCH_SIZE : 0;
     } else {
-      for(int i = 0; i < BATCH_SIZE; i++) {
+      for(i = 0; i < BATCH_SIZE; i++) {
         if(!inputColumnVector.isNull[i]) {
-          if(inputColumnVector.vector[i] <Operator> scalarValue) {
+          if(<Operand1> <Operator> <Operand2>) {
             assertEquals(
               "Vector index that passes filter "
-              + inputColumnVector.vector[i] + "<Operator>"
-              + scalarValue + " is not in rowBatch selected index",
+              + <Operand1> + "<Operator>"
+              + <Operand2> + " is not in rowBatch selected index",
               i,
               rowBatch.selected[selectedIndex]);
             selectedIndex++;
