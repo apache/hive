@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.mapreduce;
+package org.apache.hive.hcatalog.mapreduce;
 
 public class TestHCatExternalDynamicPartitioned extends TestHCatDynamicPartitioned {
 

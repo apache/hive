@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.hbase.snapshot;
+package org.apache.hive.hcatalog.hbase.snapshot;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -24,8 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hcatalog.hbase.snapshot.transaction.thrift.StoreFamilyRevision;
-import org.apache.hcatalog.hbase.snapshot.transaction.thrift.StoreFamilyRevisionList;
+import org.apache.hive.hcatalog.hbase.snapshot.transaction.thrift.StoreFamilyRevision;
+import org.apache.hive.hcatalog.hbase.snapshot.transaction.thrift.StoreFamilyRevisionList;
 import org.apache.thrift.TBase;
 import org.apache.thrift.TDeserializer;
 import org.apache.thrift.TSerializer;

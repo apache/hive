@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.cli;
+package org.apache.hive.hcatalog.cli;
 
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -43,11 +43,11 @@ import org.apache.hadoop.hive.metastore.api.Type;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hcatalog.ExitException;
-import org.apache.hcatalog.NoExitSecurityManager;
+import org.apache.hive.hcatalog.ExitException;
+import org.apache.hive.hcatalog.NoExitSecurityManager;
 
-import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
-import org.apache.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
+import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

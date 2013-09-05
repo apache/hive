@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.data;
+package org.apache.hive.hcatalog.data;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,15 +36,15 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hcatalog.common.HCatException;
-import org.apache.hcatalog.data.transfer.DataTransferFactory;
-import org.apache.hcatalog.data.transfer.HCatReader;
-import org.apache.hcatalog.data.transfer.HCatWriter;
-import org.apache.hcatalog.data.transfer.ReadEntity;
-import org.apache.hcatalog.data.transfer.ReaderContext;
-import org.apache.hcatalog.data.transfer.WriteEntity;
-import org.apache.hcatalog.data.transfer.WriterContext;
-import org.apache.hcatalog.mapreduce.HCatBaseTest;
+import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.data.transfer.DataTransferFactory;
+import org.apache.hive.hcatalog.data.transfer.HCatReader;
+import org.apache.hive.hcatalog.data.transfer.HCatWriter;
+import org.apache.hive.hcatalog.data.transfer.ReadEntity;
+import org.apache.hive.hcatalog.data.transfer.ReaderContext;
+import org.apache.hive.hcatalog.data.transfer.WriteEntity;
+import org.apache.hive.hcatalog.data.transfer.WriterContext;
+import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 

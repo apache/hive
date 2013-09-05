@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.common;
+package org.apache.hive.hcatalog.common;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;

@@ -16,9 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.templeton.mock;
+package org.apache.hive.hcatalog.templeton.mock;
 
-import org.apache.hcatalog.templeton.Server;
+import org.apache.hive.hcatalog.templeton.Server;
 
 /*
  * Test that the server code exists.

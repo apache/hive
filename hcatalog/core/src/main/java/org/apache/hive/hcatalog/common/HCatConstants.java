@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.common;
+package org.apache.hive.hcatalog.common;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
@@ -46,9 +46,9 @@ public final class HCatConstants {
 
     /**
      * {@value} (default: null)
-     * When the property is set in the UDFContext of the org.apache.hcatalog.pig.HCatStorer, HCatStorer writes
+     * When the property is set in the UDFContext of the org.apache.hive.hcatalog.pig.HCatStorer, HCatStorer writes
      * to the location it specifies instead of the default HCatalog location format. An example can be found
-     * in org.apache.hcatalog.pig.HCatStorerWrapper.
+     * in org.apache.hive.hcatalog.pig.HCatStorerWrapper.
      */
     public static final String HCAT_PIG_STORER_EXTERNAL_LOCATION = HCAT_PIG_STORER + ".external.location";
 
@@ -132,7 +132,7 @@ public final class HCatConstants {
     public static final String HCAT_MESSAGE_FORMAT = "HCAT_MESSAGE_FORMAT";
     public static final String CONF_LABEL_HCAT_MESSAGE_FACTORY_IMPL_PREFIX = "hcatalog.message.factory.impl.";
     public static final String CONF_LABEL_HCAT_MESSAGE_FORMAT = "hcatalog.message.format";
-    public static final String DEFAULT_MESSAGE_FACTORY_IMPL = "org.apache.hcatalog.messaging.json.JSONMessageFactory";
+    public static final String DEFAULT_MESSAGE_FACTORY_IMPL = "org.apache.hive.hcatalog.messaging.json.JSONMessageFactory";
 
     // System environment variables
     public static final String SYSENV_HADOOP_TOKEN_FILE_LOCATION = "HADOOP_TOKEN_FILE_LOCATION";

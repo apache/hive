@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.pig;
+package org.apache.hive.hcatalog.pig;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -61,8 +61,8 @@ public class TestHCatLoaderComplexSchema {
     }
 
     protected String storageFormat() {
-        return "RCFILE tblproperties('hcat.isd'='org.apache.hcatalog.rcfile.RCFileInputDriver'," +
-            "'hcat.osd'='org.apache.hcatalog.rcfile.RCFileOutputDriver')";
+        return "RCFILE tblproperties('hcat.isd'='org.apache.hive.hcatalog.rcfile.RCFileInputDriver'," +
+            "'hcat.osd'='org.apache.hive.hcatalog.rcfile.RCFileOutputDriver')";
     }
 
     private void createTable(String tablename, String schema, String partitionedBy) throws IOException, CommandNeedRetryException {
@@ -193,9 +193,9 @@ public class TestHCatLoaderComplexSchema {
             createTable(tablename, tableSchema);
             PigServer server = new PigServer(ExecType.LOCAL);
             server.setBatchOn();
-            server.registerQuery("A = load '" + tablename + "Input' using org.apache.hcatalog.pig.MockLoader() AS (" + pigSchema + ");");
+            server.registerQuery("A = load '" + tablename + "Input' using org.apache.hive.hcatalog.pig.MockLoader() AS (" + pigSchema + ");");
             Schema dumpedASchema = server.dumpSchema("A");
-            server.registerQuery("STORE A into '" + tablename + "' using org.apache.hcatalog.pig.HCatStorer("
+            server.registerQuery("STORE A into '" + tablename + "' using org.apache.hive.hcatalog.pig.HCatStorer("
                 + (provideSchemaToStorer ? "'', '" + pigSchema + "'" : "")
                 + ");");
 
@@ -204,7 +204,7 @@ public class TestHCatLoaderComplexSchema {
                 throw new RuntimeException("Import failed", execJob.getException());
             }
             // test that schema was loaded correctly
-            server.registerQuery("X = load '" + tablename + "' using org.apache.hcatalog.pig.HCatLoader();");
+            server.registerQuery("X = load '" + tablename + "' using org.apache.hive.hcatalog.pig.HCatLoader();");
             server.dumpSchema("X");
             Iterator<Tuple> it = server.openIterator("X");
             int i = 0;

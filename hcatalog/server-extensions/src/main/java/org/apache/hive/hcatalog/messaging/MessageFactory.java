@@ -17,14 +17,14 @@
  * under the License.
  */
 
-package org.apache.hcatalog.messaging;
+package org.apache.hive.hcatalog.messaging;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hcatalog.messaging.json.JSONMessageFactory;
+import org.apache.hive.hcatalog.messaging.json.JSONMessageFactory;
 
 /**
  * Abstract Factory for the construction of HCatalog message instances.
@@ -41,7 +41,7 @@ public abstract class MessageFactory {
     private static final String CONF_LABEL_HCAT_MESSAGE_FACTORY_IMPL_PREFIX = "hcatalog.message.factory.impl.";
     private static final String CONF_LABEL_HCAT_MESSAGE_FORMAT = "hcatalog.message.format";
     private static final String HCAT_MESSAGE_FORMAT = hiveConf.get(CONF_LABEL_HCAT_MESSAGE_FORMAT, "json");
-    private static final String DEFAULT_MESSAGE_FACTORY_IMPL = "org.apache.hcatalog.messaging.json.JSONMessageFactory";
+    private static final String DEFAULT_MESSAGE_FACTORY_IMPL = "org.apache.hive.hcatalog.messaging.json.JSONMessageFactory";
     private static final String HCAT_MESSAGE_FACTORY_IMPL = hiveConf.get(CONF_LABEL_HCAT_MESSAGE_FACTORY_IMPL_PREFIX
                                                                          + HCAT_MESSAGE_FORMAT,
                                                                          DEFAULT_MESSAGE_FACTORY_IMPL);

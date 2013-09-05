@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.listener;
+package org.apache.hive.hcatalog.listener;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -39,9 +39,9 @@ import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hcatalog.common.HCatConstants;
-import org.apache.hcatalog.messaging.HCatEventMessage;
-import org.apache.hcatalog.messaging.jms.MessagingUtils;
+import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.messaging.HCatEventMessage;
+import org.apache.hive.hcatalog.messaging.jms.MessagingUtils;
 
 public class TestMsgBusConnection extends TestCase {
 

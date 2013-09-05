@@ -17,13 +17,13 @@
  * under the License.
  */
 
-package org.apache.hcatalog.pig;
+package org.apache.hive.hcatalog.pig;
 
 import com.google.common.collect.Lists;
 import junit.framework.Assert;
-import org.apache.hcatalog.common.HCatConstants;
-import org.apache.hcatalog.data.schema.HCatFieldSchema;
-import org.apache.hcatalog.data.schema.HCatSchema;
+import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
+import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.apache.pig.ResourceSchema;
 import org.apache.pig.ResourceSchema.ResourceFieldSchema;
 import org.apache.pig.data.DataType;

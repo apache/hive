@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.har;
+package org.apache.hive.hcatalog.har;
 
 import java.io.IOException;
 
@@ -29,8 +29,8 @@ import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.tools.HadoopArchives;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.hcatalog.common.HCatConstants;
-import org.apache.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.common.HCatException;
 
 public class HarOutputCommitterPostProcessor {
 

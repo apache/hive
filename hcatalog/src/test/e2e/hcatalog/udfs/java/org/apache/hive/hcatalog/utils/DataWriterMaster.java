@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.utils;
+package org.apache.hive.hcatalog.utils;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,11 +32,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
 
-import org.apache.hcatalog.common.HCatException;
-import org.apache.hcatalog.data.transfer.DataTransferFactory;
-import org.apache.hcatalog.data.transfer.HCatWriter;
-import org.apache.hcatalog.data.transfer.WriteEntity;
-import org.apache.hcatalog.data.transfer.WriterContext;
+import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.data.transfer.DataTransferFactory;
+import org.apache.hive.hcatalog.data.transfer.HCatWriter;
+import org.apache.hive.hcatalog.data.transfer.WriteEntity;
+import org.apache.hive.hcatalog.data.transfer.WriterContext;
 
 public class DataWriterMaster {
 

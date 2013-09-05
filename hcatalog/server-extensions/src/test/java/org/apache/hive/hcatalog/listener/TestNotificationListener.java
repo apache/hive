@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.listener;
+package org.apache.hive.hcatalog.listener;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,19 +42,19 @@ import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hcatalog.common.HCatConstants;
-import org.apache.hcatalog.mapreduce.HCatBaseTest;
+import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.mapreduce.HCatBaseTest;
 
-import org.apache.hcatalog.messaging.AddPartitionMessage;
-import org.apache.hcatalog.messaging.CreateDatabaseMessage;
-import org.apache.hcatalog.messaging.CreateTableMessage;
-import org.apache.hcatalog.messaging.DropDatabaseMessage;
-import org.apache.hcatalog.messaging.DropPartitionMessage;
-import org.apache.hcatalog.messaging.DropTableMessage;
-import org.apache.hcatalog.messaging.HCatEventMessage;
-import org.apache.hcatalog.messaging.MessageDeserializer;
-import org.apache.hcatalog.messaging.MessageFactory;
-import org.apache.hcatalog.messaging.jms.MessagingUtils;
+import org.apache.hive.hcatalog.messaging.AddPartitionMessage;
+import org.apache.hive.hcatalog.messaging.CreateDatabaseMessage;
+import org.apache.hive.hcatalog.messaging.CreateTableMessage;
+import org.apache.hive.hcatalog.messaging.DropDatabaseMessage;
+import org.apache.hive.hcatalog.messaging.DropPartitionMessage;
+import org.apache.hive.hcatalog.messaging.DropTableMessage;
+import org.apache.hive.hcatalog.messaging.HCatEventMessage;
+import org.apache.hive.hcatalog.messaging.MessageDeserializer;
+import org.apache.hive.hcatalog.messaging.MessageFactory;
+import org.apache.hive.hcatalog.messaging.jms.MessagingUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;

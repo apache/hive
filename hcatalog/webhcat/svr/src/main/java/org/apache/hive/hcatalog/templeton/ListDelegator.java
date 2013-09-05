@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.templeton;
+package org.apache.hive.hcatalog.templeton;
 
 import java.io.IOException;
 import java.util.List;
@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.shims.HadoopShims.WebHCatJTShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hcatalog.templeton.tool.JobState;
+import org.apache.hive.hcatalog.templeton.tool.JobState;
 
 /**
  * List jobs owned by a user.

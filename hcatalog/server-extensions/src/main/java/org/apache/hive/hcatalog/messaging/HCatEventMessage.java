@@ -17,9 +17,9 @@
  * under the License.
  */
 
-package org.apache.hcatalog.messaging;
+package org.apache.hive.hcatalog.messaging;
 
-import org.apache.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.common.HCatConstants;
 
 /**
  * Class representing messages emitted when Metastore operations are done.

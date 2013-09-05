@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.mapreduce;
+package org.apache.hive.hcatalog.mapreduce;
 
 import junit.framework.Assert;
 import org.apache.hadoop.fs.Path;
@@ -94,7 +94,7 @@ public class TestHCatHiveThriftCompatibility extends HCatBaseTest {
                         intStringSeq.getParent() + "'").getResponseCode());
 
         PigServer pigServer = new PigServer(ExecType.LOCAL);
-        pigServer.registerQuery("A = load 'test_thrift' using org.apache.hcatalog.pig.HCatLoader();");
+        pigServer.registerQuery("A = load 'test_thrift' using org.apache.hive.hcatalog.pig.HCatLoader();");
 
         Schema expectedSchema = new Schema();
         expectedSchema.add(new Schema.FieldSchema("myint", DataType.INTEGER));

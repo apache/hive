@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.data;
+package org.apache.hive.hcatalog.data;
 
 import java.io.DataInput;
 import java.io.DataOutput;

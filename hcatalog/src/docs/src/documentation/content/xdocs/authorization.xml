@@ -185,7 +185,7 @@
 
   &lt;property&gt;
     &lt;name&gt;hive.security.authorization.manager&lt;/name&gt;
-    &lt;value&gt;org.apache.hcatalog.security.HdfsAuthorizationProvider&lt;/value&gt;
+    &lt;value&gt;org.apache.hive.hcatalog.security.HdfsAuthorizationProvider&lt;/value&gt;
     &lt;description&gt;the hive client authorization manager class name.
     The user defined authorization class should implement interface
     org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider.

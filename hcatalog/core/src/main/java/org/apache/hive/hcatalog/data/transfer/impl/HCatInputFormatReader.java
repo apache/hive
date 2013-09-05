@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.data.transfer.impl;
+package org.apache.hive.hcatalog.data.transfer.impl;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -31,14 +31,14 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
-import org.apache.hcatalog.common.ErrorType;
-import org.apache.hcatalog.common.HCatException;
-import org.apache.hcatalog.data.HCatRecord;
-import org.apache.hcatalog.data.transfer.HCatReader;
-import org.apache.hcatalog.data.transfer.ReadEntity;
-import org.apache.hcatalog.data.transfer.ReaderContext;
-import org.apache.hcatalog.data.transfer.state.StateProvider;
-import org.apache.hcatalog.mapreduce.HCatInputFormat;
+import org.apache.hive.hcatalog.common.ErrorType;
+import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.data.HCatRecord;
+import org.apache.hive.hcatalog.data.transfer.HCatReader;
+import org.apache.hive.hcatalog.data.transfer.ReadEntity;
+import org.apache.hive.hcatalog.data.transfer.ReaderContext;
+import org.apache.hive.hcatalog.data.transfer.state.StateProvider;
+import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
 
 /**
  * This reader reads via {@link HCatInputFormat}

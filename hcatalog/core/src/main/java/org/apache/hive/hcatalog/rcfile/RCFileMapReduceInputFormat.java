@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.rcfile;
+package org.apache.hive.hcatalog.rcfile;
 
 import java.io.IOException;
 import java.util.List;

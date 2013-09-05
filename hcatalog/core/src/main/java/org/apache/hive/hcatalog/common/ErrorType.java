@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.common;
+package org.apache.hive.hcatalog.common;
 
 /**
  * Enum type representing the various errors throws by HCat.

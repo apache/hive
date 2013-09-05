@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.templeton;
+package org.apache.hive.hcatalog.templeton;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -26,7 +26,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hcatalog.templeton.tool.TempletonUtils;
+import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.eclipse.jetty.http.HttpStatus;
 

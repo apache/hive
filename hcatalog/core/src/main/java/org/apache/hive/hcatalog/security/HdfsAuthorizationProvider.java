@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.security;
+package org.apache.hive.hcatalog.security;
 
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 

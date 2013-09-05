@@ -129,9 +129,9 @@ os.environ['HADOOP_OPTS'] += " " + "-Dhive.log.file=hcat.log" + " " + "-Dhive.lo
 
 cmdLine = os.path.join(os.environ['HADOOP_PREFIX'], "bin", hadoopcmd)
 if os.name == "posix":
-  cmd = [cmdLine, "jar", hcatJars[0], "org.apache.hcatalog.cli.HCatCli"] + sys.argv[1:len(sys.argv)]
+  cmd = [cmdLine, "jar", hcatJars[0], "org.apache.hive.hcatalog.cli.HCatCli"] + sys.argv[1:len(sys.argv)]
 else:
-  cmd = ["call", cmdLine, "jar", hcatJars[0], "org.apache.hcatalog.cli.HCatCli"] + sys.argv[1:len(sys.argv)]
+  cmd = ["call", cmdLine, "jar", hcatJars[0], "org.apache.hive.hcatalog.cli.HCatCli"] + sys.argv[1:len(sys.argv)]
 
 
 if debug == 1:

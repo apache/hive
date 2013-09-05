@@ -16,16 +16,16 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.templeton.mock;
+package org.apache.hive.hcatalog.templeton.mock;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.exec.ExecuteException;
-import org.apache.hcatalog.templeton.ExecBean;
-import org.apache.hcatalog.templeton.ExecService;
-import org.apache.hcatalog.templeton.NotAuthorizedException;
+import org.apache.hive.hcatalog.templeton.ExecBean;
+import org.apache.hive.hcatalog.templeton.ExecService;
+import org.apache.hive.hcatalog.templeton.NotAuthorizedException;
 
 public class MockExecService implements ExecService {
 

@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.data;
+package org.apache.hive.hcatalog.data;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -25,8 +25,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.hcatalog.common.HCatException;
-import org.apache.hcatalog.data.schema.HCatSchema;
+import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.data.schema.HCatSchema;
 
 public class DefaultHCatRecord extends HCatRecord {
 

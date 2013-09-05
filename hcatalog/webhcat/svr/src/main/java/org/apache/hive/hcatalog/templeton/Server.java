@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.templeton;
+package org.apache.hive.hcatalog.templeton;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -50,7 +50,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.client.PseudoAuthenticator;
-import org.apache.hcatalog.templeton.tool.TempletonUtils;
+import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
 
 /**
  * The Templeton Web API server.

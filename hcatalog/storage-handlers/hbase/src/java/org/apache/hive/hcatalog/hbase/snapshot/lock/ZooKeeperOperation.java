@@ -17,13 +17,13 @@
  * under the License.
  */
 
-package org.apache.hcatalog.hbase.snapshot.lock;
+package org.apache.hive.hcatalog.hbase.snapshot.lock;
 
 import org.apache.zookeeper.KeeperException;
 
 /**
  * A callback object which can be used for implementing retry-able operations in the
- * {@link org.apache.hcatalog.hbase.snapshot.lock.ProtocolSupport} class
+ * {@link org.apache.hive.hcatalog.hbase.snapshot.lock.ProtocolSupport} class
  *  This class has been used as-is from the zookeeper 3.4.0 with change in the
  *  package name .
  */

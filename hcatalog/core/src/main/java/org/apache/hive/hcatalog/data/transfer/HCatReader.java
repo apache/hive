@@ -17,16 +17,16 @@
  * under the License.
  */
 
-package org.apache.hcatalog.data.transfer;
+package org.apache.hive.hcatalog.data.transfer;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hcatalog.common.HCatException;
-import org.apache.hcatalog.data.HCatRecord;
-import org.apache.hcatalog.data.transfer.state.StateProvider;
+import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.data.HCatRecord;
+import org.apache.hive.hcatalog.data.transfer.state.StateProvider;
 
 /**
  * This abstract class is internal to HCatalog and abstracts away the notion of

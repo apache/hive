@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.templeton.mock;
+package org.apache.hive.hcatalog.templeton.mock;
 
 import java.net.URI;
 import java.net.URISyntaxException;

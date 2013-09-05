@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.pig;
+package org.apache.hive.hcatalog.pig;
 
 import java.io.DataInput;
 import java.io.DataOutput;

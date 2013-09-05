@@ -319,7 +319,7 @@ stored as rcfile
 location '$location';\n";
     } elsif ($format eq "json") {
         print $hivefp "
-row format serde 'org.apache.hcatalog.data.JsonSerDe'
+row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
 stored as textfile
 location '$location'
 ;\n";
@@ -657,7 +657,7 @@ for (my $i = 0; $i < $numRows; $i++) {
             d double,
             m map<string, string>,
             bb array<struct<a: int, b: string>>)
-            row format serde 'org.apache.hcatalog.data.JsonSerDe'
+            row format serde 'org.apache.hive.hcatalog.data.JsonSerDe'
             STORED AS TEXTFILE 
             location '$hdfsTargetDir/$tableName';\n";
         open(PLAIN, ">$tableName.plain") or

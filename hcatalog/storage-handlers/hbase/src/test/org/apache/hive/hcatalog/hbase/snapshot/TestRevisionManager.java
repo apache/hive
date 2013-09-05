@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.hbase.snapshot;
+package org.apache.hive.hcatalog.hbase.snapshot;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -26,9 +26,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hcatalog.hbase.SkeletonHBaseTest;
-import org.apache.hcatalog.hbase.snapshot.transaction.thrift.StoreFamilyRevision;
-import org.apache.hcatalog.hbase.snapshot.transaction.thrift.StoreFamilyRevisionList;
+import org.apache.hive.hcatalog.hbase.SkeletonHBaseTest;
+import org.apache.hive.hcatalog.hbase.snapshot.transaction.thrift.StoreFamilyRevision;
+import org.apache.hive.hcatalog.hbase.snapshot.transaction.thrift.StoreFamilyRevisionList;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;

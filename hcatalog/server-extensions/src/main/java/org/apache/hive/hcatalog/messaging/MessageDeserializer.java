@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.messaging;
+package org.apache.hive.hcatalog.messaging;
 
 /**
  * Interface for converting HCat events from String-form back to HCatEventMessage instances.

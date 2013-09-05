@@ -17,13 +17,13 @@
  * under the License.
  */
 
-package org.apache.hcatalog.pig;
+package org.apache.hive.hcatalog.pig;
 
 import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.pig.impl.util.UDFContext;
 
 /**

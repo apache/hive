@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.mapreduce;
+package org.apache.hive.hcatalog.mapreduce;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -41,13 +41,13 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
-import org.apache.hcatalog.HcatTestUtils;
-import org.apache.hcatalog.common.HCatConstants;
-import org.apache.hcatalog.common.HCatException;
-import org.apache.hcatalog.common.HCatUtil;
-import org.apache.hcatalog.data.DefaultHCatRecord;
-import org.apache.hcatalog.data.schema.HCatFieldSchema;
-import org.apache.hcatalog.data.schema.HCatSchema;
+import org.apache.hive.hcatalog.HcatTestUtils;
+import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.common.HCatUtil;
+import org.apache.hive.hcatalog.data.DefaultHCatRecord;
+import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
+import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.apache.pig.data.Tuple;
@@ -98,10 +98,10 @@ public class TestSequenceFileReadWrite extends TestCase {
         server.registerQuery("A = load '"
                 + INPUT_FILE_NAME
                 + "' using PigStorage(',') as (a0:int,a1:chararray,a2:chararray);");
-        server.registerQuery("store A into 'demo_table' using org.apache.hcatalog.pig.HCatStorer();");
+        server.registerQuery("store A into 'demo_table' using org.apache.hive.hcatalog.pig.HCatStorer();");
         server.executeBatch();
 
-        server.registerQuery("B = load 'demo_table' using org.apache.hcatalog.pig.HCatLoader();");
+        server.registerQuery("B = load 'demo_table' using org.apache.hive.hcatalog.pig.HCatLoader();");
         Iterator<Tuple> XIter = server.openIterator("B");
         int numTuplesRead = 0;
         while (XIter.hasNext()) {
@@ -127,10 +127,10 @@ public class TestSequenceFileReadWrite extends TestCase {
         server.registerQuery("A = load '"
                 + INPUT_FILE_NAME
                 + "' using PigStorage(',') as (a0:int,a1:chararray,a2:chararray);");
-        server.registerQuery("store A into 'demo_table_1' using org.apache.hcatalog.pig.HCatStorer();");
+        server.registerQuery("store A into 'demo_table_1' using org.apache.hive.hcatalog.pig.HCatStorer();");
         server.executeBatch();
 
-        server.registerQuery("B = load 'demo_table_1' using org.apache.hcatalog.pig.HCatLoader();");
+        server.registerQuery("B = load 'demo_table_1' using org.apache.hive.hcatalog.pig.HCatLoader();");
         Iterator<Tuple> XIter = server.openIterator("B");
         int numTuplesRead = 0;
         while (XIter.hasNext()) {
@@ -176,7 +176,7 @@ public class TestSequenceFileReadWrite extends TestCase {
         assertTrue(job.isSuccessful());
 
         server.setBatchOn();
-        server.registerQuery("C = load 'default.demo_table_2' using org.apache.hcatalog.pig.HCatLoader();");
+        server.registerQuery("C = load 'default.demo_table_2' using org.apache.hive.hcatalog.pig.HCatLoader();");
         server.executeBatch();
         Iterator<Tuple> XIter = server.openIterator("C");
         int numTuplesRead = 0;
@@ -223,7 +223,7 @@ public class TestSequenceFileReadWrite extends TestCase {
         assertTrue(job.isSuccessful());
 
         server.setBatchOn();
-        server.registerQuery("D = load 'default.demo_table_3' using org.apache.hcatalog.pig.HCatLoader();");
+        server.registerQuery("D = load 'default.demo_table_3' using org.apache.hive.hcatalog.pig.HCatLoader();");
         server.executeBatch();
         Iterator<Tuple> XIter = server.openIterator("D");
         int numTuplesRead = 0;

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.pig;
+package org.apache.hive.hcatalog.pig;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -33,7 +33,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.CommandNeedRetryException;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hcatalog.data.Pair;
+import org.apache.hive.hcatalog.data.Pair;
 import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 
@@ -50,8 +50,8 @@ public class TestHCatStorerMulti extends TestCase {
     private static Map<Integer, Pair<Integer, String>> basicInputData;
 
     protected String storageFormat() {
-        return "RCFILE tblproperties('hcat.isd'='org.apache.hcatalog.rcfile.RCFileInputDriver'," +
-            "'hcat.osd'='org.apache.hcatalog.rcfile.RCFileOutputDriver')";
+        return "RCFILE tblproperties('hcat.isd'='org.apache.hive.hcatalog.rcfile.RCFileInputDriver'," +
+            "'hcat.osd'='org.apache.hive.hcatalog.rcfile.RCFileOutputDriver')";
     }
 
     private void dropTable(String tablename) throws IOException, CommandNeedRetryException {
@@ -105,7 +105,7 @@ public class TestHCatStorerMulti extends TestCase {
         PigServer server = new PigServer(ExecType.LOCAL);
         server.setBatchOn();
         server.registerQuery("A = load '" + INPUT_FILE_NAME + "' as (a:int, b:chararray);");
-        server.registerQuery("store A into '" + BASIC_TABLE + "' using org.apache.hcatalog.pig.HCatStorer();");
+        server.registerQuery("store A into '" + BASIC_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer();");
 
         server.executeBatch();
 
@@ -125,9 +125,9 @@ public class TestHCatStorerMulti extends TestCase {
         server.registerQuery("A = load '" + INPUT_FILE_NAME + "' as (a:int, b:chararray);");
 
         server.registerQuery("B2 = filter A by a < 2;");
-        server.registerQuery("store B2 into '" + PARTITIONED_TABLE + "' using org.apache.hcatalog.pig.HCatStorer('bkt=0');");
+        server.registerQuery("store B2 into '" + PARTITIONED_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer('bkt=0');");
         server.registerQuery("C2 = filter A by a >= 2;");
-        server.registerQuery("store C2 into '" + PARTITIONED_TABLE + "' using org.apache.hcatalog.pig.HCatStorer('bkt=1');");
+        server.registerQuery("store C2 into '" + PARTITIONED_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer('bkt=1');");
 
         server.executeBatch();
 
@@ -148,12 +148,12 @@ public class TestHCatStorerMulti extends TestCase {
         PigServer server = new PigServer(ExecType.LOCAL);
         server.setBatchOn();
         server.registerQuery("A = load '" + INPUT_FILE_NAME + "' as (a:int, b:chararray);");
-        server.registerQuery("store A into '" + BASIC_TABLE + "' using org.apache.hcatalog.pig.HCatStorer();");
+        server.registerQuery("store A into '" + BASIC_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer();");
 
         server.registerQuery("B2 = filter A by a < 2;");
-        server.registerQuery("store B2 into '" + PARTITIONED_TABLE + "' using org.apache.hcatalog.pig.HCatStorer('bkt=0');");
+        server.registerQuery("store B2 into '" + PARTITIONED_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer('bkt=0');");
         server.registerQuery("C2 = filter A by a >= 2;");
-        server.registerQuery("store C2 into '" + PARTITIONED_TABLE + "' using org.apache.hcatalog.pig.HCatStorer('bkt=1');");
+        server.registerQuery("store C2 into '" + PARTITIONED_TABLE + "' using org.apache.hive.hcatalog.pig.HCatStorer('bkt=1');");
 
         server.executeBatch();
 

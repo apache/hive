@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.templeton;
+package org.apache.hive.hcatalog.templeton;
 
 import com.sun.jersey.api.core.PackagesResourceConfig;
 import com.sun.jersey.spi.container.servlet.ServletContainer;
@@ -212,11 +212,11 @@ public class Main {
 
     public PackagesResourceConfig makeJerseyConfig() {
         PackagesResourceConfig rc
-            = new PackagesResourceConfig("org.apache.hcatalog.templeton");
+            = new PackagesResourceConfig("org.apache.hive.hcatalog.templeton");
         HashMap<String, Object> props = new HashMap<String, Object>();
         props.put("com.sun.jersey.api.json.POJOMappingFeature", "true");
         props.put("com.sun.jersey.config.property.WadlGeneratorConfig",
-            "org.apache.hcatalog.templeton.WadlConfig");
+            "org.apache.hive.hcatalog.templeton.WadlConfig");
         rc.setPropertiesAndFeatures(props);
 
         return rc;

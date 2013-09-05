@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.rcfile;
+package org.apache.hive.hcatalog.rcfile;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;

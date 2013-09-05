@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.data.transfer.state;
+package org.apache.hive.hcatalog.data.transfer.state;
 
 /**
  * If external system wants to communicate any state to slaves, they can do so

@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.data.transfer;
+package org.apache.hive.hcatalog.data.transfer;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -29,7 +29,7 @@ import java.util.List;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hcatalog.mapreduce.HCatSplit;
+import org.apache.hive.hcatalog.mapreduce.HCatSplit;
 
 /**
  * This class will contain information of different {@link InputSplit} obtained

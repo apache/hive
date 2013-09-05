@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.templeton;
+package org.apache.hive.hcatalog.templeton;
 
 import java.io.IOException;
 
@@ -28,7 +28,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.mapred.JobID;
 import org.apache.hadoop.mapred.JobProfile;
 import org.apache.hadoop.mapred.JobStatus;
-import org.apache.hcatalog.templeton.tool.JobState;
+import org.apache.hive.hcatalog.templeton.tool.JobState;
 
 /**
  * Fetch the status of a given job id in the queue.

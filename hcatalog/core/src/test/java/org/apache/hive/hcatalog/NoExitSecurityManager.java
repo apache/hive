@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog;
+package org.apache.hive.hcatalog;
 
 import java.security.Permission;
 

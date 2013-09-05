@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.cli.SemanticAnalysis;
+package org.apache.hive.hcatalog.cli.SemanticAnalysis;
 
 import java.io.Serializable;
 import java.util.List;
@@ -46,8 +46,8 @@ import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
-import org.apache.hcatalog.common.ErrorType;
-import org.apache.hcatalog.common.HCatException;
+import org.apache.hive.hcatalog.common.ErrorType;
+import org.apache.hive.hcatalog.common.HCatException;
 
 public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
 

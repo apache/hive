@@ -17,16 +17,16 @@
  * under the License.
  */
 
-package org.apache.hcatalog.data.transfer;
+package org.apache.hive.hcatalog.data.transfer;
 
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.InputSplit;
-import org.apache.hcatalog.data.transfer.impl.HCatInputFormatReader;
-import org.apache.hcatalog.data.transfer.impl.HCatOutputFormatWriter;
-import org.apache.hcatalog.data.transfer.state.DefaultStateProvider;
-import org.apache.hcatalog.data.transfer.state.StateProvider;
+import org.apache.hive.hcatalog.data.transfer.impl.HCatInputFormatReader;
+import org.apache.hive.hcatalog.data.transfer.impl.HCatOutputFormatWriter;
+import org.apache.hive.hcatalog.data.transfer.state.DefaultStateProvider;
+import org.apache.hive.hcatalog.data.transfer.state.StateProvider;
 
 /**
  * Use this factory to get instances of {@link HCatReader} or {@link HCatWriter}

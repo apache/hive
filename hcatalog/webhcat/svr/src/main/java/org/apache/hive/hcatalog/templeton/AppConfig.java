@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.templeton;
+package org.apache.hive.hcatalog.templeton;
 
 import java.io.File;
 import java.net.URL;
@@ -27,9 +27,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.util.VersionInfo;
-import org.apache.hcatalog.templeton.tool.JobState;
-import org.apache.hcatalog.templeton.tool.ZooKeeperCleanup;
-import org.apache.hcatalog.templeton.tool.ZooKeeperStorage;
+import org.apache.hive.hcatalog.templeton.tool.JobState;
+import org.apache.hive.hcatalog.templeton.tool.ZooKeeperCleanup;
+import org.apache.hive.hcatalog.templeton.tool.ZooKeeperStorage;
 
 /**
  * The configuration for Templeton.  This merges the normal Hadoop

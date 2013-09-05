@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hcatalog.hbase.snapshot;
+package org.apache.hive.hcatalog.hbase.snapshot;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -25,8 +25,8 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HConstants;
-import org.apache.hcatalog.hbase.snapshot.lock.LockListener;
-import org.apache.hcatalog.hbase.snapshot.lock.WriteLock;
+import org.apache.hive.hcatalog.hbase.snapshot.lock.LockListener;
+import org.apache.hive.hcatalog.hbase.snapshot.lock.WriteLock;
 import org.apache.zookeeper.CreateMode;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooDefs.Ids;
@@ -46,7 +46,7 @@ public class ZKBasedRevisionManager implements RevisionManager {
 
 
     /*
-     * @see org.apache.hcatalog.hbase.snapshot.RevisionManager#initialize()
+     * @see org.apache.hive.hcatalog.hbase.snapshot.RevisionManager#initialize()
      */
     @Override
     public void initialize(Configuration conf) {
@@ -116,7 +116,7 @@ public class ZKBasedRevisionManager implements RevisionManager {
     /* @param keepAlive
     /* @return
     /* @throws IOException
-     * @see org.apache.hcatalog.hbase.snapshot.RevisionManager#beginWriteTransaction(java.lang.String, java.util.List, long)
+     * @see org.apache.hive.hcatalog.hbase.snapshot.RevisionManager#beginWriteTransaction(java.lang.String, java.util.List, long)
      */
     public Transaction beginWriteTransaction(String table,
                                              List<String> families, long keepAlive) throws IOException {
@@ -171,7 +171,7 @@ public class ZKBasedRevisionManager implements RevisionManager {
     /* @param families The column families involved in the transaction.
     /* @return transaction The transaction which was started.
     /* @throws IOException
-     * @see org.apache.hcatalog.hbase.snapshot.RevisionManager#beginWriteTransaction(java.lang.String, java.util.List)
+     * @see org.apache.hive.hcatalog.hbase.snapshot.RevisionManager#beginWriteTransaction(java.lang.String, java.util.List)
      */
     public Transaction beginWriteTransaction(String table, List<String> families)
         throws IOException {
@@ -270,7 +270,7 @@ public class ZKBasedRevisionManager implements RevisionManager {
 
     /* @param transaction
    /* @throws IOException
-    * @see org.apache.hcatalog.hbase.snapshot.RevsionManager#keepAlive(org.apache.hcatalog.hbase.snapshot.Transaction)
+    * @see org.apache.hive.hcatalog.hbase.snapshot.RevsionManager#keepAlive(org.apache.hive.hcatalog.hbase.snapshot.Transaction)
     */
     public void keepAlive(Transaction transaction)
         throws IOException {
@@ -316,7 +316,7 @@ public class ZKBasedRevisionManager implements RevisionManager {
     /* @param tableName The table whose snapshot is being created.
     /* @return TableSnapshot An instance of TableSnaphot
     /* @throws IOException
-     * @see org.apache.hcatalog.hbase.snapshot.RevsionManager#createSnapshot(java.lang.String)
+     * @see org.apache.hive.hcatalog.hbase.snapshot.RevsionManager#createSnapshot(java.lang.String)
      */
     public TableSnapshot createSnapshot(String tableName) throws IOException {
         refreshTransactionList(tableName);
@@ -350,7 +350,7 @@ public class ZKBasedRevisionManager implements RevisionManager {
     /* @param revision
     /* @return TableSnapshot
     /* @throws IOException
-     * @see org.apache.hcatalog.hbase.snapshot.RevsionManager#createSnapshot(java.lang.String, long)
+     * @see org.apache.hive.hcatalog.hbase.snapshot.RevsionManager#createSnapshot(java.lang.String, long)
      */
     public TableSnapshot createSnapshot(String tableName, long revision) throws IOException {
 
@@ -440,7 +440,7 @@ public class ZKBasedRevisionManager implements RevisionManager {
     class RMLockListener implements LockListener {
 
         /*
-         * @see org.apache.hcatalog.hbase.snapshot.lock.LockListener#lockAcquired()
+         * @see org.apache.hive.hcatalog.hbase.snapshot.lock.LockListener#lockAcquired()
          */
         @Override
         public void lockAcquired() {
@@ -448,7 +448,7 @@ public class ZKBasedRevisionManager implements RevisionManager {
         }
 
         /*
-         * @see org.apache.hcatalog.hbase.snapshot.lock.LockListener#lockReleased()
+         * @see org.apache.hive.hcatalog.hbase.snapshot.lock.LockListener#lockReleased()
          */
         @Override
         public void lockReleased() {
