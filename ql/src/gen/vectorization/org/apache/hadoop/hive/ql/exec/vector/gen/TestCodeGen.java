@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.vector.expressions.templates;
+package org.apache.hadoop.hive.ql.exec.vector.gen;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -43,12 +43,12 @@ public class TestCodeGen {
   }
 
   private final String testOutputDir;
-  private final String templateDirectory;
+  private final String testTemplateDirectory;
   private final HashMap<TestSuiteClassName,StringBuilder> testsuites;
 
-  public TestCodeGen(String testOutputDir, String templateDirectory) {
+  public TestCodeGen(String testOutputDir, String testTemplateDirectory) {
     this.testOutputDir = testOutputDir;
-    this.templateDirectory = templateDirectory;
+    this.testTemplateDirectory = testTemplateDirectory;
     testsuites = new HashMap<TestSuiteClassName, StringBuilder>();
 
     for(TestSuiteClassName className : TestSuiteClassName.values()) {
@@ -65,7 +65,7 @@ public class TestCodeGen {
         TestSuiteClassName.TestColumnScalarOperationVectorExpressionEvaluation;
 
     //Read the template into a string;
-    String templateFile = CodeGen.joinPath(this.templateDirectory,template.toString()+".txt");
+    String templateFile = CodeGen.joinPath(this.testTemplateDirectory,template.toString()+".txt");
     String templateString = removeTemplateComments(CodeGen.readFile(templateFile));
 
     for(Boolean[] testMatrix :new Boolean[][]{
@@ -109,7 +109,7 @@ public class TestCodeGen {
         TestSuiteClassName.TestColumnScalarFilterVectorExpressionEvaluation;
 
     //Read the template into a string;
-    String templateFile = CodeGen.joinPath(this.templateDirectory,template.toString()+".txt");
+    String templateFile = CodeGen.joinPath(this.testTemplateDirectory,template.toString()+".txt");
     String templateString = removeTemplateComments(CodeGen.readFile(templateFile));
 
     for(Boolean[] testMatrix : new Boolean[][]{
@@ -132,9 +132,11 @@ public class TestCodeGen {
       testCase = testCase.replaceAll("<Operator>", operatorSymbol);
 
       if(op1IsCol){
-        testCase = testCase.replaceAll("<ConstructorParams>","0, scalarValue");
+        testCase = testCase.replaceAll("<Operand1>","inputColumnVector.vector[i]");
+        testCase = testCase.replaceAll("<Operand2>","scalarValue");
       }else{
-        testCase = testCase.replaceAll("<ConstructorParams>","scalarValue, 0");
+        testCase = testCase.replaceAll("<Operand1>","scalarValue");
+        testCase = testCase.replaceAll("<Operand2>","inputColumnVector.vector[i]");
       }
 
       testsuites.get(template).append(testCase);
@@ -149,7 +151,7 @@ public class TestCodeGen {
      TestSuiteClassName.TestColumnColumnOperationVectorExpressionEvaluation;
 
     //Read the template into a string;
-    String templateFile = CodeGen.joinPath(this.templateDirectory,template.toString()+".txt");
+    String templateFile = CodeGen.joinPath(this.testTemplateDirectory,template.toString()+".txt");
     String templateString = removeTemplateComments(CodeGen.readFile(templateFile));
 
     for(Boolean[] testMatrix : new Boolean[][]{
@@ -191,7 +193,7 @@ public class TestCodeGen {
           TestSuiteClassName.TestColumnColumnFilterVectorExpressionEvaluation;
 
       //Read the template into a string;
-      String templateFile = CodeGen.joinPath(this.templateDirectory,template.toString()+".txt");
+      String templateFile = CodeGen.joinPath(this.testTemplateDirectory,template.toString()+".txt");
       String templateString = removeTemplateComments(CodeGen.readFile(templateFile));
 
       for(Boolean[] testMatrix : new Boolean[][]{
@@ -222,7 +224,7 @@ public class TestCodeGen {
 
   public void generateTestSuites() throws IOException {
 
-    String templateFile = CodeGen.joinPath(this.templateDirectory, "TestClass.txt");
+    String templateFile = CodeGen.joinPath(this.testTemplateDirectory, "TestClass.txt");
     for(TestSuiteClassName testClass : testsuites.keySet()) {
 
       String templateString = CodeGen.readFile(templateFile);
