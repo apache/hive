@@ -149,8 +149,11 @@ import org.apache.hadoop.hive.ql.udf.xml.UDFXPathString;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -956,6 +959,59 @@ public final class FunctionRegistry {
   }
 
   /**
+   * Given a set of candidate methods and list of argument types, try to
+   * select the best candidate based on how close the passed argument types are
+   * to the candidate argument types.
+   * For a varchar argument, we would prefer evaluate(string) over evaluate(double).
+   * @param udfMethods  list of candidate methods
+   * @param argumentsPassed list of argument types to match to the candidate methods
+   */
+  static void filterMethodsByTypeAffinity(List<Method> udfMethods, List<TypeInfo> argumentsPassed) {
+    if (udfMethods.size() > 1) {
+      // Prefer methods with a closer signature based on the primitive grouping of each argument.
+      // Score each method based on its similarity to the passed argument types.
+      int currentScore = 0;
+      int bestMatchScore = 0;
+      Method bestMatch = null;
+      for (Method m: udfMethods) {
+        currentScore = 0;
+        List<TypeInfo> argumentsAccepted =
+            TypeInfoUtils.getParameterTypeInfos(m, argumentsPassed.size());
+        Iterator<TypeInfo> argsPassedIter = argumentsPassed.iterator();
+        for (TypeInfo acceptedType : argumentsAccepted) {
+          // Check the affinity of the argument passed in with the accepted argument,
+          // based on the PrimitiveGrouping
+          TypeInfo passedType = argsPassedIter.next();
+          if (acceptedType.getCategory() == Category.PRIMITIVE
+              && passedType.getCategory() == Category.PRIMITIVE) {
+            PrimitiveGrouping acceptedPg = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(
+                ((PrimitiveTypeInfo) acceptedType).getPrimitiveCategory());
+            PrimitiveGrouping passedPg = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(
+                ((PrimitiveTypeInfo) passedType).getPrimitiveCategory());
+            if (acceptedPg == passedPg) {
+              // The passed argument matches somewhat closely with an accepted argument
+              ++currentScore;
+            }
+          }
+        }
+        // Check if the score for this method is any better relative to others
+        if (currentScore > bestMatchScore) {
+          bestMatchScore = currentScore;
+          bestMatch = m;
+        } else if (currentScore == bestMatchScore) {
+          bestMatch = null; // no longer a best match if more than one.
+        }
+      }
+
+      if (bestMatch != null) {
+        // Found a best match during this processing, use it.
+        udfMethods.clear();
+        udfMethods.add(bestMatch);
+      }
+    }
+  }
+
+  /**
    * Gets the closest matching method corresponding to the argument list from a
    * list of methods.
    *
@@ -1025,6 +1081,13 @@ public final class FunctionRegistry {
       // No matching methods found
       throw new NoMatchingMethodException(udfClass, argumentsPassed, mlist);
     }
+
+    if (udfMethods.size() > 1) {
+      // First try selecting methods based on the type affinity of the arguments passed
+      // to the candidate method arguments.
+      filterMethodsByTypeAffinity(udfMethods, argumentsPassed);
+    }
+
     if (udfMethods.size() > 1) {
 
       // if the only difference is numeric types, pick the method

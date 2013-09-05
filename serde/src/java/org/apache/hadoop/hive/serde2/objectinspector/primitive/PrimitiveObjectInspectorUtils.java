@@ -952,6 +952,44 @@ public final class PrimitiveObjectInspectorUtils {
     return t == null ? null : t.primitiveJavaClass;
   }
 
+  /**
+   * Provide a general grouping for each primitive data type.
+   */
+  public static enum PrimitiveGrouping {
+    NUMERIC_GROUP, STRING_GROUP, BOOLEAN_GROUP, DATE_GROUP, BINARY_GROUP, UNKNOWN_GROUP
+  };
+
+  /**
+   * Based on the PrimitiveCategory of a type, return the PrimitiveGrouping
+   * that the PrimitiveCategory belongs to (numeric, string, date, etc).
+   * @param primitiveCategory Primitive category of the type
+   * @return PrimitveGrouping corresponding to the PrimitiveCategory,
+   *         or UNKNOWN_GROUP if the type does not match to a grouping.
+   */
+  public static PrimitiveGrouping getPrimitiveGrouping(PrimitiveCategory primitiveCategory) {
+    switch (primitiveCategory) {
+      case BYTE:
+      case SHORT:
+      case INT:
+      case LONG:
+      case FLOAT:
+      case DOUBLE:
+      case DECIMAL:
+        return PrimitiveGrouping.NUMERIC_GROUP;
+      case STRING:
+        return PrimitiveGrouping.STRING_GROUP;
+      case BOOLEAN:
+        return PrimitiveGrouping.BOOLEAN_GROUP;
+      case TIMESTAMP:
+      case DATE:
+        return PrimitiveGrouping.DATE_GROUP;
+      case BINARY:
+        return PrimitiveGrouping.BINARY_GROUP;
+      default:
+        return PrimitiveGrouping.UNKNOWN_GROUP;
+    }
+  }
+
   private PrimitiveObjectInspectorUtils() {
     // prevent instantiation
   }
