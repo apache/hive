@@ -25,14 +25,14 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 public class PartitionDesc extends GroupPermissionsDesc {
-    public String partition;
-    public String location;
-    public boolean ifNotExists = false;
+  public String partition;
+  public String location;
+  public boolean ifNotExists = false;
 
-    public PartitionDesc() {}
+  public PartitionDesc() {}
 
-    public String toString() {
-        return String.format("PartitionDesc(partition=%s, location=%s, ifNotExists=%s)",
-                             partition, location, ifNotExists);
-    }
+  public String toString() {
+    return String.format("PartitionDesc(partition=%s, location=%s, ifNotExists=%s)",
+               partition, location, ifNotExists);
+  }
 }

@@ -51,62 +51,62 @@ import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
  */
 public class ReadJson extends Configured implements Tool {
 
-    public static class Map
-        extends Mapper<WritableComparable, HCatRecord, IntWritable, HCatRecord> {
+  public static class Map
+    extends Mapper<WritableComparable, HCatRecord, IntWritable, HCatRecord> {
 
-        String s;
-        Integer i;
-        Double d;
+    String s;
+    Integer i;
+    Double d;
 
-        @Override
-        protected void map(WritableComparable key, HCatRecord value,
-                           org.apache.hadoop.mapreduce.Mapper<WritableComparable, HCatRecord,
-                               IntWritable, HCatRecord>.Context context)
-            throws IOException, InterruptedException {
-            s = value.get(0) == null ? null : (String) value.get(0);
-            i = value.get(1) == null ? null : (Integer) value.get(1);
-            d = value.get(2) == null ? null : (Double) value.get(2);
+    @Override
+    protected void map(WritableComparable key, HCatRecord value,
+               org.apache.hadoop.mapreduce.Mapper<WritableComparable, HCatRecord,
+                 IntWritable, HCatRecord>.Context context)
+      throws IOException, InterruptedException {
+      s = value.get(0) == null ? null : (String) value.get(0);
+      i = value.get(1) == null ? null : (Integer) value.get(1);
+      d = value.get(2) == null ? null : (Double) value.get(2);
 
-            HCatRecord record = new DefaultHCatRecord(3);
-            record.set(0, s);
-            record.set(1, i);
-            record.set(2, d);
+      HCatRecord record = new DefaultHCatRecord(3);
+      record.set(0, s);
+      record.set(1, i);
+      record.set(2, d);
 
-            context.write(null, record);
+      context.write(null, record);
 
-        }
     }
+  }
 
-    public int run(String[] args) throws Exception {
-        Configuration conf = getConf();
-        args = new GenericOptionsParser(conf, args).getRemainingArgs();
+  public int run(String[] args) throws Exception {
+    Configuration conf = getConf();
+    args = new GenericOptionsParser(conf, args).getRemainingArgs();
 
-        String serverUri = args[0];
-        String tableName = args[1];
-        String outputDir = args[2];
-        String dbName = null;
+    String serverUri = args[0];
+    String tableName = args[1];
+    String outputDir = args[2];
+    String dbName = null;
 
-        String principalID = System.getProperty(HCatConstants.HCAT_METASTORE_PRINCIPAL);
-        if (principalID != null)
-            conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
-        Job job = new Job(conf, "ReadJson");
-        HCatInputFormat.setInput(job, InputJobInfo.create(
-            dbName, tableName, null));
-        // initialize HCatOutputFormat
+    String principalID = System.getProperty(HCatConstants.HCAT_METASTORE_PRINCIPAL);
+    if (principalID != null)
+      conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
+    Job job = new Job(conf, "ReadJson");
+    HCatInputFormat.setInput(job, InputJobInfo.create(
+      dbName, tableName, null));
+    // initialize HCatOutputFormat
 
-        job.setInputFormatClass(HCatInputFormat.class);
-        job.setOutputFormatClass(TextOutputFormat.class);
-        job.setJarByClass(ReadJson.class);
-        job.setMapperClass(Map.class);
-        job.setOutputKeyClass(IntWritable.class);
-        job.setOutputValueClass(HCatRecord.class);
-        job.setNumReduceTasks(0);
-        FileOutputFormat.setOutputPath(job, new Path(outputDir));
-        return (job.waitForCompletion(true) ? 0 : 1);
-    }
+    job.setInputFormatClass(HCatInputFormat.class);
+    job.setOutputFormatClass(TextOutputFormat.class);
+    job.setJarByClass(ReadJson.class);
+    job.setMapperClass(Map.class);
+    job.setOutputKeyClass(IntWritable.class);
+    job.setOutputValueClass(HCatRecord.class);
+    job.setNumReduceTasks(0);
+    FileOutputFormat.setOutputPath(job, new Path(outputDir));
+    return (job.waitForCompletion(true) ? 0 : 1);
+  }
 
-    public static void main(String[] args) throws Exception {
-        int exitCode = ToolRunner.run(new ReadJson(), args);
-        System.exit(exitCode);
-    }
+  public static void main(String[] args) throws Exception {
+    int exitCode = ToolRunner.run(new ReadJson(), args);
+    System.exit(exitCode);
+  }
 }

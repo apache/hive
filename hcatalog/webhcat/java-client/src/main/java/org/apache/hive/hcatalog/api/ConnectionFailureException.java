@@ -26,14 +26,14 @@ import org.apache.hive.hcatalog.common.HCatException;
  */
 public class ConnectionFailureException extends HCatException {
 
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-    /**
-     * @param message Exception message.
-     * @param cause The wrapped Throwable that caused this exception.
-     */
-    public ConnectionFailureException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  /**
+   * @param message Exception message.
+   * @param cause The wrapped Throwable that caused this exception.
+   */
+  public ConnectionFailureException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
 }

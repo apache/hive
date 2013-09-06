@@ -28,14 +28,14 @@ import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 
 public class JavaAction {
 
-    public static void main(String[] args) throws Exception {
+  public static void main(String[] args) throws Exception {
 
-        HiveConf conf = new HiveConf();
-        conf.addResource(new Path("file:///", System.getProperty("oozie.action.conf.xml")));
-        conf.setVar(ConfVars.SEMANTIC_ANALYZER_HOOK, HCatSemanticAnalyzer.class.getName());
-        conf.setBoolVar(ConfVars.METASTORE_USE_THRIFT_SASL, true);
-        SessionState.start(new CliSessionState(conf));
-        new CliDriver().processLine(args[0]);
-    }
+    HiveConf conf = new HiveConf();
+    conf.addResource(new Path("file:///", System.getProperty("oozie.action.conf.xml")));
+    conf.setVar(ConfVars.SEMANTIC_ANALYZER_HOOK, HCatSemanticAnalyzer.class.getName());
+    conf.setBoolVar(ConfVars.METASTORE_USE_THRIFT_SASL, true);
+    SessionState.start(new CliSessionState(conf));
+    new CliDriver().processLine(args[0]);
+  }
 
 }

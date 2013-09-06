@@ -28,27 +28,27 @@ import java.util.List;
  */
 public class TestServer extends TestCase {
 
-    MockServer server;
+  MockServer server;
 
-    public void setUp() {
-        new Main(null);         // Initialize the config
-        server = new MockServer();
-    }
+  public void setUp() {
+    new Main(null);         // Initialize the config
+    server = new MockServer();
+  }
 
-    public void testServer() {
-        assertNotNull(server);
-    }
+  public void testServer() {
+    assertNotNull(server);
+  }
 
-    public void testStatus() {
-        assertEquals(server.status().get("status"), "ok");
-    }
-    
-    public void testVersions() {
-        assertEquals(server.version().get("version"), "v1");
-    }
-    
-    public void testFormats() {
-        assertEquals(1, server.requestFormats().size());
-        assertEquals( ((List)server.requestFormats().get("responseTypes")).get(0), "application/json");
-    }
+  public void testStatus() {
+    assertEquals(server.status().get("status"), "ok");
+  }
+
+  public void testVersions() {
+    assertEquals(server.version().get("version"), "v1");
+  }
+
+  public void testFormats() {
+    assertEquals(1, server.requestFormats().size());
+    assertEquals( ((List)server.requestFormats().get("responseTypes")).get(0), "application/json");
+  }
 }

@@ -35,63 +35,63 @@ import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
  * This is the backend of the pig web service.
  */
 public class PigDelegator extends LauncherDelegator {
-    public PigDelegator(AppConfig appConf) {
-        super(appConf);
+  public PigDelegator(AppConfig appConf) {
+    super(appConf);
+  }
+
+  public EnqueueBean run(String user,
+               String execute, String srcFile,
+               List<String> pigArgs, String otherFiles,
+               String statusdir, String callback, String completedUrl)
+    throws NotAuthorizedException, BadParam, BusyException, QueueException,
+    ExecuteException, IOException, InterruptedException {
+    runAs = user;
+    List<String> args = makeArgs(execute,
+      srcFile, pigArgs,
+      otherFiles, statusdir, completedUrl);
+
+    return enqueueController(user, callback, args);
+  }
+
+  private List<String> makeArgs(String execute, String srcFile,
+                  List<String> pigArgs, String otherFiles,
+                  String statusdir, String completedUrl)
+    throws BadParam, IOException, InterruptedException {
+    ArrayList<String> args = new ArrayList<String>();
+    try {
+      ArrayList<String> allFiles = new ArrayList<String>();
+      if (TempletonUtils.isset(srcFile))
+        allFiles.add(TempletonUtils.hadoopFsFilename
+          (srcFile, appConf, runAs));
+      if (TempletonUtils.isset(otherFiles)) {
+        String[] ofs = TempletonUtils.hadoopFsListAsArray(otherFiles, appConf, runAs);
+        allFiles.addAll(Arrays.asList(ofs));
+      }
+
+      args.addAll(makeLauncherArgs(appConf, statusdir, completedUrl, allFiles));
+      args.add("-archives");
+      args.add(appConf.pigArchive());
+
+      args.add("--");
+      args.add(appConf.pigPath());
+      //the token file location should be first argument of pig
+      args.add("-D" + TempletonControllerJob.TOKEN_FILE_ARG_PLACEHOLDER);
+
+      args.addAll(pigArgs);
+      if (TempletonUtils.isset(execute)) {
+        args.add("-execute");
+        args.add(execute);
+      } else if (TempletonUtils.isset(srcFile)) {
+        args.add("-file");
+        args.add(TempletonUtils.hadoopFsPath(srcFile, appConf, runAs)
+          .getName());
+      }
+    } catch (FileNotFoundException e) {
+      throw new BadParam(e.getMessage());
+    } catch (URISyntaxException e) {
+      throw new BadParam(e.getMessage());
     }
 
-    public EnqueueBean run(String user,
-                           String execute, String srcFile,
-                           List<String> pigArgs, String otherFiles,
-                           String statusdir, String callback, String completedUrl)
-        throws NotAuthorizedException, BadParam, BusyException, QueueException,
-        ExecuteException, IOException, InterruptedException {
-        runAs = user;
-        List<String> args = makeArgs(execute,
-            srcFile, pigArgs,
-            otherFiles, statusdir, completedUrl);
-
-        return enqueueController(user, callback, args);
-    }
-
-    private List<String> makeArgs(String execute, String srcFile,
-                                  List<String> pigArgs, String otherFiles,
-                                  String statusdir, String completedUrl)
-        throws BadParam, IOException, InterruptedException {
-        ArrayList<String> args = new ArrayList<String>();
-        try {
-            ArrayList<String> allFiles = new ArrayList<String>();
-            if (TempletonUtils.isset(srcFile))
-                allFiles.add(TempletonUtils.hadoopFsFilename
-                    (srcFile, appConf, runAs));
-            if (TempletonUtils.isset(otherFiles)) {
-                String[] ofs = TempletonUtils.hadoopFsListAsArray(otherFiles, appConf, runAs);
-                allFiles.addAll(Arrays.asList(ofs));
-            }
-
-            args.addAll(makeLauncherArgs(appConf, statusdir, completedUrl, allFiles));
-            args.add("-archives");
-            args.add(appConf.pigArchive());
-
-            args.add("--");
-            args.add(appConf.pigPath());
-            //the token file location should be first argument of pig
-            args.add("-D" + TempletonControllerJob.TOKEN_FILE_ARG_PLACEHOLDER);
-            
-            args.addAll(pigArgs);
-            if (TempletonUtils.isset(execute)) {
-                args.add("-execute");
-                args.add(execute);
-            } else if (TempletonUtils.isset(srcFile)) {
-                args.add("-file");
-                args.add(TempletonUtils.hadoopFsPath(srcFile, appConf, runAs)
-                    .getName());
-            }
-        } catch (FileNotFoundException e) {
-            throw new BadParam(e.getMessage());
-        } catch (URISyntaxException e) {
-            throw new BadParam(e.getMessage());
-        }
-
-        return args;
-    }
+    return args;
+  }
 }

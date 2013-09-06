@@ -51,62 +51,62 @@ import org.apache.hive.hcatalog.mapreduce.OutputJobInfo;
  */
 public class ReadWrite extends Configured implements Tool {
 
-    public static class Map extends
-        Mapper<WritableComparable, HCatRecord, Text, HCatRecord> {
+  public static class Map extends
+    Mapper<WritableComparable, HCatRecord, Text, HCatRecord> {
 
-        String name;
-        int age;
-        double gpa;
+    String name;
+    int age;
+    double gpa;
 
-        @Override
-        protected void map(
-            WritableComparable key,
-            HCatRecord value,
-            org.apache.hadoop.mapreduce.Mapper<WritableComparable, HCatRecord, Text, HCatRecord>.Context context)
-            throws IOException, InterruptedException {
-            name = (String) value.get(0);
-            age = (Integer) value.get(1);
-            gpa = (Double) value.get(2);
-            context.write(new Text(name), value);
+    @Override
+    protected void map(
+      WritableComparable key,
+      HCatRecord value,
+      org.apache.hadoop.mapreduce.Mapper<WritableComparable, HCatRecord, Text, HCatRecord>.Context context)
+      throws IOException, InterruptedException {
+      name = (String) value.get(0);
+      age = (Integer) value.get(1);
+      gpa = (Double) value.get(2);
+      context.write(new Text(name), value);
 
-        }
     }
+  }
 
-    public int run(String[] args) throws Exception {
-        Configuration conf = getConf();
-        args = new GenericOptionsParser(conf, args).getRemainingArgs();
+  public int run(String[] args) throws Exception {
+    Configuration conf = getConf();
+    args = new GenericOptionsParser(conf, args).getRemainingArgs();
 
-        String serverUri = args[0];
-        String inputTableName = args[1];
-        String outputTableName = args[2];
-        String dbName = null;
+    String serverUri = args[0];
+    String inputTableName = args[1];
+    String outputTableName = args[2];
+    String dbName = null;
 
-        String principalID = System
-            .getProperty(HCatConstants.HCAT_METASTORE_PRINCIPAL);
-        if (principalID != null)
-            conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
-        Job job = new Job(conf, "ReadWrite");
-        HCatInputFormat.setInput(job, InputJobInfo.create(dbName,
-            inputTableName, null));
-        // initialize HCatOutputFormat
+    String principalID = System
+      .getProperty(HCatConstants.HCAT_METASTORE_PRINCIPAL);
+    if (principalID != null)
+      conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
+    Job job = new Job(conf, "ReadWrite");
+    HCatInputFormat.setInput(job, InputJobInfo.create(dbName,
+      inputTableName, null));
+    // initialize HCatOutputFormat
 
-        job.setInputFormatClass(HCatInputFormat.class);
-        job.setJarByClass(ReadWrite.class);
-        job.setMapperClass(Map.class);
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(DefaultHCatRecord.class);
-        HCatOutputFormat.setOutput(job, OutputJobInfo.create(dbName,
-            outputTableName, null));
-        HCatSchema s = HCatInputFormat.getTableSchema(job);
-        System.err.println("INFO: output schema explicitly set for writing:"
-            + s);
-        HCatOutputFormat.setSchema(job, s);
-        job.setOutputFormatClass(HCatOutputFormat.class);
-        return (job.waitForCompletion(true) ? 0 : 1);
-    }
+    job.setInputFormatClass(HCatInputFormat.class);
+    job.setJarByClass(ReadWrite.class);
+    job.setMapperClass(Map.class);
+    job.setOutputKeyClass(Text.class);
+    job.setOutputValueClass(DefaultHCatRecord.class);
+    HCatOutputFormat.setOutput(job, OutputJobInfo.create(dbName,
+      outputTableName, null));
+    HCatSchema s = HCatInputFormat.getTableSchema(job);
+    System.err.println("INFO: output schema explicitly set for writing:"
+      + s);
+    HCatOutputFormat.setSchema(job, s);
+    job.setOutputFormatClass(HCatOutputFormat.class);
+    return (job.waitForCompletion(true) ? 0 : 1);
+  }
 
-    public static void main(String[] args) throws Exception {
-        int exitCode = ToolRunner.run(new ReadWrite(), args);
-        System.exit(exitCode);
-    }
+  public static void main(String[] args) throws Exception {
+    int exitCode = ToolRunner.run(new ReadWrite(), args);
+    System.exit(exitCode);
+  }
 }

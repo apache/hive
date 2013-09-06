@@ -24,7 +24,7 @@ import org.eclipse.jetty.http.HttpStatus;
  * Simple "we are busy, try again" exception.
  */
 public class BusyException extends SimpleWebException {
-    public BusyException() {
-        super(HttpStatus.SERVICE_UNAVAILABLE_503, "Busy, please retry");
-    }
+  public BusyException() {
+    super(HttpStatus.SERVICE_UNAVAILABLE_503, "Busy, please retry");
+  }
 }

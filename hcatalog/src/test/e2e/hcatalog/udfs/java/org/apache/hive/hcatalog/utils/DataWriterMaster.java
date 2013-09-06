@@ -40,57 +40,57 @@ import org.apache.hive.hcatalog.data.transfer.WriterContext;
 
 public class DataWriterMaster {
 
-    public static void main(String[] args) throws FileNotFoundException, IOException, ClassNotFoundException {
+  public static void main(String[] args) throws FileNotFoundException, IOException, ClassNotFoundException {
 
-        // This config contains all the configuration that master node wants to provide
-        // to the HCatalog.
-        Properties externalConfigs = new Properties();
-        externalConfigs.load(new FileReader(args[0]));
-        Map<String, String> config = new HashMap<String, String>();
+    // This config contains all the configuration that master node wants to provide
+    // to the HCatalog.
+    Properties externalConfigs = new Properties();
+    externalConfigs.load(new FileReader(args[0]));
+    Map<String, String> config = new HashMap<String, String>();
 
-        for (Entry<Object, Object> kv : externalConfigs.entrySet()) {
-            System.err.println("k: " + kv.getKey() + "\t v: " + kv.getValue());
-            config.put((String) kv.getKey(), (String) kv.getValue());
-        }
-
-        if (args.length == 3 && "commit".equalsIgnoreCase(args[2])) {
-            // Then, master commits if everything goes well.
-            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(args[1])));
-            WriterContext cntxt = (WriterContext) ois.readObject();
-            commit(config, true, cntxt);
-            System.exit(0);
-        }
-        // This piece of code runs in master node and gets necessary context.
-        WriterContext cntxt = runsInMaster(config);
-
-
-        // Master node will serialize writercontext and will make it available at slaves.
-        File f = new File(args[1]);
-        f.delete();
-        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f));
-        oos.writeObject(cntxt);
-        oos.flush();
-        oos.close();
+    for (Entry<Object, Object> kv : externalConfigs.entrySet()) {
+      System.err.println("k: " + kv.getKey() + "\t v: " + kv.getValue());
+      config.put((String) kv.getKey(), (String) kv.getValue());
     }
 
-    private static WriterContext runsInMaster(Map<String, String> config) throws HCatException {
-
-        WriteEntity.Builder builder = new WriteEntity.Builder();
-        WriteEntity entity = builder.withTable(config.get("table")).build();
-        HCatWriter writer = DataTransferFactory.getHCatWriter(entity, config);
-        WriterContext info = writer.prepareWrite();
-        return info;
+    if (args.length == 3 && "commit".equalsIgnoreCase(args[2])) {
+      // Then, master commits if everything goes well.
+      ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File(args[1])));
+      WriterContext cntxt = (WriterContext) ois.readObject();
+      commit(config, true, cntxt);
+      System.exit(0);
     }
+    // This piece of code runs in master node and gets necessary context.
+    WriterContext cntxt = runsInMaster(config);
 
-    private static void commit(Map<String, String> config, boolean status, WriterContext cntxt) throws HCatException {
 
-        WriteEntity.Builder builder = new WriteEntity.Builder();
-        WriteEntity entity = builder.withTable(config.get("table")).build();
-        HCatWriter writer = DataTransferFactory.getHCatWriter(entity, config);
-        if (status) {
-            writer.commit(cntxt);
-        } else {
-            writer.abort(cntxt);
-        }
+    // Master node will serialize writercontext and will make it available at slaves.
+    File f = new File(args[1]);
+    f.delete();
+    ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(f));
+    oos.writeObject(cntxt);
+    oos.flush();
+    oos.close();
+  }
+
+  private static WriterContext runsInMaster(Map<String, String> config) throws HCatException {
+
+    WriteEntity.Builder builder = new WriteEntity.Builder();
+    WriteEntity entity = builder.withTable(config.get("table")).build();
+    HCatWriter writer = DataTransferFactory.getHCatWriter(entity, config);
+    WriterContext info = writer.prepareWrite();
+    return info;
+  }
+
+  private static void commit(Map<String, String> config, boolean status, WriterContext cntxt) throws HCatException {
+
+    WriteEntity.Builder builder = new WriteEntity.Builder();
+    WriteEntity entity = builder.withTable(config.get("table")).build();
+    HCatWriter writer = DataTransferFactory.getHCatWriter(entity, config);
+    if (status) {
+      writer.commit(cntxt);
+    } else {
+      writer.abort(cntxt);
     }
+  }
 }

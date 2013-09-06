@@ -22,16 +22,16 @@ package org.apache.hive.hcatalog.templeton;
  * CompleteBean - The results of an CompleteDelegator run.
  */
 public class CompleteBean {
-    public String status;
+  public String status;
 
-    public CompleteBean() {}
+  public CompleteBean() {}
 
-    /**
-     * Create a new CompleteBean
-     *
-     * @param status     run status
-     */
-    public CompleteBean(String status) {
-        this.status = status;
-    }
+  /**
+   * Create a new CompleteBean
+   *
+   * @param status     run status
+   */
+  public CompleteBean(String status) {
+    this.status = status;
+  }
 }

@@ -30,70 +30,70 @@ import org.junit.Test;
 
 public class TestIDGenerator extends SkeletonHBaseTest {
 
-    @Test
-    public void testIDGeneration() throws Exception {
+  @Test
+  public void testIDGeneration() throws Exception {
 
-        int port = getHbaseConf().getInt("hbase.zookeeper.property.clientPort", 2181);
-        String servers = getHbaseConf().get("hbase.zookeeper.quorum");
-        String[] splits = servers.split(",");
-        StringBuffer sb = new StringBuffer();
-        for (String split : splits) {
-            sb.append(split);
-            sb.append(':');
-            sb.append(port);
-        }
-        ZKUtil zkutil = new ZKUtil(sb.toString(), "/rm_base");
+    int port = getHbaseConf().getInt("hbase.zookeeper.property.clientPort", 2181);
+    String servers = getHbaseConf().get("hbase.zookeeper.quorum");
+    String[] splits = servers.split(",");
+    StringBuffer sb = new StringBuffer();
+    for (String split : splits) {
+      sb.append(split);
+      sb.append(':');
+      sb.append(port);
+    }
+    ZKUtil zkutil = new ZKUtil(sb.toString(), "/rm_base");
 
-        String tableName = "myTable";
-        long initId = zkutil.nextId(tableName);
-        for (int i = 0; i < 10; i++) {
-            long id = zkutil.nextId(tableName);
-            Assert.assertEquals(initId + (i + 1), id);
-        }
+    String tableName = "myTable";
+    long initId = zkutil.nextId(tableName);
+    for (int i = 0; i < 10; i++) {
+      long id = zkutil.nextId(tableName);
+      Assert.assertEquals(initId + (i + 1), id);
+    }
+  }
+
+  @Test
+  public void testMultipleClients() throws InterruptedException {
+
+    int port = getHbaseConf().getInt("hbase.zookeeper.property.clientPort", 2181);
+    String servers = getHbaseConf().get("hbase.zookeeper.quorum");
+    String[] splits = servers.split(",");
+    StringBuffer sb = new StringBuffer();
+    for (String split : splits) {
+      sb.append(split);
+      sb.append(':');
+      sb.append(port);
     }
 
-    @Test
-    public void testMultipleClients() throws InterruptedException {
+    ArrayList<IDGenClient> clients = new ArrayList<IDGenClient>();
 
-        int port = getHbaseConf().getInt("hbase.zookeeper.property.clientPort", 2181);
-        String servers = getHbaseConf().get("hbase.zookeeper.quorum");
-        String[] splits = servers.split(",");
-        StringBuffer sb = new StringBuffer();
-        for (String split : splits) {
-            sb.append(split);
-            sb.append(':');
-            sb.append(port);
-        }
-
-        ArrayList<IDGenClient> clients = new ArrayList<IDGenClient>();
-
-        for (int i = 0; i < 5; i++) {
-            IDGenClient idClient = new IDGenClient(sb.toString(), "/rm_base", 10, "testTable");
-            clients.add(idClient);
-        }
-
-        for (IDGenClient idClient : clients) {
-            idClient.run();
-        }
-
-        for (IDGenClient idClient : clients) {
-            idClient.join();
-        }
-
-        HashMap<Long, Long> idMap = new HashMap<Long, Long>();
-        for (IDGenClient idClient : clients) {
-            idMap.putAll(idClient.getIdMap());
-        }
-
-        ArrayList<Long> keys = new ArrayList<Long>(idMap.keySet());
-        Collections.sort(keys);
-        int startId = 1;
-        for (Long key : keys) {
-            Long id = idMap.get(key);
-            System.out.println("Key: " + key + " Value " + id);
-            assertTrue(id == startId);
-            startId++;
-
-        }
+    for (int i = 0; i < 5; i++) {
+      IDGenClient idClient = new IDGenClient(sb.toString(), "/rm_base", 10, "testTable");
+      clients.add(idClient);
     }
+
+    for (IDGenClient idClient : clients) {
+      idClient.run();
+    }
+
+    for (IDGenClient idClient : clients) {
+      idClient.join();
+    }
+
+    HashMap<Long, Long> idMap = new HashMap<Long, Long>();
+    for (IDGenClient idClient : clients) {
+      idMap.putAll(idClient.getIdMap());
+    }
+
+    ArrayList<Long> keys = new ArrayList<Long>(idMap.keySet());
+    Collections.sort(keys);
+    int startId = 1;
+    for (Long key : keys) {
+      Long id = idMap.get(key);
+      System.out.println("Key: " + key + " Value " + id);
+      assertTrue(id == startId);
+      startId++;
+
+    }
+  }
 }

@@ -22,27 +22,27 @@ package org.apache.hive.hcatalog.templeton;
  * ExecBean - The results of an exec call.
  */
 public class ExecBean {
-    public String stdout;
-    public String stderr;
-    public int exitcode;
+  public String stdout;
+  public String stderr;
+  public int exitcode;
 
-    public ExecBean() {}
+  public ExecBean() {}
 
-    /**
-     * Create a new ExecBean.
-     *
-     * @param stdout     standard output of the the program.
-     * @param stderr     error output of the the program.
-     * @param exitcode   exit code of the program.
-     */
-    public ExecBean(String stdout, String stderr, int exitcode) {
-        this.stdout = stdout;
-        this.stderr = stderr;
-        this.exitcode = exitcode;
-    }
+  /**
+   * Create a new ExecBean.
+   *
+   * @param stdout     standard output of the the program.
+   * @param stderr     error output of the the program.
+   * @param exitcode   exit code of the program.
+   */
+  public ExecBean(String stdout, String stderr, int exitcode) {
+    this.stdout = stdout;
+    this.stderr = stderr;
+    this.exitcode = exitcode;
+  }
 
-    public String toString() {
-        return String.format("ExecBean(stdout=%s, stderr=%s, exitcode=%s)",
-                             stdout, stderr, exitcode);
-    }
+  public String toString() {
+    return String.format("ExecBean(stdout=%s, stderr=%s, exitcode=%s)",
+               stdout, stderr, exitcode);
+  }
 }

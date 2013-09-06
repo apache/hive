@@ -28,13 +28,13 @@ import org.apache.hcatalog.common.HCatException;
  */
 public class ObjectNotFoundException extends HCatException {
 
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-    /**
-     * @param message Exception message.
-     * @param cause The wrapped Throwable that caused this exception.
-     */
-    public ObjectNotFoundException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  /**
+   * @param message Exception message.
+   * @param cause The wrapped Throwable that caused this exception.
+   */
+  public ObjectNotFoundException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }

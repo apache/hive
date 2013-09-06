@@ -35,160 +35,160 @@ import org.eclipse.jetty.http.HttpStatus;
  * properties.  Only add non-null entries.
  */
 public class JsonBuilder {
-    private static final Map<Object, Integer> hiveError2HttpStatusCode = new HashMap<Object, Integer>();
+  private static final Map<Object, Integer> hiveError2HttpStatusCode = new HashMap<Object, Integer>();
 
-    /**
-     * It's expected that Hive (and thus HCat CLI) will return canonical error msgs/codes.
-     * Here they are mapped to appropriate HTTP Status Code.
-     */
-    static {
-        hiveError2HttpStatusCode.put(ErrorMsg.GENERIC_ERROR.getErrorCode(), HttpStatus.INTERNAL_SERVER_ERROR_500);
-        hiveError2HttpStatusCode.put(ErrorMsg.DATABASE_NOT_EXISTS.getErrorCode(), HttpStatus.NOT_FOUND_404);
-        hiveError2HttpStatusCode.put(ErrorMsg.INVALID_TABLE.getErrorCode(), HttpStatus.NOT_FOUND_404);
-        hiveError2HttpStatusCode.put(ErrorMsg.TABLE_NOT_PARTITIONED.getErrorCode(), HttpStatus.NOT_FOUND_404);
-        hiveError2HttpStatusCode.put(ErrorMsg.INVALID_PARTITION.getErrorCode(), HttpStatus.NOT_FOUND_404);
+  /**
+   * It's expected that Hive (and thus HCat CLI) will return canonical error msgs/codes.
+   * Here they are mapped to appropriate HTTP Status Code.
+   */
+  static {
+    hiveError2HttpStatusCode.put(ErrorMsg.GENERIC_ERROR.getErrorCode(), HttpStatus.INTERNAL_SERVER_ERROR_500);
+    hiveError2HttpStatusCode.put(ErrorMsg.DATABASE_NOT_EXISTS.getErrorCode(), HttpStatus.NOT_FOUND_404);
+    hiveError2HttpStatusCode.put(ErrorMsg.INVALID_TABLE.getErrorCode(), HttpStatus.NOT_FOUND_404);
+    hiveError2HttpStatusCode.put(ErrorMsg.TABLE_NOT_PARTITIONED.getErrorCode(), HttpStatus.NOT_FOUND_404);
+    hiveError2HttpStatusCode.put(ErrorMsg.INVALID_PARTITION.getErrorCode(), HttpStatus.NOT_FOUND_404);
 
-        hiveError2HttpStatusCode.put(ErrorMsg.DUPLICATE_COLUMN_NAMES.getErrorCode(), HttpStatus.CONFLICT_409);
-        hiveError2HttpStatusCode.put(ErrorMsg.DATABSAE_ALREADY_EXISTS.getErrorCode(), HttpStatus.CONFLICT_409);
-        hiveError2HttpStatusCode.put(ErrorMsg.PARTITION_EXISTS.getErrorCode(), HttpStatus.CONFLICT_409);
-        hiveError2HttpStatusCode.put(ErrorMsg.TABLE_ALREADY_EXISTS.getErrorCode(), HttpStatus.CONFLICT_409);
+    hiveError2HttpStatusCode.put(ErrorMsg.DUPLICATE_COLUMN_NAMES.getErrorCode(), HttpStatus.CONFLICT_409);
+    hiveError2HttpStatusCode.put(ErrorMsg.DATABSAE_ALREADY_EXISTS.getErrorCode(), HttpStatus.CONFLICT_409);
+    hiveError2HttpStatusCode.put(ErrorMsg.PARTITION_EXISTS.getErrorCode(), HttpStatus.CONFLICT_409);
+    hiveError2HttpStatusCode.put(ErrorMsg.TABLE_ALREADY_EXISTS.getErrorCode(), HttpStatus.CONFLICT_409);
+  }
+
+  // The map we're building.
+  private Map map;
+
+  // Parse the json map.
+  private JsonBuilder(String json)
+    throws IOException {
+    map = jsonToMap(json);
+  }
+
+  /**
+   * Create a new map object from the existing json.
+   */
+  public static JsonBuilder create(String json)
+    throws IOException {
+    return new JsonBuilder(json);
+  }
+
+  /**
+   * Create a new map object.
+   */
+  public static JsonBuilder create()
+    throws IOException {
+    return new JsonBuilder(null);
+  }
+
+  /**
+   * Create a new map error object.
+   */
+  public static JsonBuilder createError(String msg, int errorCode)
+    throws IOException {
+    return new JsonBuilder(null)
+      .put("error", msg)
+      .put("errorCode", errorCode);
+  }
+
+  /**
+   * Add a non-null value to the map.
+   */
+  public JsonBuilder put(String name, Object val) {
+    if (val != null)
+      map.put(name, val);
+    return this;
+  }
+
+  /**
+   * Remove a value from the map.
+   */
+  public JsonBuilder remove(String name) {
+    map.remove(name);
+    return this;
+  }
+
+  /**
+   * Get the underlying map.
+   */
+  public Map getMap() {
+    return map;
+  }
+
+  /**
+   * Turn the map back to response object.
+   */
+  public Response build() {
+    return buildResponse();
+  }
+
+  /**
+   * Turn the map back to json.
+   */
+  public String buildJson()
+    throws IOException {
+    return mapToJson(map);
+  }
+
+  /**
+   * Turn the map back to response object.
+   */
+  public Response buildResponse() {
+    int status = HttpStatus.OK_200;        // Server ok.
+    if (map.containsKey("error"))
+      status = HttpStatus.INTERNAL_SERVER_ERROR_500; // Generic http server error.
+    Object o = map.get("errorCode");
+    if (o != null) {
+      if(hiveError2HttpStatusCode.containsKey(o)) {
+        status = hiveError2HttpStatusCode.get(o);
+      }
     }
+    return buildResponse(status);
+  }
 
-    // The map we're building.
-    private Map map;
+  /**
+   * Turn the map back to response object.
+   */
+  public Response buildResponse(int status) {
+    return Response.status(status)
+      .entity(map)
+      .type(MediaType.APPLICATION_JSON)
+      .build();
+  }
 
-    // Parse the json map.
-    private JsonBuilder(String json)
-        throws IOException {
-        map = jsonToMap(json);
+  /**
+   * Is the object non-empty?
+   */
+  public boolean isset() {
+    return TempletonUtils.isset(map);
+  }
+
+  /**
+   * Check if this is an error doc.
+   */
+  public static boolean isError(Map obj) {
+    return (obj != null) && obj.containsKey("error");
+  }
+
+  /**
+   * Convert a json string to a Map.
+   */
+  public static Map jsonToMap(String json)
+    throws IOException {
+    if (!TempletonUtils.isset(json))
+      return new HashMap<String, Object>();
+    else {
+      ObjectMapper mapper = new ObjectMapper();
+      return mapper.readValue(json, Map.class);
     }
+  }
 
-    /**
-     * Create a new map object from the existing json.
-     */
-    public static JsonBuilder create(String json)
-        throws IOException {
-        return new JsonBuilder(json);
-    }
-
-    /**
-     * Create a new map object.
-     */
-    public static JsonBuilder create()
-        throws IOException {
-        return new JsonBuilder(null);
-    }
-
-    /**
-     * Create a new map error object.
-     */
-    public static JsonBuilder createError(String msg, int errorCode)
-        throws IOException {
-        return new JsonBuilder(null)
-            .put("error", msg)
-            .put("errorCode", errorCode);
-    }
-
-    /**
-     * Add a non-null value to the map.
-     */
-    public JsonBuilder put(String name, Object val) {
-        if (val != null)
-            map.put(name, val);
-        return this;
-    }
-
-    /**
-     * Remove a value from the map.
-     */
-    public JsonBuilder remove(String name) {
-        map.remove(name);
-        return this;
-    }
-
-    /**
-     * Get the underlying map.
-     */
-    public Map getMap() {
-        return map;
-    }
-
-    /**
-     * Turn the map back to response object.
-     */
-    public Response build() {
-        return buildResponse();
-    }
-
-    /**
-     * Turn the map back to json.
-     */
-    public String buildJson()
-        throws IOException {
-        return mapToJson(map);
-    }
-
-    /**
-     * Turn the map back to response object.
-     */
-    public Response buildResponse() {
-        int status = HttpStatus.OK_200;        // Server ok.
-        if (map.containsKey("error"))
-            status = HttpStatus.INTERNAL_SERVER_ERROR_500; // Generic http server error.
-        Object o = map.get("errorCode");
-        if (o != null) {
-            if(hiveError2HttpStatusCode.containsKey(o)) {
-                status = hiveError2HttpStatusCode.get(o);
-            }
-        }
-        return buildResponse(status);
-    }
-
-    /**
-     * Turn the map back to response object.
-     */
-    public Response buildResponse(int status) {
-        return Response.status(status)
-            .entity(map)
-            .type(MediaType.APPLICATION_JSON)
-            .build();
-    }
-
-    /**
-     * Is the object non-empty?
-     */
-    public boolean isset() {
-        return TempletonUtils.isset(map);
-    }
-
-    /**
-     * Check if this is an error doc.
-     */
-    public static boolean isError(Map obj) {
-        return (obj != null) && obj.containsKey("error");
-    }
-
-    /**
-     * Convert a json string to a Map.
-     */
-    public static Map jsonToMap(String json)
-        throws IOException {
-        if (!TempletonUtils.isset(json))
-            return new HashMap<String, Object>();
-        else {
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.readValue(json, Map.class);
-        }
-    }
-
-    /**
-     * Convert a map to a json string.
-     */
-    public static String mapToJson(Object obj)
-        throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        mapper.writeValue(out, obj);
-        return out.toString();
-    }
+  /**
+   * Convert a map to a json string.
+   */
+  public static String mapToJson(Object obj)
+    throws IOException {
+    ObjectMapper mapper = new ObjectMapper();
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    mapper.writeValue(out, obj);
+    return out.toString();
+  }
 }

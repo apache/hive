@@ -34,65 +34,65 @@ import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
  * This is the backend of the mapreduce/jar web service.
  */
 public class JarDelegator extends LauncherDelegator {
-    public JarDelegator(AppConfig appConf) {
-        super(appConf);
+  public JarDelegator(AppConfig appConf) {
+    super(appConf);
+  }
+
+  public EnqueueBean run(String user, String jar, String mainClass,
+               String libjars, String files,
+               List<String> jarArgs, List<String> defines,
+               String statusdir, String callback, String completedUrl)
+    throws NotAuthorizedException, BadParam, BusyException, QueueException,
+    ExecuteException, IOException, InterruptedException {
+    runAs = user;
+    List<String> args = makeArgs(jar, mainClass,
+      libjars, files, jarArgs, defines,
+      statusdir, completedUrl);
+
+    return enqueueController(user, callback, args);
+  }
+
+  private List<String> makeArgs(String jar, String mainClass,
+                  String libjars, String files,
+                  List<String> jarArgs, List<String> defines,
+                  String statusdir, String completedUrl)
+    throws BadParam, IOException, InterruptedException {
+    ArrayList<String> args = new ArrayList<String>();
+    try {
+      ArrayList<String> allFiles = new ArrayList();
+      allFiles.add(TempletonUtils.hadoopFsFilename(jar, appConf, runAs));
+
+      args.addAll(makeLauncherArgs(appConf, statusdir,
+        completedUrl, allFiles));
+      args.add("--");
+      args.add(appConf.clusterHadoop());
+      args.add("jar");
+      args.add(TempletonUtils.hadoopFsPath(jar, appConf, runAs).getName());
+      if (TempletonUtils.isset(mainClass))
+        args.add(mainClass);
+      if (TempletonUtils.isset(libjars)) {
+        args.add("-libjars");
+        args.add(TempletonUtils.hadoopFsListAsString(libjars, appConf,
+          runAs));
+      }
+      if (TempletonUtils.isset(files)) {
+        args.add("-files");
+        args.add(TempletonUtils.hadoopFsListAsString(files, appConf,
+          runAs));
+      }
+      //the token file location comes after mainClass, as a -Dprop=val
+      args.add("-D" + TempletonControllerJob.TOKEN_FILE_ARG_PLACEHOLDER);
+
+      for (String d : defines)
+        args.add("-D" + d);
+
+      args.addAll(jarArgs);
+    } catch (FileNotFoundException e) {
+      throw new BadParam(e.getMessage());
+    } catch (URISyntaxException e) {
+      throw new BadParam(e.getMessage());
     }
 
-    public EnqueueBean run(String user, String jar, String mainClass,
-                           String libjars, String files,
-                           List<String> jarArgs, List<String> defines,
-                           String statusdir, String callback, String completedUrl)
-        throws NotAuthorizedException, BadParam, BusyException, QueueException,
-        ExecuteException, IOException, InterruptedException {
-        runAs = user;
-        List<String> args = makeArgs(jar, mainClass,
-            libjars, files, jarArgs, defines,
-            statusdir, completedUrl);
-
-        return enqueueController(user, callback, args);
-    }
-
-    private List<String> makeArgs(String jar, String mainClass,
-                                  String libjars, String files,
-                                  List<String> jarArgs, List<String> defines,
-                                  String statusdir, String completedUrl)
-        throws BadParam, IOException, InterruptedException {
-        ArrayList<String> args = new ArrayList<String>();
-        try {
-            ArrayList<String> allFiles = new ArrayList();
-            allFiles.add(TempletonUtils.hadoopFsFilename(jar, appConf, runAs));
-
-            args.addAll(makeLauncherArgs(appConf, statusdir,
-                completedUrl, allFiles));
-            args.add("--");
-            args.add(appConf.clusterHadoop());
-            args.add("jar");
-            args.add(TempletonUtils.hadoopFsPath(jar, appConf, runAs).getName());
-            if (TempletonUtils.isset(mainClass))
-                args.add(mainClass);
-            if (TempletonUtils.isset(libjars)) {
-                args.add("-libjars");
-                args.add(TempletonUtils.hadoopFsListAsString(libjars, appConf,
-                    runAs));
-            }
-            if (TempletonUtils.isset(files)) {
-                args.add("-files");
-                args.add(TempletonUtils.hadoopFsListAsString(files, appConf,
-                    runAs));
-            }
-            //the token file location comes after mainClass, as a -Dprop=val
-            args.add("-D" + TempletonControllerJob.TOKEN_FILE_ARG_PLACEHOLDER);
-            
-            for (String d : defines)
-                args.add("-D" + d);
-
-            args.addAll(jarArgs);
-        } catch (FileNotFoundException e) {
-            throw new BadParam(e.getMessage());
-        } catch (URISyntaxException e) {
-            throw new BadParam(e.getMessage());
-        }
-
-        return args;
-    }
+    return args;
+  }
 }

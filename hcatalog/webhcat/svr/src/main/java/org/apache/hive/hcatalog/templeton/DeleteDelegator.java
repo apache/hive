@@ -30,34 +30,34 @@ import org.apache.hive.hcatalog.templeton.tool.JobState;
  * Delete a job
  */
 public class DeleteDelegator extends TempletonDelegator {
-    public DeleteDelegator(AppConfig appConf) {
-        super(appConf);
-    }
+  public DeleteDelegator(AppConfig appConf) {
+    super(appConf);
+  }
 
-    public QueueStatusBean run(String user, String id)
-        throws NotAuthorizedException, BadParam, IOException, InterruptedException
-    {
-        UserGroupInformation ugi = UgiFactory.getUgi(user);
-        WebHCatJTShim tracker = null;
-        JobState state = null;
-        try {
-            tracker = ShimLoader.getHadoopShims().getWebHCatShim(appConf, ugi);
-            JobID jobid = StatusDelegator.StringToJobID(id);
-            if (jobid == null)
-                throw new BadParam("Invalid jobid: " + id);
-            tracker.killJob(jobid);
-            state = new JobState(id, Main.getAppConfigInstance());
-            String childid = state.getChildId();
-            if (childid != null)
-                tracker.killJob(StatusDelegator.StringToJobID(childid));
-            return StatusDelegator.makeStatus(tracker, jobid, state);
-        } catch (IllegalStateException e) {
-            throw new BadParam(e.getMessage());
-        } finally {
-            if (tracker != null)
-                tracker.close();
-            if (state != null)
-                state.close();
-        }
+  public QueueStatusBean run(String user, String id)
+    throws NotAuthorizedException, BadParam, IOException, InterruptedException
+  {
+    UserGroupInformation ugi = UgiFactory.getUgi(user);
+    WebHCatJTShim tracker = null;
+    JobState state = null;
+    try {
+      tracker = ShimLoader.getHadoopShims().getWebHCatShim(appConf, ugi);
+      JobID jobid = StatusDelegator.StringToJobID(id);
+      if (jobid == null)
+        throw new BadParam("Invalid jobid: " + id);
+      tracker.killJob(jobid);
+      state = new JobState(id, Main.getAppConfigInstance());
+      String childid = state.getChildId();
+      if (childid != null)
+        tracker.killJob(StatusDelegator.StringToJobID(childid));
+      return StatusDelegator.makeStatus(tracker, jobid, state);
+    } catch (IllegalStateException e) {
+      throw new BadParam(e.getMessage());
+    } finally {
+      if (tracker != null)
+        tracker.close();
+      if (state != null)
+        state.close();
     }
+  }
 }

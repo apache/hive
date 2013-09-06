@@ -24,53 +24,53 @@ import java.io.ByteArrayOutputStream;
  * An output stream that will only accept the first N bytes of data.
  */
 public class MaxByteArrayOutputStream extends ByteArrayOutputStream {
-    /**
-     * The max number of bytes stored.
-     */
-    private int maxBytes;
+  /**
+   * The max number of bytes stored.
+   */
+  private int maxBytes;
 
-    /**
-     * The number of bytes currently stored.
-     */
-    private int nBytes;
+  /**
+   * The number of bytes currently stored.
+   */
+  private int nBytes;
 
-    /**
-     * Create.
-     */
-    public MaxByteArrayOutputStream(int maxBytes) {
-        this.maxBytes = maxBytes;
-        nBytes = 0;
+  /**
+   * Create.
+   */
+  public MaxByteArrayOutputStream(int maxBytes) {
+    this.maxBytes = maxBytes;
+    nBytes = 0;
+  }
+
+  /**
+   * Writes the specified byte to this byte array output stream.
+   * Any bytes after the first maxBytes will be ignored.
+   *
+   * @param   b   the byte to be written.
+   */
+  public synchronized void write(int b) {
+    if (nBytes < maxBytes) {
+      ++nBytes;
+      super.write(b);
     }
+  }
 
-    /**
-     * Writes the specified byte to this byte array output stream.
-     * Any bytes after the first maxBytes will be ignored.
-     *
-     * @param   b   the byte to be written.
-     */
-    public synchronized void write(int b) {
-        if (nBytes < maxBytes) {
-            ++nBytes;
-            super.write(b);
-        }
+  /**
+   * Writes <code>len</code> bytes from the specified byte array
+   * starting at offset <code>off</code> to this byte array output stream.
+   * Any bytes after the first maxBytes will be ignored.
+   *
+   * @param   b     the data.
+   * @param   off   the start offset in the data.
+   * @param   len   the number of bytes to write.
+   */
+  public synchronized void write(byte b[], int off, int len) {
+    int storable = Math.min(maxBytes - nBytes, len);
+    if (storable > 0) {
+      nBytes += storable;
+      super.write(b, off, storable);
     }
-
-    /**
-     * Writes <code>len</code> bytes from the specified byte array
-     * starting at offset <code>off</code> to this byte array output stream.
-     * Any bytes after the first maxBytes will be ignored.
-     *
-     * @param   b     the data.
-     * @param   off   the start offset in the data.
-     * @param   len   the number of bytes to write.
-     */
-    public synchronized void write(byte b[], int off, int len) {
-        int storable = Math.min(maxBytes - nBytes, len);
-        if (storable > 0) {
-            nBytes += storable;
-            super.write(b, off, storable);
-        }
-    }
+  }
 
 
 }

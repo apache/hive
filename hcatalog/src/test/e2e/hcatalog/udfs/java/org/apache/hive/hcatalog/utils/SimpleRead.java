@@ -51,58 +51,58 @@ import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
  */
 public class SimpleRead extends Configured implements Tool {
 
-    private static final String TABLE_NAME = "studenttab10k";
-    private static final String TAB = "\t";
+  private static final String TABLE_NAME = "studenttab10k";
+  private static final String TAB = "\t";
 
-    public static class Map
-        extends Mapper<WritableComparable, HCatRecord, Text, IntWritable> {
+  public static class Map
+    extends Mapper<WritableComparable, HCatRecord, Text, IntWritable> {
 
-        String name;
-        int age;
-        double gpa;
+    String name;
+    int age;
+    double gpa;
 
-        @Override
-        protected void map(WritableComparable key, HCatRecord value,
-                           org.apache.hadoop.mapreduce.Mapper<WritableComparable, HCatRecord,
-                               Text, IntWritable>.Context context)
-            throws IOException, InterruptedException {
-            name = (String) value.get(0);
-            age = (Integer) value.get(1);
-            gpa = (Double) value.get(2);
-            context.write(new Text(name), new IntWritable(age));
+    @Override
+    protected void map(WritableComparable key, HCatRecord value,
+               org.apache.hadoop.mapreduce.Mapper<WritableComparable, HCatRecord,
+                 Text, IntWritable>.Context context)
+      throws IOException, InterruptedException {
+      name = (String) value.get(0);
+      age = (Integer) value.get(1);
+      gpa = (Double) value.get(2);
+      context.write(new Text(name), new IntWritable(age));
 
-        }
     }
+  }
 
-    public int run(String[] args) throws Exception {
-        Configuration conf = getConf();
-        args = new GenericOptionsParser(conf, args).getRemainingArgs();
+  public int run(String[] args) throws Exception {
+    Configuration conf = getConf();
+    args = new GenericOptionsParser(conf, args).getRemainingArgs();
 
-        String serverUri = args[0];
-        String tableName = args[1];
-        String outputDir = args[2];
-        String dbName = null;
+    String serverUri = args[0];
+    String tableName = args[1];
+    String outputDir = args[2];
+    String dbName = null;
 
-        String principalID = System.getProperty(HCatConstants.HCAT_METASTORE_PRINCIPAL);
-        if (principalID != null)
-            conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
-        Job job = new Job(conf, "SimpleRead");
-        HCatInputFormat.setInput(job, InputJobInfo.create(
-            dbName, tableName, null));
-        // initialize HCatOutputFormat
+    String principalID = System.getProperty(HCatConstants.HCAT_METASTORE_PRINCIPAL);
+    if (principalID != null)
+      conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
+    Job job = new Job(conf, "SimpleRead");
+    HCatInputFormat.setInput(job, InputJobInfo.create(
+      dbName, tableName, null));
+    // initialize HCatOutputFormat
 
-        job.setInputFormatClass(HCatInputFormat.class);
-        job.setOutputFormatClass(TextOutputFormat.class);
-        job.setJarByClass(SimpleRead.class);
-        job.setMapperClass(Map.class);
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(IntWritable.class);
-        FileOutputFormat.setOutputPath(job, new Path(outputDir));
-        return (job.waitForCompletion(true) ? 0 : 1);
-    }
+    job.setInputFormatClass(HCatInputFormat.class);
+    job.setOutputFormatClass(TextOutputFormat.class);
+    job.setJarByClass(SimpleRead.class);
+    job.setMapperClass(Map.class);
+    job.setOutputKeyClass(Text.class);
+    job.setOutputValueClass(IntWritable.class);
+    FileOutputFormat.setOutputPath(job, new Path(outputDir));
+    return (job.waitForCompletion(true) ? 0 : 1);
+  }
 
-    public static void main(String[] args) throws Exception {
-        int exitCode = ToolRunner.run(new SimpleRead(), args);
-        System.exit(exitCode);
-    }
+  public static void main(String[] args) throws Exception {
+    int exitCode = ToolRunner.run(new SimpleRead(), args);
+    System.exit(exitCode);
+  }
 }

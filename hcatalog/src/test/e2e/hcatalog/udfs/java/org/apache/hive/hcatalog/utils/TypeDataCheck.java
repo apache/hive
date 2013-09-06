@@ -58,126 +58,126 @@ import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
  */
 public class TypeDataCheck implements Tool {
 
-    static String SCHEMA_KEY = "schema";
-    static String DELIM = "delim";
-    private static Configuration conf = new Configuration();
+  static String SCHEMA_KEY = "schema";
+  static String DELIM = "delim";
+  private static Configuration conf = new Configuration();
 
-    public static class TypeDataCheckMapper
-        extends Mapper<WritableComparable, HCatRecord, Long, Text> {
+  public static class TypeDataCheckMapper
+    extends Mapper<WritableComparable, HCatRecord, Long, Text> {
 
-        Long dummykey = null;
-        String[] types;
-        String delim = "\u0001";
+    Long dummykey = null;
+    String[] types;
+    String delim = "\u0001";
 
-        @Override
-        protected void setup(org.apache.hadoop.mapreduce.Mapper<WritableComparable, HCatRecord, Long, Text>.Context context)
-            throws IOException, InterruptedException {
-            String typesStr = context.getConfiguration().get(SCHEMA_KEY);
-            delim = context.getConfiguration().get(DELIM);
-            if (delim.equals("tab")) {
-                delim = "\t";
-            } else if (delim.equals("ctrla")) {
-                delim = "\u0001";
-            }
-            types = typesStr.split("\\+");
-            for (int i = 0; i < types.length; i++) {
-                types[i] = types[i].toLowerCase();
-            }
+    @Override
+    protected void setup(org.apache.hadoop.mapreduce.Mapper<WritableComparable, HCatRecord, Long, Text>.Context context)
+      throws IOException, InterruptedException {
+      String typesStr = context.getConfiguration().get(SCHEMA_KEY);
+      delim = context.getConfiguration().get(DELIM);
+      if (delim.equals("tab")) {
+        delim = "\t";
+      } else if (delim.equals("ctrla")) {
+        delim = "\u0001";
+      }
+      types = typesStr.split("\\+");
+      for (int i = 0; i < types.length; i++) {
+        types[i] = types[i].toLowerCase();
+      }
 
 
-        }
-
-        String check(HCatRecord r) throws IOException {
-            String s = "";
-            for (int i = 0; i < r.size(); i++) {
-                s += Util.check(types[i], r.get(i));
-                if (i != r.size() - 1) {
-                    s += delim;
-                }
-            }
-            return s;
-        }
-
-        @Override
-        protected void map(WritableComparable key, HCatRecord value,
-                           org.apache.hadoop.mapreduce.Mapper<WritableComparable, HCatRecord, Long, Text>.Context context)
-            throws IOException, InterruptedException {
-            context.write(dummykey, new Text(check(value)));
-        }
     }
 
-    public static void main(String[] args) throws Exception {
-        TypeDataCheck self = new TypeDataCheck();
-        System.exit(ToolRunner.run(conf, self, args));
-    }
-
-    public int run(String[] args) {
-        try {
-            args = new GenericOptionsParser(conf, args).getRemainingArgs();
-            String[] otherArgs = new String[5];
-            int j = 0;
-            for (int i = 0; i < args.length; i++) {
-                if (args[i].equals("-libjars")) {
-                    conf.set("tmpjars", args[i + 1]);
-                    i = i + 1; // skip it , the for loop will skip its value
-                } else {
-                    otherArgs[j++] = args[i];
-                }
-            }
-            if (otherArgs.length != 5) {
-                System.err.println("Other args:" + Arrays.asList(otherArgs));
-                System.err.println("Usage: hadoop jar testudf.jar typedatacheck " +
-                    "<serveruri> <tablename> <hive types of cols + delimited> " +
-                    "<output dir> <tab|ctrla> <-libjars hive-hcat jar>\n" +
-                    "The <tab|ctrla> argument controls the output delimiter.\n" +
-                    "The hcat jar location should be specified as file://<full path to jar>\n");
-                System.err.println(" The <tab|ctrla> argument controls the output delimiter.");
-                System.exit(2);
-            }
-            String serverUri = otherArgs[0];
-            String tableName = otherArgs[1];
-            String schemaStr = otherArgs[2];
-            String outputDir = otherArgs[3];
-            String outputdelim = otherArgs[4];
-            if (!outputdelim.equals("tab") && !outputdelim.equals("ctrla")) {
-                System.err.println("ERROR: Specify 'tab' or 'ctrla' for output delimiter");
-            }
-            String dbName = "default";
-
-            String principalID = System.getProperty(HCatConstants.HCAT_METASTORE_PRINCIPAL);
-            if (principalID != null) {
-                conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
-            }
-            Job job = new Job(conf, "typedatacheck");
-            // initialize HCatInputFormat
-            HCatInputFormat.setInput(job, InputJobInfo.create(
-                dbName, tableName, null));
-            HCatSchema s = HCatInputFormat.getTableSchema(job);
-            job.getConfiguration().set(SCHEMA_KEY, schemaStr);
-            job.getConfiguration().set(DELIM, outputdelim);
-            job.setInputFormatClass(HCatInputFormat.class);
-            job.setOutputFormatClass(TextOutputFormat.class);
-            job.setJarByClass(TypeDataCheck.class);
-            job.setMapperClass(TypeDataCheckMapper.class);
-            job.setNumReduceTasks(0);
-            job.setOutputKeyClass(Long.class);
-            job.setOutputValueClass(Text.class);
-            FileOutputFormat.setOutputPath(job, new Path(outputDir));
-            System.exit(job.waitForCompletion(true) ? 0 : 1);
-            return 0;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+    String check(HCatRecord r) throws IOException {
+      String s = "";
+      for (int i = 0; i < r.size(); i++) {
+        s += Util.check(types[i], r.get(i));
+        if (i != r.size() - 1) {
+          s += delim;
         }
+      }
+      return s;
     }
 
     @Override
-    public Configuration getConf() {
-        return conf;
+    protected void map(WritableComparable key, HCatRecord value,
+               org.apache.hadoop.mapreduce.Mapper<WritableComparable, HCatRecord, Long, Text>.Context context)
+      throws IOException, InterruptedException {
+      context.write(dummykey, new Text(check(value)));
     }
+  }
 
-    @Override
-    public void setConf(Configuration conf) {
-        TypeDataCheck.conf = conf;
+  public static void main(String[] args) throws Exception {
+    TypeDataCheck self = new TypeDataCheck();
+    System.exit(ToolRunner.run(conf, self, args));
+  }
+
+  public int run(String[] args) {
+    try {
+      args = new GenericOptionsParser(conf, args).getRemainingArgs();
+      String[] otherArgs = new String[5];
+      int j = 0;
+      for (int i = 0; i < args.length; i++) {
+        if (args[i].equals("-libjars")) {
+          conf.set("tmpjars", args[i + 1]);
+          i = i + 1; // skip it , the for loop will skip its value
+        } else {
+          otherArgs[j++] = args[i];
+        }
+      }
+      if (otherArgs.length != 5) {
+        System.err.println("Other args:" + Arrays.asList(otherArgs));
+        System.err.println("Usage: hadoop jar testudf.jar typedatacheck " +
+          "<serveruri> <tablename> <hive types of cols + delimited> " +
+          "<output dir> <tab|ctrla> <-libjars hive-hcat jar>\n" +
+          "The <tab|ctrla> argument controls the output delimiter.\n" +
+          "The hcat jar location should be specified as file://<full path to jar>\n");
+        System.err.println(" The <tab|ctrla> argument controls the output delimiter.");
+        System.exit(2);
+      }
+      String serverUri = otherArgs[0];
+      String tableName = otherArgs[1];
+      String schemaStr = otherArgs[2];
+      String outputDir = otherArgs[3];
+      String outputdelim = otherArgs[4];
+      if (!outputdelim.equals("tab") && !outputdelim.equals("ctrla")) {
+        System.err.println("ERROR: Specify 'tab' or 'ctrla' for output delimiter");
+      }
+      String dbName = "default";
+
+      String principalID = System.getProperty(HCatConstants.HCAT_METASTORE_PRINCIPAL);
+      if (principalID != null) {
+        conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
+      }
+      Job job = new Job(conf, "typedatacheck");
+      // initialize HCatInputFormat
+      HCatInputFormat.setInput(job, InputJobInfo.create(
+        dbName, tableName, null));
+      HCatSchema s = HCatInputFormat.getTableSchema(job);
+      job.getConfiguration().set(SCHEMA_KEY, schemaStr);
+      job.getConfiguration().set(DELIM, outputdelim);
+      job.setInputFormatClass(HCatInputFormat.class);
+      job.setOutputFormatClass(TextOutputFormat.class);
+      job.setJarByClass(TypeDataCheck.class);
+      job.setMapperClass(TypeDataCheckMapper.class);
+      job.setNumReduceTasks(0);
+      job.setOutputKeyClass(Long.class);
+      job.setOutputValueClass(Text.class);
+      FileOutputFormat.setOutputPath(job, new Path(outputDir));
+      System.exit(job.waitForCompletion(true) ? 0 : 1);
+      return 0;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public Configuration getConf() {
+    return conf;
+  }
+
+  @Override
+  public void setConf(Configuration conf) {
+    TypeDataCheck.conf = conf;
+  }
 
 }

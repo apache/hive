@@ -29,21 +29,21 @@ import org.apache.hive.hcatalog.templeton.NotAuthorizedException;
 
 public class MockExecService implements ExecService {
 
-    public ExecBean run(String program, List<String> args,
-                        Map<String, String> env) {
-        ExecBean bean = new ExecBean();
-        bean.stdout = program;
-        bean.stderr = args.toString();
-        return bean;
-    }
+  public ExecBean run(String program, List<String> args,
+            Map<String, String> env) {
+    ExecBean bean = new ExecBean();
+    bean.stdout = program;
+    bean.stderr = args.toString();
+    return bean;
+  }
 
-    @Override
-    public ExecBean runUnlimited(String program,
-                                 List<String> args, Map<String, String> env)
-        throws NotAuthorizedException, ExecuteException, IOException {
-        ExecBean bean = new ExecBean();
-        bean.stdout = program;
-        bean.stderr = args.toString();
-        return null;
-    }
+  @Override
+  public ExecBean runUnlimited(String program,
+                 List<String> args, Map<String, String> env)
+    throws NotAuthorizedException, ExecuteException, IOException {
+    ExecBean bean = new ExecBean();
+    bean.stdout = program;
+    bean.stderr = args.toString();
+    return null;
+  }
 }

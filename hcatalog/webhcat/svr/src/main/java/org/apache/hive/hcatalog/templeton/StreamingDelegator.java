@@ -31,59 +31,59 @@ import org.apache.commons.exec.ExecuteException;
  * This is the backend of the mapreduce/streaming web service.
  */
 public class StreamingDelegator extends LauncherDelegator {
-    public StreamingDelegator(AppConfig appConf) {
-        super(appConf);
+  public StreamingDelegator(AppConfig appConf) {
+    super(appConf);
+  }
+
+  public EnqueueBean run(String user,
+               List<String> inputs, String output,
+               String mapper, String reducer,
+               List<String> files, List<String> defines,
+               List<String> cmdenvs,
+               List<String> jarArgs,
+               String statusdir,
+               String callback,
+               String completedUrl)
+    throws NotAuthorizedException, BadParam, BusyException, QueueException,
+    ExecuteException, IOException, InterruptedException {
+    List<String> args = makeArgs(inputs, output, mapper, reducer,
+      files, defines, cmdenvs, jarArgs);
+
+    JarDelegator d = new JarDelegator(appConf);
+    return d.run(user,
+      appConf.streamingJar(), null,
+      null, null, args, defines,
+      statusdir, callback, completedUrl);
+  }
+
+  private List<String> makeArgs(List<String> inputs,
+                  String output,
+                  String mapper,
+                  String reducer,
+                  List<String> files,
+                  List<String> defines,
+                  List<String> cmdenvs,
+                  List<String> jarArgs) {
+    ArrayList<String> args = new ArrayList<String>();
+    for (String input : inputs) {
+      args.add("-input");
+      args.add(input);
     }
+    args.add("-output");
+    args.add(output);
+    args.add("-mapper");
+    args.add(mapper);
+    args.add("-reducer");
+    args.add(reducer);
 
-    public EnqueueBean run(String user,
-                           List<String> inputs, String output,
-                           String mapper, String reducer,
-                           List<String> files, List<String> defines,
-                           List<String> cmdenvs,
-                           List<String> jarArgs,
-                           String statusdir,
-                           String callback,
-                           String completedUrl)
-        throws NotAuthorizedException, BadParam, BusyException, QueueException,
-        ExecuteException, IOException, InterruptedException {
-        List<String> args = makeArgs(inputs, output, mapper, reducer,
-            files, defines, cmdenvs, jarArgs);
+    for (String f : files)
+      args.add("-file" + f);
+    for (String d : defines)
+      args.add("-D" + d);
+    for (String e : cmdenvs)
+      args.add("-cmdenv" + e);
+    args.addAll(jarArgs);
 
-        JarDelegator d = new JarDelegator(appConf);
-        return d.run(user,
-            appConf.streamingJar(), null,
-            null, null, args, defines,
-            statusdir, callback, completedUrl);
-    }
-
-    private List<String> makeArgs(List<String> inputs,
-                                  String output,
-                                  String mapper,
-                                  String reducer,
-                                  List<String> files,
-                                  List<String> defines,
-                                  List<String> cmdenvs,
-                                  List<String> jarArgs) {
-        ArrayList<String> args = new ArrayList<String>();
-        for (String input : inputs) {
-            args.add("-input");
-            args.add(input);
-        }
-        args.add("-output");
-        args.add(output);
-        args.add("-mapper");
-        args.add(mapper);
-        args.add("-reducer");
-        args.add(reducer);
-
-        for (String f : files)
-            args.add("-file" + f);
-        for (String d : defines)
-            args.add("-D" + d);
-        for (String e : cmdenvs)
-            args.add("-cmdenv" + e);
-        args.addAll(jarArgs);
-
-        return args;
-    }
+    return args;
+  }
 }

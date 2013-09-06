@@ -30,56 +30,56 @@ import java.util.Map;
  */
 public class JSONAddPartitionMessage extends AddPartitionMessage {
 
-    @JsonProperty
-    String server, servicePrincipal, db, table;
+  @JsonProperty
+  String server, servicePrincipal, db, table;
 
-    @JsonProperty
-    Long timestamp;
+  @JsonProperty
+  Long timestamp;
 
-    @JsonProperty
-    List<Map<String, String>> partitions;
+  @JsonProperty
+  List<Map<String, String>> partitions;
 
-    /**
-     * Default Constructor. Required for Jackson.
-     */
-    public JSONAddPartitionMessage() {}
+  /**
+   * Default Constructor. Required for Jackson.
+   */
+  public JSONAddPartitionMessage() {}
 
-    public JSONAddPartitionMessage(String server, String servicePrincipal, String db, String table,
-                                   List<Map<String,String>> partitions, Long timestamp) {
-        this.server = server;
-        this.servicePrincipal = servicePrincipal;
-        this.db = db;
-        this.table = table;
-        this.partitions = partitions;
-        this.timestamp = timestamp;
-        checkValid();
+  public JSONAddPartitionMessage(String server, String servicePrincipal, String db, String table,
+                   List<Map<String,String>> partitions, Long timestamp) {
+    this.server = server;
+    this.servicePrincipal = servicePrincipal;
+    this.db = db;
+    this.table = table;
+    this.partitions = partitions;
+    this.timestamp = timestamp;
+    checkValid();
+  }
+
+  @Override
+  public String getServer() { return server; }
+
+  @Override
+  public String getServicePrincipal() { return servicePrincipal; }
+
+  @Override
+  public String getDB() { return db; }
+
+  @Override
+  public String getTable() { return table; }
+
+  @Override
+  public Long   getTimestamp() { return timestamp; }
+
+  @Override
+  public List<Map<String, String>> getPartitions () { return partitions; }
+
+  @Override
+  public String toString() {
+    try {
+      return JSONMessageDeserializer.mapper.writeValueAsString(this);
     }
-
-    @Override
-    public String getServer() { return server; }
-
-    @Override
-    public String getServicePrincipal() { return servicePrincipal; }
-
-    @Override
-    public String getDB() { return db; }
-
-    @Override
-    public String getTable() { return table; }
-
-    @Override
-    public Long   getTimestamp() { return timestamp; }
-
-    @Override
-    public List<Map<String, String>> getPartitions () { return partitions; }
-
-    @Override
-    public String toString() {
-        try {
-            return JSONMessageDeserializer.mapper.writeValueAsString(this);
-        }
-        catch (Exception exception) {
-            throw new IllegalArgumentException("Could not serialize: ", exception);
-        }
+    catch (Exception exception) {
+      throw new IllegalArgumentException("Could not serialize: ", exception);
     }
+  }
 }

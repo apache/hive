@@ -25,8 +25,8 @@ package org.apache.hcatalog.messaging;
  */
 public abstract class CreateDatabaseMessage extends HCatEventMessage {
 
-    protected CreateDatabaseMessage() {
-        super(EventType.CREATE_DATABASE);
-    }
+  protected CreateDatabaseMessage() {
+    super(EventType.CREATE_DATABASE);
+  }
 
 }

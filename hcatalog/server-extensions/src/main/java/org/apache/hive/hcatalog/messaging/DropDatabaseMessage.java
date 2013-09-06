@@ -24,7 +24,7 @@ package org.apache.hive.hcatalog.messaging;
  */
 public abstract class DropDatabaseMessage extends HCatEventMessage {
 
-    protected DropDatabaseMessage() {
-        super(EventType.DROP_DATABASE);
-    }
+  protected DropDatabaseMessage() {
+    super(EventType.DROP_DATABASE);
+  }
 }

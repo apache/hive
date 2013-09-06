@@ -47,41 +47,41 @@ import java.util.Map;
 @InterfaceAudience.Public
 @InterfaceStability.Evolving
 public enum HCatContext {
-    INSTANCE;
+  INSTANCE;
 
-    private Configuration conf = null;
+  private Configuration conf = null;
 
-    /**
-     * Use the given configuration for optional behavior. Keys exclusive to an existing config
-     * are set in the new conf. The job conf must be used to ensure properties are passed to
-     * backend MR tasks.
-     */
-    public synchronized HCatContext setConf(Configuration newConf) {
-        Preconditions.checkNotNull(newConf, "Required parameter 'newConf' must not be null.");
+  /**
+   * Use the given configuration for optional behavior. Keys exclusive to an existing config
+   * are set in the new conf. The job conf must be used to ensure properties are passed to
+   * backend MR tasks.
+   */
+  public synchronized HCatContext setConf(Configuration newConf) {
+    Preconditions.checkNotNull(newConf, "Required parameter 'newConf' must not be null.");
 
-        if (conf == null) {
-            conf = newConf;
-            return this;
-        }
-
-        if (conf != newConf) {
-            for (Map.Entry<String, String> entry : conf) {
-                if ((entry.getKey().matches("hcat.*")) && (newConf.get(entry.getKey()) == null)) {
-                    newConf.set(entry.getKey(), entry.getValue());
-                }
-            }
-            conf = newConf;
-        }
-        return this;
+    if (conf == null) {
+      conf = newConf;
+      return this;
     }
 
-    /**
-     * Get the configuration, if there is one. Users are not required to setup HCatContext
-     * unless they wish to override default behavior, so the configuration may not be present.
-     *
-     * @return an Optional that might contain a Configuration
-     */
-    public Optional<Configuration> getConf() {
-        return Optional.fromNullable(conf);
+    if (conf != newConf) {
+      for (Map.Entry<String, String> entry : conf) {
+        if ((entry.getKey().matches("hcat.*")) && (newConf.get(entry.getKey()) == null)) {
+          newConf.set(entry.getKey(), entry.getValue());
+        }
+      }
+      conf = newConf;
     }
+    return this;
+  }
+
+  /**
+   * Get the configuration, if there is one. Users are not required to setup HCatContext
+   * unless they wish to override default behavior, so the configuration may not be present.
+   *
+   * @return an Optional that might contain a Configuration
+   */
+  public Optional<Configuration> getConf() {
+    return Optional.fromNullable(conf);
+  }
 }

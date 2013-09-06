@@ -26,17 +26,17 @@ import java.util.HashMap;
  * Unable to run hcat on the job.
  */
 public class HcatException extends SimpleWebException {
-    public ExecBean execBean;
-    public String statement;
+  public ExecBean execBean;
+  public String statement;
 
-    public HcatException(String msg, final ExecBean bean, final String statement) {
-        super(HttpStatus.INTERNAL_SERVER_ERROR_500, msg, new HashMap<String, Object>() {
-            {
-                put("exec", bean);
-                put("statement", statement);
-            }
-        });
-        execBean = bean;
-        this.statement = statement;
-    }
+  public HcatException(String msg, final ExecBean bean, final String statement) {
+    super(HttpStatus.INTERNAL_SERVER_ERROR_500, msg, new HashMap<String, Object>() {
+      {
+        put("exec", bean);
+        put("statement", statement);
+      }
+    });
+    execBean = bean;
+    this.statement = statement;
+  }
 }

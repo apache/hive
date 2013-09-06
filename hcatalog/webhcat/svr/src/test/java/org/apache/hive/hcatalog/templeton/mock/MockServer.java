@@ -24,18 +24,18 @@ import org.apache.hive.hcatalog.templeton.Server;
  * Test that the server code exists.
  */
 public class MockServer extends Server {
-    public String user;
+  public String user;
 
-    public MockServer() {
-        execService = new MockExecService();
-        resetUser();
-    }
+  public MockServer() {
+    execService = new MockExecService();
+    resetUser();
+  }
 
-    public void resetUser() {
-        user = System.getenv("USER");
-    }
+  public void resetUser() {
+    user = System.getenv("USER");
+  }
 
-    public String getUser() {
-        return user;
-    }
+  public String getUser() {
+    return user;
+  }
 }

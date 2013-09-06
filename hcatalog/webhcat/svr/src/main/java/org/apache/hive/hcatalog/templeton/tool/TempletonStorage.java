@@ -43,111 +43,111 @@ import org.apache.hadoop.conf.Configuration;
  * Each field must be available to be fetched/changed individually.
  */
 public interface TempletonStorage {
-    // These are the possible types referenced by 'type' below.
-    public enum Type {
-        UNKNOWN, JOB, JOBTRACKING, TEMPLETONOVERHEAD
-    }
-    
-    public static final String STORAGE_CLASS    = "templeton.storage.class";
-    public static final String STORAGE_ROOT     = "templeton.storage.root";
+  // These are the possible types referenced by 'type' below.
+  public enum Type {
+    UNKNOWN, JOB, JOBTRACKING, TEMPLETONOVERHEAD
+  }
 
-    /**
-     * Start the cleanup process for this storage type.
-     * @param config
-     */
-    public void startCleanup(Configuration config);
-    
-    /**
-     * Save a single key/value pair for a specific job id.
-     * @param type The data type (as listed above)
-     * @param id The String id of this data grouping (jobid, etc.)
-     * @param key The name of the field to save
-     * @param val The value of the field to save
-     */
-    public void saveField(Type type, String id, String key, String val)
-        throws NotFoundException;
+  public static final String STORAGE_CLASS    = "templeton.storage.class";
+  public static final String STORAGE_ROOT     = "templeton.storage.root";
 
-    /**
-     * Get the value of one field for a given data type.  If the type
-     * is UNKNOWN, search for the id in all types.
-     * @param type The data type (as listed above)
-     * @param id The String id of this data grouping (jobid, etc.)
-     * @param key The name of the field to retrieve
-     * @return The value of the field requested, or null if not
-     * found.
-     */
-    public String getField(Type type, String id, String key);
+  /**
+   * Start the cleanup process for this storage type.
+   * @param config
+   */
+  public void startCleanup(Configuration config);
 
-    /**
-     * Get all the name/value pairs stored for this id.
-     * Be careful using getFields() -- optimistic locking will mean that
-     * your odds of a conflict are decreased if you read/write one field
-     * at a time.  getFields() is intended for read-only usage.
-     *
-     * If the type is UNKNOWN, search for the id in all types.
-     *
-     * @param type The data type (as listed above)
-     * @param id The String id of this data grouping (jobid, etc.)
-     * @return A Map of key/value pairs found for this type/id.
-     */
-    public Map<String, String> getFields(Type type, String id);
+  /**
+   * Save a single key/value pair for a specific job id.
+   * @param type The data type (as listed above)
+   * @param id The String id of this data grouping (jobid, etc.)
+   * @param key The name of the field to save
+   * @param val The value of the field to save
+   */
+  public void saveField(Type type, String id, String key, String val)
+    throws NotFoundException;
 
-    /**
-     * Delete a data grouping (all data for a jobid, all tracking data
-     * for a job, etc.).  If the type is UNKNOWN, search for the id
-     * in all types.
-     *
-     * @param type The data type (as listed above)
-     * @param id The String id of this data grouping (jobid, etc.)
-     * @return True if successful, false if not, throws NotFoundException
-     * if the id wasn't found.
-     */
-    public boolean delete(Type type, String id) throws NotFoundException;
+  /**
+   * Get the value of one field for a given data type.  If the type
+   * is UNKNOWN, search for the id in all types.
+   * @param type The data type (as listed above)
+   * @param id The String id of this data grouping (jobid, etc.)
+   * @param key The name of the field to retrieve
+   * @return The value of the field requested, or null if not
+   * found.
+   */
+  public String getField(Type type, String id, String key);
 
-    /**
-     * Get the id of each data grouping in the storage system.
-     *
-     * @return An ArrayList<String> of ids.
-     */
-    public List<String> getAll();
+  /**
+   * Get all the name/value pairs stored for this id.
+   * Be careful using getFields() -- optimistic locking will mean that
+   * your odds of a conflict are decreased if you read/write one field
+   * at a time.  getFields() is intended for read-only usage.
+   *
+   * If the type is UNKNOWN, search for the id in all types.
+   *
+   * @param type The data type (as listed above)
+   * @param id The String id of this data grouping (jobid, etc.)
+   * @return A Map of key/value pairs found for this type/id.
+   */
+  public Map<String, String> getFields(Type type, String id);
 
-    /**
-     * Get the id of each data grouping of a given type in the storage
-     * system.
-     * @param type The data type (as listed above)
-     * @return An ArrayList<String> of ids.
-     */
-    public List<String> getAllForType(Type type);
+  /**
+   * Delete a data grouping (all data for a jobid, all tracking data
+   * for a job, etc.).  If the type is UNKNOWN, search for the id
+   * in all types.
+   *
+   * @param type The data type (as listed above)
+   * @param id The String id of this data grouping (jobid, etc.)
+   * @return True if successful, false if not, throws NotFoundException
+   * if the id wasn't found.
+   */
+  public boolean delete(Type type, String id) throws NotFoundException;
 
-    /**
-     * Get the id of each data grouping that has the specific key/value
-     * pair.
-     * @param key The name of the field to search for
-     * @param value The value of the field to search for
-     * @return An ArrayList<String> of ids.
-     */
-    public List<String> getAllForKey(String key, String value);
+  /**
+   * Get the id of each data grouping in the storage system.
+   *
+   * @return An ArrayList<String> of ids.
+   */
+  public List<String> getAll();
 
-    /**
-     * Get the id of each data grouping of a given type that has the
-     * specific key/value pair.
-     * @param type The data type (as listed above)
-     * @param key The name of the field to search for
-     * @param value The value of the field to search for
-     * @return An ArrayList<String> of ids.
-     */
-    public List<String> getAllForTypeAndKey(Type type, String key,
-                                            String value);
+  /**
+   * Get the id of each data grouping of a given type in the storage
+   * system.
+   * @param type The data type (as listed above)
+   * @return An ArrayList<String> of ids.
+   */
+  public List<String> getAllForType(Type type);
 
-    /**
-     * For storage methods that require a connection, this is a hint
-     * that it's time to open a connection.
-     */
-    public void openStorage(Configuration config) throws IOException;
+  /**
+   * Get the id of each data grouping that has the specific key/value
+   * pair.
+   * @param key The name of the field to search for
+   * @param value The value of the field to search for
+   * @return An ArrayList<String> of ids.
+   */
+  public List<String> getAllForKey(String key, String value);
 
-    /**
-     * For storage methods that require a connection, this is a hint
-     * that it's time to close the connection.
-     */
-    public void closeStorage() throws IOException;
+  /**
+   * Get the id of each data grouping of a given type that has the
+   * specific key/value pair.
+   * @param type The data type (as listed above)
+   * @param key The name of the field to search for
+   * @param value The value of the field to search for
+   * @return An ArrayList<String> of ids.
+   */
+  public List<String> getAllForTypeAndKey(Type type, String key,
+                      String value);
+
+  /**
+   * For storage methods that require a connection, this is a hint
+   * that it's time to open a connection.
+   */
+  public void openStorage(Configuration config) throws IOException;
+
+  /**
+   * For storage methods that require a connection, this is a hint
+   * that it's time to close the connection.
+   */
+  public void closeStorage() throws IOException;
 }

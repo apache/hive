@@ -54,80 +54,80 @@ import org.apache.hive.hcatalog.mapreduce.OutputJobInfo;
  */
 public class WriteTextPartitioned extends Configured implements Tool {
 
-    static String filter = null;
+  static String filter = null;
 
-    public static class Map extends
-        Mapper<WritableComparable, HCatRecord, WritableComparable, HCatRecord> {
+  public static class Map extends
+    Mapper<WritableComparable, HCatRecord, WritableComparable, HCatRecord> {
 
-        @Override
-        protected void map(
-            WritableComparable key,
-            HCatRecord value,
-            org.apache.hadoop.mapreduce.Mapper<WritableComparable, HCatRecord, WritableComparable, HCatRecord>.Context context)
-            throws IOException, InterruptedException {
-            String name = (String) value.get(0);
-            int age = (Integer) value.get(1);
-            String ds = (String) value.get(3);
+    @Override
+    protected void map(
+      WritableComparable key,
+      HCatRecord value,
+      org.apache.hadoop.mapreduce.Mapper<WritableComparable, HCatRecord, WritableComparable, HCatRecord>.Context context)
+      throws IOException, InterruptedException {
+      String name = (String) value.get(0);
+      int age = (Integer) value.get(1);
+      String ds = (String) value.get(3);
 
-            HCatRecord record = (filter == null ? new DefaultHCatRecord(3) : new DefaultHCatRecord(2));
-            record.set(0, name);
-            record.set(1, age);
-            if (filter == null) record.set(2, ds);
+      HCatRecord record = (filter == null ? new DefaultHCatRecord(3) : new DefaultHCatRecord(2));
+      record.set(0, name);
+      record.set(1, age);
+      if (filter == null) record.set(2, ds);
 
-            context.write(null, record);
+      context.write(null, record);
 
-        }
     }
+  }
 
-    public int run(String[] args) throws Exception {
-        Configuration conf = getConf();
-        args = new GenericOptionsParser(conf, args).getRemainingArgs();
+  public int run(String[] args) throws Exception {
+    Configuration conf = getConf();
+    args = new GenericOptionsParser(conf, args).getRemainingArgs();
 
-        String serverUri = args[0];
-        String inputTableName = args[1];
-        String outputTableName = args[2];
-        if (args.length > 3) filter = args[3];
-        String dbName = null;
+    String serverUri = args[0];
+    String inputTableName = args[1];
+    String outputTableName = args[2];
+    if (args.length > 3) filter = args[3];
+    String dbName = null;
 
-        String principalID = System
-            .getProperty(HCatConstants.HCAT_METASTORE_PRINCIPAL);
-        if (principalID != null)
-            conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
-        Job job = new Job(conf, "WriteTextPartitioned");
-        HCatInputFormat.setInput(job, InputJobInfo.create(dbName,
-            inputTableName, filter));
-        // initialize HCatOutputFormat
+    String principalID = System
+      .getProperty(HCatConstants.HCAT_METASTORE_PRINCIPAL);
+    if (principalID != null)
+      conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
+    Job job = new Job(conf, "WriteTextPartitioned");
+    HCatInputFormat.setInput(job, InputJobInfo.create(dbName,
+      inputTableName, filter));
+    // initialize HCatOutputFormat
 
-        job.setInputFormatClass(HCatInputFormat.class);
-        job.setJarByClass(WriteTextPartitioned.class);
-        job.setMapperClass(Map.class);
-        job.setOutputKeyClass(WritableComparable.class);
-        job.setOutputValueClass(DefaultHCatRecord.class);
-        job.setNumReduceTasks(0);
+    job.setInputFormatClass(HCatInputFormat.class);
+    job.setJarByClass(WriteTextPartitioned.class);
+    job.setMapperClass(Map.class);
+    job.setOutputKeyClass(WritableComparable.class);
+    job.setOutputValueClass(DefaultHCatRecord.class);
+    job.setNumReduceTasks(0);
 
-        java.util.Map<String, String> partitionVals = null;
-        if (filter != null) {
-            String[] s = filter.split("=");
-            String val = s[1].replace('"', ' ').trim();
-            partitionVals = new HashMap<String, String>(1);
-            partitionVals.put(s[0], val);
-        }
-        HCatOutputFormat.setOutput(job, OutputJobInfo.create(dbName,
-            outputTableName, partitionVals));
-        HCatSchema s = HCatInputFormat.getTableSchema(job);
-        // Build the schema for this table, which is slightly different than the
-        // schema for the input table
-        List<HCatFieldSchema> fss = new ArrayList<HCatFieldSchema>(3);
-        fss.add(s.get(0));
-        fss.add(s.get(1));
-        fss.add(s.get(3));
-        HCatOutputFormat.setSchema(job, new HCatSchema(fss));
-        job.setOutputFormatClass(HCatOutputFormat.class);
-        return (job.waitForCompletion(true) ? 0 : 1);
+    java.util.Map<String, String> partitionVals = null;
+    if (filter != null) {
+      String[] s = filter.split("=");
+      String val = s[1].replace('"', ' ').trim();
+      partitionVals = new HashMap<String, String>(1);
+      partitionVals.put(s[0], val);
     }
+    HCatOutputFormat.setOutput(job, OutputJobInfo.create(dbName,
+      outputTableName, partitionVals));
+    HCatSchema s = HCatInputFormat.getTableSchema(job);
+    // Build the schema for this table, which is slightly different than the
+    // schema for the input table
+    List<HCatFieldSchema> fss = new ArrayList<HCatFieldSchema>(3);
+    fss.add(s.get(0));
+    fss.add(s.get(1));
+    fss.add(s.get(3));
+    HCatOutputFormat.setSchema(job, new HCatSchema(fss));
+    job.setOutputFormatClass(HCatOutputFormat.class);
+    return (job.waitForCompletion(true) ? 0 : 1);
+  }
 
-    public static void main(String[] args) throws Exception {
-        int exitCode = ToolRunner.run(new WriteTextPartitioned(), args);
-        System.exit(exitCode);
-    }
+  public static void main(String[] args) throws Exception {
+    int exitCode = ToolRunner.run(new WriteTextPartitioned(), args);
+    System.exit(exitCode);
+  }
 }

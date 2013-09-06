@@ -27,219 +27,219 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 public class TableDesc extends GroupPermissionsDesc {
-    public boolean external = false;
-    public boolean ifNotExists = false;
-    public String table;
-    public String comment;
-    public List<ColumnDesc> columns;
-    public List<ColumnDesc> partitionedBy;
-    public ClusteredByDesc clusteredBy;
-    public StorageFormatDesc format;
-    public String location;
-    public Map<String, String> tableProperties;
+  public boolean external = false;
+  public boolean ifNotExists = false;
+  public String table;
+  public String comment;
+  public List<ColumnDesc> columns;
+  public List<ColumnDesc> partitionedBy;
+  public ClusteredByDesc clusteredBy;
+  public StorageFormatDesc format;
+  public String location;
+  public Map<String, String> tableProperties;
 
-    /**
-     * Create a new TableDesc
-     */
-    public TableDesc() {
+  /**
+   * Create a new TableDesc
+   */
+  public TableDesc() {
+  }
+
+  public String toString() {
+    return String.format("TableDesc(table=%s, columns=%s)", table, columns);
+  }
+
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (!(o instanceof TableDesc))
+      return false;
+    TableDesc that = (TableDesc) o;
+    return xequals(this.external, that.external)
+      && xequals(this.ifNotExists, that.ifNotExists)
+      && xequals(this.table, that.table)
+      && xequals(this.comment, that.comment)
+      && xequals(this.columns, that.columns)
+      && xequals(this.partitionedBy, that.partitionedBy)
+      && xequals(this.clusteredBy, that.clusteredBy)
+      && xequals(this.format, that.format)
+      && xequals(this.location, that.location)
+      && xequals(this.tableProperties, that.tableProperties)
+      && super.equals(that)
+      ;
+  }
+
+  /**
+   * How to cluster the table.
+   */
+  @XmlRootElement
+  public static class ClusteredByDesc {
+    public List<String> columnNames;
+    public List<ClusterSortOrderDesc> sortedBy;
+    public int numberOfBuckets;
+
+    public ClusteredByDesc() {
     }
 
     public String toString() {
-        return String.format("TableDesc(table=%s, columns=%s)", table, columns);
+      String fmt
+        = "ClusteredByDesc(columnNames=%s, sortedBy=%s, numberOfBuckets=%s)";
+      return String.format(fmt, columnNames, sortedBy, numberOfBuckets);
     }
 
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof TableDesc))
-            return false;
-        TableDesc that = (TableDesc) o;
-        return xequals(this.external, that.external)
-            && xequals(this.ifNotExists, that.ifNotExists)
-            && xequals(this.table, that.table)
-            && xequals(this.comment, that.comment)
-            && xequals(this.columns, that.columns)
-            && xequals(this.partitionedBy, that.partitionedBy)
-            && xequals(this.clusteredBy, that.clusteredBy)
-            && xequals(this.format, that.format)
-            && xequals(this.location, that.location)
-            && xequals(this.tableProperties, that.tableProperties)
-            && super.equals(that)
-            ;
+      if (this == o)
+        return true;
+      if (!(o instanceof ClusteredByDesc))
+        return false;
+      ClusteredByDesc that = (ClusteredByDesc) o;
+      return xequals(this.columnNames, that.columnNames)
+        && xequals(this.sortedBy, that.sortedBy)
+        && xequals(this.numberOfBuckets, that.numberOfBuckets)
+        ;
+    }
+  }
+
+  /**
+   * The clustered sort order.
+   */
+  @XmlRootElement
+  public static class ClusterSortOrderDesc {
+    public String columnName;
+    public SortDirectionDesc order;
+
+    public ClusterSortOrderDesc() {
     }
 
-    /**
-     * How to cluster the table.
-     */
-    @XmlRootElement
-    public static class ClusteredByDesc {
-        public List<String> columnNames;
-        public List<ClusterSortOrderDesc> sortedBy;
-        public int numberOfBuckets;
-
-        public ClusteredByDesc() {
-        }
-
-        public String toString() {
-            String fmt
-                = "ClusteredByDesc(columnNames=%s, sortedBy=%s, numberOfBuckets=%s)";
-            return String.format(fmt, columnNames, sortedBy, numberOfBuckets);
-        }
-
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (!(o instanceof ClusteredByDesc))
-                return false;
-            ClusteredByDesc that = (ClusteredByDesc) o;
-            return xequals(this.columnNames, that.columnNames)
-                && xequals(this.sortedBy, that.sortedBy)
-                && xequals(this.numberOfBuckets, that.numberOfBuckets)
-                ;
-        }
+    public ClusterSortOrderDesc(String columnName, SortDirectionDesc order) {
+      this.columnName = columnName;
+      this.order = order;
     }
 
-    /**
-     * The clustered sort order.
-     */
-    @XmlRootElement
-    public static class ClusterSortOrderDesc {
-        public String columnName;
-        public SortDirectionDesc order;
-
-        public ClusterSortOrderDesc() {
-        }
-
-        public ClusterSortOrderDesc(String columnName, SortDirectionDesc order) {
-            this.columnName = columnName;
-            this.order = order;
-        }
-
-        public String toString() {
-            return String
-                .format("ClusterSortOrderDesc(columnName=%s, order=%s)",
-                    columnName, order);
-        }
-
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (!(o instanceof ClusterSortOrderDesc))
-                return false;
-            ClusterSortOrderDesc that = (ClusterSortOrderDesc) o;
-            return xequals(this.columnName, that.columnName)
-                && xequals(this.order, that.order)
-                ;
-        }
+    public String toString() {
+      return String
+        .format("ClusterSortOrderDesc(columnName=%s, order=%s)",
+          columnName, order);
     }
 
-    /**
-     * Ther ASC or DESC sort order.
-     */
-    @XmlRootElement
-    public static enum SortDirectionDesc {
-        ASC, DESC
+    public boolean equals(Object o) {
+      if (this == o)
+        return true;
+      if (!(o instanceof ClusterSortOrderDesc))
+        return false;
+      ClusterSortOrderDesc that = (ClusterSortOrderDesc) o;
+      return xequals(this.columnName, that.columnName)
+        && xequals(this.order, that.order)
+        ;
+    }
+  }
+
+  /**
+   * Ther ASC or DESC sort order.
+   */
+  @XmlRootElement
+  public static enum SortDirectionDesc {
+    ASC, DESC
+  }
+
+  /**
+   * The storage format.
+   */
+  @XmlRootElement
+  public static class StorageFormatDesc {
+    public RowFormatDesc rowFormat;
+    public String storedAs;
+    public StoredByDesc storedBy;
+
+    public StorageFormatDesc() {
     }
 
-    /**
-     * The storage format.
-     */
-    @XmlRootElement
-    public static class StorageFormatDesc {
-        public RowFormatDesc rowFormat;
-        public String storedAs;
-        public StoredByDesc storedBy;
+    public boolean equals(Object o) {
+      if (this == o)
+        return true;
+      if (!(o instanceof StorageFormatDesc))
+        return false;
+      StorageFormatDesc that = (StorageFormatDesc) o;
+      return xequals(this.rowFormat, that.rowFormat)
+        && xequals(this.storedAs, that.storedAs)
+        && xequals(this.storedBy, that.storedBy)
+        ;
+    }
+  }
 
-        public StorageFormatDesc() {
-        }
+  /**
+   * The Row Format.
+   */
+  @XmlRootElement
+  public static class RowFormatDesc {
+    public String fieldsTerminatedBy;
+    public String collectionItemsTerminatedBy;
+    public String mapKeysTerminatedBy;
+    public String linesTerminatedBy;
+    public SerdeDesc serde;
 
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (!(o instanceof StorageFormatDesc))
-                return false;
-            StorageFormatDesc that = (StorageFormatDesc) o;
-            return xequals(this.rowFormat, that.rowFormat)
-                && xequals(this.storedAs, that.storedAs)
-                && xequals(this.storedBy, that.storedBy)
-                ;
-        }
+    public RowFormatDesc() {
     }
 
-    /**
-     * The Row Format.
-     */
-    @XmlRootElement
-    public static class RowFormatDesc {
-        public String fieldsTerminatedBy;
-        public String collectionItemsTerminatedBy;
-        public String mapKeysTerminatedBy;
-        public String linesTerminatedBy;
-        public SerdeDesc serde;
+    public boolean equals(Object o) {
+      if (this == o)
+        return true;
+      if (!(o instanceof RowFormatDesc))
+        return false;
+      RowFormatDesc that = (RowFormatDesc) o;
+      return xequals(this.fieldsTerminatedBy, that.fieldsTerminatedBy)
+        && xequals(this.collectionItemsTerminatedBy,
+          that.collectionItemsTerminatedBy)
+        && xequals(this.mapKeysTerminatedBy, that.mapKeysTerminatedBy)
+        && xequals(this.linesTerminatedBy, that.linesTerminatedBy)
+        && xequals(this.serde, that.serde)
+        ;
+    }
+  }
 
-        public RowFormatDesc() {
-        }
+  /**
+   * The SERDE Row Format.
+   */
+  @XmlRootElement
+  public static class SerdeDesc {
+    public String name;
+    public Map<String, String> properties;
 
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (!(o instanceof RowFormatDesc))
-                return false;
-            RowFormatDesc that = (RowFormatDesc) o;
-            return xequals(this.fieldsTerminatedBy, that.fieldsTerminatedBy)
-                && xequals(this.collectionItemsTerminatedBy,
-                    that.collectionItemsTerminatedBy)
-                && xequals(this.mapKeysTerminatedBy, that.mapKeysTerminatedBy)
-                && xequals(this.linesTerminatedBy, that.linesTerminatedBy)
-                && xequals(this.serde, that.serde)
-                ;
-        }
+    public SerdeDesc() {
     }
 
-    /**
-     * The SERDE Row Format.
-     */
-    @XmlRootElement
-    public static class SerdeDesc {
-        public String name;
-        public Map<String, String> properties;
+    public boolean equals(Object o) {
+      if (this == o)
+        return true;
+      if (!(o instanceof SerdeDesc))
+        return false;
+      SerdeDesc that = (SerdeDesc) o;
+      return xequals(this.name, that.name)
+        && xequals(this.properties, that.properties)
+        ;
+    }
+  }
 
-        public SerdeDesc() {
-        }
+  /**
+   * How to store the table.
+   */
+  @XmlRootElement
+  public static class StoredByDesc {
+    public String className;
+    public Map<String, String> properties;
 
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (!(o instanceof SerdeDesc))
-                return false;
-            SerdeDesc that = (SerdeDesc) o;
-            return xequals(this.name, that.name)
-                && xequals(this.properties, that.properties)
-                ;
-        }
+    public StoredByDesc() {
     }
 
-    /**
-     * How to store the table.
-     */
-    @XmlRootElement
-    public static class StoredByDesc {
-        public String className;
-        public Map<String, String> properties;
-
-        public StoredByDesc() {
-        }
-
-        public boolean equals(Object o) {
-            if (this == o)
-                return true;
-            if (!(o instanceof StoredByDesc))
-                return false;
-            StoredByDesc that = (StoredByDesc) o;
-            return xequals(this.className, that.className)
-                && xequals(this.properties, that.properties)
-                ;
-        }
+    public boolean equals(Object o) {
+      if (this == o)
+        return true;
+      if (!(o instanceof StoredByDesc))
+        return false;
+      StoredByDesc that = (StoredByDesc) o;
+      return xequals(this.className, that.className)
+        && xequals(this.properties, that.properties)
+        ;
     }
+  }
 
 }

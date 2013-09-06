@@ -38,34 +38,34 @@ import org.apache.hive.hcatalog.data.transfer.ReaderContext;
 
 public class DataReaderMaster {
 
-    public static void main(String[] args) throws FileNotFoundException, IOException {
+  public static void main(String[] args) throws FileNotFoundException, IOException {
 
-        // This config contains all the configuration that master node wants to provide
-        // to the HCatalog.
-        Properties externalConfigs = new Properties();
-        externalConfigs.load(new FileReader(args[0]));
-        Map<String, String> config = new HashMap<String, String>();
+    // This config contains all the configuration that master node wants to provide
+    // to the HCatalog.
+    Properties externalConfigs = new Properties();
+    externalConfigs.load(new FileReader(args[0]));
+    Map<String, String> config = new HashMap<String, String>();
 
-        for (Entry<Object, Object> kv : externalConfigs.entrySet()) {
-            config.put((String) kv.getKey(), (String) kv.getValue());
-        }
-
-        // This piece of code runs in master node and gets necessary context.
-        ReaderContext context = runsInMaster(config);
-
-        ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(args[1])));
-        oos.writeObject(context);
-        oos.flush();
-        oos.close();
-        // Master node will serialize readercontext and will make it available  at slaves.
+    for (Entry<Object, Object> kv : externalConfigs.entrySet()) {
+      config.put((String) kv.getKey(), (String) kv.getValue());
     }
 
-    private static ReaderContext runsInMaster(Map<String, String> config) throws HCatException {
+    // This piece of code runs in master node and gets necessary context.
+    ReaderContext context = runsInMaster(config);
 
-        ReadEntity.Builder builder = new ReadEntity.Builder();
-        ReadEntity entity = builder.withTable(config.get("table")).build();
-        HCatReader reader = DataTransferFactory.getHCatReader(entity, config);
-        ReaderContext cntxt = reader.prepareRead();
-        return cntxt;
-    }
+    ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File(args[1])));
+    oos.writeObject(context);
+    oos.flush();
+    oos.close();
+    // Master node will serialize readercontext and will make it available  at slaves.
+  }
+
+  private static ReaderContext runsInMaster(Map<String, String> config) throws HCatException {
+
+    ReadEntity.Builder builder = new ReadEntity.Builder();
+    ReadEntity entity = builder.withTable(config.get("table")).build();
+    HCatReader reader = DataTransferFactory.getHCatReader(entity, config);
+    ReaderContext cntxt = reader.prepareRead();
+    return cntxt;
+  }
 }

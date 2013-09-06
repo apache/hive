@@ -56,137 +56,137 @@ import org.apache.hive.hcatalog.mapreduce.OutputJobInfo;
  */
 public class HBaseReadWrite extends Configured implements Tool {
 
-    public static class HBaseWriteMap extends
-        Mapper<LongWritable, Text, Text, Text> {
+  public static class HBaseWriteMap extends
+    Mapper<LongWritable, Text, Text, Text> {
 
-        String name;
-        String age;
-        String gpa;
+    String name;
+    String age;
+    String gpa;
 
-        @Override
-        protected void map(
-            LongWritable key,
-            Text value,
-            org.apache.hadoop.mapreduce.Mapper<LongWritable, Text, Text, Text>.Context context)
-            throws IOException, InterruptedException {
-            String line = value.toString();
-            String[] tokens = line.split("\t");
-            name = tokens[0];
+    @Override
+    protected void map(
+      LongWritable key,
+      Text value,
+      org.apache.hadoop.mapreduce.Mapper<LongWritable, Text, Text, Text>.Context context)
+      throws IOException, InterruptedException {
+      String line = value.toString();
+      String[] tokens = line.split("\t");
+      name = tokens[0];
 
-            context.write(new Text(name), value);
-        }
+      context.write(new Text(name), value);
     }
+  }
 
 
-    public static class HBaseWriteReduce extends
-        Reducer<Text, Text, WritableComparable, HCatRecord> {
+  public static class HBaseWriteReduce extends
+    Reducer<Text, Text, WritableComparable, HCatRecord> {
 
-        String name;
-        String age;
-        String gpa;
+    String name;
+    String age;
+    String gpa;
 
-        @Override
-        protected void reduce(Text key, Iterable<Text> values, Context context)
-            throws IOException, InterruptedException {
-            name = key.toString();
-            int count = 0;
-            double sum = 0;
-            for (Text value : values) {
-                String line = value.toString();
-                String[] tokens = line.split("\t");
-                name = tokens[0];
-                age = tokens[1];
-                gpa = tokens[2];
+    @Override
+    protected void reduce(Text key, Iterable<Text> values, Context context)
+      throws IOException, InterruptedException {
+      name = key.toString();
+      int count = 0;
+      double sum = 0;
+      for (Text value : values) {
+        String line = value.toString();
+        String[] tokens = line.split("\t");
+        name = tokens[0];
+        age = tokens[1];
+        gpa = tokens[2];
 
-                count++;
-                sum += Double.parseDouble(gpa.toString());
-            }
+        count++;
+        sum += Double.parseDouble(gpa.toString());
+      }
 
-            HCatRecord record = new DefaultHCatRecord(2);
-            record.set(0, name);
-            record.set(1, Double.toString(sum));
+      HCatRecord record = new DefaultHCatRecord(2);
+      record.set(0, name);
+      record.set(1, Double.toString(sum));
 
-            context.write(null, record);
-        }
+      context.write(null, record);
     }
+  }
 
-    public static class HBaseReadMap extends
-        Mapper<WritableComparable, HCatRecord, Text, Text> {
+  public static class HBaseReadMap extends
+    Mapper<WritableComparable, HCatRecord, Text, Text> {
 
-        String name;
-        String age;
-        String gpa;
+    String name;
+    String age;
+    String gpa;
 
-        @Override
-        protected void map(
-            WritableComparable key,
-            HCatRecord value,
-            org.apache.hadoop.mapreduce.Mapper<WritableComparable, HCatRecord, Text, Text>.Context context)
-            throws IOException, InterruptedException {
-            name = (String) value.get(0);
-            gpa = (String) value.get(1);
-            context.write(new Text(name), new Text(gpa));
-        }
+    @Override
+    protected void map(
+      WritableComparable key,
+      HCatRecord value,
+      org.apache.hadoop.mapreduce.Mapper<WritableComparable, HCatRecord, Text, Text>.Context context)
+      throws IOException, InterruptedException {
+      name = (String) value.get(0);
+      gpa = (String) value.get(1);
+      context.write(new Text(name), new Text(gpa));
     }
+  }
 
 
-    public int run(String[] args) throws Exception {
-        Configuration conf = getConf();
-        args = new GenericOptionsParser(conf, args).getRemainingArgs();
+  public int run(String[] args) throws Exception {
+    Configuration conf = getConf();
+    args = new GenericOptionsParser(conf, args).getRemainingArgs();
 
-        String serverUri = args[0];
-        String inputDir = args[1];
-        String tableName = args[2];
-        String outputDir = args[3];
-        String dbName = null;
+    String serverUri = args[0];
+    String inputDir = args[1];
+    String tableName = args[2];
+    String outputDir = args[3];
+    String dbName = null;
 
-        String principalID = System
-            .getProperty(HCatConstants.HCAT_METASTORE_PRINCIPAL);
-        if (principalID != null)
-            conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
-        conf.set("hcat.hbase.output.bulkMode", "false");
-        Job job = new Job(conf, "HBaseWrite");
-        FileInputFormat.setInputPaths(job, inputDir);
+    String principalID = System
+      .getProperty(HCatConstants.HCAT_METASTORE_PRINCIPAL);
+    if (principalID != null)
+      conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
+    conf.set("hcat.hbase.output.bulkMode", "false");
+    Job job = new Job(conf, "HBaseWrite");
+    FileInputFormat.setInputPaths(job, inputDir);
 
-        job.setInputFormatClass(TextInputFormat.class);
-        job.setOutputFormatClass(HCatOutputFormat.class);
-        job.setJarByClass(HBaseReadWrite.class);
-        job.setMapperClass(HBaseWriteMap.class);
-        job.setMapOutputKeyClass(Text.class);
-        job.setMapOutputValueClass(Text.class);
-        job.setReducerClass(HBaseWriteReduce.class);
-        job.setOutputKeyClass(WritableComparable.class);
-        job.setOutputValueClass(DefaultHCatRecord.class);
-        HCatOutputFormat.setOutput(job, OutputJobInfo.create(dbName,
-            tableName, null));
+    job.setInputFormatClass(TextInputFormat.class);
+    job.setOutputFormatClass(HCatOutputFormat.class);
+    job.setJarByClass(HBaseReadWrite.class);
+    job.setMapperClass(HBaseWriteMap.class);
+    job.setMapOutputKeyClass(Text.class);
+    job.setMapOutputValueClass(Text.class);
+    job.setReducerClass(HBaseWriteReduce.class);
+    job.setOutputKeyClass(WritableComparable.class);
+    job.setOutputValueClass(DefaultHCatRecord.class);
+    HCatOutputFormat.setOutput(job, OutputJobInfo.create(dbName,
+      tableName, null));
 
-        boolean succ = job.waitForCompletion(true);
+    boolean succ = job.waitForCompletion(true);
 
-        if (!succ) return 1;
+    if (!succ) return 1;
 
-        job = new Job(conf, "HBaseRead");
-        HCatInputFormat.setInput(job, InputJobInfo.create(dbName, tableName,
-            null));
+    job = new Job(conf, "HBaseRead");
+    HCatInputFormat.setInput(job, InputJobInfo.create(dbName, tableName,
+      null));
 
-        job.setInputFormatClass(HCatInputFormat.class);
-        job.setOutputFormatClass(TextOutputFormat.class);
-        job.setJarByClass(HBaseReadWrite.class);
-        job.setMapperClass(HBaseReadMap.class);
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(Text.class);
-        job.setNumReduceTasks(0);
-        TextOutputFormat.setOutputPath(job, new Path(outputDir));
+    job.setInputFormatClass(HCatInputFormat.class);
+    job.setOutputFormatClass(TextOutputFormat.class);
+    job.setJarByClass(HBaseReadWrite.class);
+    job.setMapperClass(HBaseReadMap.class);
+    job.setOutputKeyClass(Text.class);
+    job.setOutputValueClass(Text.class);
+    job.setNumReduceTasks(0);
+    TextOutputFormat.setOutputPath(job, new Path(outputDir));
 
-        succ = job.waitForCompletion(true);
+    succ = job.waitForCompletion(true);
 
-        if (!succ) return 2;
+    if (!succ) return 2;
 
-        return 0;
-    }
+    return 0;
+  }
 
-    public static void main(String[] args) throws Exception {
-        int exitCode = ToolRunner.run(new HBaseReadWrite(), args);
-        System.exit(exitCode);
-    }
+  public static void main(String[] args) throws Exception {
+    int exitCode = ToolRunner.run(new HBaseReadWrite(), args);
+    System.exit(exitCode);
+  }
 }
 
