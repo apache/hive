@@ -32,6 +32,8 @@ import org.apache.hive.service.cli.thrift.TCloseOperationReq;
 import org.apache.hive.service.cli.thrift.TCloseOperationResp;
 import org.apache.hive.service.cli.thrift.TExecuteStatementReq;
 import org.apache.hive.service.cli.thrift.TExecuteStatementResp;
+import org.apache.hive.service.cli.thrift.TGetOperationStatusReq;
+import org.apache.hive.service.cli.thrift.TGetOperationStatusResp;
 import org.apache.hive.service.cli.thrift.TOperationHandle;
 import org.apache.hive.service.cli.thrift.TSessionHandle;
 
@@ -193,6 +195,44 @@ public class HiveStatement implements java.sql.Statement {
     }
 
     if (!stmtHandle.isHasResultSet()) {
+      // Poll until the query has completed one way or another. DML queries will not return a result
+      // set, but we should not return from this method until the query has completed to avoid
+      // racing with possible subsequent session shutdown, or queries that depend on the results
+      // materialised here.
+      TGetOperationStatusReq statusReq = new TGetOperationStatusReq(stmtHandle);
+      boolean requestComplete = false;
+      while (!requestComplete) {
+        try {
+          TGetOperationStatusResp statusResp = client.GetOperationStatus(statusReq);
+          Utils.verifySuccessWithInfo(statusResp.getStatus());
+          if (statusResp.isSetOperationState()) {
+            switch (statusResp.getOperationState()) {
+            case CLOSED_STATE:
+            case FINISHED_STATE:
+              return false;
+            case CANCELED_STATE:
+              // 01000 -> warning
+              throw new SQLException("Query was cancelled", "01000");
+            case ERROR_STATE:
+              // HY000 -> general error
+              throw new SQLException("Query failed", "HY000");
+            case UKNOWN_STATE:
+              throw new SQLException("Unknown query", "HY000");
+            case INITIALIZED_STATE:
+            case RUNNING_STATE:
+              break;
+            }
+          }
+        } catch (Exception ex) {
+          throw new SQLException(ex.toString(), "08S01", ex);
+        }
+
+        try {
+          Thread.sleep(100);
+        } catch (InterruptedException ex) {
+          // Ignore
+        }
+      }
       return false;
     }
     resultSet =  new HiveQueryResultSet.Builder().setClient(client).setSessionHandle(sessHandle)
