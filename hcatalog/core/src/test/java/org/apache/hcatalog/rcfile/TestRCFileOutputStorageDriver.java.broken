@@ -41,13 +41,13 @@ import org.apache.hcatalog.data.schema.HCatSchema;
 import org.apache.hcatalog.mapreduce.HCatInputStorageDriver;
 import org.apache.hcatalog.mapreduce.HCatOutputStorageDriver;
 import org.apache.hcatalog.mapreduce.OutputJobInfo;
-import org.apache.hcatalog.shims.HCatHadoopShims;
+import org.apache.hadoop.hive.shims.ShimLoader;
 
 public class TestRCFileOutputStorageDriver extends TestCase {
 
   public void testConversion() throws IOException {
     Configuration conf = new Configuration();
-    JobContext jc = HCatHadoopShims.Instance.get().createJobContext(conf, new JobID());
+    JobContext jc = ShimLoader.getHadoopShims().getHCatShim().createJobContext(conf, new JobID());
     String jobString = HCatUtil.serialize(OutputJobInfo.create(null,null,null));
     jc.getConfiguration().set(HCatConstants.HCAT_KEY_OUTPUT_INFO,jobString);
 

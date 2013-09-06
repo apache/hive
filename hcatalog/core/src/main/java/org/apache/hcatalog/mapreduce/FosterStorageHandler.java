@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorization
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hcatalog.common.HCatConstants;
 import org.apache.hcatalog.common.HCatUtil;
@@ -179,6 +180,14 @@ public class FosterStorageHandler extends HCatStorageHandler {
     public HiveAuthorizationProvider getAuthorizationProvider()
         throws HiveException {
         return new DefaultHiveAuthorizationProvider();
+    }
+    @Override
+    public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
+        //do nothing by default
+        //EK: added the same (no-op) implementation as in 
+        // org.apache.hive.hcatalog.DefaultStorageHandler (hive 0.12)
+        // this is needed to get 0.11 API compat layer to work
+        // see HIVE-4896
     }
 
 }
