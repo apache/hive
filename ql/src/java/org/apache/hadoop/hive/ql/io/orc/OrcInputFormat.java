@@ -167,8 +167,7 @@ public class OrcInputFormat  extends FileInputFormat<NullWritable, OrcStruct>
   public RecordReader<NullWritable, OrcStruct>
       getRecordReader(InputSplit inputSplit, JobConf conf,
                       Reporter reporter) throws IOException {
-    if (Utilities
-        .getMapRedWork(conf).getMapWork().getVectorMode()) {
+    if (isVectorMode(conf)) {
       RecordReader<NullWritable, VectorizedRowBatch> vorr = voif.getRecordReader(inputSplit, conf,
           reporter);
       return (RecordReader) vorr;
@@ -187,8 +186,7 @@ public class OrcInputFormat  extends FileInputFormat<NullWritable, OrcStruct>
                                ArrayList<FileStatus> files
                               ) throws IOException {
 
-    if (Utilities
-        .getMapRedWork(conf).getMapWork().getVectorMode()) {
+    if (isVectorMode(conf)) {
       return voif.validateInput(fs, conf, files);
     }
 
@@ -203,5 +201,13 @@ public class OrcInputFormat  extends FileInputFormat<NullWritable, OrcStruct>
       }
     }
     return true;
+  }
+
+  private boolean isVectorMode(Configuration conf) {
+    if (Utilities.getPlanPath(conf) != null && Utilities
+        .getMapRedWork(conf).getMapWork().getVectorMode()) {
+      return true;
+    }
+    return false;
   }
 }
