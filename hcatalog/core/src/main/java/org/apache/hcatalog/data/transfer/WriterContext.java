@@ -36,31 +36,31 @@ import org.apache.hadoop.conf.Configuration;
  */
 public class WriterContext implements Externalizable, Configurable {
 
-    private static final long serialVersionUID = -5899374262971611840L;
-    private Configuration conf;
+  private static final long serialVersionUID = -5899374262971611840L;
+  private Configuration conf;
 
-    public WriterContext() {
-        conf = new Configuration();
-    }
+  public WriterContext() {
+    conf = new Configuration();
+  }
 
-    @Override
-    public Configuration getConf() {
-        return conf;
-    }
+  @Override
+  public Configuration getConf() {
+    return conf;
+  }
 
-    @Override
-    public void setConf(final Configuration config) {
-        this.conf = config;
-    }
+  @Override
+  public void setConf(final Configuration config) {
+    this.conf = config;
+  }
 
-    @Override
-    public void writeExternal(ObjectOutput out) throws IOException {
-        conf.write(out);
-    }
+  @Override
+  public void writeExternal(ObjectOutput out) throws IOException {
+    conf.write(out);
+  }
 
-    @Override
-    public void readExternal(ObjectInput in) throws IOException,
-        ClassNotFoundException {
-        conf.readFields(in);
-    }
+  @Override
+  public void readExternal(ObjectInput in) throws IOException,
+    ClassNotFoundException {
+    conf.readFields(in);
+  }
 }

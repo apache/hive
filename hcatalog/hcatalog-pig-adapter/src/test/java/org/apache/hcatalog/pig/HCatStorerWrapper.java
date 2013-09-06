@@ -39,35 +39,35 @@ import org.apache.pig.impl.util.UDFContext;
  */
 public class HCatStorerWrapper extends HCatStorer {
 
-    private String sign;
-    private String externalDir;
+  private String sign;
+  private String externalDir;
 
-    public HCatStorerWrapper(String partSpecs, String schema, String externalDir) throws Exception {
-	super(partSpecs, schema);
-	this.externalDir = externalDir;
-    }
+  public HCatStorerWrapper(String partSpecs, String schema, String externalDir) throws Exception {
+    super(partSpecs, schema);
+    this.externalDir = externalDir;
+  }
 
-    public HCatStorerWrapper(String partSpecs, String externalDir) throws Exception {
-	super(partSpecs);
-	this.externalDir = externalDir;
-    }
+  public HCatStorerWrapper(String partSpecs, String externalDir) throws Exception {
+    super(partSpecs);
+    this.externalDir = externalDir;
+  }
 
-    public HCatStorerWrapper(String externalDir) throws Exception{
-	super();
-	this.externalDir = externalDir;
-    }
+  public HCatStorerWrapper(String externalDir) throws Exception{
+    super();
+    this.externalDir = externalDir;
+  }
 
-    @Override
-    public void setStoreLocation(String location, Job job) throws IOException {
-	Properties udfProps = UDFContext.getUDFContext().getUDFProperties(
-		this.getClass(), new String[] { sign });
-	udfProps.setProperty(HCatConstants.HCAT_PIG_STORER_EXTERNAL_LOCATION, externalDir);
-	super.setStoreLocation(location, job);
-    }
+  @Override
+  public void setStoreLocation(String location, Job job) throws IOException {
+    Properties udfProps = UDFContext.getUDFContext().getUDFProperties(
+        this.getClass(), new String[] { sign });
+    udfProps.setProperty(HCatConstants.HCAT_PIG_STORER_EXTERNAL_LOCATION, externalDir);
+    super.setStoreLocation(location, job);
+  }
 
-    @Override
-    public void setStoreFuncUDFContextSignature(String signature) {
-	sign = signature;
-	super.setStoreFuncUDFContextSignature(signature);
-    }
+  @Override
+  public void setStoreFuncUDFContextSignature(String signature) {
+    sign = signature;
+    super.setStoreFuncUDFContextSignature(signature);
+  }
 }

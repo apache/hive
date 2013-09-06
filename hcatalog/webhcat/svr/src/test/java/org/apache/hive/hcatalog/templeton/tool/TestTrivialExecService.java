@@ -27,43 +27,43 @@ import org.junit.Assert;
 import org.junit.Test;
 
 public class TestTrivialExecService {
-    @Test
-    public void test() {
-        ArrayList<String> list = new ArrayList<String>();
-        list.add("echo");
-        list.add("success");
-        BufferedReader out = null;
-        BufferedReader err = null;
-        try {
-            Process process = TrivialExecService.getInstance()
-                .run(list,
-                    new ArrayList<String>(),
-                    new HashMap<String, String>());
-            out = new BufferedReader(new InputStreamReader(
-                process.getInputStream()));
-            err = new BufferedReader(new InputStreamReader(
-                process.getErrorStream()));
-            Assert.assertEquals("success", out.readLine());
-            out.close();
-            String line;
-            while ((line = err.readLine()) != null) {
-                Assert.fail(line);
-            }
-            process.waitFor();
-        } catch (Exception e) {
-            e.printStackTrace();
-            Assert.fail("Process caused exception.");
-        } finally {
-            try {
-                out.close();
-            } catch (Exception ex) {
-                // Whatever.
-            }
-            try {
-                err.close();
-            } catch (Exception ex) {
-                // Whatever
-            }
-        }
+  @Test
+  public void test() {
+    ArrayList<String> list = new ArrayList<String>();
+    list.add("echo");
+    list.add("success");
+    BufferedReader out = null;
+    BufferedReader err = null;
+    try {
+      Process process = TrivialExecService.getInstance()
+        .run(list,
+          new ArrayList<String>(),
+          new HashMap<String, String>());
+      out = new BufferedReader(new InputStreamReader(
+        process.getInputStream()));
+      err = new BufferedReader(new InputStreamReader(
+        process.getErrorStream()));
+      Assert.assertEquals("success", out.readLine());
+      out.close();
+      String line;
+      while ((line = err.readLine()) != null) {
+        Assert.fail(line);
+      }
+      process.waitFor();
+    } catch (Exception e) {
+      e.printStackTrace();
+      Assert.fail("Process caused exception.");
+    } finally {
+      try {
+        out.close();
+      } catch (Exception ex) {
+        // Whatever.
+      }
+      try {
+        err.close();
+      } catch (Exception ex) {
+        // Whatever
+      }
     }
+  }
 }

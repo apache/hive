@@ -23,9 +23,9 @@ package org.apache.hcatalog.pig;
  */
 public class TestOrcHCatStorer extends TestHCatStorerMulti {
 
-    @Override
-    protected String storageFormat() {
-        return "orc";
-    }
+  @Override
+  protected String storageFormat() {
+    return "orc";
+  }
 }
 

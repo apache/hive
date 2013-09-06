@@ -20,9 +20,9 @@ package org.apache.hive.hcatalog.pig;
 
 public class TestOrcHCatStorer extends TestHCatStorerMulti {
 
-    @Override
-    protected String storageFormat() {
-        return "orc";
-    }
+  @Override
+  protected String storageFormat() {
+    return "orc";
+  }
 }
 

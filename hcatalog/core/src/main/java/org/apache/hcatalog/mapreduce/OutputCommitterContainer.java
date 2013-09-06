@@ -28,21 +28,21 @@ import org.apache.hadoop.mapreduce.OutputCommitter;
  * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.OutputCommitterContainer} instead
  */
 abstract class OutputCommitterContainer extends OutputCommitter {
-    private final org.apache.hadoop.mapred.OutputCommitter committer;
+  private final org.apache.hadoop.mapred.OutputCommitter committer;
 
-    /**
-     * @param context current JobContext
-     * @param committer OutputCommitter that this instance will contain
-     */
-    public OutputCommitterContainer(JobContext context, org.apache.hadoop.mapred.OutputCommitter committer) {
-        this.committer = committer;
-    }
+  /**
+   * @param context current JobContext
+   * @param committer OutputCommitter that this instance will contain
+   */
+  public OutputCommitterContainer(JobContext context, org.apache.hadoop.mapred.OutputCommitter committer) {
+    this.committer = committer;
+  }
 
-    /**
-     * @return underlying OutputCommitter
-     */
-    public OutputCommitter getBaseOutputCommitter() {
-        return committer;
-    }
+  /**
+   * @return underlying OutputCommitter
+   */
+  public OutputCommitter getBaseOutputCommitter() {
+    return committer;
+  }
 
 }

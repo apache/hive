@@ -32,22 +32,22 @@ import org.apache.hive.hcatalog.data.HCatRecord;
  */
 abstract class RecordWriterContainer extends  RecordWriter<WritableComparable<?>, HCatRecord> {
 
-    private final org.apache.hadoop.mapred.RecordWriter<? super WritableComparable<?>, ? super Writable> baseRecordWriter;
+  private final org.apache.hadoop.mapred.RecordWriter<? super WritableComparable<?>, ? super Writable> baseRecordWriter;
 
-    /**
-     * @param context current JobContext
-     * @param baseRecordWriter RecordWriter that this instance will contain
-     */
-    public RecordWriterContainer(TaskAttemptContext context,
-                                 org.apache.hadoop.mapred.RecordWriter<? super WritableComparable<?>, ? super Writable> baseRecordWriter) {
-        this.baseRecordWriter = baseRecordWriter;
-    }
+  /**
+   * @param context current JobContext
+   * @param baseRecordWriter RecordWriter that this instance will contain
+   */
+  public RecordWriterContainer(TaskAttemptContext context,
+                 org.apache.hadoop.mapred.RecordWriter<? super WritableComparable<?>, ? super Writable> baseRecordWriter) {
+    this.baseRecordWriter = baseRecordWriter;
+  }
 
-    /**
-     * @return underlying RecordWriter
-     */
-    public org.apache.hadoop.mapred.RecordWriter getBaseRecordWriter() {
-        return baseRecordWriter;
-    }
+  /**
+   * @return underlying RecordWriter
+   */
+  public org.apache.hadoop.mapred.RecordWriter getBaseRecordWriter() {
+    return baseRecordWriter;
+  }
 
 }

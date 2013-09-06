@@ -51,101 +51,101 @@ import org.apache.pig.impl.util.Utils;
  */
 public class HCatTypeCheck extends EvalFunc<Integer> {
 
-    static HashMap<Byte, Class<?>> typeMap = new HashMap<Byte, Class<?>>();
+  static HashMap<Byte, Class<?>> typeMap = new HashMap<Byte, Class<?>>();
 
-    @Override
-    public Integer exec(Tuple input) throws IOException {
-        String schemaStr = (String) input.get(0);
-        Schema s = null;
-        try {
-            s = getSchemaFromString(schemaStr);
-        } catch (Exception e) {
-            throw new IOException(e);
+  @Override
+  public Integer exec(Tuple input) throws IOException {
+    String schemaStr = (String) input.get(0);
+    Schema s = null;
+    try {
+      s = getSchemaFromString(schemaStr);
+    } catch (Exception e) {
+      throw new IOException(e);
+    }
+    for (int i = 0; i < s.size(); i++) {
+      check(s.getField(i).type, input.get(i + 1)); // input.get(i+1) since input.get(0) is the schema;
+    }
+    return 1;
+  }
+
+  static {
+    typeMap.put(DataType.INTEGER, Integer.class);
+    typeMap.put(DataType.LONG, Long.class);
+    typeMap.put(DataType.FLOAT, Float.class);
+    typeMap.put(DataType.DOUBLE, Double.class);
+    typeMap.put(DataType.CHARARRAY, String.class);
+    typeMap.put(DataType.TUPLE, Tuple.class);
+    typeMap.put(DataType.MAP, Map.class);
+    typeMap.put(DataType.BAG, DataBag.class);
+  }
+
+
+  private void die(String expectedType, Object o) throws IOException {
+    throw new IOException("Expected " + expectedType + ", got " +
+      o.getClass().getName());
+  }
+
+
+  private String check(Byte type, Object o) throws IOException {
+    if (o == null) {
+      return "";
+    }
+    if (check(typeMap.get(type), o)) {
+      if (type.equals(DataType.MAP)) {
+        Map<String, String> m = (Map<String, String>) o;
+        check(m);
+      } else if (type.equals(DataType.BAG)) {
+        DataBag bg = (DataBag) o;
+        for (Tuple tuple : bg) {
+          Map<String, String> m = (Map<String, String>) tuple.get(0);
+          check(m);
         }
-        for (int i = 0; i < s.size(); i++) {
-            check(s.getField(i).type, input.get(i + 1)); // input.get(i+1) since input.get(0) is the schema;
+      } else if (type.equals(DataType.TUPLE)) {
+        Tuple t = (Tuple) o;
+        if (!check(Integer.class, t.get(0)) ||
+          !check(String.class, t.get(1)) ||
+          !check(Double.class, t.get(2))) {
+          die("t:tuple(num:int,str:string,dbl:double)", t);
         }
-        return 1;
+      }
+    } else {
+      die(typeMap.get(type).getName(), o);
+    }
+    return o.toString();
+  }
+
+  /**
+   * @param m
+   * @throws IOException
+   */
+  private void check(Map<String, String> m) throws IOException {
+    for (Entry<String, String> e : m.entrySet()) {
+      // just access key and value to ensure they are correct
+      if (!check(String.class, e.getKey())) {
+        die("String", e.getKey());
+      }
+      if (!check(String.class, e.getValue())) {
+        die("String", e.getValue());
+      }
     }
 
-    static {
-        typeMap.put(DataType.INTEGER, Integer.class);
-        typeMap.put(DataType.LONG, Long.class);
-        typeMap.put(DataType.FLOAT, Float.class);
-        typeMap.put(DataType.DOUBLE, Double.class);
-        typeMap.put(DataType.CHARARRAY, String.class);
-        typeMap.put(DataType.TUPLE, Tuple.class);
-        typeMap.put(DataType.MAP, Map.class);
-        typeMap.put(DataType.BAG, DataBag.class);
+  }
+
+  private boolean check(Class<?> expected, Object actual) {
+    if (actual == null) {
+      return true;
     }
+    return expected.isAssignableFrom(actual.getClass());
+  }
 
-
-    private void die(String expectedType, Object o) throws IOException {
-        throw new IOException("Expected " + expectedType + ", got " +
-            o.getClass().getName());
-    }
-
-
-    private String check(Byte type, Object o) throws IOException {
-        if (o == null) {
-            return "";
-        }
-        if (check(typeMap.get(type), o)) {
-            if (type.equals(DataType.MAP)) {
-                Map<String, String> m = (Map<String, String>) o;
-                check(m);
-            } else if (type.equals(DataType.BAG)) {
-                DataBag bg = (DataBag) o;
-                for (Tuple tuple : bg) {
-                    Map<String, String> m = (Map<String, String>) tuple.get(0);
-                    check(m);
-                }
-            } else if (type.equals(DataType.TUPLE)) {
-                Tuple t = (Tuple) o;
-                if (!check(Integer.class, t.get(0)) ||
-                    !check(String.class, t.get(1)) ||
-                    !check(Double.class, t.get(2))) {
-                    die("t:tuple(num:int,str:string,dbl:double)", t);
-                }
-            }
-        } else {
-            die(typeMap.get(type).getName(), o);
-        }
-        return o.toString();
-    }
-
-    /**
-     * @param m
-     * @throws IOException
+  Schema getSchemaFromString(String schemaString) throws Exception {
+    /** ByteArrayInputStream stream = new ByteArrayInputStream(schemaString.getBytes()) ;
+     QueryParser queryParser = new QueryParser(stream) ;
+     Schema schema = queryParser.TupleSchema() ;
+     Schema.setSchemaDefaultType(schema, org.apache.pig.data.DataType.BYTEARRAY);
+     return schema;
      */
-    private void check(Map<String, String> m) throws IOException {
-        for (Entry<String, String> e : m.entrySet()) {
-            // just access key and value to ensure they are correct
-            if (!check(String.class, e.getKey())) {
-                die("String", e.getKey());
-            }
-            if (!check(String.class, e.getValue())) {
-                die("String", e.getValue());
-            }
-        }
-
-    }
-
-    private boolean check(Class<?> expected, Object actual) {
-        if (actual == null) {
-            return true;
-        }
-        return expected.isAssignableFrom(actual.getClass());
-    }
-
-    Schema getSchemaFromString(String schemaString) throws Exception {
-        /** ByteArrayInputStream stream = new ByteArrayInputStream(schemaString.getBytes()) ;
-         QueryParser queryParser = new QueryParser(stream) ;
-         Schema schema = queryParser.TupleSchema() ;
-         Schema.setSchemaDefaultType(schema, org.apache.pig.data.DataType.BYTEARRAY);
-         return schema;
-         */
-        return Utils.getSchemaFromString(schemaString);
-    }
+    return Utils.getSchemaFromString(schemaString);
+  }
 
 }

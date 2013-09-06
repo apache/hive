@@ -27,16 +27,16 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 public class DatabaseDesc extends GroupPermissionsDesc {
-    public boolean ifNotExists;
-    public String database;
-    public String comment;
-    public String location;
-    public Map<String, String> properties;
+  public boolean ifNotExists;
+  public String database;
+  public String comment;
+  public String location;
+  public Map<String, String> properties;
 
-    public DatabaseDesc() {}
+  public DatabaseDesc() {}
 
-    public String toString() {
-        return String.format("DatabaseDesc(database=%s, comment=%s, location=%s, " +
-                             "properties=%s)", database, comment, location, properties);
-    }
+  public String toString() {
+    return String.format("DatabaseDesc(database=%s, comment=%s, location=%s, " +
+               "properties=%s)", database, comment, location, properties);
+  }
 }

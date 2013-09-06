@@ -25,13 +25,13 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 public class TablePropertyDesc extends GroupPermissionsDesc {
-    public String name;
-    public String value;
+  public String name;
+  public String value;
 
-    public TablePropertyDesc() {}
+  public TablePropertyDesc() {}
 
-    public String toString() {
-        return String.format("TablePropertyDesc(name=%s, value=%s)",
-                             name, value);
-    }
+  public String toString() {
+    return String.format("TablePropertyDesc(name=%s, value=%s)",
+               name, value);
+  }
 }

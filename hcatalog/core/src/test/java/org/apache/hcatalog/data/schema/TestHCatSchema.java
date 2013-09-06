@@ -27,55 +27,55 @@ import java.util.List;
  * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.schema.TestHCatSchema} instead
  */
 public class TestHCatSchema extends TestCase {
-    public void testCannotAddFieldMoreThanOnce() throws HCatException {
-        List<HCatFieldSchema> fieldSchemaList = new ArrayList<HCatFieldSchema>();
-        fieldSchemaList.add(new HCatFieldSchema("name", HCatFieldSchema.Type.STRING, "What's your handle?"));
-        fieldSchemaList.add(new HCatFieldSchema("age", HCatFieldSchema.Type.INT, "So very old"));
+  public void testCannotAddFieldMoreThanOnce() throws HCatException {
+    List<HCatFieldSchema> fieldSchemaList = new ArrayList<HCatFieldSchema>();
+    fieldSchemaList.add(new HCatFieldSchema("name", HCatFieldSchema.Type.STRING, "What's your handle?"));
+    fieldSchemaList.add(new HCatFieldSchema("age", HCatFieldSchema.Type.INT, "So very old"));
 
-        HCatSchema schema = new HCatSchema(fieldSchemaList);
+    HCatSchema schema = new HCatSchema(fieldSchemaList);
 
-        assertTrue(schema.getFieldNames().contains("age"));
-        assertEquals(2, schema.getFields().size());
+    assertTrue(schema.getFieldNames().contains("age"));
+    assertEquals(2, schema.getFields().size());
 
-        try {
-            schema.append(new HCatFieldSchema("age", HCatFieldSchema.Type.INT, "So very old"));
-            fail("Was able to append field schema with same name");
-        } catch (HCatException he) {
-            assertTrue(he.getMessage().contains("Attempt to append HCatFieldSchema with already existing name: age."));
-        }
-
-        assertTrue(schema.getFieldNames().contains("age"));
-        assertEquals(2, schema.getFields().size());
-
-        // Should also not be able to add fields of different types with same name
-        try {
-            schema.append(new HCatFieldSchema("age", HCatFieldSchema.Type.STRING, "Maybe spelled out?"));
-            fail("Was able to append field schema with same name");
-        } catch (HCatException he) {
-            assertTrue(he.getMessage().contains("Attempt to append HCatFieldSchema with already existing name: age."));
-        }
-
-        assertTrue(schema.getFieldNames().contains("age"));
-        assertEquals(2, schema.getFields().size());
+    try {
+      schema.append(new HCatFieldSchema("age", HCatFieldSchema.Type.INT, "So very old"));
+      fail("Was able to append field schema with same name");
+    } catch (HCatException he) {
+      assertTrue(he.getMessage().contains("Attempt to append HCatFieldSchema with already existing name: age."));
     }
 
-    public void testCannotInstantiateSchemaWithRepeatedFieldNames() throws HCatException {
-        List<HCatFieldSchema> fieldSchemaList = new ArrayList<HCatFieldSchema>();
+    assertTrue(schema.getFieldNames().contains("age"));
+    assertEquals(2, schema.getFields().size());
 
-        fieldSchemaList.add(new HCatFieldSchema("memberID", HCatFieldSchema.Type.INT, "as a number"));
-        fieldSchemaList.add(new HCatFieldSchema("location", HCatFieldSchema.Type.STRING, "there's Waldo"));
-
-        // No duplicate names.  This should be ok
-        HCatSchema schema = new HCatSchema(fieldSchemaList);
-
-        fieldSchemaList.add(new HCatFieldSchema("memberID", HCatFieldSchema.Type.STRING, "as a String"));
-
-        // Now a duplicated field name.  Should fail
-        try {
-            HCatSchema schema2 = new HCatSchema(fieldSchemaList);
-            fail("Able to add duplicate field name");
-        } catch (IllegalArgumentException iae) {
-            assertTrue(iae.getMessage().contains("Field named memberID already exists"));
-        }
+    // Should also not be able to add fields of different types with same name
+    try {
+      schema.append(new HCatFieldSchema("age", HCatFieldSchema.Type.STRING, "Maybe spelled out?"));
+      fail("Was able to append field schema with same name");
+    } catch (HCatException he) {
+      assertTrue(he.getMessage().contains("Attempt to append HCatFieldSchema with already existing name: age."));
     }
+
+    assertTrue(schema.getFieldNames().contains("age"));
+    assertEquals(2, schema.getFields().size());
+  }
+
+  public void testCannotInstantiateSchemaWithRepeatedFieldNames() throws HCatException {
+    List<HCatFieldSchema> fieldSchemaList = new ArrayList<HCatFieldSchema>();
+
+    fieldSchemaList.add(new HCatFieldSchema("memberID", HCatFieldSchema.Type.INT, "as a number"));
+    fieldSchemaList.add(new HCatFieldSchema("location", HCatFieldSchema.Type.STRING, "there's Waldo"));
+
+    // No duplicate names.  This should be ok
+    HCatSchema schema = new HCatSchema(fieldSchemaList);
+
+    fieldSchemaList.add(new HCatFieldSchema("memberID", HCatFieldSchema.Type.STRING, "as a String"));
+
+    // Now a duplicated field name.  Should fail
+    try {
+      HCatSchema schema2 = new HCatSchema(fieldSchemaList);
+      fail("Able to add duplicate field name");
+    } catch (IllegalArgumentException iae) {
+      assertTrue(iae.getMessage().contains("Field named memberID already exists"));
+    }
+  }
 }

@@ -24,20 +24,20 @@ package org.apache.hive.hcatalog.messaging;
  */
 public abstract class CreateTableMessage extends HCatEventMessage {
 
-    protected CreateTableMessage() {
-        super(EventType.CREATE_TABLE);
-    }
+  protected CreateTableMessage() {
+    super(EventType.CREATE_TABLE);
+  }
 
-    /**
-     * Getter for the name of table created in HCatalog.
-     * @return Table-name (String).
-     */
-    public abstract String getTable();
+  /**
+   * Getter for the name of table created in HCatalog.
+   * @return Table-name (String).
+   */
+  public abstract String getTable();
 
-    @Override
-    public HCatEventMessage checkValid() {
-        if (getTable() == null)
-            throw new IllegalStateException("Table name unset.");
-        return super.checkValid();
-    }
+  @Override
+  public HCatEventMessage checkValid() {
+    if (getTable() == null)
+      throw new IllegalStateException("Table name unset.");
+    return super.checkValid();
+  }
 }

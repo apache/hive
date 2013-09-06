@@ -28,16 +28,16 @@ import org.apache.hadoop.mapreduce.InputSplit;
  * An empty splitter.
  */
 public class NullSplit extends InputSplit implements Writable {
-    public long getLength() { return 0; }
+  public long getLength() { return 0; }
 
-    public String[] getLocations() throws IOException {
-        return new String[]{};
-    }
+  public String[] getLocations() throws IOException {
+    return new String[]{};
+  }
 
-    @Override
-    public void write(DataOutput out) throws IOException {}
+  @Override
+  public void write(DataOutput out) throws IOException {}
 
-    @Override
-    public void readFields(DataInput in) throws IOException {}
+  @Override
+  public void readFields(DataInput in) throws IOException {}
 }
 

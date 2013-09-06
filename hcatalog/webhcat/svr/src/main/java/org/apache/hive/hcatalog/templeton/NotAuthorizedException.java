@@ -24,7 +24,7 @@ import org.eclipse.jetty.http.HttpStatus;
  * Simple "user not found" type exception.
  */
 public class NotAuthorizedException extends SimpleWebException {
-    public NotAuthorizedException(String msg) {
-        super(HttpStatus.UNAUTHORIZED_401, msg);
-    }
+  public NotAuthorizedException(String msg) {
+    super(HttpStatus.UNAUTHORIZED_401, msg);
+  }
 }

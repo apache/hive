@@ -45,69 +45,69 @@ import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
  * See LauncherDelegator for the HADOOP_END_RETRY* vars that are set.
  */
 public class CompleteDelegator extends TempletonDelegator {
-    private static final Log LOG = LogFactory.getLog(CompleteDelegator.class);
+  private static final Log LOG = LogFactory.getLog(CompleteDelegator.class);
 
-    public CompleteDelegator(AppConfig appConf) {
-        super(appConf);
+  public CompleteDelegator(AppConfig appConf) {
+    super(appConf);
+  }
+
+  public CompleteBean run(String id)
+    throws CallbackFailedException, IOException {
+    if (id == null)
+      acceptWithError("No jobid given");
+
+    JobState state = null;
+    try {
+      state = new JobState(id, Main.getAppConfigInstance());
+      if (state.getCompleteStatus() == null)
+        failed("Job not yet complete", null);
+
+      Long notified = state.getNotifiedTime();
+      if (notified != null)
+        return acceptWithError("Callback already run on "
+          + new Date(notified.longValue()));
+
+      String callback = state.getCallback();
+      if (callback == null)
+        return new CompleteBean("No callback registered");
+
+      try {
+        doCallback(state.getId(), callback);
+      } catch (Exception e) {
+        failed("Callback failed " + callback + " for " + id, e);
+      }
+
+      state.setNotifiedTime(System.currentTimeMillis());
+      return new CompleteBean("Callback sent");
+    } finally {
+      if (state != null)
+        state.close();
     }
+  }
 
-    public CompleteBean run(String id)
-        throws CallbackFailedException, IOException {
-        if (id == null)
-            acceptWithError("No jobid given");
+  /**
+   * Call the callback url with the jobid to let them know it's
+   * finished.  If the url has the string $jobId in it, it will be
+   * replaced with the completed jobid.
+   */
+  public static void doCallback(String jobid, String url)
+    throws MalformedURLException, IOException {
+    if (url.contains("$jobId"))
+      url = url.replace("$jobId", jobid);
+    TempletonUtils.fetchUrl(new URL(url));
+  }
 
-        JobState state = null;
-        try {
-            state = new JobState(id, Main.getAppConfigInstance());
-            if (state.getCompleteStatus() == null)
-                failed("Job not yet complete", null);
+  private void failed(String msg, Exception e)
+    throws CallbackFailedException {
+    if (e != null)
+      LOG.error(msg, e);
+    else
+      LOG.error(msg);
+    throw new CallbackFailedException(msg);
+  }
 
-            Long notified = state.getNotifiedTime();
-            if (notified != null)
-                return acceptWithError("Callback already run on "
-                    + new Date(notified.longValue()));
-
-            String callback = state.getCallback();
-            if (callback == null)
-                return new CompleteBean("No callback registered");
-
-            try {
-                doCallback(state.getId(), callback);
-            } catch (Exception e) {
-                failed("Callback failed " + callback + " for " + id, e);
-            }
-
-            state.setNotifiedTime(System.currentTimeMillis());
-            return new CompleteBean("Callback sent");
-        } finally {
-            if (state != null)
-                state.close();
-        }
-    }
-
-    /**
-     * Call the callback url with the jobid to let them know it's
-     * finished.  If the url has the string $jobId in it, it will be
-     * replaced with the completed jobid.
-     */
-    public static void doCallback(String jobid, String url)
-        throws MalformedURLException, IOException {
-        if (url.contains("$jobId"))
-            url = url.replace("$jobId", jobid);
-        TempletonUtils.fetchUrl(new URL(url));
-    }
-
-    private void failed(String msg, Exception e)
-        throws CallbackFailedException {
-        if (e != null)
-            LOG.error(msg, e);
-        else
-            LOG.error(msg);
-        throw new CallbackFailedException(msg);
-    }
-
-    private CompleteBean acceptWithError(String msg) {
-        LOG.error(msg);
-        return new CompleteBean(msg);
-    }
+  private CompleteBean acceptWithError(String msg) {
+    LOG.error(msg);
+    return new CompleteBean(msg);
+  }
 }

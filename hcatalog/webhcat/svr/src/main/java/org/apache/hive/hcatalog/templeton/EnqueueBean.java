@@ -22,16 +22,16 @@ package org.apache.hive.hcatalog.templeton;
  * EnqueueBean - The results of a call that enqueues a Hadoop job.
  */
 public class EnqueueBean {
-    public String id;
+  public String id;
 
-    public EnqueueBean() {}
+  public EnqueueBean() {}
 
-    /**
-     * Create a new EnqueueBean.
-     *
-     * @param id     job id
-     */
-    public EnqueueBean(String id) {
-        this.id = id;
-    }
+  /**
+   * Create a new EnqueueBean.
+   *
+   * @param id     job id
+   */
+  public EnqueueBean(String id) {
+    this.id = id;
+  }
 }

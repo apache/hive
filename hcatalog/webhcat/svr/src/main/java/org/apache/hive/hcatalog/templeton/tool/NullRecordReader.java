@@ -29,34 +29,34 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
  * An empty record reader.
  */
 public class NullRecordReader
-    extends RecordReader<NullWritable, NullWritable> {
-    @Override
-    public void initialize(InputSplit genericSplit, TaskAttemptContext context)
-        throws IOException {
-    }
+  extends RecordReader<NullWritable, NullWritable> {
+  @Override
+  public void initialize(InputSplit genericSplit, TaskAttemptContext context)
+    throws IOException {
+  }
 
-    @Override
-    public void close() throws IOException {
-    }
+  @Override
+  public void close() throws IOException {
+  }
 
-    @Override
-    public NullWritable getCurrentKey() {
-        return NullWritable.get();
-    }
+  @Override
+  public NullWritable getCurrentKey() {
+    return NullWritable.get();
+  }
 
-    @Override
-    public NullWritable getCurrentValue() {
-        return NullWritable.get();
-    }
+  @Override
+  public NullWritable getCurrentValue() {
+    return NullWritable.get();
+  }
 
-    @Override
-    public float getProgress() {
-        return 1.0f;
-    }
+  @Override
+  public float getProgress() {
+    return 1.0f;
+  }
 
-    @Override
-    public boolean nextKeyValue() throws IOException {
-        return false;
-    }
+  @Override
+  public boolean nextKeyValue() throws IOException {
+    return false;
+  }
 }
 

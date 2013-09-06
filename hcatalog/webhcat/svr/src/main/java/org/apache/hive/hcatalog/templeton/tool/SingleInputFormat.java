@@ -33,19 +33,19 @@ import org.apache.hadoop.mapreduce.TaskAttemptContext;
  * An empty InputFormat.
  */
 public class SingleInputFormat
-    extends InputFormat<NullWritable, NullWritable> {
-    public List<InputSplit> getSplits(JobContext job)
-        throws IOException {
-        List<InputSplit> res = new ArrayList<InputSplit>();
-        res.add(new NullSplit());
-        return res;
-    }
+  extends InputFormat<NullWritable, NullWritable> {
+  public List<InputSplit> getSplits(JobContext job)
+    throws IOException {
+    List<InputSplit> res = new ArrayList<InputSplit>();
+    res.add(new NullSplit());
+    return res;
+  }
 
-    public RecordReader<NullWritable, NullWritable>
-    createRecordReader(InputSplit split,
-                       TaskAttemptContext context)
-        throws IOException {
-        return new NullRecordReader();
-    }
+  public RecordReader<NullWritable, NullWritable>
+  createRecordReader(InputSplit split,
+             TaskAttemptContext context)
+    throws IOException {
+    return new NullRecordReader();
+  }
 }
 

@@ -62,81 +62,81 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.Obje
  */
 public final class HCatTypeCheckHive extends GenericUDF {
 
-    ObjectInspector[] argOIs;
+  ObjectInspector[] argOIs;
 
-    @Override
-    public Object evaluate(DeferredObject[] args) throws HiveException {
-        List<Object> row = new ArrayList<Object>();
-        String typesStr = (String) getJavaObject(args[0].get(), argOIs[0], new ArrayList<Category>());
-        String[] types = typesStr.split("\\+");
-        for (int i = 0; i < types.length; i++) {
-            types[i] = types[i].toLowerCase();
-        }
-        for (int i = 1; i < args.length; i++) {
-            ObjectInspector oi = argOIs[i];
-            List<ObjectInspector.Category> categories = new ArrayList<ObjectInspector.Category>();
-            Object o = getJavaObject(args[i].get(), oi, categories);
-            try {
-                if (o != null) {
-                    Util.check(types[i - 1], o);
-                }
-            } catch (IOException e) {
-                throw new HiveException(e);
-            }
-            row.add(o == null ? "null" : o);
-            row.add(":" + (o == null ? "null" : o.getClass()) + ":" + categories);
-        }
-        return row.toString();
+  @Override
+  public Object evaluate(DeferredObject[] args) throws HiveException {
+    List<Object> row = new ArrayList<Object>();
+    String typesStr = (String) getJavaObject(args[0].get(), argOIs[0], new ArrayList<Category>());
+    String[] types = typesStr.split("\\+");
+    for (int i = 0; i < types.length; i++) {
+      types[i] = types[i].toLowerCase();
     }
-
-    private Object getJavaObject(Object o, ObjectInspector oi, List<Category> categories) {
-        if (categories != null) {
-            categories.add(oi.getCategory());
+    for (int i = 1; i < args.length; i++) {
+      ObjectInspector oi = argOIs[i];
+      List<ObjectInspector.Category> categories = new ArrayList<ObjectInspector.Category>();
+      Object o = getJavaObject(args[i].get(), oi, categories);
+      try {
+        if (o != null) {
+          Util.check(types[i - 1], o);
         }
-        if (oi.getCategory() == ObjectInspector.Category.LIST) {
-            List<?> l = ((ListObjectInspector) oi).getList(o);
-            List<Object> result = new ArrayList<Object>();
-            ObjectInspector elemOI = ((ListObjectInspector) oi).getListElementObjectInspector();
-            for (Object lo : l) {
-                result.add(getJavaObject(lo, elemOI, categories));
-            }
-            return result;
-        } else if (oi.getCategory() == ObjectInspector.Category.MAP) {
-            Map<?, ?> m = ((MapObjectInspector) oi).getMap(o);
-            Map<String, String> result = new HashMap<String, String>();
-            ObjectInspector koi = ((MapObjectInspector) oi).getMapKeyObjectInspector();
-            ObjectInspector voi = ((MapObjectInspector) oi).getMapValueObjectInspector();
-            for (Entry<?, ?> e : m.entrySet()) {
-                result.put((String) getJavaObject(e.getKey(), koi, null),
-                    (String) getJavaObject(e.getValue(), voi, null));
-            }
-            return result;
-
-        } else if (oi.getCategory() == ObjectInspector.Category.STRUCT) {
-            List<Object> s = ((StructObjectInspector) oi).getStructFieldsDataAsList(o);
-            List<? extends StructField> sf = ((StructObjectInspector) oi).getAllStructFieldRefs();
-            List<Object> result = new ArrayList<Object>();
-            for (int i = 0; i < s.size(); i++) {
-                result.add(getJavaObject(s.get(i), sf.get(i).getFieldObjectInspector(), categories));
-            }
-            return result;
-        } else if (oi.getCategory() == ObjectInspector.Category.PRIMITIVE) {
-            return ((PrimitiveObjectInspector) oi).getPrimitiveJavaObject(o);
-        }
-        throw new RuntimeException("Unexpected error!");
+      } catch (IOException e) {
+        throw new HiveException(e);
+      }
+      row.add(o == null ? "null" : o);
+      row.add(":" + (o == null ? "null" : o.getClass()) + ":" + categories);
     }
+    return row.toString();
+  }
 
-    @Override
-    public String getDisplayString(String[] arg0) {
-        return null;
+  private Object getJavaObject(Object o, ObjectInspector oi, List<Category> categories) {
+    if (categories != null) {
+      categories.add(oi.getCategory());
     }
+    if (oi.getCategory() == ObjectInspector.Category.LIST) {
+      List<?> l = ((ListObjectInspector) oi).getList(o);
+      List<Object> result = new ArrayList<Object>();
+      ObjectInspector elemOI = ((ListObjectInspector) oi).getListElementObjectInspector();
+      for (Object lo : l) {
+        result.add(getJavaObject(lo, elemOI, categories));
+      }
+      return result;
+    } else if (oi.getCategory() == ObjectInspector.Category.MAP) {
+      Map<?, ?> m = ((MapObjectInspector) oi).getMap(o);
+      Map<String, String> result = new HashMap<String, String>();
+      ObjectInspector koi = ((MapObjectInspector) oi).getMapKeyObjectInspector();
+      ObjectInspector voi = ((MapObjectInspector) oi).getMapValueObjectInspector();
+      for (Entry<?, ?> e : m.entrySet()) {
+        result.put((String) getJavaObject(e.getKey(), koi, null),
+          (String) getJavaObject(e.getValue(), voi, null));
+      }
+      return result;
 
-    @Override
-    public ObjectInspector initialize(ObjectInspector[] argOIs)
-        throws UDFArgumentException {
-        this.argOIs = argOIs;
-        return ObjectInspectorFactory.getReflectionObjectInspector(String.class,
-            ObjectInspectorOptions.JAVA);
+    } else if (oi.getCategory() == ObjectInspector.Category.STRUCT) {
+      List<Object> s = ((StructObjectInspector) oi).getStructFieldsDataAsList(o);
+      List<? extends StructField> sf = ((StructObjectInspector) oi).getAllStructFieldRefs();
+      List<Object> result = new ArrayList<Object>();
+      for (int i = 0; i < s.size(); i++) {
+        result.add(getJavaObject(s.get(i), sf.get(i).getFieldObjectInspector(), categories));
+      }
+      return result;
+    } else if (oi.getCategory() == ObjectInspector.Category.PRIMITIVE) {
+      return ((PrimitiveObjectInspector) oi).getPrimitiveJavaObject(o);
     }
+    throw new RuntimeException("Unexpected error!");
+  }
+
+  @Override
+  public String getDisplayString(String[] arg0) {
+    return null;
+  }
+
+  @Override
+  public ObjectInspector initialize(ObjectInspector[] argOIs)
+    throws UDFArgumentException {
+    this.argOIs = argOIs;
+    return ObjectInspectorFactory.getReflectionObjectInspector(String.class,
+      ObjectInspectorOptions.JAVA);
+  }
 
 }

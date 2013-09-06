@@ -30,26 +30,26 @@ import org.junit.BeforeClass;
  */
 public class TestOrcDynamicPartitioned extends TestHCatDynamicPartitioned {
 
-    @BeforeClass
-    public static void generateInputData() throws Exception {
-        tableName = "testOrcDynamicPartitionedTable";
-        generateWriteRecords(NUM_RECORDS, NUM_PARTITIONS, 0);
-        generateDataColumns();
-    }
+  @BeforeClass
+  public static void generateInputData() throws Exception {
+    tableName = "testOrcDynamicPartitionedTable";
+    generateWriteRecords(NUM_RECORDS, NUM_PARTITIONS, 0);
+    generateDataColumns();
+  }
 
-    @Override
-    protected String inputFormat() { 
-        return OrcInputFormat.class.getName();
-    }
-  
-    @Override
-    protected String outputFormat() { 
-        return OrcOutputFormat.class.getName(); 
-    }
-  
-    @Override
-    protected String serdeClass() { 
-        return OrcSerde.class.getName(); 
-    }
+  @Override
+  protected String inputFormat() { 
+    return OrcInputFormat.class.getName();
+  }
+
+  @Override
+  protected String outputFormat() { 
+    return OrcOutputFormat.class.getName(); 
+  }
+
+  @Override
+  protected String serdeClass() { 
+    return OrcSerde.class.getName(); 
+  }
 
 }

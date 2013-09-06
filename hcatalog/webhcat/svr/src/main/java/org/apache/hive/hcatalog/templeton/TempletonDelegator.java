@@ -24,9 +24,9 @@ package org.apache.hive.hcatalog.templeton;
  * or hive.
  */
 public class TempletonDelegator {
-    protected AppConfig appConf;
+  protected AppConfig appConf;
 
-    public TempletonDelegator(AppConfig appConf) {
-        this.appConf = appConf;
-    }
+  public TempletonDelegator(AppConfig appConf) {
+    this.appConf = appConf;
+  }
 }

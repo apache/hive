@@ -51,74 +51,74 @@ import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
  */
 public class ReadText extends Configured implements Tool {
 
-    public static class Map
-        extends Mapper<WritableComparable, HCatRecord, IntWritable, HCatRecord> {
+  public static class Map
+    extends Mapper<WritableComparable, HCatRecord, IntWritable, HCatRecord> {
 
-        byte t;
-        short si;
-        int i;
-        long b;
-        float f;
-        double d;
-        String s;
+    byte t;
+    short si;
+    int i;
+    long b;
+    float f;
+    double d;
+    String s;
 
-        @Override
-        protected void map(WritableComparable key, HCatRecord value,
-                           org.apache.hadoop.mapreduce.Mapper<WritableComparable, HCatRecord,
-                               IntWritable, HCatRecord>.Context context)
-            throws IOException, InterruptedException {
-            t = (Byte) value.get(0);
-            si = (Short) value.get(1);
-            i = (Integer) value.get(2);
-            b = (Long) value.get(3);
-            f = (Float) value.get(4);
-            d = (Double) value.get(5);
-            s = (String) value.get(6);
+    @Override
+    protected void map(WritableComparable key, HCatRecord value,
+               org.apache.hadoop.mapreduce.Mapper<WritableComparable, HCatRecord,
+                 IntWritable, HCatRecord>.Context context)
+      throws IOException, InterruptedException {
+      t = (Byte) value.get(0);
+      si = (Short) value.get(1);
+      i = (Integer) value.get(2);
+      b = (Long) value.get(3);
+      f = (Float) value.get(4);
+      d = (Double) value.get(5);
+      s = (String) value.get(6);
 
-            HCatRecord record = new DefaultHCatRecord(7);
-            record.set(0, t);
-            record.set(1, si);
-            record.set(2, i);
-            record.set(3, b);
-            record.set(4, f);
-            record.set(5, d);
-            record.set(6, s);
+      HCatRecord record = new DefaultHCatRecord(7);
+      record.set(0, t);
+      record.set(1, si);
+      record.set(2, i);
+      record.set(3, b);
+      record.set(4, f);
+      record.set(5, d);
+      record.set(6, s);
 
-            context.write(null, record);
+      context.write(null, record);
 
-        }
     }
+  }
 
-    public int run(String[] args) throws Exception {
-        Configuration conf = getConf();
-        args = new GenericOptionsParser(conf, args).getRemainingArgs();
+  public int run(String[] args) throws Exception {
+    Configuration conf = getConf();
+    args = new GenericOptionsParser(conf, args).getRemainingArgs();
 
-        String serverUri = args[0];
-        String tableName = args[1];
-        String outputDir = args[2];
-        String dbName = null;
+    String serverUri = args[0];
+    String tableName = args[1];
+    String outputDir = args[2];
+    String dbName = null;
 
-        String principalID = System.getProperty(HCatConstants.HCAT_METASTORE_PRINCIPAL);
-        if (principalID != null)
-            conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
-        Job job = new Job(conf, "ReadText");
-        HCatInputFormat.setInput(job, InputJobInfo.create(
-            dbName, tableName, null));
-        // initialize HCatOutputFormat
+    String principalID = System.getProperty(HCatConstants.HCAT_METASTORE_PRINCIPAL);
+    if (principalID != null)
+      conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
+    Job job = new Job(conf, "ReadText");
+    HCatInputFormat.setInput(job, InputJobInfo.create(
+      dbName, tableName, null));
+    // initialize HCatOutputFormat
 
-        job.setInputFormatClass(HCatInputFormat.class);
-        job.setOutputFormatClass(TextOutputFormat.class);
-        job.setJarByClass(ReadText.class);
-        job.setMapperClass(Map.class);
-        job.setOutputKeyClass(IntWritable.class);
-        job.setOutputValueClass(HCatRecord.class);
-        job.setNumReduceTasks(0);
-        FileOutputFormat.setOutputPath(job, new Path(outputDir));
-        return (job.waitForCompletion(true) ? 0 : 1);
-    }
+    job.setInputFormatClass(HCatInputFormat.class);
+    job.setOutputFormatClass(TextOutputFormat.class);
+    job.setJarByClass(ReadText.class);
+    job.setMapperClass(Map.class);
+    job.setOutputKeyClass(IntWritable.class);
+    job.setOutputValueClass(HCatRecord.class);
+    job.setNumReduceTasks(0);
+    FileOutputFormat.setOutputPath(job, new Path(outputDir));
+    return (job.waitForCompletion(true) ? 0 : 1);
+  }
 
-    public static void main(String[] args) throws Exception {
-        int exitCode = ToolRunner.run(new ReadText(), args);
-        System.exit(exitCode);
-    }
+  public static void main(String[] args) throws Exception {
+    int exitCode = ToolRunner.run(new ReadText(), args);
+    System.exit(exitCode);
+  }
 }

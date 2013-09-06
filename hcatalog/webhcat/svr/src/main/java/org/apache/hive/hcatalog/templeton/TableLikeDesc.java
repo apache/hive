@@ -25,17 +25,17 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 public class TableLikeDesc extends GroupPermissionsDesc {
-    public boolean external = false;
-    public boolean ifNotExists = false;
-    public String location;
-    public String existingTable;
-    public String newTable;
+  public boolean external = false;
+  public boolean ifNotExists = false;
+  public String location;
+  public String existingTable;
+  public String newTable;
 
-    public TableLikeDesc() {
-    }
+  public TableLikeDesc() {
+  }
 
-    public String toString() {
-        return String.format("TableLikeDesc(existingTable=%s, newTable=%s, location=%s",
-            existingTable, newTable, location);
-    }
+  public String toString() {
+    return String.format("TableLikeDesc(existingTable=%s, newTable=%s, location=%s",
+      existingTable, newTable, location);
+  }
 }

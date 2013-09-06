@@ -50,69 +50,69 @@ import org.apache.hive.hcatalog.mapreduce.OutputJobInfo;
  */
 public class WriteJson extends Configured implements Tool {
 
-    public static class Map extends
-        Mapper<WritableComparable, HCatRecord, WritableComparable, HCatRecord> {
+  public static class Map extends
+    Mapper<WritableComparable, HCatRecord, WritableComparable, HCatRecord> {
 
-        String s;
-        Integer i;
-        Double d;
+    String s;
+    Integer i;
+    Double d;
 
-        @Override
-        protected void map(
-            WritableComparable key,
-            HCatRecord value,
-            org.apache.hadoop.mapreduce.Mapper<WritableComparable, HCatRecord, WritableComparable, HCatRecord>.Context context)
-            throws IOException, InterruptedException {
-            s = value.get(0) == null ? null : (String) value.get(0);
-            i = value.get(1) == null ? null : (Integer) value.get(1);
-            d = value.get(2) == null ? null : (Double) value.get(2);
+    @Override
+    protected void map(
+      WritableComparable key,
+      HCatRecord value,
+      org.apache.hadoop.mapreduce.Mapper<WritableComparable, HCatRecord, WritableComparable, HCatRecord>.Context context)
+      throws IOException, InterruptedException {
+      s = value.get(0) == null ? null : (String) value.get(0);
+      i = value.get(1) == null ? null : (Integer) value.get(1);
+      d = value.get(2) == null ? null : (Double) value.get(2);
 
-            HCatRecord record = new DefaultHCatRecord(5);
-            record.set(0, s);
-            record.set(1, i);
-            record.set(2, d);
+      HCatRecord record = new DefaultHCatRecord(5);
+      record.set(0, s);
+      record.set(1, i);
+      record.set(2, d);
 
-            context.write(null, record);
+      context.write(null, record);
 
-        }
     }
+  }
 
-    public int run(String[] args) throws Exception {
-        Configuration conf = getConf();
-        args = new GenericOptionsParser(conf, args).getRemainingArgs();
+  public int run(String[] args) throws Exception {
+    Configuration conf = getConf();
+    args = new GenericOptionsParser(conf, args).getRemainingArgs();
 
-        String serverUri = args[0];
-        String inputTableName = args[1];
-        String outputTableName = args[2];
-        String dbName = null;
+    String serverUri = args[0];
+    String inputTableName = args[1];
+    String outputTableName = args[2];
+    String dbName = null;
 
-        String principalID = System
-            .getProperty(HCatConstants.HCAT_METASTORE_PRINCIPAL);
-        if (principalID != null)
-            conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
-        Job job = new Job(conf, "WriteJson");
-        HCatInputFormat.setInput(job, InputJobInfo.create(dbName,
-            inputTableName, null));
-        // initialize HCatOutputFormat
+    String principalID = System
+      .getProperty(HCatConstants.HCAT_METASTORE_PRINCIPAL);
+    if (principalID != null)
+      conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
+    Job job = new Job(conf, "WriteJson");
+    HCatInputFormat.setInput(job, InputJobInfo.create(dbName,
+      inputTableName, null));
+    // initialize HCatOutputFormat
 
-        job.setInputFormatClass(HCatInputFormat.class);
-        job.setJarByClass(WriteJson.class);
-        job.setMapperClass(Map.class);
-        job.setOutputKeyClass(WritableComparable.class);
-        job.setOutputValueClass(DefaultHCatRecord.class);
-        job.setNumReduceTasks(0);
-        HCatOutputFormat.setOutput(job, OutputJobInfo.create(dbName,
-            outputTableName, null));
-        HCatSchema s = HCatInputFormat.getTableSchema(job);
-        System.err.println("INFO: output schema explicitly set for writing:"
-            + s);
-        HCatOutputFormat.setSchema(job, s);
-        job.setOutputFormatClass(HCatOutputFormat.class);
-        return (job.waitForCompletion(true) ? 0 : 1);
-    }
+    job.setInputFormatClass(HCatInputFormat.class);
+    job.setJarByClass(WriteJson.class);
+    job.setMapperClass(Map.class);
+    job.setOutputKeyClass(WritableComparable.class);
+    job.setOutputValueClass(DefaultHCatRecord.class);
+    job.setNumReduceTasks(0);
+    HCatOutputFormat.setOutput(job, OutputJobInfo.create(dbName,
+      outputTableName, null));
+    HCatSchema s = HCatInputFormat.getTableSchema(job);
+    System.err.println("INFO: output schema explicitly set for writing:"
+      + s);
+    HCatOutputFormat.setSchema(job, s);
+    job.setOutputFormatClass(HCatOutputFormat.class);
+    return (job.waitForCompletion(true) ? 0 : 1);
+  }
 
-    public static void main(String[] args) throws Exception {
-        int exitCode = ToolRunner.run(new WriteJson(), args);
-        System.exit(exitCode);
-    }
+  public static void main(String[] args) throws Exception {
+    int exitCode = ToolRunner.run(new WriteJson(), args);
+    System.exit(exitCode);
+  }
 }

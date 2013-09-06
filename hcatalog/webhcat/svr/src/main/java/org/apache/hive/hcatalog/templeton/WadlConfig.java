@@ -31,11 +31,11 @@ import com.sun.jersey.server.wadl.generators.resourcedoc.WadlGeneratorResourceDo
  */
 public class WadlConfig extends WadlGeneratorConfig {
 
-    @Override
-    public List<WadlGeneratorDescription> configure() {
-        return generator(WadlGeneratorResourceDocSupport.class)
-            .prop("resourceDocStream", "resourcedoc.xml")
-            .descriptions();
-    }
+  @Override
+  public List<WadlGeneratorDescription> configure() {
+    return generator(WadlGeneratorResourceDocSupport.class)
+      .prop("resourceDocStream", "resourcedoc.xml")
+      .descriptions();
+  }
 
 }

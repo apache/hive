@@ -28,45 +28,45 @@ import org.codehaus.jackson.annotate.JsonProperty;
  */
 public class JSONCreateDatabaseMessage extends CreateDatabaseMessage {
 
-    @JsonProperty
-    String server, servicePrincipal, db;
+  @JsonProperty
+  String server, servicePrincipal, db;
 
-    @JsonProperty
-    Long timestamp;
+  @JsonProperty
+  Long timestamp;
 
-    /**
-     * Default constructor, required for Jackson.
-     */
-    public JSONCreateDatabaseMessage() {}
+  /**
+   * Default constructor, required for Jackson.
+   */
+  public JSONCreateDatabaseMessage() {}
 
-    public JSONCreateDatabaseMessage(String server, String servicePrincipal, String db, Long timestamp) {
-        this.server = server;
-        this.servicePrincipal = servicePrincipal;
-        this.db = db;
-        this.timestamp = timestamp;
-        checkValid();
+  public JSONCreateDatabaseMessage(String server, String servicePrincipal, String db, Long timestamp) {
+    this.server = server;
+    this.servicePrincipal = servicePrincipal;
+    this.db = db;
+    this.timestamp = timestamp;
+    checkValid();
+  }
+
+  @Override
+  public String getDB() { return db; }
+
+  @Override
+  public String getServer() { return server; }
+
+  @Override
+  public String getServicePrincipal() { return servicePrincipal; }
+
+  @Override
+  public Long getTimestamp() { return timestamp; }
+
+  @Override
+  public String toString() {
+    try {
+      return JSONMessageDeserializer.mapper.writeValueAsString(this);
     }
-
-    @Override
-    public String getDB() { return db; }
-
-    @Override
-    public String getServer() { return server; }
-
-    @Override
-    public String getServicePrincipal() { return servicePrincipal; }
-
-    @Override
-    public Long getTimestamp() { return timestamp; }
-
-    @Override
-    public String toString() {
-        try {
-            return JSONMessageDeserializer.mapper.writeValueAsString(this);
-        }
-        catch (Exception exception) {
-            throw new IllegalArgumentException("Could not serialize: ", exception);
-        }
+    catch (Exception exception) {
+      throw new IllegalArgumentException("Could not serialize: ", exception);
     }
+  }
 
 }

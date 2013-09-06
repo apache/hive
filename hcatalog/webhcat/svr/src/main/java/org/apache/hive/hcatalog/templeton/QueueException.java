@@ -24,8 +24,8 @@ import org.eclipse.jetty.http.HttpStatus;
  * Unable to queue the job
  */
 public class QueueException extends SimpleWebException {
-    public QueueException(String msg) {
-        super(HttpStatus.INTERNAL_SERVER_ERROR_500, msg);
-    }
+  public QueueException(String msg) {
+    super(HttpStatus.INTERNAL_SERVER_ERROR_500, msg);
+  }
 
 }

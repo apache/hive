@@ -26,10 +26,10 @@ package org.apache.hive.hcatalog.data.transfer.state;
  */
 public interface StateProvider {
 
-    /**
-     * This method should return id assigned to slave node.
-     *
-     * @return id
-     */
-    public int getId();
+  /**
+   * This method should return id assigned to slave node.
+   *
+   * @return id
+   */
+  public int getId();
 }

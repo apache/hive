@@ -67,285 +67,285 @@ import org.apache.hadoop.util.ToolRunner;
  *   in hdfs files.
  */
 public class TempletonControllerJob extends Configured implements Tool {
-    public static final String COPY_NAME = "templeton.copy";
-    public static final String STATUSDIR_NAME = "templeton.statusdir";
-    public static final String JAR_ARGS_NAME = "templeton.args";
-    public static final String OVERRIDE_CLASSPATH = "templeton.override-classpath";
+  public static final String COPY_NAME = "templeton.copy";
+  public static final String STATUSDIR_NAME = "templeton.statusdir";
+  public static final String JAR_ARGS_NAME = "templeton.args";
+  public static final String OVERRIDE_CLASSPATH = "templeton.override-classpath";
 
-    public static final String STDOUT_FNAME = "stdout";
-    public static final String STDERR_FNAME = "stderr";
-    public static final String EXIT_FNAME = "exit";
+  public static final String STDOUT_FNAME = "stdout";
+  public static final String STDERR_FNAME = "stderr";
+  public static final String EXIT_FNAME = "exit";
 
-    public static final int WATCHER_TIMEOUT_SECS = 10;
-    public static final int KEEP_ALIVE_MSEC = 60 * 1000;
-    
-    public static final String TOKEN_FILE_ARG_PLACEHOLDER 
-        = "__WEBHCAT_TOKEN_FILE_LOCATION__";
-    
-    
-    private static TrivialExecService execService = TrivialExecService.getInstance();
+  public static final int WATCHER_TIMEOUT_SECS = 10;
+  public static final int KEEP_ALIVE_MSEC = 60 * 1000;
 
-    private static final Log LOG = LogFactory.getLog(TempletonControllerJob.class);
+  public static final String TOKEN_FILE_ARG_PLACEHOLDER 
+    = "__WEBHCAT_TOKEN_FILE_LOCATION__";
 
 
-    public static class LaunchMapper
-        extends Mapper<NullWritable, NullWritable, Text, Text> {
-        protected Process startJob(Context context, String user,
-                                   String overrideClasspath)
-            throws IOException, InterruptedException {
-            Configuration conf = context.getConfiguration();
-            copyLocal(COPY_NAME, conf);
-            String[] jarArgs
-                = TempletonUtils.decodeArray(conf.get(JAR_ARGS_NAME));
+  private static TrivialExecService execService = TrivialExecService.getInstance();
 
-            ArrayList<String> removeEnv = new ArrayList<String>();
-            removeEnv.add("HADOOP_ROOT_LOGGER");
-            Map<String, String> env = TempletonUtils.hadoopUserEnv(user,
-                overrideClasspath);
-            List<String> jarArgsList = new LinkedList<String>(Arrays.asList(jarArgs));
-            String tokenFile = System.getenv("HADOOP_TOKEN_FILE_LOCATION");
+  private static final Log LOG = LogFactory.getLog(TempletonControllerJob.class);
 
 
-            if (tokenFile != null) {
-                //Token is available, so replace the placeholder
-                String tokenArg = "mapreduce.job.credentials.binary=" + tokenFile;
-                for(int i=0; i<jarArgsList.size(); i++){
-                    String newArg = 
-                        jarArgsList.get(i).replace(TOKEN_FILE_ARG_PLACEHOLDER, tokenArg);
-                    jarArgsList.set(i, newArg);
-                }
-                
-            }else{
-                //No token, so remove the placeholder arg
-                Iterator<String> it = jarArgsList.iterator();
-                while(it.hasNext()){
-                    String arg = it.next();
-                    if(arg.contains(TOKEN_FILE_ARG_PLACEHOLDER)){
-                        it.remove();
-                    }
-                }
-            }
-            return execService.run(jarArgsList, removeEnv, env);
+  public static class LaunchMapper
+    extends Mapper<NullWritable, NullWritable, Text, Text> {
+    protected Process startJob(Context context, String user,
+                   String overrideClasspath)
+      throws IOException, InterruptedException {
+      Configuration conf = context.getConfiguration();
+      copyLocal(COPY_NAME, conf);
+      String[] jarArgs
+        = TempletonUtils.decodeArray(conf.get(JAR_ARGS_NAME));
+
+      ArrayList<String> removeEnv = new ArrayList<String>();
+      removeEnv.add("HADOOP_ROOT_LOGGER");
+      Map<String, String> env = TempletonUtils.hadoopUserEnv(user,
+        overrideClasspath);
+      List<String> jarArgsList = new LinkedList<String>(Arrays.asList(jarArgs));
+      String tokenFile = System.getenv("HADOOP_TOKEN_FILE_LOCATION");
+
+
+      if (tokenFile != null) {
+        //Token is available, so replace the placeholder
+        String tokenArg = "mapreduce.job.credentials.binary=" + tokenFile;
+        for(int i=0; i<jarArgsList.size(); i++){
+          String newArg = 
+            jarArgsList.get(i).replace(TOKEN_FILE_ARG_PLACEHOLDER, tokenArg);
+          jarArgsList.set(i, newArg);
         }
 
-        private void copyLocal(String var, Configuration conf)
-            throws IOException {
-            String[] filenames = TempletonUtils.decodeArray(conf.get(var));
-            if (filenames != null) {
-                for (String filename : filenames) {
-                    Path src = new Path(filename);
-                    Path dst = new Path(src.getName());
-                    FileSystem fs = src.getFileSystem(conf);
-                    System.err.println("templeton: copy " + src + " => " + dst);
-                    fs.copyToLocalFile(src, dst);
-                }
-            }
+      }else{
+        //No token, so remove the placeholder arg
+        Iterator<String> it = jarArgsList.iterator();
+        while(it.hasNext()){
+          String arg = it.next();
+          if(arg.contains(TOKEN_FILE_ARG_PLACEHOLDER)){
+            it.remove();
+          }
         }
-
-        @Override
-        public void run(Context context)
-            throws IOException, InterruptedException {
-
-            Configuration conf = context.getConfiguration();
-
-            Process proc = startJob(context,
-                conf.get("user.name"),
-                conf.get(OVERRIDE_CLASSPATH));
-
-            String statusdir = conf.get(STATUSDIR_NAME);
-
-            if (statusdir != null) {
-                statusdir = TempletonUtils.addUserHomeDirectoryIfApplicable(statusdir, conf.get("user.name"), conf);
-            }
-
-            ExecutorService pool = Executors.newCachedThreadPool();
-            executeWatcher(pool, conf, context.getJobID(),
-                proc.getInputStream(), statusdir, STDOUT_FNAME);
-            executeWatcher(pool, conf, context.getJobID(),
-                proc.getErrorStream(), statusdir, STDERR_FNAME);
-            KeepAlive keepAlive = startCounterKeepAlive(pool, context);
-
-            proc.waitFor();
-            keepAlive.sendReport = false;
-            pool.shutdown();
-            if (!pool.awaitTermination(WATCHER_TIMEOUT_SECS, TimeUnit.SECONDS))
-                pool.shutdownNow();
-
-            writeExitValue(conf, proc.exitValue(), statusdir);
-            JobState state = new JobState(context.getJobID().toString(), conf);
-            state.setExitValue(proc.exitValue());
-            state.setCompleteStatus("done");
-            state.close();
-
-            if (proc.exitValue() != 0)
-                System.err.println("templeton: job failed with exit code "
-                    + proc.exitValue());
-            else
-                System.err.println("templeton: job completed with exit code 0");
-        }
-
-        private void executeWatcher(ExecutorService pool, Configuration conf,
-                                    JobID jobid, InputStream in, String statusdir,
-                                    String name)
-            throws IOException {
-            Watcher w = new Watcher(conf, jobid, in, statusdir, name);
-            pool.execute(w);
-        }
-
-        private KeepAlive startCounterKeepAlive(ExecutorService pool, Context cnt)
-            throws IOException {
-            KeepAlive k = new KeepAlive(cnt);
-            pool.execute(k);
-            return k;
-        }
-
-        private void writeExitValue(Configuration conf, int exitValue, String statusdir)
-            throws IOException {
-            if (TempletonUtils.isset(statusdir)) {
-                Path p = new Path(statusdir, EXIT_FNAME);
-                FileSystem fs = p.getFileSystem(conf);
-                OutputStream out = fs.create(p);
-                System.err.println("templeton: Writing exit value "
-                    + exitValue + " to " + p);
-                PrintWriter writer = new PrintWriter(out);
-                writer.println(exitValue);
-                writer.close();
-            }
-        }
+      }
+      return execService.run(jarArgsList, removeEnv, env);
     }
 
-    private static class Watcher implements Runnable {
-        private InputStream in;
-        private OutputStream out;
-        private JobID jobid;
-        private Configuration conf;
-
-        public Watcher(Configuration conf, JobID jobid, InputStream in,
-                       String statusdir, String name)
-            throws IOException {
-            this.conf = conf;
-            this.jobid = jobid;
-            this.in = in;
-
-            if (name.equals(STDERR_FNAME))
-                out = System.err;
-            else
-                out = System.out;
-
-            if (TempletonUtils.isset(statusdir)) {
-                Path p = new Path(statusdir, name);
-                FileSystem fs = p.getFileSystem(conf);
-                out = fs.create(p);
-                System.err.println("templeton: Writing status to " + p);
-            }
+    private void copyLocal(String var, Configuration conf)
+      throws IOException {
+      String[] filenames = TempletonUtils.decodeArray(conf.get(var));
+      if (filenames != null) {
+        for (String filename : filenames) {
+          Path src = new Path(filename);
+          Path dst = new Path(src.getName());
+          FileSystem fs = src.getFileSystem(conf);
+          System.err.println("templeton: copy " + src + " => " + dst);
+          fs.copyToLocalFile(src, dst);
         }
-
-        @Override
-        public void run() {
-            try {
-                InputStreamReader isr = new InputStreamReader(in);
-                BufferedReader reader = new BufferedReader(isr);
-                PrintWriter writer = new PrintWriter(out);
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    writer.println(line);
-                    JobState state = null;
-                    try {
-                        String percent = TempletonUtils.extractPercentComplete(line);
-                        String childid = TempletonUtils.extractChildJobId(line);
-
-                        if (percent != null || childid != null) {
-                            state = new JobState(jobid.toString(), conf);
-                            state.setPercentComplete(percent);
-                            state.setChildId(childid);
-                        }
-                    } catch (IOException e) {
-                        System.err.println("templeton: state error: " + e);
-                    } finally {
-                        if (state != null) {
-                            try {
-                                state.close();
-                            } catch (IOException e) {
-                            }
-                        }
-                    }
-                }
-                writer.flush();
-            } catch (IOException e) {
-                System.err.println("templeton: execute error: " + e);
-            }
-        }
+      }
     }
 
-    private static class KeepAlive implements Runnable {
-        private final Mapper.Context cnt;
-        private volatile boolean sendReport;
-
-        public KeepAlive(Mapper.Context cnt) {
-            this.cnt = cnt;
-            this.sendReport = true;
-        }
-
-        @Override
-        public void run() {
-            try {
-                while (sendReport) {
-                    cnt.progress();
-                    Thread.sleep(KEEP_ALIVE_MSEC);
-                }
-            } catch (InterruptedException e) {
-                // Ok to be interrupted
-            }
-        }
-    }
-
-    private JobID submittedJobId;
-
-    public String getSubmittedId() {
-        if (submittedJobId == null)
-            return null;
-        else
-            return submittedJobId.toString();
-    }
-
-    /**
-     * Enqueue the job and print out the job id for later collection.
-     */
     @Override
-    public int run(String[] args)
-        throws IOException, InterruptedException, ClassNotFoundException {
-        Configuration conf = getConf();
-        conf.set(JAR_ARGS_NAME, TempletonUtils.encodeArray(args));
-        conf.set("user.name", UserGroupInformation.getCurrentUser().getShortUserName());
-        Job job = new Job(conf);
-        job.setJarByClass(TempletonControllerJob.class);
-        job.setJobName("TempletonControllerJob");
-        job.setMapperClass(LaunchMapper.class);
-        job.setMapOutputKeyClass(Text.class);
-        job.setMapOutputValueClass(Text.class);
-        job.setInputFormatClass(SingleInputFormat.class);
-        NullOutputFormat<NullWritable, NullWritable> of
-            = new NullOutputFormat<NullWritable, NullWritable>();
-        job.setOutputFormatClass(of.getClass());
-        job.setNumReduceTasks(0);
+    public void run(Context context)
+      throws IOException, InterruptedException {
 
-        JobClient jc = new JobClient(new JobConf(job.getConfiguration()));
+      Configuration conf = context.getConfiguration();
 
-        Token<DelegationTokenIdentifier> mrdt = jc.getDelegationToken(new Text("mr token"));
-        job.getCredentials().addToken(new Text("mr token"), mrdt);
-        job.submit();
+      Process proc = startJob(context,
+        conf.get("user.name"),
+        conf.get(OVERRIDE_CLASSPATH));
 
-        submittedJobId = job.getJobID();
+      String statusdir = conf.get(STATUSDIR_NAME);
 
-        return 0;
+      if (statusdir != null) {
+        statusdir = TempletonUtils.addUserHomeDirectoryIfApplicable(statusdir, conf.get("user.name"), conf);
+      }
+
+      ExecutorService pool = Executors.newCachedThreadPool();
+      executeWatcher(pool, conf, context.getJobID(),
+        proc.getInputStream(), statusdir, STDOUT_FNAME);
+      executeWatcher(pool, conf, context.getJobID(),
+        proc.getErrorStream(), statusdir, STDERR_FNAME);
+      KeepAlive keepAlive = startCounterKeepAlive(pool, context);
+
+      proc.waitFor();
+      keepAlive.sendReport = false;
+      pool.shutdown();
+      if (!pool.awaitTermination(WATCHER_TIMEOUT_SECS, TimeUnit.SECONDS))
+        pool.shutdownNow();
+
+      writeExitValue(conf, proc.exitValue(), statusdir);
+      JobState state = new JobState(context.getJobID().toString(), conf);
+      state.setExitValue(proc.exitValue());
+      state.setCompleteStatus("done");
+      state.close();
+
+      if (proc.exitValue() != 0)
+        System.err.println("templeton: job failed with exit code "
+          + proc.exitValue());
+      else
+        System.err.println("templeton: job completed with exit code 0");
     }
 
-
-    public static void main(String[] args) throws Exception {
-        int ret = ToolRunner.run(new TempletonControllerJob(), args);
-        if (ret != 0)
-            System.err.println("TempletonControllerJob failed!");
-        System.exit(ret);
+    private void executeWatcher(ExecutorService pool, Configuration conf,
+                  JobID jobid, InputStream in, String statusdir,
+                  String name)
+      throws IOException {
+      Watcher w = new Watcher(conf, jobid, in, statusdir, name);
+      pool.execute(w);
     }
+
+    private KeepAlive startCounterKeepAlive(ExecutorService pool, Context cnt)
+      throws IOException {
+      KeepAlive k = new KeepAlive(cnt);
+      pool.execute(k);
+      return k;
+    }
+
+    private void writeExitValue(Configuration conf, int exitValue, String statusdir)
+      throws IOException {
+      if (TempletonUtils.isset(statusdir)) {
+        Path p = new Path(statusdir, EXIT_FNAME);
+        FileSystem fs = p.getFileSystem(conf);
+        OutputStream out = fs.create(p);
+        System.err.println("templeton: Writing exit value "
+          + exitValue + " to " + p);
+        PrintWriter writer = new PrintWriter(out);
+        writer.println(exitValue);
+        writer.close();
+      }
+    }
+  }
+
+  private static class Watcher implements Runnable {
+    private InputStream in;
+    private OutputStream out;
+    private JobID jobid;
+    private Configuration conf;
+
+    public Watcher(Configuration conf, JobID jobid, InputStream in,
+             String statusdir, String name)
+      throws IOException {
+      this.conf = conf;
+      this.jobid = jobid;
+      this.in = in;
+
+      if (name.equals(STDERR_FNAME))
+        out = System.err;
+      else
+        out = System.out;
+
+      if (TempletonUtils.isset(statusdir)) {
+        Path p = new Path(statusdir, name);
+        FileSystem fs = p.getFileSystem(conf);
+        out = fs.create(p);
+        System.err.println("templeton: Writing status to " + p);
+      }
+    }
+
+    @Override
+    public void run() {
+      try {
+        InputStreamReader isr = new InputStreamReader(in);
+        BufferedReader reader = new BufferedReader(isr);
+        PrintWriter writer = new PrintWriter(out);
+
+        String line;
+        while ((line = reader.readLine()) != null) {
+          writer.println(line);
+          JobState state = null;
+          try {
+            String percent = TempletonUtils.extractPercentComplete(line);
+            String childid = TempletonUtils.extractChildJobId(line);
+
+            if (percent != null || childid != null) {
+              state = new JobState(jobid.toString(), conf);
+              state.setPercentComplete(percent);
+              state.setChildId(childid);
+            }
+          } catch (IOException e) {
+            System.err.println("templeton: state error: " + e);
+          } finally {
+            if (state != null) {
+              try {
+                state.close();
+              } catch (IOException e) {
+              }
+            }
+          }
+        }
+        writer.flush();
+      } catch (IOException e) {
+        System.err.println("templeton: execute error: " + e);
+      }
+    }
+  }
+
+  private static class KeepAlive implements Runnable {
+    private final Mapper.Context cnt;
+    private volatile boolean sendReport;
+
+    public KeepAlive(Mapper.Context cnt) {
+      this.cnt = cnt;
+      this.sendReport = true;
+    }
+
+    @Override
+    public void run() {
+      try {
+        while (sendReport) {
+          cnt.progress();
+          Thread.sleep(KEEP_ALIVE_MSEC);
+        }
+      } catch (InterruptedException e) {
+        // Ok to be interrupted
+      }
+    }
+  }
+
+  private JobID submittedJobId;
+
+  public String getSubmittedId() {
+    if (submittedJobId == null)
+      return null;
+    else
+      return submittedJobId.toString();
+  }
+
+  /**
+   * Enqueue the job and print out the job id for later collection.
+   */
+  @Override
+  public int run(String[] args)
+    throws IOException, InterruptedException, ClassNotFoundException {
+    Configuration conf = getConf();
+    conf.set(JAR_ARGS_NAME, TempletonUtils.encodeArray(args));
+    conf.set("user.name", UserGroupInformation.getCurrentUser().getShortUserName());
+    Job job = new Job(conf);
+    job.setJarByClass(TempletonControllerJob.class);
+    job.setJobName("TempletonControllerJob");
+    job.setMapperClass(LaunchMapper.class);
+    job.setMapOutputKeyClass(Text.class);
+    job.setMapOutputValueClass(Text.class);
+    job.setInputFormatClass(SingleInputFormat.class);
+    NullOutputFormat<NullWritable, NullWritable> of
+      = new NullOutputFormat<NullWritable, NullWritable>();
+    job.setOutputFormatClass(of.getClass());
+    job.setNumReduceTasks(0);
+
+    JobClient jc = new JobClient(new JobConf(job.getConfiguration()));
+
+    Token<DelegationTokenIdentifier> mrdt = jc.getDelegationToken(new Text("mr token"));
+    job.getCredentials().addToken(new Text("mr token"), mrdt);
+    job.submit();
+
+    submittedJobId = job.getJobID();
+
+    return 0;
+  }
+
+
+  public static void main(String[] args) throws Exception {
+    int ret = ToolRunner.run(new TempletonControllerJob(), args);
+    if (ret != 0)
+      System.err.println("TempletonControllerJob failed!");
+    System.exit(ret);
+  }
 }

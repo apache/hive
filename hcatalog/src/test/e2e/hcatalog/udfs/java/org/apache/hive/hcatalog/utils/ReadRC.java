@@ -51,63 +51,63 @@ import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
  */
 public class ReadRC extends Configured implements Tool {
 
-    public static class Map
-        extends Mapper<WritableComparable, HCatRecord, IntWritable, HCatRecord> {
+  public static class Map
+    extends Mapper<WritableComparable, HCatRecord, IntWritable, HCatRecord> {
 
-        String name;
-        int age;
-        double gpa;
+    String name;
+    int age;
+    double gpa;
 
-        @Override
-        protected void map(WritableComparable key, HCatRecord value,
-                           org.apache.hadoop.mapreduce.Mapper<WritableComparable, HCatRecord,
-                               IntWritable, HCatRecord>.Context context)
-            throws IOException, InterruptedException {
-            name = (String) value.get(0);
-            age = (Integer) value.get(1);
-            gpa = (Double) value.get(2);
-            gpa = Math.floor(gpa) + 0.1;
+    @Override
+    protected void map(WritableComparable key, HCatRecord value,
+               org.apache.hadoop.mapreduce.Mapper<WritableComparable, HCatRecord,
+                 IntWritable, HCatRecord>.Context context)
+      throws IOException, InterruptedException {
+      name = (String) value.get(0);
+      age = (Integer) value.get(1);
+      gpa = (Double) value.get(2);
+      gpa = Math.floor(gpa) + 0.1;
 
-            HCatRecord record = new DefaultHCatRecord(3);
-            record.set(0, name);
-            record.set(1, age);
-            record.set(2, gpa);
+      HCatRecord record = new DefaultHCatRecord(3);
+      record.set(0, name);
+      record.set(1, age);
+      record.set(2, gpa);
 
-            context.write(null, record);
+      context.write(null, record);
 
-        }
     }
+  }
 
-    public int run(String[] args) throws Exception {
-        Configuration conf = getConf();
-        args = new GenericOptionsParser(conf, args).getRemainingArgs();
+  public int run(String[] args) throws Exception {
+    Configuration conf = getConf();
+    args = new GenericOptionsParser(conf, args).getRemainingArgs();
 
-        String serverUri = args[0];
-        String tableName = args[1];
-        String outputDir = args[2];
-        String dbName = null;
+    String serverUri = args[0];
+    String tableName = args[1];
+    String outputDir = args[2];
+    String dbName = null;
 
-        String principalID = System.getProperty(HCatConstants.HCAT_METASTORE_PRINCIPAL);
-        if (principalID != null)
-            conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
-        Job job = new Job(conf, "ReadRC");
-        HCatInputFormat.setInput(job, InputJobInfo.create(
-            dbName, tableName, null));
-        // initialize HCatOutputFormat
+    String principalID = System.getProperty(HCatConstants.HCAT_METASTORE_PRINCIPAL);
+    if (principalID != null)
+      conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
+    Job job = new Job(conf, "ReadRC");
+    HCatInputFormat.setInput(job, InputJobInfo.create(
+      dbName, tableName, null));
+    // initialize HCatOutputFormat
 
-        job.setInputFormatClass(HCatInputFormat.class);
-        job.setOutputFormatClass(TextOutputFormat.class);
-        job.setJarByClass(ReadRC.class);
-        job.setMapperClass(Map.class);
-        job.setOutputKeyClass(IntWritable.class);
-        job.setOutputValueClass(HCatRecord.class);
-        job.setNumReduceTasks(0);
-        FileOutputFormat.setOutputPath(job, new Path(outputDir));
-        return (job.waitForCompletion(true) ? 0 : 1);
-    }
+    job.setInputFormatClass(HCatInputFormat.class);
+    job.setOutputFormatClass(TextOutputFormat.class);
+    job.setJarByClass(ReadRC.class);
+    job.setMapperClass(Map.class);
+    job.setOutputKeyClass(IntWritable.class);
+    job.setOutputValueClass(HCatRecord.class);
+    job.setNumReduceTasks(0);
+    FileOutputFormat.setOutputPath(job, new Path(outputDir));
+    return (job.waitForCompletion(true) ? 0 : 1);
+  }
 
-    public static void main(String[] args) throws Exception {
-        int exitCode = ToolRunner.run(new ReadRC(), args);
-        System.exit(exitCode);
-    }
+  public static void main(String[] args) throws Exception {
+    int exitCode = ToolRunner.run(new ReadRC(), args);
+    System.exit(exitCode);
+  }
 }

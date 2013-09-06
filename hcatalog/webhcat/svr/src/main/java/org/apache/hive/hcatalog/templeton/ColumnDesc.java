@@ -25,36 +25,36 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 public class ColumnDesc extends GroupPermissionsDesc {
-    public String name;
-    public String type;
-    public String comment;
+  public String name;
+  public String type;
+  public String comment;
 
-    public ColumnDesc() {}
+  public ColumnDesc() {}
 
-    /**
-     * Create a new ColumnDesc
-     */
-    public ColumnDesc(String name, String type, String comment) {
-        this.name = name;
-        this.type = type;
-        this.comment = comment;
-    }
+  /**
+   * Create a new ColumnDesc
+   */
+  public ColumnDesc(String name, String type, String comment) {
+    this.name = name;
+    this.type = type;
+    this.comment = comment;
+  }
 
-    public String toString() {
-        return String.format("ColumnDesc(name=%s, type=%s, comment=%s)",
-                             name, type, comment);
-    }
+  public String toString() {
+    return String.format("ColumnDesc(name=%s, type=%s, comment=%s)",
+               name, type, comment);
+  }
 
-    public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (! (o instanceof ColumnDesc))
-            return false;
-        ColumnDesc that = (ColumnDesc) o;
-        return xequals(this.name,       that.name)
-            && xequals(this.type,       that.type)
-            && xequals(this.comment,    that.comment)
-            && super.equals(that)
-            ;
-    }
+  public boolean equals(Object o) {
+    if (this == o)
+      return true;
+    if (! (o instanceof ColumnDesc))
+      return false;
+    ColumnDesc that = (ColumnDesc) o;
+    return xequals(this.name,       that.name)
+      && xequals(this.type,       that.type)
+      && xequals(this.comment,    that.comment)
+      && super.equals(that)
+      ;
+  }
 }

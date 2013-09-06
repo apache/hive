@@ -24,7 +24,7 @@ import org.eclipse.jetty.http.HttpStatus;
  * The callback failed when it tried to reach the callback URL.
  */
 public class CallbackFailedException extends SimpleWebException {
-    public CallbackFailedException(String msg) {
-        super(HttpStatus.BAD_REQUEST_400, msg);
-    }
+  public CallbackFailedException(String msg) {
+    super(HttpStatus.BAD_REQUEST_400, msg);
+  }
 }

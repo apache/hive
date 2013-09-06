@@ -24,49 +24,49 @@ import java.util.Random;
 
 public class IDGenClient extends Thread {
 
-    String connectionStr;
-    String base_dir;
-    ZKUtil zkutil;
-    Random sleepTime = new Random();
-    int runtime;
-    HashMap<Long, Long> idMap;
-    String tableName;
+  String connectionStr;
+  String base_dir;
+  ZKUtil zkutil;
+  Random sleepTime = new Random();
+  int runtime;
+  HashMap<Long, Long> idMap;
+  String tableName;
 
-    IDGenClient(String connectionStr, String base_dir, int time, String tableName) {
-        super();
-        this.connectionStr = connectionStr;
-        this.base_dir = base_dir;
-        this.zkutil = new ZKUtil(connectionStr, base_dir);
-        this.runtime = time;
-        idMap = new HashMap<Long, Long>();
-        this.tableName = tableName;
+  IDGenClient(String connectionStr, String base_dir, int time, String tableName) {
+    super();
+    this.connectionStr = connectionStr;
+    this.base_dir = base_dir;
+    this.zkutil = new ZKUtil(connectionStr, base_dir);
+    this.runtime = time;
+    idMap = new HashMap<Long, Long>();
+    this.tableName = tableName;
+  }
+
+  /*
+   * @see java.lang.Runnable#run()
+   */
+  @Override
+  public void run() {
+    long startTime = System.currentTimeMillis();
+    int timeElapsed = 0;
+    while( timeElapsed <= runtime){
+      try {
+        long id = zkutil.nextId(tableName);
+        idMap.put(System.currentTimeMillis(), id);
+
+        int sTime = sleepTime.nextInt(2);
+        Thread.sleep(sTime * 100);
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+
+      timeElapsed = (int) Math.ceil((System.currentTimeMillis() - startTime)/(double)1000);
     }
 
-    /*
-     * @see java.lang.Runnable#run()
-     */
-    @Override
-    public void run() {
-        long startTime = System.currentTimeMillis();
-        int timeElapsed = 0;
-        while( timeElapsed <= runtime){
-            try {
-                long id = zkutil.nextId(tableName);
-                idMap.put(System.currentTimeMillis(), id);
+  }
 
-                int sTime = sleepTime.nextInt(2);
-                Thread.sleep(sTime * 100);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            timeElapsed = (int) Math.ceil((System.currentTimeMillis() - startTime)/(double)1000);
-        }
-
-    }
-
-    Map<Long, Long> getIdMap(){
-        return idMap;
-    }
+  Map<Long, Long> getIdMap(){
+    return idMap;
+  }
 
 }

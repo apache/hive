@@ -35,87 +35,87 @@ import org.apache.hadoop.mapred.OutputFormat;
  */
 public abstract class HCatStorageHandler implements HiveStorageHandler {
 
-    //TODO move this to HiveStorageHandler
+  //TODO move this to HiveStorageHandler
 
-    /**
-     * This method is called to allow the StorageHandlers the chance
-     * to populate the JobContext.getConfiguration() with properties that
-     * maybe be needed by the handler's bundled artifacts (ie InputFormat, SerDe, etc).
-     * Key value pairs passed into jobProperties is guaranteed to be set in the job's
-     * configuration object. User's can retrieve "context" information from tableDesc.
-     * User's should avoid mutating tableDesc and only make changes in jobProperties.
-     * This method is expected to be idempotent such that a job called with the
-     * same tableDesc values should return the same key-value pairs in jobProperties.
-     * Any external state set by this method should remain the same if this method is
-     * called again. It is up to the user to determine how best guarantee this invariant.
-     *
-     * This method in particular is to create a configuration for input.
-     * @param tableDesc
-     * @param jobProperties
-     */
-    public abstract void configureInputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties);
+  /**
+   * This method is called to allow the StorageHandlers the chance
+   * to populate the JobContext.getConfiguration() with properties that
+   * maybe be needed by the handler's bundled artifacts (ie InputFormat, SerDe, etc).
+   * Key value pairs passed into jobProperties is guaranteed to be set in the job's
+   * configuration object. User's can retrieve "context" information from tableDesc.
+   * User's should avoid mutating tableDesc and only make changes in jobProperties.
+   * This method is expected to be idempotent such that a job called with the
+   * same tableDesc values should return the same key-value pairs in jobProperties.
+   * Any external state set by this method should remain the same if this method is
+   * called again. It is up to the user to determine how best guarantee this invariant.
+   *
+   * This method in particular is to create a configuration for input.
+   * @param tableDesc
+   * @param jobProperties
+   */
+  public abstract void configureInputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties);
 
-    //TODO move this to HiveStorageHandler
+  //TODO move this to HiveStorageHandler
 
-    /**
-     * This method is called to allow the StorageHandlers the chance
-     * to populate the JobContext.getConfiguration() with properties that
-     * maybe be needed by the handler's bundled artifacts (ie InputFormat, SerDe, etc).
-     * Key value pairs passed into jobProperties is guaranteed to be set in the job's
-     * configuration object. User's can retrieve "context" information from tableDesc.
-     * User's should avoid mutating tableDesc and only make changes in jobProperties.
-     * This method is expected to be idempotent such that a job called with the
-     * same tableDesc values should return the same key-value pairs in jobProperties.
-     * Any external state set by this method should remain the same if this method is
-     * called again. It is up to the user to determine how best guarantee this invariant.
-     *
-     * This method in particular is to create a configuration for output.
-     * @param tableDesc
-     * @param jobProperties
-     */
-    public abstract void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties);
+  /**
+   * This method is called to allow the StorageHandlers the chance
+   * to populate the JobContext.getConfiguration() with properties that
+   * maybe be needed by the handler's bundled artifacts (ie InputFormat, SerDe, etc).
+   * Key value pairs passed into jobProperties is guaranteed to be set in the job's
+   * configuration object. User's can retrieve "context" information from tableDesc.
+   * User's should avoid mutating tableDesc and only make changes in jobProperties.
+   * This method is expected to be idempotent such that a job called with the
+   * same tableDesc values should return the same key-value pairs in jobProperties.
+   * Any external state set by this method should remain the same if this method is
+   * called again. It is up to the user to determine how best guarantee this invariant.
+   *
+   * This method in particular is to create a configuration for output.
+   * @param tableDesc
+   * @param jobProperties
+   */
+  public abstract void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties);
 
-    /**
-     *
-     *
-     * @return authorization provider
-     * @throws HiveException
-     */
-    public abstract HiveAuthorizationProvider getAuthorizationProvider()
-        throws HiveException;
+  /**
+   *
+   *
+   * @return authorization provider
+   * @throws HiveException
+   */
+  public abstract HiveAuthorizationProvider getAuthorizationProvider()
+    throws HiveException;
 
-    /*
-    * (non-Javadoc)
-    *
-    * @see org.apache.hadoop.hive.ql.metadata.HiveStorageHandler#
-    * configureTableJobProperties(org.apache.hadoop.hive.ql.plan.TableDesc,
-    * java.util.Map)
-    */
-    @Override
-    @Deprecated
-    public final void configureTableJobProperties(TableDesc tableDesc,
-                                                  Map<String, String> jobProperties) {
-    }
+  /*
+  * (non-Javadoc)
+  *
+  * @see org.apache.hadoop.hive.ql.metadata.HiveStorageHandler#
+  * configureTableJobProperties(org.apache.hadoop.hive.ql.plan.TableDesc,
+  * java.util.Map)
+  */
+  @Override
+  @Deprecated
+  public final void configureTableJobProperties(TableDesc tableDesc,
+                          Map<String, String> jobProperties) {
+  }
 
-    /*
-    * (non-Javadoc)
-    *
-    * @see org.apache.hadoop.conf.Configurable#getConf()
-    */
-    @Override
-    public abstract Configuration getConf();
+  /*
+  * (non-Javadoc)
+  *
+  * @see org.apache.hadoop.conf.Configurable#getConf()
+  */
+  @Override
+  public abstract Configuration getConf();
 
-    /*
-    * (non-Javadoc)
-    *
-    * @see org.apache.hadoop.conf.Configurable#setConf(org.apache.hadoop.conf.
-    * Configuration)
-    */
-    @Override
-    public abstract void setConf(Configuration conf);
+  /*
+  * (non-Javadoc)
+  *
+  * @see org.apache.hadoop.conf.Configurable#setConf(org.apache.hadoop.conf.
+  * Configuration)
+  */
+  @Override
+  public abstract void setConf(Configuration conf);
 
-    OutputFormatContainer getOutputFormatContainer(OutputFormat outputFormat) {
-        return new DefaultOutputFormatContainer(outputFormat);
-    }
+  OutputFormatContainer getOutputFormatContainer(OutputFormat outputFormat) {
+    return new DefaultOutputFormatContainer(outputFormat);
+  }
 
 }

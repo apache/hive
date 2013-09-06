@@ -32,44 +32,44 @@ import org.apache.hive.hcatalog.templeton.tool.JobState;
  * List jobs owned by a user.
  */
 public class ListDelegator extends TempletonDelegator {
-    public ListDelegator(AppConfig appConf) {
-        super(appConf);
-    }
+  public ListDelegator(AppConfig appConf) {
+    super(appConf);
+  }
 
-    public List<String> run(String user, boolean showall)
-        throws NotAuthorizedException, BadParam, IOException, InterruptedException {
-        
-        UserGroupInformation ugi = UgiFactory.getUgi(user);
-        WebHCatJTShim tracker = null;
-        try {
-            tracker = ShimLoader.getHadoopShims().getWebHCatShim(appConf, ugi);
+  public List<String> run(String user, boolean showall)
+    throws NotAuthorizedException, BadParam, IOException, InterruptedException {
 
-            ArrayList<String> ids = new ArrayList<String>();
+    UserGroupInformation ugi = UgiFactory.getUgi(user);
+    WebHCatJTShim tracker = null;
+    try {
+      tracker = ShimLoader.getHadoopShims().getWebHCatShim(appConf, ugi);
 
-            JobStatus[] jobs = tracker.getAllJobs();
+      ArrayList<String> ids = new ArrayList<String>();
 
-            if (jobs != null) {
-                for (JobStatus job : jobs) {
-                    JobState state = null;
-                    try {
-                        String id = job.getJobID().toString();
-                        state = new JobState(id, Main.getAppConfigInstance());
-                        if (showall || user.equals(state.getUser()))
-                            ids.add(id);
-                    } finally {
-                        if (state != null) {
-                            state.close();
-                        }
-                    }
-                }
+      JobStatus[] jobs = tracker.getAllJobs();
+
+      if (jobs != null) {
+        for (JobStatus job : jobs) {
+          JobState state = null;
+          try {
+            String id = job.getJobID().toString();
+            state = new JobState(id, Main.getAppConfigInstance());
+            if (showall || user.equals(state.getUser()))
+              ids.add(id);
+          } finally {
+            if (state != null) {
+              state.close();
             }
-
-            return ids;
-        } catch (IllegalStateException e) {
-            throw new BadParam(e.getMessage());
-        } finally {
-            if (tracker != null)
-                tracker.close();
+          }
         }
+      }
+
+      return ids;
+    } catch (IllegalStateException e) {
+      throw new BadParam(e.getMessage());
+    } finally {
+      if (tracker != null)
+        tracker.close();
     }
+  }
 }

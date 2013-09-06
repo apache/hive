@@ -34,14 +34,14 @@ import com.sun.jersey.api.NotFoundException;
  */
 @Provider
 public class CatchallExceptionMapper
-    implements ExceptionMapper<Exception> {
-    private static final Log LOG = LogFactory.getLog(CatchallExceptionMapper.class);
+  implements ExceptionMapper<Exception> {
+  private static final Log LOG = LogFactory.getLog(CatchallExceptionMapper.class);
 
-    public Response toResponse(Exception e) {
-        LOG.error(e.getMessage(), e);
-        if (e instanceof NotFoundException) {
-            return SimpleWebException.buildMessage(HttpStatus.NOT_FOUND_404, null, e.getMessage());
-        }
-        return SimpleWebException.buildMessage(HttpStatus.INTERNAL_SERVER_ERROR_500, null, e.getMessage());
+  public Response toResponse(Exception e) {
+    LOG.error(e.getMessage(), e);
+    if (e instanceof NotFoundException) {
+      return SimpleWebException.buildMessage(HttpStatus.NOT_FOUND_404, null, e.getMessage());
     }
+    return SimpleWebException.buildMessage(HttpStatus.INTERNAL_SERVER_ERROR_500, null, e.getMessage());
+  }
 }
