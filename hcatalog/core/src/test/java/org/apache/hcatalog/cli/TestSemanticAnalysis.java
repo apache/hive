@@ -207,7 +207,7 @@ public class TestSemanticAnalysis extends HCatBaseTest {
     public void testAddReplaceCols() throws IOException, MetaException, TException, NoSuchObjectException, CommandNeedRetryException {
 
         hcatDriver.run("drop table junit_sem_analysis");
-        hcatDriver.run("create table junit_sem_analysis (a int, c string) partitioned by (b string) stored as RCFILE");
+        hcatDriver.run("create table junit_sem_analysis (a int, c string) partitioned by (b string)");
         CommandProcessorResponse response = hcatDriver.run("alter table junit_sem_analysis replace columns (a1 tinyint)");
         assertEquals(0, response.getResponseCode());
 

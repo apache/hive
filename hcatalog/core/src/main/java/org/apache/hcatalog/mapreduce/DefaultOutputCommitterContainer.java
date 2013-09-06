@@ -23,7 +23,7 @@ import java.io.IOException;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.mapred.HCatMapRedUtil;
+import org.apache.hive.hcatalog.mapreduce.HCatMapRedUtil;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.JobStatus.State;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;

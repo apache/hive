@@ -95,6 +95,14 @@ class DummyStorageHandler extends HCatStorageHandler {
         throws HiveException {
         return new DummyAuthProvider();
     }
+    @Override
+    public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
+        //do nothing by default
+        //EK: added the same (no-op) implementation as in
+        // org.apache.hive.hcatalog.DefaultStorageHandler (hive 0.12)
+        // this is needed to get 0.11 API compat layer to work
+        // see HIVE-4896
+    }
 
     private class DummyAuthProvider implements HiveAuthorizationProvider {
 
