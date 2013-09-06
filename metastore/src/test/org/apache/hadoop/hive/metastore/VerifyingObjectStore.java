@@ -68,6 +68,15 @@ class VerifyingObjectStore extends ObjectStore {
     return sqlResults;
   }
 
+  @Override
+  public List<Partition> getPartitions(
+      String dbName, String tableName, int maxParts) throws MetaException {
+    List<Partition> sqlResults = getPartitionsInternal(dbName, tableName, maxParts, true, false);
+    List<Partition> ormResults = getPartitionsInternal(dbName, tableName, maxParts, false, true);
+    compareParts(sqlResults, ormResults);
+    return sqlResults;
+  };
+
   private void compareParts(List<Partition> sqlResults, List<Partition> ormResults)
       throws MetaException {
     if (sqlResults.size() != ormResults.size()) {
