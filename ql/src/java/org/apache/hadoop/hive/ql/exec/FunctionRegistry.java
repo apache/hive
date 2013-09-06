@@ -23,7 +23,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -149,6 +149,7 @@ import org.apache.hadoop.hive.ql.udf.xml.UDFXPathString;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
@@ -600,24 +601,53 @@ public final class FunctionRegistry {
     return synonyms;
   }
 
-  static Map<TypeInfo, Integer> numericTypes = new HashMap<TypeInfo, Integer>();
-  static List<TypeInfo> numericTypeList = new ArrayList<TypeInfo>();
+  // The ordering of types here is used to determine which numeric types
+  // are common/convertible to one another. Probably better to rely on the
+  // ordering explicitly defined here than to assume that the enum values
+  // that were arbitrarily assigned in PrimitiveCategory work for our purposes.
+  static EnumMap<PrimitiveCategory, Integer> numericTypes =
+      new EnumMap<PrimitiveCategory, Integer>(PrimitiveCategory.class);
+  static List<PrimitiveCategory> numericTypeList = new ArrayList<PrimitiveCategory>();
 
-  static void registerNumericType(String typeName, int level) {
-    TypeInfo t = TypeInfoFactory.getPrimitiveTypeInfo(typeName);
-    numericTypeList.add(t);
-    numericTypes.put(t, level);
+  static void registerNumericType(PrimitiveCategory primitiveCategory, int level) {
+    numericTypeList.add(primitiveCategory);
+    numericTypes.put(primitiveCategory, level);
   }
 
   static {
-    registerNumericType(serdeConstants.TINYINT_TYPE_NAME, 1);
-    registerNumericType(serdeConstants.SMALLINT_TYPE_NAME, 2);
-    registerNumericType(serdeConstants.INT_TYPE_NAME, 3);
-    registerNumericType(serdeConstants.BIGINT_TYPE_NAME, 4);
-    registerNumericType(serdeConstants.FLOAT_TYPE_NAME, 5);
-    registerNumericType(serdeConstants.DOUBLE_TYPE_NAME, 6);
-    registerNumericType(serdeConstants.DECIMAL_TYPE_NAME, 7);
-    registerNumericType(serdeConstants.STRING_TYPE_NAME, 8);
+    registerNumericType(PrimitiveCategory.BYTE, 1);
+    registerNumericType(PrimitiveCategory.SHORT, 2);
+    registerNumericType(PrimitiveCategory.INT, 3);
+    registerNumericType(PrimitiveCategory.LONG, 4);
+    registerNumericType(PrimitiveCategory.FLOAT, 5);
+    registerNumericType(PrimitiveCategory.DOUBLE, 6);
+    registerNumericType(PrimitiveCategory.DECIMAL, 7);
+    registerNumericType(PrimitiveCategory.STRING, 8);
+  }
+
+  /**
+   * Given 2 TypeInfo types and the PrimitiveCategory selected as the common class between the two,
+   * return a TypeInfo corresponding to the common PrimitiveCategory, and with type qualifiers
+   * (if applicable) that match the 2 TypeInfo types.
+   * Examples:
+   *   varchar(10), varchar(20), primitive category varchar => varchar(20)
+   *   date, string, primitive category string => string
+   * @param a  TypeInfo of the first type
+   * @param b  TypeInfo of the second type
+   * @param typeCategory PrimitiveCategory of the designated common type between a and b
+   * @return TypeInfo represented by the primitive category, with any applicable type qualifiers.
+   */
+  public static TypeInfo getTypeInfoForPrimitiveCategory(
+      PrimitiveTypeInfo a, PrimitiveTypeInfo b, PrimitiveCategory typeCategory) {
+    // For types with parameters (like varchar), we need to determine the type parameters
+    // that should be added to this type, based on the original 2 TypeInfos.
+    switch (typeCategory) {
+
+      default:
+        // Type doesn't require any qualifiers.
+        return TypeInfoFactory.getPrimitiveTypeInfo(
+          PrimitiveObjectInspectorUtils.getTypeEntryFromPrimitiveCategory(typeCategory).typeName);
+    }
   }
 
   /**
@@ -627,18 +657,38 @@ public final class FunctionRegistry {
     if (a.equals(b)) {
       return a;
     }
+    if (a.getCategory() != Category.PRIMITIVE || b.getCategory() != Category.PRIMITIVE) {
+      return null;
+    }
+    PrimitiveCategory pcA = ((PrimitiveTypeInfo)a).getPrimitiveCategory();
+    PrimitiveCategory pcB = ((PrimitiveTypeInfo)b).getPrimitiveCategory();
+
+    if (pcA == pcB) {
+      // Same primitive category but different qualifiers.
+      return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, pcA);
+    }
+
+    PrimitiveGrouping pgA = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcA);
+    PrimitiveGrouping pgB = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcB);
+    // handle string types properly
+    if (pgA == PrimitiveGrouping.STRING_GROUP && pgB == PrimitiveGrouping.STRING_GROUP) {
+      return getTypeInfoForPrimitiveCategory(
+          (PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b,PrimitiveCategory.STRING);
+    }
+
     if (FunctionRegistry.implicitConvertable(a, b)) {
-      return b;
+      return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, pcB);
     }
     if (FunctionRegistry.implicitConvertable(b, a)) {
-      return a;
+      return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, pcA);
     }
-    for (TypeInfo t : numericTypeList) {
-      if (FunctionRegistry.implicitConvertable(a, t)
-          && FunctionRegistry.implicitConvertable(b, t)) {
-        return t;
+    for (PrimitiveCategory t : numericTypeList) {
+      if (FunctionRegistry.implicitConvertable(pcA, t)
+          && FunctionRegistry.implicitConvertable(pcB, t)) {
+        return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, t);
       }
     }
+
     return null;
   }
 
@@ -656,12 +706,34 @@ public final class FunctionRegistry {
     if (a.equals(b)) {
       return a;
     }
-    for (TypeInfo t : numericTypeList) {
-      if (FunctionRegistry.implicitConvertable(a, t)
-          && FunctionRegistry.implicitConvertable(b, t)) {
-        return t;
+    if (a.getCategory() != Category.PRIMITIVE || b.getCategory() != Category.PRIMITIVE) {
+      return null;
+    }
+    PrimitiveCategory pcA = ((PrimitiveTypeInfo)a).getPrimitiveCategory();
+    PrimitiveCategory pcB = ((PrimitiveTypeInfo)b).getPrimitiveCategory();
+
+    if (pcA == pcB) {
+      // Same primitive category but different qualifiers.
+      // Rely on getTypeInfoForPrimitiveCategory() to sort out the type params.
+      return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, pcA);
+    }
+
+    PrimitiveGrouping pgA = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcA);
+    PrimitiveGrouping pgB = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcB);
+    // handle string types properly
+    if (pgA == PrimitiveGrouping.STRING_GROUP && pgB == PrimitiveGrouping.STRING_GROUP) {
+      // Compare as strings. Char comparison semantics may be different if/when implemented.
+      return getTypeInfoForPrimitiveCategory(
+          (PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b,PrimitiveCategory.STRING);
+    }
+
+    for (PrimitiveCategory t : numericTypeList) {
+      if (FunctionRegistry.implicitConvertable(pcA, t)
+          && FunctionRegistry.implicitConvertable(pcB, t)) {
+        return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, t);
       }
     }
+
     return null;
   }
 
@@ -677,45 +749,60 @@ public final class FunctionRegistry {
     if (a.equals(b)) {
       return a;
     }
-    Integer ai = numericTypes.get(a);
-    Integer bi = numericTypes.get(b);
+    if (a.getCategory() != Category.PRIMITIVE || b.getCategory() != Category.PRIMITIVE) {
+      return null;
+    }
+    PrimitiveCategory pcA = ((PrimitiveTypeInfo)a).getPrimitiveCategory();
+    PrimitiveCategory pcB = ((PrimitiveTypeInfo)b).getPrimitiveCategory();
+
+    PrimitiveGrouping pgA = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcA);
+    PrimitiveGrouping pgB = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcB);
+    // handle string types properly
+    if (pgA == PrimitiveGrouping.STRING_GROUP && pgB == PrimitiveGrouping.STRING_GROUP) {
+      return getTypeInfoForPrimitiveCategory(
+          (PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b,PrimitiveCategory.STRING);
+    }
+
+    Integer ai = numericTypes.get(pcA);
+    Integer bi = numericTypes.get(pcB);
     if (ai == null || bi == null) {
       // If either is not a numeric type, return null.
       return null;
     }
-    return (ai > bi) ? a : b;
+    PrimitiveCategory pcCommon = (ai > bi) ? pcA : pcB;
+    return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, pcCommon);
   }
 
-  /**
-   * Returns whether it is possible to implicitly convert an object of Class
-   * from to Class to.
-   */
-  public static boolean implicitConvertable(TypeInfo from, TypeInfo to) {
-    if (from.equals(to)) {
+  public static boolean implicitConvertable(PrimitiveCategory from, PrimitiveCategory to) {
+    if (from == to) {
       return true;
     }
+
+    PrimitiveGrouping fromPg = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(from);
+    PrimitiveGrouping toPg = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(to);
+
     // Allow implicit String to Double conversion
-    if (from.equals(TypeInfoFactory.stringTypeInfo)
-        && to.equals(TypeInfoFactory.doubleTypeInfo)) {
+    if (fromPg == PrimitiveGrouping.STRING_GROUP && to == PrimitiveCategory.DOUBLE) {
       return true;
     }
     // Allow implicit String to Decimal conversion
-    if (from.equals(TypeInfoFactory.stringTypeInfo)
-        && to.equals(TypeInfoFactory.decimalTypeInfo)) {
+    if (fromPg == PrimitiveGrouping.STRING_GROUP && to == PrimitiveCategory.DECIMAL) {
       return true;
     }
     // Void can be converted to any type
-    if (from.equals(TypeInfoFactory.voidTypeInfo)) {
+    if (from == PrimitiveCategory.VOID) {
       return true;
     }
     // Allow implicit String to Date conversion
-    if (from.equals(TypeInfoFactory.dateTypeInfo)
-        && to.equals(TypeInfoFactory.stringTypeInfo)) {
+    if (fromPg == PrimitiveGrouping.DATE_GROUP && toPg == PrimitiveGrouping.STRING_GROUP) {
       return true;
     }
-
-    if (from.equals(TypeInfoFactory.timestampTypeInfo)
-        && to.equals(TypeInfoFactory.stringTypeInfo)) {
+    // Allow implicit Numeric to String conversion
+    if (fromPg == PrimitiveGrouping.NUMERIC_GROUP && toPg == PrimitiveGrouping.STRING_GROUP) {
+      return true;
+    }
+    // Allow implicit String to varchar conversion, and vice versa
+    if (fromPg == PrimitiveGrouping.STRING_GROUP && toPg == PrimitiveGrouping.STRING_GROUP) {
       return true;
     }
 
@@ -731,6 +818,27 @@ public final class FunctionRegistry {
     }
     return true;
   }
+
+  /**
+   * Returns whether it is possible to implicitly convert an object of Class
+   * from to Class to.
+   */
+  public static boolean implicitConvertable(TypeInfo from, TypeInfo to) {
+    if (from.equals(to)) {
+      return true;
+    }
+
+    // Reimplemented to use PrimitiveCategory rather than TypeInfo, because
+    // 2 TypeInfos from the same qualified type (varchar, decimal) should still be
+    // seen as equivalent.
+    if (from.getCategory() == Category.PRIMITIVE && to.getCategory() == Category.PRIMITIVE) {
+      return implicitConvertable(
+          ((PrimitiveTypeInfo)from).getPrimitiveCategory(),
+          ((PrimitiveTypeInfo)to).getPrimitiveCategory());
+    }
+    return false;
+  }
+
 
   /**
    * Get the GenericUDAF evaluator for the name and argumentClasses.
@@ -1113,9 +1221,15 @@ public final class FunctionRegistry {
         for (TypeInfo accepted: argumentsAccepted) {
           TypeInfo reference = referenceIterator.next();
 
-          if (numericTypes.containsKey(accepted)) {
+          boolean acceptedIsPrimitive = false;
+          PrimitiveCategory acceptedPrimCat = PrimitiveCategory.UNKNOWN;
+          if (accepted.getCategory() == Category.PRIMITIVE) {
+            acceptedIsPrimitive = true;
+            acceptedPrimCat = ((PrimitiveTypeInfo) accepted).getPrimitiveCategory();
+          }
+          if (acceptedIsPrimitive && numericTypes.containsKey(acceptedPrimCat)) {
             // We're looking for the udf with the smallest maximum numeric type.
-            int typeValue = numericTypes.get(accepted);
+            int typeValue = numericTypes.get(acceptedPrimCat);
             maxNumericType = typeValue > maxNumericType ? typeValue : maxNumericType;
           } else if (!accepted.equals(reference)) {
             // There are non-numeric arguments that don't match from one UDF to
