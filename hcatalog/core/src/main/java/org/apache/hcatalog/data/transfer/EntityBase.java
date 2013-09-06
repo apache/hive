@@ -22,7 +22,7 @@ package org.apache.hcatalog.data.transfer;
 import java.util.Map;
 
 /**
- * This is a base class for 
+ * This is a base class for
  * {@link ReadEntity.Builder} / {@link WriteEntity.Builder}.
  * Many fields in them are common, so this class
  * contains the common fields.

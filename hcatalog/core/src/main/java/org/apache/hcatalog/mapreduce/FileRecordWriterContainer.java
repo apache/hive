@@ -221,7 +221,7 @@ class FileRecordWriterContainer extends RecordWriterContainer {
 
                 Path parentDir = new Path(currTaskContext.getConfiguration().get("mapred.work.output.dir"));
                 Path childPath = new Path(parentDir,FileOutputFormat.getUniqueFile(currTaskContext, "part", ""));
-                
+
                 org.apache.hadoop.mapred.RecordWriter baseRecordWriter =
                     baseOF.getRecordWriter(
                         parentDir.getFileSystem(currTaskContext.getConfiguration()),

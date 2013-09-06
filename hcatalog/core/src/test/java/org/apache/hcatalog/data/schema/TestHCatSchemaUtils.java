@@ -29,7 +29,7 @@ import org.apache.hcatalog.data.schema.HCatFieldSchema.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 /**
- * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.schema.TestHCatSchema} instead
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.schema.TestHCatSchemaUtils} instead
  */
 public class TestHCatSchemaUtils extends TestCase {
 

@@ -469,7 +469,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
                         // Create the directory
                         Path placeholder = new Path(parentDir, "_placeholder");
                         if (fs.mkdirs(parentDir)) {
-                            // It is weired but we need a placeholder, 
+                            // It is weired but we need a placeholder,
                             // otherwise rename cannot move file to the right place
                             fs.create(placeholder).close();
                         }

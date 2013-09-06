@@ -57,4 +57,3 @@ public class HCatTestDriver {
         System.exit(exitCode);
     }
 }
-	
