@@ -34,12 +34,12 @@ import java.sql.Savepoint;
 import java.sql.Statement;
 import java.sql.Struct;
 import java.util.HashMap;
-import java.util.concurrent.Executor;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.concurrent.Executor;
 
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
@@ -122,6 +122,12 @@ public class HiveConnection implements java.sql.Connection {
       Statement stmt = createStatement();
       for (Entry<String, String> hiveConf : connParams.getHiveConfs().entrySet()) {
         stmt.execute("set " + hiveConf.getKey() + "=" + hiveConf.getValue());
+        stmt.close();
+      }
+
+      // For remote JDBC client, try to set the hive var using 'set hivevar:key=value'
+      for (Entry<String, String> hiveVar : connParams.getHiveVars().entrySet()) {
+        stmt.execute("set hivevar:" + hiveVar.getKey() + "=" + hiveVar.getValue());
         stmt.close();
       }
     }
