@@ -148,11 +148,8 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
   private MapredWork convertSMBWorkToJoinWork(MapredWork currWork, SMBMapJoinOperator oldSMBJoinOp)
       throws SemanticException {
     try {
-      String xml = currWork.toXML();
-
       // deep copy a new mapred work
-      InputStream in = new ByteArrayInputStream(xml.getBytes("UTF-8"));
-      MapredWork currJoinWork = Utilities.deserializeObject(in);
+      MapredWork currJoinWork = Utilities.clonePlan(currWork);
       SMBMapJoinOperator newSMBJoinOp = getSMBMapJoinOp(currJoinWork);
 
       // Add the row resolver for the new operator
@@ -169,14 +166,13 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
   }
 
   // create map join task and set big table as bigTablePosition
-  private ObjectPair<MapRedTask, String> convertSMBTaskToMapJoinTask(String xml,
+  private ObjectPair<MapRedTask, String> convertSMBTaskToMapJoinTask(MapredWork origWork,
       int bigTablePosition,
       SMBMapJoinOperator smbJoinOp,
       QBJoinTree joinTree)
       throws UnsupportedEncodingException, SemanticException {
-    // deep copy a new mapred work from xml
-    InputStream in = new ByteArrayInputStream(xml.getBytes("UTF-8"));
-    MapredWork newWork = Utilities.deserializeObject(in);
+    // deep copy a new mapred work
+    MapredWork newWork = Utilities.clonePlan(origWork);
     // create a mapred task for this work
     MapRedTask newTask = (MapRedTask) TaskFactory.get(newWork, physicalContext
         .getParseContext().getConf());
@@ -290,7 +286,6 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
       long aliasTotalKnownInputSize = getTotalKnownInputSize(context, currJoinWork.getMapWork(),
           pathToAliases, aliasToSize);
 
-      String xml = currJoinWork.toXML();
       long ThresholdOfSmallTblSizeSum = HiveConf.getLongVar(conf,
           HiveConf.ConfVars.HIVESMALLTABLESFILESIZE);
 
@@ -301,8 +296,8 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
         }
 
         // create map join task for the given big table position
-        ObjectPair<MapRedTask, String> newTaskAlias =
-            convertSMBTaskToMapJoinTask(xml, bigTablePosition, newSMBJoinOp, joinTree);
+        ObjectPair<MapRedTask, String> newTaskAlias = convertSMBTaskToMapJoinTask(
+            currJoinWork, bigTablePosition, newSMBJoinOp, joinTree);
         MapRedTask newTask = newTaskAlias.getFirst();
         String bigTableAlias = newTaskAlias.getSecond();
 

@@ -181,7 +181,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
       OutputStream out = FileSystem.getLocal(conf).create(planPath);
       MapredWork plan = getWork();
       LOG.info("Generating plan file " + planPath.toString());
-      Utilities.serializeObject(plan, out);
+      Utilities.serializePlan(plan, out);
 
       String isSilent = "true".equalsIgnoreCase(System
           .getProperty("test.silent")) ? "-nolog" : "";

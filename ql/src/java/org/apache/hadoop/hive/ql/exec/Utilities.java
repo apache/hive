@@ -112,6 +112,7 @@ import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.OneNullRowInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.io.ReworkMapredInputFormat;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -268,7 +269,7 @@ public final class Utilities {
           localPath = new Path(name);
         }
         InputStream in = new FileInputStream(localPath.toUri().getPath());
-        BaseWork ret = deserializeObject(in);
+        BaseWork ret = deserializePlan(in);
         gWork = ret;
         gWorkMap.put(path, gWork);
       }
@@ -479,7 +480,7 @@ public final class Utilities {
       // use the default file system of the conf
       FileSystem fs = planPath.getFileSystem(conf);
       FSDataOutputStream out = fs.create(planPath);
-      serializeObject(w, out);
+      serializePlan(w, out);
 
       // Serialize the plan to the default hdfs instance
       // Except for hadoop local mode execution where we should be
@@ -584,6 +585,47 @@ public final class Utilities {
         out.writeStatement(new Statement(oldInstance, "add", new Object[] {ite.next()}));
       }
     }
+  }
+
+  /**
+   * Serializes the plan.
+   * @param plan The plan, such as QueryPlan, MapredWork, etc.
+   * @param out The stream to write to.
+   */
+  public static void serializePlan(Object plan, OutputStream out) {
+    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    perfLogger.PerfLogBegin(LOG, PerfLogger.SERIALIZE_PLAN);
+    serializeObject(plan, out);
+    perfLogger.PerfLogEnd(LOG, PerfLogger.SERIALIZE_PLAN);
+  }
+
+  /**
+   * Deserializes the plan.
+   * @param in The stream to read from.
+   * @return The plan, such as QueryPlan, MapredWork, etc.
+   */
+  public static <T> T deserializePlan(InputStream in) {
+    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    perfLogger.PerfLogBegin(LOG, PerfLogger.DESERIALIZE_PLAN);
+    T result = deserializeObject(in);
+    perfLogger.PerfLogEnd(LOG, PerfLogger.DESERIALIZE_PLAN);
+    return result;
+  }
+
+  /**
+   * Clones using the powers of XML. Do not use unless necessary.
+   * @param plan The plan.
+   * @return The clone.
+   */
+  public static <T> T clonePlan(T plan) {
+    // TODO: need proper clone. Meanwhiel, let's at least keep this horror in one place
+    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    perfLogger.PerfLogBegin(LOG, PerfLogger.CLONE_PLAN);
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    Utilities.serializeObject(plan, baos);
+    T copy = Utilities.deserializeObject(new ByteArrayInputStream(baos.toByteArray()));
+    perfLogger.PerfLogEnd(LOG, PerfLogger.CLONE_PLAN);
+    return copy;
   }
 
   /**
@@ -1802,6 +1844,8 @@ public final class Utilities {
    */
   public static ContentSummary getInputSummary(Context ctx, MapWork work, PathFilter filter)
       throws IOException {
+    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    perfLogger.PerfLogBegin(LOG, PerfLogger.INPUT_SUMMARY);
 
     long[] summary = {0, 0, 0};
 
@@ -1937,6 +1981,7 @@ public final class Utilities {
               + cs.getFileCount() + " directory count: " + cs.getDirectoryCount());
         }
 
+        perfLogger.PerfLogEnd(LOG, PerfLogger.INPUT_SUMMARY);
         return new ContentSummary(summary[0], summary[1], summary[2]);
       } finally {
         HiveInterruptUtils.remove(interrup);
