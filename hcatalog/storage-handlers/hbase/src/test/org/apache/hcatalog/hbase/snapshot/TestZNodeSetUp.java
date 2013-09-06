@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hive.hcatalog.hbase.snapshot;
+package org.apache.hcatalog.hbase.snapshot;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.cli.HCatDriver;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
-import org.apache.hive.hcatalog.hbase.SkeletonHBaseTest;
+import org.apache.hcatalog.hbase.SkeletonHBaseTest;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
 import org.junit.Test;
@@ -89,7 +89,7 @@ public class TestZNodeSetUp extends SkeletonHBaseTest {
         hcatDriver.run("drop table test_table");
         CommandProcessorResponse response = hcatDriver
             .run("create table test_table(key int, value string) STORED BY " +
-                "'org.apache.hive.hcatalog.hbase.HBaseHCatStorageHandler'"
+                "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
                 + "TBLPROPERTIES ('hbase.columns.mapping'=':key,cf1:val')");
 
         assertEquals(0, response.getResponseCode());

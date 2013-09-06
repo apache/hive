@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hive.hcatalog.hbase;
+package org.apache.hcatalog.hbase;
 
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.fs.FileSystem;

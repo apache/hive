@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hive.hcatalog.hbase;
+package org.apache.hcatalog.hbase;
 
 import java.io.IOException;
 import java.util.List;
@@ -42,7 +42,7 @@ import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.util.Progressable;
-import org.apache.hive.hcatalog.hbase.snapshot.RevisionManager;
+import org.apache.hcatalog.hbase.snapshot.RevisionManager;
 
 /**
  * Class which imports data into HBase via it's "bulk load" feature. Wherein

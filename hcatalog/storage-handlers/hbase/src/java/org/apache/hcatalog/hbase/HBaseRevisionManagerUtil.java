@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hive.hcatalog.hbase;
+package org.apache.hcatalog.hbase;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,10 +33,10 @@ import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
-import org.apache.hive.hcatalog.hbase.snapshot.RevisionManager;
-import org.apache.hive.hcatalog.hbase.snapshot.RevisionManagerFactory;
-import org.apache.hive.hcatalog.hbase.snapshot.TableSnapshot;
-import org.apache.hive.hcatalog.hbase.snapshot.Transaction;
+import org.apache.hcatalog.hbase.snapshot.RevisionManager;
+import org.apache.hcatalog.hbase.snapshot.RevisionManagerFactory;
+import org.apache.hcatalog.hbase.snapshot.TableSnapshot;
+import org.apache.hcatalog.hbase.snapshot.Transaction;
 import org.apache.hive.hcatalog.mapreduce.HCatTableInfo;
 import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
 import org.apache.hive.hcatalog.mapreduce.OutputJobInfo;

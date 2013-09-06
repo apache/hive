@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hive.hcatalog.hbase;
+package org.apache.hcatalog.hbase;
 
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;

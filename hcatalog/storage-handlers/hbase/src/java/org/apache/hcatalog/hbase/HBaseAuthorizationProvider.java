@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hive.hcatalog.hbase;
+package org.apache.hcatalog.hbase;
 
 import java.util.List;
 

@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hive.hcatalog.hbase.snapshot.lock;
+package org.apache.hcatalog.hbase.snapshot.lock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

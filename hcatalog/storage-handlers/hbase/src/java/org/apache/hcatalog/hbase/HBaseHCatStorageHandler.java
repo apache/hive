@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hive.hcatalog.hbase;
+package org.apache.hcatalog.hbase;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -57,11 +57,11 @@ import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
-import org.apache.hive.hcatalog.hbase.HBaseBulkOutputFormat.HBaseBulkOutputCommitter;
-import org.apache.hive.hcatalog.hbase.HBaseDirectOutputFormat.HBaseDirectOutputCommitter;
-import org.apache.hive.hcatalog.hbase.snapshot.RevisionManager;
-import org.apache.hive.hcatalog.hbase.snapshot.RevisionManagerConfiguration;
-import org.apache.hive.hcatalog.hbase.snapshot.Transaction;
+import org.apache.hcatalog.hbase.HBaseBulkOutputFormat.HBaseBulkOutputCommitter;
+import org.apache.hcatalog.hbase.HBaseDirectOutputFormat.HBaseDirectOutputCommitter;
+import org.apache.hcatalog.hbase.snapshot.RevisionManager;
+import org.apache.hcatalog.hbase.snapshot.RevisionManagerConfiguration;
+import org.apache.hcatalog.hbase.snapshot.Transaction;
 import org.apache.hive.hcatalog.mapreduce.HCatOutputFormat;
 import org.apache.hive.hcatalog.mapreduce.HCatTableInfo;
 import org.apache.hive.hcatalog.mapreduce.InputJobInfo;

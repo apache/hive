@@ -25,4 +25,4 @@
  * <a href="https://cwiki.apache.org/confluence/display/HCATALOG/Snapshots+and+Repeatable+reads+for+HBase+Tables">Snapshots and Repeatable reads for HBase Tables</a>.
  * @since 0.4
  */
-package org.apache.hive.hcatalog.hbase.snapshot;
+package org.apache.hcatalog.hbase.snapshot;
