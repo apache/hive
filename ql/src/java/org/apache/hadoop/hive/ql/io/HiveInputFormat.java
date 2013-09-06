@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.io.HiveIOExceptionHandlerUtil;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -257,7 +258,8 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
   }
 
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
-
+    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    perfLogger.PerfLogBegin(LOG, PerfLogger.GET_SPLITS);
     init(job);
 
     Path[] dirs = FileInputFormat.getInputPaths(job);
@@ -296,7 +298,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     LOG.info("number of splits " + result.size());
-
+    perfLogger.PerfLogEnd(LOG, PerfLogger.GET_SPLITS);
     return result.toArray(new HiveInputSplit[result.size()]);
   }
 

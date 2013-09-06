@@ -419,10 +419,13 @@ public class Driver implements CommandProcessor {
       ctx.setCmd(command);
       ctx.setHDFSCleanup(true);
 
+      perfLogger.PerfLogBegin(LOG, PerfLogger.PARSE);
       ParseDriver pd = new ParseDriver();
       ASTNode tree = pd.parse(command, ctx);
       tree = ParseUtils.findRootNonNullToken(tree);
+      perfLogger.PerfLogEnd(LOG, PerfLogger.PARSE);
 
+      perfLogger.PerfLogBegin(LOG, PerfLogger.ANALYZE);
       BaseSemanticAnalyzer sem = SemanticAnalyzerFactory.get(conf, tree);
       List<HiveSemanticAnalyzerHook> saHooks =
           getHooks(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK,
@@ -448,6 +451,7 @@ public class Driver implements CommandProcessor {
 
       // validate the plan
       sem.validate();
+      perfLogger.PerfLogEnd(LOG, PerfLogger.ANALYZE);
 
       plan = new QueryPlan(command, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN));
 
@@ -1179,11 +1183,13 @@ public class Driver implements CommandProcessor {
       }
 
       perfLogger.PerfLogEnd(LOG, PerfLogger.TIME_TO_SUBMIT);
+      perfLogger.PerfLogBegin(LOG, PerfLogger.RUN_TASKS);
       // Loop while you either have tasks running, or tasks queued up
       while (running.size() != 0 || runnable.peek() != null) {
         // Launch upto maxthreads tasks
         while (runnable.peek() != null && running.size() < maxthreads) {
           Task<? extends Serializable> tsk = runnable.remove();
+          perfLogger.PerfLogBegin(LOG, PerfLogger.TASK + tsk.getName() + "." + tsk.getId());
           launchTask(tsk, queryId, noName, running, jobname, jobs, driverCxt);
         }
 
@@ -1191,6 +1197,7 @@ public class Driver implements CommandProcessor {
         TaskResult tskRes = pollTasks(running.keySet());
         TaskRunner tskRun = running.remove(tskRes);
         Task<? extends Serializable> tsk = tskRun.getTask();
+        perfLogger.PerfLogEnd(LOG, PerfLogger.TASK + tsk.getName() + "." + tsk.getId());
         hookContext.addCompleteTask(tskRun);
 
         int exitVal = tskRes.getExitVal();
@@ -1254,6 +1261,7 @@ public class Driver implements CommandProcessor {
           }
         }
       }
+      perfLogger.PerfLogEnd(LOG, PerfLogger.RUN_TASKS);
 
       // in case we decided to run everything in local mode, restore the
       // the jobtracker setting to its initial value

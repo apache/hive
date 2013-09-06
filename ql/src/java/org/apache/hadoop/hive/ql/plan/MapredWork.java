@@ -82,10 +82,4 @@ public class MapredWork extends AbstractOperatorDesc {
 
     return ops;
   }
-
-  public String toXML() {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    Utilities.serializeObject(this, baos);
-    return (baos.toString());
-  }
 }
