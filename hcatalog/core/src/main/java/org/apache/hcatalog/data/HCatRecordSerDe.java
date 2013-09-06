@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * SerDe class for serializing to and from HCatRecord
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.HCatRecordSerDe} instead
  */
 public class HCatRecordSerDe implements SerDe {
 

@@ -25,6 +25,7 @@ import org.apache.hcatalog.common.HCatException;
 
 /**
  * The Class HCatCreateDBDesc for defining database attributes.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.api.HCatCreateDBDesc} instead
  */
 public class HCatCreateDBDesc {
 

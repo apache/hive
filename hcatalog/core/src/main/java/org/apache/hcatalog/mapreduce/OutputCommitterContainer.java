@@ -25,6 +25,7 @@ import org.apache.hadoop.mapreduce.OutputCommitter;
 /**
  *  This class will contain an implementation of an OutputCommitter.
  *  See {@link OutputFormatContainer} for more information about containers.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.OutputCommitterContainer} instead
  */
 abstract class OutputCommitterContainer extends OutputCommitter {
     private final org.apache.hadoop.mapred.OutputCommitter committer;

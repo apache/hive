@@ -38,6 +38,7 @@ import java.util.Map;
 /**
  * The JSON implementation of the MessageFactory. Constructs JSON implementations of
  * each message-type.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.json.JSONMessageFactory} instead
  */
 public class JSONMessageFactory extends MessageFactory {
 

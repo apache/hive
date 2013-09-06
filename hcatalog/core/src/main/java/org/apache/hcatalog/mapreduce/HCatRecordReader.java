@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
  * this ensures that the initialize on
  * the underlying record reader is done with the underlying split,
  * not with HCatSplit.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.HCatRecordReader} instead
  */
 class HCatRecordReader extends RecordReader<WritableComparable, HCatRecord> {
 

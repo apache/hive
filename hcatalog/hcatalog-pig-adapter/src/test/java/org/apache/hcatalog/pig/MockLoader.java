@@ -40,6 +40,9 @@ import org.apache.pig.LoadFunc;
 import org.apache.pig.backend.hadoop.executionengine.mapReduceLayer.PigSplit;
 import org.apache.pig.data.Tuple;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.pig.MockLoader} instead
+ */
 public class MockLoader extends LoadFunc {
     private static final class MockRecordReader extends RecordReader<Object, Object> {
         @Override

@@ -38,6 +38,7 @@ import java.util.List;
 /**
  * Test that require both HCatLoader and HCatStorer. For read or write only functionality,
  * please consider @{link TestHCatLoader} or @{link TestHCatStorer}.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.pig.TestHCatLoaderStorer} instead
  */
 public class TestHCatLoaderStorer extends HCatBaseTest {
 

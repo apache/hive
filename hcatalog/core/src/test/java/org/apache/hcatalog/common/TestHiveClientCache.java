@@ -60,7 +60,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.common.TestHiveClientCache} instead
+ */
 public class TestHiveClientCache {
 
     private static final Logger LOG = LoggerFactory.getLogger(TestHiveClientCache.class);

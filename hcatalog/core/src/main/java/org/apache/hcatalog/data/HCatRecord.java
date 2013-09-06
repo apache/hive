@@ -30,6 +30,8 @@ import org.apache.hcatalog.data.schema.HCatSchema;
  * Note :
  *   HCatRecord is designed only to be used as in-memory representation only.
  *   Don't use it to store data on the physical device.
+
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.HCatRecord} instead
  */
 public abstract class HCatRecord implements HCatRecordable {
 

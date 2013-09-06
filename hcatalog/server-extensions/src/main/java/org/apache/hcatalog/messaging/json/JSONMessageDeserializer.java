@@ -31,6 +31,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 /**
  * MessageDeserializer implementation, for deserializing from JSON strings.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.json.JSONMessageDeserializer} instead
  */
 public class JSONMessageDeserializer extends MessageDeserializer {
 

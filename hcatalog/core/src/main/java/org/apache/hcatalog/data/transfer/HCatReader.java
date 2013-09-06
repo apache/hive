@@ -31,6 +31,7 @@ import org.apache.hcatalog.data.transfer.state.StateProvider;
 /**
  * This abstract class is internal to HCatalog and abstracts away the notion of
  * underlying system from which reads will be done.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.transfer.HCatReader} instead
  */
 
 public abstract class HCatReader {

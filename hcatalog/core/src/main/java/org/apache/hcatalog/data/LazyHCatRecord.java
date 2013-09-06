@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 /**
  * An implementation of HCatRecord that wraps an Object returned by a SerDe
  * and an ObjectInspector.  This delays deserialization of unused columns.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.LazyHCatRecord} instead
  */
 public class LazyHCatRecord extends HCatRecord {
 

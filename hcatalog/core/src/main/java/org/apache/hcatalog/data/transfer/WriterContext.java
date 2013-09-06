@@ -32,6 +32,7 @@ import org.apache.hadoop.conf.Configuration;
  * for writer. This class implements {@link Externalizable} so it can be
  * serialized using standard java mechanisms. Master should serialize it and
  * make it available to slaves to prepare for writes.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.transfer.WriterContext} instead
  */
 public class WriterContext implements Externalizable, Configurable {
 

@@ -26,6 +26,9 @@ import org.apache.hadoop.mapreduce.StatusReporter;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.TaskInputOutputContext;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.ProgressReporter} instead
+ */
 class ProgressReporter extends StatusReporter implements Reporter {
 
     private TaskInputOutputContext context = null;

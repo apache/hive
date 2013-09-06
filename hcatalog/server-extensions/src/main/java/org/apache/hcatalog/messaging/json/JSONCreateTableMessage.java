@@ -24,6 +24,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * JSON implementation of CreateTableMessage.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.json.JSONCreateTableMessage} instead
  */
 public class JSONCreateTableMessage extends CreateTableMessage {
 

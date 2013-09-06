@@ -30,6 +30,9 @@ import org.apache.pig.data.DataType;
 import org.apache.pig.impl.util.UDFContext;
 import org.junit.Test;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.pig.TestPigHCatUtil} instead
+ */
 public class TestPigHCatUtil {
 
     @Test

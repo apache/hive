@@ -71,6 +71,9 @@ import org.codehaus.jackson.JsonToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.JsonSerDe} instead
+ */
 public class JsonSerDe implements SerDe {
 
     private static final Logger LOG = LoggerFactory.getLogger(JsonSerDe.class);

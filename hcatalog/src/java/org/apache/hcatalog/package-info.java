@@ -17,25 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog;
-
 /**
- * @deprecated Use/modify {@link org.apache.hive.hcatalog.ExitException} instead
+ * @deprecated classes in {@link org.apache.hive.hcatalog} should be used instead
  */
-public class ExitException extends SecurityException {
-    private static final long serialVersionUID = -1982617086752946683L;
-    private final int status;
-
-    /**
-     * @return the status
-     */
-    public int getStatus() {
-        return status;
-    }
-
-    public ExitException(int status) {
-
-        super("Raising exception, instead of System.exit(). Return code was: " + status);
-        this.status = status;
-    }
-}
+package org.apache.hcatalog;

@@ -44,6 +44,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A thread safe time expired cache for HiveMetaStoreClient
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.common.HiveClientCache} instead
  */
 class HiveClientCache {
     final private Cache<HiveClientCacheKey, CacheableHiveMetaStoreClient> hiveCache;

@@ -36,6 +36,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * The RC file input format using new Hadoop mapreduce APIs.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.rcfile.RCFileMapReduceOutputFormat} instead
  */
 public class RCFileMapReduceOutputFormat extends
     FileOutputFormat<WritableComparable<?>, BytesRefArrayWritable> {

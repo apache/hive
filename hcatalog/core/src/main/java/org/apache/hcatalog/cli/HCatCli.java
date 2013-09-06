@@ -52,6 +52,9 @@ import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hcatalog.common.HCatConstants;
 import org.apache.hcatalog.common.HCatUtil;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.cli.HCatCli} instead
+ */
 public class HCatCli {
 
     @SuppressWarnings("static-access")

@@ -26,6 +26,7 @@ import java.util.Map;
  * {@link ReadEntity.Builder} / {@link WriteEntity.Builder}.
  * Many fields in them are common, so this class
  * contains the common fields.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.transfer.EntityBase} instead
  */
 
 abstract class EntityBase {

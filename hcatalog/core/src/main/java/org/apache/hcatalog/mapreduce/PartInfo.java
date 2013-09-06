@@ -24,7 +24,10 @@ import java.util.Properties;
 
 import org.apache.hcatalog.data.schema.HCatSchema;
 
-/** The Class used to serialize the partition information read from the metadata server that maps to a partition. */
+/** 
+ * The Class used to serialize the partition information read from the metadata server that maps to a partition. 
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.PartInfo} instead
+ */
 public class PartInfo implements Serializable {
 
     /** The serialization version */

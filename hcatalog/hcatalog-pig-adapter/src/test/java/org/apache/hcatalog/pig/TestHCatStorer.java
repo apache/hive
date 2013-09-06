@@ -38,6 +38,9 @@ import org.apache.pig.impl.util.LogUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.pig.TestHCatStorer} instead
+ */
 public class TestHCatStorer extends HCatBaseTest {
 
     private static final String INPUT_FILE_NAME = TEST_DATA_DIR + "/input.data";

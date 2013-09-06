@@ -33,6 +33,9 @@ import org.apache.hadoop.io.VIntWritable;
 import org.apache.hadoop.io.VLongWritable;
 
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.ReaderWriter} instead
+ */
 public abstract class ReaderWriter {
 
     private static final String UTF8 = "UTF-8";

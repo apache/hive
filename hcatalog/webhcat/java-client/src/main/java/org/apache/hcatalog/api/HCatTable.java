@@ -31,6 +31,7 @@ import org.apache.hcatalog.data.schema.HCatSchemaUtils;
 
 /**
  * The HCatTable is a wrapper around org.apache.hadoop.hive.metastore.api.Table.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.api.HCatTable} instead
  */
 public class HCatTable {
 

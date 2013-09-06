@@ -30,6 +30,9 @@ import org.apache.hcatalog.data.schema.HCatSchemaUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.TestLazyHCatRecord} instead
+ */
 public class TestLazyHCatRecord {
 
     private final int INT_CONST = 789;

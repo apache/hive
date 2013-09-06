@@ -49,6 +49,9 @@ import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.pig.TestHCatLoader} instead
+ */
 public class TestHCatLoader extends TestCase {
     private static final String TEST_DATA_DIR = System.getProperty("user.dir") +
         "/build/test/data/" + TestHCatLoader.class.getCanonicalName();

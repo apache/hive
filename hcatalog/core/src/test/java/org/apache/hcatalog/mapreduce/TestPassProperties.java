@@ -46,6 +46,9 @@ import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.junit.Test;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.TestPassProperties} instead
+ */
 public class TestPassProperties {
     private static final String TEST_DATA_DIR = System.getProperty("user.dir") +
             "/build/test/data/" + TestSequenceFileReadWrite.class.getCanonicalName();

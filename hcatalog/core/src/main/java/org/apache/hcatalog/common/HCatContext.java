@@ -43,6 +43,8 @@ import java.util.Map;
  * <p>HCatalog <em>developers</em> should enable optional functionality by checking properties
  * from {@link #getConf()}. Since users are not obligated to set a configuration, optional
  * functionality must provide a sensible default.</p>
+ * 
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.common.HCatContext} instead
  */
 @InterfaceAudience.Public
 @InterfaceStability.Evolving

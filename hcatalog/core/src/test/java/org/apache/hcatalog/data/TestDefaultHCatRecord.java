@@ -39,7 +39,9 @@ import org.apache.hcatalog.data.schema.HCatSchemaUtils;
 
 import junit.framework.Assert;
 import junit.framework.TestCase;
-
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.TestDefaultHCatRecord} instead
+ */
 public class TestDefaultHCatRecord extends TestCase {
 
     public void testRYW() throws IOException {

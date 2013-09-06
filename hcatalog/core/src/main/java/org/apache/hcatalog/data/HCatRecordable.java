@@ -24,6 +24,7 @@ import org.apache.hadoop.io.Writable;
 
 /**
  * Interface that determines whether we can implement a HCatRecord on top of it
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.HCatRecordable} instead
  */
 public interface HCatRecordable extends Writable {
 

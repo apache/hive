@@ -50,7 +50,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** The OutputFormat to use to write data to HCatalog. The key value is ignored and
- *  should be given as null. The value is the HCatRecord to write.*/
+ *  should be given as null. The value is the HCatRecord to write.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.HCatOutputFormat} instead
+ */
 public class HCatOutputFormat extends HCatBaseOutputFormat {
 
     static final private Logger LOG = LoggerFactory.getLogger(HCatOutputFormat.class);

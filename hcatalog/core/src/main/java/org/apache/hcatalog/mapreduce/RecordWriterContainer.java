@@ -29,6 +29,7 @@ import org.apache.hcatalog.data.HCatRecord;
 /**
  *  This class will contain an implementation of an RecordWriter.
  *  See {@link OutputFormatContainer} for more information about containers.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.RecordWriterContainer} instead
  */
 abstract class RecordWriterContainer extends  RecordWriter<WritableComparable<?>, HCatRecord> {
 

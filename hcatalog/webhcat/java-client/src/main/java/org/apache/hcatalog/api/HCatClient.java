@@ -29,6 +29,7 @@ import org.apache.hcatalog.data.schema.HCatFieldSchema;
 
 /**
  * The abstract class HCatClient containing APIs for HCatalog DDL commands.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.api.HCatClient} instead
  */
 public abstract class HCatClient {
 

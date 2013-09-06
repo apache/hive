@@ -32,6 +32,9 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.hcatalog.common.HCatConstants;
 import org.apache.hcatalog.common.HCatException;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.har.HarOutputCommitterPostProcessor} instead
+ */
 public class HarOutputCommitterPostProcessor {
 
     boolean isEnabled = false;

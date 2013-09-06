@@ -40,6 +40,9 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.TestHCatInputFormat} instead
+ */
 public class TestHCatInputFormat extends HCatBaseTest {
 
     private boolean setUpComplete = false;

@@ -53,6 +53,9 @@ import org.apache.pig.PigServer;
 import org.apache.pig.data.Tuple;
 import org.junit.Test;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.TestSequenceFileReadWrite} instead
+ */
 public class TestSequenceFileReadWrite extends TestCase {
     private static final String TEST_DATA_DIR = System.getProperty("user.dir") +
             "/build/test/data/" + TestSequenceFileReadWrite.class.getCanonicalName();

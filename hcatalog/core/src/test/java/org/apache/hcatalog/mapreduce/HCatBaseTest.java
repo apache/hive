@@ -37,6 +37,7 @@ import java.io.IOException;
 
 /**
  * Simplify writing HCatalog tests that require a HiveMetaStore.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.HCatBaseTest} instead
  */
 public class HCatBaseTest {
     protected static final Logger LOG = LoggerFactory.getLogger(HCatBaseTest.class);

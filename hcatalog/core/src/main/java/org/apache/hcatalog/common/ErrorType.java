@@ -20,6 +20,7 @@ package org.apache.hcatalog.common;
 
 /**
  * Enum type representing the various errors throws by HCat.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.common.ErrorType} instead
  */
 public enum ErrorType {
 

@@ -31,7 +31,9 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 
-/* Unit test for GitHub Howl issue #3 */
+/** Unit test for GitHub Howl issue #3 
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.cli.TestUseDatabase} instead
+ */
 public class TestUseDatabase extends TestCase {
 
     private Driver hcatDriver;

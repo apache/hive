@@ -21,6 +21,9 @@ package org.apache.hcatalog.data.transfer;
 
 import java.util.Map;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.transfer.ReadEntity} instead
+ */
 public class ReadEntity extends EntityBase.Entity {
 
     private String filterString;

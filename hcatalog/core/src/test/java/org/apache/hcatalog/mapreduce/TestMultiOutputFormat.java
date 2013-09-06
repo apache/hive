@@ -60,6 +60,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.TestMultiOutputFormat} instead
+ */
 public class TestMultiOutputFormat {
 
     private static final Logger LOG = LoggerFactory.getLogger(TestMultiOutputFormat.class);

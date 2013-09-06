@@ -45,6 +45,7 @@ import org.apache.pig.impl.util.UDFContext;
 
 /**
  * Base class for HCatLoader and HCatEximLoader
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.pig.HCatBaseLoader} instead
  */
 
 abstract class HCatBaseLoader extends LoadFunc implements LoadMetadata, LoadPushDown {

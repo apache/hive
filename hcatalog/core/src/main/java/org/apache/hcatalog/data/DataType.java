@@ -25,7 +25,9 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
-
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.DataType} instead
+ */
 public abstract class DataType {
 
     public static final byte NULL = 1;

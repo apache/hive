@@ -21,6 +21,7 @@ package org.apache.hcatalog.messaging;
 
 /**
  * HCat message sent when a Database is dropped from HCatalog.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.DropDatabaseMessage} instead
  */
 public abstract class DropDatabaseMessage extends HCatEventMessage {
 

@@ -47,6 +47,7 @@ import org.apache.pig.impl.util.UDFContext;
 /**
  * HCatStorer.
  *
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.pig.HCatStorer} instead
  */
 
 public class HCatStorer extends HCatBaseStorer {

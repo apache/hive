@@ -32,6 +32,7 @@ import org.apache.hcatalog.data.schema.HCatSchema;
  * HCatTableInfo - class to communicate table information to {@link HCatInputFormat}
  * and {@link HCatOutputFormat}
  *
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.HCatTableInfo} instead
  */
 public class HCatTableInfo implements Serializable {
 

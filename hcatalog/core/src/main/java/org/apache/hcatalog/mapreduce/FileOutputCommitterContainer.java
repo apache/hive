@@ -64,6 +64,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Part of the FileOutput*Container classes
  * See {@link FileOutputFormatContainer} for more information
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.FileOutputCommitterContainer} instead
  */
 class FileOutputCommitterContainer extends OutputCommitterContainer {
 

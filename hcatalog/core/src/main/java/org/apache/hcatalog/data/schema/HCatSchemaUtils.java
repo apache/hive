@@ -37,6 +37,9 @@ import org.apache.hcatalog.common.HCatException;
 import org.apache.hcatalog.data.schema.HCatFieldSchema.Type;
 
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.schema.HCatSchemaUtils} instead
+ */
 public class HCatSchemaUtils {
 
     public static CollectionBuilder getStructSchemaBuilder() {

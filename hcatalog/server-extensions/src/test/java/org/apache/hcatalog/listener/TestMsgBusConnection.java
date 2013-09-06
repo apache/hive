@@ -43,6 +43,9 @@ import org.apache.hcatalog.common.HCatConstants;
 import org.apache.hcatalog.messaging.HCatEventMessage;
 import org.apache.hcatalog.messaging.jms.MessagingUtils;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.listener.TestMsgBusConnection} instead
+ */
 public class TestMsgBusConnection extends TestCase {
 
     private Driver driver;

@@ -21,6 +21,7 @@ package org.apache.hcatalog.messaging;
 
 /**
  * Interface for converting HCat events from String-form back to HCatEventMessage instances.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.MessageDeserializer} instead
  */
 public abstract class MessageDeserializer {
 

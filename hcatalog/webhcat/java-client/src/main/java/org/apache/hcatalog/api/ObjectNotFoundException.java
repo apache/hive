@@ -24,6 +24,7 @@ import org.apache.hcatalog.common.HCatException;
 /**
  * This exception is thrown when a Database, Table or Partition
  * specified in an HCatalog query is not found.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.api.ObjectNotFoundException} instead
  */
 public class ObjectNotFoundException extends HCatException {
 

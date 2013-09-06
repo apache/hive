@@ -36,6 +36,7 @@ import org.apache.hcatalog.mapreduce.HCatSplit;
  * at master node and configuration. This class implements
  * {@link Externalizable} so it can be serialized using standard java
  * mechanisms.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.transfer.ReaderContext} instead
  */
 public class ReaderContext implements Externalizable, Configurable {
 

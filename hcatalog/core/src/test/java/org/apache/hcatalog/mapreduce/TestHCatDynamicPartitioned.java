@@ -45,6 +45,9 @@ import org.slf4j.LoggerFactory;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.TestHCatExternalDynamicPartitioned} instead
+ */
 public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
 
     private static List<HCatRecord> writeRecords;

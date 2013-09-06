@@ -31,6 +31,7 @@ import javax.jms.TextMessage;
 /**
  * Helper Utility to assist consumers of HCat Messages in extracting
  * message-content from JMS messages.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.jms.MessagingUtils} instead
  */
 public class MessagingUtils {
 

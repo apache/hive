@@ -60,6 +60,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.listener.TestNotificationListener} instead
+ */
 public class TestNotificationListener extends HCatBaseTest implements MessageListener {
 
     private List<String> actualMessages = new ArrayList<String>();

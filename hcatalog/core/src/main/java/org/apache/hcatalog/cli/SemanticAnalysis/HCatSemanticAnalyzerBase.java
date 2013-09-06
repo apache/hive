@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
  * Base class for HCatSemanticAnalyzer hooks.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzerBase} instead
  */
 public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
 

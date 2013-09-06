@@ -28,7 +28,9 @@ import org.apache.hcatalog.common.HCatException;
 import org.apache.hcatalog.data.schema.HCatFieldSchema.Category;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.schema.TestHCatSchema} instead
+ */
 public class TestHCatSchemaUtils extends TestCase {
 
     private static final Logger LOG = LoggerFactory.getLogger(TestHCatSchemaUtils.class);

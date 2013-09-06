@@ -32,7 +32,10 @@ import org.apache.hcatalog.data.schema.HCatSchema;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** The HCatSplit wrapper around the InputSplit returned by the underlying InputFormat */
+/** 
+ * The HCatSplit wrapper around the InputSplit returned by the underlying InputFormat 
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.HCatSplit} instead
+ */
 public class HCatSplit extends InputSplit
     implements Writable, org.apache.hadoop.mapred.InputSplit {
 

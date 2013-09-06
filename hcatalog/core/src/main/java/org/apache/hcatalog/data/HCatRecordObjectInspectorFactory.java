@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * ObjectInspectorFactory for HCatRecordObjectInspectors (and associated helper inspectors)
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.HCatRecordObjectInspectorFactory} instead
  */
 public class HCatRecordObjectInspectorFactory {
 

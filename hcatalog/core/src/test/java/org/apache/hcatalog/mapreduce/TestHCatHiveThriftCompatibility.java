@@ -38,6 +38,9 @@ import org.junit.Test;
 import java.io.ByteArrayOutputStream;
 import java.util.Iterator;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.TestHCatHiveThriftCompatibility} instead
+ */
 public class TestHCatHiveThriftCompatibility extends HCatBaseTest {
 
     private boolean setUpComplete = false;

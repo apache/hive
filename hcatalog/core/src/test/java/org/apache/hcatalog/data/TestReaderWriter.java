@@ -48,6 +48,9 @@ import org.apache.hcatalog.mapreduce.HCatBaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.TestReaderWriter} instead
+ */
 public class TestReaderWriter extends HCatBaseTest {
 
     @Test

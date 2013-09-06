@@ -27,6 +27,7 @@ import java.util.Map;
 
 /**
  * JSON implementation of DropPartitionMessage.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.json.JSONDropPartitionMessage} instead
  */
 public class JSONDropPartitionMessage extends DropPartitionMessage {
 

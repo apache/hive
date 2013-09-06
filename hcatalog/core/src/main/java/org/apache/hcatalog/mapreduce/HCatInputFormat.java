@@ -30,6 +30,7 @@ import org.apache.hadoop.mapreduce.Job;
 
 /**
  * The InputFormat to use to read data from HCatalog.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.HCatInputFormat} instead
  */
 @InterfaceAudience.Public
 @InterfaceStability.Evolving

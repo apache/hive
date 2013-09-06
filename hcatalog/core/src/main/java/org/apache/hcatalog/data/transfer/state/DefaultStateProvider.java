@@ -22,6 +22,9 @@ package org.apache.hcatalog.data.transfer.state;
 import java.text.NumberFormat;
 import java.util.Random;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.transfer.state.DefaultStateProvider} instead
+ */
 public class DefaultStateProvider implements StateProvider {
 
     /**

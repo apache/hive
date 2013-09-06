@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.metastore.api.Database;
 
 /**
  * HCatDatabase is wrapper class around org.apache.hadoop.hive.metastore.api.Database.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.api.HCatDatabase} instead
  */
 public class HCatDatabase {
 

@@ -25,6 +25,9 @@ import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hcatalog.mapreduce.TestHCatDynamicPartitioned;
 import org.junit.BeforeClass;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.fileformats.TestOrcDynamicPartitioned} instead
+ */
 public class TestOrcDynamicPartitioned extends TestHCatDynamicPartitioned {
 
     @BeforeClass

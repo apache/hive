@@ -35,6 +35,9 @@ import org.apache.hadoop.hive.ql.plan.DDLWork;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hcatalog.common.HCatConstants;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.cli.SemanticAnalysis.CreateDatabaseHook} instead
+ */
 final class CreateDatabaseHook extends HCatSemanticAnalyzerBase {
 
     String databaseName;

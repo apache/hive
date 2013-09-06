@@ -23,6 +23,9 @@ import java.io.IOException;
 import org.apache.pig.builtin.PigStorage;
 import org.apache.pig.data.Tuple;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.pig.MyPigStorage} instead
+ */
 public class MyPigStorage extends PigStorage {
 
     String arg2;

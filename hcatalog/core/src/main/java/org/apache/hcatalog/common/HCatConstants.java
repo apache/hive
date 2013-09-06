@@ -22,6 +22,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.common.HCatConstants} instead
+ */
 public final class HCatConstants {
 
     public static final String HIVE_RCFILE_IF_CLASS = "org.apache.hadoop.hive.ql.io.RCFileInputFormat";

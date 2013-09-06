@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The Class HCatAddPartitionDesc helps users in defining partition attributes.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.api.HCatAddPartitionDesc} instead
  */
 public class HCatAddPartitionDesc {
 

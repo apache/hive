@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Utility methods for tests
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.HcatTestUtils} instead
  */
 public class HcatTestUtils {
     private static final Logger LOG = LoggerFactory.getLogger(HcatTestUtils.class);

@@ -68,6 +68,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Test for HCatOutputFormat. Writes a partition using HCatOutputFormat and reads
  * it back using HCatInputFormat, checks the column values and counts.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.HCatMapReduceTest} instead
  */
 public abstract class HCatMapReduceTest extends HCatBaseTest {
 
