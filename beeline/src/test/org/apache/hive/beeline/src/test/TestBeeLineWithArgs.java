@@ -40,7 +40,9 @@ import org.junit.Test;
 public class TestBeeLineWithArgs {
 
   // Default location of HiveServer2
-  final static String JDBC_URL = BeeLine.BEELINE_DEFAULT_JDBC_URL + "localhost:10000";
+  final static String BASE_JDBC_URL = BeeLine.BEELINE_DEFAULT_JDBC_URL + "localhost:10000";
+  //set JDBC_URL to something else in test case, if it needs to be customized
+  String JDBC_URL = BASE_JDBC_URL;
 
   private static HiveServer2 hiveServer2;
 
@@ -100,7 +102,7 @@ public class TestBeeLineWithArgs {
    * in the output (stdout or stderr), fail if not found
    * Print PASSED or FAILED
    * @paramm testName Name of test to print
-   * @param expecttedPattern Text to look for in command output
+   * @param expectedPattern Text to look for in command output/error
    * @param shouldMatch true if the pattern should be found, false if it should not
    * @throws Exception on command execution error
    */
@@ -237,6 +239,15 @@ public class TestBeeLineWithArgs {
     Assert.assertTrue( output.contains("No current connection") );
 
     System.out.println(">>> PASSED " + "testNPE" );
+  }
+
+  @Test
+  public void testHiveVarSubstitution() throws Throwable {
+    JDBC_URL = BASE_JDBC_URL + "#D_TBL=dummy_t";
+    final String TEST_NAME = "testHiveVarSubstitution";
+    final String SCRIPT_TEXT = "create table ${D_TBL} (d int);\nshow tables;\n";
+    final String EXPECTED_PATTERN = "dummy_t";
+    testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, true);
   }
 
 }
