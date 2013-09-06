@@ -31,6 +31,8 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BytesWritable;
@@ -196,6 +198,33 @@ public class TestFunctionRegistry extends TestCase {
                TypeInfoFactory.decimalTypeInfo);
     comparison(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.stringTypeInfo,
                TypeInfoFactory.doubleTypeInfo);
+  }
+
+  private void unionAll(TypeInfo a, TypeInfo b, TypeInfo result) {
+    assertEquals(result, FunctionRegistry.getCommonClassForUnionAll(a,b));
+  }
+
+  public void testCommonClassUnionAll() {
+    unionAll(TypeInfoFactory.intTypeInfo, TypeInfoFactory.decimalTypeInfo,
+        TypeInfoFactory.decimalTypeInfo);
+    unionAll(TypeInfoFactory.stringTypeInfo, TypeInfoFactory.decimalTypeInfo,
+        TypeInfoFactory.decimalTypeInfo);
+    unionAll(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.decimalTypeInfo,
+        TypeInfoFactory.decimalTypeInfo);
+    unionAll(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.stringTypeInfo,
+        TypeInfoFactory.stringTypeInfo);
+  }
+
+  public void testGetTypeInfoForPrimitiveCategory() {
+    // non-qualified types should simply return the TypeInfo associated with that type
+    assertEquals(TypeInfoFactory.stringTypeInfo, FunctionRegistry.getTypeInfoForPrimitiveCategory(
+        (PrimitiveTypeInfo) TypeInfoFactory.stringTypeInfo,
+        (PrimitiveTypeInfo) TypeInfoFactory.stringTypeInfo,
+        PrimitiveCategory.STRING));
+    assertEquals(TypeInfoFactory.doubleTypeInfo, FunctionRegistry.getTypeInfoForPrimitiveCategory(
+        (PrimitiveTypeInfo) TypeInfoFactory.doubleTypeInfo,
+        (PrimitiveTypeInfo) TypeInfoFactory.stringTypeInfo,
+        PrimitiveCategory.DOUBLE));
   }
 
   @Override
