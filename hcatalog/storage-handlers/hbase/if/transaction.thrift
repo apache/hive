@@ -17,7 +17,7 @@
  * under the License.
  */
 
-namespace java org.apache.hive.hcatalog.hbase.snapshot.transaction.thrift
+namespace java org.apache.hcatalog.hbase.snapshot.transaction.thrift
 namespace cpp Apache.HCatalog.HBase
 
 struct StoreFamilyRevision {

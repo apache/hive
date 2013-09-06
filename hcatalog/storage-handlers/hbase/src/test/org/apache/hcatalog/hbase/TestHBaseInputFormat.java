@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hive.hcatalog.hbase;
+package org.apache.hcatalog.hbase;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -67,9 +67,9 @@ import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.data.HCatRecord;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
-import org.apache.hive.hcatalog.hbase.snapshot.RevisionManager;
-import org.apache.hive.hcatalog.hbase.snapshot.RevisionManagerConfiguration;
-import org.apache.hive.hcatalog.hbase.snapshot.Transaction;
+import org.apache.hcatalog.hbase.snapshot.RevisionManager;
+import org.apache.hcatalog.hbase.snapshot.RevisionManagerConfiguration;
+import org.apache.hcatalog.hbase.snapshot.Transaction;
 import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
 import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
 import org.apache.hive.hcatalog.mapreduce.PartInfo;
@@ -187,7 +187,7 @@ public class TestHBaseInputFormat extends SkeletonHBaseTest {
             + db_dir + "'";
         String tableQuery = "CREATE TABLE " + databaseName + "." + tableName
             + "(key string, testqualifier1 string, testqualifier2 string) STORED BY " +
-            "'org.apache.hive.hcatalog.hbase.HBaseHCatStorageHandler'"
+            "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
             + "TBLPROPERTIES ('hbase.columns.mapping'=':key,testFamily:testQualifier1,testFamily:testQualifier2')";
 
         CommandProcessorResponse responseOne = hcatDriver.run(dbquery);
@@ -251,7 +251,7 @@ public class TestHBaseInputFormat extends SkeletonHBaseTest {
         String hbaseTableName = "MyDB_" + tableName;
         String tableQuery = "CREATE TABLE " + tableName
             + "(key string, testqualifier1 string, testqualifier2 string) STORED BY "
-            + "'org.apache.hive.hcatalog.hbase.HBaseHCatStorageHandler'"
+            + "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
             + "TBLPROPERTIES ('hbase.columns.mapping'="
             + "':key,testFamily:testQualifier1,testFamily:testQualifier2',"
             + "'hbase.table.name'='" + hbaseTableName + "')";
@@ -307,7 +307,7 @@ public class TestHBaseInputFormat extends SkeletonHBaseTest {
         String tableName = newTableName("mytable");
         String tableQuery = "CREATE TABLE " + tableName
             + "(key string, testqualifier1 string, testqualifier2 string) STORED BY " +
-            "'org.apache.hive.hcatalog.hbase.HBaseHCatStorageHandler'"
+            "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
             + "TBLPROPERTIES ('hbase.columns.mapping'=':key," +
             "testFamily:testQualifier1,testFamily:testQualifier2')";
 
@@ -377,7 +377,7 @@ public class TestHBaseInputFormat extends SkeletonHBaseTest {
         String tableName = newTableName("mytable");
         String tableQuery = "CREATE TABLE " + tableName
             + "(key string, testqualifier1 string, testqualifier2 string) STORED BY " +
-            "'org.apache.hive.hcatalog.hbase.HBaseHCatStorageHandler'"
+            "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
             + "TBLPROPERTIES ('hbase.columns.mapping'=':key," +
             "testFamily:testQualifier1,testFamily:testQualifier2')";
 
@@ -434,7 +434,7 @@ public class TestHBaseInputFormat extends SkeletonHBaseTest {
         String tableName = newTableName("mytable");
         String tableQuery = "CREATE TABLE " + tableName
             + "(key string, testqualifier1 string, testqualifier2 string) STORED BY " +
-            "'org.apache.hive.hcatalog.hbase.HBaseHCatStorageHandler'"
+            "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
             + "TBLPROPERTIES ('hbase.columns.mapping'=':key," +
             "testFamily:testQualifier1,testFamily:testQualifier2')";
 

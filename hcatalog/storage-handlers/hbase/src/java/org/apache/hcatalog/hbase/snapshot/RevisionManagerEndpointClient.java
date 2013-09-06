@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hive.hcatalog.hbase.snapshot;
+package org.apache.hcatalog.hbase.snapshot;
 
 import java.io.IOException;
 import java.util.List;

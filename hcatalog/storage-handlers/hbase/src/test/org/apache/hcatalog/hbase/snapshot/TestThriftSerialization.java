@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hive.hcatalog.hbase.snapshot;
+package org.apache.hcatalog.hbase.snapshot;
 
 import static org.junit.Assert.assertTrue;
 
@@ -25,8 +25,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.hive.hcatalog.hbase.snapshot.transaction.thrift.StoreFamilyRevision;
-import org.apache.hive.hcatalog.hbase.snapshot.transaction.thrift.StoreFamilyRevisionList;
+import org.apache.hcatalog.hbase.snapshot.transaction.thrift.StoreFamilyRevision;
+import org.apache.hcatalog.hbase.snapshot.transaction.thrift.StoreFamilyRevisionList;
 import org.junit.Test;
 
 public class TestThriftSerialization {

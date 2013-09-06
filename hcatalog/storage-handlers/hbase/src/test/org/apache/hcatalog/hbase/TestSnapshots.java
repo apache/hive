@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hive.hcatalog.hbase;
+package org.apache.hcatalog.hbase;
 
 import static org.junit.Assert.assertEquals;
 
@@ -38,7 +38,7 @@ import org.apache.hive.hcatalog.cli.HCatDriver;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatUtil;
-import org.apache.hive.hcatalog.hbase.snapshot.TableSnapshot;
+import org.apache.hcatalog.hbase.snapshot.TableSnapshot;
 import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
 import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
 import org.junit.Test;
@@ -81,7 +81,7 @@ public class TestSnapshots extends SkeletonHBaseTest {
             + db_dir + "'";
         String tableQuery = "CREATE TABLE " + fullyQualTableName
             + "(key string, value1 string, value2 string) STORED BY " +
-            "'org.apache.hive.hcatalog.hbase.HBaseHCatStorageHandler'"
+            "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
             + "TBLPROPERTIES ('hbase.columns.mapping'=':key,cf1:q1,cf2:q2')";
 
         CommandProcessorResponse cmdResponse = hcatDriver.run(dbquery);
@@ -116,7 +116,7 @@ public class TestSnapshots extends SkeletonHBaseTest {
         fullyQualTableName = databaseName + "." + tableName;
         tableQuery = "CREATE TABLE " + fullyQualTableName
             + "(key string, value1 string, value2 string) STORED BY " +
-            "'org.apache.hive.hcatalog.hbase.HBaseHCatStorageHandler'"
+            "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
             + "TBLPROPERTIES ('hbase.columns.mapping'=':key,cf1:q1,cf1:q2')";
         cmdResponse = hcatDriver.run(tableQuery);
         assertEquals(0, cmdResponse.getResponseCode());

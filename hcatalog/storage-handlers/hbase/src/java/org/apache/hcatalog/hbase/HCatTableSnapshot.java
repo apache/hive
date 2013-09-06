@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hive.hcatalog.hbase;
+package org.apache.hcatalog.hbase;
 
 import java.io.Serializable;
 import java.util.Map;

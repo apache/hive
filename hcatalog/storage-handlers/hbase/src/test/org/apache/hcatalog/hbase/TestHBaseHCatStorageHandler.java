@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hive.hcatalog.hbase;
+package org.apache.hcatalog.hbase;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -38,8 +38,8 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.hcatalog.cli.HCatDriver;
 import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
-import org.apache.hive.hcatalog.hbase.snapshot.RevisionManager;
-import org.apache.hive.hcatalog.hbase.snapshot.RevisionManagerConfiguration;
+import org.apache.hcatalog.hbase.snapshot.RevisionManager;
+import org.apache.hcatalog.hbase.snapshot.RevisionManagerConfiguration;
 import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.junit.Test;
 
@@ -82,7 +82,7 @@ public class TestHBaseHCatStorageHandler extends SkeletonHBaseTest {
         hcatDriver.run("drop table test_table");
         CommandProcessorResponse response = hcatDriver
                 .run("create table test_table(key int, value string) STORED BY " +
-                		     "'org.apache.hive.hcatalog.hbase.HBaseHCatStorageHandler'"
+                		     "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
                     + "TBLPROPERTIES ('hbase.columns.mapping'=':key,cf1:val')");
 
         assertEquals(0, response.getResponseCode());
@@ -117,7 +117,7 @@ public class TestHBaseHCatStorageHandler extends SkeletonHBaseTest {
         hcatDriver.run("drop table test_Table");
         CommandProcessorResponse response = hcatDriver
                 .run("create table test_Table(key int, value string) STORED BY " +
-                             "'org.apache.hive.hcatalog.hbase.HBaseHCatStorageHandler'"
+                             "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
                     + "TBLPROPERTIES ('hbase.columns.mapping'=':key,cf1:val')");
 
         assertEquals(0, response.getResponseCode());
@@ -153,7 +153,7 @@ public class TestHBaseHCatStorageHandler extends SkeletonHBaseTest {
         hcatDriver.run("drop table test_Table");
         CommandProcessorResponse response = hcatDriver
                 .run("create table test_Table(key int, value string) STORED BY " +
-                             "'org.apache.hive.hcatalog.hbase.HBaseHCatStorageHandler'"
+                             "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
                     + "TBLPROPERTIES ('hbase.columns.mapping'=':key,cf1:val'," +
                     " 'hbase.table.name'='CaseSensitiveTable')");
 
@@ -189,7 +189,7 @@ public class TestHBaseHCatStorageHandler extends SkeletonHBaseTest {
         hcatDriver.run("drop table mytable");
         CommandProcessorResponse response = hcatDriver
                 .run("create table mytable(key int, value string) STORED BY " +
-                     "'org.apache.hive.hcatalog.hbase.HBaseHCatStorageHandler'"
+                     "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
                     + "TBLPROPERTIES ('hbase.columns.mapping'=':key,cf1:val')");
 
         assertEquals(0, response.getResponseCode());
@@ -229,7 +229,7 @@ public class TestHBaseHCatStorageHandler extends SkeletonHBaseTest {
         hcatDriver.run("drop table mytabletwo");
         CommandProcessorResponse response = hcatDriver
                 .run("create external table mytabletwo(key int, valueone string, valuetwo string) STORED BY " +
-                     "'org.apache.hive.hcatalog.hbase.HBaseHCatStorageHandler'"
+                     "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
                     + "TBLPROPERTIES ('hbase.columns.mapping'=':key,familyone:val,familytwo:val'," +
                     "'hbase.table.name'='testTable')");
 

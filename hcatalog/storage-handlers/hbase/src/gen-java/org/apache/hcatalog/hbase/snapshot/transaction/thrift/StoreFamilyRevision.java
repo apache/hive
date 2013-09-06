@@ -25,7 +25,7 @@
  *
  * DO NOT EDIT UNLESS YOU ARE SURE THAT YOU KNOW WHAT YOU ARE DOING
  */
-package org.apache.hive.hcatalog.hbase.snapshot.transaction.thrift;
+package org.apache.hcatalog.hbase.snapshot.transaction.thrift;
 
 import java.util.Map;
 import java.util.HashMap;

@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.hive.hcatalog.hbase.snapshot;
+package org.apache.hcatalog.hbase.snapshot;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -29,7 +29,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.coprocessor.CoprocessorHost;
-import org.apache.hive.hcatalog.hbase.SkeletonHBaseTest;
+import org.apache.hcatalog.hbase.SkeletonHBaseTest;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -39,7 +39,7 @@ public class TestRevisionManagerEndpoint extends SkeletonHBaseTest {
         // test case specific mini cluster settings
         testConf = new Configuration(false);
         testConf.setStrings(CoprocessorHost.REGION_COPROCESSOR_CONF_KEY,
-            "org.apache.hive.hcatalog.hbase.snapshot.RevisionManagerEndpoint",
+            "org.apache.hcatalog.hbase.snapshot.RevisionManagerEndpoint",
             "org.apache.hadoop.hbase.coprocessor.GenericEndpoint");
         testConf.set(RMConstants.REVISION_MGR_ENDPOINT_IMPL_CLASS, MockRM.class.getName());
     }
