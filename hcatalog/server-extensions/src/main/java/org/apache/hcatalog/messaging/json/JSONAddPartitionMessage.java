@@ -27,7 +27,7 @@ import java.util.Map;
 
 /**
  * JSON implementation of AddPartitionMessage.
- * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.jms.MessagingUtils} instead
+ * @deprecated Use/modify {@link org.apache.hcatalog.messaging.json.JSONAddPartitionMessage} instead
  */
 public class JSONAddPartitionMessage extends AddPartitionMessage {
 

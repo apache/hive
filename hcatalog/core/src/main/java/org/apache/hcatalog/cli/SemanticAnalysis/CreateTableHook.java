@@ -205,7 +205,7 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
                         desc.getSerName(),
                         desc.getInputFormat(),
                         desc.getOutputFormat());
-                //Authorization checks are performed by the storageHandler.getAuthorizationProvider(), if  
+                //Authorization checks are performed by the storageHandler.getAuthorizationProvider(), if
                 //StorageDelegationAuthorizationProvider is used.
             } catch (IOException e) {
                 throw new SemanticException(e);

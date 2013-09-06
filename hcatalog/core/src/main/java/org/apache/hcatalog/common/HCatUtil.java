@@ -619,7 +619,7 @@ public class HCatUtil {
             jobConf.set(entry.getKey(), entry.getValue());
         }
     }
-    
+
 
     public static boolean isHadoop23() {
         String version = org.apache.hadoop.util.VersionInfo.getVersion();

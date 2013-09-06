@@ -231,7 +231,7 @@ public class HCatOutputFormat extends HCatBaseOutputFormat {
     }
 
     /**
-     * Get the record writer for the job. This uses the StorageHandler's default 
+     * Get the record writer for the job. This uses the StorageHandler's default
      * OutputFormat to get the record writer.
      * @param context the information about the current task
      * @return a RecordWriter to write the output for the job

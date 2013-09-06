@@ -46,7 +46,7 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 
 /**
- * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.TestHCatExternalDynamicPartitioned} instead
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.TestHCatDynamicPartitioned} instead
  */
 public class TestHCatDynamicPartitioned extends HCatMapReduceTest {
 
