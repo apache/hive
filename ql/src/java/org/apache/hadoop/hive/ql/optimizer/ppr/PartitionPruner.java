@@ -244,8 +244,7 @@ public class PartitionPruner implements Transform {
     try {
       if (!tab.isPartitioned()) {
         // If the table is not partitioned, return everything.
-        return new PrunedPartitionList(
-            tab, new LinkedHashSet<Partition>(Hive.get().getPartitions(tab)), false);
+        return new PrunedPartitionList(tab, Hive.get().getAllPartitionsForPruner(tab), false);
       }
       LOG.debug("tabname = " + tab.getTableName() + " is partitioned");
 
@@ -258,8 +257,7 @@ public class PartitionPruner implements Transform {
 
       if (prunerExpr == null) {
         // This can happen when hive.mapred.mode=nonstrict and there is no predicates at all.
-        return new PrunedPartitionList(tab,
-            new LinkedHashSet<Partition>(Hive.get().getPartitions(tab)), false);
+        return new PrunedPartitionList(tab, Hive.get().getAllPartitionsForPruner(tab), false);
       }
 
       // Remove virtual columns. See javadoc for details.
@@ -271,8 +269,7 @@ public class PartitionPruner implements Transform {
         // This could happen when hive.mapred.mode=nonstrict and all the predicates
         // are on non-partition columns.
         LOG.debug("Filter " + oldFilter + " was null after compacting");
-        return new PrunedPartitionList(
-            tab, new LinkedHashSet<Partition>(Hive.get().getPartitions(tab)), true);
+        return new PrunedPartitionList(tab, Hive.get().getAllPartitionsForPruner(tab), true);
       }
 
       Set<Partition> partitions = new LinkedHashSet<Partition>();

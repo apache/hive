@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -89,6 +90,8 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
+
+import com.google.common.collect.Sets;
 
 /**
  * The Hive class contains information about this instance of Hive. An instance
@@ -1712,6 +1715,30 @@ private void constructOneLBLocationMap(FileStatus fSta,
       parts.add(part);
       return parts;
     }
+  }
+
+  /**
+   * Get all the partitions; unlike {@link #getPartitions(Table)}, does not include auth.
+   * @param tbl table for which partitions are needed
+   * @return list of partition objects
+   */
+  public Set<Partition> getAllPartitionsForPruner(Table tbl) throws HiveException {
+    if (!tbl.isPartitioned()) {
+      return Sets.newHashSet(new Partition(tbl));
+    }
+
+    List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
+    try {
+      tParts = getMSC().listPartitions(tbl.getDbName(), tbl.getTableName(), (short)-1);
+    } catch (Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    }
+    Set<Partition> parts = new LinkedHashSet<Partition>(tParts.size());
+    for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
+      parts.add(new Partition(tbl, tpart));
+    }
+    return parts;
   }
 
   /**
