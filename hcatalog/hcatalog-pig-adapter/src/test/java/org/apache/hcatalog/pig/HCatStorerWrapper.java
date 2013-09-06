@@ -35,6 +35,7 @@ import org.apache.pig.impl.util.UDFContext;
  * <li> set the same UDFContext signature as HCatStorer </li>
  * <li> before {@link HCatStorer#setStoreLocation(String, Job)}, set the external dir in the UDFContext.</li>
  * </ol>
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.pig.HCatStorerWrapper} instead
  */
 public class HCatStorerWrapper extends HCatStorer {
 

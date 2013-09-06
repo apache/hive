@@ -72,6 +72,8 @@ import org.slf4j.LoggerFactory;
  * it are: add/drop database and add/drop table. All messages also has a
  * property named "HCAT_EVENT" set on them whose value can be used to configure
  * message selector on subscriber side.
+ * 
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.listener.NotificationListener} instead
  */
 public class NotificationListener extends MetaStoreEventListener {
 

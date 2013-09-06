@@ -22,6 +22,7 @@ import java.io.Serializable;
 
 /**
  * Copy of C++ STL pair container.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.Pair} instead
  */
 public class Pair<T, U> implements Serializable {
 

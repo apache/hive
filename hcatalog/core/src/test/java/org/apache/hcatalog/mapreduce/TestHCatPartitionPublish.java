@@ -62,6 +62,9 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.TestHCatPartitionPublish} instead
+ */
 public class TestHCatPartitionPublish {
     private static Configuration mrConf = null;
     private static FileSystem fs = null;

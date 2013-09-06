@@ -24,6 +24,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * JSON Implementation of CreateDatabaseMessage.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.json.JSONCreateDatabaseMessage} instead
  */
 public class JSONCreateDatabaseMessage extends CreateDatabaseMessage {
 

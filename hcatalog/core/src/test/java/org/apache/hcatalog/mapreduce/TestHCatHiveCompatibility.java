@@ -34,6 +34,9 @@ import org.apache.pig.data.Tuple;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.TestHCatHiveCompatibility} instead
+ */
 public class TestHCatHiveCompatibility extends HCatBaseTest {
     private static final String INPUT_FILE_NAME = TEST_DATA_DIR + "/input.data";
 

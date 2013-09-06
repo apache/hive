@@ -44,6 +44,9 @@ import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.Security} instead
+ */
 final class Security {
 
     private static final Logger LOG = LoggerFactory.getLogger(HCatOutputFormat.class);

@@ -46,6 +46,9 @@ import org.apache.hcatalog.common.HCatConstants;
 import org.apache.hcatalog.common.HCatUtil;
 import org.apache.hcatalog.mapreduce.HCatStorageHandler;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.cli.SemanticAnalysis.CreateTableHook} instead
+ */
 final class CreateTableHook extends HCatSemanticAnalyzerBase {
 
     private String tableName;

@@ -29,8 +29,8 @@ import org.apache.hcatalog.common.HCatException;
 
 /**
  * HCatSchema. This class is NOT thread-safe.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.schema.HCatSchema} instead
  */
-
 public class HCatSchema implements Serializable {
 
     private static final long serialVersionUID = 1L;

@@ -37,6 +37,9 @@ import org.apache.hcatalog.common.HCatUtil;
 import org.apache.hcatalog.data.HCatRecord;
 import org.apache.hcatalog.data.schema.HCatSchema;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.HCatBaseOutputFormat} instead
+ */
 public abstract class HCatBaseOutputFormat extends OutputFormat<WritableComparable<?>, HCatRecord> {
 
 //  static final private Log LOG = LogFactory.getLog(HCatBaseOutputFormat.class);

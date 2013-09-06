@@ -52,6 +52,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.security.TestHdfsAuthorizationProvider} instead
+ */
 public class TestHdfsAuthorizationProvider {
 
     protected HCatDriver hcatDriver;

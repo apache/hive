@@ -44,6 +44,7 @@ import java.util.Map;
  *  This class is used to encapsulate the InputFormat, OutputFormat and SerDe
  *  artifacts of tables which don't define a SerDe. This StorageHandler assumes
  *  the supplied storage artifacts are for a file-based storage system.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.FosterStorageHandler} instead
  */
 public class FosterStorageHandler extends HCatStorageHandler {
 

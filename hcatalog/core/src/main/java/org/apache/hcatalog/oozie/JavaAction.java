@@ -26,6 +26,9 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.oozie.JavaAction} instead
+ */
 public class JavaAction {
 
     public static void main(String[] args) throws Exception {

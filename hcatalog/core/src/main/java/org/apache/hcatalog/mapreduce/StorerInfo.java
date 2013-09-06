@@ -22,7 +22,10 @@ package org.apache.hcatalog.mapreduce;
 import java.io.Serializable;
 import java.util.Properties;
 
-/** Information about the storer to use for writing the data. */
+/** 
+ * Information about the storer to use for writing the data. 
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.StorerInfo} instead
+ */
 public class StorerInfo implements Serializable {
 
     /** The serialization version */

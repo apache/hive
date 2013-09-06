@@ -21,6 +21,7 @@ package org.apache.hcatalog.messaging;
 
 /**
  * HCat message sent when a Database is created in HCatalog.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.CreateDatabaseMessage} instead
  */
 public abstract class CreateDatabaseMessage extends HCatEventMessage {
 

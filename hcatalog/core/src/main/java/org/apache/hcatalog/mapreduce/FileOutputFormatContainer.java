@@ -56,6 +56,7 @@ import java.util.Map;
 /**
  * File-based storage (ie RCFile, Text, etc) implementation of OutputFormatContainer.
  * This implementation supports the following HCatalog features: partitioning, dynamic partitioning, Hadoop Archiving, etc.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.FileOutputFormatContainer} instead
  */
 class FileOutputFormatContainer extends OutputFormatContainer {
 

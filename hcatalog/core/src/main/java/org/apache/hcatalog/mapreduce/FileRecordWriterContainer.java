@@ -49,6 +49,7 @@ import org.apache.hcatalog.data.HCatRecord;
 /**
  * Part of the FileOutput*Container classes
  * See {@link FileOutputFormatContainer} for more information
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.FileRecordWriterContainer} instead
  */
 class FileRecordWriterContainer extends RecordWriterContainer {
 

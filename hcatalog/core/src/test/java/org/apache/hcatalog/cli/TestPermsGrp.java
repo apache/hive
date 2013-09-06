@@ -51,7 +51,9 @@ import org.apache.hcatalog.common.HCatConstants;
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.cli.TestPermsGrp} instead
+ */
 public class TestPermsGrp extends TestCase {
 
     private boolean isServerRunning = false;

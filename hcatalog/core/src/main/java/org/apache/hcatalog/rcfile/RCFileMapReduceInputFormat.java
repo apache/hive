@@ -30,6 +30,9 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.rcfile.RCFileMapReduceInputFormat} instead
+ */
 public class RCFileMapReduceInputFormat<K extends LongWritable, V extends BytesRefArrayWritable>
     extends FileInputFormat<LongWritable, BytesRefArrayWritable> {
 

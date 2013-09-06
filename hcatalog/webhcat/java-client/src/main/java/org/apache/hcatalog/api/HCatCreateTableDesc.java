@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The Class HCatCreateTableDesc for defining attributes for a new table.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.api.HCatCreateTableDesc} instead
  */
 @SuppressWarnings("deprecation")
 public class HCatCreateTableDesc {

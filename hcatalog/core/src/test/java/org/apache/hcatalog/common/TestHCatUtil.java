@@ -39,7 +39,9 @@ import org.apache.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hcatalog.data.schema.HCatSchema;
 import org.junit.Assert;
 import org.junit.Test;
-
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.common.TestHCatUtil} instead
+ */
 public class TestHCatUtil {
 
     @Test

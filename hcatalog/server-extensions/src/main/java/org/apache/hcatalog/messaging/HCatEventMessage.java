@@ -24,6 +24,7 @@ import org.apache.hcatalog.common.HCatConstants;
 /**
  * Class representing messages emitted when Metastore operations are done.
  * (E.g. Creation and deletion of databases, tables and partitions.)
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.HCatEventMessage} instead
  */
 public abstract class HCatEventMessage {
 

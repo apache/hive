@@ -21,6 +21,9 @@ package org.apache.hcatalog.data.transfer;
 
 import java.util.Map;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.transfer.WriteEntity} instead
+ */
 public class WriteEntity extends EntityBase.Entity {
 
     /**

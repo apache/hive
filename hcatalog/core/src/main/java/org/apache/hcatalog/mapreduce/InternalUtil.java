@@ -56,6 +56,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.InternalUtil} instead
+ */
 class InternalUtil {
     private static final Logger LOG = LoggerFactory.getLogger(InternalUtil.class);
 

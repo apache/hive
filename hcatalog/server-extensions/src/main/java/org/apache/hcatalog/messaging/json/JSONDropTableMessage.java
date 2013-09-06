@@ -24,6 +24,7 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * JSON implementation of DropTableMessage.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.json.JSONDropTableMessage} instead
  */
 public class JSONDropTableMessage extends DropTableMessage {
 

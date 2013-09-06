@@ -71,6 +71,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.TestHCatMultiOutputFormat} instead
+ */
 public class TestHCatMultiOutputFormat {
 
     private static final Logger LOG = LoggerFactory.getLogger(TestHCatMultiOutputFormat.class);

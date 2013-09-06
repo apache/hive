@@ -41,6 +41,7 @@ import org.apache.hadoop.mapred.MiniMRCluster;
  * mini cluster that actually consists of a mini DFS cluster and a
  * mini MapReduce cluster on the local machine and also sets up the
  * environment for Pig to run on top of the mini cluster.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.MiniCluster} instead
  */
 public class MiniCluster {
     private MiniDFSCluster m_dfs = null;

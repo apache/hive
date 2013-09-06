@@ -22,6 +22,7 @@ import java.io.IOException;
 
 /**
  * Class representing exceptions thrown by HCat.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.common.HCatException} instead
  */
 public class HCatException extends IOException {
 

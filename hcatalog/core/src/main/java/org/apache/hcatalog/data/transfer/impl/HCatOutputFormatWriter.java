@@ -44,7 +44,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 
 /**
  * This writer writes via {@link HCatOutputFormat}
- *
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.transfer.impl.HCatOutputFormatWriter} instead
  */
 public class HCatOutputFormatWriter extends HCatWriter {
 

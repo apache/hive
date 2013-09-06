@@ -35,6 +35,9 @@ import org.apache.hadoop.io.Writable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.TestHCatRecordSerDe} instead
+ */
 public class TestHCatRecordSerDe extends TestCase {
 
     private static final Logger LOG = LoggerFactory.getLogger(TestHCatRecordSerDe.class);

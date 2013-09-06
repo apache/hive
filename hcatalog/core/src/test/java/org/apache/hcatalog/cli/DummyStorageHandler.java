@@ -51,6 +51,9 @@ import org.apache.hadoop.util.Progressable;
 import org.apache.hcatalog.data.HCatRecord;
 import org.apache.hcatalog.mapreduce.HCatStorageHandler;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.cli.DummyStorageHandler} instead
+ */
 class DummyStorageHandler extends HCatStorageHandler {
 
     @Override

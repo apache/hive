@@ -32,6 +32,7 @@ import org.apache.hcatalog.data.schema.HCatSchemaUtils;
 
 /**
  * The HCatPartition is a wrapper around org.apache.hadoop.hive.metastore.api.Partition.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.api.HCatPartition} instead
  */
 public class HCatPartition {
 

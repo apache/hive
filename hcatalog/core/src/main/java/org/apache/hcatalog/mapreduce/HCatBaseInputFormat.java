@@ -47,6 +47,9 @@ import org.apache.hcatalog.data.HCatRecord;
 import org.apache.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hcatalog.data.schema.HCatSchema;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.HCatBaseInputFormat} instead
+ */
 public abstract class HCatBaseInputFormat
     extends InputFormat<WritableComparable, HCatRecord> {
 

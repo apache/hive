@@ -51,6 +51,7 @@ import org.apache.thrift.TException;
 /**
  * The HCatClientHMSImpl is the Hive Metastore client based implementation of
  * HCatClient.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.api.HCatClientHMSImpl} instead
  */
 public class HCatClientHMSImpl extends HCatClient {
 

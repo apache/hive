@@ -39,6 +39,7 @@ import org.junit.Test;
  *
  * Since {@link HCatStorer} does not allow extra parameters in the constructor, we use {@link HCatStorerWrapper}
  * that always treats the last parameter as the external path.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.pig.TestHCatStorerWrapper} instead
  */
 public class TestHCatStorerWrapper extends HCatBaseTest {
 

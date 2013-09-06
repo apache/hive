@@ -24,6 +24,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.HCatRecordObjectInspector} instead
+ */
 public class HCatRecordObjectInspector extends StandardStructObjectInspector {
 
     protected HCatRecordObjectInspector(List<String> structFieldNames,

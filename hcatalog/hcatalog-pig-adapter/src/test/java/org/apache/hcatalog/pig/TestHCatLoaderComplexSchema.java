@@ -49,6 +49,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.pig.TestHCatLoaderComplexSchema} instead
+ */
 public class TestHCatLoaderComplexSchema {
 
     //private static MiniCluster cluster = MiniCluster.buildCluster();

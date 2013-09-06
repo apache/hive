@@ -30,7 +30,9 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
-
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.rcfile.RCFileMapReduceRecordReader} instead
+ */
 public class RCFileMapReduceRecordReader<K extends LongWritable, V extends BytesRefArrayWritable>
     extends RecordReader<LongWritable, BytesRefArrayWritable> {
 

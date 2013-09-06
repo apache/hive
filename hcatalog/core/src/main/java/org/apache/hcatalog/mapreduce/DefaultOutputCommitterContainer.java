@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Part of the DefaultOutput*Container classes
  * See {@link DefaultOutputFormatContainer} for more information
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.DefaultOutputCommitterContainer} instead
  */
 class DefaultOutputCommitterContainer extends OutputCommitterContainer {
 

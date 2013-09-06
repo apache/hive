@@ -23,6 +23,9 @@ import java.io.Serializable;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.hcatalog.common.HCatException;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.schema.HCatFieldSchema} instead
+ */
 public class HCatFieldSchema implements Serializable {
 
     public enum Type {

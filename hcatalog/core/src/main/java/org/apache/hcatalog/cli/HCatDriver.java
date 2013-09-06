@@ -33,6 +33,9 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hcatalog.common.HCatConstants;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.cli.HCatDriver} instead
+ */
 public class HCatDriver extends Driver {
 
     @Override

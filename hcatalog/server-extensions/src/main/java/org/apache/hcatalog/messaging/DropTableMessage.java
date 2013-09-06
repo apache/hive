@@ -21,6 +21,7 @@ package org.apache.hcatalog.messaging;
 
 /**
  * HCat message sent when a Table is dropped in HCatalog.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.DropTableMessage} instead
  */
 public abstract class DropTableMessage extends HCatEventMessage {
 

@@ -40,6 +40,9 @@ import org.junit.Test;
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.TestHCatPartitioned} instead
+ */
 public class TestHCatPartitioned extends HCatMapReduceTest {
 
     private static List<HCatRecord> writeRecords;

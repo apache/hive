@@ -50,7 +50,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.cli.TestSemanticAnalysis} instead
+ */
 public class TestSemanticAnalysis extends HCatBaseTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(TestSemanticAnalysis.class);

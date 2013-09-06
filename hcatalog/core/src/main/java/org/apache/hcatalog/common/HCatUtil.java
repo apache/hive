@@ -74,6 +74,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.security.auth.login.LoginException;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.common.HCatUtil} instead
+ */
 public class HCatUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(HCatUtil.class);

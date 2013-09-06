@@ -18,6 +18,9 @@
  */
 package org.apache.hcatalog.pig;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.pig.TestOrcHCatStorer} instead
+ */
 public class TestOrcHCatStorer extends TestHCatStorerMulti {
 
     @Override

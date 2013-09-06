@@ -223,8 +223,10 @@
     <target name="javadoc" depends="jar" description="Generate Javadoc documentation" unless="skip.javadoc">
         <mkdir dir="${build.javadoc}"/>
         <record name="${build.dir}/javadoc.log" action="start"/>
+        <!--NOTE: old org.apache.hcatalog is intentionally excluded since 0.11 
+        version of the JavaDocs is available online-->
         <javadoc overview="${src.dir}/../docs/overview.html"
-                 packagenames="org.apache.hive.hcatalog.*"
+                 packagenames="org.apache.hive.hcatalog.*" 
                  destdir="${build.javadoc}"
                  author="true"
                  version="true"

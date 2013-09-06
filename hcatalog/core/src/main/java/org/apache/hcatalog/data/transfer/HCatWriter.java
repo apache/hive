@@ -32,6 +32,7 @@ import org.apache.hcatalog.data.transfer.state.StateProvider;
  * This abstraction is internal to HCatalog. This is to facilitate writing to
  * HCatalog from external systems. Don't try to instantiate this directly.
  * Instead, use {@link DataTransferFactory}
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.transfer.HCatWriter} instead
  */
 
 public abstract class HCatWriter {

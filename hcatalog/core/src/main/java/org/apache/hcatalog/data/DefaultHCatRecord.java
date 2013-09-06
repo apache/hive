@@ -27,7 +27,9 @@ import java.util.List;
 
 import org.apache.hcatalog.common.HCatException;
 import org.apache.hcatalog.data.schema.HCatSchema;
-
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.DefaultHCatRecord} instead
+ */
 public class DefaultHCatRecord extends HCatRecord {
 
     private List<Object> contents;

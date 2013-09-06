@@ -133,6 +133,7 @@ import org.slf4j.LoggerFactory;
  * MultiOutputFormat.write("output", key, value, context); can be called similar
  * to a reducer in map only jobs.
  *
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.MultiOutputFormat} instead
  */
 public class MultiOutputFormat extends OutputFormat<Writable, Writable> {
 

@@ -48,6 +48,7 @@ import org.apache.pig.impl.util.UDFContext;
 
 /**
  * Pig {@link org.apache.pig.LoadFunc} to read data from HCat
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.pig.HCatLoader} instead
  */
 
 public class HCatLoader extends HCatBaseLoader {

@@ -34,6 +34,7 @@ import org.apache.hcatalog.data.HCatRecord;
 /**
  * Part of the DefaultOutput*Container classes
  * See {@link DefaultOutputFormatContainer} for more information
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.DefaultRecordWriterContainer} instead
  */
 class DefaultRecordWriterContainer extends RecordWriterContainer {
 

@@ -45,6 +45,9 @@ import org.apache.hadoop.mapreduce.OutputCommitter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.TestHCatOutputFormat} instead
+ */
 public class TestHCatOutputFormat extends TestCase {
 
     private static final Logger LOG = LoggerFactory.getLogger(TestHCatOutputFormat.class);

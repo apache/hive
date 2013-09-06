@@ -21,6 +21,9 @@ package org.apache.hcatalog;
 
 import java.security.Permission;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.NoExitSecurityManager} instead
+ */
 public class NoExitSecurityManager extends SecurityManager {
 
     @Override

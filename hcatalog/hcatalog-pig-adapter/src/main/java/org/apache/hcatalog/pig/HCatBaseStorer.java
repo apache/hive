@@ -57,6 +57,7 @@ import org.apache.pig.impl.util.Utils;
 /**
  * Base class for HCatStorer and HCatEximStorer
  *
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.pig.HCatBaseStorer} instead
  */
 
 abstract class HCatBaseStorer extends StoreFunc implements StoreMetadata {

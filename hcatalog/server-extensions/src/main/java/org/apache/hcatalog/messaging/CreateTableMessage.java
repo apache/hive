@@ -21,6 +21,7 @@ package org.apache.hcatalog.messaging;
 
 /**
  * HCat message sent when a table is created in HCatalog.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.CreateTableMessage} instead
  */
 public abstract class CreateTableMessage extends HCatEventMessage {
 

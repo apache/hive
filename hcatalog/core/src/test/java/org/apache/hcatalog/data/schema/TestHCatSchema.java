@@ -23,7 +23,9 @@ import org.apache.hcatalog.common.HCatException;
 
 import java.util.ArrayList;
 import java.util.List;
-
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.schema.TestHCatSchema} instead
+ */
 public class TestHCatSchema extends TestCase {
     public void testCannotAddFieldMoreThanOnce() throws HCatException {
         List<HCatFieldSchema> fieldSchemaList = new ArrayList<HCatFieldSchema>();

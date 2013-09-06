@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
  * partitions matching the partition filter is fetched from the server and the information is
  * serialized and written into the JobContext configuration. The inputInfo is also updated with
  * info required in the client process context.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.InitializeInput} instead
  */
 class InitializeInput {
 

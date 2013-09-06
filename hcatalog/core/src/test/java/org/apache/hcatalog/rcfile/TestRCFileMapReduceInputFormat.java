@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * TestRCFile.
- *
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.rcfile.TestRCFileMapReduceInputFormat} instead
  */
 public class TestRCFileMapReduceInputFormat extends TestCase {
 

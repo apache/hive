@@ -49,6 +49,9 @@ import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hcatalog.common.ErrorType;
 import org.apache.hcatalog.common.HCatException;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer} instead
+ */
 public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
 
     private AbstractSemanticAnalyzerHook hook;

@@ -28,6 +28,7 @@ import org.apache.hcatalog.messaging.json.JSONMessageFactory;
 
 /**
  * Abstract Factory for the construction of HCatalog message instances.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.MessageFactory} instead
  */
 public abstract class MessageFactory {
 

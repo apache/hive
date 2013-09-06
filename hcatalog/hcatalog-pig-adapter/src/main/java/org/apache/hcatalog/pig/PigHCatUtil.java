@@ -59,6 +59,9 @@ import org.apache.pig.impl.util.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.pig.PigHCatUtil} instead
+ */
 class PigHCatUtil {
 
     private static final Logger LOG = LoggerFactory.getLogger(PigHCatUtil.class);

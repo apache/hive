@@ -29,7 +29,10 @@ import java.util.Properties;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hcatalog.data.schema.HCatSchema;
 
-/** The class used to serialize and store the output related information  */
+/** 
+ * The class used to serialize and store the output related information  
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.OutputJobInfo} instead
+ */
 public class OutputJobInfo implements Serializable {
 
     /** The db and table names. */

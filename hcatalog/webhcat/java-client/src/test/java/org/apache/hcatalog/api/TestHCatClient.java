@@ -53,6 +53,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertArrayEquals;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.api.TestHCatClient} instead
+ */
 public class TestHCatClient {
     private static final Logger LOG = LoggerFactory.getLogger(TestHCatClient.class);
     private static final String msPort = "20101";

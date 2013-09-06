@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 /**
  * This class is a dummy implementation of HiveAuthorizationProvider to provide
  * dummy authorization functionality for other classes to extend and override.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.storagehandler.DummyHCatAuthProvider} instead
  */
 class DummyHCatAuthProvider implements HiveAuthorizationProvider {
 

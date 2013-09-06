@@ -24,6 +24,9 @@ import junit.framework.Assert;
 
 import org.junit.Test;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.TestInputJobInfo} instead
+ */
 public class TestInputJobInfo extends HCatBaseTest {
 
     @Test

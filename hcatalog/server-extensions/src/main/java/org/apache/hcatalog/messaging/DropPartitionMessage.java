@@ -24,6 +24,7 @@ import java.util.Map;
 
 /**
  * HCat message sent when a partition is dropped in HCatalog.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.DropPartitionMessage} instead
  */
 public abstract class DropPartitionMessage extends HCatEventMessage {
 
