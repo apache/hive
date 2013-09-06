@@ -527,7 +527,7 @@ public final class Utilities {
     }
   }
 
-  private static Path getPlanPath(Configuration conf) {
+  public static Path getPlanPath(Configuration conf) {
     String plan = HiveConf.getVar(conf, HiveConf.ConfVars.PLAN);
     if (plan != null && !plan.isEmpty()) {
       return new Path(plan);
