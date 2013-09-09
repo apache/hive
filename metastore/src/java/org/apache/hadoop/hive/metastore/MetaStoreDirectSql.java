@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
-import org.apache.hadoop.hive.metastore.api.SkewedValueList;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
@@ -267,7 +266,7 @@ class MetaStoreDirectSql {
       sd.setBucketCols(new ArrayList<String>());
       sd.setParameters(new HashMap<String, String>());
       sd.setSkewedInfo(new SkewedInfo(new ArrayList<String>(),
-          new ArrayList<List<String>>(), new HashMap<SkewedValueList, String>()));
+          new ArrayList<List<String>>(), new HashMap<List<String>, String>()));
       sd.setInputFormat((String)fields[6]);
       Boolean tmpBoolean = extractSqlBoolean(fields[7]);
       if (tmpBoolean != null) sd.setCompressed(tmpBoolean);
@@ -412,28 +411,28 @@ class MetaStoreDirectSql {
 
       loopJoinOrderedResult(sds, queryText, 0, new ApplyFunc<StorageDescriptor>() {
         private Long currentListId;
-        private SkewedValueList currentList;
+        private List<String> currentList;
         public void apply(StorageDescriptor t, Object[] fields) {
           if (!t.isSetSkewedInfo()) {
             SkewedInfo skewedInfo = new SkewedInfo();
-            skewedInfo.setSkewedColValueLocationMaps(new HashMap<SkewedValueList, String>());
+            skewedInfo.setSkewedColValueLocationMaps(new HashMap<List<String>, String>());
             t.setSkewedInfo(skewedInfo);
           }
-          Map<SkewedValueList, String> skewMap = t.getSkewedInfo().getSkewedColValueLocationMaps();
+          Map<List<String>, String> skewMap = t.getSkewedInfo().getSkewedColValueLocationMaps();
           // Note that this is not a typical list accumulator - there's no call to finalize
           // the last list. Instead we add list to SD first, as well as locally to add elements.
           if (fields[1] == null) {
-            currentList = new SkewedValueList(); // left outer join produced a list with no values
+            currentList = new ArrayList<String>(); // left outer join produced a list with no values
             currentListId = null;
           } else {
             long fieldsListId = (Long)fields[1];
             if (currentListId == null || fieldsListId != currentListId) {
-              currentList = new SkewedValueList();
+              currentList = new ArrayList<String>();
               currentListId = fieldsListId;
             } else {
               skewMap.remove(currentList); // value based compare.. remove first
             }
-            currentList.addToSkewedValueList((String)fields[3]);
+            currentList.add((String)fields[3]);
           }
           skewMap.put(currentList, (String)fields[2]);
         }});
