@@ -402,7 +402,7 @@ public class FetchOperator implements Serializable {
 
       ObjectInspector outputOI = ObjectInspectorConverters.getConvertedOI(
           serde.getObjectInspector(),
-          partitionedTableOI == null ? tblSerde.getObjectInspector() : partitionedTableOI);
+          partitionedTableOI == null ? tblSerde.getObjectInspector() : partitionedTableOI, true);
 
       partTblObjectInspectorConverter = ObjectInspectorConverters.getConverter(
           serde.getObjectInspector(), outputOI);
@@ -628,7 +628,7 @@ public class FetchOperator implements Serializable {
         partSerde.initialize(job, listPart.getOverlayedProperties());
 
         partitionedTableOI = ObjectInspectorConverters.getConvertedOI(
-            partSerde.getObjectInspector(), tableOI);
+            partSerde.getObjectInspector(), tableOI, true);
         if (!partitionedTableOI.equals(tableOI)) {
           break;
         }
