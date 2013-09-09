@@ -88,7 +88,6 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
-import org.apache.hadoop.hive.metastore.api.SkewedValueList;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -1065,13 +1064,13 @@ public class ObjectStore implements RawStore, Configurable {
    * @param mMap
    * @return
    */
-  private Map<SkewedValueList, String> covertToSkewedMap(Map<MStringList, String> mMap) {
-    Map<SkewedValueList, String> map = null;
+  private Map<List<String>, String> covertToSkewedMap(Map<MStringList, String> mMap) {
+    Map<List<String>, String> map = null;
     if (mMap != null) {
-      map = new HashMap<SkewedValueList, String>(mMap.size());
+      map = new HashMap<List<String>, String>(mMap.size());
       Set<MStringList> keys = mMap.keySet();
       for (MStringList key : keys) {
-        map.put(new SkewedValueList(new ArrayList<String>(key.getInternalList())), mMap.get(key));
+        map.put(new ArrayList<String>(key.getInternalList()), mMap.get(key));
       }
     }
     return map;
@@ -1082,12 +1081,13 @@ public class ObjectStore implements RawStore, Configurable {
    * @param mMap
    * @return
    */
-  private Map<MStringList, String> convertToMapMStringList(Map<SkewedValueList, String> mMap) {
+  private Map<MStringList, String> covertToMapMStringList(Map<List<String>, String> mMap) {
     Map<MStringList, String> map = null;
     if (mMap != null) {
       map = new HashMap<MStringList, String>(mMap.size());
-      for (Map.Entry<SkewedValueList, String> entry : mMap.entrySet()) {
-        map.put(new MStringList(entry.getKey().getSkewedValueList()), entry.getValue());
+      Set<List<String>> keys = mMap.keySet();
+      for (List<String> key : keys) {
+        map.put(new MStringList(key), mMap.get(key));
       }
     }
     return map;
@@ -1134,7 +1134,7 @@ public class ObjectStore implements RawStore, Configurable {
             : sd.getSkewedInfo().getSkewedColNames(),
         convertToMStringLists((null == sd.getSkewedInfo()) ? null : sd.getSkewedInfo()
             .getSkewedColValues()),
-        convertToMapMStringList((null == sd.getSkewedInfo()) ? null : sd.getSkewedInfo()
+        covertToMapMStringList((null == sd.getSkewedInfo()) ? null : sd.getSkewedInfo()
             .getSkewedColValueLocationMaps()), sd.isStoredAsSubDirectories());
   }
 
