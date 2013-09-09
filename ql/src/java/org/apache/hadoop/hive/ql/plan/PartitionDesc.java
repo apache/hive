@@ -47,7 +47,7 @@ public class PartitionDesc implements Serializable, Cloneable {
   private java.util.Properties properties;
   private String serdeClassName;
 
-  private transient String baseFileName;
+  private String baseFileName;
 
   public void setBaseFileName(String baseFileName) {
     this.baseFileName = baseFileName;

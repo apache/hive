@@ -201,6 +201,9 @@
                                     </void> 
                                    </object> 
                                   </void> 
+                                  <void property="typeName"> 
+                                   <string>string</string> 
+                                  </void> 
                                  </object> 
                                 </void> 
                                 <void method="add"> 
@@ -213,6 +216,9 @@
                                   </void> 
                                   <void property="type"> 
                                    <object idref="PrimitiveTypeInfo0"/> 
+                                  </void> 
+                                  <void property="typeName"> 
+                                   <string>string</string> 
                                   </void> 
                                  </object> 
                                 </void> 
@@ -870,6 +876,9 @@
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo1"/> 
                       </void> 
+                      <void property="typeName"> 
+                       <string>int</string> 
+                      </void> 
                      </object> 
                     </void> 
                     <void method="add"> 
@@ -882,6 +891,9 @@
                       </void> 
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
+                      </void> 
+                      <void property="typeName"> 
+                       <string>string</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -955,9 +967,6 @@
                               <void property="operator"> 
                                <boolean>true</boolean> 
                               </void> 
-                              <void property="udfClass"> 
-                               <class>org.apache.hadoop.hive.ql.udf.UDFOPBitAnd</class> 
-                              </void> 
                               <void property="udfClassName"> 
                                <string>org.apache.hadoop.hive.ql.udf.UDFOPBitAnd</string> 
                               </void> 
@@ -987,9 +996,6 @@
                          <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
                           <void property="operator"> 
                            <boolean>true</boolean> 
-                          </void> 
-                          <void property="udfClass"> 
-                           <class>org.apache.hadoop.hive.ql.udf.UDFOPMod</class> 
                           </void> 
                           <void property="udfClassName"> 
                            <string>org.apache.hadoop.hive.ql.udf.UDFOPMod</string> 
@@ -1118,6 +1124,9 @@
                   <void property="type"> 
                    <object idref="PrimitiveTypeInfo1"/> 
                   </void> 
+                  <void property="typeName"> 
+                   <string>int</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void method="add"> 
@@ -1130,6 +1139,9 @@
                   </void> 
                   <void property="type"> 
                    <object idref="PrimitiveTypeInfo0"/> 
+                  </void> 
+                  <void property="typeName"> 
+                   <string>string</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -1218,6 +1230,9 @@
                 </void> 
                </object> 
               </void> 
+              <void property="typeName"> 
+               <string>bigint</string> 
+              </void> 
              </object> 
             </void> 
             <void method="add"> 
@@ -1233,6 +1248,9 @@
               </void> 
               <void property="type"> 
                <object idref="PrimitiveTypeInfo0"/> 
+              </void> 
+              <void property="typeName"> 
+               <string>string</string> 
               </void> 
              </object> 
             </void> 

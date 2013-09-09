@@ -31,12 +31,12 @@ import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspecto
  */
 public class ExprNodeColumnEvaluator extends ExprNodeEvaluator<ExprNodeColumnDesc> {
 
-  transient boolean simpleCase;
-  transient StructObjectInspector inspector;
-  transient StructField field;
-  transient StructObjectInspector[] inspectors;
-  transient StructField[] fields;
-  transient boolean[] unionField;
+  private transient boolean simpleCase;
+  private transient StructObjectInspector inspector;
+  private transient StructField field;
+  private transient StructObjectInspector[] inspectors;
+  private transient StructField[] fields;
+  private transient boolean[] unionField;
 
   public ExprNodeColumnEvaluator(ExprNodeColumnDesc expr) {
     super(expr);
@@ -61,18 +61,17 @@ public class ExprNodeColumnEvaluator extends ExprNodeEvaluator<ExprNodeColumnDes
     fields = new StructField[names.length];
     unionField = new boolean[names.length];
     int unionIndex = -1;
-
     for (int i = 0; i < names.length; i++) {
       if (i == 0) {
         inspectors[0] = (StructObjectInspector) rowInspector;
       } else {
-        if (unionIndex != -1) {
+        if (unionIndex == -1) {
+          inspectors[i] = (StructObjectInspector) fields[i - 1]
+              .getFieldObjectInspector();
+        } else {
           inspectors[i] = (StructObjectInspector) (
               (UnionObjectInspector)fields[i-1].getFieldObjectInspector()).
               getObjectInspectors().get(unionIndex);
-        } else {
-          inspectors[i] = (StructObjectInspector) fields[i - 1]
-              .getFieldObjectInspector();
         }
       }
       // to support names like _colx:1._coly

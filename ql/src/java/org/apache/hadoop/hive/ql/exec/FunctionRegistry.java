@@ -482,7 +482,7 @@ public final class FunctionRegistry {
       Class<? extends UDF> UDFClass, boolean isOperator, String displayName) {
     if (UDF.class.isAssignableFrom(UDFClass)) {
       FunctionInfo fI = new FunctionInfo(isNative, displayName,
-          new GenericUDFBridge(displayName, isOperator, UDFClass));
+          new GenericUDFBridge(displayName, isOperator, UDFClass.getName()));
       mFunctions.put(functionName.toLowerCase(), fI);
     } else {
       throw new RuntimeException("Registering UDF Class " + UDFClass
@@ -1284,7 +1284,7 @@ public final class FunctionRegistry {
     if (genericUDF instanceof GenericUDFBridge) {
       GenericUDFBridge bridge = (GenericUDFBridge) genericUDF;
       return new GenericUDFBridge(bridge.getUdfName(), bridge.isOperator(),
-          bridge.getUdfClass());
+          bridge.getUdfClassName());
     } else if (genericUDF instanceof GenericUDFMacro) {
       GenericUDFMacro bridge = (GenericUDFMacro) genericUDF;
       return new GenericUDFMacro(bridge.getMacroName(), bridge.getBody(),

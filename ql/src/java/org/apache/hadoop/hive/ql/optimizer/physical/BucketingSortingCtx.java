@@ -36,19 +36,19 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
  */
 public class BucketingSortingCtx implements NodeProcessorCtx {
 
-  boolean disableBucketing;
+  private boolean disableBucketing;
 
   // A mapping from an operator to the columns by which it's output is bucketed
-  Map<Operator<? extends OperatorDesc>, List<BucketCol>> bucketedColsByOp;
+  private Map<Operator<? extends OperatorDesc>, List<BucketCol>> bucketedColsByOp;
   // A mapping from a directory which a FileSinkOperator writes into to the columns by which that
   // output is bucketed
-  Map<String, List<BucketCol>> bucketedColsByDirectory;
+  private Map<String, List<BucketCol>> bucketedColsByDirectory;
 
   // A mapping from an operator to the columns by which it's output is sorted
-  Map<Operator<? extends OperatorDesc>, List<SortCol>> sortedColsByOp;
+  private Map<Operator<? extends OperatorDesc>, List<SortCol>> sortedColsByOp;
   // A mapping from a directory which a FileSinkOperator writes into to the columns by which that
   // output is sorted
-  Map<String, List<SortCol>> sortedColsByDirectory;
+  private Map<String, List<SortCol>> sortedColsByDirectory;
 
   public BucketingSortingCtx(boolean disableBucketing) {
     this.disableBucketing = disableBucketing;
@@ -189,13 +189,18 @@ public class BucketingSortingCtx implements NodeProcessorCtx {
    * to be constant for all equivalent columns.
    */
   public static final class SortCol implements BucketSortCol, Serializable {
+
+    public SortCol() {
+      super();
+    }
+
     private static final long serialVersionUID = 1L;
     // Equivalent aliases for the column
-    private final List<String> names = new ArrayList<String>();
+    private List<String> names = new ArrayList<String>();
     // Indexes of those equivalent columns
-    private final List<Integer> indexes = new ArrayList<Integer>();
+    private List<Integer> indexes = new ArrayList<Integer>();
     // Sort order (+|-)
-    private final char sortOrder;
+    private char sortOrder;
 
     public SortCol(String name, int index, char sortOrder) {
       this(sortOrder);

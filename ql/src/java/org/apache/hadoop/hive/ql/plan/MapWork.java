@@ -52,13 +52,13 @@ import org.apache.hadoop.mapred.JobConf;
  * distributed on the cluster. The ExecMapper will ultimately deserialize this
  * class on the data nodes and setup it's operator pipeline accordingly.
  *
- * This class is also used in the explain command any property with the 
+ * This class is also used in the explain command any property with the
  * appropriate annotation will be displayed in the explain output.
  */
 @SuppressWarnings({"serial", "deprecation"})
 public class MapWork extends BaseWork {
 
-  private static transient final Log LOG = LogFactory.getLog(MapWork.class);
+  private static final Log LOG = LogFactory.getLog(MapWork.class);
 
   private boolean hadoopSupportsSplittable;
 
@@ -102,15 +102,15 @@ public class MapWork extends BaseWork {
   public static final int SAMPLING_ON_START = 2;    // sampling on task running
 
   // the following two are used for join processing
-  private QBJoinTree joinTree;
-  private LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap;
+  private transient QBJoinTree joinTree;
+  private transient LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap;
 
   private boolean mapperCannotSpanPartns;
 
   // used to indicate the input is sorted, and so a BinarySearchRecordReader shoudl be used
   private boolean inputFormatSorted = false;
 
-  private transient boolean useBucketizedHiveInputFormat;
+  private boolean useBucketizedHiveInputFormat;
 
   public MapWork() {
   }

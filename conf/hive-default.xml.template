@@ -1963,4 +1963,13 @@
  </description>
 </property>
 
+<property>
+  <name>hive.plan.serialization.format</name>
+  <value>kryo</value>
+  <description>
+  Query plan format serialization between client and task nodes. 
+  Two supported values are : kryo and javaXML. Kryo is default.
+  </description>
+</property>
+
 </configuration>

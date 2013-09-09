@@ -465,12 +465,12 @@ public class Driver implements CommandProcessor {
 
         // serialize the queryPlan
         FileOutputStream fos = new FileOutputStream(queryPlanFileName);
-        Utilities.serializeObject(plan, fos);
+        Utilities.serializePlan(plan, fos, conf);
         fos.close();
 
         // deserialize the queryPlan
         FileInputStream fis = new FileInputStream(queryPlanFileName);
-        QueryPlan newPlan = Utilities.deserializeObject(fis);
+        QueryPlan newPlan = Utilities.deserializePlan(fis, QueryPlan.class, conf);
         fis.close();
 
         // Use the deserialized plan

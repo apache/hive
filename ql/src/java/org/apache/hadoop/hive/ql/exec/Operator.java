@@ -58,7 +58,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   private static final long serialVersionUID = 1L;
 
-  private Configuration configuration;
+  private transient Configuration configuration;
   protected List<Operator<? extends OperatorDesc>> childOperators;
   protected List<Operator<? extends OperatorDesc>> parentOperators;
   protected String operatorId;
@@ -196,7 +196,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   // non-bean fields needed during compilation
-  private transient RowSchema rowSchema;
+  private RowSchema rowSchema;
 
   public void setSchema(RowSchema rowSchema) {
     this.rowSchema = rowSchema;

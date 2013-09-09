@@ -47,6 +47,10 @@
              checkmodified="${ivy.checkmodified}" 
              changingPattern="${ivy.changingPattern}"/>
 
+    <ibiblio name="sonatype-snapshot" root="https://oss.sonatype.org/content/repositories/snapshots/" m2compatible="true"
+             checkmodified="${ivy.checkmodified}" 
+             changingPattern="${ivy.changingPattern}"/>
+
     <url name="datanucleus-repo" m2compatible="true">
       <artifact pattern="${datanucleus.repo}/[organisation]/[module]/[revision]/[module]-[revision](-[classifier]).[ext]"/>
     </url>
@@ -68,6 +72,7 @@
       <resolver ref="maven2"/>
       <resolver ref="datanucleus-repo"/>
       <resolver ref="sourceforge"/>
+      <resolver ref="sonatype-snapshot"/>
     </chain>
 
     <chain name="internal" dual="true">
@@ -77,11 +82,13 @@
       <resolver ref="maven2"/>
       <resolver ref="datanucleus-repo"/>
       <resolver ref="sourceforge"/>
+      <resolver ref="sonatype-snapshot"/>
     </chain>
 
     <chain name="external">
       <resolver ref="maven2"/>
       <resolver ref="datanucleus-repo"/>
+      <resolver ref="sonatype-snapshot"/>
     </chain>
 
   </resolvers>

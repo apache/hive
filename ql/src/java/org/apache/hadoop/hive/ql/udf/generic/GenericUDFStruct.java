@@ -31,7 +31,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 @Description(name = "struct",
     value = "_FUNC_(col1, col2, col3, ...) - Creates a struct with the given field values")
 public class GenericUDFStruct extends GenericUDF {
-  Object[] ret;
+  private transient Object[] ret;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)

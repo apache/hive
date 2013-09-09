@@ -273,6 +273,9 @@
                         </void> 
                        </object> 
                       </void> 
+                      <void property="typeName"> 
+                       <string>string</string> 
+                      </void> 
                      </object> 
                     </void> 
                     <void method="add"> 
@@ -289,6 +292,9 @@
                          <string>int</string> 
                         </void> 
                        </object> 
+                      </void> 
+                      <void property="typeName"> 
+                       <string>int</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -380,9 +386,6 @@
                 </void> 
                 <void property="genericUDF"> 
                  <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
-                  <void property="udfClass"> 
-                   <class>org.apache.hadoop.hive.ql.udf.UDFConcat</class> 
-                  </void> 
                   <void property="udfClassName"> 
                    <string>org.apache.hadoop.hive.ql.udf.UDFConcat</string> 
                   </void> 
@@ -463,6 +466,9 @@
                   <void property="type"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
+                  <void property="typeName"> 
+                   <string>string</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void method="add"> 
@@ -475,6 +481,9 @@
                   </void> 
                   <void property="type"> 
                    <object idref="PrimitiveTypeInfo1"/> 
+                  </void> 
+                  <void property="typeName"> 
+                   <string>int</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -536,6 +545,9 @@
               <void property="type"> 
                <object idref="PrimitiveTypeInfo0"/> 
               </void> 
+              <void property="typeName"> 
+               <string>string</string> 
+              </void> 
              </object> 
             </void> 
             <void method="add"> 
@@ -548,6 +560,9 @@
               </void> 
               <void property="type"> 
                <object idref="PrimitiveTypeInfo0"/> 
+              </void> 
+              <void property="typeName"> 
+               <string>string</string> 
               </void> 
              </object> 
             </void> 
@@ -569,6 +584,9 @@
                 </void> 
                </object> 
               </void> 
+              <void property="typeName"> 
+               <string>bigint</string> 
+              </void> 
              </object> 
             </void> 
             <void method="add"> 
@@ -584,6 +602,9 @@
               </void> 
               <void property="type"> 
                <object idref="PrimitiveTypeInfo0"/> 
+              </void> 
+              <void property="typeName"> 
+               <string>string</string> 
               </void> 
              </object> 
             </void> 
