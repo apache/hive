@@ -201,6 +201,9 @@
                                     </void> 
                                    </object> 
                                   </void> 
+                                  <void property="typeName"> 
+                                   <string>string</string> 
+                                  </void> 
                                  </object> 
                                 </void> 
                                 <void method="add"> 
@@ -213,6 +216,9 @@
                                   </void> 
                                   <void property="type"> 
                                    <object idref="PrimitiveTypeInfo0"/> 
+                                  </void> 
+                                  <void property="typeName"> 
+                                   <string>string</string> 
                                   </void> 
                                  </object> 
                                 </void> 
@@ -960,6 +966,9 @@
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo1"/> 
                       </void> 
+                      <void property="typeName"> 
+                       <string>int</string> 
+                      </void> 
                      </object> 
                     </void> 
                     <void method="add"> 
@@ -969,6 +978,9 @@
                       </void> 
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
+                      </void> 
+                      <void property="typeName"> 
+                       <string>string</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -1090,6 +1102,9 @@
                   <void property="type"> 
                    <object idref="ListTypeInfo1"/> 
                   </void> 
+                  <void property="typeName"> 
+                   <string>array&lt;int&gt;</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void method="add"> 
@@ -1102,6 +1117,9 @@
                   </void> 
                   <void property="type"> 
                    <object idref="ListTypeInfo0"/> 
+                  </void> 
+                  <void property="typeName"> 
+                   <string>array&lt;struct&lt;myint:int,mystring:string,underscore_int:int&gt;&gt;</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -1177,6 +1195,9 @@
               <void property="type"> 
                <object idref="PrimitiveTypeInfo1"/> 
               </void> 
+              <void property="typeName"> 
+               <string>int</string> 
+              </void> 
              </object> 
             </void> 
             <void method="add"> 
@@ -1189,6 +1210,9 @@
               </void> 
               <void property="type"> 
                <object idref="PrimitiveTypeInfo0"/> 
+              </void> 
+              <void property="typeName"> 
+               <string>string</string> 
               </void> 
              </object> 
             </void> 
@@ -1209,6 +1233,9 @@
                  <object idref="PrimitiveTypeInfo0"/> 
                 </void> 
                </object> 
+              </void> 
+              <void property="typeName"> 
+               <string>array&lt;string&gt;</string> 
               </void> 
              </object> 
             </void> 
@@ -1233,6 +1260,9 @@
                 </void> 
                </object> 
               </void> 
+              <void property="typeName"> 
+               <string>map&lt;string,string&gt;</string> 
+              </void> 
              </object> 
             </void> 
             <void method="add"> 
@@ -1253,6 +1283,9 @@
                 </void> 
                </object> 
               </void> 
+              <void property="typeName"> 
+               <string>bigint</string> 
+              </void> 
              </object> 
             </void> 
             <void method="add"> 
@@ -1268,6 +1301,9 @@
               </void> 
               <void property="type"> 
                <object idref="PrimitiveTypeInfo0"/> 
+              </void> 
+              <void property="typeName"> 
+               <string>string</string> 
               </void> 
              </object> 
             </void> 

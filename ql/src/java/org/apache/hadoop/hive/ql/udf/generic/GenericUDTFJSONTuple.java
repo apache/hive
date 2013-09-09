@@ -63,9 +63,10 @@ public class GenericUDTFJSONTuple extends GenericUDTF {
 
   int numCols;    // number of output columns
   String[] paths; // array of path expressions, each of which corresponds to a column
-  Text[] retCols; // array of returned column values
-  Text[] cols;    // object pool of non-null Text, avoid creating objects all the time
-  Object[] nullCols; // array of null column values
+  private transient Text[] retCols; // array of returned column values
+  //object pool of non-null Text, avoid creating objects all the time
+  private transient Text[] cols;
+  private transient Object[] nullCols; // array of null column values
   private transient ObjectInspector[] inputOIs; // input ObjectInspectors
   boolean pathParsed = false;
   boolean seenErrors = false;

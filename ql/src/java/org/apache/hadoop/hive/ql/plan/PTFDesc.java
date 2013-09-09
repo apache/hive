@@ -52,7 +52,7 @@ public class PTFDesc extends AbstractOperatorDesc
    */
   boolean isMapSide = false;
 
-  HiveConf cfg;
+  transient HiveConf cfg;
 
   static{
     PTFUtils.makeTransient(PTFDesc.class, "llInfo");

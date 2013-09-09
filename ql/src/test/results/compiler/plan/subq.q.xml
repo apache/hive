@@ -134,6 +134,9 @@
                                     </void> 
                                    </object> 
                                   </void> 
+                                  <void property="typeName"> 
+                                   <string>string</string> 
+                                  </void> 
                                  </object> 
                                 </void> 
                                 <void method="add"> 
@@ -146,6 +149,9 @@
                                   </void> 
                                   <void property="type"> 
                                    <object idref="PrimitiveTypeInfo0"/> 
+                                  </void> 
+                                  <void property="typeName"> 
+                                   <string>string</string> 
                                   </void> 
                                  </object> 
                                 </void> 
@@ -725,6 +731,9 @@
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
                       </void> 
+                      <void property="typeName"> 
+                       <string>string</string> 
+                      </void> 
                      </object> 
                     </void> 
                     <void method="add"> 
@@ -740,6 +749,9 @@
                       </void> 
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
+                      </void> 
+                      <void property="typeName"> 
+                       <string>string</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -841,6 +853,9 @@
                   <void property="type"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
+                  <void property="typeName"> 
+                   <string>string</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void method="add"> 
@@ -853,6 +868,9 @@
                   </void> 
                   <void property="type"> 
                    <object idref="PrimitiveTypeInfo0"/> 
+                  </void> 
+                  <void property="typeName"> 
+                   <string>string</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -941,6 +959,9 @@
                 </void> 
                </object> 
               </void> 
+              <void property="typeName"> 
+               <string>bigint</string> 
+              </void> 
              </object> 
             </void> 
             <void method="add"> 
@@ -956,6 +977,9 @@
               </void> 
               <void property="type"> 
                <object idref="PrimitiveTypeInfo0"/> 
+              </void> 
+              <void property="typeName"> 
+               <string>string</string> 
               </void> 
              </object> 
             </void> 

@@ -39,14 +39,11 @@ import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.shims.ShimLoader;
-import org.apache.hadoop.mapred.JobConf;
 /**
  * Extension of ExecDriver:
  * - can optionally spawn a map-reduce task from a separate jvm
@@ -69,7 +66,6 @@ public class MapRedTask extends ExecDriver implements Serializable {
   private transient ContentSummary inputSummary = null;
   private transient boolean runningViaChild = false;
 
-  private transient boolean inputSizeEstimated = false;
   private transient long totalInputFileSize;
   private transient long totalInputNumFiles;
 
@@ -77,10 +73,6 @@ public class MapRedTask extends ExecDriver implements Serializable {
 
   public MapRedTask() {
     super();
-  }
-
-  public MapRedTask(MapredWork plan, JobConf job, boolean isSilent) throws HiveException {
-    throw new RuntimeException("Illegal Constructor call");
   }
 
   @Override
@@ -181,7 +173,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
       OutputStream out = FileSystem.getLocal(conf).create(planPath);
       MapredWork plan = getWork();
       LOG.info("Generating plan file " + planPath.toString());
-      Utilities.serializePlan(plan, out);
+      Utilities.serializePlan(plan, out, conf);
 
       String isSilent = "true".equalsIgnoreCase(System
           .getProperty("test.silent")) ? "-nolog" : "";
@@ -408,7 +400,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
         if (inputSummary == null) {
           inputSummary =  Utilities.getInputSummary(driverContext.getCtx(), work.getMapWork(), null);
         }
-        int reducers = Utilities.estimateNumberOfReducers(conf, inputSummary, work.getMapWork(), 
+        int reducers = Utilities.estimateNumberOfReducers(conf, inputSummary, work.getMapWork(),
                                                           work.isFinalMapRed());
         rWork.setNumReduceTasks(reducers);
         console

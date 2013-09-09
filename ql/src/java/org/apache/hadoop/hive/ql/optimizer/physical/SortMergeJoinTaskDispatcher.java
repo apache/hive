@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -236,7 +234,6 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
   public Task<? extends Serializable> processCurrentTask(MapRedTask currTask,
       ConditionalTask conditionalTask, Context context)
       throws SemanticException {
-
     // whether it contains a sort merge join operator
     MapredWork currWork = currTask.getWork();
     SMBMapJoinOperator originalSMBJoinOp = getSMBMapJoinOp(currWork);

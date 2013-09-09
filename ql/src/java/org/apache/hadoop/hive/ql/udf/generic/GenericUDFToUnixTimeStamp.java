@@ -47,7 +47,7 @@ public class GenericUDFToUnixTimeStamp extends GenericUDF {
   private transient TimestampObjectInspector inputTimestampOI;
   private transient StringObjectInspector patternOI;
 
-  private String lasPattern = "yyyy-MM-dd HH:mm:ss";
+  private transient String lasPattern = "yyyy-MM-dd HH:mm:ss";
   private transient final SimpleDateFormat formatter = new SimpleDateFormat(lasPattern);
 
   @Override
