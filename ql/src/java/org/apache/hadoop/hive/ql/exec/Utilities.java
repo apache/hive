@@ -261,9 +261,8 @@ public final class Utilities {
       assert path != null;
       gWork = gWorkMap.get(path);
       if (gWork == null) {
-        String jtConf = ShimLoader.getHadoopShims().getJobLauncherRpcAddress(conf);
         Path localPath;
-        if (jtConf.equals("local")) {
+        if (ShimLoader.getHadoopShims().isLocalMode(conf)) {
           localPath = path;
         } else {
           localPath = new Path(name);
