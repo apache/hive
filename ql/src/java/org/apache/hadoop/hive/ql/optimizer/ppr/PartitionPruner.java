@@ -18,10 +18,12 @@
 
 package org.apache.hadoop.hive.ql.optimizer.ppr;
 
+import java.util.AbstractSequentialList;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -348,15 +350,22 @@ public class PartitionPruner implements Transform {
     ObjectPair<PrimitiveObjectInspector, ExprNodeEvaluator> handle =
         PartExprEvalUtils.prepareExpr(prunerExpr, columnNames);
 
-    // Filter the name list.
-    List<String> values = new ArrayList<String>(columnNames.size());
+    // Filter the name list. Removing elements one by one can be slow on e.g. ArrayList,
+    // so let's create a new list and copy it if we don't have a linked list
+    boolean inPlace = partNames instanceof AbstractSequentialList<?>;
+    List<String> partNamesSeq = inPlace ? partNames : new LinkedList<String>(partNames);
+
+    // Array for the values to pass to evaluator.
+    ArrayList<String> values = new ArrayList<String>(columnNames.size());
+    for (int i = 0; i < columnNames.size(); ++i) {
+      values.add(null);
+    }
+
     boolean hasUnknownPartitions = false;
-    Iterator<String> partIter = partNames.iterator();
+    Iterator<String> partIter = partNamesSeq.iterator();
     while (partIter.hasNext()) {
       String partName = partIter.next();
-      LinkedHashMap<String, String> partSpec = Warehouse.makeSpecFromName(partName);
-      values.clear();
-      values.addAll(partSpec.values());
+      Warehouse.makeValsFromName(partName, values);
 
       // Evaluate the expression tree.
       Boolean isNeeded = (Boolean)PartExprEvalUtils.evaluateExprOnPart(handle, values);
@@ -374,6 +383,10 @@ public class PartitionPruner implements Transform {
       }
       hasUnknownPartitions |= isUnknown;
       LOG.debug("retained " + (isUnknown ? "unknown " : "") + "partition: " + partName);
+    }
+    if (!inPlace) {
+      partNames.clear();
+      partNames.addAll(partNamesSeq);
     }
     return hasUnknownPartitions;
   }
