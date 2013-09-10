@@ -1854,8 +1854,21 @@
 
 <property>
   <name>hive.server2.thrift.max.worker.threads</name>
-  <value>100</value>
+  <value>500</value>
   <description>Maximum number of Thrift worker threads</description>
+</property>
+
+<property>
+  <name>hive.server2.async.exec.threads</name>
+  <value>50</value>
+  <description>Number of threads in the async thread pool for HiveServer2</description>
+</property>
+
+<property>
+  <name>hive.server2.async.exec.shutdown.timeout</name>
+  <value>10</value>
+  <description>Time (in seconds) for which HiveServer2 shutdown will wait for async 
+  threads to terminate</description>
 </property>
 
 <property>

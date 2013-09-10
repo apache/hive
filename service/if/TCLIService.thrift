@@ -38,7 +38,10 @@ namespace cpp apache.hive.service.cli.thrift
 // List of protocol versions. A new token should be
 // added to the end of this list every time a change is made.
 enum TProtocolVersion {
-  HIVE_CLI_SERVICE_PROTOCOL_V1
+  HIVE_CLI_SERVICE_PROTOCOL_V1,
+  
+  // V2 adds support for asynchronous execution
+  HIVE_CLI_SERVICE_PROTOCOL_V2
 }
 
 enum TTypeId {
@@ -356,6 +359,9 @@ enum TOperationState {
 
   // The operation is in an unrecognized state
   UKNOWN_STATE,
+  
+  // The operation is in an pending state
+  PENDING_STATE,
 }
 
 
@@ -452,7 +458,7 @@ struct TOperationHandle {
 // which operations may be executed. 
 struct TOpenSessionReq {
   // The version of the HiveServer2 protocol that the client is using.
-  1: required TProtocolVersion client_protocol = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V1
+  1: required TProtocolVersion client_protocol = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V2
   
   // Username and password for authentication.
   // Depending on the authentication scheme being used,
@@ -471,7 +477,7 @@ struct TOpenSessionResp {
   1: required TStatus status
 
   // The protocol version that the server is using.
-  2: required TProtocolVersion serverProtocolVersion = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V1
+  2: required TProtocolVersion serverProtocolVersion = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V2
 
   // Session Handle
   3: optional TSessionHandle sessionHandle
@@ -582,7 +588,7 @@ struct TGetInfoResp {
 // status of the statement, and to fetch results once the
 // statement has finished executing.
 struct TExecuteStatementReq {
-  // The session to exexcute the statement against
+  // The session to execute the statement against
   1: required TSessionHandle sessionHandle
 
   // The statement to be executed (DML, DDL, SET, etc)
@@ -593,13 +599,15 @@ struct TExecuteStatementReq {
   // is executed. These properties apply to this statement
   // only and will not affect the subsequent state of the Session.
   3: optional map<string, string> confOverlay
+  
+  // Execute asynchronously when runAsync is true
+  4: optional bool runAsync = false
 }
 
 struct TExecuteStatementResp {
   1: required TStatus status
   2: optional TOperationHandle operationHandle
 }
-
 
 // GetTypeInfo()
 //
