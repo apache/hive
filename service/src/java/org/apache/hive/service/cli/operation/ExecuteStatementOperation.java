@@ -40,7 +40,7 @@ public abstract class ExecuteStatementOperation extends Operation {
   }
 
   public static ExecuteStatementOperation newExecuteStatementOperation(
-      HiveSession parentSession, String statement, Map<String, String> confOverlay) {
+      HiveSession parentSession, String statement, Map<String, String> confOverlay, boolean runAsync) {
     String[] tokens = statement.trim().split("\\s+");
     String command = tokens[0].toLowerCase();
 
@@ -53,7 +53,7 @@ public abstract class ExecuteStatementOperation extends Operation {
     } else if ("delete".equals(command)) {
       return new DeleteResourceOperation(parentSession, statement, confOverlay);
     } else {
-      return new SQLOperation(parentSession, statement, confOverlay);
+      return new SQLOperation(parentSession, statement, confOverlay, runAsync);
     }
   }
 }

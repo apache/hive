@@ -66,9 +66,9 @@ public class OperationManager extends AbstractService {
   }
 
   public ExecuteStatementOperation newExecuteStatementOperation(HiveSession parentSession,
-      String statement, Map<String, String> confOverlay) {
+      String statement, Map<String, String> confOverlay, boolean runAsync) {
     ExecuteStatementOperation executeStatementOperation = ExecuteStatementOperation
-        .newExecuteStatementOperation(parentSession, statement, confOverlay);
+        .newExecuteStatementOperation(parentSession, statement, confOverlay, runAsync);
     addOperation(executeStatementOperation);
     return executeStatementOperation;
   }

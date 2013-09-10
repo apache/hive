@@ -113,4 +113,105 @@ public abstract class CLIServiceTest {
 
     client.closeSession(sessionHandle);
   }
+
+  @Test
+  public void testExecuteStatement() throws Exception {
+    HashMap<String, String> confOverlay = new HashMap<String, String>();
+    SessionHandle sessionHandle = client.openSession("tom", "password",
+        new HashMap<String, String>());
+    assertNotNull(sessionHandle);
+
+    // Change lock manager, otherwise unit-test doesn't go through
+    String setLockMgr = "SET hive.lock.manager=" +
+        "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager";
+    client.executeStatement(sessionHandle, setLockMgr, confOverlay);
+
+    String createTable = "CREATE TABLE TEST_EXEC(ID STRING)";
+    client.executeStatement(sessionHandle, createTable, confOverlay);
+
+    // blocking execute
+    String select = "SELECT ID FROM TEST_EXEC";
+    OperationHandle ophandle = client.executeStatement(sessionHandle, select, confOverlay);
+
+    // expect query to be completed now
+    assertEquals("Query should be finished",
+        OperationState.FINISHED, client.getOperationStatus(ophandle));
+  }
+
+  @Test
+  public void testExecuteStatementAsync() throws Exception {
+    HashMap<String, String> confOverlay = new HashMap<String, String>();
+    SessionHandle sessionHandle = client.openSession("tom", "password",
+        new HashMap<String, String>());
+    // Timeout for the poll in case of asynchronous execute
+    long pollTimeout = System.currentTimeMillis() + 100000;
+    assertNotNull(sessionHandle);
+    OperationState state = null;
+    OperationHandle ophandle;
+
+    // Change lock manager, otherwise unit-test doesn't go through
+    String setLockMgr = "SET hive.lock.manager=" +
+        "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager";
+    client.executeStatement(sessionHandle, setLockMgr, confOverlay);
+
+    String createTable = "CREATE TABLE TEST_EXEC_ASYNC(ID STRING)";
+    client.executeStatementAsync(sessionHandle, createTable, confOverlay);
+
+    // Test async execution response when query is malformed
+    String wrongQuery = "SELECT NAME FROM TEST_EXEC";
+    ophandle = client.executeStatementAsync(sessionHandle, wrongQuery, confOverlay);
+
+    int count = 0;
+    while (true) {
+      // Break if polling times out
+      if (System.currentTimeMillis() > pollTimeout) {
+          System.out.println("Polling timed out");
+          break;
+      }
+      state = client.getOperationStatus(ophandle);
+      System.out.println("Polling: " + ophandle + " count=" + (++count)
+          + " state=" + state);
+
+      if (OperationState.CANCELED == state || state == OperationState.CLOSED
+          || state == OperationState.FINISHED || state == OperationState.ERROR) {
+        break;
+      }
+      Thread.sleep(1000);
+    }
+    assertEquals("Query should return an error state",
+        OperationState.ERROR, client.getOperationStatus(ophandle));
+
+    // Test async execution when query is well formed
+    String select = "SELECT ID FROM TEST_EXEC_ASYNC";
+    ophandle =
+        client.executeStatementAsync(sessionHandle, select, confOverlay);
+
+    count = 0;
+    while (true) {
+      // Break if polling times out
+      if (System.currentTimeMillis() > pollTimeout) {
+          System.out.println("Polling timed out");
+          break;
+      }
+      state = client.getOperationStatus(ophandle);
+      System.out.println("Polling: " + ophandle + " count=" + (++count)
+          + " state=" + state);
+
+      if (OperationState.CANCELED == state || state == OperationState.CLOSED
+          || state == OperationState.FINISHED || state == OperationState.ERROR) {
+        break;
+      }
+      Thread.sleep(1000);
+    }
+    assertEquals("Query should be finished",
+        OperationState.FINISHED, client.getOperationStatus(ophandle));
+
+    // Cancellation test
+    ophandle = client.executeStatementAsync(sessionHandle, select, confOverlay);
+    System.out.println("cancelling " + ophandle);
+    client.cancelOperation(ophandle);
+    state = client.getOperationStatus(ophandle);
+    System.out.println(ophandle + " after cancelling, state= " + state);
+    assertEquals("Query should be cancelled", OperationState.CANCELED, state);
+  }
 }
