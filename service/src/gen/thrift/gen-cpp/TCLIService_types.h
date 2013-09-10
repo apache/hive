@@ -18,7 +18,8 @@ namespace apache { namespace hive { namespace service { namespace cli { namespac
 
 struct TProtocolVersion {
   enum type {
-    HIVE_CLI_SERVICE_PROTOCOL_V1 = 0
+    HIVE_CLI_SERVICE_PROTOCOL_V1 = 0,
+    HIVE_CLI_SERVICE_PROTOCOL_V2 = 1
   };
 };
 
@@ -69,7 +70,8 @@ struct TOperationState {
     CANCELED_STATE = 3,
     CLOSED_STATE = 4,
     ERROR_STATE = 5,
-    UKNOWN_STATE = 6
+    UKNOWN_STATE = 6,
+    PENDING_STATE = 7
   };
 };
 
@@ -1467,8 +1469,8 @@ class TOpenSessionReq {
   static const char* ascii_fingerprint; // = "C8FD0F306A16C16BDA7B57F58BFAE5B2";
   static const uint8_t binary_fingerprint[16]; // = {0xC8,0xFD,0x0F,0x30,0x6A,0x16,0xC1,0x6B,0xDA,0x7B,0x57,0xF5,0x8B,0xFA,0xE5,0xB2};
 
-  TOpenSessionReq() : client_protocol((TProtocolVersion::type)0), username(), password() {
-    client_protocol = (TProtocolVersion::type)0;
+  TOpenSessionReq() : client_protocol((TProtocolVersion::type)1), username(), password() {
+    client_protocol = (TProtocolVersion::type)1;
 
   }
 
@@ -1543,8 +1545,8 @@ class TOpenSessionResp {
   static const char* ascii_fingerprint; // = "CFE7D7F4E9EC671F2518ED74FEE9F163";
   static const uint8_t binary_fingerprint[16]; // = {0xCF,0xE7,0xD7,0xF4,0xE9,0xEC,0x67,0x1F,0x25,0x18,0xED,0x74,0xFE,0xE9,0xF1,0x63};
 
-  TOpenSessionResp() : serverProtocolVersion((TProtocolVersion::type)0) {
-    serverProtocolVersion = (TProtocolVersion::type)0;
+  TOpenSessionResp() : serverProtocolVersion((TProtocolVersion::type)1) {
+    serverProtocolVersion = (TProtocolVersion::type)1;
 
   }
 
@@ -1850,17 +1852,18 @@ class TGetInfoResp {
 void swap(TGetInfoResp &a, TGetInfoResp &b);
 
 typedef struct _TExecuteStatementReq__isset {
-  _TExecuteStatementReq__isset() : confOverlay(false) {}
+  _TExecuteStatementReq__isset() : confOverlay(false), runAsync(true) {}
   bool confOverlay;
+  bool runAsync;
 } _TExecuteStatementReq__isset;
 
 class TExecuteStatementReq {
  public:
 
-  static const char* ascii_fingerprint; // = "4CDA19909D21B7D9907F85E3387EAB27";
-  static const uint8_t binary_fingerprint[16]; // = {0x4C,0xDA,0x19,0x90,0x9D,0x21,0xB7,0xD9,0x90,0x7F,0x85,0xE3,0x38,0x7E,0xAB,0x27};
+  static const char* ascii_fingerprint; // = "FED75DB77E66D76EC1939A51FB0D96FA";
+  static const uint8_t binary_fingerprint[16]; // = {0xFE,0xD7,0x5D,0xB7,0x7E,0x66,0xD7,0x6E,0xC1,0x93,0x9A,0x51,0xFB,0x0D,0x96,0xFA};
 
-  TExecuteStatementReq() : statement() {
+  TExecuteStatementReq() : statement(), runAsync(false) {
   }
 
   virtual ~TExecuteStatementReq() throw() {}
@@ -1868,6 +1871,7 @@ class TExecuteStatementReq {
   TSessionHandle sessionHandle;
   std::string statement;
   std::map<std::string, std::string>  confOverlay;
+  bool runAsync;
 
   _TExecuteStatementReq__isset __isset;
 
@@ -1884,6 +1888,11 @@ class TExecuteStatementReq {
     __isset.confOverlay = true;
   }
 
+  void __set_runAsync(const bool val) {
+    runAsync = val;
+    __isset.runAsync = true;
+  }
+
   bool operator == (const TExecuteStatementReq & rhs) const
   {
     if (!(sessionHandle == rhs.sessionHandle))
@@ -1893,6 +1902,10 @@ class TExecuteStatementReq {
     if (__isset.confOverlay != rhs.__isset.confOverlay)
       return false;
     else if (__isset.confOverlay && !(confOverlay == rhs.confOverlay))
+      return false;
+    if (__isset.runAsync != rhs.__isset.runAsync)
+      return false;
+    else if (__isset.runAsync && !(runAsync == rhs.runAsync))
       return false;
     return true;
   }

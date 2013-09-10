@@ -101,8 +101,10 @@ public class HiveConnection implements java.sql.Connection {
       openTransport(uri, connParams.getHost(), connParams.getPort(), connParams.getSessionVars());
     }
 
-    // currently only V1 is supported
+    // add supported protocols: V1 and V2 supported
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V1);
+
+    supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V2);
 
     // open client session
     openSession(uri);

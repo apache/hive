@@ -37,6 +37,7 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
   private static final org.apache.thrift.protocol.TField SESSION_HANDLE_FIELD_DESC = new org.apache.thrift.protocol.TField("sessionHandle", org.apache.thrift.protocol.TType.STRUCT, (short)1);
   private static final org.apache.thrift.protocol.TField STATEMENT_FIELD_DESC = new org.apache.thrift.protocol.TField("statement", org.apache.thrift.protocol.TType.STRING, (short)2);
   private static final org.apache.thrift.protocol.TField CONF_OVERLAY_FIELD_DESC = new org.apache.thrift.protocol.TField("confOverlay", org.apache.thrift.protocol.TType.MAP, (short)3);
+  private static final org.apache.thrift.protocol.TField RUN_ASYNC_FIELD_DESC = new org.apache.thrift.protocol.TField("runAsync", org.apache.thrift.protocol.TType.BOOL, (short)4);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -47,12 +48,14 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
   private TSessionHandle sessionHandle; // required
   private String statement; // required
   private Map<String,String> confOverlay; // optional
+  private boolean runAsync; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     SESSION_HANDLE((short)1, "sessionHandle"),
     STATEMENT((short)2, "statement"),
-    CONF_OVERLAY((short)3, "confOverlay");
+    CONF_OVERLAY((short)3, "confOverlay"),
+    RUN_ASYNC((short)4, "runAsync");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -73,6 +76,8 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
           return STATEMENT;
         case 3: // CONF_OVERLAY
           return CONF_OVERLAY;
+        case 4: // RUN_ASYNC
+          return RUN_ASYNC;
         default:
           return null;
       }
@@ -113,7 +118,9 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
   }
 
   // isset id assignments
-  private _Fields optionals[] = {_Fields.CONF_OVERLAY};
+  private static final int __RUNASYNC_ISSET_ID = 0;
+  private byte __isset_bitfield = 0;
+  private _Fields optionals[] = {_Fields.CONF_OVERLAY,_Fields.RUN_ASYNC};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -125,11 +132,15 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
         new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
+    tmpMap.put(_Fields.RUN_ASYNC, new org.apache.thrift.meta_data.FieldMetaData("runAsync", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TExecuteStatementReq.class, metaDataMap);
   }
 
   public TExecuteStatementReq() {
+    this.runAsync = false;
+
   }
 
   public TExecuteStatementReq(
@@ -145,6 +156,7 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
    * Performs a deep copy on <i>other</i>.
    */
   public TExecuteStatementReq(TExecuteStatementReq other) {
+    __isset_bitfield = other.__isset_bitfield;
     if (other.isSetSessionHandle()) {
       this.sessionHandle = new TSessionHandle(other.sessionHandle);
     }
@@ -166,6 +178,7 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
       }
       this.confOverlay = __this__confOverlay;
     }
+    this.runAsync = other.runAsync;
   }
 
   public TExecuteStatementReq deepCopy() {
@@ -177,6 +190,8 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
     this.sessionHandle = null;
     this.statement = null;
     this.confOverlay = null;
+    this.runAsync = false;
+
   }
 
   public TSessionHandle getSessionHandle() {
@@ -259,6 +274,28 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
     }
   }
 
+  public boolean isRunAsync() {
+    return this.runAsync;
+  }
+
+  public void setRunAsync(boolean runAsync) {
+    this.runAsync = runAsync;
+    setRunAsyncIsSet(true);
+  }
+
+  public void unsetRunAsync() {
+    __isset_bitfield = EncodingUtils.clearBit(__isset_bitfield, __RUNASYNC_ISSET_ID);
+  }
+
+  /** Returns true if field runAsync is set (has been assigned a value) and false otherwise */
+  public boolean isSetRunAsync() {
+    return EncodingUtils.testBit(__isset_bitfield, __RUNASYNC_ISSET_ID);
+  }
+
+  public void setRunAsyncIsSet(boolean value) {
+    __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __RUNASYNC_ISSET_ID, value);
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case SESSION_HANDLE:
@@ -285,6 +322,14 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
       }
       break;
 
+    case RUN_ASYNC:
+      if (value == null) {
+        unsetRunAsync();
+      } else {
+        setRunAsync((Boolean)value);
+      }
+      break;
+
     }
   }
 
@@ -298,6 +343,9 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
 
     case CONF_OVERLAY:
       return getConfOverlay();
+
+    case RUN_ASYNC:
+      return Boolean.valueOf(isRunAsync());
 
     }
     throw new IllegalStateException();
@@ -316,6 +364,8 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
       return isSetStatement();
     case CONF_OVERLAY:
       return isSetConfOverlay();
+    case RUN_ASYNC:
+      return isSetRunAsync();
     }
     throw new IllegalStateException();
   }
@@ -360,6 +410,15 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
         return false;
     }
 
+    boolean this_present_runAsync = true && this.isSetRunAsync();
+    boolean that_present_runAsync = true && that.isSetRunAsync();
+    if (this_present_runAsync || that_present_runAsync) {
+      if (!(this_present_runAsync && that_present_runAsync))
+        return false;
+      if (this.runAsync != that.runAsync)
+        return false;
+    }
+
     return true;
   }
 
@@ -381,6 +440,11 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
     builder.append(present_confOverlay);
     if (present_confOverlay)
       builder.append(confOverlay);
+
+    boolean present_runAsync = true && (isSetRunAsync());
+    builder.append(present_runAsync);
+    if (present_runAsync)
+      builder.append(runAsync);
 
     return builder.toHashCode();
   }
@@ -419,6 +483,16 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
     }
     if (isSetConfOverlay()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.confOverlay, typedOther.confOverlay);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetRunAsync()).compareTo(typedOther.isSetRunAsync());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetRunAsync()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.runAsync, typedOther.runAsync);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -468,6 +542,12 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
       }
       first = false;
     }
+    if (isSetRunAsync()) {
+      if (!first) sb.append(", ");
+      sb.append("runAsync:");
+      sb.append(this.runAsync);
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -498,6 +578,8 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
 
   private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
     try {
+      // it doesn't seem like you should have to do this, but java serialization is wacky, and doesn't call the default constructor.
+      __isset_bitfield = 0;
       read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
     } catch (org.apache.thrift.TException te) {
       throw new java.io.IOException(te);
@@ -559,6 +641,14 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 4: // RUN_ASYNC
+            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
+              struct.runAsync = iprot.readBool();
+              struct.setRunAsyncIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -597,6 +687,11 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
           oprot.writeFieldEnd();
         }
       }
+      if (struct.isSetRunAsync()) {
+        oprot.writeFieldBegin(RUN_ASYNC_FIELD_DESC);
+        oprot.writeBool(struct.runAsync);
+        oprot.writeFieldEnd();
+      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -620,7 +715,10 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
       if (struct.isSetConfOverlay()) {
         optionals.set(0);
       }
-      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetRunAsync()) {
+        optionals.set(1);
+      }
+      oprot.writeBitSet(optionals, 2);
       if (struct.isSetConfOverlay()) {
         {
           oprot.writeI32(struct.confOverlay.size());
@@ -630,6 +728,9 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
             oprot.writeString(_iter149.getValue());
           }
         }
+      }
+      if (struct.isSetRunAsync()) {
+        oprot.writeBool(struct.runAsync);
       }
     }
 
@@ -641,7 +742,7 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
       struct.setSessionHandleIsSet(true);
       struct.statement = iprot.readString();
       struct.setStatementIsSet(true);
-      BitSet incoming = iprot.readBitSet(1);
+      BitSet incoming = iprot.readBitSet(2);
       if (incoming.get(0)) {
         {
           org.apache.thrift.protocol.TMap _map150 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRING, iprot.readI32());
@@ -656,6 +757,10 @@ public class TExecuteStatementReq implements org.apache.thrift.TBase<TExecuteSta
           }
         }
         struct.setConfOverlayIsSet(true);
+      }
+      if (incoming.get(1)) {
+        struct.runAsync = iprot.readBool();
+        struct.setRunAsyncIsSet(true);
       }
     }
   }
