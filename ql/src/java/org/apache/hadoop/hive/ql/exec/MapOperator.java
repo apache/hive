@@ -347,6 +347,8 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
     Path fpath = new Path(HiveConf.getVar(hconf,
         HiveConf.ConfVars.HADOOPMAPFILENAME));
 
+    boolean schemeless = fpath.toUri().getScheme() == null;
+
     List<Operator<? extends OperatorDesc>> children =
         new ArrayList<Operator<? extends OperatorDesc>>();
 
@@ -358,6 +360,10 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
         List<String> aliases = entry.getValue();
 
         Path onepath = new Path(onefile);
+        if (schemeless) {
+          onepath = new Path(onepath.toUri().getPath());
+        }
+
         PartitionDesc partDesc = conf.getPathToPartitionInfo().get(onefile);
 
         for (String onealias : aliases) {
