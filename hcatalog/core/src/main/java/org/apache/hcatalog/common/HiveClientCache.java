@@ -27,7 +27,6 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
-import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.thrift.TException;
@@ -274,11 +273,7 @@ class HiveClientCache {
     protected boolean isOpen() {
       try {
         // Look for an unlikely database name and see if either MetaException or TException is thrown
-        this.getDatabase("NonExistentDatabaseUsedForHealthCheck");
-      } catch (NoSuchObjectException e) {
-        return true; // It is okay if the database doesn't exist
-      } catch (MetaException e) {
-        return false;
+        this.getDatabases("NonExistentDatabaseUsedForHealthCheck");
       } catch (TException e) {
         return false;
       }
