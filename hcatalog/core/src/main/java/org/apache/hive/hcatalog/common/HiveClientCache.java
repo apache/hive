@@ -273,11 +273,7 @@ class HiveClientCache {
     protected boolean isOpen() {
       try {
         // Look for an unlikely database name and see if either MetaException or TException is thrown
-        this.getDatabase("NonExistentDatabaseUsedForHealthCheck");
-      } catch (NoSuchObjectException e) {
-        return true; // It is okay if the database doesn't exist
-      } catch (MetaException e) {
-        return false;
+        this.getDatabases("NonExistentDatabaseUsedForHealthCheck");
       } catch (TException e) {
         return false;
       }
