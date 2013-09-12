@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.JobContext;
@@ -78,12 +79,21 @@ public abstract class HCatBaseOutputFormat extends OutputFormat<WritableComparab
    * @return the output format instance
    * @throws IOException
    */
-  protected OutputFormat<WritableComparable<?>, HCatRecord> getOutputFormat(JobContext context) throws IOException {
+  protected OutputFormat<WritableComparable<?>, HCatRecord> getOutputFormat(JobContext context) 
+    throws IOException {
     OutputJobInfo jobInfo = getJobInfo(context);
-    HCatStorageHandler storageHandler = HCatUtil.getStorageHandler(context.getConfiguration(), jobInfo.getTableInfo().getStorerInfo());
+    HiveStorageHandler storageHandler = HCatUtil.getStorageHandler(context.getConfiguration(), 
+        jobInfo.getTableInfo().getStorerInfo());
     //why do we need this?
     configureOutputStorageHandler(context);
-    return storageHandler.getOutputFormatContainer(ReflectionUtils.newInstance(storageHandler.getOutputFormatClass(), context.getConfiguration()));
+    if (storageHandler instanceof FosterStorageHandler) {
+      return new FileOutputFormatContainer(ReflectionUtils.newInstance(
+          storageHandler.getOutputFormatClass(),context.getConfiguration()));
+    }
+    else { 
+      return new DefaultOutputFormatContainer(ReflectionUtils.newInstance(
+          storageHandler.getOutputFormatClass(),context.getConfiguration()));
+    }
   }
 
   /**
@@ -134,7 +144,7 @@ public abstract class HCatBaseOutputFormat extends OutputFormat<WritableComparab
     Configuration conf = jobContext.getConfiguration();
     try {
       OutputJobInfo jobInfo = (OutputJobInfo) HCatUtil.deserialize(conf.get(HCatConstants.HCAT_KEY_OUTPUT_INFO));
-      HCatStorageHandler storageHandler = HCatUtil.getStorageHandler(conf, jobInfo.getTableInfo().getStorerInfo());
+      HiveStorageHandler storageHandler = HCatUtil.getStorageHandler(jobContext.getConfiguration(),jobInfo.getTableInfo().getStorerInfo());
 
       Map<String, String> partitionValues = jobInfo.getPartitionValues();
       String location = jobInfo.getLocation();

@@ -29,6 +29,7 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
@@ -116,7 +117,7 @@ public abstract class HCatBaseInputFormat
       return splits;
     }
 
-    HCatStorageHandler storageHandler;
+    HiveStorageHandler storageHandler;
     JobConf jobConf;
     //For each matching partition, call getSplits on the underlying InputFormat
     for (PartInfo partitionInfo : partitionInfoList) {
@@ -185,7 +186,7 @@ public abstract class HCatBaseInputFormat
     JobContext jobContext = taskContext;
     Configuration conf = jobContext.getConfiguration();
 
-    HCatStorageHandler storageHandler = HCatUtil.getStorageHandler(
+    HiveStorageHandler storageHandler = HCatUtil.getStorageHandler(
       conf, partitionInfo);
 
     JobConf jobConf = HCatUtil.getJobConfFromContext(jobContext);

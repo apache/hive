@@ -37,7 +37,6 @@ import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvide
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProviderBase;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hadoop.util.ReflectionUtils;
-import org.apache.hive.hcatalog.mapreduce.HCatStorageHandler;
 
 /**
  * A HiveAuthorizationProvider which delegates the authorization requests to 
@@ -84,8 +83,8 @@ public class StorageDelegationAuthorizationProvider extends HiveAuthorizationPro
     HiveStorageHandler handler = table.getStorageHandler();
 
     if (handler != null) {
-      if (handler instanceof HCatStorageHandler) {
-        return ((HCatStorageHandler) handler).getAuthorizationProvider();
+      if (handler instanceof HiveStorageHandler) {
+        return ((HiveStorageHandler) handler).getAuthorizationProvider();
       } else {
         String authProviderClass = authProviders.get(handler.getClass().getCanonicalName());
 

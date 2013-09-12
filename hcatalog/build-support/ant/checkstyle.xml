@@ -45,6 +45,7 @@
           <exclude name="storage-handlers/hbase/src/gen-java/**"/>
           <exclude name="storage-handlers/hbase/src/test/all-tests"/>
           <exclude name="storage-handlers/hbase/src/test/excluded-tests"/>
+          <exclude name="storage-handlers/hbase/metastore_db/**"/>
           <exclude name="storage-handlers/hbase/partitions*"/>
           <exclude name="storage-handlers/hbase/.partitions*"/>
           <exclude name="KEYS"/>

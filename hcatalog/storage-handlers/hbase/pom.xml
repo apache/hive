@@ -54,6 +54,12 @@
       <scope>compile</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.hive.hcatalog</groupId>
+      <artifactId>hcatalog-pig-adapter</artifactId>
+      <version>${hcatalog.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
       <groupId>org.apache.zookeeper</groupId>
       <artifactId>zookeeper</artifactId>
       <version>${zookeeper.version}</version>
@@ -67,6 +73,12 @@
     </dependency>
 
     <!-- test scope -->
+    <dependency>
+      <groupId>org.apache.hive.hcatalog</groupId>
+      <artifactId>hcatalog-pig-adapter</artifactId>
+      <version>${hcatalog.version}</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
