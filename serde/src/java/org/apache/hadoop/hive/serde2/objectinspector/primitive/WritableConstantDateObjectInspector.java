@@ -31,6 +31,9 @@ public class WritableConstantDateObjectInspector extends
 
   private DateWritable value;
 
+  protected WritableConstantDateObjectInspector() {
+    super();
+  }
   WritableConstantDateObjectInspector(DateWritable value) {
     super();
     this.value = value;

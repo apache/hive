@@ -88,6 +88,10 @@ public final class PrimitiveObjectInspectorUtils {
      */
     public String typeName;
 
+    protected PrimitiveTypeEntry() {
+      super();
+    }
+    
     PrimitiveTypeEntry(
         PrimitiveObjectInspector.PrimitiveCategory primitiveCategory,
         String typeName, Class<?> primitiveType, Class<?> javaClass,

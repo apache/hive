@@ -31,10 +31,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  * StructObjectInspector works on struct data that is stored as a Java List or
  * Java Array object. Basically, the fields are stored sequentially in the List
  * object.
- * 
+ *
  * The names of the struct fields and the internal structure of the struct
  * fields are specified in the ctor of the StructObjectInspector.
- * 
+ *
  */
 public class MetadataListStructObjectInspector extends
     StandardStructObjectInspector {
@@ -79,6 +79,9 @@ public class MetadataListStructObjectInspector extends
     return r;
   }
 
+  protected MetadataListStructObjectInspector() {
+    super();
+  }
   MetadataListStructObjectInspector(List<String> columnNames) {
     super(columnNames, getFieldObjectInspectors(columnNames.size()));
   }

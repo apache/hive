@@ -24,14 +24,17 @@ import java.util.List;
 /**
  * DefaultListObjectInspector works on list data that is stored as a Java List
  * or Java Array object.
- * 
+ *
  * Always use the ObjectInspectorFactory to create new ObjectInspector objects,
  * instead of directly creating an instance of this class.
  */
 public class StandardListObjectInspector implements SettableListObjectInspector {
 
-  ObjectInspector listElementObjectInspector;
+  private ObjectInspector listElementObjectInspector;
 
+  protected StandardListObjectInspector() {
+    super();
+  }
   /**
    * Call ObjectInspectorFactory.getStandardListObjectInspector instead.
    */

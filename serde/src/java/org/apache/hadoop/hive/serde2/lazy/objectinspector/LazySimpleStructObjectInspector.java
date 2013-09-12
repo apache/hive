@@ -33,10 +33,10 @@ import org.apache.hadoop.io.Text;
 /**
  * LazySimpleStructObjectInspector works on struct data that is stored in
  * LazyStruct.
- * 
+ *
  * The names of the struct fields and the internal structure of the struct
  * fields are specified in the ctor of the LazySimpleStructObjectInspector.
- * 
+ *
  * Always use the ObjectInspectorFactory to create new ObjectInspector objects,
  * instead of directly creating an instance of this class.
  */
@@ -51,6 +51,9 @@ public class LazySimpleStructObjectInspector extends StructObjectInspector {
     protected ObjectInspector fieldObjectInspector;
     protected String fieldComment;
 
+    protected MyField() {
+      super();
+    }
     public MyField(int fieldID, String fieldName,
         ObjectInspector fieldObjectInspector) {
       this.fieldID = fieldID;
@@ -85,19 +88,16 @@ public class LazySimpleStructObjectInspector extends StructObjectInspector {
     }
   }
 
-  protected List<MyField> fields;
+  private List<MyField> fields;
+  private byte separator;
+  private Text nullSequence;
+  private boolean lastColumnTakesRest;
+  private boolean escaped;
+  private byte escapeChar;
 
-  @Override
-  public String getTypeName() {
-    return ObjectInspectorUtils.getStandardStructTypeName(this);
+  protected LazySimpleStructObjectInspector() {
+    super();
   }
-
-  byte separator;
-  Text nullSequence;
-  boolean lastColumnTakesRest;
-  boolean escaped;
-  byte escapeChar;
-
   /**
    * Call ObjectInspectorFactory.getLazySimpleStructObjectInspector instead.
    */
@@ -155,6 +155,11 @@ public class LazySimpleStructObjectInspector extends StructObjectInspector {
       this.fields.add(new MyField(i, fields.get(i).getFieldName(), fields
           .get(i).getFieldObjectInspector(), fields.get(i).getFieldComment()));
     }
+  }
+
+  @Override
+  public String getTypeName() {
+    return ObjectInspectorUtils.getStandardStructTypeName(this);
   }
 
   @Override

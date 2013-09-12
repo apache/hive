@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.SettableListObjectInspector
 import org.apache.hadoop.hive.serde2.objectinspector.SettableMapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
@@ -163,8 +162,11 @@ final class OrcStruct implements Writable {
   }
 
   static class OrcStructInspector extends SettableStructObjectInspector {
-    private final List<StructField> fields;
+    private List<StructField> fields;
 
+    protected OrcStructInspector() {
+      super();
+    }
     OrcStructInspector(StructTypeInfo info) {
       ArrayList<String> fieldNames = info.getAllStructFieldNames();
       ArrayList<TypeInfo> fieldTypes = info.getAllStructFieldTypeInfos();
@@ -283,9 +285,12 @@ final class OrcStruct implements Writable {
 
   static class OrcMapObjectInspector
       implements MapObjectInspector, SettableMapObjectInspector {
-    private final ObjectInspector key;
-    private final ObjectInspector value;
+    private ObjectInspector key;
+    private ObjectInspector value;
 
+    private OrcMapObjectInspector() {
+      super();
+    }
     OrcMapObjectInspector(MapTypeInfo info) {
       key = createObjectInspector(info.getMapKeyTypeInfo());
       value = createObjectInspector(info.getMapValueTypeInfo());
@@ -371,8 +376,11 @@ final class OrcStruct implements Writable {
 
   static class OrcListObjectInspector
       implements ListObjectInspector, SettableListObjectInspector {
-    private final ObjectInspector child;
+    private ObjectInspector child;
 
+    private OrcListObjectInspector() {
+      super();
+    }
     OrcListObjectInspector(ListTypeInfo info) {
       child = createObjectInspector(info.getListElementTypeInfo());
     }

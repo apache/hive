@@ -28,8 +28,12 @@ public class WritableConstantBinaryObjectInspector extends
     WritableBinaryObjectInspector implements
     ConstantObjectInspector {
 
-  private final BytesWritable value;
+  private BytesWritable value;
 
+  protected WritableConstantBinaryObjectInspector() {
+    super();
+  }
+  
   public WritableConstantBinaryObjectInspector(BytesWritable value) {
     super();
     this.value = value;

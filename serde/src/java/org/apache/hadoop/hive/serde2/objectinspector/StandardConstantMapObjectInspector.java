@@ -32,6 +32,9 @@ public class StandardConstantMapObjectInspector extends StandardMapObjectInspect
 
   private Map<?, ?> value;
 
+  protected StandardConstantMapObjectInspector() {
+    super();
+  }
   /**
    * Call ObjectInspectorFactory.getStandardMapObjectInspector instead.
    */

@@ -28,7 +28,7 @@ public class LazyBinaryObjectInspector extends
   AbstractPrimitiveLazyObjectInspector<BytesWritable> implements
     BinaryObjectInspector {
 
-  protected LazyBinaryObjectInspector() {
+  public LazyBinaryObjectInspector() {
     super(PrimitiveObjectInspectorUtils.binaryTypeEntry);
   }
 

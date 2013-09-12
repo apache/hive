@@ -31,8 +31,11 @@ import java.util.List;
  * objects, instead of directly creating an instance of this class.
  */
 public class StandardUnionObjectInspector implements UnionObjectInspector {
-  List<ObjectInspector> ois;
+  private List<ObjectInspector> ois;
 
+  protected StandardUnionObjectInspector() {
+    super();
+  }
   public StandardUnionObjectInspector(List<ObjectInspector> ois) {
     this.ois = ois;
   }
