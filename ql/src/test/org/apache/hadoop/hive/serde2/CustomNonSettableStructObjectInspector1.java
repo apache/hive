@@ -21,6 +21,10 @@ StructObjectInspector {
     protected ObjectInspector fieldObjectInspector;
     protected String fieldComment;
 
+    protected MyField() {
+      super();
+    }
+
     public MyField(int fieldID, String fieldName,
         ObjectInspector fieldObjectInspector) {
       this.fieldID = fieldID;
@@ -58,10 +62,9 @@ StructObjectInspector {
 
   protected List<MyField> fields;
 
-  public String getTypeName() {
-    return ObjectInspectorUtils.getStandardStructTypeName(this);
+  protected CustomNonSettableStructObjectInspector1() {
+    super();
   }
-
   /**
    * Call ObjectInspectorFactory.getNonSettableStructObjectInspector instead.
    */
@@ -79,6 +82,10 @@ StructObjectInspector {
       fields.add(new MyField(i, structFieldNames.get(i),
           structFieldObjectInspectors.get(i), null));
     }
+  }
+
+  public String getTypeName() {
+    return ObjectInspectorUtils.getStandardStructTypeName(this);
   }
 
   public final Category getCategory() {

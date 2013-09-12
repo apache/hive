@@ -31,6 +31,9 @@ public class WritableConstantDoubleObjectInspector extends
 
   private DoubleWritable value;
 
+  protected WritableConstantDoubleObjectInspector() {
+    super();
+  }
   WritableConstantDoubleObjectInspector(DoubleWritable value) {
     super();
     this.value = value;

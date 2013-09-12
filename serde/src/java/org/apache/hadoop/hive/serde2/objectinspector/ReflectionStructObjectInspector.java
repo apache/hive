@@ -45,6 +45,10 @@ public class ReflectionStructObjectInspector extends
     protected Field field;
     protected ObjectInspector fieldObjectInspector;
 
+    protected MyField() {
+      super();
+    }
+
     public MyField(Field field, ObjectInspector fieldObjectInspector) {
       this.field = field;
       this.fieldObjectInspector = fieldObjectInspector;

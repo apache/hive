@@ -26,12 +26,15 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 
 /**
  * ObjectInspector for LazyBinaryStruct.
- * 
+ *
  * @see LazyBinaryStruct
  */
 public class LazyBinaryStructObjectInspector extends
     StandardStructObjectInspector {
 
+  protected LazyBinaryStructObjectInspector() {
+    super();
+  }
   protected LazyBinaryStructObjectInspector(List<String> structFieldNames,
       List<ObjectInspector> structFieldObjectInspectors) {
     super(structFieldNames, structFieldObjectInspectors);

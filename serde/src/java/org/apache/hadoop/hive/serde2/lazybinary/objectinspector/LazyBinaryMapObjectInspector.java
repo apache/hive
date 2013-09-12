@@ -30,6 +30,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.StandardMapObjectInspector;
  */
 public class LazyBinaryMapObjectInspector extends StandardMapObjectInspector {
 
+  protected LazyBinaryMapObjectInspector() {
+    super();
+  }
   protected LazyBinaryMapObjectInspector(ObjectInspector mapKeyObjectInspector,
       ObjectInspector mapValueObjectInspector) {
     super(mapKeyObjectInspector, mapValueObjectInspector);

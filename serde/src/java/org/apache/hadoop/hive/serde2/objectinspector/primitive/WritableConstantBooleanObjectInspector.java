@@ -31,6 +31,9 @@ public class WritableConstantBooleanObjectInspector extends
 
   private BooleanWritable value;
 
+  protected WritableConstantBooleanObjectInspector() {
+    super();
+  }
   WritableConstantBooleanObjectInspector(BooleanWritable value) {
     super();
     this.value = value;
