@@ -21,11 +21,15 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Iterator;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.filecache.DistributedCache;
+import org.apache.hadoop.fs.BlockLocation;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.mapred.JobTracker;
@@ -330,4 +334,37 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   public WebHCatJTShim getWebHCatShim(Configuration conf, UserGroupInformation ugi) throws IOException {
     return new WebHCatJTShim20S(conf, ugi);//this has state, so can't be cached
   }
+
+  @Override
+  public Iterator<FileStatus> listLocatedStatus(final FileSystem fs,
+                                                final Path path,
+                                                final PathFilter filter
+  ) throws IOException {
+    return new Iterator<FileStatus>() {
+      private final FileStatus[] result = fs.listStatus(path, filter);
+      private int current = 0;
+
+      @Override
+      public boolean hasNext() {
+        return current < result.length;
+      }
+
+      @Override
+      public FileStatus next() {
+        return result[current++];
+      }
+
+      @Override
+      public void remove() {
+        throw new IllegalArgumentException("Not supported");
+      }
+    };
+  }
+
+  @Override
+  public BlockLocation[] getLocations(FileSystem fs,
+                                      FileStatus status) throws IOException {
+    return fs.getFileBlockLocations(status, 0, status.getLen());
+  }
+
 }

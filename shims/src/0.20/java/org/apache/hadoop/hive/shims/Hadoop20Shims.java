@@ -30,6 +30,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -37,6 +38,7 @@ import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -628,6 +630,38 @@ public class Hadoop20Shims implements HadoopShims {
   @Override
   public UserGroupInformation createProxyUser(String userName) throws IOException {
     return createRemoteUser(userName, null);
+  }
+
+  @Override
+  public Iterator<FileStatus> listLocatedStatus(final FileSystem fs,
+                                                final Path path,
+                                                final PathFilter filter
+                                               ) throws IOException {
+    return new Iterator<FileStatus>() {
+      private final FileStatus[] result = fs.listStatus(path, filter);
+      private int current = 0;
+
+      @Override
+      public boolean hasNext() {
+        return current < result.length;
+      }
+
+      @Override
+      public FileStatus next() {
+        return result[current++];
+      }
+
+      @Override
+      public void remove() {
+        throw new IllegalArgumentException("Not supported");
+      }
+    };
+  }
+
+  @Override
+  public BlockLocation[] getLocations(FileSystem fs,
+                                      FileStatus status) throws IOException {
+    return fs.getFileBlockLocations(status, 0, status.getLen());
   }
 
   @Override
