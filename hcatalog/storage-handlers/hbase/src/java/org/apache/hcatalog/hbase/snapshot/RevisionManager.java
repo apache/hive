@@ -36,6 +36,7 @@ public interface RevisionManager {
   /**
    * Initialize the revision manager.
    */
+  @Deprecated
   public void initialize(Configuration conf);
 
   /**
@@ -43,6 +44,7 @@ public interface RevisionManager {
    *
    * @throws IOException
    */
+  @Deprecated
   public void open() throws IOException;
 
   /**
@@ -50,6 +52,7 @@ public interface RevisionManager {
    *
    * @throws IOException
    */
+  @Deprecated
   public void close() throws IOException;
 
   /**
@@ -57,12 +60,14 @@ public interface RevisionManager {
    * @param table the hbase table name
    * @param columnFamilies the column families in the table
    */
+  @Deprecated
   public void createTable(String table, List<String> columnFamilies) throws IOException;
 
   /**
    * Remove table data from revision manager for a dropped table.
    * @param table the hbase table name
    */
+  @Deprecated
   public void dropTable(String table) throws IOException;
 
   /**
@@ -73,6 +78,7 @@ public interface RevisionManager {
    * @return a new Transaction
    * @throws IOException
    */
+  @Deprecated
   public Transaction beginWriteTransaction(String table, List<String> families)
     throws IOException;
 
@@ -85,6 +91,7 @@ public interface RevisionManager {
    * @return a new Transaction
    * @throws IOException
    */
+  @Deprecated
   public Transaction beginWriteTransaction(String table,
                        List<String> families, long keepAlive) throws IOException;
 
@@ -94,6 +101,7 @@ public interface RevisionManager {
    * @param transaction
    * @throws IOException
    */
+  @Deprecated
   public void commitWriteTransaction(Transaction transaction)
     throws IOException;
 
@@ -103,6 +111,7 @@ public interface RevisionManager {
    * @param transaction
    * @throws IOException
    */
+  @Deprecated
   public void abortWriteTransaction(Transaction transaction)
     throws IOException;
 
@@ -114,8 +123,9 @@ public interface RevisionManager {
    * @return a list of aborted WriteTransactions
    * @throws java.io.IOException
    */
+  @Deprecated
   public List<FamilyRevision> getAbortedWriteTransactions(String table,
-                              String columnFamily) throws IOException;
+      String columnFamily) throws IOException;
 
   /**
    * Create the latest snapshot of the table.
@@ -124,6 +134,7 @@ public interface RevisionManager {
    * @return a new snapshot
    * @throws IOException
    */
+  @Deprecated
   public TableSnapshot createSnapshot(String tableName) throws IOException;
 
   /**
@@ -134,6 +145,7 @@ public interface RevisionManager {
    * @return a new snapshot
    * @throws IOException
    */
+  @Deprecated
   public TableSnapshot createSnapshot(String tableName, long revision)
     throws IOException;
 
@@ -143,6 +155,7 @@ public interface RevisionManager {
    * @param transaction
    * @throws IOException
    */
+  @Deprecated
   public void keepAlive(Transaction transaction) throws IOException;
 
 }

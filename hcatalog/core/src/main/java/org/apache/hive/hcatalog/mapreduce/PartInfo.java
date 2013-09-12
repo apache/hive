@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
 
 /** The Class used to serialize the partition information read from the metadata server that maps to a partition. */
@@ -63,7 +64,7 @@ public class PartInfo implements Serializable {
    * @param jobProperties the job properties
    * @param tableInfo the table information
    */
-  public PartInfo(HCatSchema partitionSchema, HCatStorageHandler storageHandler,
+  public PartInfo(HCatSchema partitionSchema, HiveStorageHandler storageHandler,
           String location, Properties hcatProperties,
           Map<String, String> jobProperties, HCatTableInfo tableInfo) {
     this.partitionSchema = partitionSchema;

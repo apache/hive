@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -87,7 +88,7 @@ class FileOutputFormatContainer extends OutputFormatContainer {
     OutputJobInfo jobInfo = (OutputJobInfo) HCatUtil
       .deserialize(jobInfoString);
     StorerInfo storeInfo = jobInfo.getTableInfo().getStorerInfo();
-    HCatStorageHandler storageHandler = HCatUtil.getStorageHandler(
+    HiveStorageHandler storageHandler = HCatUtil.getStorageHandler(
       context.getConfiguration(), storeInfo);
     Class<? extends SerDe> serde = storageHandler.getSerDeClass();
     SerDe sd = (SerDe) ReflectionUtils.newInstance(serde,

@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -51,7 +52,7 @@ import org.apache.hive.hcatalog.data.HCatRecord;
  */
 class FileRecordWriterContainer extends RecordWriterContainer {
 
-  private final HCatStorageHandler storageHandler;
+  private final HiveStorageHandler storageHandler;
   private final SerDe serDe;
   private final ObjectInspector objectInspector;
 
@@ -125,7 +126,7 @@ class FileRecordWriterContainer extends RecordWriterContainer {
   /**
    * @return the storagehandler
    */
-  public HCatStorageHandler getStorageHandler() {
+  public HiveStorageHandler getStorageHandler() {
     return storageHandler;
   }
 

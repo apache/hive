@@ -31,7 +31,7 @@ import org.apache.hadoop.mapred.OutputFormat;
 /**
  * The abstract Class HCatStorageHandler would server as the base class for all
  * the storage handlers required for non-native tables in HCatalog.
- * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.HCatStorageHandler} instead
+ * @deprecated Use/modify {@link org.apache.hcatalog.mapreduce.HCatStorageHandler} instead
  */
 public abstract class HCatStorageHandler implements HiveStorageHandler {
 

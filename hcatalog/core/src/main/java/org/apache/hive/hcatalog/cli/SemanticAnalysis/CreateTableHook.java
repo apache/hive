@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.ASTNode;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
@@ -44,7 +45,6 @@ import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatUtil;
-import org.apache.hive.hcatalog.mapreduce.HCatStorageHandler;
 
 final class CreateTableHook extends HCatSemanticAnalyzerBase {
 
@@ -196,7 +196,7 @@ final class CreateTableHook extends HCatSemanticAnalyzerBase {
     if (StringUtils.isEmpty(storageHandler)) {
     } else {
       try {
-        HCatStorageHandler storageHandlerInst = HCatUtil
+        HiveStorageHandler storageHandlerInst = HCatUtil
           .getStorageHandler(context.getConf(),
             desc.getStorageHandler(),
             desc.getSerName(),
