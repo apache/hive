@@ -22,8 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 
 /**
  * TypeInfoFactory can be used to create the TypeInfo object for any types.
@@ -33,7 +36,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  * objects that represents the same type.
  */
 public final class TypeInfoFactory {
-
+  private static Log LOG = LogFactory.getLog(TypeInfoFactory.class);
   static ConcurrentHashMap<String, TypeInfo> cachedPrimitiveTypeInfo = new ConcurrentHashMap<String, TypeInfo>();
 
   private TypeInfoFactory() {
@@ -41,13 +44,32 @@ public final class TypeInfoFactory {
   }
 
   public static TypeInfo getPrimitiveTypeInfo(String typeName) {
-    if (null == PrimitiveObjectInspectorUtils
-        .getTypeEntryFromTypeName(typeName)) {
+    PrimitiveTypeEntry typeEntry = PrimitiveObjectInspectorUtils
+        .getTypeEntryFromTypeName(TypeInfoUtils.getBaseName(typeName));
+    if (null == typeEntry) {
       throw new RuntimeException("Cannot getPrimitiveTypeInfo for " + typeName);
     }
     TypeInfo result = cachedPrimitiveTypeInfo.get(typeName);
     if (result == null) {
-      result = new PrimitiveTypeInfo(typeName);
+      TypeInfoUtils.PrimitiveParts parts = TypeInfoUtils.parsePrimitiveParts(typeName);
+      // Create params if there are any
+      if (parts.typeParams != null && parts.typeParams.length > 0) {
+        // The type string came with parameters.  Parse and add to TypeInfo
+        try {
+          BaseTypeParams typeParams = PrimitiveTypeEntry.createTypeParams(
+              parts.typeName, parts.typeParams);
+          result = new PrimitiveTypeInfo(typeName);
+          ((PrimitiveTypeInfo) result).setTypeParams(typeParams);
+        } catch (Exception err) {
+          LOG.error(err);
+          throw new RuntimeException("Error creating type parameters for " + typeName
+              + ": " + err, err);
+        }
+      } else {
+        // No type params
+        result = new PrimitiveTypeInfo(parts.typeName);
+      }
+
       cachedPrimitiveTypeInfo.put(typeName, result);
     }
     return result;
@@ -66,6 +88,8 @@ public final class TypeInfoFactory {
   public static final TypeInfo timestampTypeInfo = getPrimitiveTypeInfo(serdeConstants.TIMESTAMP_TYPE_NAME);
   public static final TypeInfo binaryTypeInfo = getPrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME);
   public static final TypeInfo decimalTypeInfo = getPrimitiveTypeInfo(serdeConstants.DECIMAL_TYPE_NAME);
+  // Disallow usage of varchar without length specifier.
+  //public static final TypeInfo varcharTypeInfo = getPrimitiveTypeInfo(serdeConstants.VARCHAR_TYPE_NAME);
 
   public static final TypeInfo unknownTypeInfo = getPrimitiveTypeInfo("unknown");
 

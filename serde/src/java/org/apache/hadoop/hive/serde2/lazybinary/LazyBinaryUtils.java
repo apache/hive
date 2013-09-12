@@ -425,8 +425,7 @@ public final class LazyBinaryUtils {
       switch (typeInfo.getCategory()) {
       case PRIMITIVE: {
         result = PrimitiveObjectInspectorFactory
-            .getPrimitiveWritableObjectInspector(((PrimitiveTypeInfo) typeInfo)
-            .getPrimitiveCategory());
+            .getPrimitiveWritableObjectInspector(((PrimitiveTypeInfo) typeInfo));
         break;
       }
       case LIST: {

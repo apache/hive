@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
+import org.apache.hadoop.hive.serde2.typeinfo.BaseTypeParams;
 
 /**
  * An AbstractPrimitiveObjectInspector is based on
@@ -28,6 +29,7 @@ public abstract class AbstractPrimitiveObjectInspector implements
     PrimitiveObjectInspector {
 
   protected PrimitiveTypeEntry typeEntry;
+  protected BaseTypeParams typeParams;
 
   protected AbstractPrimitiveObjectInspector() {
     super();
@@ -79,7 +81,18 @@ public abstract class AbstractPrimitiveObjectInspector implements
    */
   @Override
   public String getTypeName() {
-    return typeEntry.typeName;
+    return typeEntry.toString();
   }
 
+  public BaseTypeParams getTypeParams() {
+    return typeParams;
+  }
+
+  public void setTypeParams(BaseTypeParams newParams) {
+    if (typeParams != null && !typeEntry.isParameterized()) {
+      throw new UnsupportedOperationException(
+          "Attempting to add type parameters " + typeParams + " to type " + getTypeName());
+    }
+    this.typeParams = newParams;
+  }
 }

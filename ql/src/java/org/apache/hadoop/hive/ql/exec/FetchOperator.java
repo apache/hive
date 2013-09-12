@@ -130,7 +130,7 @@ public class FetchOperator implements Serializable {
       List<ObjectInspector> inspectors = new ArrayList<ObjectInspector>(vcCols.size());
       for (VirtualColumn vc : vcCols) {
         inspectors.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-                vc.getTypeInfo().getPrimitiveCategory()));
+                vc.getTypeInfo()));
         names.add(vc.getName());
       }
       vcsOI = ObjectInspectorFactory.getStandardStructObjectInspector(names, inspectors);
