@@ -95,7 +95,7 @@ public class TestVectorSelectOperator {
     ExprNodeColumnDesc colDesc2 = new ExprNodeColumnDesc(Long.class, "b", "table", false);
     ExprNodeColumnDesc colDesc3 = new ExprNodeColumnDesc(Long.class, "c", "table", false);
     ExprNodeGenericFuncDesc plusDesc = new ExprNodeGenericFuncDesc();
-    GenericUDF gudf = new GenericUDFBridge("+", true, UDFOPPlus.class);
+    GenericUDF gudf = new GenericUDFBridge("+", true, UDFOPPlus.class.getCanonicalName());
     plusDesc.setGenericUDF(gudf);
     List<ExprNodeDesc> children = new  ArrayList<ExprNodeDesc>();
     children.add(colDesc1);

@@ -318,4 +318,18 @@ public class RowResolver implements Serializable{
     this.expressionMap = expressionMap;
   }
 
+  public String[] toColumnDesc() {
+    StringBuilder cols = new StringBuilder();
+    StringBuilder colTypes = new StringBuilder();
+
+    for (ColumnInfo colInfo : getColumnInfos()) {
+      if (cols.length() > 0) {
+        cols.append(',');
+        colTypes.append(':');
+      }
+      cols.append(colInfo.getInternalName());
+      colTypes.append(colInfo.getType().getTypeName());
+    }
+    return new String[] {cols.toString(), colTypes.toString()};
+  }
 }

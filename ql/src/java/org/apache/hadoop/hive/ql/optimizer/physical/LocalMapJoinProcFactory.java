@@ -163,7 +163,8 @@ public final class LocalMapJoinProcFactory {
           if (parent instanceof TableScanOperator) {
             tbl = ((TableScanOperator) parent).getTableDesc();
           } else {
-            throw new SemanticException();
+            throw new SemanticException("Expected parent operator of type TableScanOperator." +
+              "Found " + parent.getClass().getName() + " instead.");
           }
         } else {
           // get parent schema

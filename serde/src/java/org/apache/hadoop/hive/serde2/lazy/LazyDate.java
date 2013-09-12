@@ -62,6 +62,7 @@ public class LazyDate extends LazyPrimitive<LazyDateObjectInspector, DateWritabl
     try {
       s = Text.decode(bytes.getData(), start, length);
       data.set(Date.valueOf(s));
+      isNull = false;
     } catch (Exception e) {
       isNull = true;
       logExceptionMessage(bytes, start, length, "DATE");

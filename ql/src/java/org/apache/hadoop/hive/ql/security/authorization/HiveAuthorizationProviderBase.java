@@ -57,10 +57,14 @@ public abstract class HiveAuthorizationProviderBase implements
       this.handler = handler;
     }
 
+    public boolean isRunFromMetaStore(){
+      return (this.hiveClient == null);
+    }
+
     public PrincipalPrivilegeSet get_privilege_set(HiveObjectType column, String dbName,
         String tableName, List<String> partValues, String col, String userName,
         List<String> groupNames) throws HiveException {
-      if (hiveClient != null) {
+      if (!isRunFromMetaStore()) {
         return hiveClient.get_privilege_set(
             column, dbName, tableName, partValues, col, userName, groupNames);
       } else {
@@ -77,7 +81,7 @@ public abstract class HiveAuthorizationProviderBase implements
     }
 
     public Database getDatabase(String dbName) throws HiveException {
-      if (hiveClient != null) {
+      if (!isRunFromMetaStore()) {
         return hiveClient.getDatabase(dbName);
       } else {
         try {

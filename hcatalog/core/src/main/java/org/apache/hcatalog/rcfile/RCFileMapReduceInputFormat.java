@@ -30,21 +30,24 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.rcfile.RCFileMapReduceInputFormat} instead
+ */
 public class RCFileMapReduceInputFormat<K extends LongWritable, V extends BytesRefArrayWritable>
-    extends FileInputFormat<LongWritable, BytesRefArrayWritable> {
+  extends FileInputFormat<LongWritable, BytesRefArrayWritable> {
 
-    @Override
-    public RecordReader<LongWritable, BytesRefArrayWritable> createRecordReader(InputSplit split,
-                                                                                TaskAttemptContext context) throws IOException, InterruptedException {
+  @Override
+  public RecordReader<LongWritable, BytesRefArrayWritable> createRecordReader(InputSplit split,
+                                        TaskAttemptContext context) throws IOException, InterruptedException {
 
-        context.setStatus(split.toString());
-        return new RCFileMapReduceRecordReader<LongWritable, BytesRefArrayWritable>();
-    }
+    context.setStatus(split.toString());
+    return new RCFileMapReduceRecordReader<LongWritable, BytesRefArrayWritable>();
+  }
 
-    @Override
-    public List<InputSplit> getSplits(JobContext job) throws IOException {
+  @Override
+  public List<InputSplit> getSplits(JobContext job) throws IOException {
 
-        job.getConfiguration().setLong("mapred.min.split.size", SequenceFile.SYNC_INTERVAL);
-        return super.getSplits(job);
-    }
+    job.getConfiguration().setLong("mapred.min.split.size", SequenceFile.SYNC_INTERVAL);
+    return super.getSplits(job);
+  }
 }

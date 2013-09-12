@@ -22,14 +22,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
-        <groupId>org.apache.hcatalog</groupId>
+        <groupId>org.apache.hive.hcatalog</groupId>
         <artifactId>hcatalog</artifactId>
-        <version>0.12.0-SNAPSHOT</version>
+        <version>0.13.0-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
-    <groupId>org.apache.hcatalog</groupId>
     <artifactId>webhcat-java-client</artifactId>
     <packaging>jar</packaging>
     <name>webhcat-java-client</name>
@@ -37,7 +36,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.hcatalog</groupId>
+            <groupId>org.apache.hive.hcatalog</groupId>
             <artifactId>hcatalog-core</artifactId>
             <version>${hcatalog.version}</version>
             <scope>compile</scope>

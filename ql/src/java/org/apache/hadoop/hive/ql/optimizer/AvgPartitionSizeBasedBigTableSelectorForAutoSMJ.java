@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,9 +46,10 @@ public class AvgPartitionSizeBasedBigTableSelectorForAutoSMJ
   private static final Log LOG = LogFactory
       .getLog(AvgPartitionSizeBasedBigTableSelectorForAutoSMJ.class.getName());
 
-  public int getBigTablePosition(ParseContext parseCtx, JoinOperator joinOp)
+  public int getBigTablePosition(ParseContext parseCtx, JoinOperator joinOp,
+      Set<Integer> bigTableCandidates)
     throws SemanticException {
-    int bigTablePos = 0;
+    int bigTablePos = -1;
     long maxSize = -1;
     int numPartitionsCurrentBigTable = 0; // number of partitions for the chosen big table
     HiveConf conf = parseCtx.getConf();
@@ -57,9 +59,16 @@ public class AvgPartitionSizeBasedBigTableSelectorForAutoSMJ
       getListTopOps(joinOp, topOps);
       int currentPos = 0;
       for (TableScanOperator topOp : topOps) {
+
         if (topOp == null) {
           return -1;
         }
+
+        if (!bigTableCandidates.contains(currentPos)) {
+          currentPos++;
+          continue;
+        }
+
         int numPartitions = 1; // in case the sizes match, preference is
                                // given to the table with fewer partitions
         Table table = parseCtx.getTopToTable().get(topOp);

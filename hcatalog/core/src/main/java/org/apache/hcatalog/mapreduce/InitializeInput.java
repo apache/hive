@@ -45,127 +45,128 @@ import org.slf4j.LoggerFactory;
  * partitions matching the partition filter is fetched from the server and the information is
  * serialized and written into the JobContext configuration. The inputInfo is also updated with
  * info required in the client process context.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.InitializeInput} instead
  */
 class InitializeInput {
 
-    private static final Logger LOG = LoggerFactory.getLogger(InitializeInput.class);
+  private static final Logger LOG = LoggerFactory.getLogger(InitializeInput.class);
 
-    /**
-     * @see org.apache.hcatalog.mapreduce.InitializeInput#setInput(org.apache.hadoop.conf.Configuration, InputJobInfo)
-     */
-    public static void setInput(Job job, InputJobInfo theirInputJobInfo) throws Exception {
-        setInput(job.getConfiguration(), theirInputJobInfo);
-    }
+  /**
+   * @see org.apache.hcatalog.mapreduce.InitializeInput#setInput(org.apache.hadoop.conf.Configuration, InputJobInfo)
+   */
+  public static void setInput(Job job, InputJobInfo theirInputJobInfo) throws Exception {
+    setInput(job.getConfiguration(), theirInputJobInfo);
+  }
 
-    /**
-     * Set the input to use for the Job. This queries the metadata server with the specified
-     * partition predicates, gets the matching partitions, and puts the information in the job
-     * configuration object.
-     *
-     * To ensure a known InputJobInfo state, only the database name, table name, filter, and
-     * properties are preserved. All other modification from the given InputJobInfo are discarded.
-     *
-     * After calling setInput, InputJobInfo can be retrieved from the job configuration as follows:
-     * {code}
-     * InputJobInfo inputInfo = (InputJobInfo) HCatUtil.deserialize(
-     *     job.getConfiguration().get(HCatConstants.HCAT_KEY_JOB_INFO));
-     * {code}
-     *
-     * @param conf the job Configuration object
-     * @param theirInputJobInfo information on the Input to read
-     * @throws Exception
-     */
-    public static void setInput(Configuration conf,
-                                InputJobInfo theirInputJobInfo) throws Exception {
-        InputJobInfo inputJobInfo = InputJobInfo.create(
-            theirInputJobInfo.getDatabaseName(),
-            theirInputJobInfo.getTableName(),
-            theirInputJobInfo.getFilter(),
-            theirInputJobInfo.getProperties());
-        conf.set(
-            HCatConstants.HCAT_KEY_JOB_INFO,
-            HCatUtil.serialize(getInputJobInfo(conf, inputJobInfo, null)));
-    }
+  /**
+   * Set the input to use for the Job. This queries the metadata server with the specified
+   * partition predicates, gets the matching partitions, and puts the information in the job
+   * configuration object.
+   *
+   * To ensure a known InputJobInfo state, only the database name, table name, filter, and
+   * properties are preserved. All other modification from the given InputJobInfo are discarded.
+   *
+   * After calling setInput, InputJobInfo can be retrieved from the job configuration as follows:
+   * {code}
+   * InputJobInfo inputInfo = (InputJobInfo) HCatUtil.deserialize(
+   *     job.getConfiguration().get(HCatConstants.HCAT_KEY_JOB_INFO));
+   * {code}
+   *
+   * @param conf the job Configuration object
+   * @param theirInputJobInfo information on the Input to read
+   * @throws Exception
+   */
+  public static void setInput(Configuration conf,
+                InputJobInfo theirInputJobInfo) throws Exception {
+    InputJobInfo inputJobInfo = InputJobInfo.create(
+      theirInputJobInfo.getDatabaseName(),
+      theirInputJobInfo.getTableName(),
+      theirInputJobInfo.getFilter(),
+      theirInputJobInfo.getProperties());
+    conf.set(
+      HCatConstants.HCAT_KEY_JOB_INFO,
+      HCatUtil.serialize(getInputJobInfo(conf, inputJobInfo, null)));
+  }
 
-    /**
-     * Returns the given InputJobInfo after populating with data queried from the metadata service.
-     */
-    private static InputJobInfo getInputJobInfo(
-        Configuration conf, InputJobInfo inputJobInfo, String locationFilter) throws Exception {
-        HiveMetaStoreClient client = null;
-        HiveConf hiveConf = null;
-        try {
-            if (conf != null) {
-                hiveConf = HCatUtil.getHiveConf(conf);
-            } else {
-                hiveConf = new HiveConf(HCatInputFormat.class);
-            }
-            client = HCatUtil.getHiveClient(hiveConf);
-            Table table = HCatUtil.getTable(client, inputJobInfo.getDatabaseName(),
-                inputJobInfo.getTableName());
+  /**
+   * Returns the given InputJobInfo after populating with data queried from the metadata service.
+   */
+  private static InputJobInfo getInputJobInfo(
+    Configuration conf, InputJobInfo inputJobInfo, String locationFilter) throws Exception {
+    HiveMetaStoreClient client = null;
+    HiveConf hiveConf = null;
+    try {
+      if (conf != null) {
+        hiveConf = HCatUtil.getHiveConf(conf);
+      } else {
+        hiveConf = new HiveConf(HCatInputFormat.class);
+      }
+      client = HCatUtil.getHiveClient(hiveConf);
+      Table table = HCatUtil.getTable(client, inputJobInfo.getDatabaseName(),
+        inputJobInfo.getTableName());
 
-            List<PartInfo> partInfoList = new ArrayList<PartInfo>();
+      List<PartInfo> partInfoList = new ArrayList<PartInfo>();
 
-            inputJobInfo.setTableInfo(HCatTableInfo.valueOf(table.getTTable()));
-            if (table.getPartitionKeys().size() != 0) {
-                //Partitioned table
-                List<Partition> parts = client.listPartitionsByFilter(inputJobInfo.getDatabaseName(),
-                    inputJobInfo.getTableName(),
-                    inputJobInfo.getFilter(),
-                    (short) -1);
+      inputJobInfo.setTableInfo(HCatTableInfo.valueOf(table.getTTable()));
+      if (table.getPartitionKeys().size() != 0) {
+        //Partitioned table
+        List<Partition> parts = client.listPartitionsByFilter(inputJobInfo.getDatabaseName(),
+          inputJobInfo.getTableName(),
+          inputJobInfo.getFilter(),
+          (short) -1);
 
-                // Default to 100,000 partitions if hive.metastore.maxpartition is not defined
-                int maxPart = hiveConf.getInt("hcat.metastore.maxpartitions", 100000);
-                if (parts != null && parts.size() > maxPart) {
-                    throw new HCatException(ErrorType.ERROR_EXCEED_MAXPART, "total number of partitions is " + parts.size());
-                }
-
-                // populate partition info
-                for (Partition ptn : parts) {
-                    HCatSchema schema = HCatUtil.extractSchema(
-                        new org.apache.hadoop.hive.ql.metadata.Partition(table, ptn));
-                    PartInfo partInfo = extractPartInfo(schema, ptn.getSd(),
-                        ptn.getParameters(), conf, inputJobInfo);
-                    partInfo.setPartitionValues(InternalUtil.createPtnKeyValueMap(table, ptn));
-                    partInfoList.add(partInfo);
-                }
-
-            } else {
-                //Non partitioned table
-                HCatSchema schema = HCatUtil.extractSchema(table);
-                PartInfo partInfo = extractPartInfo(schema, table.getTTable().getSd(),
-                    table.getParameters(), conf, inputJobInfo);
-                partInfo.setPartitionValues(new HashMap<String, String>());
-                partInfoList.add(partInfo);
-            }
-            inputJobInfo.setPartitions(partInfoList);
-
-            return inputJobInfo;
-        } finally {
-            HCatUtil.closeHiveClientQuietly(client);
+        // Default to 100,000 partitions if hive.metastore.maxpartition is not defined
+        int maxPart = hiveConf.getInt("hcat.metastore.maxpartitions", 100000);
+        if (parts != null && parts.size() > maxPart) {
+          throw new HCatException(ErrorType.ERROR_EXCEED_MAXPART, "total number of partitions is " + parts.size());
         }
 
-    }
-
-    private static PartInfo extractPartInfo(HCatSchema schema, StorageDescriptor sd,
-                                            Map<String, String> parameters, Configuration conf,
-                                            InputJobInfo inputJobInfo) throws IOException {
-
-        StorerInfo storerInfo = InternalUtil.extractStorerInfo(sd, parameters);
-
-        Properties hcatProperties = new Properties();
-        HCatStorageHandler storageHandler = HCatUtil.getStorageHandler(conf, storerInfo);
-
-        // copy the properties from storageHandler to jobProperties
-        Map<String, String> jobProperties = HCatUtil.getInputJobProperties(storageHandler, inputJobInfo);
-
-        for (String key : parameters.keySet()) {
-            hcatProperties.put(key, parameters.get(key));
+        // populate partition info
+        for (Partition ptn : parts) {
+          HCatSchema schema = HCatUtil.extractSchema(
+            new org.apache.hadoop.hive.ql.metadata.Partition(table, ptn));
+          PartInfo partInfo = extractPartInfo(schema, ptn.getSd(),
+            ptn.getParameters(), conf, inputJobInfo);
+          partInfo.setPartitionValues(InternalUtil.createPtnKeyValueMap(table, ptn));
+          partInfoList.add(partInfo);
         }
-        // FIXME
-        // Bloating partinfo with inputJobInfo is not good
-        return new PartInfo(schema, storageHandler, sd.getLocation(),
-            hcatProperties, jobProperties, inputJobInfo.getTableInfo());
+
+      } else {
+        //Non partitioned table
+        HCatSchema schema = HCatUtil.extractSchema(table);
+        PartInfo partInfo = extractPartInfo(schema, table.getTTable().getSd(),
+          table.getParameters(), conf, inputJobInfo);
+        partInfo.setPartitionValues(new HashMap<String, String>());
+        partInfoList.add(partInfo);
+      }
+      inputJobInfo.setPartitions(partInfoList);
+
+      return inputJobInfo;
+    } finally {
+      HCatUtil.closeHiveClientQuietly(client);
     }
+
+  }
+
+  private static PartInfo extractPartInfo(HCatSchema schema, StorageDescriptor sd,
+                      Map<String, String> parameters, Configuration conf,
+                      InputJobInfo inputJobInfo) throws IOException {
+
+    StorerInfo storerInfo = InternalUtil.extractStorerInfo(sd, parameters);
+
+    Properties hcatProperties = new Properties();
+    HCatStorageHandler storageHandler = HCatUtil.getStorageHandler(conf, storerInfo);
+
+    // copy the properties from storageHandler to jobProperties
+    Map<String, String> jobProperties = HCatUtil.getInputJobProperties(storageHandler, inputJobInfo);
+
+    for (String key : parameters.keySet()) {
+      hcatProperties.put(key, parameters.get(key));
+    }
+    // FIXME
+    // Bloating partinfo with inputJobInfo is not good
+    return new PartInfo(schema, storageHandler, sd.getLocation(),
+      hcatProperties, jobProperties, inputJobInfo.getTableInfo());
+  }
 
 }

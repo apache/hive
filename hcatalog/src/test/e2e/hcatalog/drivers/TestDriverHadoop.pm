@@ -145,7 +145,7 @@ sub runTest
 	               $testCmd->{'group'} .  "_" .  $testCmd->{'num'} . ".$i.out";
                    $tableName = $results[$i];
 	           $modifiedTestCmd{'num'} = $testCmd->{'num'} . "_" . $i . "_benchmark";
-                   $modifiedTestCmd{'pig'} = "a = load '$tableName' using org.apache.hcatalog.pig.HCatLoader(); store a into ':OUTPATH:';";
+                   $modifiedTestCmd{'pig'} = "a = load '$tableName' using org.apache.hive.hcatalog.pig.HCatLoader(); store a into ':OUTPATH:';";
                    my $r = $self->runPig(\%modifiedTestCmd, $log, 1);
 	           $outputs[$i] = $r->{'output'};
                } else {
@@ -185,7 +185,7 @@ sub dumpPigTable
     my $outfile = $testCmd->{'outpath'} . $testCmd->{'group'} . "_" . $testCmd->{'num'}  . $id . "dump.out";
 
     open(FH, "> $pigfile") or die "Unable to open file $pigfile to write pig script, $ERRNO\n";
-    print FH "a = load '$table' using org.apache.hcatalog.pig.HCatLoader(); store a into '$outfile';\n";
+    print FH "a = load '$table' using org.apache.hive.hcatalog.pig.HCatLoader(); store a into '$outfile';\n";
     close(FH);
 
 

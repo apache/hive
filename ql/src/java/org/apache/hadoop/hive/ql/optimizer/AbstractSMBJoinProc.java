@@ -23,12 +23,14 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.DummyStoreOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -49,6 +51,8 @@ import org.apache.hadoop.hive.ql.parse.QBJoinTree;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.parse.TableAccessAnalyzer;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
+import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.SMBJoinDesc;
@@ -123,8 +127,11 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
     }
     if (!tableEligibleForBucketedSortMergeJoin) {
       // this is a mapjoin but not suited for a sort merge bucket map join. check outer joins
-      MapJoinProcessor.checkMapJoin(mapJoinOp.getConf().getPosBigTable(),
-            mapJoinOp.getConf().getConds());
+      if (MapJoinProcessor.checkMapJoin(mapJoinOp.getConf().getPosBigTable(),
+            mapJoinOp.getConf().getConds()) < 0) {
+        throw new SemanticException(
+            ErrorMsg.INVALID_BIGTABLE_MAPJOIN.format(mapJoinOp.getConf().getBigTableAlias()));
+      }
       return false;
     }
 
@@ -463,8 +470,16 @@ abstract public class AbstractSMBJoinProc extends AbstractBucketJoinProc impleme
 
     BigTableSelectorForAutoSMJ bigTableMatcher =
       (BigTableSelectorForAutoSMJ) ReflectionUtils.newInstance(bigTableMatcherClass, null);
+    JoinDesc joinDesc = joinOp.getConf();
+    JoinCondDesc[] joinCondns = joinDesc.getConds();
+    Set<Integer> joinCandidates = MapJoinProcessor.getBigTableCandidates(joinCondns);
+    if (joinCandidates == null) {
+      // This is a full outer join. This can never be a map-join
+      // of any type. So return false.
+      return false;
+    }
     int bigTablePosition =
-      bigTableMatcher.getBigTablePosition(pGraphContext, joinOp);
+      bigTableMatcher.getBigTablePosition(pGraphContext, joinOp, joinCandidates);
     if (bigTablePosition < 0) {
       // contains aliases from sub-query
       return false;

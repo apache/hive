@@ -9,7 +9,8 @@ ROW FORMAT SERDE 'org.apache.hadoop.hive.ql.io.orc.OrcSerde'
 STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' 
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat';
 
-INSERT OVERWRITE TABLE test_orc SELECT key FROM src limit 10;
+-- should be single split
+INSERT OVERWRITE TABLE test_orc SELECT key FROM src TABLESAMPLE (10 ROWS);
 
 -- Test reading the column back
 

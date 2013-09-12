@@ -37,7 +37,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.api.SkewedValueList;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryProperties;
@@ -981,29 +980,16 @@ public abstract class BaseSemanticAnalyzer {
    * @return
    */
   protected ListBucketingCtx constructListBucketingCtx(List<String> skewedColNames,
-      List<List<String>> skewedValues, Map<SkewedValueList, String> skewedColValueLocationMaps,
+      List<List<String>> skewedValues, Map<List<String>, String> skewedColValueLocationMaps,
       boolean isStoredAsSubDirectories, HiveConf conf) {
     ListBucketingCtx lbCtx = new ListBucketingCtx();
     lbCtx.setSkewedColNames(skewedColNames);
     lbCtx.setSkewedColValues(skewedValues);
-    lbCtx.setLbLocationMap(convertSkewedValueListToSimpleList(skewedColValueLocationMaps));
+    lbCtx.setLbLocationMap(skewedColValueLocationMaps);
     lbCtx.setStoredAsSubDirectories(isStoredAsSubDirectories);
     lbCtx.setDefaultKey(ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_KEY);
     lbCtx.setDefaultDirName(ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME);
     return lbCtx;
-  }
-
- // This is done to avoid the need of sending metastore jars to task nodes.
-  private Map<List<String>, String> convertSkewedValueListToSimpleList(
-      Map<SkewedValueList, String> skewedColValueLocationMaps) {
-    if (skewedColValueLocationMaps == null) {
-      return null;
-    }
-    Map<List<String>, String> converted = new HashMap<List<String>, String>();
-    for (Map.Entry<SkewedValueList, String> entry : skewedColValueLocationMaps.entrySet()) {
-      converted.put(entry.getKey().getSkewedValueList(), entry.getValue());
-    }
-    return converted;
   }
 
   /**

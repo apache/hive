@@ -31,7 +31,8 @@ public enum OperationState {
   CANCELED(TOperationState.CANCELED_STATE),
   CLOSED(TOperationState.CLOSED_STATE),
   ERROR(TOperationState.ERROR_STATE),
-  UNKNOWN(TOperationState.UKNOWN_STATE);
+  UNKNOWN(TOperationState.UKNOWN_STATE),
+  PENDING(TOperationState.PENDING_STATE);
 
   private final TOperationState tOperationState;
 
@@ -55,7 +56,18 @@ public enum OperationState {
     switch (oldState) {
     case INITIALIZED:
       switch (newState) {
+      case PENDING:
       case RUNNING:
+      case CLOSED:
+        return;
+      }
+      break;
+    case PENDING:
+      switch (newState) {
+      case RUNNING:
+      case FINISHED:
+      case CANCELED:
+      case ERROR:
       case CLOSED:
         return;
       }

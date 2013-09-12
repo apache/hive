@@ -32,94 +32,97 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.hcatalog.common.HCatConstants;
 import org.apache.hcatalog.common.HCatException;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.har.HarOutputCommitterPostProcessor} instead
+ */
 public class HarOutputCommitterPostProcessor {
 
-    boolean isEnabled = false;
+  boolean isEnabled = false;
 
-    public boolean isEnabled() {
-        return isEnabled;
-    }
+  public boolean isEnabled() {
+    return isEnabled;
+  }
 
-    public void setEnabled(boolean enabled) {
-        this.isEnabled = enabled;
-    }
+  public void setEnabled(boolean enabled) {
+    this.isEnabled = enabled;
+  }
 
 
-    public void exec(JobContext context, Partition partition, Path partPath) throws IOException {
+  public void exec(JobContext context, Partition partition, Path partPath) throws IOException {
 //    LOG.info("Archiving partition ["+partPath.toString()+"]");
-        makeHar(context, partPath.toUri().toString(), harFile(partPath));
-        partition.getParameters().put(hive_metastoreConstants.IS_ARCHIVED, "true");
-    }
+    makeHar(context, partPath.toUri().toString(), harFile(partPath));
+    partition.getParameters().put(hive_metastoreConstants.IS_ARCHIVED, "true");
+  }
 
-    public String harFile(Path ptnPath) throws IOException {
-        String harFile = ptnPath.toString().replaceFirst("/+$", "") + ".har";
+  public String harFile(Path ptnPath) throws IOException {
+    String harFile = ptnPath.toString().replaceFirst("/+$", "") + ".har";
 //    LOG.info("har file : " + harFile);
-        return harFile;
-    }
+    return harFile;
+  }
 
-    public String getParentFSPath(Path ptnPath) throws IOException {
-        return ptnPath.toUri().getPath().replaceFirst("/+$", "");
-    }
+  public String getParentFSPath(Path ptnPath) throws IOException {
+    return ptnPath.toUri().getPath().replaceFirst("/+$", "");
+  }
 
-    public String getProcessedLocation(Path ptnPath) throws IOException {
-        String harLocn = ("har://" + ptnPath.toUri().getPath()).replaceFirst("/+$", "") + ".har" + Path.SEPARATOR;
+  public String getProcessedLocation(Path ptnPath) throws IOException {
+    String harLocn = ("har://" + ptnPath.toUri().getPath()).replaceFirst("/+$", "") + ".har" + Path.SEPARATOR;
 //    LOG.info("har location : " + harLocn);
-        return harLocn;
-    }
+    return harLocn;
+  }
 
 
-    /**
-     * Creates a har file from the contents of a given directory, using that as root.
-     * @param dir Directory to archive
-     * @param harFile The HAR file to create
-     */
-    public static void makeHar(JobContext context, String dir, String harFile) throws IOException {
+  /**
+   * Creates a har file from the contents of a given directory, using that as root.
+   * @param dir Directory to archive
+   * @param harFile The HAR file to create
+   */
+  public static void makeHar(JobContext context, String dir, String harFile) throws IOException {
 //    Configuration conf = context.getConfiguration();
 //    Credentials creds = context.getCredentials();
 
 //    HCatUtil.logAllTokens(LOG,context);
 
-        int lastSep = harFile.lastIndexOf(Path.SEPARATOR_CHAR);
-        Path archivePath = new Path(harFile.substring(0, lastSep));
-        final String[] args = {
-            "-archiveName",
-            harFile.substring(lastSep + 1, harFile.length()),
-            "-p",
-            dir,
-            "*",
-            archivePath.toString()
-        };
+    int lastSep = harFile.lastIndexOf(Path.SEPARATOR_CHAR);
+    Path archivePath = new Path(harFile.substring(0, lastSep));
+    final String[] args = {
+      "-archiveName",
+      harFile.substring(lastSep + 1, harFile.length()),
+      "-p",
+      dir,
+      "*",
+      archivePath.toString()
+    };
 //    for (String arg : args){
 //      LOG.info("Args to har : "+ arg);
 //    }
-        try {
-            Configuration newConf = new Configuration();
-            FileSystem fs = archivePath.getFileSystem(newConf);
+    try {
+      Configuration newConf = new Configuration();
+      FileSystem fs = archivePath.getFileSystem(newConf);
 
-            String hadoopTokenFileLocationEnvSetting = System.getenv(HCatConstants.SYSENV_HADOOP_TOKEN_FILE_LOCATION);
-            if ((hadoopTokenFileLocationEnvSetting != null) && (!hadoopTokenFileLocationEnvSetting.isEmpty())) {
-                newConf.set(HCatConstants.CONF_MAPREDUCE_JOB_CREDENTIALS_BINARY, hadoopTokenFileLocationEnvSetting);
+      String hadoopTokenFileLocationEnvSetting = System.getenv(HCatConstants.SYSENV_HADOOP_TOKEN_FILE_LOCATION);
+      if ((hadoopTokenFileLocationEnvSetting != null) && (!hadoopTokenFileLocationEnvSetting.isEmpty())) {
+        newConf.set(HCatConstants.CONF_MAPREDUCE_JOB_CREDENTIALS_BINARY, hadoopTokenFileLocationEnvSetting);
 //      LOG.info("System.getenv(\"HADOOP_TOKEN_FILE_LOCATION\") =["+  System.getenv("HADOOP_TOKEN_FILE_LOCATION")+"]");
-            }
+      }
 //      for (FileStatus ds : fs.globStatus(new Path(dir, "*"))){
 //        LOG.info("src : "+ds.getPath().toUri().toString());
 //      }
 
-            final HadoopArchives har = new HadoopArchives(newConf);
-            int rc = ToolRunner.run(har, args);
-            if (rc != 0) {
-                throw new Exception("Har returned error code " + rc);
-            }
+      final HadoopArchives har = new HadoopArchives(newConf);
+      int rc = ToolRunner.run(har, args);
+      if (rc != 0) {
+        throw new Exception("Har returned error code " + rc);
+      }
 
 //      for (FileStatus hs : fs.globStatus(new Path(harFile, "*"))){
 //        LOG.info("dest : "+hs.getPath().toUri().toString());
 //      }
 //      doHarCheck(fs,harFile);
 //      LOG.info("Nuking " + dir);
-            fs.delete(new Path(dir), true);
-        } catch (Exception e) {
-            throw new HCatException("Error creating Har [" + harFile + "] from [" + dir + "]", e);
-        }
+      fs.delete(new Path(dir), true);
+    } catch (Exception e) {
+      throw new HCatException("Error creating Har [" + harFile + "] from [" + dir + "]", e);
     }
+  }
 
 }

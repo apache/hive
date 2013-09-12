@@ -33,13 +33,13 @@ import javax.jdo.Query;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
-import org.apache.hadoop.hive.metastore.api.SkewedValueList;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
@@ -73,28 +73,59 @@ class MetaStoreDirectSql {
    * @param dbName Metastore db name.
    * @param tblName Metastore table name.
    * @param partNames Partition names to get.
+   * @param max The maximum number of partitions to return.
    * @return List of partitions.
    */
   public List<Partition> getPartitionsViaSqlFilter(
-      String dbName, String tblName, List<String> partNames) throws MetaException {
+      String dbName, String tblName, List<String> partNames, Integer max) throws MetaException {
     String list = repeat(",?", partNames.size()).substring(1);
-    return getPartitionsViaSqlFilterInternal(dbName, tblName,
-        "and PARTITIONS.PART_NAME in (" + list + ")" , partNames, new ArrayList<String>());
+    return getPartitionsViaSqlFilterInternal(dbName, tblName, null,
+        "and PARTITIONS.PART_NAME in (" + list + ")", partNames, new ArrayList<String>(), max);
   }
 
   /**
    * Gets partitions by using direct SQL queries.
-   * @param dbName Metastore db name.
-   * @param tblName Metastore table name.
+   * @param table The table.
    * @param parser The parsed filter from which the SQL filter will be generated.
+   * @param max The maximum number of partitions to return.
    * @return List of partitions.
    */
-  public List<Partition> getPartitionsViaSqlFilter(Table table, String dbName,
-      String tblName, FilterParser parser) throws MetaException {
+  public List<Partition> getPartitionsViaSqlFilter(
+      Table table, FilterParser parser, Integer max) throws MetaException {
     List<String> params = new ArrayList<String>(), joins = new ArrayList<String>();
     String sqlFilter = (parser == null) ? null
         : PartitionFilterGenerator.generateSqlFilter(table, parser.tree, params, joins);
-    return getPartitionsViaSqlFilterInternal(dbName, tblName, sqlFilter, params, joins);
+    return getPartitionsViaSqlFilterInternal(table.getDbName(), table.getTableName(),
+        isViewTable(table), sqlFilter, params, joins, max);
+  }
+
+  /**
+   * Gets all partitions of a table by using direct SQL queries.
+   * @param dbName Metastore db name.
+   * @param tblName Metastore table name.
+   * @param max The maximum number of partitions to return.
+   * @return List of partitions.
+   */
+  public List<Partition> getPartitions(
+      String dbName, String tblName, Integer max) throws MetaException {
+    return getPartitionsViaSqlFilterInternal(dbName, tblName, null,
+        null, new ArrayList<String>(), new ArrayList<String>(), max);
+  }
+
+  private static Boolean isViewTable(Table t) {
+    return t.isSetTableType() ?
+        t.getTableType().equals(TableType.VIRTUAL_VIEW.toString()) : null;
+  }
+
+  private boolean isViewTable(String dbName, String tblName) throws MetaException {
+    String queryText = "select TBL_TYPE from TBLS" +
+        " inner join DBS on TBLS.DB_ID = DBS.DB_ID " +
+        " where TBLS.TBL_NAME = ? and DBS.NAME = ?";
+    Object[] params = new Object[] { tblName, dbName };
+    Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    query.setUnique(true);
+    Object result = query.executeWithArray(params);
+    return (result != null) && result.toString().equals(TableType.VIRTUAL_VIEW.toString());
   }
 
   /**
@@ -102,16 +133,24 @@ class MetaStoreDirectSql {
    * queries created by DN retrieving stuff for each object individually.
    * @param dbName Metastore db name.
    * @param tblName Metastore table name.
+   * @param isView Whether table is a view. Can be passed as null if not immediately
+   *               known, then this method will get it only if necessary.
    * @param sqlFilter SQL filter to use. Better be SQL92-compliant. Can be null.
    * @param paramsForFilter params for ?-s in SQL filter text. Params must be in order.
    * @param joinsForFilter if the filter needs additional join statement, they must be in
    *                       this list. Better be SQL92-compliant.
+   * @param max The maximum number of partitions to return.
    * @return List of partition objects. FieldSchema is currently not populated.
    */
-  private List<Partition> getPartitionsViaSqlFilterInternal(String dbName,
-      String tblName, String sqlFilter, List<String> paramsForFilter,
-      List<String> joinsForFilter) throws MetaException {
+  private List<Partition> getPartitionsViaSqlFilterInternal(String dbName, String tblName,
+      Boolean isView, String sqlFilter, List<String> paramsForFilter,
+      List<String> joinsForFilter, Integer max) throws MetaException {
     boolean doTrace = LOG.isDebugEnabled();
+    dbName = dbName.toLowerCase();
+    tblName = tblName.toLowerCase();
+    // We have to be mindful of order during filtering if we are not returning all partitions.
+    String orderForFilter = (max != null) ? " order by PART_NAME asc" : "";
+
     // Get all simple fields for partitions and related objects, which we can map one-on-one.
     // We will do this in 2 queries to use different existing indices for each one.
     // We do not get table and DB name, assuming they are the same as we are using to filter.
@@ -125,7 +164,7 @@ class MetaStoreDirectSql {
       + "  inner join TBLS on PARTITIONS.TBL_ID = TBLS.TBL_ID "
       + "  inner join DBS on TBLS.DB_ID = DBS.DB_ID "
       + join(joinsForFilter, ' ') + " where TBLS.TBL_NAME = ? and DBS.NAME = ?"
-      + ((sqlFilter == null) ? "" : " " + sqlFilter);
+      + ((sqlFilter == null) ? "" : " " + sqlFilter) + orderForFilter;
     Object[] params = new Object[paramsForFilter.size() + 2];
     params[0] = tblName;
     params[1] = dbName;
@@ -135,12 +174,16 @@ class MetaStoreDirectSql {
 
     long start = doTrace ? System.nanoTime() : 0;
     Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
+    if (max != null) {
+      query.setRange(0, max.shortValue());
+    }
     @SuppressWarnings("unchecked")
     List<Object> sqlResult = (List<Object>)query.executeWithArray(params);
+    long queryTime = doTrace ? System.nanoTime() : 0;
     if (sqlResult.isEmpty()) {
+      timingTrace(doTrace, queryText, start, queryTime);
       return new ArrayList<Partition>(); // no partitions, bail early.
     }
-    long queryTime = doTrace ? System.nanoTime() : 0;
 
     // Prepare StringBuilder for "PART_ID in (...)" to use in future queries.
     int sbCapacity = sqlResult.size() * 7; // if there are 100k things => 6 chars, plus comma
@@ -150,10 +193,7 @@ class MetaStoreDirectSql {
       partSb.append((Long)partitionId).append(",");
     }
     String partIds = trimCommaList(partSb);
-    if (doTrace) {
-      LOG.debug("Direct SQL query in " + (queryTime - start) / 1000000.0 + "ms + " +
-          (System.nanoTime() - queryTime) / 1000000.0 + "ms, the query is [ " + queryText + "]");
-    }
+    timingTrace(doTrace, queryText, start, queryTime);
 
     // Now get most of the other fields.
     queryText =
@@ -190,9 +230,15 @@ class MetaStoreDirectSql {
       Long sdId = (Long)fields[1];
       Long colId = (Long)fields[2];
       Long serdeId = (Long)fields[3];
+      // A partition must have either everything set, or nothing set if it's a view.
       if (sdId == null || colId == null || serdeId == null) {
-        throw new MetaException("Unexpected null for one of the IDs, SD " + sdId
-            + ", column " + colId + ", serde " + serdeId);
+        if (isView == null) {
+          isView = isViewTable(dbName, tblName);
+        }
+        if ((sdId != null || colId != null || serdeId != null) || !isView) {
+          throw new MetaException("Unexpected null for one of the IDs, SD " + sdId + ", column "
+              + colId + ", serde " + serdeId + " for a " + (isView ? "" : "non-") + " view");
+        }
       }
 
       Partition part = new Partition();
@@ -206,6 +252,9 @@ class MetaStoreDirectSql {
       if (fields[5] != null) part.setLastAccessTime((Integer)fields[5]);
       partitions.put(partitionId, part);
 
+      if (sdId == null) continue; // Probably a view.
+      assert colId != null && serdeId != null;
+
       // We assume each partition has an unique SD.
       StorageDescriptor sd = new StorageDescriptor();
       StorageDescriptor oldSd = sds.put(sdId, sd);
@@ -217,7 +266,7 @@ class MetaStoreDirectSql {
       sd.setBucketCols(new ArrayList<String>());
       sd.setParameters(new HashMap<String, String>());
       sd.setSkewedInfo(new SkewedInfo(new ArrayList<String>(),
-          new ArrayList<List<String>>(), new HashMap<SkewedValueList, String>()));
+          new ArrayList<List<String>>(), new HashMap<List<String>, String>()));
       sd.setInputFormat((String)fields[6]);
       Boolean tmpBoolean = extractSqlBoolean(fields[7]);
       if (tmpBoolean != null) sd.setCompressed(tmpBoolean);
@@ -251,14 +300,7 @@ class MetaStoreDirectSql {
       sd.setSerdeInfo(serde);
     }
     query.closeAll();
-    if (doTrace) {
-      LOG.debug("Direct SQL query in " + (queryTime - start) / 1000000.0 + "ms + " +
-          (System.nanoTime() - queryTime) / 1000000.0 + "ms, the query is [ " + queryText + "]");
-    }
-
-    // Prepare IN (blah) lists for the following queries. Cut off the final ','s.
-    String sdIds = trimCommaList(sdSb), serdeIds = trimCommaList(serdeSb),
-        colIds = trimCommaList(colsSb);
+    timingTrace(doTrace, queryText, start, queryTime);
 
     // Now get all the one-to-many things. Start with partitions.
     queryText = "select PART_ID, PARAM_KEY, PARAM_VALUE from PARTITION_PARAMS where PART_ID in ("
@@ -274,6 +316,14 @@ class MetaStoreDirectSql {
       public void apply(Partition t, Object[] fields) {
         t.addToValues((String)fields[1]);
       }});
+
+    // Prepare IN (blah) lists for the following queries. Cut off the final ','s.
+    if (sdSb.length() == 0) {
+      assert serdeSb.length() == 0 && colsSb.length() == 0;
+      return orderedResult; // No SDs, probably a view.
+    }
+    String sdIds = trimCommaList(sdSb), serdeIds = trimCommaList(serdeSb),
+        colIds = trimCommaList(colsSb);
 
     // Get all the stuff for SD. Don't do empty-list check - we expect partitions do have SDs.
     queryText = "select SD_ID, PARAM_KEY, PARAM_VALUE from SD_PARAMS where SD_ID in ("
@@ -356,28 +406,35 @@ class MetaStoreDirectSql {
           + "where SKEWED_COL_VALUE_LOC_MAP.SD_ID in (" + sdIds + ")"
           + "  and SKEWED_COL_VALUE_LOC_MAP.STRING_LIST_ID_KID is not null "
           + "order by SKEWED_COL_VALUE_LOC_MAP.SD_ID asc,"
+          + "  SKEWED_STRING_LIST_VALUES.STRING_LIST_ID asc,"
           + "  SKEWED_STRING_LIST_VALUES.INTEGER_IDX asc";
+
       loopJoinOrderedResult(sds, queryText, 0, new ApplyFunc<StorageDescriptor>() {
         private Long currentListId;
-        private SkewedValueList currentList;
+        private List<String> currentList;
         public void apply(StorageDescriptor t, Object[] fields) {
-          if (!t.isSetSkewedInfo()) t.setSkewedInfo(new SkewedInfo());
+          if (!t.isSetSkewedInfo()) {
+            SkewedInfo skewedInfo = new SkewedInfo();
+            skewedInfo.setSkewedColValueLocationMaps(new HashMap<List<String>, String>());
+            t.setSkewedInfo(skewedInfo);
+          }
+          Map<List<String>, String> skewMap = t.getSkewedInfo().getSkewedColValueLocationMaps();
           // Note that this is not a typical list accumulator - there's no call to finalize
           // the last list. Instead we add list to SD first, as well as locally to add elements.
           if (fields[1] == null) {
-            currentList = null; // left outer join produced a list with no values
+            currentList = new ArrayList<String>(); // left outer join produced a list with no values
             currentListId = null;
-            t.getSkewedInfo().putToSkewedColValueLocationMaps(
-                new SkewedValueList(), (String)fields[2]);
           } else {
             long fieldsListId = (Long)fields[1];
             if (currentListId == null || fieldsListId != currentListId) {
-              currentList = new SkewedValueList();
+              currentList = new ArrayList<String>();
               currentListId = fieldsListId;
-              t.getSkewedInfo().putToSkewedColValueLocationMaps(currentList, (String)fields[2]);
+            } else {
+              skewMap.remove(currentList); // value based compare.. remove first
             }
-            currentList.addToSkewedValueList((String)fields[3]);
+            currentList.add((String)fields[3]);
           }
+          skewMap.put(currentList, (String)fields[2]);
         }});
     } // if (hasSkewedColumns)
 
@@ -401,6 +458,12 @@ class MetaStoreDirectSql {
       }});
 
     return orderedResult;
+  }
+
+  private void timingTrace(boolean doTrace, String queryText, long start, long queryTime) {
+    if (!doTrace) return;
+    LOG.debug("Direct SQL query in " + (queryTime - start) / 1000000.0 + "ms + " +
+        (System.nanoTime() - queryTime) / 1000000.0 + "ms, the query is [ " + queryText + "]");
   }
 
   private static Boolean extractSqlBoolean(Object value) throws MetaException {
@@ -472,10 +535,7 @@ class MetaStoreDirectSql {
     }
     int rv = list.size();
     query.closeAll();
-    if (doTrace) {
-      LOG.debug("Direct SQL query in " + (queryTime - start) / 1000000.0 + "ms + " +
-          (System.nanoTime() - queryTime) / 1000000.0 + "ms, the query is [" + queryText + "]");
-    }
+    timingTrace(doTrace, queryText, start, queryTime);
     return rv;
   }
 

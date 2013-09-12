@@ -64,6 +64,8 @@ import org.apache.hadoop.hive.serde.serdeConstants;
  */
 public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
 
+  public static final String METADATA_NAME="_metadata";
+
   public ImportSemanticAnalyzer(HiveConf conf) throws SemanticException {
     super(conf);
   }
@@ -89,7 +91,7 @@ public class ImportSemanticAnalyzer extends BaseSemanticAnalyzer {
       Path fromPath = new Path(fromURI.getScheme(), fromURI.getAuthority(),
           fromURI.getPath());
       try {
-        Path metadataPath = new Path(fromPath, "_metadata");
+        Path metadataPath = new Path(fromPath, METADATA_NAME);
         Map.Entry<org.apache.hadoop.hive.metastore.api.Table,
         List<Partition>> rv =  EximUtil.readMetaData(fs, metadataPath);
         dbname = db.getCurrentDatabase();

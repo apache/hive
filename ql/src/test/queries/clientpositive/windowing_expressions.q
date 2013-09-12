@@ -35,17 +35,15 @@ create table over10k(
 load data local inpath '../data/files/over10k' into table over10k;
 
 select p_mfgr, p_retailprice, p_size,
-round(sum(p_retailprice),2) = round(sum(lag(p_retailprice,1,0.0)) + last_value(p_retailprice),2) 
-  over(distribute by p_mfgr sort by p_retailprice),
-max(p_retailprice) - min(p_retailprice) = last_value(p_retailprice) - first_value(p_retailprice)
-  over(distribute by p_mfgr sort by p_retailprice)
+round(sum(p_retailprice) over w1 , 2) = round(sum(lag(p_retailprice,1,0.0)) over w1 + last_value(p_retailprice) over w1 , 2), 
+max(p_retailprice) over w1 - min(p_retailprice) over w1 = last_value(p_retailprice) over w1 - first_value(p_retailprice) over w1
 from part
+window w1 as (distribute by p_mfgr sort by p_retailprice)
 ;
-
 select p_mfgr, p_retailprice, p_size,
 rank() over (distribute by p_mfgr sort by p_retailprice) as r,
 sum(p_retailprice) over (distribute by p_mfgr sort by p_retailprice rows between unbounded preceding and current row) as s2,
-sum(p_retailprice) - 5 over (distribute by p_mfgr sort by p_retailprice rows between unbounded preceding and current row) as s1
+sum(p_retailprice) over (distribute by p_mfgr sort by p_retailprice rows between unbounded preceding and current row) -5 as s1
 from part
 ;
 
@@ -66,7 +64,7 @@ select * from t1 limit 3;
 select * from t2 limit 3;
 
 select p_mfgr, p_retailprice, p_size,
-round(sum(p_retailprice),2) + 50.0 = round(sum(lag(p_retailprice,1,50.0)) + last_value(p_retailprice),2) 
-  over(distribute by p_mfgr sort by p_retailprice)
+round(sum(p_retailprice) over w1 , 2) + 50.0 = round(sum(lag(p_retailprice,1,50.0)) over w1 + (last_value(p_retailprice) over w1),2)
 from part
+window w1 as (distribute by p_mfgr sort by p_retailprice)
 limit 11;

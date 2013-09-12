@@ -93,7 +93,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   protected transient ArrayList<Object>[] dummyObj;
 
   // empty rows for each table
-  protected transient RowContainer<ArrayList<Object>>[] dummyObjVectors;
+  protected transient RowContainer<List<Object>>[] dummyObjVectors;
 
   protected transient int totalSz; // total size of the composite object
 
@@ -108,7 +108,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   // input is too large
   // to fit in memory
 
-  AbstractRowContainer<ArrayList<Object>>[] storage; // map b/w table alias
+  AbstractRowContainer<List<Object>>[] storage; // map b/w table alias
   // to RowContainer
   int joinEmitInterval = -1;
   int joinCacheSize = 0;
@@ -274,7 +274,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       }
       dummyObj[pos] = nr;
       // there should be only 1 dummy object in the RowContainer
-      RowContainer<ArrayList<Object>> values = JoinUtil.getRowContainer(hconf,
+      RowContainer<List<Object>> values = JoinUtil.getRowContainer(hconf,
           rowContainerStandardObjectInspectors[pos],
           alias, 1, spillTableDesc, conf, !hasFilter(pos), reporter);
 
@@ -283,7 +283,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
       // if serde is null, the input doesn't need to be spilled out
       // e.g., the output columns does not contains the input table
-      RowContainer rc = JoinUtil.getRowContainer(hconf,
+      RowContainer<List<Object>> rc = JoinUtil.getRowContainer(hconf,
           rowContainerStandardObjectInspectors[pos],
           alias, joinCacheSize, spillTableDesc, conf, !hasFilter(pos), reporter);
       storage[pos] = rc;
@@ -328,7 +328,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   public void startGroup() throws HiveException {
     LOG.trace("Join: Starting new group");
     newGroupStarted = true;
-    for (AbstractRowContainer<ArrayList<Object>> alw : storage) {
+    for (AbstractRowContainer<List<Object>> alw : storage) {
       alw.clear();
     }
     super.startGroup();
@@ -443,7 +443,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   private void genJoinObject() throws HiveException {
     boolean rightFirst = true;
     boolean hasFilter = hasFilter(order[0]);
-    AbstractRowContainer<ArrayList<Object>> aliasRes = storage[order[0]];
+    AbstractRowContainer<List<Object>> aliasRes = storage[order[0]];
     for (List<Object> rightObj = aliasRes.first(); rightObj != null; rightObj = aliasRes.next()) {
       boolean rightNull = rightObj == dummyObj[0];
       if (hasFilter) {
@@ -471,7 +471,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       int right = joinCond.getRight();
 
       // search for match in the rhs table
-      AbstractRowContainer<ArrayList<Object>> aliasRes = storage[order[aliasNum]];
+      AbstractRowContainer<List<Object>> aliasRes = storage[order[aliasNum]];
 
       boolean done = false;
       boolean loopAgain = false;
@@ -641,8 +641,8 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
 
   private void genUniqueJoinObject(int aliasNum, int forwardCachePos)
       throws HiveException {
-    AbstractRowContainer<ArrayList<Object>> alias = storage[order[aliasNum]];
-    for (ArrayList<Object> row = alias.first(); row != null; row = alias.next()) {
+    AbstractRowContainer<List<Object>> alias = storage[order[aliasNum]];
+    for (List<Object> row = alias.first(); row != null; row = alias.next()) {
       int sz = joinValues[order[aliasNum]].size();
       int p = forwardCachePos;
       for (int j = 0; j < sz; j++) {
@@ -662,7 +662,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     int p = 0;
     for (int i = 0; i < numAliases; i++) {
       int sz = joinValues[order[i]].size();
-      ArrayList<Object> obj = storage[order[i]].first();
+      List<Object> obj = storage[order[i]].first();
       for (int j = 0; j < sz; j++) {
         forwardCache[p++] = obj.get(j);
       }
@@ -684,7 +684,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       boolean allOne = true;
       for (int i = 0; i < numAliases; i++) {
         Byte alias = order[i];
-        AbstractRowContainer<ArrayList<Object>> alw = storage[alias];
+        AbstractRowContainer<List<Object>> alw = storage[alias];
 
         if (alw.size() != 1) {
           allOne = false;
@@ -717,7 +717,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       boolean hasEmpty = false;
       for (int i = 0; i < numAliases; i++) {
         Byte alias = order[i];
-        AbstractRowContainer<ArrayList<Object>> alw = storage[alias];
+        AbstractRowContainer<List<Object>> alw = storage[alias];
 
         if (noOuterJoin) {
           if (alw.size() == 0) {
@@ -737,7 +737,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
           } else {
             mayHasMoreThanOne = true;
             if (!hasEmpty) {
-              for (ArrayList<Object> row = alw.first(); row != null; row = alw.next()) {
+              for (List<Object> row = alw.first(); row != null; row = alw.next()) {
                 reportProgress();
                 if (hasAnyFiltered(alias, row)) {
                   hasEmpty = true;
@@ -784,7 +784,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   @Override
   public void closeOp(boolean abort) throws HiveException {
     LOG.trace("Join Op close");
-    for (AbstractRowContainer<ArrayList<Object>> alw : storage) {
+    for (AbstractRowContainer<List<Object>> alw : storage) {
       if (alw != null) {
         alw.clear(); // clean up the temp files
       }

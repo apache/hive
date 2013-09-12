@@ -17,8 +17,6 @@
  */
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -148,11 +146,8 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
   private MapredWork convertSMBWorkToJoinWork(MapredWork currWork, SMBMapJoinOperator oldSMBJoinOp)
       throws SemanticException {
     try {
-      String xml = currWork.toXML();
-
       // deep copy a new mapred work
-      InputStream in = new ByteArrayInputStream(xml.getBytes("UTF-8"));
-      MapredWork currJoinWork = Utilities.deserializeObject(in);
+      MapredWork currJoinWork = Utilities.clonePlan(currWork);
       SMBMapJoinOperator newSMBJoinOp = getSMBMapJoinOp(currJoinWork);
 
       // Add the row resolver for the new operator
@@ -169,14 +164,13 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
   }
 
   // create map join task and set big table as bigTablePosition
-  private ObjectPair<MapRedTask, String> convertSMBTaskToMapJoinTask(String xml,
+  private ObjectPair<MapRedTask, String> convertSMBTaskToMapJoinTask(MapredWork origWork,
       int bigTablePosition,
       SMBMapJoinOperator smbJoinOp,
       QBJoinTree joinTree)
       throws UnsupportedEncodingException, SemanticException {
-    // deep copy a new mapred work from xml
-    InputStream in = new ByteArrayInputStream(xml.getBytes("UTF-8"));
-    MapredWork newWork = Utilities.deserializeObject(in);
+    // deep copy a new mapred work
+    MapredWork newWork = Utilities.clonePlan(origWork);
     // create a mapred task for this work
     MapRedTask newTask = (MapRedTask) TaskFactory.get(newWork, physicalContext
         .getParseContext().getConf());
@@ -240,7 +234,6 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
   public Task<? extends Serializable> processCurrentTask(MapRedTask currTask,
       ConditionalTask conditionalTask, Context context)
       throws SemanticException {
-
     // whether it contains a sort merge join operator
     MapredWork currWork = currTask.getWork();
     SMBMapJoinOperator originalSMBJoinOp = getSMBMapJoinOp(currWork);
@@ -284,18 +277,12 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
     Set<Integer> bigTableCandidates =
         MapJoinProcessor.getBigTableCandidates(originalSMBJoinDesc.getConds());
 
-    // no table could be the big table; there is no need to convert
-    if (bigTableCandidates == null) {
-      return null;
-    }
-
     HashMap<String, Long> aliasToSize = new HashMap<String, Long>();
     Configuration conf = context.getConf();
     try {
       long aliasTotalKnownInputSize = getTotalKnownInputSize(context, currJoinWork.getMapWork(),
           pathToAliases, aliasToSize);
 
-      String xml = currJoinWork.toXML();
       long ThresholdOfSmallTblSizeSum = HiveConf.getLongVar(conf,
           HiveConf.ConfVars.HIVESMALLTABLESFILESIZE);
 
@@ -306,8 +293,8 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
         }
 
         // create map join task for the given big table position
-        ObjectPair<MapRedTask, String> newTaskAlias =
-            convertSMBTaskToMapJoinTask(xml, bigTablePosition, newSMBJoinOp, joinTree);
+        ObjectPair<MapRedTask, String> newTaskAlias = convertSMBTaskToMapJoinTask(
+            currJoinWork, bigTablePosition, newSMBJoinOp, joinTree);
         MapRedTask newTask = newTaskAlias.getFirst();
         String bigTableAlias = newTaskAlias.getSecond();
 

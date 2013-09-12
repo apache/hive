@@ -23,6 +23,7 @@ import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_N
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -364,6 +365,30 @@ public class Warehouse {
   }
 
   static final Pattern pat = Pattern.compile("([^/]+)=([^/]+)");
+
+  private static final Pattern slash = Pattern.compile("/");
+
+  /**
+   * Extracts values from partition name without the column names.
+   * @param name Partition name.
+   * @param result The result. Must be pre-sized to the expected number of columns.
+   */
+  public static void makeValsFromName(
+      String name, AbstractList<String> result) throws MetaException {
+    assert name != null;
+    String[] parts = slash.split(name, 0);
+    if (parts.length != result.size()) {
+      throw new MetaException(
+          "Expected " + result.size() + " components, got " + parts.length + " (" + name + ")");
+    }
+    for (int i = 0; i < parts.length; ++i) {
+      int eq = parts[i].indexOf('=');
+      if (eq <= 0) {
+        throw new MetaException("Unexpected component " + parts[i]);
+      }
+      result.set(i, unescapePathName(parts[i].substring(eq + 1)));
+    }
+  }
 
   public static LinkedHashMap<String, String> makeSpecFromName(String name)
       throws MetaException {

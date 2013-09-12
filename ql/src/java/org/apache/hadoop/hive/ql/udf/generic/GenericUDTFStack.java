@@ -48,7 +48,7 @@ public class GenericUDTFStack extends GenericUDTF {
   }
 
   private transient List<ObjectInspector> argOIs = new ArrayList<ObjectInspector>();
-  Object[] forwardObj = null;
+  private transient Object[] forwardObj = null;
   private transient ArrayList<ReturnObjectInspectorResolver> returnOIResolvers =
       new ArrayList<ReturnObjectInspectorResolver>();
   IntWritable numRows = null;

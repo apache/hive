@@ -27,7 +27,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.metastore.api.SkewedValueList;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.optimizer.PrunerUtils;
@@ -289,13 +288,12 @@ public class ListBucketingPruner implements Transform {
       List<List<String>> uniqSkewedValues) throws SemanticException {
     // For each entry in dynamic-multi-dimension collection.
     List<String> skewedCols = part.getSkewedColNames(); // Retrieve skewed column.
-    Map<SkewedValueList, String> mappings = part.getSkewedColValueLocationMaps(); // Retrieve skewed
+    Map<List<String>, String> mappings = part.getSkewedColValueLocationMaps(); // Retrieve skewed
                                                                                // map.
     assert ListBucketingPrunerUtils.isListBucketingPart(part) : part.getName()
         + " skewed metadata is corrupted. No skewed column and/or location mappings information.";
     List<List<String>> skewedValues = part.getSkewedColValues();
     List<Boolean> nonSkewedValueMatchResult = new ArrayList<Boolean>();
-    SkewedValueList skewedValueList = new SkewedValueList();
     for (List<String> cell : collections) {
       // Walk through the tree to decide value.
       // Example: skewed column: C1, C2 ;
@@ -309,9 +307,8 @@ public class ListBucketingPruner implements Transform {
           /* It's valid case if a partition: */
           /* 1. is defined with skewed columns and skewed values in metadata */
           /* 2. doesn't have all skewed values within its data */
-          skewedValueList.setSkewedValueList(cell);
-          if (mappings.get(skewedValueList) != null) {
-            selectedPaths.add(new Path(mappings.get(skewedValueList)));
+          if (mappings.get(cell) != null) {
+            selectedPaths.add(new Path(mappings.get(cell)));
           }
         }
       } else {

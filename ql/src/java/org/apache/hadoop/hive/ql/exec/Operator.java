@@ -58,7 +58,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   private static final long serialVersionUID = 1L;
 
-  private Configuration configuration;
+  private transient Configuration configuration;
   protected List<Operator<? extends OperatorDesc>> childOperators;
   protected List<Operator<? extends OperatorDesc>> parentOperators;
   protected String operatorId;
@@ -196,7 +196,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   // non-bean fields needed during compilation
-  private transient RowSchema rowSchema;
+  private RowSchema rowSchema;
 
   public void setSchema(RowSchema rowSchema) {
     this.rowSchema = rowSchema;
@@ -592,6 +592,9 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     state = State.CLOSE;
     LOG.info(id + " finished. closing... ");
 
+    // call the operator specific close routine
+    closeOp(abort);
+
     if (counterNameToEnum != null) {
       incrCounter(numInputRowsCntr, inputRows);
       incrCounter(numOutputRowsCntr, outputRows);
@@ -599,9 +602,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     }
 
     LOG.info(id + " forwarded " + cntr + " rows");
-
-    // call the operator specific close routine
-    closeOp(abort);
 
     try {
       logStats();
@@ -816,13 +816,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       }
     }
 
-    if (isLogInfoEnabled) {
-      cntr++;
-      if (cntr == nextCntr) {
-        LOG.info(id + " forwarding " + cntr + " rows");
-        nextCntr = getNextCntr(cntr);
-      }
-    }
+    increaseForward(1);
 
     // For debugging purposes:
     // System.out.println("" + this.getClass() + ": " +
@@ -852,6 +846,18 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     // if all children are done, this operator is also done
     if (childrenDone == childOperatorsArray.length) {
       setDone(true);
+    }
+  }
+
+  void increaseForward(long counter) {
+    if (isLogInfoEnabled) {
+      cntr += counter;
+      if (cntr >= nextCntr) {
+        LOG.info(id + " forwarding " + cntr + " rows");
+        do {
+          nextCntr = getNextCntr(nextCntr);
+        } while(cntr >= nextCntr);
+      }
     }
   }
 
@@ -1548,6 +1554,17 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    */
   public boolean opAllowedBeforeSortMergeJoin() {
     return true;
+  }
+
+  /**
+   * used for LimitPushdownOptimizer
+   *
+   * if all of the operators between limit and reduce-sink does not remove any input rows
+   * in the range of limit count, limit can be pushed down to reduce-sink operator.
+   * forward, select, etc.
+   */
+  public boolean acceptLimitPushdown() {
+    return false;
   }
 
   @Override

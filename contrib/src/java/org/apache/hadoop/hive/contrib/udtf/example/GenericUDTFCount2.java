@@ -36,8 +36,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  */
 public class GenericUDTFCount2 extends GenericUDTF {
 
-  Integer count = Integer.valueOf(0);
-  Object forwardObj[] = new Object[1];
+  private transient Integer count = Integer.valueOf(0);
+  private transient Object forwardObj[] = new Object[1];
 
   @Override
   public void close() throws HiveException {

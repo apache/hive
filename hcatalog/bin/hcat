@@ -151,12 +151,12 @@ export HADOOP_OPTS=$HADOOP_OPTS
 # run it
 if [ "$debug" == "true" ]; then
 	echo "Would run:"
-	echo "exec $HADOOP_PREFIX/bin/hadoop jar $HCAT_JAR org.apache.hcatalog.cli.HCatCli $remaining"
+	echo "exec $HADOOP_PREFIX/bin/hadoop jar $HCAT_JAR org.apache.hive.hcatalog.cli.HCatCli $remaining"
 	echo "with HADOOP_CLASSPATH set to ($HADOOP_CLASSPATH)"
 	echo "and HADOOP_OPTS set to ($HADOOP_OPTS)"
 elif [ "$dump_classpath" == "true" ]; then
     echo $HADOOP_CLASSPATH
 else
-	exec $HADOOP_PREFIX/bin/hadoop jar  $HCAT_JAR org.apache.hcatalog.cli.HCatCli "$@"
+	exec $HADOOP_PREFIX/bin/hadoop jar  $HCAT_JAR org.apache.hive.hcatalog.cli.HCatCli "$@"
 fi
 

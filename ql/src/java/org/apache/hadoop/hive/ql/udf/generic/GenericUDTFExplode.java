@@ -77,8 +77,8 @@ public class GenericUDTFExplode extends GenericUDTF {
         fieldOIs);
   }
 
-  private final Object[] forwardListObj = new Object[1];
-  private final Object[] forwardMapObj = new Object[2];
+  private transient final Object[] forwardListObj = new Object[1];
+  private transient final Object[] forwardMapObj = new Object[2];
 
   @Override
   public void process(Object[] o) throws HiveException {

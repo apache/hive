@@ -134,6 +134,21 @@ public interface SearchArgument {
           throw new IllegalArgumentException("Unknown value: " + this);
       }
     }
+
+    /**
+     * Does the RecordReader need to include this set of records?
+     * @return true unless none of the rows qualify
+     */
+    public boolean isNotNeeded() {
+      switch (this) {
+        case NO:
+        case NULL:
+        case NO_NULL:
+          return false;
+        default:
+          return true;
+      }
+    }
   }
 
   /**

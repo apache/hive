@@ -24,6 +24,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Text;
 
@@ -247,11 +248,13 @@ final class ReaderImpl implements Reader {
       if (version.size() >= 2) {
         minor = version.get(1);
       }
-      if (major > OrcFile.MAJOR_VERSION ||
-          (major == OrcFile.MAJOR_VERSION && minor > OrcFile.MINOR_VERSION)) {
-        log.warn("ORC file " + path + " was written by a future Hive version " +
-            versionString(version) + ". This file may not be readable by " +
-            "this version of Hive.");
+      if (major > OrcFile.Version.CURRENT.getMajor() ||
+          (major == OrcFile.Version.CURRENT.getMajor() &&
+           minor > OrcFile.Version.CURRENT.getMinor())) {
+        log.warn("ORC file " + path +
+                 " was written by a future Hive version " +
+                 versionString(version) +
+                 ". This file may not be readable by this version of Hive.");
       }
     }
   }
@@ -307,7 +310,8 @@ final class ReaderImpl implements Reader {
       buffer.position(psOffset - footerSize);
       buffer.limit(psOffset);
     }
-    InputStream instream = InStream.create("footer", buffer, codec, bufferSize);
+    InputStream instream = InStream.create("footer", new ByteBuffer[]{buffer},
+        new long[]{0L}, footerSize, codec, bufferSize);
     footer = OrcProto.Footer.parseFrom(instream);
     inspector = OrcStruct.createObjectInspector(0, footer.getTypesList());
     file.close();
@@ -315,15 +319,22 @@ final class ReaderImpl implements Reader {
 
   @Override
   public RecordReader rows(boolean[] include) throws IOException {
-    return rows(0, Long.MAX_VALUE, include);
+    return rows(0, Long.MAX_VALUE, include, null, null);
   }
 
   @Override
   public RecordReader rows(long offset, long length, boolean[] include
                            ) throws IOException {
+    return rows(offset, length, include, null, null);
+  }
+
+  @Override
+  public RecordReader rows(long offset, long length, boolean[] include,
+                           SearchArgument sarg, String[] columnNames
+                           ) throws IOException {
     return new RecordReaderImpl(this.getStripes(), fileSystem,  path, offset,
-      length, footer.getTypesList(), codec, bufferSize,
-      include, footer.getRowIndexStride());
+        length, footer.getTypesList(), codec, bufferSize,
+        include, footer.getRowIndexStride(), sarg, columnNames);
   }
 
 }

@@ -50,14 +50,14 @@ import org.apache.hcatalog.data.HCatDataCheckUtil;
 import org.apache.hcatalog.data.HCatRecord;
 import org.apache.hcatalog.data.schema.HCatSchema;
 import org.apache.hcatalog.rcfile.RCFileInputDriver;
-import org.apache.hcatalog.shims.HCatHadoopShims;
+import org.apache.hadoop.hive.shims.ShimLoader;
 
 
 public class TestRCFileInputStorageDriver extends TestCase{
   private static final Configuration conf = new Configuration();
   private static final Path dir =  new Path(System.getProperty("test.data.dir", ".") + "/mapred");
   private static final Path file = new Path(dir, "test_rcfile");
-  private final HCatHadoopShims shim = HCatHadoopShims.Instance.get();
+  private final HadoopShims.HCatHadoopShims shim = ShimLoader.getHadoopShims().getHCatShim();
 
   // Generate sample records to compare against
   private byte[][][] getRecords() throws UnsupportedEncodingException {

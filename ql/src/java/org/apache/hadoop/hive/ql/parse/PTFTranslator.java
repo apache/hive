@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.exec.WindowFunctionInfo;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.OrderExpression;
@@ -71,7 +72,6 @@ import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.RangeBoundaryDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.ShapeDetails;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.ValueBoundaryDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowExpressionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFrameDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowTableFunctionDef;
@@ -131,6 +131,7 @@ public class PTFTranslator {
     init(semAly, hCfg, inputRR, unparseT);
     ptfInvocation = qSpec;
     ptfDesc = new PTFDesc();
+    ptfDesc.setCfg(hCfg);
     ptfDesc.setLlInfo(llInfo);
     translatePTFChain();
     return ptfDesc;
@@ -143,6 +144,7 @@ public class PTFTranslator {
     init(semAly, hCfg, inputRR, unparseT);
     windowingSpec = wdwSpec;
     ptfDesc = new PTFDesc();
+    ptfDesc.setCfg(hCfg);
     ptfDesc.setLlInfo(llInfo);
     WindowTableFunctionDef wdwTFnDef = new WindowTableFunctionDef();
     ptfDesc.setFuncDef(wdwTFnDef);
@@ -197,82 +199,25 @@ public class PTFTranslator {
     /*
      * set outputFromWdwFnProcessing
      */
-    if (windowFunctions.size() > 0) {
-      ArrayList<String> aliases = new ArrayList<String>();
-      ArrayList<ObjectInspector> fieldOIs = new ArrayList<ObjectInspector>();
-      for (WindowFunctionDef wFnDef : windowFunctions) {
-        aliases.add(wFnDef.getAlias());
-        if (wFnDef.isPivotResult()) {
-          fieldOIs.add(((ListObjectInspector) wFnDef.getOI()).getListElementObjectInspector());
-        } else {
-          fieldOIs.add(wFnDef.getOI());
-        }
+    ArrayList<String> aliases = new ArrayList<String>();
+    ArrayList<ObjectInspector> fieldOIs = new ArrayList<ObjectInspector>();
+    for (WindowFunctionDef wFnDef : windowFunctions) {
+      aliases.add(wFnDef.getAlias());
+      if (wFnDef.isPivotResult()) {
+        fieldOIs.add(((ListObjectInspector) wFnDef.getOI()).getListElementObjectInspector());
+      } else {
+        fieldOIs.add(wFnDef.getOI());
       }
-      PTFTranslator.addInputColumnsToList(inpShape, aliases, fieldOIs);
-      StructObjectInspector wdwOutOI = ObjectInspectorFactory.getStandardStructObjectInspector(
-          aliases, fieldOIs);
-      tFn.setWdwProcessingOutputOI(wdwOutOI);
-      RowResolver wdwOutRR = buildRowResolverForWindowing(wdwTFnDef, false);
-      ShapeDetails wdwOutShape = setupShape(wdwOutOI, null, wdwOutRR);
-      wdwTFnDef.setOutputFromWdwFnProcessing(wdwOutShape);
     }
-    else {
-      wdwTFnDef.setOutputFromWdwFnProcessing(inpShape);
-    }
-
-    /*
-     * process Wdw expressions
-     */
-    ShapeDetails wdwOutShape = wdwTFnDef.getOutputFromWdwFnProcessing();
-    ArrayList<WindowExpressionDef> windowExpressions = new ArrayList<WindowExpressionDef>();
-    if (wdwSpec.getWindowExpressions() != null) {
-      for (WindowExpressionSpec expr : wdwSpec.getWindowExpressions()) {
-        if (!(expr instanceof WindowFunctionSpec)) {
-          try {
-            PTFExpressionDef eDef = buildExpressionDef(wdwOutShape, expr.getExpression());
-            WindowExpressionDef wdwEDef = new WindowExpressionDef(eDef);
-            wdwEDef.setAlias(expr.getAlias());
-            windowExpressions.add(wdwEDef);
-          } catch (HiveException he) {
-            throw new SemanticException(he);
-          }
-        }
-      }
-      wdwTFnDef.setWindowExpressions(windowExpressions);
-    }
-
-    /*
-     * set outputOI
-     */
-    if (windowExpressions.size() > 0) {
-      ArrayList<String> aliases = new ArrayList<String>();
-      ArrayList<ObjectInspector> fieldOIs = new ArrayList<ObjectInspector>();
-      for (WindowExpressionDef wEDef : windowExpressions) {
-        aliases.add(wEDef.getAlias());
-        fieldOIs.add(wEDef.getOI());
-      }
-      PTFTranslator.addInputColumnsToList(wdwOutShape, aliases, fieldOIs);
-      StructObjectInspector outOI = ObjectInspectorFactory.getStandardStructObjectInspector(
-          aliases, fieldOIs);
-      RowResolver outRR = buildRowResolverForWindowing(wdwTFnDef, true);
-      ShapeDetails outShape = setupShape(outOI, null, outRR);
-      wdwTFnDef.setOutputShape(outShape);
-    }
-    else {
-      wdwTFnDef.setOutputShape(copyShape(wdwOutShape));
-    }
+    PTFTranslator.addInputColumnsToList(inpShape, aliases, fieldOIs);
+    StructObjectInspector wdwOutOI = ObjectInspectorFactory.getStandardStructObjectInspector(
+        aliases, fieldOIs);
+    tFn.setWdwProcessingOutputOI(wdwOutOI);
+    RowResolver wdwOutRR = buildRowResolverForWindowing(wdwTFnDef);
+    ShapeDetails wdwOutShape = setupShape(wdwOutOI, null, wdwOutRR);
+    wdwTFnDef.setOutputShape(wdwOutShape);
 
     tFn.setupOutputOI();
-
-    /*
-     * If we have windowExpressions then we convert to Std. Object to process;
-     * we just stream these rows; no need to put in an output Partition.
-     */
-    if (windowExpressions.size() > 0) {
-      StructObjectInspector oi = (StructObjectInspector)
-          ObjectInspectorUtils.getStandardObjectInspector(wdwTFnDef.getOutputShape().getOI());
-      wdwTFnDef.getOutputShape().setOI(oi);
-    }
 
     return ptfDesc;
   }
@@ -693,7 +638,8 @@ public class PTFTranslator {
 
     try {
       serde = PTFTranslator.createLazyBinarySerDe(hCfg, OI, serdePropsMap);
-      shp.setOI((StructObjectInspector) serde.getObjectInspector());
+      StructObjectInspector outOI = PTFPartition.setupPartitionOutputOI(serde, OI);
+      shp.setOI(outOI);
     } catch (SerDeException se) {
       throw new SemanticException(se);
     }
@@ -945,23 +891,10 @@ public class PTFTranslator {
     return rwsch;
   }
 
-  protected RowResolver buildRowResolverForWindowing(WindowTableFunctionDef def,
-      boolean addWdwExprs) throws SemanticException {
+  protected RowResolver buildRowResolverForWindowing(WindowTableFunctionDef def)
+      throws SemanticException {
     RowResolver rr = new RowResolver();
     HashMap<String, WindowExpressionSpec> aliasToExprMap = windowingSpec.getAliasToWdwExpr();
-    /*
-     * add Window Expressions
-     */
-    if (addWdwExprs) {
-      for (WindowExpressionDef wEDef : def.getWindowExpressions()) {
-        ASTNode ast = aliasToExprMap.get(wEDef.getAlias()).getExpression();
-        ColumnInfo cInfo = new ColumnInfo(wEDef.getAlias(),
-            TypeInfoUtils.getTypeInfoFromObjectInspector(wEDef.getOI()),
-            null,
-            false);
-        rr.putExpression(ast, cInfo);
-      }
-    }
 
     /*
      * add Window Functions

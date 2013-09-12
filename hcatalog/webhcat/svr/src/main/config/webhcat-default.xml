@@ -191,7 +191,7 @@
 
   <property>
     <name>templeton.storage.class</name>
-    <value>org.apache.hcatalog.templeton.tool.HDFSStorage</value>
+    <value>org.apache.hive.hcatalog.templeton.tool.HDFSStorage</value>
     <description>The class to use as storage</description>
   </property>
 
@@ -234,5 +234,49 @@
     in the cluster are taken over by Templeton launcher tasks.
     </description>
   </property>
+  <!--
+  <property>
+    <name>webhcat.proxyuser.#USER#.hosts</name>
+    <value>www.example.com,host2</value>
+    <description>
+      List of client hosts from which the '#USER#' user is allowed to perform 
+      'doAs' operations.
 
+      The '#USER#' must be replaced with the username of the user who is
+      allowed to perform 'doAs' operations.
+
+      The value can be the '*' wildcard, which means every host is allowed,
+      or a comma-separated list of hostnames.
+   
+      If value is a blank string or webhcat.proxyuser.#USER#.hosts is missing,
+      no hosts will be allowed.  
+
+      For multiple users copy this property and replace the user name
+      in the property name.
+    </description>
+  </property>
+  <property>
+    <name>webhcat.proxyuser.#USER#.groups</name>
+    <value>group1, group2</value>
+    <description>
+      List of groups the '#USER#' user is allowed to impersonate users
+      from to perform 'doAs' operations.
+
+      The '#USER#' must be replaced with the username of the user who is
+      allowed to perform 'doAs' operations.
+
+      The value can be the '*' wildcard, which means any doAs value is
+      allowed, or a comma-separated list of groups.
+
+      If value is an empty list or webhcat.proxyuser.#USER#.groups is missing,
+      every doAs call value will fail.
+
+      For multiple users copy this property and replace the user name
+      in the property name.
+      
+      The username->usergroup mapping is performed using Hadoop API which is 
+      controlled by hadoop.security.group.mapping property.
+    </description>
+  </property>
+-->
 </configuration>

@@ -38,14 +38,13 @@ import org.apache.hadoop.hive.metastore.events.PreDropTableEvent;
 import org.apache.hadoop.hive.metastore.events.PreEventContext;
 import org.apache.hadoop.hive.metastore.events.PreEventContext.PreEventType;
 import org.apache.hadoop.hive.ql.session.SessionState;
-
+import org.apache.hadoop.hive.ql.parse.ImportSemanticAnalyzer;
 /**
  * This class listens for drop events and, if set, exports the table's metadata as JSON to the trash
  * of the user performing the drop
  */
 public class MetaDataExportListener extends MetaStorePreEventListener {
   public static final Log LOG = LogFactory.getLog(MetaDataExportListener.class);
-  private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
 
   /** Configure the export listener */
   public MetaDataExportListener(Configuration config) {
@@ -65,6 +64,7 @@ public class MetaDataExportListener extends MetaStorePreEventListener {
     Path tblPath = new Path(tbl.getSd().getLocation());
     fs = wh.getFs(tblPath);
     Date now = new Date();
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
     String dateString = sdf.format(now);
     String exportPathString = hiveconf.getVar(HiveConf.ConfVars.METADATA_EXPORT_LOCATION);
     boolean moveMetadataToTrash = hiveconf
@@ -83,7 +83,7 @@ public class MetaDataExportListener extends MetaStorePreEventListener {
     } catch (IOException e) {
       throw new MetaException(e.getMessage());
     }
-    Path outFile = new Path(metaPath, name + ".metadata");
+    Path outFile = new Path(metaPath, name + ImportSemanticAnalyzer.METADATA_NAME);
     try {
       SessionState.getConsole().printInfo("Beginning metadata export");
       EximUtil.createExportDump(fs, outFile, mTbl, null);

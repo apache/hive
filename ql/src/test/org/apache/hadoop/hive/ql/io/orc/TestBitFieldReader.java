@@ -47,7 +47,8 @@ public class TestBitFieldReader {
     ByteBuffer inBuf = ByteBuffer.allocate(collect.buffer.size());
     collect.buffer.setByteBuffer(inBuf, 0, collect.buffer.size());
     inBuf.flip();
-    BitFieldReader in = new BitFieldReader(InStream.create("test", inBuf,
+    BitFieldReader in = new BitFieldReader(InStream.create("test",
+        new ByteBuffer[]{inBuf}, new long[]{0}, inBuf.remaining(),
         codec, 500), 1);
     for(int i=0; i < COUNT; ++i) {
       int x = in.next();
@@ -96,7 +97,8 @@ public class TestBitFieldReader {
     ByteBuffer inBuf = ByteBuffer.allocate(collect.buffer.size());
     collect.buffer.setByteBuffer(inBuf, 0, collect.buffer.size());
     inBuf.flip();
-    BitFieldReader in = new BitFieldReader(InStream.create("test", inBuf,
+    BitFieldReader in = new BitFieldReader(InStream.create("test",
+        new ByteBuffer[]{inBuf}, new long[]{0}, inBuf.remaining(),
         null, 500), 3);
     for(int i=0; i < COUNT; ++i) {
       int x = in.next();
@@ -126,7 +128,8 @@ public class TestBitFieldReader {
     collect.buffer.setByteBuffer(inBuf, 0, collect.buffer.size());
     inBuf.flip();
     BitFieldReader in = new BitFieldReader(InStream.create
-        ("test", inBuf, null, 100), 1);
+        ("test", new ByteBuffer[]{inBuf}, new long[]{0}, inBuf.remaining(),
+            null, 100), 1);
     for(int i=0; i < COUNT; i += 5) {
       int x = (int) in.next();
       if (i < COUNT/2) {

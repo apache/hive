@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.lang.reflect.Type;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -29,10 +31,13 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
 
 public class TestFunctionRegistry extends TestCase {
 
@@ -45,6 +50,11 @@ public class TestFunctionRegistry extends TestCase {
     public void mismatch(DateWritable x, HiveDecimalWritable y) {}
     public void mismatch(TimestampWritable x, HiveDecimalWritable y) {}
     public void mismatch(BytesWritable x, DoubleWritable y) {}
+    public void typeaffinity1(DateWritable x) {}
+    public void typeaffinity1(DoubleWritable x) {};
+    public void typeaffinity1(Text x) {}
+    public void typeaffinity2(IntWritable x) {}
+    public void typeaffinity2(DoubleWritable x) {}
   }
 
   @Override
@@ -62,6 +72,52 @@ public class TestFunctionRegistry extends TestCase {
     implicit(TypeInfoFactory.stringTypeInfo, TypeInfoFactory.decimalTypeInfo, true);
     implicit(TypeInfoFactory.dateTypeInfo, TypeInfoFactory.decimalTypeInfo, false);
     implicit(TypeInfoFactory.timestampTypeInfo, TypeInfoFactory.decimalTypeInfo, false);
+  }
+
+  private static List<Method> getMethods(Class<?> udfClass, String methodName) {
+    List<Method> mlist = new ArrayList<Method>();
+
+    for (Method m : udfClass.getMethods()) {
+      if (m.getName().equals(methodName)) {
+        mlist.add(m);
+      }
+    }
+    return mlist;
+  }
+
+  private void typeAffinity(String methodName, TypeInfo inputType,
+      int expectedNumFoundMethods, Class expectedFoundType) {
+    List<Method> mlist = getMethods(TestUDF.class, methodName);
+    assertEquals(true, 1 < mlist.size());
+    List<TypeInfo> inputTypes = new ArrayList<TypeInfo>();
+    inputTypes.add(inputType);
+
+    // narrow down the possible choices based on type affinity
+    FunctionRegistry.filterMethodsByTypeAffinity(mlist, inputTypes);
+    assertEquals(expectedNumFoundMethods, mlist.size());
+    if (expectedNumFoundMethods == 1) {
+      assertEquals(expectedFoundType, mlist.get(0).getParameterTypes()[0]);
+    }
+  }
+
+  public void testTypeAffinity() {
+    // Prefer numeric type arguments over other method signatures
+    typeAffinity("typeaffinity1", TypeInfoFactory.shortTypeInfo, 1, DoubleWritable.class);
+    typeAffinity("typeaffinity1", TypeInfoFactory.intTypeInfo, 1, DoubleWritable.class);
+    typeAffinity("typeaffinity1", TypeInfoFactory.floatTypeInfo, 1, DoubleWritable.class);
+
+    // Prefer date type arguments over other method signatures
+    typeAffinity("typeaffinity1", TypeInfoFactory.dateTypeInfo, 1, DateWritable.class);
+    typeAffinity("typeaffinity1", TypeInfoFactory.timestampTypeInfo, 1, DateWritable.class);
+
+    // String type affinity
+    typeAffinity("typeaffinity1", TypeInfoFactory.stringTypeInfo, 1, Text.class);
+
+    // Type affinity does not help when multiple methods have the same type affinity.
+    typeAffinity("typeaffinity2", TypeInfoFactory.shortTypeInfo, 2, null);
+
+    // Type affinity does not help when type affinity does not match input args
+    typeAffinity("typeaffinity2", TypeInfoFactory.dateTypeInfo, 2, null);
   }
 
   private void verify(Class udf, String name, TypeInfo ta, TypeInfo tb,
@@ -142,6 +198,33 @@ public class TestFunctionRegistry extends TestCase {
                TypeInfoFactory.decimalTypeInfo);
     comparison(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.stringTypeInfo,
                TypeInfoFactory.doubleTypeInfo);
+  }
+
+  private void unionAll(TypeInfo a, TypeInfo b, TypeInfo result) {
+    assertEquals(result, FunctionRegistry.getCommonClassForUnionAll(a,b));
+  }
+
+  public void testCommonClassUnionAll() {
+    unionAll(TypeInfoFactory.intTypeInfo, TypeInfoFactory.decimalTypeInfo,
+        TypeInfoFactory.decimalTypeInfo);
+    unionAll(TypeInfoFactory.stringTypeInfo, TypeInfoFactory.decimalTypeInfo,
+        TypeInfoFactory.decimalTypeInfo);
+    unionAll(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.decimalTypeInfo,
+        TypeInfoFactory.decimalTypeInfo);
+    unionAll(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.stringTypeInfo,
+        TypeInfoFactory.stringTypeInfo);
+  }
+
+  public void testGetTypeInfoForPrimitiveCategory() {
+    // non-qualified types should simply return the TypeInfo associated with that type
+    assertEquals(TypeInfoFactory.stringTypeInfo, FunctionRegistry.getTypeInfoForPrimitiveCategory(
+        (PrimitiveTypeInfo) TypeInfoFactory.stringTypeInfo,
+        (PrimitiveTypeInfo) TypeInfoFactory.stringTypeInfo,
+        PrimitiveCategory.STRING));
+    assertEquals(TypeInfoFactory.doubleTypeInfo, FunctionRegistry.getTypeInfoForPrimitiveCategory(
+        (PrimitiveTypeInfo) TypeInfoFactory.doubleTypeInfo,
+        (PrimitiveTypeInfo) TypeInfoFactory.stringTypeInfo,
+        PrimitiveCategory.DOUBLE));
   }
 
   @Override

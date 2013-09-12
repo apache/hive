@@ -51,22 +51,22 @@ public class QBJoinTree implements Serializable{
 
   // keeps track of the right-hand-side table name of the left-semi-join, and
   // its list of join keys
-  private final HashMap<String, ArrayList<ASTNode>> rhsSemijoin;
+  private transient final HashMap<String, ArrayList<ASTNode>> rhsSemijoin;
 
   // join conditions
-  private ArrayList<ArrayList<ASTNode>> expressions;
+  private transient ArrayList<ArrayList<ASTNode>> expressions;
 
   // key index to nullsafe join flag
   private ArrayList<Boolean> nullsafes;
 
   // filters
-  private ArrayList<ArrayList<ASTNode>> filters;
+  private transient ArrayList<ArrayList<ASTNode>> filters;
 
   // outerjoin-pos = other-pos:filter-len, other-pos:filter-len, ...
   private int[][] filterMap;
 
   // filters for pushing
-  private ArrayList<ArrayList<ASTNode>> filtersForPushing;
+  private transient ArrayList<ArrayList<ASTNode>> filtersForPushing;
 
   // user asked for map-side join
   private boolean mapSideJoin;

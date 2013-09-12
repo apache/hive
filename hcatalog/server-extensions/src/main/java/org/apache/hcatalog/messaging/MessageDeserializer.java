@@ -21,63 +21,64 @@ package org.apache.hcatalog.messaging;
 
 /**
  * Interface for converting HCat events from String-form back to HCatEventMessage instances.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.MessageDeserializer} instead
  */
 public abstract class MessageDeserializer {
 
-    /**
-     * Method to construct HCatEventMessage from string.
-     */
-    public HCatEventMessage getHCatEventMessage(String eventTypeString, String messageBody) {
+  /**
+   * Method to construct HCatEventMessage from string.
+   */
+  public HCatEventMessage getHCatEventMessage(String eventTypeString, String messageBody) {
 
-        switch (HCatEventMessage.EventType.valueOf(eventTypeString)) {
-        case CREATE_DATABASE:
-            return getCreateDatabaseMessage(messageBody);
-        case DROP_DATABASE:
-            return getDropDatabaseMessage(messageBody);
-        case CREATE_TABLE:
-            return getCreateTableMessage(messageBody);
-        case DROP_TABLE:
-            return getDropTableMessage(messageBody);
-        case ADD_PARTITION:
-            return getAddPartitionMessage(messageBody);
-        case DROP_PARTITION:
-            return getDropPartitionMessage(messageBody);
+    switch (HCatEventMessage.EventType.valueOf(eventTypeString)) {
+    case CREATE_DATABASE:
+      return getCreateDatabaseMessage(messageBody);
+    case DROP_DATABASE:
+      return getDropDatabaseMessage(messageBody);
+    case CREATE_TABLE:
+      return getCreateTableMessage(messageBody);
+    case DROP_TABLE:
+      return getDropTableMessage(messageBody);
+    case ADD_PARTITION:
+      return getAddPartitionMessage(messageBody);
+    case DROP_PARTITION:
+      return getDropPartitionMessage(messageBody);
 
-        default:
-            throw new IllegalArgumentException("Unsupported event-type: " + eventTypeString);
-        }
+    default:
+      throw new IllegalArgumentException("Unsupported event-type: " + eventTypeString);
     }
+  }
 
-    /**
-     * Method to de-serialize CreateDatabaseMessage instance.
-     */
-    public abstract CreateDatabaseMessage getCreateDatabaseMessage(String messageBody);
+  /**
+   * Method to de-serialize CreateDatabaseMessage instance.
+   */
+  public abstract CreateDatabaseMessage getCreateDatabaseMessage(String messageBody);
 
-    /**
-     * Method to de-serialize DropDatabaseMessage instance.
-     */
-    public abstract DropDatabaseMessage getDropDatabaseMessage(String messageBody);
+  /**
+   * Method to de-serialize DropDatabaseMessage instance.
+   */
+  public abstract DropDatabaseMessage getDropDatabaseMessage(String messageBody);
 
-    /**
-     * Method to de-serialize CreateTableMessage instance.
-     */
-    public abstract CreateTableMessage getCreateTableMessage(String messageBody);
+  /**
+   * Method to de-serialize CreateTableMessage instance.
+   */
+  public abstract CreateTableMessage getCreateTableMessage(String messageBody);
 
-    /**
-     * Method to de-serialize DropTableMessage instance.
-     */
-    public abstract DropTableMessage getDropTableMessage(String messageBody);
+  /**
+   * Method to de-serialize DropTableMessage instance.
+   */
+  public abstract DropTableMessage getDropTableMessage(String messageBody);
 
-    /**
-     * Method to de-serialize AddPartitionMessage instance.
-     */
-    public abstract AddPartitionMessage getAddPartitionMessage(String messageBody);
+  /**
+   * Method to de-serialize AddPartitionMessage instance.
+   */
+  public abstract AddPartitionMessage getAddPartitionMessage(String messageBody);
 
-    /**
-     * Method to de-serialize DropPartitionMessage instance.
-     */
-    public abstract DropPartitionMessage getDropPartitionMessage(String messageBody);
+  /**
+   * Method to de-serialize DropPartitionMessage instance.
+   */
+  public abstract DropPartitionMessage getDropPartitionMessage(String messageBody);
 
-    // Protection against construction.
-    protected MessageDeserializer() {}
+  // Protection against construction.
+  protected MessageDeserializer() {}
 }

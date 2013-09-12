@@ -176,7 +176,8 @@ public final class TypeCheckProcFactory {
   private static Map<ASTNode, ExprNodeDesc> convert(Map<Node, Object> outputs) {
     Map<ASTNode, ExprNodeDesc> converted = new LinkedHashMap<ASTNode, ExprNodeDesc>();
     for (Map.Entry<Node, Object> entry : outputs.entrySet()) {
-      if (entry.getKey() instanceof ASTNode && entry.getValue() instanceof ExprNodeDesc) {
+      if (entry.getKey() instanceof ASTNode &&
+          (entry.getValue() == null || entry.getValue() instanceof ExprNodeDesc)) {
         converted.put((ASTNode)entry.getKey(), (ExprNodeDesc)entry.getValue());
       } else {
         LOG.warn("Invalid type entry " + entry);

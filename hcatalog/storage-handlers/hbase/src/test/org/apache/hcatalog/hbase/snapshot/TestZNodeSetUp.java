@@ -33,8 +33,8 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hcatalog.cli.HCatDriver;
-import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
+import org.apache.hive.hcatalog.cli.HCatDriver;
+import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hcatalog.hbase.SkeletonHBaseTest;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
@@ -43,78 +43,78 @@ import org.junit.Test;
 
 public class TestZNodeSetUp extends SkeletonHBaseTest {
 
-    private static HiveConf hcatConf;
-    private static HCatDriver hcatDriver;
+  private static HiveConf hcatConf;
+  private static HCatDriver hcatDriver;
 
-    public void Initialize() throws Exception {
+  public void Initialize() throws Exception {
 
-        hcatConf = getHiveConf();
-        hcatConf.set(ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
-            HCatSemanticAnalyzer.class.getName());
-        URI fsuri = getFileSystem().getUri();
-        Path whPath = new Path(fsuri.getScheme(), fsuri.getAuthority(),
-            getTestDir());
-        hcatConf.set(HiveConf.ConfVars.HADOOPFS.varname, fsuri.toString());
-        hcatConf.set(ConfVars.METASTOREWAREHOUSE.varname, whPath.toString());
+    hcatConf = getHiveConf();
+    hcatConf.set(ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
+      HCatSemanticAnalyzer.class.getName());
+    URI fsuri = getFileSystem().getUri();
+    Path whPath = new Path(fsuri.getScheme(), fsuri.getAuthority(),
+      getTestDir());
+    hcatConf.set(HiveConf.ConfVars.HADOOPFS.varname, fsuri.toString());
+    hcatConf.set(ConfVars.METASTOREWAREHOUSE.varname, whPath.toString());
 
-        //Add hbase properties
+    //Add hbase properties
 
-        for (Map.Entry<String, String> el : getHbaseConf()) {
-            if (el.getKey().startsWith("hbase.")) {
-                hcatConf.set(el.getKey(), el.getValue());
-            }
-        }
-        HBaseConfiguration.merge(hcatConf,
-            RevisionManagerConfiguration.create());
-        hcatConf.set(RMConstants.ZOOKEEPER_DATADIR, "/rm_base");
-        SessionState.start(new CliSessionState(hcatConf));
-        hcatDriver = new HCatDriver();
+    for (Map.Entry<String, String> el : getHbaseConf()) {
+      if (el.getKey().startsWith("hbase.")) {
+        hcatConf.set(el.getKey(), el.getValue());
+      }
+    }
+    HBaseConfiguration.merge(hcatConf,
+      RevisionManagerConfiguration.create());
+    hcatConf.set(RMConstants.ZOOKEEPER_DATADIR, "/rm_base");
+    SessionState.start(new CliSessionState(hcatConf));
+    hcatDriver = new HCatDriver();
 
+  }
+
+  @Test
+  public void testBasicZNodeCreation() throws Exception {
+
+    Initialize();
+    int port = getHbaseConf().getInt("hbase.zookeeper.property.clientPort", 2181);
+    String servers = getHbaseConf().get("hbase.zookeeper.quorum");
+    String[] splits = servers.split(",");
+    StringBuffer sb = new StringBuffer();
+    for (String split : splits) {
+      sb.append(split);
+      sb.append(':');
+      sb.append(port);
     }
 
-    @Test
-    public void testBasicZNodeCreation() throws Exception {
+    hcatDriver.run("drop table test_table");
+    CommandProcessorResponse response = hcatDriver
+      .run("create table test_table(key int, value string) STORED BY " +
+        "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
+        + "TBLPROPERTIES ('hbase.columns.mapping'=':key,cf1:val')");
 
-        Initialize();
-        int port = getHbaseConf().getInt("hbase.zookeeper.property.clientPort", 2181);
-        String servers = getHbaseConf().get("hbase.zookeeper.quorum");
-        String[] splits = servers.split(",");
-        StringBuffer sb = new StringBuffer();
-        for (String split : splits) {
-            sb.append(split);
-            sb.append(':');
-            sb.append(port);
-        }
+    assertEquals(0, response.getResponseCode());
 
-        hcatDriver.run("drop table test_table");
-        CommandProcessorResponse response = hcatDriver
-            .run("create table test_table(key int, value string) STORED BY " +
-                "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
-                + "TBLPROPERTIES ('hbase.columns.mapping'=':key,cf1:val')");
-
-        assertEquals(0, response.getResponseCode());
-
-        HBaseAdmin hAdmin = new HBaseAdmin(getHbaseConf());
-        boolean doesTableExist = hAdmin.tableExists("test_table");
-        assertTrue(doesTableExist);
+    HBaseAdmin hAdmin = new HBaseAdmin(getHbaseConf());
+    boolean doesTableExist = hAdmin.tableExists("test_table");
+    assertTrue(doesTableExist);
 
 
-        ZKUtil zkutil = new ZKUtil(sb.toString(), "/rm_base");
-        ZooKeeper zk = zkutil.getSession();
-        String tablePath = PathUtil.getTxnDataPath("/rm_base", "test_table");
-        Stat tempTwo = zk.exists(tablePath, false);
-        assertTrue(tempTwo != null);
+    ZKUtil zkutil = new ZKUtil(sb.toString(), "/rm_base");
+    ZooKeeper zk = zkutil.getSession();
+    String tablePath = PathUtil.getTxnDataPath("/rm_base", "test_table");
+    Stat tempTwo = zk.exists(tablePath, false);
+    assertTrue(tempTwo != null);
 
-        String cfPath = PathUtil.getTxnDataPath("/rm_base", "test_table") + "/cf1";
-        Stat tempThree = zk.exists(cfPath, false);
-        assertTrue(tempThree != null);
+    String cfPath = PathUtil.getTxnDataPath("/rm_base", "test_table") + "/cf1";
+    Stat tempThree = zk.exists(cfPath, false);
+    assertTrue(tempThree != null);
 
-        hcatDriver.run("drop table test_table");
+    hcatDriver.run("drop table test_table");
 
-        System.out.println("Table path : " + tablePath);
-        Stat tempFour = zk.exists(tablePath, false);
-        assertTrue(tempFour == null);
+    System.out.println("Table path : " + tablePath);
+    Stat tempFour = zk.exists(tablePath, false);
+    assertTrue(tempFour == null);
 
-    }
+  }
 
 }

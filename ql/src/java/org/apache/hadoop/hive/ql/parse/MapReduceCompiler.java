@@ -137,14 +137,22 @@ public class MapReduceCompiler {
       if ((!loadTableWork.isEmpty()) || (loadFileWork.size() != 1)) {
         throw new SemanticException(ErrorMsg.GENERIC_ERROR.getMsg());
       }
-      String cols = loadFileWork.get(0).getColumns();
-      String colTypes = loadFileWork.get(0).getColumnTypes();
 
-      String resFileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
-      TableDesc resultTab = PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, resFileFormat);
+      LoadFileDesc loadFileDesc = loadFileWork.get(0);
 
-      FetchWork fetch = new FetchWork(new Path(loadFileWork.get(0).getSourceDir()).toString(),
+      String cols = loadFileDesc.getColumns();
+      String colTypes = loadFileDesc.getColumnTypes();
+
+      TableDesc resultTab = pCtx.getFetchTabledesc();
+      if (resultTab == null) {
+        String resFileFormat = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYRESULTFILEFORMAT);
+        resultTab = PlanUtils.getDefaultQueryOutputTableDesc(cols, colTypes, resFileFormat);
+      }
+
+      FetchWork fetch = new FetchWork(new Path(loadFileDesc.getSourceDir()).toString(),
           resultTab, qb.getParseInfo().getOuterQueryLimit());
+      fetch.setSource(pCtx.getFetchSource());
+      fetch.setSink(pCtx.getFetchSink());
 
       pCtx.setFetchTask((FetchTask) TaskFactory.get(fetch, conf));
 

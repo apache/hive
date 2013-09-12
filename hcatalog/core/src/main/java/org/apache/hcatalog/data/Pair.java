@@ -22,68 +22,69 @@ import java.io.Serializable;
 
 /**
  * Copy of C++ STL pair container.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.Pair} instead
  */
 public class Pair<T, U> implements Serializable {
 
-    private static final long serialVersionUID = 1L;
-    public T first;
-    public U second;
+  private static final long serialVersionUID = 1L;
+  public T first;
+  public U second;
 
-    /**
-     * @param f First element in pair.
-     * @param s Second element in pair.
-     */
-    public Pair(T f, U s) {
-        first = f;
-        second = s;
+  /**
+   * @param f First element in pair.
+   * @param s Second element in pair.
+   */
+  public Pair(T f, U s) {
+    first = f;
+    second = s;
+  }
+
+  /* (non-Javadoc)
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return "[" + first.toString() + "," + second.toString() + "]";
+  }
+
+  @Override
+  public int hashCode() {
+    return (((this.first == null ? 1 : this.first.hashCode()) * 17)
+      + (this.second == null ? 1 : this.second.hashCode()) * 19);
+  }
+
+  @Override
+  public boolean equals(Object other) {
+    if (other == null) {
+      return false;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
-    @Override
-    public String toString() {
-        return "[" + first.toString() + "," + second.toString() + "]";
+    if (!(other instanceof Pair)) {
+      return false;
     }
 
-    @Override
-    public int hashCode() {
-        return (((this.first == null ? 1 : this.first.hashCode()) * 17)
-            + (this.second == null ? 1 : this.second.hashCode()) * 19);
+    Pair otherPair = (Pair) other;
+
+    if (this.first == null) {
+      if (otherPair.first != null) {
+        return false;
+      } else {
+        return true;
+      }
     }
 
-    @Override
-    public boolean equals(Object other) {
-        if (other == null) {
-            return false;
-        }
-
-        if (!(other instanceof Pair)) {
-            return false;
-        }
-
-        Pair otherPair = (Pair) other;
-
-        if (this.first == null) {
-            if (otherPair.first != null) {
-                return false;
-            } else {
-                return true;
-            }
-        }
-
-        if (this.second == null) {
-            if (otherPair.second != null) {
-                return false;
-            } else {
-                return true;
-            }
-        }
-
-        if (this.first.equals(otherPair.first) && this.second.equals(otherPair.second)) {
-            return true;
-        } else {
-            return false;
-        }
+    if (this.second == null) {
+      if (otherPair.second != null) {
+        return false;
+      } else {
+        return true;
+      }
     }
+
+    if (this.first.equals(otherPair.first) && this.second.equals(otherPair.second)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }

@@ -431,19 +431,19 @@
 <property>
   <name>hive.mapjoin.followby.map.aggr.hash.percentmemory</name>
   <value>0.3</value>
-  <description>Portion of total memory to be used by map-side grup aggregation hash table, when this group by is followed by map join</description>
+  <description>Portion of total memory to be used by map-side group aggregation hash table, when this group by is followed by map join</description>
 </property>
 
 <property>
   <name>hive.map.aggr.hash.force.flush.memory.threshold</name>
   <value>0.9</value>
-  <description>The max memory to be used by map-side grup aggregation hash table, if the memory usage is higher than this number, force to flush data</description>
+  <description>The max memory to be used by map-side group aggregation hash table, if the memory usage is higher than this number, force to flush data</description>
 </property>
 
 <property>
   <name>hive.map.aggr.hash.percentmemory</name>
   <value>0.5</value>
-  <description>Portion of total memory to be used by map-side grup aggregation hash table</description>
+  <description>Portion of total memory to be used by map-side group aggregation hash table</description>
 </property>
 
 <property>
@@ -1584,6 +1584,12 @@
 </property>
 
 <property>
+  <name>hive.limit.pushdown.memory.usage</name>
+  <value>0.3f</value>
+  <description>The max memory to be used for hash in RS operator for top K selection.</description>
+</property>
+
+<property>
   <name>hive.rework.mapredwork</name>
   <value>false</value>
   <description>should rework the mapred work or not.
@@ -1848,8 +1854,21 @@
 
 <property>
   <name>hive.server2.thrift.max.worker.threads</name>
-  <value>100</value>
+  <value>500</value>
   <description>Maximum number of Thrift worker threads</description>
+</property>
+
+<property>
+  <name>hive.server2.async.exec.threads</name>
+  <value>50</value>
+  <description>Number of threads in the async thread pool for HiveServer2</description>
+</property>
+
+<property>
+  <name>hive.server2.async.exec.shutdown.timeout</name>
+  <value>10</value>
+  <description>Time (in seconds) for which HiveServer2 shutdown will wait for async 
+  threads to terminate</description>
 </property>
 
 <property>
@@ -1948,8 +1967,22 @@
 <property>
   <name>hive.server2.thrift.sasl.qop</name>
   <value>auth</auth>
-  <description>Sasl QOP value; one of 'auth', 'auth-int' and 'auth-conf'</description>
+  <description>Sasl QOP value; Set it to one of following values to enable higher levels of
+     protection for hive server2 communication with clients.
+      "auth" - authentication only (default)
+      "auth-int" - authentication plus integrity protection
+      "auth-conf" - authentication plus integrity and confidentiality protection
+     This is applicable only hive server2 is configured to use kerberos authentication.
+ </description>
+</property>
+
+<property>
+  <name>hive.plan.serialization.format</name>
+  <value>kryo</value>
+  <description>
+  Query plan format serialization between client and task nodes. 
+  Two supported values are : kryo and javaXML. Kryo is default.
+  </description>
 </property>
 
 </configuration>
-

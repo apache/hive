@@ -79,14 +79,15 @@ public class TestPlan extends TestCase {
       mrwork.getMapWork().setPathToPartitionInfo(pt);
       mrwork.getMapWork().setAliasToWork(ao);
 
+      JobConf job = new JobConf(TestPlan.class);
       // serialize the configuration once ..
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      Utilities.serializeObject(mrwork, baos);
+      Utilities.serializePlan(mrwork, baos, job);
       baos.close();
       String v1 = baos.toString();
 
       // store into configuration
-      JobConf job = new JobConf(TestPlan.class);
+
       job.set("fs.default.name", "file:///");
       Utilities.setMapRedWork(job, mrwork, System.getProperty("java.io.tmpdir") + File.separator +
         System.getProperty("user.name") + File.separator + "hive");
@@ -99,7 +100,7 @@ public class TestPlan extends TestCase {
 
       // serialize again
       baos.reset();
-      Utilities.serializeObject(mrwork2, baos);
+      Utilities.serializePlan(mrwork2, baos, job);
       baos.close();
 
       // verify that the two are equal

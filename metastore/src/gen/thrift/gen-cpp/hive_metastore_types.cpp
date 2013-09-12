@@ -1404,90 +1404,8 @@ void swap(Order &a, Order &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* SkewedValueList::ascii_fingerprint = "ACE4F644F0FDD289DDC4EE5B83BC13C0";
-const uint8_t SkewedValueList::binary_fingerprint[16] = {0xAC,0xE4,0xF6,0x44,0xF0,0xFD,0xD2,0x89,0xDD,0xC4,0xEE,0x5B,0x83,0xBC,0x13,0xC0};
-
-uint32_t SkewedValueList::read(::apache::thrift::protocol::TProtocol* iprot) {
-
-  uint32_t xfer = 0;
-  std::string fname;
-  ::apache::thrift::protocol::TType ftype;
-  int16_t fid;
-
-  xfer += iprot->readStructBegin(fname);
-
-  using ::apache::thrift::protocol::TProtocolException;
-
-
-  while (true)
-  {
-    xfer += iprot->readFieldBegin(fname, ftype, fid);
-    if (ftype == ::apache::thrift::protocol::T_STOP) {
-      break;
-    }
-    switch (fid)
-    {
-      case 1:
-        if (ftype == ::apache::thrift::protocol::T_LIST) {
-          {
-            this->skewedValueList.clear();
-            uint32_t _size79;
-            ::apache::thrift::protocol::TType _etype82;
-            xfer += iprot->readListBegin(_etype82, _size79);
-            this->skewedValueList.resize(_size79);
-            uint32_t _i83;
-            for (_i83 = 0; _i83 < _size79; ++_i83)
-            {
-              xfer += iprot->readString(this->skewedValueList[_i83]);
-            }
-            xfer += iprot->readListEnd();
-          }
-          this->__isset.skewedValueList = true;
-        } else {
-          xfer += iprot->skip(ftype);
-        }
-        break;
-      default:
-        xfer += iprot->skip(ftype);
-        break;
-    }
-    xfer += iprot->readFieldEnd();
-  }
-
-  xfer += iprot->readStructEnd();
-
-  return xfer;
-}
-
-uint32_t SkewedValueList::write(::apache::thrift::protocol::TProtocol* oprot) const {
-  uint32_t xfer = 0;
-  xfer += oprot->writeStructBegin("SkewedValueList");
-
-  xfer += oprot->writeFieldBegin("skewedValueList", ::apache::thrift::protocol::T_LIST, 1);
-  {
-    xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->skewedValueList.size()));
-    std::vector<std::string> ::const_iterator _iter84;
-    for (_iter84 = this->skewedValueList.begin(); _iter84 != this->skewedValueList.end(); ++_iter84)
-    {
-      xfer += oprot->writeString((*_iter84));
-    }
-    xfer += oprot->writeListEnd();
-  }
-  xfer += oprot->writeFieldEnd();
-
-  xfer += oprot->writeFieldStop();
-  xfer += oprot->writeStructEnd();
-  return xfer;
-}
-
-void swap(SkewedValueList &a, SkewedValueList &b) {
-  using ::std::swap;
-  swap(a.skewedValueList, b.skewedValueList);
-  swap(a.__isset, b.__isset);
-}
-
-const char* SkewedInfo::ascii_fingerprint = "F4A067072461B8071E4F5A6BE5276FC0";
-const uint8_t SkewedInfo::binary_fingerprint[16] = {0xF4,0xA0,0x67,0x07,0x24,0x61,0xB8,0x07,0x1E,0x4F,0x5A,0x6B,0xE5,0x27,0x6F,0xC0};
+const char* SkewedInfo::ascii_fingerprint = "4BF2ED84BC3C3EB297A2AE2FA8427EB1";
+const uint8_t SkewedInfo::binary_fingerprint[16] = {0x4B,0xF2,0xED,0x84,0xBC,0x3C,0x3E,0xB2,0x97,0xA2,0xAE,0x2F,0xA8,0x42,0x7E,0xB1};
 
 uint32_t SkewedInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -1513,14 +1431,14 @@ uint32_t SkewedInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->skewedColNames.clear();
-            uint32_t _size85;
-            ::apache::thrift::protocol::TType _etype88;
-            xfer += iprot->readListBegin(_etype88, _size85);
-            this->skewedColNames.resize(_size85);
-            uint32_t _i89;
-            for (_i89 = 0; _i89 < _size85; ++_i89)
+            uint32_t _size79;
+            ::apache::thrift::protocol::TType _etype82;
+            xfer += iprot->readListBegin(_etype82, _size79);
+            this->skewedColNames.resize(_size79);
+            uint32_t _i83;
+            for (_i83 = 0; _i83 < _size79; ++_i83)
             {
-              xfer += iprot->readString(this->skewedColNames[_i89]);
+              xfer += iprot->readString(this->skewedColNames[_i83]);
             }
             xfer += iprot->readListEnd();
           }
@@ -1533,23 +1451,23 @@ uint32_t SkewedInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_LIST) {
           {
             this->skewedColValues.clear();
-            uint32_t _size90;
-            ::apache::thrift::protocol::TType _etype93;
-            xfer += iprot->readListBegin(_etype93, _size90);
-            this->skewedColValues.resize(_size90);
-            uint32_t _i94;
-            for (_i94 = 0; _i94 < _size90; ++_i94)
+            uint32_t _size84;
+            ::apache::thrift::protocol::TType _etype87;
+            xfer += iprot->readListBegin(_etype87, _size84);
+            this->skewedColValues.resize(_size84);
+            uint32_t _i88;
+            for (_i88 = 0; _i88 < _size84; ++_i88)
             {
               {
-                this->skewedColValues[_i94].clear();
-                uint32_t _size95;
-                ::apache::thrift::protocol::TType _etype98;
-                xfer += iprot->readListBegin(_etype98, _size95);
-                this->skewedColValues[_i94].resize(_size95);
-                uint32_t _i99;
-                for (_i99 = 0; _i99 < _size95; ++_i99)
+                this->skewedColValues[_i88].clear();
+                uint32_t _size89;
+                ::apache::thrift::protocol::TType _etype92;
+                xfer += iprot->readListBegin(_etype92, _size89);
+                this->skewedColValues[_i88].resize(_size89);
+                uint32_t _i93;
+                for (_i93 = 0; _i93 < _size89; ++_i93)
                 {
-                  xfer += iprot->readString(this->skewedColValues[_i94][_i99]);
+                  xfer += iprot->readString(this->skewedColValues[_i88][_i93]);
                 }
                 xfer += iprot->readListEnd();
               }
@@ -1565,17 +1483,29 @@ uint32_t SkewedInfo::read(::apache::thrift::protocol::TProtocol* iprot) {
         if (ftype == ::apache::thrift::protocol::T_MAP) {
           {
             this->skewedColValueLocationMaps.clear();
-            uint32_t _size100;
-            ::apache::thrift::protocol::TType _ktype101;
-            ::apache::thrift::protocol::TType _vtype102;
-            xfer += iprot->readMapBegin(_ktype101, _vtype102, _size100);
-            uint32_t _i104;
-            for (_i104 = 0; _i104 < _size100; ++_i104)
+            uint32_t _size94;
+            ::apache::thrift::protocol::TType _ktype95;
+            ::apache::thrift::protocol::TType _vtype96;
+            xfer += iprot->readMapBegin(_ktype95, _vtype96, _size94);
+            uint32_t _i98;
+            for (_i98 = 0; _i98 < _size94; ++_i98)
             {
-              SkewedValueList _key105;
-              xfer += _key105.read(iprot);
-              std::string& _val106 = this->skewedColValueLocationMaps[_key105];
-              xfer += iprot->readString(_val106);
+              std::vector<std::string>  _key99;
+              {
+                _key99.clear();
+                uint32_t _size101;
+                ::apache::thrift::protocol::TType _etype104;
+                xfer += iprot->readListBegin(_etype104, _size101);
+                _key99.resize(_size101);
+                uint32_t _i105;
+                for (_i105 = 0; _i105 < _size101; ++_i105)
+                {
+                  xfer += iprot->readString(_key99[_i105]);
+                }
+                xfer += iprot->readListEnd();
+              }
+              std::string& _val100 = this->skewedColValueLocationMaps[_key99];
+              xfer += iprot->readString(_val100);
             }
             xfer += iprot->readMapEnd();
           }
@@ -1603,10 +1533,10 @@ uint32_t SkewedInfo::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("skewedColNames", ::apache::thrift::protocol::T_LIST, 1);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->skewedColNames.size()));
-    std::vector<std::string> ::const_iterator _iter107;
-    for (_iter107 = this->skewedColNames.begin(); _iter107 != this->skewedColNames.end(); ++_iter107)
+    std::vector<std::string> ::const_iterator _iter106;
+    for (_iter106 = this->skewedColNames.begin(); _iter106 != this->skewedColNames.end(); ++_iter106)
     {
-      xfer += oprot->writeString((*_iter107));
+      xfer += oprot->writeString((*_iter106));
     }
     xfer += oprot->writeListEnd();
   }
@@ -1615,15 +1545,15 @@ uint32_t SkewedInfo::write(::apache::thrift::protocol::TProtocol* oprot) const {
   xfer += oprot->writeFieldBegin("skewedColValues", ::apache::thrift::protocol::T_LIST, 2);
   {
     xfer += oprot->writeListBegin(::apache::thrift::protocol::T_LIST, static_cast<uint32_t>(this->skewedColValues.size()));
-    std::vector<std::vector<std::string> > ::const_iterator _iter108;
-    for (_iter108 = this->skewedColValues.begin(); _iter108 != this->skewedColValues.end(); ++_iter108)
+    std::vector<std::vector<std::string> > ::const_iterator _iter107;
+    for (_iter107 = this->skewedColValues.begin(); _iter107 != this->skewedColValues.end(); ++_iter107)
     {
       {
-        xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*_iter108).size()));
-        std::vector<std::string> ::const_iterator _iter109;
-        for (_iter109 = (*_iter108).begin(); _iter109 != (*_iter108).end(); ++_iter109)
+        xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>((*_iter107).size()));
+        std::vector<std::string> ::const_iterator _iter108;
+        for (_iter108 = (*_iter107).begin(); _iter108 != (*_iter107).end(); ++_iter108)
         {
-          xfer += oprot->writeString((*_iter109));
+          xfer += oprot->writeString((*_iter108));
         }
         xfer += oprot->writeListEnd();
       }
@@ -1634,12 +1564,20 @@ uint32_t SkewedInfo::write(::apache::thrift::protocol::TProtocol* oprot) const {
 
   xfer += oprot->writeFieldBegin("skewedColValueLocationMaps", ::apache::thrift::protocol::T_MAP, 3);
   {
-    xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_STRUCT, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->skewedColValueLocationMaps.size()));
-    std::map<SkewedValueList, std::string> ::const_iterator _iter110;
-    for (_iter110 = this->skewedColValueLocationMaps.begin(); _iter110 != this->skewedColValueLocationMaps.end(); ++_iter110)
+    xfer += oprot->writeMapBegin(::apache::thrift::protocol::T_LIST, ::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(this->skewedColValueLocationMaps.size()));
+    std::map<std::vector<std::string> , std::string> ::const_iterator _iter109;
+    for (_iter109 = this->skewedColValueLocationMaps.begin(); _iter109 != this->skewedColValueLocationMaps.end(); ++_iter109)
     {
-      xfer += _iter110->first.write(oprot);
-      xfer += oprot->writeString(_iter110->second);
+      {
+        xfer += oprot->writeListBegin(::apache::thrift::protocol::T_STRING, static_cast<uint32_t>(_iter109->first.size()));
+        std::vector<std::string> ::const_iterator _iter110;
+        for (_iter110 = _iter109->first.begin(); _iter110 != _iter109->first.end(); ++_iter110)
+        {
+          xfer += oprot->writeString((*_iter110));
+        }
+        xfer += oprot->writeListEnd();
+      }
+      xfer += oprot->writeString(_iter109->second);
     }
     xfer += oprot->writeMapEnd();
   }
@@ -1658,8 +1596,8 @@ void swap(SkewedInfo &a, SkewedInfo &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* StorageDescriptor::ascii_fingerprint = "283664579DDA891300CFDE15F5771323";
-const uint8_t StorageDescriptor::binary_fingerprint[16] = {0x28,0x36,0x64,0x57,0x9D,0xDA,0x89,0x13,0x00,0xCF,0xDE,0x15,0xF5,0x77,0x13,0x23};
+const char* StorageDescriptor::ascii_fingerprint = "CA8C9AA5FE4C32643757D8639CEF0CD7";
+const uint8_t StorageDescriptor::binary_fingerprint[16] = {0xCA,0x8C,0x9A,0xA5,0xFE,0x4C,0x32,0x64,0x37,0x57,0xD8,0x63,0x9C,0xEF,0x0C,0xD7};
 
 uint32_t StorageDescriptor::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -1949,8 +1887,8 @@ void swap(StorageDescriptor &a, StorageDescriptor &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* Table::ascii_fingerprint = "AEBB39149C622C62B239988E19489807";
-const uint8_t Table::binary_fingerprint[16] = {0xAE,0xBB,0x39,0x14,0x9C,0x62,0x2C,0x62,0xB2,0x39,0x98,0x8E,0x19,0x48,0x98,0x07};
+const char* Table::ascii_fingerprint = "68640B4B66B355CF317429AF70D2C260";
+const uint8_t Table::binary_fingerprint[16] = {0x68,0x64,0x0B,0x4B,0x66,0xB3,0x55,0xCF,0x31,0x74,0x29,0xAF,0x70,0xD2,0xC2,0x60};
 
 uint32_t Table::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -2212,8 +2150,8 @@ void swap(Table &a, Table &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* Partition::ascii_fingerprint = "81AD5F7E827DDC1A37C18BF73ECA603F";
-const uint8_t Partition::binary_fingerprint[16] = {0x81,0xAD,0x5F,0x7E,0x82,0x7D,0xDC,0x1A,0x37,0xC1,0x8B,0xF7,0x3E,0xCA,0x60,0x3F};
+const char* Partition::ascii_fingerprint = "31A52241B88A426C34087FE38343FF51";
+const uint8_t Partition::binary_fingerprint[16] = {0x31,0xA5,0x22,0x41,0xB8,0x8A,0x42,0x6C,0x34,0x08,0x7F,0xE3,0x83,0x43,0xFF,0x51};
 
 uint32_t Partition::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -2410,8 +2348,8 @@ void swap(Partition &a, Partition &b) {
   swap(a.__isset, b.__isset);
 }
 
-const char* Index::ascii_fingerprint = "A2822E71566DF57594774A6CF56D11B5";
-const uint8_t Index::binary_fingerprint[16] = {0xA2,0x82,0x2E,0x71,0x56,0x6D,0xF5,0x75,0x94,0x77,0x4A,0x6C,0xF5,0x6D,0x11,0xB5};
+const char* Index::ascii_fingerprint = "09EEF655216AC81802850988D6C470A6";
+const uint8_t Index::binary_fingerprint[16] = {0x09,0xEE,0xF6,0x55,0x21,0x6A,0xC8,0x18,0x02,0x85,0x09,0x88,0xD6,0xC4,0x70,0xA6};
 
 uint32_t Index::read(::apache::thrift::protocol::TProtocol* iprot) {
 

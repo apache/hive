@@ -59,10 +59,7 @@ public final class OpProcFactory extends PrunerOperatorFactory {
       String alias = top.getConf().getAlias();
 
       // Generate the partition pruning predicate
-      boolean hasNonPartCols = false;
-      ExprNodeDesc ppr_pred = ExprProcFactory.genPruner(alias, predicate,
-          hasNonPartCols);
-      owc.addHasNonPartCols(hasNonPartCols);
+      ExprNodeDesc ppr_pred = ExprProcFactory.genPruner(alias, predicate);
 
       // Add the pruning predicate to the table scan operator
       addPruningPred(owc.getOpToPartPruner(), top, ppr_pred);

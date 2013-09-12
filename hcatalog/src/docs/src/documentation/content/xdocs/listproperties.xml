@@ -86,10 +86,10 @@
  "properties": {
    "fruit": "apple",
    "last_modified_by": "ctdean",
-   "hcat.osd": "org.apache.hcatalog.rcfile.RCFileOutputDriver",
+   "hcat.osd": "org.apache.hive.hcatalog.rcfile.RCFileOutputDriver",
    "color": "blue",
    "last_modified_time": "1331620706",
-   "hcat.isd": "org.apache.hcatalog.rcfile.RCFileInputDriver",
+   "hcat.isd": "org.apache.hive.hcatalog.rcfile.RCFileInputDriver",
    "transient_lastDdlTime": "1331620706",
    "comment": "Best table made today",
    "country": "Albania"

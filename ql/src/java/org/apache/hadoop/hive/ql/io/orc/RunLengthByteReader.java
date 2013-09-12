@@ -59,7 +59,7 @@ class RunLengthByteReader {
       while (bytes < numLiterals) {
         int result = input.read(literals, bytes, numLiterals - bytes);
         if (result == -1) {
-          throw new EOFException("Reading RLE byte literal got EOF");
+          throw new EOFException("Reading RLE byte literal got EOF in " + this);
         }
         bytes += result;
       }
@@ -132,5 +132,11 @@ class RunLengthByteReader {
       used += consume;
       items -= consume;
     }
+  }
+
+  @Override
+  public String toString() {
+    return "byte rle " + (repeat ? "repeat" : "literal") + " used: " +
+        used + "/" + numLiterals + " from " + input;
   }
 }

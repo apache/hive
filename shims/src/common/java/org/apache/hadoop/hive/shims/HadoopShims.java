@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.shims;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -40,13 +41,19 @@ import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.JobProfile;
+import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobContext;
+import org.apache.hadoop.mapreduce.JobID;
+import org.apache.hadoop.mapreduce.OutputFormat;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
+import org.apache.hadoop.mapreduce.TaskAttemptID;
+import org.apache.hadoop.mapreduce.TaskID;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.Progressable;
 
@@ -461,4 +468,72 @@ public interface HadoopShims {
         Class<RecordReader<K, V>> rrClass) throws IOException;
   }
 
+  public HCatHadoopShims getHCatShim();
+  public interface HCatHadoopShims {
+
+    enum PropertyName {CACHE_ARCHIVES, CACHE_FILES, CACHE_SYMLINK}
+
+    public TaskID createTaskID();
+
+    public TaskAttemptID createTaskAttemptID();
+
+    public org.apache.hadoop.mapreduce.TaskAttemptContext createTaskAttemptContext(Configuration conf,
+                                                                                   TaskAttemptID taskId);
+
+    public org.apache.hadoop.mapred.TaskAttemptContext createTaskAttemptContext(JobConf conf,
+                                                                                org.apache.hadoop.mapred.TaskAttemptID taskId, Progressable progressable);
+
+    public JobContext createJobContext(Configuration conf, JobID jobId);
+
+    public org.apache.hadoop.mapred.JobContext createJobContext(JobConf conf, JobID jobId, Progressable progressable);
+
+    public void commitJob(OutputFormat outputFormat, Job job) throws IOException;
+
+    public void abortJob(OutputFormat outputFormat, Job job) throws IOException;
+
+    /* Referring to job tracker in 0.20 and resource manager in 0.23 */
+    public InetSocketAddress getResourceManagerAddress(Configuration conf);
+
+    public String getPropertyName(PropertyName name);
+
+    /**
+     * Checks if file is in HDFS filesystem.
+     *
+     * @param fs
+     * @param path
+     * @return true if the file is in HDFS, false if the file is in other file systems.
+     */
+    public boolean isFileInHDFS(FileSystem fs, Path path) throws IOException;
+  }
+  /**
+   * Provides a Hadoop JobTracker shim.
+   * @param conf not {@code null}
+   */
+  public WebHCatJTShim getWebHCatShim(Configuration conf, UserGroupInformation ugi) throws IOException;
+  public interface WebHCatJTShim {
+    /**
+     * Grab a handle to a job that is already known to the JobTracker.
+     *
+     * @return Profile of the job, or null if not found.
+     */
+    public JobProfile getJobProfile(org.apache.hadoop.mapred.JobID jobid) throws IOException;
+    /**
+     * Grab a handle to a job that is already known to the JobTracker.
+     *
+     * @return Status of the job, or null if not found.
+     */
+    public JobStatus getJobStatus(org.apache.hadoop.mapred.JobID jobid) throws IOException;
+    /**
+     * Kill a job.
+     */
+    public void killJob(org.apache.hadoop.mapred.JobID jobid) throws IOException;
+    /**
+     * Get all the jobs submitted.
+     */
+    public JobStatus[] getAllJobs() throws IOException;
+    /**
+     * Close the connection to the Job Tracker.
+     */
+    public void close();
+  }
 }

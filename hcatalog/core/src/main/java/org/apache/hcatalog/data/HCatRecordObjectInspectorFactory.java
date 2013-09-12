@@ -36,97 +36,98 @@ import org.slf4j.LoggerFactory;
 
 /**
  * ObjectInspectorFactory for HCatRecordObjectInspectors (and associated helper inspectors)
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.HCatRecordObjectInspectorFactory} instead
  */
 public class HCatRecordObjectInspectorFactory {
 
-    private final static Logger LOG = LoggerFactory.getLogger(HCatRecordObjectInspectorFactory.class);
+  private final static Logger LOG = LoggerFactory.getLogger(HCatRecordObjectInspectorFactory.class);
 
-    static HashMap<TypeInfo, HCatRecordObjectInspector> cachedHCatRecordObjectInspectors =
-        new HashMap<TypeInfo, HCatRecordObjectInspector>();
-    static HashMap<TypeInfo, ObjectInspector> cachedObjectInspectors =
-        new HashMap<TypeInfo, ObjectInspector>();
+  static HashMap<TypeInfo, HCatRecordObjectInspector> cachedHCatRecordObjectInspectors =
+    new HashMap<TypeInfo, HCatRecordObjectInspector>();
+  static HashMap<TypeInfo, ObjectInspector> cachedObjectInspectors =
+    new HashMap<TypeInfo, ObjectInspector>();
 
-    /**
-     * Returns HCatRecordObjectInspector given a StructTypeInfo type definition for the record to look into
-     * @param typeInfo Type definition for the record to look into
-     * @return appropriate HCatRecordObjectInspector
-     * @throws SerDeException
-     */
-    public static HCatRecordObjectInspector getHCatRecordObjectInspector(
-        StructTypeInfo typeInfo) throws SerDeException {
-        HCatRecordObjectInspector oi = cachedHCatRecordObjectInspectors.get(typeInfo);
-        if (oi == null) {
+  /**
+   * Returns HCatRecordObjectInspector given a StructTypeInfo type definition for the record to look into
+   * @param typeInfo Type definition for the record to look into
+   * @return appropriate HCatRecordObjectInspector
+   * @throws SerDeException
+   */
+  public static HCatRecordObjectInspector getHCatRecordObjectInspector(
+    StructTypeInfo typeInfo) throws SerDeException {
+    HCatRecordObjectInspector oi = cachedHCatRecordObjectInspectors.get(typeInfo);
+    if (oi == null) {
 
-            LOG.debug("Got asked for OI for {} [{} ]", typeInfo.getCategory(), typeInfo.getTypeName());
-            switch (typeInfo.getCategory()) {
-            case STRUCT:
-                StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
-                List<String> fieldNames = structTypeInfo.getAllStructFieldNames();
-                List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
-                List<ObjectInspector> fieldObjectInspectors = new ArrayList<ObjectInspector>(fieldTypeInfos.size());
-                for (int i = 0; i < fieldTypeInfos.size(); i++) {
-                    fieldObjectInspectors.add(getStandardObjectInspectorFromTypeInfo(fieldTypeInfos.get(i)));
-                }
-                oi = new HCatRecordObjectInspector(fieldNames, fieldObjectInspectors);
-
-                break;
-            default:
-                // Hmm.. not good,
-                // the only type expected here is STRUCT, which maps to HCatRecord
-                // - anything else is an error. Return null as the inspector.
-                throw new SerDeException("TypeInfo [" + typeInfo.getTypeName()
-                    + "] was not of struct type - HCatRecord expected struct type, got ["
-                    + typeInfo.getCategory().toString() + "]");
-            }
-            cachedHCatRecordObjectInspectors.put(typeInfo, oi);
+      LOG.debug("Got asked for OI for {} [{} ]", typeInfo.getCategory(), typeInfo.getTypeName());
+      switch (typeInfo.getCategory()) {
+      case STRUCT:
+        StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+        List<String> fieldNames = structTypeInfo.getAllStructFieldNames();
+        List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+        List<ObjectInspector> fieldObjectInspectors = new ArrayList<ObjectInspector>(fieldTypeInfos.size());
+        for (int i = 0; i < fieldTypeInfos.size(); i++) {
+          fieldObjectInspectors.add(getStandardObjectInspectorFromTypeInfo(fieldTypeInfos.get(i)));
         }
-        return oi;
+        oi = new HCatRecordObjectInspector(fieldNames, fieldObjectInspectors);
+
+        break;
+      default:
+        // Hmm.. not good,
+        // the only type expected here is STRUCT, which maps to HCatRecord
+        // - anything else is an error. Return null as the inspector.
+        throw new SerDeException("TypeInfo [" + typeInfo.getTypeName()
+          + "] was not of struct type - HCatRecord expected struct type, got ["
+          + typeInfo.getCategory().toString() + "]");
+      }
+      cachedHCatRecordObjectInspectors.put(typeInfo, oi);
     }
+    return oi;
+  }
 
-    public static ObjectInspector getStandardObjectInspectorFromTypeInfo(TypeInfo typeInfo) {
+  public static ObjectInspector getStandardObjectInspectorFromTypeInfo(TypeInfo typeInfo) {
 
 
-        ObjectInspector oi = cachedObjectInspectors.get(typeInfo);
-        if (oi == null) {
+    ObjectInspector oi = cachedObjectInspectors.get(typeInfo);
+    if (oi == null) {
 
-            LOG.debug("Got asked for OI for {}, [{}]", typeInfo.getCategory(), typeInfo.getTypeName());
-            switch (typeInfo.getCategory()) {
-            case PRIMITIVE:
-                oi = PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
-                    ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory());
-                break;
-            case STRUCT:
-                StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
-                List<String> fieldNames = structTypeInfo.getAllStructFieldNames();
-                List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
-                List<ObjectInspector> fieldObjectInspectors =
-                    new ArrayList<ObjectInspector>(fieldTypeInfos.size());
-                for (int i = 0; i < fieldTypeInfos.size(); i++) {
-                    fieldObjectInspectors.add(getStandardObjectInspectorFromTypeInfo(fieldTypeInfos.get(i)));
-                }
-                oi = ObjectInspectorFactory.getStandardStructObjectInspector(
-                    fieldNames, fieldObjectInspectors
-                );
-                break;
-            case LIST:
-                ObjectInspector elementObjectInspector = getStandardObjectInspectorFromTypeInfo(
-                    ((ListTypeInfo) typeInfo).getListElementTypeInfo());
-                oi = ObjectInspectorFactory.getStandardListObjectInspector(elementObjectInspector);
-                break;
-            case MAP:
-                ObjectInspector keyObjectInspector = getStandardObjectInspectorFromTypeInfo(
-                    ((MapTypeInfo) typeInfo).getMapKeyTypeInfo());
-                ObjectInspector valueObjectInspector = getStandardObjectInspectorFromTypeInfo(
-                    ((MapTypeInfo) typeInfo).getMapValueTypeInfo());
-                oi = ObjectInspectorFactory.getStandardMapObjectInspector(keyObjectInspector, valueObjectInspector);
-                break;
-            default:
-                oi = null;
-            }
-            cachedObjectInspectors.put(typeInfo, oi);
+      LOG.debug("Got asked for OI for {}, [{}]", typeInfo.getCategory(), typeInfo.getTypeName());
+      switch (typeInfo.getCategory()) {
+      case PRIMITIVE:
+        oi = PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+          ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory());
+        break;
+      case STRUCT:
+        StructTypeInfo structTypeInfo = (StructTypeInfo) typeInfo;
+        List<String> fieldNames = structTypeInfo.getAllStructFieldNames();
+        List<TypeInfo> fieldTypeInfos = structTypeInfo.getAllStructFieldTypeInfos();
+        List<ObjectInspector> fieldObjectInspectors =
+          new ArrayList<ObjectInspector>(fieldTypeInfos.size());
+        for (int i = 0; i < fieldTypeInfos.size(); i++) {
+          fieldObjectInspectors.add(getStandardObjectInspectorFromTypeInfo(fieldTypeInfos.get(i)));
         }
-        return oi;
+        oi = ObjectInspectorFactory.getStandardStructObjectInspector(
+          fieldNames, fieldObjectInspectors
+        );
+        break;
+      case LIST:
+        ObjectInspector elementObjectInspector = getStandardObjectInspectorFromTypeInfo(
+          ((ListTypeInfo) typeInfo).getListElementTypeInfo());
+        oi = ObjectInspectorFactory.getStandardListObjectInspector(elementObjectInspector);
+        break;
+      case MAP:
+        ObjectInspector keyObjectInspector = getStandardObjectInspectorFromTypeInfo(
+          ((MapTypeInfo) typeInfo).getMapKeyTypeInfo());
+        ObjectInspector valueObjectInspector = getStandardObjectInspectorFromTypeInfo(
+          ((MapTypeInfo) typeInfo).getMapValueTypeInfo());
+        oi = ObjectInspectorFactory.getStandardMapObjectInspector(keyObjectInspector, valueObjectInspector);
+        break;
+      default:
+        oi = null;
+      }
+      cachedObjectInspectors.put(typeInfo, oi);
     }
+    return oi;
+  }
 
 
 }

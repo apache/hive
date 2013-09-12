@@ -23,17 +23,18 @@ import org.apache.hcatalog.common.HCatException;
 /**
  * Class representing exceptions resulting from connection problems
  * between HCat client and server.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.api.ConnectionFailureException} instead
  */
 public class ConnectionFailureException extends HCatException {
 
-    private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 
-    /**
-     * @param message Exception message.
-     * @param cause The wrapped Throwable that caused this exception.
-     */
-    public ConnectionFailureException(String message, Throwable cause) {
-        super(message, cause);
-    }
+  /**
+   * @param message Exception message.
+   * @param cause The wrapped Throwable that caused this exception.
+   */
+  public ConnectionFailureException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
 }

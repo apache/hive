@@ -277,6 +277,9 @@
                             </void> 
                            </object> 
                           </void> 
+                          <void property="typeName"> 
+                           <string>int</string> 
+                          </void> 
                          </object> 
                         </void> 
                         <void method="add"> 
@@ -294,6 +297,9 @@
                             </void> 
                            </object> 
                           </void> 
+                          <void property="typeName"> 
+                           <string>double</string> 
+                          </void> 
                          </object> 
                         </void> 
                         <void method="add"> 
@@ -306,6 +312,9 @@
                           </void> 
                           <void property="type"> 
                            <object idref="PrimitiveTypeInfo1"/> 
+                          </void> 
+                          <void property="typeName"> 
+                           <string>double</string> 
                           </void> 
                          </object> 
                         </void> 
@@ -320,6 +329,9 @@
                           <void property="type"> 
                            <object idref="PrimitiveTypeInfo1"/> 
                           </void> 
+                          <void property="typeName"> 
+                           <string>double</string> 
+                          </void> 
                          </object> 
                         </void> 
                         <void method="add"> 
@@ -332,6 +344,9 @@
                           </void> 
                           <void property="type"> 
                            <object idref="PrimitiveTypeInfo0"/> 
+                          </void> 
+                          <void property="typeName"> 
+                           <string>int</string> 
                           </void> 
                          </object> 
                         </void> 
@@ -350,6 +365,9 @@
                             </void> 
                            </object> 
                           </void> 
+                          <void property="typeName"> 
+                           <string>boolean</string> 
+                          </void> 
                          </object> 
                         </void> 
                         <void method="add"> 
@@ -362,6 +380,9 @@
                           </void> 
                           <void property="type"> 
                            <object idref="PrimitiveTypeInfo0"/> 
+                          </void> 
+                          <void property="typeName"> 
+                           <string>int</string> 
                           </void> 
                          </object> 
                         </void> 
@@ -394,9 +415,6 @@
                     </void> 
                     <void property="genericUDF"> 
                      <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
-                      <void property="udfClass"> 
-                       <class>org.apache.hadoop.hive.ql.udf.UDFToInteger</class> 
-                      </void> 
                       <void property="udfClassName"> 
                        <string>org.apache.hadoop.hive.ql.udf.UDFToInteger</string> 
                       </void> 
@@ -429,9 +447,6 @@
                     </void> 
                     <void property="genericUDF"> 
                      <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
-                      <void property="udfClass"> 
-                       <class>org.apache.hadoop.hive.ql.udf.UDFToBoolean</class> 
-                      </void> 
                       <void property="udfClassName"> 
                        <string>org.apache.hadoop.hive.ql.udf.UDFToBoolean</string> 
                       </void> 
@@ -478,9 +493,6 @@
                         </void> 
                         <void property="genericUDF"> 
                          <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
-                          <void property="udfClass"> 
-                           <class>org.apache.hadoop.hive.ql.udf.UDFToInteger</class> 
-                          </void> 
                           <void property="udfClassName"> 
                            <string>org.apache.hadoop.hive.ql.udf.UDFToInteger</string> 
                           </void> 
@@ -500,9 +512,6 @@
                      <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
                       <void property="operator"> 
                        <boolean>true</boolean> 
-                      </void> 
-                      <void property="udfClass"> 
-                       <class>org.apache.hadoop.hive.ql.udf.UDFOPPlus</class> 
                       </void> 
                       <void property="udfClassName"> 
                        <string>org.apache.hadoop.hive.ql.udf.UDFOPPlus</string> 
@@ -549,9 +558,6 @@
                       <void property="operator"> 
                        <boolean>true</boolean> 
                       </void> 
-                      <void property="udfClass"> 
-                       <class>org.apache.hadoop.hive.ql.udf.UDFOPPlus</class> 
-                      </void> 
                       <void property="udfClassName"> 
                        <string>org.apache.hadoop.hive.ql.udf.UDFOPPlus</string> 
                       </void> 
@@ -596,9 +602,6 @@
                      <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
                       <void property="operator"> 
                        <boolean>true</boolean> 
-                      </void> 
-                      <void property="udfClass"> 
-                       <class>org.apache.hadoop.hive.ql.udf.UDFOPPlus</class> 
                       </void> 
                       <void property="udfClassName"> 
                        <string>org.apache.hadoop.hive.ql.udf.UDFOPPlus</string> 
@@ -645,9 +648,6 @@
                       <void property="operator"> 
                        <boolean>true</boolean> 
                       </void> 
-                      <void property="udfClass"> 
-                       <class>org.apache.hadoop.hive.ql.udf.UDFOPPlus</class> 
-                      </void> 
                       <void property="udfClassName"> 
                        <string>org.apache.hadoop.hive.ql.udf.UDFOPPlus</string> 
                       </void> 
@@ -692,9 +692,6 @@
                      <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
                       <void property="operator"> 
                        <boolean>true</boolean> 
-                      </void> 
-                      <void property="udfClass"> 
-                       <class>org.apache.hadoop.hive.ql.udf.UDFOPPlus</class> 
                       </void> 
                       <void property="udfClassName"> 
                        <string>org.apache.hadoop.hive.ql.udf.UDFOPPlus</string> 
@@ -806,6 +803,9 @@
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
                       </void> 
+                      <void property="typeName"> 
+                       <string>int</string> 
+                      </void> 
                      </object> 
                     </void> 
                     <void method="add"> 
@@ -818,6 +818,9 @@
                       </void> 
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="typeName"> 
+                       <string>double</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -832,6 +835,9 @@
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo1"/> 
                       </void> 
+                      <void property="typeName"> 
+                       <string>double</string> 
+                      </void> 
                      </object> 
                     </void> 
                     <void method="add"> 
@@ -844,6 +850,9 @@
                       </void> 
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="typeName"> 
+                       <string>double</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -858,6 +867,9 @@
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
                       </void> 
+                      <void property="typeName"> 
+                       <string>int</string> 
+                      </void> 
                      </object> 
                     </void> 
                     <void method="add"> 
@@ -871,6 +883,9 @@
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo2"/> 
                       </void> 
+                      <void property="typeName"> 
+                       <string>boolean</string> 
+                      </void> 
                      </object> 
                     </void> 
                     <void method="add"> 
@@ -883,6 +898,9 @@
                       </void> 
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
+                      </void> 
+                      <void property="typeName"> 
+                       <string>int</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -920,10 +938,10 @@
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc"> 
                     <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo0"/>
+                     <object idref="PrimitiveTypeInfo0"/> 
                     </void> 
                     <void property="value"> 
-                     <int>86</int>
+                     <int>86</int> 
                     </void> 
                    </object> 
                   </void> 
@@ -980,6 +998,9 @@
                   <void property="type"> 
                    <object idref="PrimitiveTypeInfo3"/> 
                   </void> 
+                  <void property="typeName"> 
+                   <string>string</string> 
+                  </void> 
                  </object> 
                 </void> 
                </object> 
@@ -1023,6 +1044,13 @@
           </void> 
          </object> 
         </void> 
+        <void property="neededColumns"> 
+         <object class="java.util.ArrayList"> 
+          <void method="add"> 
+           <string>key</string> 
+          </void> 
+         </object> 
+        </void> 
         <void property="operatorId"> 
          <string>TS_0</string> 
         </void> 
@@ -1044,6 +1072,9 @@
               <void property="type"> 
                <object idref="PrimitiveTypeInfo3"/> 
               </void> 
+              <void property="typeName"> 
+               <string>string</string> 
+              </void> 
              </object> 
             </void> 
             <void method="add"> 
@@ -1064,6 +1095,9 @@
                 </void> 
                </object> 
               </void> 
+              <void property="typeName"> 
+               <string>bigint</string> 
+              </void> 
              </object> 
             </void> 
             <void method="add"> 
@@ -1079,6 +1113,9 @@
               </void> 
               <void property="type"> 
                <object idref="PrimitiveTypeInfo3"/> 
+              </void> 
+              <void property="typeName"> 
+               <string>string</string> 
               </void> 
              </object> 
             </void> 

@@ -249,7 +249,7 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
     if (genericUDF instanceof GenericUDFBridge) {
       GenericUDFBridge bridge = (GenericUDFBridge) genericUDF;
       GenericUDFBridge bridge2 = (GenericUDFBridge) dest.getGenericUDF();
-      if (!bridge.getUdfClass().equals(bridge2.getUdfClass())
+      if (!bridge.getUdfClassName().equals(bridge2.getUdfClassName())
           || !bridge.getUdfName().equals(bridge2.getUdfName())
           || bridge.isOperator() != bridge2.isOperator()) {
         return false;
