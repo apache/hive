@@ -22,12 +22,18 @@ import java.lang.Integer;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.BlockLocation;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
 import org.apache.hadoop.mapred.MiniMRCluster;
@@ -339,4 +345,61 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   public WebHCatJTShim getWebHCatShim(Configuration conf, UserGroupInformation ugi) throws IOException {
     return new WebHCatJTShim23(conf, ugi);//this has state, so can't be cached
   }
+
+  @Override
+  public Iterator<FileStatus> listLocatedStatus(final FileSystem fs,
+                                                final Path path,
+                                                final PathFilter filter
+  ) throws IOException {
+    return new Iterator<FileStatus>() {
+      private final RemoteIterator<LocatedFileStatus> inner =
+          fs.listLocatedStatus(path);
+      private FileStatus next;
+      {
+        if (inner.hasNext()) {
+          next = inner.next();
+        } else {
+          next = null;
+        }
+      }
+
+      @Override
+      public boolean hasNext() {
+        return next != null;
+      }
+
+      @Override
+      public FileStatus next() {
+        FileStatus result = next;
+        next = null;
+        try {
+          while (inner.hasNext() && next == null) {
+            next = inner.next();
+            if (filter != null && !filter.accept(next.getPath())) {
+              next = null;
+            }
+          }
+        } catch (IOException ioe) {
+          throw new IllegalArgumentException("Iterator exception", ioe);
+        }
+        return result;
+      }
+
+      @Override
+      public void remove() {
+        throw new IllegalArgumentException("Not supported");
+      }
+    };
+  }
+
+  @Override
+  public BlockLocation[] getLocations(FileSystem fs,
+                                      FileStatus status) throws IOException {
+    if (status instanceof LocatedFileStatus) {
+      return ((LocatedFileStatus) status).getBlockLocations();
+    } else {
+      return fs.getFileBlockLocations(status, 0, status.getLen());
+    }
+  }
+
 }
