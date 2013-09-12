@@ -100,8 +100,6 @@ to call at top-level: ant deploy-contrib compile-core-test
          destdir="${test.build.classes}"
          debug="${javac.debug}"
          optimize="${javac.optimize}"
-         target="${javac.version}"
-         source="${javac.version}"
          deprecation="${javac.deprecation}"
          includeantruntime="false">
           <compilerarg line="${javac.args} ${javac.args.warnings}" />

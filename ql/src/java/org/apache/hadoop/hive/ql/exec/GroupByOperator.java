@@ -60,7 +60,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObject;
@@ -180,7 +179,7 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
    * Current number of entries in the hash table.
    */
   protected transient int numEntriesHashTable;
-  transient int countAfterReport;
+  transient int countAfterReport;   // report or forward
   transient int heartbeatInterval;
 
   public static FastBitSet groupingSet2BitSet(int value) {
@@ -244,15 +243,15 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
     // reduce KEY has union field as the last field if there are distinct
     // aggregates in group-by.
     List<? extends StructField> sfs =
-      ((StandardStructObjectInspector) rowInspector).getAllStructFieldRefs();
+      ((StructObjectInspector) rowInspector).getAllStructFieldRefs();
     if (sfs.size() > 0) {
       StructField keyField = sfs.get(0);
       if (keyField.getFieldName().toUpperCase().equals(
           Utilities.ReduceField.KEY.name())) {
         ObjectInspector keyObjInspector = keyField.getFieldObjectInspector();
-        if (keyObjInspector instanceof StandardStructObjectInspector) {
+        if (keyObjInspector instanceof StructObjectInspector) {
           List<? extends StructField> keysfs =
-            ((StandardStructObjectInspector) keyObjInspector).getAllStructFieldRefs();
+            ((StructObjectInspector) keyObjInspector).getAllStructFieldRefs();
           if (keysfs.size() > 0) {
             // the last field is the union field, if any
             StructField sf = keysfs.get(keysfs.size() - 1);
@@ -1196,5 +1195,16 @@ public class GroupByOperator extends Operator<GroupByDesc> implements
   @Override
   public OperatorType getType() {
     return OperatorType.GROUPBY;
+  }
+
+  /**
+   * we can push the limit above GBY (running in Reducer), since that will generate single row
+   * for each group. This doesn't necessarily hold for GBY (running in Mappers),
+   * so we don't push limit above it.
+   */
+  @Override
+  public boolean acceptLimitPushdown() {
+    return getConf().getMode() == GroupByDesc.Mode.MERGEPARTIAL ||
+        getConf().getMode() == GroupByDesc.Mode.COMPLETE;
   }
 }

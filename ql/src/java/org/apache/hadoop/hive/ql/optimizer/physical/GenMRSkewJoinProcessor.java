@@ -18,9 +18,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
-import java.io.ByteArrayInputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -241,16 +239,7 @@ public final class GenMRSkewJoinProcessor {
           HiveConf.ConfVars.HIVE_MAPPER_CANNOT_SPAN_MULTIPLE_PARTITIONS);
       newPlan.setMapperCannotSpanPartns(mapperCannotSpanPartns);
 
-      MapredWork clonePlan = null;
-      try {
-        String xmlPlan = currPlan.toXML();
-        StringBuilder sb = new StringBuilder(xmlPlan);
-        ByteArrayInputStream bis;
-        bis = new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
-        clonePlan = Utilities.deserializeObject(bis);
-      } catch (UnsupportedEncodingException e) {
-        throw new SemanticException(e);
-      }
+      MapredWork clonePlan = Utilities.clonePlan(currPlan);
 
       Operator<? extends OperatorDesc>[] parentOps = new TableScanOperator[tags.length];
       for (int k = 0; k < tags.length; k++) {

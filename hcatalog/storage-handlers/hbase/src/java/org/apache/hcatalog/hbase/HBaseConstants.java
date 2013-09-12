@@ -19,23 +19,23 @@
 
 package org.apache.hcatalog.hbase;
 
-import org.apache.hcatalog.common.HCatConstants;
+import org.apache.hive.hcatalog.common.HCatConstants;
 
 /**
  * Constants class for constants used in HBase storage handler.
  */
 class HBaseConstants {
 
-    /** key used to store write transaction object */
-    public static final String PROPERTY_WRITE_TXN_KEY = HCatConstants.HCAT_DEFAULT_TOPIC_PREFIX + ".hbase.mapreduce.writeTxn";
+  /** key used to store write transaction object */
+  public static final String PROPERTY_WRITE_TXN_KEY = HCatConstants.HCAT_DEFAULT_TOPIC_PREFIX + ".hbase.mapreduce.writeTxn";
 
-    /** key used to define the name of the table to write to */
-    public static final String PROPERTY_OUTPUT_TABLE_NAME_KEY = HCatConstants.HCAT_DEFAULT_TOPIC_PREFIX + ".hbase.mapreduce.outputTableName";
+  /** key used to define the name of the table to write to */
+  public static final String PROPERTY_OUTPUT_TABLE_NAME_KEY = HCatConstants.HCAT_DEFAULT_TOPIC_PREFIX + ".hbase.mapreduce.outputTableName";
 
-    /** key used to define whether bulk storage output format will be used or not  */
-    public static final String PROPERTY_BULK_OUTPUT_MODE_KEY = HCatConstants.HCAT_DEFAULT_TOPIC_PREFIX + ".hbase.output.bulkMode";
+  /** key used to define whether bulk storage output format will be used or not  */
+  public static final String PROPERTY_BULK_OUTPUT_MODE_KEY = HCatConstants.HCAT_DEFAULT_TOPIC_PREFIX + ".hbase.output.bulkMode";
 
-    /** key used to define the hbase table snapshot. */
-    public static final String PROPERTY_TABLE_SNAPSHOT_KEY = HCatConstants.HCAT_DEFAULT_TOPIC_PREFIX + "hbase.table.snapshot";
+  /** key used to define the hbase table snapshot. */
+  public static final String PROPERTY_TABLE_SNAPSHOT_KEY = HCatConstants.HCAT_DEFAULT_TOPIC_PREFIX + "hbase.table.snapshot";
 
 }

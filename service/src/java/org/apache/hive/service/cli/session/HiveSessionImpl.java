@@ -18,7 +18,6 @@
 
 package org.apache.hive.service.cli.session;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -93,7 +91,7 @@ public class HiveSessionImpl implements HiveSession {
     sessionState = new SessionState(hiveConf);
   }
 
-  private SessionManager getSessionManager() {
+  public SessionManager getSessionManager() {
     return sessionManager;
   }
 
@@ -174,10 +172,21 @@ public class HiveSessionImpl implements HiveSession {
 
   public OperationHandle executeStatement(String statement, Map<String, String> confOverlay)
       throws HiveSQLException {
+    return executeStatementInternal(statement, confOverlay, false);
+  }
+
+  public OperationHandle executeStatementAsync(String statement, Map<String, String> confOverlay)
+      throws HiveSQLException {
+    return executeStatementInternal(statement, confOverlay, true);
+  }
+
+  private OperationHandle executeStatementInternal(String statement, Map<String, String> confOverlay,
+      boolean runAsync)
+      throws HiveSQLException {
     acquire();
     try {
       ExecuteStatementOperation operation = getOperationManager()
-          .newExecuteStatementOperation(getSession(), statement, confOverlay);
+          .newExecuteStatementOperation(getSession(), statement, confOverlay, runAsync);
       operation.run();
       OperationHandle opHandle = operation.getHandle();
       opHandleSet.add(opHandle);

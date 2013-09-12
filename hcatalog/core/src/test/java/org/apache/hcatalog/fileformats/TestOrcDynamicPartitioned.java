@@ -25,28 +25,31 @@ import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hcatalog.mapreduce.TestHCatDynamicPartitioned;
 import org.junit.BeforeClass;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.fileformats.TestOrcDynamicPartitioned} instead
+ */
 public class TestOrcDynamicPartitioned extends TestHCatDynamicPartitioned {
 
-    @BeforeClass
-    public static void generateInputData() throws Exception {
-        tableName = "testOrcDynamicPartitionedTable";
-        generateWriteRecords(NUM_RECORDS, NUM_PARTITIONS, 0);
-        generateDataColumns();
-    }
+  @BeforeClass
+  public static void generateInputData() throws Exception {
+    tableName = "testOrcDynamicPartitionedTable";
+    generateWriteRecords(NUM_RECORDS, NUM_PARTITIONS, 0);
+    generateDataColumns();
+  }
 
-    @Override
-    protected String inputFormat() { 
-        return OrcInputFormat.class.getName();
-    }
-  
-    @Override
-    protected String outputFormat() { 
-        return OrcOutputFormat.class.getName(); 
-    }
-  
-    @Override
-    protected String serdeClass() { 
-        return OrcSerde.class.getName(); 
-    }
+  @Override
+  protected String inputFormat() { 
+    return OrcInputFormat.class.getName();
+  }
+
+  @Override
+  protected String outputFormat() { 
+    return OrcOutputFormat.class.getName(); 
+  }
+
+  @Override
+  protected String serdeClass() { 
+    return OrcSerde.class.getName(); 
+  }
 
 }

@@ -1,0 +1,129 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+package org.apache.hcatalog.pig;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.hcatalog.data.schema.HCatFieldSchema;
+import org.apache.hcatalog.data.schema.HCatSchema;
+import org.apache.hcatalog.mapreduce.HCatBaseInputFormat;
+import org.apache.hcatalog.mapreduce.HCatEximInputFormat;
+import org.apache.hadoop.mapreduce.InputFormat;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.pig.Expression;
+import org.apache.pig.LoadFunc;
+import org.apache.pig.ResourceSchema;
+import org.apache.pig.impl.util.UDFContext;
+
+/**
+ * Pig {@link LoadFunc} to read data/metadata from hcatalog exported location
+ */
+
+public class HCatEximLoader extends HCatBaseLoader {
+
+  private static final Log LOG = LogFactory.getLog(HCatEximLoader.class);
+
+  private HCatSchema tableSchema;
+  private HCatSchema partitionSchema;
+  private HCatEximInputFormat inputFormat;
+
+  public HCatEximLoader() {
+    LOG.debug("HCatEximLoader ctored");
+  }
+
+  @Override
+  public ResourceSchema getSchema(String location, Job job) throws IOException {
+    LOG.debug("getSchema with location :" + location);
+    if (tableSchema == null) {
+      List<HCatSchema> rv = HCatEximInputFormat.setInput(job, location, null);
+      tableSchema = rv.get(0);
+      partitionSchema = rv.get(1);
+    }
+    LOG.debug("getSchema got schema :" + tableSchema.toString());
+    List<HCatFieldSchema> colsPlusPartKeys = new ArrayList<HCatFieldSchema>();
+    colsPlusPartKeys.addAll(tableSchema.getFields());
+    colsPlusPartKeys.addAll(partitionSchema.getFields());
+    outputSchema = new HCatSchema(colsPlusPartKeys);
+    return PigHCatUtil.getResourceSchema(outputSchema);
+  }
+
+  @Override
+  public String[] getPartitionKeys(String location, Job job) throws IOException {
+    LOG.warn("getPartitionKeys with location :" + location);
+    /*
+    if (tableSchema == null) {
+      List<HCatSchema> rv = HCatEximInputFormat.setInput(job, location, null);
+      tableSchema = rv.get(0);
+      partitionSchema = rv.get(1);
+    }
+    return partitionSchema.getFieldNames().toArray(new String[0]);
+    */
+    return null;
+  }
+
+  @Override
+  public void setPartitionFilter(Expression partitionFilter) throws IOException {
+    LOG.debug("setPartitionFilter with filter :" + partitionFilter.toString());
+  }
+
+  @Override
+  public void setLocation(String location, Job job) throws IOException {
+    LOG.debug("setLocation with location :" + location);
+    List<HCatSchema> rv = HCatEximInputFormat.setInput(job, location, null);
+    tableSchema = rv.get(0);
+    partitionSchema = rv.get(1);
+    List<HCatFieldSchema> colsPlusPartKeys = new ArrayList<HCatFieldSchema>();
+    colsPlusPartKeys.addAll(tableSchema.getFields());
+    colsPlusPartKeys.addAll(partitionSchema.getFields());
+    outputSchema = new HCatSchema(colsPlusPartKeys);
+    UDFContext udfContext = UDFContext.getUDFContext();
+    Properties props = udfContext.getUDFProperties(this.getClass(),
+          new String[] {signature});
+    RequiredFieldList requiredFieldsInfo =
+          (RequiredFieldList) props.get(PRUNE_PROJECTION_INFO);
+    if (requiredFieldsInfo != null) {
+      ArrayList<HCatFieldSchema> fcols = new ArrayList<HCatFieldSchema>();
+      for (RequiredField rf : requiredFieldsInfo.getFields()) {
+        fcols.add(tableSchema.getFields().get(rf.getIndex()));
+      }
+      outputSchema = new HCatSchema(fcols);
+      try {
+        HCatBaseInputFormat.setOutputSchema(job, outputSchema);
+      } catch (Exception e) {
+        throw new IOException(e);
+      }
+    }
+  }
+
+
+  @Override
+  public InputFormat getInputFormat() throws IOException {
+    if (inputFormat == null) {
+      inputFormat = new HCatEximInputFormat();
+    }
+    return inputFormat;
+  }
+
+}

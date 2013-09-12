@@ -186,7 +186,7 @@
         </tr>
         <tr>
             <td>hive.semantic.analyzer.factory.impl</td>
-            <td>org.apache.hcatalog.cli.HCatSemanticAnalyzerFactory</td>
+            <td>org.apache.hive.hcatalog.cli.HCatSemanticAnalyzerFactory</td>
         </tr>
         <tr>
             <td>hive.metastore.warehouse.dir</td>

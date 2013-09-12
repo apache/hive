@@ -108,16 +108,16 @@ POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldS
 500
 PREHOOK: query: -- pruner only pick up default directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484'
+explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484' ORDER BY key, value
 PREHOOK: type: QUERY
 POSTHOOK: query: -- pruner only pick up default directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484'
+explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484' ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME fact_daily))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (and (and (= (TOK_TABLE_OR_COL ds) '1') (= (TOK_TABLE_OR_COL hr) '4')) (= (TOK_TABLE_OR_COL value) 'val_484')))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME fact_daily))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (and (and (= (TOK_TABLE_OR_COL ds) '1') (= (TOK_TABLE_OR_COL hr) '4')) (= (TOK_TABLE_OR_COL value) 'val_484'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -143,24 +143,19 @@ STAGE PLANS:
                       expr: value
                       type: string
                 outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-#### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
-#### A masked pattern was here ####
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      properties:
-                        columns _col0,_col1
-                        columns.types string:string
-                        escape.delim \
-                        hive.serialization.extend.nesting.levels true
-                        serialization.format 1
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
+                  sort order: ++
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -259,6 +254,27 @@ STAGE PLANS:
       Truncated Path -> Alias:
         /fact_daily/ds=1/hr=4/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME [fact_daily]
         /fact_daily/ds=1/hr=4/key=484/value=val_484 [fact_daily]
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
+#### A masked pattern was here ####
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0,_col1
+                  columns.types string:string
+                  escape.delim \
+                  hive.serialization.extend.nesting.levels true
+                  serialization.format 1
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -266,13 +282,13 @@ STAGE PLANS:
 
 
 PREHOOK: query: -- List Bucketing Query
-SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484'
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484' ORDER BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 POSTHOOK: query: -- List Bucketing Query
-SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484'
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and value= 'val_484' ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1/hr=4
@@ -282,16 +298,16 @@ POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldS
 484	val_484
 PREHOOK: query: -- pruner only pick up default directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended SELECT key FROM fact_daily WHERE ds='1' and hr='4' and key= '406'
+explain extended SELECT key FROM fact_daily WHERE ds='1' and hr='4' and key= '406' ORDER BY key
 PREHOOK: type: QUERY
 POSTHOOK: query: -- pruner only pick up default directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended SELECT key FROM fact_daily WHERE ds='1' and hr='4' and key= '406'
+explain extended SELECT key FROM fact_daily WHERE ds='1' and hr='4' and key= '406' ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME fact_daily))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key))) (TOK_WHERE (and (and (= (TOK_TABLE_OR_COL ds) '1') (= (TOK_TABLE_OR_COL hr) '4')) (= (TOK_TABLE_OR_COL key) '406')))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME fact_daily))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key))) (TOK_WHERE (and (and (= (TOK_TABLE_OR_COL ds) '1') (= (TOK_TABLE_OR_COL hr) '4')) (= (TOK_TABLE_OR_COL key) '406'))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -315,24 +331,15 @@ STAGE PLANS:
                       expr: key
                       type: string
                 outputColumnNames: _col0
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-#### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
-#### A masked pattern was here ####
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      properties:
-                        columns _col0
-                        columns.types string
-                        escape.delim \
-                        hive.serialization.extend.nesting.levels true
-                        serialization.format 1
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: string
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -384,6 +391,27 @@ STAGE PLANS:
             name: default.fact_daily
       Truncated Path -> Alias:
         /fact_daily/ds=1/hr=4/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME/HIVE_DEFAULT_LIST_BUCKETING_DIR_NAME [fact_daily]
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
+#### A masked pattern was here ####
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0
+                  columns.types string
+                  escape.delim \
+                  hive.serialization.extend.nesting.levels true
+                  serialization.format 1
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -391,13 +419,13 @@ STAGE PLANS:
 
 
 PREHOOK: query: -- List Bucketing Query
-SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and key= '406'
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and key= '406' ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 POSTHOOK: query: -- List Bucketing Query
-SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and key= '406'
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and key= '406' ORDER BY key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1/hr=4
@@ -410,16 +438,16 @@ POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldS
 406	val_406
 PREHOOK: query: -- pruner only pick up skewed-value directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
+explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238')) ORDER BY key, value
 PREHOOK: type: QUERY
 POSTHOOK: query: -- pruner only pick up skewed-value directory
 -- explain plan shows which directory selected: Truncated Path -> Alias
-explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
+explain extended SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238')) ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME fact_daily))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (and (and (= (TOK_TABLE_OR_COL ds) '1') (= (TOK_TABLE_OR_COL hr) '4')) (or (and (= (TOK_TABLE_OR_COL key) '484') (= (TOK_TABLE_OR_COL value) 'val_484')) (and (= (TOK_TABLE_OR_COL key) '238') (= (TOK_TABLE_OR_COL value) 'val_238')))))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME fact_daily))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (and (and (= (TOK_TABLE_OR_COL ds) '1') (= (TOK_TABLE_OR_COL hr) '4')) (or (and (= (TOK_TABLE_OR_COL key) '484') (= (TOK_TABLE_OR_COL value) 'val_484')) (and (= (TOK_TABLE_OR_COL key) '238') (= (TOK_TABLE_OR_COL value) 'val_238'))))) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL key)) (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -445,24 +473,19 @@ STAGE PLANS:
                       expr: value
                       type: string
                 outputColumnNames: _col0, _col1
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-#### A masked pattern was here ####
-                  NumFilesPerFileSink: 1
-#### A masked pattern was here ####
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      properties:
-                        columns _col0,_col1
-                        columns.types string:string
-                        escape.delim \
-                        hive.serialization.extend.nesting.levels true
-                        serialization.format 1
-                  TotalFiles: 1
-                  GatherStats: false
-                  MultiFileSpray: false
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
+                  sort order: ++
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: string
       Path -> Alias:
 #### A masked pattern was here ####
       Path -> Partition:
@@ -561,6 +584,27 @@ STAGE PLANS:
       Truncated Path -> Alias:
         /fact_daily/ds=1/hr=4/key=238/value=val_238 [fact_daily]
         /fact_daily/ds=1/hr=4/key=484/value=val_484 [fact_daily]
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Extract
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+#### A masked pattern was here ####
+            NumFilesPerFileSink: 1
+#### A masked pattern was here ####
+            table:
+                input format: org.apache.hadoop.mapred.TextInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                properties:
+                  columns _col0,_col1
+                  columns.types string:string
+                  escape.delim \
+                  hive.serialization.extend.nesting.levels true
+                  serialization.format 1
+            TotalFiles: 1
+            GatherStats: false
+            MultiFileSpray: false
 
   Stage: Stage-0
     Fetch Operator
@@ -568,22 +612,22 @@ STAGE PLANS:
 
 
 PREHOOK: query: -- List Bucketing Query
-SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238')) ORDER BY key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@fact_daily
 PREHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 POSTHOOK: query: -- List Bucketing Query
-SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238'))
+SELECT key, value FROM fact_daily WHERE ds='1' and hr='4' and ( (key='484' and value ='val_484')  or (key='238' and value= 'val_238')) ORDER BY key, value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@fact_daily
 POSTHOOK: Input: default@fact_daily@ds=1/hr=4
 #### A masked pattern was here ####
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: fact_daily PARTITION(ds=1,hr=4).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+238	val_238
+238	val_238
 484	val_484
-238	val_238
-238	val_238
 PREHOOK: query: -- clean up
 drop table fact_daily
 PREHOOK: type: DROPTABLE

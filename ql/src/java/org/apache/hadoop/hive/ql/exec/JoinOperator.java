@@ -32,7 +32,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.LongWritable;
@@ -114,8 +113,8 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
 
       // Add the value to the vector
       // if join-key is null, process each row in different group.
-      StandardStructObjectInspector inspector =
-          (StandardStructObjectInspector) sf.getFieldObjectInspector();
+      StructObjectInspector inspector =
+          (StructObjectInspector) sf.getFieldObjectInspector();
       if (SerDeUtils.hasAnyNullObject(keyObject, inspector, nullsafes)) {
         endGroup();
         startGroup();

@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.ql.udf.UDFHour;
 import org.apache.hadoop.hive.ql.udf.UDFMinute;
 import org.apache.hadoop.hive.ql.udf.UDFMonth;
 import org.apache.hadoop.hive.ql.udf.UDFSecond;
-import org.apache.hadoop.hive.ql.udf.UDFUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -488,10 +487,19 @@ public class TestVectorTimestampExpressions {
     verifyUDFSecondLong(batch);
   }
 
+  private LongWritable getLongWritable(TimestampWritable i) {
+    LongWritable result = new LongWritable();
+    if (i == null) {
+      return null;
+    } else {
+      result.set(i.getSeconds());
+      return result;
+    }
+  }
+
   private void compareToUDFUnixTimeStampLong(long t, long y) {
-    UDFUnixTimeStamp udf = new UDFUnixTimeStamp();
     TimestampWritable tsw = toTimestampWritable(t);
-    LongWritable res = udf.evaluate(tsw);
+    LongWritable res = getLongWritable(tsw);
     if(res.get() != y) {
       System.out.printf("%d vs %d for %d, %d\n", res.get(), y, t,
           tsw.getTimestamp().getTime()/1000);

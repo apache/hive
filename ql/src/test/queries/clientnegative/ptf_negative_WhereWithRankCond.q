@@ -12,11 +12,9 @@ CREATE TABLE part(
     p_comment STRING
 );
 
-LOAD DATA LOCAL INPATH '../data/files/part_tiny.txt' overwrite into table part;
-
 -- testWhereWithRankCond
 select  p_mfgr,p_name, p_size, 
-rank() as r 
+rank() over() as r 
 from part 
 where r < 4 
 distribute by p_mfgr 

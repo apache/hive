@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.lazy;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 
 import junit.framework.TestCase;
@@ -406,6 +407,25 @@ public class TestLazyPrimitive extends TestCase {
     byte[] bad2013 = badDate.getBytes();
     initLazyObject(t, bad2013, 0, bad2013.length);
     assertEquals(true, t.isNull);
+  }
+
+  public void testLazyDate() throws Throwable {
+    LazyDate t = new LazyDate(LazyPrimitiveObjectInspectorFactory.LAZY_DATE_OBJECT_INSPECTOR);
+    String nullDate = "NULL";
+    byte[] nullBytes = nullDate.getBytes();
+    initLazyObject(t, nullBytes, 0, nullBytes.length);
+    assertEquals(true, t.isNull);
+    String sampleDate = "2013-02-12";
+    byte[] good2013 = sampleDate.getBytes();
+    initLazyObject(t, good2013, 0, good2013.length);
+    assertEquals(false, t.isNull);
+    assertEquals(Date.valueOf(sampleDate),
+        t.getWritableObject().get());
+    String badDate = "X013-02-12";
+    byte[] bad2013 = badDate.getBytes();
+    initLazyObject(t, bad2013, 0, bad2013.length);
+    assertEquals(true, t.isNull);
+
   }
 
   public void testLazyIntegerWrite() throws Throwable {

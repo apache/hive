@@ -18,16 +18,19 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
+import java.util.Set;
+
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 
 /*
- * This is a pluggable policy to chose the candidate map-join table for converting a join to a
- * sort merge join. The policy can decide the big table position. Some of the existing polocies
+ * This is a plug-able policy to chose the candidate map-join table for converting a join to a
+ * sort merge join. The policy can decide the big table position. Some of the existing policies
  * decide the big table based on size or position of the tables.
  */
 public interface BigTableSelectorForAutoSMJ {
-  public int getBigTablePosition(ParseContext parseContext, JoinOperator joinOp)
+  public int getBigTablePosition(ParseContext parseContext, JoinOperator joinOp,
+      Set<Integer> joinCandidates)
     throws SemanticException;
 }

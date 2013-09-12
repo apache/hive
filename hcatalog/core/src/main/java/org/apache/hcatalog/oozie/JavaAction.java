@@ -26,16 +26,19 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.oozie.JavaAction} instead
+ */
 public class JavaAction {
 
-    public static void main(String[] args) throws Exception {
+  public static void main(String[] args) throws Exception {
 
-        HiveConf conf = new HiveConf();
-        conf.addResource(new Path("file:///", System.getProperty("oozie.action.conf.xml")));
-        conf.setVar(ConfVars.SEMANTIC_ANALYZER_HOOK, HCatSemanticAnalyzer.class.getName());
-        conf.setBoolVar(ConfVars.METASTORE_USE_THRIFT_SASL, true);
-        SessionState.start(new CliSessionState(conf));
-        new CliDriver().processLine(args[0]);
-    }
+    HiveConf conf = new HiveConf();
+    conf.addResource(new Path("file:///", System.getProperty("oozie.action.conf.xml")));
+    conf.setVar(ConfVars.SEMANTIC_ANALYZER_HOOK, HCatSemanticAnalyzer.class.getName());
+    conf.setBoolVar(ConfVars.METASTORE_USE_THRIFT_SASL, true);
+    SessionState.start(new CliSessionState(conf));
+    new CliDriver().processLine(args[0]);
+  }
 
 }

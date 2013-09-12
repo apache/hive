@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.FetchTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -52,6 +53,7 @@ import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 
 /**
  * Parse Context: The current parse context. This is passed to the optimizer
@@ -100,15 +102,6 @@ public class ParseContext {
    */
   private LineageInfo lInfo;
 
-  // is set to true if the expression only contains partitioning columns and not
-  // any other column reference.
-  // This is used to optimize select * from table where ... scenario, when the
-  // where condition only references
-  // partitioning columns - the partitions are identified and streamed directly
-  // to the client without requiring
-  // a map-reduce job
-  private boolean hasNonPartCols;
-
   private GlobalLimitCtx globalLimitCtx;
 
   private HashSet<ReadEntity> semanticInputs;
@@ -116,6 +109,10 @@ public class ParseContext {
 
   private FetchTask fetchTask;
   private QueryProperties queryProperties;
+
+  private TableDesc fetchTabledesc;
+  private Operator<?> fetchSource;
+  private ListSinkOperator fetchSink;
 
   public ParseContext() {
   }
@@ -206,7 +203,6 @@ public class ParseContext {
     this.destTableId = destTableId;
     this.uCtx = uCtx;
     this.listMapJoinOpsNoReducer = listMapJoinOpsNoReducer;
-    hasNonPartCols = false;
     this.groupOpToInputTables = groupOpToInputTables;
     this.prunedPartitions = prunedPartitions;
     this.opToSamplePruner = opToSamplePruner;
@@ -515,22 +511,6 @@ public class ParseContext {
   }
 
   /**
-   * Sets the hasNonPartCols flag.
-   *
-   * @param val
-   */
-  public void setHasNonPartCols(boolean val) {
-    hasNonPartCols = val;
-  }
-
-  /**
-   * Gets the value of the hasNonPartCols flag.
-   */
-  public boolean getHasNonPartCols() {
-    return hasNonPartCols;
-  }
-
-  /**
    * @return the opToSamplePruner
    */
   public HashMap<TableScanOperator, sampleDesc> getOpToSamplePruner() {
@@ -672,5 +652,29 @@ public class ParseContext {
 
   public void setQueryProperties(QueryProperties queryProperties) {
     this.queryProperties = queryProperties;
+  }
+
+  public TableDesc getFetchTabledesc() {
+    return fetchTabledesc;
+  }
+
+  public void setFetchTabledesc(TableDesc fetchTabledesc) {
+    this.fetchTabledesc = fetchTabledesc;
+  }
+
+  public Operator<?> getFetchSource() {
+    return fetchSource;
+  }
+
+  public void setFetchSource(Operator<?> fetchSource) {
+    this.fetchSource = fetchSource;
+  }
+
+  public ListSinkOperator getFetchSink() {
+    return fetchSink;
+  }
+
+  public void setFetchSink(ListSinkOperator fetchSink) {
+    this.fetchSink = fetchSink;
   }
 }

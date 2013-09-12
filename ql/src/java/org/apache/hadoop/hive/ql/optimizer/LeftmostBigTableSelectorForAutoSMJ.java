@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.optimizer;
 
+import java.util.Set;
+
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 
@@ -26,7 +28,8 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
  * sort merge join. The leftmost table is chosen as the join table.
  */
 public class LeftmostBigTableSelectorForAutoSMJ implements BigTableSelectorForAutoSMJ {
-  public int getBigTablePosition(ParseContext parseContext, JoinOperator joinOp) {
+  public int getBigTablePosition(ParseContext parseContext, JoinOperator joinOp,
+      Set<Integer> bigTableCandidates) {
     return 0;
   }
 }

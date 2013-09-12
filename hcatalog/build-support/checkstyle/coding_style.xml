@@ -58,6 +58,7 @@ imposed on others.
 
         <module name="Indentation">
             <property name="caseIndent" value="0"/>
+            <property name="basicOffset" value="2"/>
         </module>
 
     </module>

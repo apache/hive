@@ -36,16 +36,12 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.Text;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
@@ -57,7 +53,7 @@ import java.util.Map;
  */
 final class SearchArgumentImpl implements SearchArgument {
 
-  private static final class PredicateLeafImpl implements PredicateLeaf {
+  static final class PredicateLeafImpl implements PredicateLeaf {
     private final Operator operator;
     private final Type type;
     private final String columnName;
@@ -270,7 +266,6 @@ final class SearchArgumentImpl implements SearchArgument {
   }
 
   static class ExpressionBuilder {
-    private ExpressionTree expression = null;
     private final List<PredicateLeaf> leaves = new ArrayList<PredicateLeaf>();
 
     /**
@@ -321,11 +316,11 @@ final class SearchArgumentImpl implements SearchArgument {
     private static Object boxLiteral(ExprNodeConstantDesc lit) {
       switch (getType(lit)) {
         case INTEGER:
-          return new LongWritable(((Number) lit.getValue()).longValue());
+          return ((Number) lit.getValue()).longValue();
         case STRING:
-          return new Text(lit.getValue().toString());
+          return lit.getValue().toString();
         case FLOAT:
-          return new DoubleWritable(((Number) lit.getValue()).doubleValue());
+          return ((Number) lit.getValue()).doubleValue();
         default:
           throw new IllegalArgumentException("Unknown literal " + getType(lit));
       }

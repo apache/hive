@@ -28,89 +28,89 @@ import java.util.List;
  */
 public class Transaction implements Serializable {
 
-    private String tableName;
-    private List<String> columnFamilies = new ArrayList<String>();
-    private long timeStamp;
-    private long keepAlive;
-    private long revision;
+  private String tableName;
+  private List<String> columnFamilies = new ArrayList<String>();
+  private long timeStamp;
+  private long keepAlive;
+  private long revision;
 
 
-    Transaction(String tableName, List<String> columnFamilies, long revision, long timestamp) {
-        this.tableName = tableName;
-        this.columnFamilies = columnFamilies;
-        this.timeStamp = timestamp;
-        this.revision = revision;
-    }
+  Transaction(String tableName, List<String> columnFamilies, long revision, long timestamp) {
+    this.tableName = tableName;
+    this.columnFamilies = columnFamilies;
+    this.timeStamp = timestamp;
+    this.revision = revision;
+  }
 
-    /**
-     * @return The revision number associated with a transaction.
-     */
-    public long getRevisionNumber() {
-        return this.revision;
-    }
+  /**
+   * @return The revision number associated with a transaction.
+   */
+  public long getRevisionNumber() {
+    return this.revision;
+  }
 
-    /**
-     * @return The table name associated with a transaction.
-     */
-    public String getTableName() {
-        return tableName;
-    }
+  /**
+   * @return The table name associated with a transaction.
+   */
+  public String getTableName() {
+    return tableName;
+  }
 
-    /**
-     * @return The column families associated with a transaction.
-     */
-    public List<String> getColumnFamilies() {
-        return columnFamilies;
-    }
+  /**
+   * @return The column families associated with a transaction.
+   */
+  public List<String> getColumnFamilies() {
+    return columnFamilies;
+  }
 
-    /**
-     * @return The expire timestamp associated with a transaction.
-     */
-    long getTransactionExpireTimeStamp() {
-        return this.timeStamp + this.keepAlive;
-    }
+  /**
+   * @return The expire timestamp associated with a transaction.
+   */
+  long getTransactionExpireTimeStamp() {
+    return this.timeStamp + this.keepAlive;
+  }
 
-    void setKeepAlive(long seconds) {
-        this.keepAlive = seconds;
-    }
+  void setKeepAlive(long seconds) {
+    this.keepAlive = seconds;
+  }
 
-    /**
-     * Gets the keep alive value.
-     *
-     * @return long  The keep alive value for the transaction.
-     */
-    public long getKeepAliveValue() {
-        return this.keepAlive;
-    }
+  /**
+   * Gets the keep alive value.
+   *
+   * @return long  The keep alive value for the transaction.
+   */
+  public long getKeepAliveValue() {
+    return this.keepAlive;
+  }
 
-    /**
-     * Gets the family revision info.
-     *
-     * @return FamilyRevision An instance of FamilyRevision associated with the transaction.
-     */
-    FamilyRevision getFamilyRevisionInfo() {
-        return new FamilyRevision(revision, getTransactionExpireTimeStamp());
-    }
+  /**
+   * Gets the family revision info.
+   *
+   * @return FamilyRevision An instance of FamilyRevision associated with the transaction.
+   */
+  FamilyRevision getFamilyRevisionInfo() {
+    return new FamilyRevision(revision, getTransactionExpireTimeStamp());
+  }
 
-    /**
-     * Keep alive transaction. This methods extends the expire timestamp of a
-     * transaction by the "keep alive" amount.
-     */
-    void keepAliveTransaction() {
-        this.timeStamp = this.timeStamp + this.keepAlive;
-    }
+  /**
+   * Keep alive transaction. This methods extends the expire timestamp of a
+   * transaction by the "keep alive" amount.
+   */
+  void keepAliveTransaction() {
+    this.timeStamp = this.timeStamp + this.keepAlive;
+  }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Revision : ");
-        sb.append(this.getRevisionNumber());
-        sb.append(" Timestamp : ");
-        sb.append(this.getTransactionExpireTimeStamp());
-        sb.append("\n").append("Table : ");
-        sb.append(this.tableName).append("\n");
-        sb.append("Column Families : ");
-        sb.append(this.columnFamilies.toString());
-        return sb.toString();
-    }
+  @Override
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Revision : ");
+    sb.append(this.getRevisionNumber());
+    sb.append(" Timestamp : ");
+    sb.append(this.getTransactionExpireTimeStamp());
+    sb.append("\n").append("Table : ");
+    sb.append(this.tableName).append("\n");
+    sb.append("Column Families : ");
+    sb.append(this.columnFamilies.toString());
+    return sb.toString();
+  }
 }

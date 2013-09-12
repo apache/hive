@@ -37,65 +37,66 @@ import java.text.NumberFormat;
  * Bare bones implementation of OutputFormatContainer. Does only the required
  * tasks to work properly with HCatalog. HCatalog features which require a
  * storage specific implementation are unsupported (ie partitioning).
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.DefaultOutputFormatContainer} instead
  */
 class DefaultOutputFormatContainer extends OutputFormatContainer {
 
-    private static final NumberFormat NUMBER_FORMAT = NumberFormat.getInstance();
+  private static final NumberFormat NUMBER_FORMAT = NumberFormat.getInstance();
 
-    static {
-        NUMBER_FORMAT.setMinimumIntegerDigits(5);
-        NUMBER_FORMAT.setGroupingUsed(false);
-    }
+  static {
+    NUMBER_FORMAT.setMinimumIntegerDigits(5);
+    NUMBER_FORMAT.setGroupingUsed(false);
+  }
 
-    public DefaultOutputFormatContainer(org.apache.hadoop.mapred.OutputFormat<WritableComparable<?>, Writable> of) {
-        super(of);
-    }
+  public DefaultOutputFormatContainer(org.apache.hadoop.mapred.OutputFormat<WritableComparable<?>, Writable> of) {
+    super(of);
+  }
 
-    static synchronized String getOutputName(int partition) {
-        return "part-" + NUMBER_FORMAT.format(partition);
-    }
+  static synchronized String getOutputName(int partition) {
+    return "part-" + NUMBER_FORMAT.format(partition);
+  }
 
-    /**
-     * Get the record writer for the job. Uses the storagehandler's OutputFormat
-     * to get the record writer.
-     * @param context the information about the current task.
-     * @return a RecordWriter to write the output for the job.
-     * @throws IOException
-     */
-    @Override
-    public RecordWriter<WritableComparable<?>, HCatRecord>
-    getRecordWriter(TaskAttemptContext context) throws IOException, InterruptedException {
-        String name = getOutputName(context.getTaskAttemptID().getTaskID().getId());
-        return new DefaultRecordWriterContainer(context,
-            getBaseOutputFormat().getRecordWriter(null, new JobConf(context.getConfiguration()), name, InternalUtil.createReporter(context)));
-    }
+  /**
+   * Get the record writer for the job. Uses the storagehandler's OutputFormat
+   * to get the record writer.
+   * @param context the information about the current task.
+   * @return a RecordWriter to write the output for the job.
+   * @throws IOException
+   */
+  @Override
+  public RecordWriter<WritableComparable<?>, HCatRecord>
+  getRecordWriter(TaskAttemptContext context) throws IOException, InterruptedException {
+    String name = getOutputName(context.getTaskAttemptID().getTaskID().getId());
+    return new DefaultRecordWriterContainer(context,
+      getBaseOutputFormat().getRecordWriter(null, new JobConf(context.getConfiguration()), name, InternalUtil.createReporter(context)));
+  }
 
 
-    /**
-     * Get the output committer for this output format. This is responsible
-     * for ensuring the output is committed correctly.
-     * @param context the task context
-     * @return an output committer
-     * @throws IOException
-     * @throws InterruptedException
-     */
-    @Override
-    public OutputCommitter getOutputCommitter(TaskAttemptContext context)
-        throws IOException, InterruptedException {
-        return new DefaultOutputCommitterContainer(context, new JobConf(context.getConfiguration()).getOutputCommitter());
-    }
+  /**
+   * Get the output committer for this output format. This is responsible
+   * for ensuring the output is committed correctly.
+   * @param context the task context
+   * @return an output committer
+   * @throws IOException
+   * @throws InterruptedException
+   */
+  @Override
+  public OutputCommitter getOutputCommitter(TaskAttemptContext context)
+    throws IOException, InterruptedException {
+    return new DefaultOutputCommitterContainer(context, new JobConf(context.getConfiguration()).getOutputCommitter());
+  }
 
-    /**
-     * Check for validity of the output-specification for the job.
-     * @param context information about the job
-     * @throws IOException when output should not be attempted
-     */
-    @Override
-    public void checkOutputSpecs(JobContext context) throws IOException, InterruptedException {
-        org.apache.hadoop.mapred.OutputFormat<? super WritableComparable<?>, ? super Writable> outputFormat = getBaseOutputFormat();
-        JobConf jobConf = new JobConf(context.getConfiguration());
-        outputFormat.checkOutputSpecs(null, jobConf);
-        HCatUtil.copyConf(jobConf, context.getConfiguration());
-    }
+  /**
+   * Check for validity of the output-specification for the job.
+   * @param context information about the job
+   * @throws IOException when output should not be attempted
+   */
+  @Override
+  public void checkOutputSpecs(JobContext context) throws IOException, InterruptedException {
+    org.apache.hadoop.mapred.OutputFormat<? super WritableComparable<?>, ? super Writable> outputFormat = getBaseOutputFormat();
+    JobConf jobConf = new JobConf(context.getConfiguration());
+    outputFormat.checkOutputSpecs(null, jobConf);
+    HCatUtil.copyConf(jobConf, context.getConfiguration());
+  }
 
 }

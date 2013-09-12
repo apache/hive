@@ -40,11 +40,11 @@ public class FilterStringColLikeStringScalar extends VectorExpression {
   private Pattern compiledPattern;
   private PatternType type = PatternType.NONE;
   private String simpleStringPattern;
+  private final Text simplePattern = new Text();
 
-  private transient Text simplePattern = new Text();
   private transient ByteBuffer byteBuffer;
   private transient CharBuffer charBuffer;
-  private transient CharsetDecoder decoder;
+  private transient final CharsetDecoder decoder;
 
   // Doing characters comparison directly instead of regular expression
   // matching for simple patterns like "%abc%".

@@ -200,8 +200,10 @@ public class ThriftCLIService extends AbstractService implements TCLIService.Ifa
       SessionHandle sessionHandle = new SessionHandle(req.getSessionHandle());
       String statement = req.getStatement();
       Map<String, String> confOverlay = req.getConfOverlay();
-      OperationHandle operationHandle =
-          cliService.executeStatement(sessionHandle, statement, confOverlay);
+      Boolean runAsync = req.isRunAsync();
+      OperationHandle operationHandle = runAsync ?
+          cliService.executeStatementAsync(sessionHandle, statement, confOverlay)
+              : cliService.executeStatement(sessionHandle, statement, confOverlay);
       resp.setOperationHandle(operationHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {

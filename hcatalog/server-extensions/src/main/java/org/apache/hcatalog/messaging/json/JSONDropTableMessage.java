@@ -24,53 +24,54 @@ import org.codehaus.jackson.annotate.JsonProperty;
 
 /**
  * JSON implementation of DropTableMessage.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.json.JSONDropTableMessage} instead
  */
 public class JSONDropTableMessage extends DropTableMessage {
 
-    @JsonProperty
-    String server, servicePrincipal, db, table;
+  @JsonProperty
+  String server, servicePrincipal, db, table;
 
-    @JsonProperty
-    Long timestamp;
+  @JsonProperty
+  Long timestamp;
 
-    /**
-     * Default constructor, needed for Jackson.
-     */
-    public JSONDropTableMessage() {}
+  /**
+   * Default constructor, needed for Jackson.
+   */
+  public JSONDropTableMessage() {}
 
-    public JSONDropTableMessage(String server, String servicePrincipal, String db, String table, Long timestamp) {
-        this.server = server;
-        this.servicePrincipal = servicePrincipal;
-        this.db = db;
-        this.table = table;
-        this.timestamp = timestamp;
-        checkValid();
+  public JSONDropTableMessage(String server, String servicePrincipal, String db, String table, Long timestamp) {
+    this.server = server;
+    this.servicePrincipal = servicePrincipal;
+    this.db = db;
+    this.table = table;
+    this.timestamp = timestamp;
+    checkValid();
+  }
+
+
+  @Override
+  public String getTable() { return table; }
+
+  @Override
+  public String getServer() { return server; }
+
+  @Override
+  public String getServicePrincipal() { return servicePrincipal; }
+
+  @Override
+  public String getDB() { return db; }
+
+  @Override
+  public Long getTimestamp() { return timestamp; }
+
+  @Override
+  public String toString() {
+    try {
+      return JSONMessageDeserializer.mapper.writeValueAsString(this);
     }
-
-
-    @Override
-    public String getTable() { return table; }
-
-    @Override
-    public String getServer() { return server; }
-
-    @Override
-    public String getServicePrincipal() { return servicePrincipal; }
-
-    @Override
-    public String getDB() { return db; }
-
-    @Override
-    public Long getTimestamp() { return timestamp; }
-
-    @Override
-    public String toString() {
-        try {
-            return JSONMessageDeserializer.mapper.writeValueAsString(this);
-        }
-        catch (Exception exception) {
-            throw new IllegalArgumentException("Could not serialize: ", exception);
-        }
+    catch (Exception exception) {
+      throw new IllegalArgumentException("Could not serialize: ", exception);
     }
+  }
 
 }

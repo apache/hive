@@ -18,12 +18,10 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
-import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.mapred.JobConf;
 
 
@@ -81,11 +79,5 @@ public class MapredWork extends AbstractOperatorDesc {
     }
 
     return ops;
-  }
-
-  public String toXML() {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    Utilities.serializeObject(this, baos);
-    return (baos.toString());
   }
 }

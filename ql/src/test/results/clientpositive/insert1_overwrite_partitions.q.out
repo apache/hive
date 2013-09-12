@@ -33,9 +33,8 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -69,33 +68,6 @@ STAGE PLANS:
           Limit
             File Output Operator
               compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-            Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
-              sort order: --
-              tag: -1
-              value expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
-      Reduce Operator Tree:
-        Extract
-          Limit
-            File Output Operator
-              compressed: false
               GlobalTableId: 1
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -116,7 +88,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.destintable
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
 
 
@@ -219,9 +191,8 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
-  Stage-2 depends on stages: Stage-1
-  Stage-0 depends on stages: Stage-2
-  Stage-3 depends on stages: Stage-0
+  Stage-0 depends on stages: Stage-1
+  Stage-2 depends on stages: Stage-0
 
 STAGE PLANS:
   Stage: Stage-1
@@ -255,33 +226,6 @@ STAGE PLANS:
           Limit
             File Output Operator
               compressed: false
-              GlobalTableId: 0
-              table:
-                  input format: org.apache.hadoop.mapred.SequenceFileInputFormat
-                  output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
-
-  Stage: Stage-2
-    Map Reduce
-      Alias -> Map Operator Tree:
-#### A masked pattern was here ####
-            Reduce Output Operator
-              key expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
-              sort order: --
-              tag: -1
-              value expressions:
-                    expr: _col0
-                    type: string
-                    expr: _col1
-                    type: string
-      Reduce Operator Tree:
-        Extract
-          Limit
-            File Output Operator
-              compressed: false
               GlobalTableId: 1
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -299,7 +243,7 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.destintable
 
-  Stage: Stage-3
+  Stage: Stage-2
     Stats-Aggr Operator
 
 

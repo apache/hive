@@ -70,9 +70,6 @@ public class HiveHistoryUtil {
  private static final Pattern pattern = Pattern.compile(KEY + "=" + "\""
      + VALUE + "\"");
 
- // temp buffer for parsed dataa
- private static Map<String, String> parseBuffer = new HashMap<String, String>();
-
  /**
   * Parse a single line of history.
   *
@@ -81,6 +78,8 @@ public class HiveHistoryUtil {
   * @throws IOException
   */
  private static void parseLine(String line, Listener l) throws IOException {
+   Map<String, String> parseBuffer = new HashMap<String, String>();
+   
    // extract the record type
    int idx = line.indexOf(' ');
    String recType = line.substring(0, idx);
@@ -96,8 +95,5 @@ public class HiveHistoryUtil {
    }
 
    l.handle(RecordTypes.valueOf(recType), parseBuffer);
-
-   parseBuffer.clear();
  }
-
 }

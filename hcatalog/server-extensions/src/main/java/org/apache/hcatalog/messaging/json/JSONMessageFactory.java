@@ -38,69 +38,70 @@ import java.util.Map;
 /**
  * The JSON implementation of the MessageFactory. Constructs JSON implementations of
  * each message-type.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.json.JSONMessageFactory} instead
  */
 public class JSONMessageFactory extends MessageFactory {
 
-    private static JSONMessageDeserializer deserializer = new JSONMessageDeserializer();
+  private static JSONMessageDeserializer deserializer = new JSONMessageDeserializer();
 
-    @Override
-    public MessageDeserializer getDeserializer() {
-        return deserializer;
-    }
+  @Override
+  public MessageDeserializer getDeserializer() {
+    return deserializer;
+  }
 
-    @Override
-    public String getVersion() {
-        return "0.1";
-    }
+  @Override
+  public String getVersion() {
+    return "0.1";
+  }
 
-    @Override
-    public String getMessageFormat() {
-        return "json";
-    }
+  @Override
+  public String getMessageFormat() {
+    return "json";
+  }
 
-    @Override
-    public CreateDatabaseMessage buildCreateDatabaseMessage(Database db) {
-        return new JSONCreateDatabaseMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, db.getName(),
-                System.currentTimeMillis() / 1000);
-    }
+  @Override
+  public CreateDatabaseMessage buildCreateDatabaseMessage(Database db) {
+    return new JSONCreateDatabaseMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, db.getName(),
+        System.currentTimeMillis() / 1000);
+  }
 
-    @Override
-    public DropDatabaseMessage buildDropDatabaseMessage(Database db) {
-        return new JSONDropDatabaseMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, db.getName(),
-                System.currentTimeMillis() / 1000);
-    }
+  @Override
+  public DropDatabaseMessage buildDropDatabaseMessage(Database db) {
+    return new JSONDropDatabaseMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, db.getName(),
+        System.currentTimeMillis() / 1000);
+  }
 
-    @Override
-    public CreateTableMessage buildCreateTableMessage(Table table) {
-        return new JSONCreateTableMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(),
-                table.getTableName(), System.currentTimeMillis()/1000);
-    }
+  @Override
+  public CreateTableMessage buildCreateTableMessage(Table table) {
+    return new JSONCreateTableMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(),
+        table.getTableName(), System.currentTimeMillis()/1000);
+  }
 
-    @Override
-    public DropTableMessage buildDropTableMessage(Table table) {
-        return new JSONDropTableMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(), table.getTableName(),
-                System.currentTimeMillis()/1000);
-    }
+  @Override
+  public DropTableMessage buildDropTableMessage(Table table) {
+    return new JSONDropTableMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, table.getDbName(), table.getTableName(),
+        System.currentTimeMillis()/1000);
+  }
 
-    @Override
-    public AddPartitionMessage buildAddPartitionMessage(Table table, Partition partition) {
-        return new JSONAddPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, partition.getDbName(),
-                partition.getTableName(), Arrays.asList(getPartitionKeyValues(table, partition)),
-                System.currentTimeMillis()/1000);
-    }
+  @Override
+  public AddPartitionMessage buildAddPartitionMessage(Table table, Partition partition) {
+    return new JSONAddPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, partition.getDbName(),
+        partition.getTableName(), Arrays.asList(getPartitionKeyValues(table, partition)),
+        System.currentTimeMillis()/1000);
+  }
 
-    @Override
-    public DropPartitionMessage buildDropPartitionMessage(Table table, Partition partition) {
-        return new JSONDropPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, partition.getDbName(),
-                partition.getTableName(), Arrays.asList(getPartitionKeyValues(table, partition)),
-                System.currentTimeMillis()/1000);
-    }
+  @Override
+  public DropPartitionMessage buildDropPartitionMessage(Table table, Partition partition) {
+    return new JSONDropPartitionMessage(HCAT_SERVER_URL, HCAT_SERVICE_PRINCIPAL, partition.getDbName(),
+        partition.getTableName(), Arrays.asList(getPartitionKeyValues(table, partition)),
+        System.currentTimeMillis()/1000);
+  }
 
-    private static Map<String, String> getPartitionKeyValues(Table table, Partition partition) {
-        Map<String, String> partitionKeys = new LinkedHashMap<String, String>();
-        for (int i=0; i<table.getPartitionKeysSize(); ++i)
-            partitionKeys.put(table.getPartitionKeys().get(i).getName(),
-                    partition.getValues().get(i));
-        return partitionKeys;
-    }
+  private static Map<String, String> getPartitionKeyValues(Table table, Partition partition) {
+    Map<String, String> partitionKeys = new LinkedHashMap<String, String>();
+    for (int i=0; i<table.getPartitionKeysSize(); ++i)
+      partitionKeys.put(table.getPartitionKeys().get(i).getName(),
+          partition.getValues().get(i));
+    return partitionKeys;
+  }
 }

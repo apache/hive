@@ -81,7 +81,7 @@ select count(*) from list_bucketing_dynamic_part;
 explain extended
 select * from list_bucketing_dynamic_part where key = '484' and value = 'val_484';
 select * from list_bucketing_dynamic_part where key = '484' and value = 'val_484';
-select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484';
+select * from srcpart where ds = '2008-04-08' and key = '484' and value = 'val_484' order by hr;
 
 -- clean up
 drop table list_bucketing_dynamic_part;

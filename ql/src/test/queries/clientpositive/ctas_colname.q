@@ -16,10 +16,10 @@ describe formatted x4;
 select * from x4 order by key, value, rr;
 
 explain
-create table x5 as select *, lead(key,1) over(partition by key order by value) from src limit 20;
-create table x5 as select *, lead(key,1) over(partition by key order by value) from src limit 20;
+create table x5 as select *, lead(key,1) over(partition by key order by value) as lead1 from src limit 20;
+create table x5 as select *, lead(key,1) over(partition by key order by value) as lead1 from src limit 20;
 describe formatted x5;
-select * from x5 order by key, value, tok_windowspec;
+select * from x5 order by key, value, lead1;
 
 -- sub queries
 explain

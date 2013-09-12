@@ -110,3 +110,6 @@ select key from ss_src2 tablesample(10 ROWS);
 set hive.input.format=org.apache.hadoop.hive.ql.io.HiveInputFormat;
 -- ROW type works with other input formats (others, don't)
 select count(1) from ss_src2 tablesample(10 ROWS);
+
+--HIVE-5061 row sampling in sub-query
+select * from (select * from src TABLESAMPLE (1 ROWS)) x;

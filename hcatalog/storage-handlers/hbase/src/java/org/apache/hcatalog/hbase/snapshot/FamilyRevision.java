@@ -27,45 +27,45 @@ package org.apache.hcatalog.hbase.snapshot;
  * committed, the transaction object is removed from the list.
  */
 public class FamilyRevision implements
-        Comparable<FamilyRevision> {
+    Comparable<FamilyRevision> {
 
-    private long revision;
+  private long revision;
 
-    private long timestamp;
+  private long timestamp;
 
-    /**
-     * Create a FamilyRevision object
-     * @param rev revision number
-     * @param ts expiration timestamp
-     */
-    FamilyRevision(long rev, long ts) {
-        this.revision = rev;
-        this.timestamp = ts;
-    }
+  /**
+   * Create a FamilyRevision object
+   * @param rev revision number
+   * @param ts expiration timestamp
+   */
+  FamilyRevision(long rev, long ts) {
+    this.revision = rev;
+    this.timestamp = ts;
+  }
 
-    public long getRevision() {
-        return revision;
-    }
+  public long getRevision() {
+    return revision;
+  }
 
-    public long getExpireTimestamp() {
-        return timestamp;
-    }
+  public long getExpireTimestamp() {
+    return timestamp;
+  }
 
-    void setExpireTimestamp(long ts) {
-        timestamp = ts;
-    }
+  void setExpireTimestamp(long ts) {
+    timestamp = ts;
+  }
 
-    @Override
-    public String toString() {
-        String description = "revision: " + revision + " ts: " + timestamp;
-        return description;
-    }
+  @Override
+  public String toString() {
+    String description = "revision: " + revision + " ts: " + timestamp;
+    return description;
+  }
 
-    @Override
-    public int compareTo(FamilyRevision o) {
-        long d = revision - o.getRevision();
-        return (d < 0) ? -1 : (d > 0) ? 1 : 0;
-    }
+  @Override
+  public int compareTo(FamilyRevision o) {
+    long d = revision - o.getRevision();
+    return (d < 0) ? -1 : (d > 0) ? 1 : 0;
+  }
 
 
 }

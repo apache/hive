@@ -184,7 +184,7 @@ sub runTest
 	               $testCmd->{'group'} .  "_" .  $testCmd->{'num'} . ".$i.out";
                    $tableName = $results[$i];
 	           $modifiedTestCmd{'num'} = $testCmd->{'num'} . "_" . $i . "_benchmark";
-                   $modifiedTestCmd{'pig'} = "a = load '$tableName' using org.apache.hcatalog.pig.HCatLoader(); store a into ':OUTPATH:';";
+                   $modifiedTestCmd{'pig'} = "a = load '$tableName' using org.apache.hive.hcatalog.pig.HCatLoader(); store a into ':OUTPATH:';";
                    my $r = $self->runPig(\%modifiedTestCmd, $log, 1, 1);
 	           $outputs[$i] = $r->{'output'};
                } else {

@@ -18,30 +18,46 @@
 
 package org.apache.hadoop.hive.ql.exec.persistence;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 
-import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.io.Writable;
 
-public class MapJoinRowContainer<Row> extends AbstractRowContainer<Row> {
-
-  private List<Row> list;
-
+@SuppressWarnings("deprecation")
+public class MapJoinRowContainer extends AbstractRowContainer<List<Object>> {
+  private static final Object[] EMPTY_OBJECT_ARRAY = new Object[0];
+  
+  private final List<List<Object>> list;
   private int index;
+  private byte aliasFilter = (byte) 0xff;
 
   public MapJoinRowContainer() {
     index = 0;
-    list = new ArrayList<Row>(1);
-  }
+    list = new ArrayList<List<Object>>(1);
+  } 
 
   @Override
-  public void add(Row t) throws HiveException {
+  public void add(List<Object> t) {
     list.add(t);
   }
 
+  public void add(Object[] t) {
+    add(toList(t));
+  }
 
   @Override
-  public Row first() throws HiveException {
+  public List<Object> first() {
     index = 0;
     if (index < list.size()) {
       return list.get(index);
@@ -50,13 +66,12 @@ public class MapJoinRowContainer<Row> extends AbstractRowContainer<Row> {
   }
 
   @Override
-  public Row next() throws HiveException {
+  public List<Object> next() {
     index++;
     if (index < list.size()) {
       return list.get(index);
     }
     return null;
-
   }
 
   /**
@@ -73,28 +88,88 @@ public class MapJoinRowContainer<Row> extends AbstractRowContainer<Row> {
    * Remove all elements in the RowContainer.
    */
   @Override
-  public void clear() throws HiveException {
+  public void clear() {
     list.clear();
     index = 0;
   }
-
-  public List<Row> getList() {
-    return list;
+  
+  public byte getAliasFilter() {
+    return aliasFilter;
   }
-
-  public void setList(List<Row> list) {
-    this.list = list;
-  }
-
-  public void reset(MapJoinRowContainer<Object[]> other) throws HiveException {
-    list.clear();
-    Object[] obj;
-    for (obj = other.first(); obj != null; obj = other.next()) {
-      ArrayList<Object> ele = new ArrayList(obj.length);
-      for (int i = 0; i < obj.length; i++) {
-        ele.add(obj[i]);
-      }
-      list.add((Row) ele);
+  
+  public MapJoinRowContainer copy() {
+    MapJoinRowContainer result = new MapJoinRowContainer();
+    for(List<Object> item : list) {
+      result.add(item);
     }
+    return result;
+  }
+  
+  @SuppressWarnings({"unchecked"})
+  public void read(MapJoinObjectSerDeContext context, ObjectInputStream in, Writable container) 
+  throws IOException, SerDeException {
+    clear();
+    SerDe serde = context.getSerDe();
+    long numRows = in.readLong();
+    for (long rowIndex = 0L; rowIndex < numRows; rowIndex++) {
+      container.readFields(in);      
+      List<Object> value = (List<Object>)ObjectInspectorUtils.copyToStandardObject(serde.deserialize(container),
+          serde.getObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
+      if(value == null) {
+        add(toList(EMPTY_OBJECT_ARRAY));
+      } else {
+        Object[] valuesArray = value.toArray();
+        if (context.hasFilterTag()) {
+          aliasFilter &= ((ShortWritable)valuesArray[valuesArray.length - 1]).get();
+        }
+        add(toList(valuesArray));
+      }
+    }
+  }
+  
+  public void write(MapJoinObjectSerDeContext context, ObjectOutputStream out) 
+  throws IOException, SerDeException {
+    SerDe serde = context.getSerDe();
+    ObjectInspector valueObjectInspector = context.getStandardOI();
+    long numRows = size();
+    long numRowsWritten = 0L;
+    out.writeLong(numRows);
+    for (List<Object> row = first(); row != null; row = next()) {
+      serde.serialize(row.toArray(), valueObjectInspector).write(out);
+      ++numRowsWritten;      
+    }
+    if(numRows != size()) {
+      throw new ConcurrentModificationException("Values was modifified while persisting");
+    }
+    if(numRowsWritten != numRows) {
+      throw new IllegalStateException("Expected to write " + numRows + " but wrote " + numRowsWritten);
+    }
+  }
+  
+  private List<Object> toList(Object[] array) {
+    return new NoCopyingArrayList(array);
+  }
+  /**
+   * In this use case our objects will not be modified
+   * so we don't care about copying in and out.
+   */
+  private static class NoCopyingArrayList extends AbstractList<Object> {
+    private Object[] array;
+    public NoCopyingArrayList(Object[] array) {
+      this.array = array;
+    }
+    @Override
+    public Object get(int index) {
+      return array[index];
+    }
+
+    @Override
+    public int size() {
+      return array.length;
+    }
+    
+    public Object[] toArray() {
+      return array;
+    }    
   }
 }

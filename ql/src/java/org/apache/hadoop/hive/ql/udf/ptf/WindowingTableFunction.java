@@ -40,82 +40,49 @@ import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFunctionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowTableFunctionDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
-import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 
-public class WindowingTableFunction extends TableFunctionEvaluator
-{
-
-  @Override
-  public PTFPartition execute(PTFPartition iPart)
-      throws HiveException
-  {
-    WindowTableFunctionDef wFnDef = (WindowTableFunctionDef) getTableDef();
-    PTFPartitionIterator<Object> pItr = iPart.iterator();
-    PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, pItr);
-
-    if ( outputPartition == null ) {
-      outputPartition = new PTFPartition(getPartitionClass(),
-          getPartitionMemSize(), wFnDef.getOutputFromWdwFnProcessing().getSerde(), OI);
-    }
-    else {
-      outputPartition.reset();
-    }
-
-    execute(pItr, outputPartition);
-    return outputPartition;
-  }
+@SuppressWarnings("deprecation")
+public class WindowingTableFunction extends TableFunctionEvaluator {
 
   @SuppressWarnings({ "unchecked", "rawtypes" })
   @Override
-  public void execute(PTFPartitionIterator<Object> pItr, PTFPartition outP) throws HiveException
-  {
+  public void execute(PTFPartitionIterator<Object> pItr, PTFPartition outP) throws HiveException {
     ArrayList<List<?>> oColumns = new ArrayList<List<?>>();
     PTFPartition iPart = pItr.getPartition();
     StructObjectInspector inputOI;
-    try {
-      inputOI = (StructObjectInspector) iPart.getSerDe().getObjectInspector();
-    } catch (SerDeException se) {
-      throw new HiveException(se);
-    }
+    inputOI = (StructObjectInspector) iPart.getOutputOI();
 
     WindowTableFunctionDef wTFnDef = (WindowTableFunctionDef) getTableDef();
     Order order = wTFnDef.getOrder().getExpressions().get(0).getOrder();
 
-    for(WindowFunctionDef wFn : wTFnDef.getWindowFunctions())
-    {
+    for(WindowFunctionDef wFn : wTFnDef.getWindowFunctions()) {
       boolean processWindow = processWindow(wFn);
       pItr.reset();
-      if ( !processWindow )
-      {
+      if ( !processWindow ) {
         GenericUDAFEvaluator fEval = wFn.getWFnEval();
         Object[] args = new Object[wFn.getArgs() == null ? 0 : wFn.getArgs().size()];
         AggregationBuffer aggBuffer = fEval.getNewAggregationBuffer();
-        while(pItr.hasNext())
-        {
+        while(pItr.hasNext()) {
           Object row = pItr.next();
           int i =0;
           if ( wFn.getArgs() != null ) {
-            for(PTFExpressionDef arg : wFn.getArgs())
-            {
+            for(PTFExpressionDef arg : wFn.getArgs()) {
               args[i++] = arg.getExprEvaluator().evaluate(row);
             }
           }
           fEval.aggregate(aggBuffer, args);
         }
         Object out = fEval.evaluate(aggBuffer);
-        if ( !wFn.isPivotResult())
-        {
+        if ( !wFn.isPivotResult()) {
           out = new SameList(iPart.size(), out);
         }
         oColumns.add((List<?>)out);
-      }
-      else
-      {
+      } else {
         oColumns.add(executeFnwithWindow(getQueryDef(), wFn, iPart, order));
       }
     }
@@ -126,18 +93,15 @@ public class WindowingTableFunction extends TableFunctionEvaluator
      * - the input Rows columns
      */
 
-    for(int i=0; i < iPart.size(); i++)
-    {
+    for(int i=0; i < iPart.size(); i++) {
       ArrayList oRow = new ArrayList();
       Object iRow = iPart.getAt(i);
 
-      for(int j=0; j < oColumns.size(); j++)
-      {
+      for(int j=0; j < oColumns.size(); j++) {
         oRow.add(oColumns.get(j).get(i));
       }
 
-      for(StructField f : inputOI.getAllStructFieldRefs())
-      {
+      for(StructField f : inputOI.getAllStructFieldRefs()) {
         oRow.add(inputOI.getStructFieldData(iRow, f));
       }
 
@@ -191,15 +155,13 @@ public class WindowingTableFunction extends TableFunctionEvaluator
      * - the Window Functions.
      */
     @Override
-    public void initializeOutputOI() throws HiveException
-    {
+    public void initializeOutputOI() throws HiveException {
       setupOutputOI();
     }
 
 
     @Override
-    public boolean transformsRawInput()
-    {
+    public boolean transformsRawInput() {
       return false;
     }
 
@@ -229,26 +191,22 @@ public class WindowingTableFunction extends TableFunctionEvaluator
       WindowFunctionDef wFnDef,
       PTFPartition iPart,
       Order order)
-    throws HiveException
-  {
+    throws HiveException {
     ArrayList<Object> vals = new ArrayList<Object>();
 
     GenericUDAFEvaluator fEval = wFnDef.getWFnEval();
 
     Object[] args = new Object[wFnDef.getArgs() == null ? 0 : wFnDef.getArgs().size()];
-    for(int i=0; i < iPart.size(); i++)
-    {
+    for(int i=0; i < iPart.size(); i++) {
       AggregationBuffer aggBuffer = fEval.getNewAggregationBuffer();
       Range rng = getRange(wFnDef, i, iPart, order);
       PTFPartitionIterator<Object> rItr = rng.iterator();
       PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, rItr);
-      while(rItr.hasNext())
-      {
+      while(rItr.hasNext()) {
         Object row = rItr.next();
         int j = 0;
         if ( wFnDef.getArgs() != null ) {
-          for(PTFExpressionDef arg : wFnDef.getArgs())
-          {
+          for(PTFExpressionDef arg : wFnDef.getArgs()) {
             args[j++] = arg.getExprEvaluator().evaluate(row);
           }
         }
@@ -705,8 +663,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator
       }
     }
 
-    public Object computeValue(Object row) throws HiveException
-    {
+    public Object computeValue(Object row) throws HiveException {
       Object o = expressionDef.getExprEvaluator().evaluate(row);
       return ObjectInspectorUtils.copyToStandardObject(o, expressionDef.getOI());
     }
@@ -717,11 +674,10 @@ public class WindowingTableFunction extends TableFunctionEvaluator
 
 
     @SuppressWarnings("incomplete-switch")
-    public static ValueBoundaryScanner getScanner(ValueBoundaryDef vbDef, Order order) throws HiveException
-    {
+    public static ValueBoundaryScanner getScanner(ValueBoundaryDef vbDef, Order order)
+        throws HiveException {
       PrimitiveObjectInspector pOI = (PrimitiveObjectInspector) vbDef.getOI();
-      switch(pOI.getPrimitiveCategory())
-      {
+      switch(pOI.getPrimitiveCategory()) {
       case BYTE:
       case INT:
       case LONG:
@@ -740,16 +696,14 @@ public class WindowingTableFunction extends TableFunctionEvaluator
     }
   }
 
-  public static class LongValueBoundaryScanner extends ValueBoundaryScanner
-  {
-    public LongValueBoundaryScanner(BoundaryDef bndDef, Order order, PTFExpressionDef expressionDef)
-    {
+  public static class LongValueBoundaryScanner extends ValueBoundaryScanner {
+    public LongValueBoundaryScanner(BoundaryDef bndDef, Order order,
+        PTFExpressionDef expressionDef) {
       super(bndDef,order,expressionDef);
     }
 
     @Override
-    public boolean isGreater(Object v1, Object v2, int amt)
-    {
+    public boolean isGreater(Object v1, Object v2, int amt) {
       long l1 = PrimitiveObjectInspectorUtils.getLong(v1,
           (PrimitiveObjectInspector) expressionDef.getOI());
       long l2 = PrimitiveObjectInspectorUtils.getLong(v2,
@@ -758,8 +712,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator
     }
 
     @Override
-    public boolean isEqual(Object v1, Object v2)
-    {
+    public boolean isEqual(Object v1, Object v2) {
       long l1 = PrimitiveObjectInspectorUtils.getLong(v1,
           (PrimitiveObjectInspector) expressionDef.getOI());
       long l2 = PrimitiveObjectInspectorUtils.getLong(v2,
@@ -768,16 +721,14 @@ public class WindowingTableFunction extends TableFunctionEvaluator
     }
   }
 
-  public static class DoubleValueBoundaryScanner extends ValueBoundaryScanner
-  {
-    public DoubleValueBoundaryScanner(BoundaryDef bndDef, Order order, PTFExpressionDef expressionDef)
-    {
+  public static class DoubleValueBoundaryScanner extends ValueBoundaryScanner {
+    public DoubleValueBoundaryScanner(BoundaryDef bndDef, Order order,
+        PTFExpressionDef expressionDef) {
       super(bndDef,order,expressionDef);
     }
 
     @Override
-    public boolean isGreater(Object v1, Object v2, int amt)
-    {
+    public boolean isGreater(Object v1, Object v2, int amt) {
       double d1 = PrimitiveObjectInspectorUtils.getDouble(v1,
           (PrimitiveObjectInspector) expressionDef.getOI());
       double d2 = PrimitiveObjectInspectorUtils.getDouble(v2,
@@ -786,8 +737,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator
     }
 
     @Override
-    public boolean isEqual(Object v1, Object v2)
-    {
+    public boolean isEqual(Object v1, Object v2) {
       double d1 = PrimitiveObjectInspectorUtils.getDouble(v1,
           (PrimitiveObjectInspector) expressionDef.getOI());
       double d2 = PrimitiveObjectInspectorUtils.getDouble(v2,
@@ -796,16 +746,14 @@ public class WindowingTableFunction extends TableFunctionEvaluator
     }
   }
 
-  public static class StringValueBoundaryScanner extends ValueBoundaryScanner
-  {
-    public StringValueBoundaryScanner(BoundaryDef bndDef, Order order, PTFExpressionDef expressionDef)
-    {
+  public static class StringValueBoundaryScanner extends ValueBoundaryScanner {
+    public StringValueBoundaryScanner(BoundaryDef bndDef, Order order,
+        PTFExpressionDef expressionDef) {
       super(bndDef,order,expressionDef);
     }
 
     @Override
-    public boolean isGreater(Object v1, Object v2, int amt)
-    {
+    public boolean isGreater(Object v1, Object v2, int amt) {
       String s1 = PrimitiveObjectInspectorUtils.getString(v1,
           (PrimitiveObjectInspector) expressionDef.getOI());
       String s2 = PrimitiveObjectInspectorUtils.getString(v2,
@@ -814,8 +762,7 @@ public class WindowingTableFunction extends TableFunctionEvaluator
     }
 
     @Override
-    public boolean isEqual(Object v1, Object v2)
-    {
+    public boolean isEqual(Object v1, Object v2) {
       String s1 = PrimitiveObjectInspectorUtils.getString(v1,
           (PrimitiveObjectInspector) expressionDef.getOI());
       String s2 = PrimitiveObjectInspectorUtils.getString(v2,
@@ -824,26 +771,22 @@ public class WindowingTableFunction extends TableFunctionEvaluator
     }
   }
 
-  public static class SameList<E> extends AbstractList<E>
-  {
+  public static class SameList<E> extends AbstractList<E> {
     int sz;
     E val;
 
-    public SameList(int sz, E val)
-    {
+    public SameList(int sz, E val) {
       this.sz = sz;
       this.val = val;
     }
 
     @Override
-    public E get(int index)
-    {
+    public E get(int index) {
       return val;
     }
 
     @Override
-    public int size()
-    {
+    public int size() {
       return sz;
     }
 

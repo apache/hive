@@ -31,106 +31,107 @@ import org.apache.hcatalog.data.transfer.state.StateProvider;
 /**
  * Use this factory to get instances of {@link HCatReader} or {@link HCatWriter}
  * at master and slave nodes.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.transfer.DataTransferFactory} instead
  */
 
 public class DataTransferFactory {
 
-    /**
-     * This should be called once from master node to obtain an instance of
-     * {@link HCatReader}.
-     *
-     * @param re
-     *          ReadEntity built using {@link ReadEntity.Builder}
-     * @param config
-     *          any configuration which master node wants to pass to HCatalog
-     * @return {@link HCatReader}
-     */
-    public static HCatReader getHCatReader(final ReadEntity re,
-                                           final Map<String, String> config) {
-        // In future, this may examine ReadEntity and/or config to return
-        // appropriate HCatReader
-        return new HCatInputFormatReader(re, config);
-    }
+  /**
+   * This should be called once from master node to obtain an instance of
+   * {@link HCatReader}.
+   *
+   * @param re
+   *          ReadEntity built using {@link ReadEntity.Builder}
+   * @param config
+   *          any configuration which master node wants to pass to HCatalog
+   * @return {@link HCatReader}
+   */
+  public static HCatReader getHCatReader(final ReadEntity re,
+                       final Map<String, String> config) {
+    // In future, this may examine ReadEntity and/or config to return
+    // appropriate HCatReader
+    return new HCatInputFormatReader(re, config);
+  }
 
-    /**
-     * This should only be called once from every slave node to obtain an instance
-     * of {@link HCatReader}.
-     *
-     * @param split
-     *          input split obtained at master node
-     * @param config
-     *          configuration obtained at master node
-     * @return {@link HCatReader}
-     */
-    public static HCatReader getHCatReader(final InputSplit split,
-                                           final Configuration config) {
-        // In future, this may examine config to return appropriate HCatReader
-        return getHCatReader(split, config, DefaultStateProvider.get());
-    }
+  /**
+   * This should only be called once from every slave node to obtain an instance
+   * of {@link HCatReader}.
+   *
+   * @param split
+   *          input split obtained at master node
+   * @param config
+   *          configuration obtained at master node
+   * @return {@link HCatReader}
+   */
+  public static HCatReader getHCatReader(final InputSplit split,
+                       final Configuration config) {
+    // In future, this may examine config to return appropriate HCatReader
+    return getHCatReader(split, config, DefaultStateProvider.get());
+  }
 
-    /**
-     * This should only be called once from every slave node to obtain an instance
-     * of {@link HCatReader}. This should be called if an external system has some
-     * state to provide to HCatalog.
-     *
-     * @param split
-     *          input split obtained at master node
-     * @param config
-     *          configuration obtained at master node
-     * @param sp
-     *          {@link StateProvider}
-     * @return {@link HCatReader}
-     */
-    public static HCatReader getHCatReader(final InputSplit split,
-                                           final Configuration config, StateProvider sp) {
-        // In future, this may examine config to return appropriate HCatReader
-        return new HCatInputFormatReader(split, config, sp);
-    }
+  /**
+   * This should only be called once from every slave node to obtain an instance
+   * of {@link HCatReader}. This should be called if an external system has some
+   * state to provide to HCatalog.
+   *
+   * @param split
+   *          input split obtained at master node
+   * @param config
+   *          configuration obtained at master node
+   * @param sp
+   *          {@link StateProvider}
+   * @return {@link HCatReader}
+   */
+  public static HCatReader getHCatReader(final InputSplit split,
+                       final Configuration config, StateProvider sp) {
+    // In future, this may examine config to return appropriate HCatReader
+    return new HCatInputFormatReader(split, config, sp);
+  }
 
-    /**
-     * This should be called at master node to obtain an instance of
-     * {@link HCatWriter}.
-     *
-     * @param we
-     *          WriteEntity built using {@link WriteEntity.Builder}
-     * @param config
-     *          any configuration which master wants to pass to HCatalog
-     * @return {@link HCatWriter}
-     */
-    public static HCatWriter getHCatWriter(final WriteEntity we,
-                                           final Map<String, String> config) {
-        // In future, this may examine WriteEntity and/or config to return
-        // appropriate HCatWriter
-        return new HCatOutputFormatWriter(we, config);
-    }
+  /**
+   * This should be called at master node to obtain an instance of
+   * {@link HCatWriter}.
+   *
+   * @param we
+   *          WriteEntity built using {@link WriteEntity.Builder}
+   * @param config
+   *          any configuration which master wants to pass to HCatalog
+   * @return {@link HCatWriter}
+   */
+  public static HCatWriter getHCatWriter(final WriteEntity we,
+                       final Map<String, String> config) {
+    // In future, this may examine WriteEntity and/or config to return
+    // appropriate HCatWriter
+    return new HCatOutputFormatWriter(we, config);
+  }
 
-    /**
-     * This should be called at slave nodes to obtain an instance of
-     * {@link HCatWriter}.
-     *
-     * @param cntxt
-     *          {@link WriterContext} obtained at master node
-     * @return {@link HCatWriter}
-     */
-    public static HCatWriter getHCatWriter(final WriterContext cntxt) {
-        // In future, this may examine context to return appropriate HCatWriter
-        return getHCatWriter(cntxt, DefaultStateProvider.get());
-    }
+  /**
+   * This should be called at slave nodes to obtain an instance of
+   * {@link HCatWriter}.
+   *
+   * @param cntxt
+   *          {@link WriterContext} obtained at master node
+   * @return {@link HCatWriter}
+   */
+  public static HCatWriter getHCatWriter(final WriterContext cntxt) {
+    // In future, this may examine context to return appropriate HCatWriter
+    return getHCatWriter(cntxt, DefaultStateProvider.get());
+  }
 
-    /**
-     * This should be called at slave nodes to obtain an instance of
-     * {@link HCatWriter}. If an external system has some mechanism for providing
-     * state to HCatalog, this constructor can be used.
-     *
-     * @param cntxt
-     *          {@link WriterContext} obtained at master node
-     * @param sp
-     *          {@link StateProvider}
-     * @return {@link HCatWriter}
-     */
-    public static HCatWriter getHCatWriter(final WriterContext cntxt,
-                                           final StateProvider sp) {
-        // In future, this may examine context to return appropriate HCatWriter
-        return new HCatOutputFormatWriter(cntxt.getConf(), sp);
-    }
+  /**
+   * This should be called at slave nodes to obtain an instance of
+   * {@link HCatWriter}. If an external system has some mechanism for providing
+   * state to HCatalog, this constructor can be used.
+   *
+   * @param cntxt
+   *          {@link WriterContext} obtained at master node
+   * @param sp
+   *          {@link StateProvider}
+   * @return {@link HCatWriter}
+   */
+  public static HCatWriter getHCatWriter(final WriterContext cntxt,
+                       final StateProvider sp) {
+    // In future, this may examine context to return appropriate HCatWriter
+    return new HCatOutputFormatWriter(cntxt.getConf(), sp);
+  }
 }

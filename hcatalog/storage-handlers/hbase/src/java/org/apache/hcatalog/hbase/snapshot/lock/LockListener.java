@@ -27,15 +27,15 @@ package org.apache.hcatalog.hbase.snapshot.lock;
  *  in the package name.
  */
 public interface LockListener {
-    /**
-     * call back called when the lock
-     * is acquired
-     */
-    public void lockAcquired();
+  /**
+   * call back called when the lock
+   * is acquired
+   */
+  public void lockAcquired();
 
-    /**
-     * call back called when the lock is
-     * released.
-     */
-    public void lockReleased();
+  /**
+   * call back called when the lock is
+   * released.
+   */
+  public void lockReleased();
 }

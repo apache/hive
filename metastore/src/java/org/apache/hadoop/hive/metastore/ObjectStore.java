@@ -88,7 +88,6 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeGrantInfo;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
-import org.apache.hadoop.hive.metastore.api.SkewedValueList;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.StringColumnStatsData;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -1065,13 +1064,13 @@ public class ObjectStore implements RawStore, Configurable {
    * @param mMap
    * @return
    */
-  private Map<SkewedValueList, String> covertToSkewedMap(Map<MStringList, String> mMap) {
-    Map<SkewedValueList, String> map = null;
+  private Map<List<String>, String> covertToSkewedMap(Map<MStringList, String> mMap) {
+    Map<List<String>, String> map = null;
     if (mMap != null) {
-      map = new HashMap<SkewedValueList, String>(mMap.size());
+      map = new HashMap<List<String>, String>(mMap.size());
       Set<MStringList> keys = mMap.keySet();
       for (MStringList key : keys) {
-        map.put(new SkewedValueList(new ArrayList<String>(key.getInternalList())), mMap.get(key));
+        map.put(new ArrayList<String>(key.getInternalList()), mMap.get(key));
       }
     }
     return map;
@@ -1082,12 +1081,13 @@ public class ObjectStore implements RawStore, Configurable {
    * @param mMap
    * @return
    */
-  private Map<MStringList, String> convertToMapMStringList(Map<SkewedValueList, String> mMap) {
+  private Map<MStringList, String> covertToMapMStringList(Map<List<String>, String> mMap) {
     Map<MStringList, String> map = null;
     if (mMap != null) {
       map = new HashMap<MStringList, String>(mMap.size());
-      for (Map.Entry<SkewedValueList, String> entry : mMap.entrySet()) {
-        map.put(new MStringList(entry.getKey().getSkewedValueList()), entry.getValue());
+      Set<List<String>> keys = mMap.keySet();
+      for (List<String> key : keys) {
+        map.put(new MStringList(key), mMap.get(key));
       }
     }
     return map;
@@ -1134,7 +1134,7 @@ public class ObjectStore implements RawStore, Configurable {
             : sd.getSkewedInfo().getSkewedColNames(),
         convertToMStringLists((null == sd.getSkewedInfo()) ? null : sd.getSkewedInfo()
             .getSkewedColValues()),
-        convertToMapMStringList((null == sd.getSkewedInfo()) ? null : sd.getSkewedInfo()
+        covertToMapMStringList((null == sd.getSkewedInfo()) ? null : sd.getSkewedInfo()
             .getSkewedColValueLocationMaps()), sd.isStoredAsSubDirectories());
   }
 
@@ -1380,12 +1380,48 @@ public class ObjectStore implements RawStore, Configurable {
     return success;
   }
 
-  public List<Partition> getPartitions(String dbName, String tableName, int max)
-      throws MetaException {
-    openTransaction();
-    List<Partition> parts = convertToParts(listMPartitions(dbName, tableName, max));
-    commitTransaction();
-    return parts;
+  public List<Partition> getPartitions(
+      String dbName, String tableName, int maxParts) throws MetaException {
+    return getPartitionsInternal(dbName, tableName, maxParts, true, true);
+  }
+
+  protected List<Partition> getPartitionsInternal(String dbName, String tableName,
+      int maxParts, boolean allowSql, boolean allowJdo) throws MetaException {
+    assert allowSql || allowJdo;
+    boolean doTrace = LOG.isDebugEnabled();
+    List<Partition> parts = null;
+    boolean doUseDirectSql = allowSql
+        && HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL);
+
+    boolean success = false;
+    try {
+      long start = doTrace ? System.nanoTime() : 0;
+      openTransaction();
+      if (doUseDirectSql) {
+        try {
+          Integer max = (maxParts < 0) ? null : maxParts;
+          parts = directSql.getPartitions(dbName, tableName, max);
+        } catch (Exception ex) {
+          handleDirectSqlError(allowJdo, ex);
+          doUseDirectSql = false;
+          start = doTrace ? System.nanoTime() : 0;
+        }
+      }
+
+      if (!doUseDirectSql) {
+        parts = convertToParts(listMPartitions(dbName, tableName, maxParts));
+      }
+      success = commitTransaction();
+      if (doTrace) {
+        LOG.debug(parts.size() + " partition retrieved using " + (doUseDirectSql ? "SQL" : "ORM")
+            + " in " + ((System.nanoTime() - start) / 1000000.0) + "ms");
+      }
+      return parts;
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
   }
 
   @Override
@@ -1659,9 +1695,17 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<Partition> getPartitionsByNames(String dbName, String tblName,
       List<String> partNames) throws MetaException, NoSuchObjectException {
+    return getPartitionsByNamesInternal(dbName, tblName, partNames, true, true);
+  }
+
+  protected List<Partition> getPartitionsByNamesInternal(String dbName, String tblName,
+      List<String> partNames, boolean allowSql, boolean allowJdo)
+          throws MetaException, NoSuchObjectException {
+    assert allowSql || allowJdo;
     boolean doTrace = LOG.isDebugEnabled();
     List<Partition> results = null;
-    boolean doUseDirectSql = HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL);
+    boolean doUseDirectSql = allowSql
+        && HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL);
 
     boolean success = false;
     try {
@@ -1669,13 +1713,11 @@ public class ObjectStore implements RawStore, Configurable {
       openTransaction();
       if (doUseDirectSql) {
         try {
-          results = directSql.getPartitionsViaSqlFilter(dbName, tblName, partNames);
+          results = directSql.getPartitionsViaSqlFilter(dbName, tblName, partNames, null);
         } catch (Exception ex) {
-          LOG.error("Direct SQL failed, falling back to ORM", ex);
+          handleDirectSqlError(allowJdo, ex);
           doUseDirectSql = false;
-          rollbackTransaction();
           start = doTrace ? System.nanoTime() : 0;
-          openTransaction();
         }
       }
 
@@ -1692,6 +1734,16 @@ public class ObjectStore implements RawStore, Configurable {
       if (!success) {
         rollbackTransaction();
       }
+    }
+  }
+
+  private void handleDirectSqlError(boolean allowJdo, Exception ex) throws MetaException {
+    LOG.error("Direct SQL failed" + (allowJdo ? ", falling back to ORM" : ""), ex);
+    if (!allowJdo) {
+      if (ex instanceof MetaException) {
+        throw (MetaException)ex;
+      }
+      throw new MetaException(ex.getMessage());
     }
   }
 
@@ -1734,10 +1786,17 @@ public class ObjectStore implements RawStore, Configurable {
   @Override
   public List<Partition> getPartitionsByFilter(String dbName, String tblName,
       String filter, short maxParts) throws MetaException, NoSuchObjectException {
+    return getPartitionsByFilterInternal(dbName, tblName, filter, maxParts, true, true);
+  }
+
+  protected List<Partition> getPartitionsByFilterInternal(String dbName, String tblName,
+      String filter, short maxParts, boolean allowSql, boolean allowJdo)
+      throws MetaException, NoSuchObjectException {
+    assert allowSql || allowJdo;
     boolean doTrace = LOG.isDebugEnabled();
     // There's no portable SQL limit. It doesn't make a lot of sense w/o offset anyway.
-    boolean doUseDirectSql = (maxParts < 0)
-        && HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL);
+    boolean doUseDirectSql = allowSql
+      && HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL);
     dbName = dbName.toLowerCase();
     tblName = tblName.toLowerCase();
     List<Partition> results = null;
@@ -1755,14 +1814,12 @@ public class ObjectStore implements RawStore, Configurable {
       if (doUseDirectSql) {
         try {
           Table table = convertToTable(mtable);
-          results = directSql.getPartitionsViaSqlFilter(table, dbName, tblName, parser);
+          Integer max = (maxParts < 0) ? null : (int)maxParts;
+          results = directSql.getPartitionsViaSqlFilter(table, parser, max);
         } catch (Exception ex) {
-          LOG.error("Direct SQL failed, falling back to ORM", ex);
+          handleDirectSqlError(allowJdo, ex);
           doUseDirectSql = false;
-          rollbackTransaction();
           start = doTrace ? System.nanoTime() : 0;
-          openTransaction();
-          mtable = ensureGetMTable(dbName, tblName); // Detached on rollback, get again.
         }
       }
       if (!doUseDirectSql) {

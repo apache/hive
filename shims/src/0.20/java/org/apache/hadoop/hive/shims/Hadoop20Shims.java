@@ -735,5 +735,12 @@ public class Hadoop20Shims implements HadoopShims {
     throw new UnsupportedOperationException(
         "Kerberos not supported in current hadoop version");
   }
-
+  @Override
+  public HCatHadoopShims getHCatShim() {
+      throw new UnsupportedOperationException("HCatalog does not support Hadoop 0.20.x");
+  }
+  @Override
+  public WebHCatJTShim getWebHCatShim(Configuration conf, UserGroupInformation ugi) throws IOException {
+      throw new UnsupportedOperationException("WebHCat does not support Hadoop 0.20.x");
+  }
 }

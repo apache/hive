@@ -795,3 +795,33 @@ POSTHOOK: Input: default@over10k
 71.68	722.6499947607517
 79.46	802.1099938452244
 80.02	882.1299904882908
+PREHOOK: query: select s, i, round(avg(d) over (partition by s order by i) / 10.0 , 2) from over10k limit 7
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, i, round(avg(d) over (partition by s order by i) / 10.0 , 2) from over10k limit 7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+alice allen	65545	2.22
+alice allen	65557	2.58
+alice allen	65600	3.38
+alice allen	65609	2.99
+alice allen	65662	2.7
+alice allen	65670	2.88
+alice allen	65720	2.76
+PREHOOK: query: select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k window w1 as (partition by s order by i) limit 7
+PREHOOK: type: QUERY
+PREHOOK: Input: default@over10k
+#### A masked pattern was here ####
+POSTHOOK: query: select s, i, round((avg(d) over  w1 + 10.0) - (avg(d) over w1 - 10.0),2) from over10k window w1 as (partition by s order by i) limit 7
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@over10k
+#### A masked pattern was here ####
+alice allen	65545	20.0
+alice allen	65557	20.0
+alice allen	65600	20.0
+alice allen	65609	20.0
+alice allen	65662	20.0
+alice allen	65670	20.0
+alice allen	65720	20.0

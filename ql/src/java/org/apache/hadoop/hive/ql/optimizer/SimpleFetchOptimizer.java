@@ -234,14 +234,19 @@ public class SimpleFetchOptimizer implements Transform {
     // rows forwarded will be received by ListSinkOperator, which is replacing FS
     private ListSinkOperator completed(ParseContext pctx, FetchWork work) {
       pctx.getSemanticInputs().addAll(inputs);
-      ListSinkOperator sink = new ListSinkOperator();
-      sink.setConf(new ListSinkDesc(work.getSerializationNullFormat()));
-      sink.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>());
-      Operator<? extends OperatorDesc> parent = fileSink.getParentOperators().get(0);
-      sink.getParentOperators().add(parent);
-      parent.replaceChild(fileSink, sink);
-      fileSink.setParentOperators(null);
-      return sink;
+      return replaceFSwithLS(fileSink, work.getSerializationNullFormat());
     }
+  }
+
+  public static ListSinkOperator replaceFSwithLS(Operator<?> fileSink, String nullFormat) {
+    ListSinkOperator sink = new ListSinkOperator();
+    sink.setConf(new ListSinkDesc(nullFormat));
+
+    sink.setParentOperators(new ArrayList<Operator<? extends OperatorDesc>>());
+    Operator<? extends OperatorDesc> parent = fileSink.getParentOperators().get(0);
+    sink.getParentOperators().add(parent);
+    parent.replaceChild(fileSink, sink);
+    fileSink.setParentOperators(null);
+    return sink;
   }
 }

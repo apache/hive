@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -241,6 +242,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   // and 2) it will fail some join and union queries if this is added forcibly
   // into tableScanDesc
   java.util.ArrayList<Integer> neededColumnIDs;
+  List<String> neededColumns;
 
   public void setNeededColumnIDs(java.util.ArrayList<Integer> orign_columns) {
     neededColumnIDs = orign_columns;
@@ -248,6 +250,14 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
 
   public java.util.ArrayList<Integer> getNeededColumnIDs() {
     return neededColumnIDs;
+  }
+
+  public void setNeededColumns(List<String> columnNames) {
+    neededColumns = columnNames;
+  }
+
+  public List<String> getNeededColumns() {
+    return neededColumns;
   }
 
   @Override

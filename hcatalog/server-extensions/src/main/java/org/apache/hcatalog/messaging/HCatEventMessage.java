@@ -24,77 +24,78 @@ import org.apache.hcatalog.common.HCatConstants;
 /**
  * Class representing messages emitted when Metastore operations are done.
  * (E.g. Creation and deletion of databases, tables and partitions.)
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.HCatEventMessage} instead
  */
 public abstract class HCatEventMessage {
 
-    /**
-     * Enumeration of all supported types of Metastore operations.
-     */
-    public static enum EventType {
+  /**
+   * Enumeration of all supported types of Metastore operations.
+   */
+  public static enum EventType {
 
-        CREATE_DATABASE(HCatConstants.HCAT_CREATE_DATABASE_EVENT),
-        DROP_DATABASE(HCatConstants.HCAT_DROP_DATABASE_EVENT),
-        CREATE_TABLE(HCatConstants.HCAT_CREATE_TABLE_EVENT),
-        DROP_TABLE(HCatConstants.HCAT_DROP_TABLE_EVENT),
-        ADD_PARTITION(HCatConstants.HCAT_ADD_PARTITION_EVENT),
-        DROP_PARTITION(HCatConstants.HCAT_DROP_PARTITION_EVENT);
+    CREATE_DATABASE(HCatConstants.HCAT_CREATE_DATABASE_EVENT),
+    DROP_DATABASE(HCatConstants.HCAT_DROP_DATABASE_EVENT),
+    CREATE_TABLE(HCatConstants.HCAT_CREATE_TABLE_EVENT),
+    DROP_TABLE(HCatConstants.HCAT_DROP_TABLE_EVENT),
+    ADD_PARTITION(HCatConstants.HCAT_ADD_PARTITION_EVENT),
+    DROP_PARTITION(HCatConstants.HCAT_DROP_PARTITION_EVENT);
 
-        private String typeString;
+    private String typeString;
 
-        EventType(String typeString) {
-            this.typeString = typeString;
-        }
-
-        @Override
-        public String toString() { return typeString; }
+    EventType(String typeString) {
+      this.typeString = typeString;
     }
 
-    protected EventType eventType;
+    @Override
+    public String toString() { return typeString; }
+  }
 
-    protected HCatEventMessage(EventType eventType) {
-        this.eventType = eventType;
-    }
+  protected EventType eventType;
 
-    public EventType getEventType() {
-        return eventType;
-    }
+  protected HCatEventMessage(EventType eventType) {
+    this.eventType = eventType;
+  }
 
-    /**
-     * Getter for HCatalog Server's URL.
-     * (This is where the event originates from.)
-     * @return HCatalog Server's URL (String).
-     */
-    public abstract String getServer();
+  public EventType getEventType() {
+    return eventType;
+  }
 
-    /**
-     * Getter for the Kerberos principal of the HCatalog service.
-     * @return HCatalog Service Principal (String).
-     */
-    public abstract String getServicePrincipal();
+  /**
+   * Getter for HCatalog Server's URL.
+   * (This is where the event originates from.)
+   * @return HCatalog Server's URL (String).
+   */
+  public abstract String getServer();
 
-    /**
-     * Getter for the name of the Database on which the Metastore operation is done.
-     * @return Database-name (String).
-     */
-    public abstract String getDB();
+  /**
+   * Getter for the Kerberos principal of the HCatalog service.
+   * @return HCatalog Service Principal (String).
+   */
+  public abstract String getServicePrincipal();
 
-    /**
-     * Getter for the timestamp associated with the operation.
-     * @return Timestamp (Long - seconds since epoch).
-     */
-    public abstract Long   getTimestamp();
+  /**
+   * Getter for the name of the Database on which the Metastore operation is done.
+   * @return Database-name (String).
+   */
+  public abstract String getDB();
 
-    /**
-     * Class invariant. Checked after construction or deserialization.
-     */
-    public HCatEventMessage checkValid() {
-        if (getServer() == null || getServicePrincipal() == null)
-            throw new IllegalStateException("Server-URL/Service-Principal shouldn't be null.");
-        if (getEventType() == null)
-            throw new IllegalStateException("Event-type unset.");
-        if (getDB() == null)
-            throw new IllegalArgumentException("DB-name unset.");
+  /**
+   * Getter for the timestamp associated with the operation.
+   * @return Timestamp (Long - seconds since epoch).
+   */
+  public abstract Long   getTimestamp();
 
-        return this;
-    }
+  /**
+   * Class invariant. Checked after construction or deserialization.
+   */
+  public HCatEventMessage checkValid() {
+    if (getServer() == null || getServicePrincipal() == null)
+      throw new IllegalStateException("Server-URL/Service-Principal shouldn't be null.");
+    if (getEventType() == null)
+      throw new IllegalStateException("Event-type unset.");
+    if (getDB() == null)
+      throw new IllegalArgumentException("DB-name unset.");
+
+    return this;
+  }
 }

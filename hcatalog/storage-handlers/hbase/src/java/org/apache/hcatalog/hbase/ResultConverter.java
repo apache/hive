@@ -21,7 +21,7 @@ package org.apache.hcatalog.hbase;
 
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
-import org.apache.hcatalog.data.HCatRecord;
+import org.apache.hive.hcatalog.data.HCatRecord;
 
 import java.io.IOException;
 
@@ -32,27 +32,27 @@ import java.io.IOException;
  */
 interface ResultConverter {
 
-    /**
-     * convert HCatRecord instance to an HBase Put, used when writing out data.
-     * @param record instance to convert
-     * @return converted Put instance
-     * @throws IOException
-     */
-    Put convert(HCatRecord record) throws IOException;
+  /**
+   * convert HCatRecord instance to an HBase Put, used when writing out data.
+   * @param record instance to convert
+   * @return converted Put instance
+   * @throws IOException
+   */
+  Put convert(HCatRecord record) throws IOException;
 
-    /**
-     * convert HBase Result to HCatRecord instance, used when reading data.
-     * @param result instance to convert
-     * @return converted Result instance
-     * @throws IOException
-     */
-    HCatRecord convert(Result result) throws IOException;
+  /**
+   * convert HBase Result to HCatRecord instance, used when reading data.
+   * @param result instance to convert
+   * @return converted Result instance
+   * @throws IOException
+   */
+  HCatRecord convert(Result result) throws IOException;
 
-    /**
-     * Returns the hbase columns that are required for the scan.
-     * @return String containing hbase columns delimited by space.
-     * @throws IOException
-     */
-    String getHBaseScanColumns() throws IOException;
+  /**
+   * Returns the hbase columns that are required for the scan.
+   * @return String containing hbase columns delimited by space.
+   * @throws IOException
+   */
+  String getHBaseScanColumns() throws IOException;
 
 }

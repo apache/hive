@@ -36,11 +36,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  */
 @Description(name = "index", value = "_FUNC_(a, n) - Returns the n-th element of a ")
 public class GenericUDFIndex extends GenericUDF {
-  private MapObjectInspector mapOI;
+  private transient MapObjectInspector mapOI;
   private boolean mapKeyPreferWritable;
-  private ListObjectInspector listOI;
-  private PrimitiveObjectInspector indexOI;
-  private ObjectInspector returnOI;
+  private transient ListObjectInspector listOI;
+  private transient PrimitiveObjectInspector indexOI;
+  private transient ObjectInspector returnOI;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {

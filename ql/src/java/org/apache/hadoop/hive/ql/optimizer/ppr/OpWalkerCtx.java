@@ -26,10 +26,9 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 
 /**
  * Context class for operator tree walker for partition pruner.
+ * TODO: this class may be not useful.
  */
 public class OpWalkerCtx implements NodeProcessorCtx {
-
-  private boolean hasNonPartCols;
 
   /**
    * Map from tablescan operator to partition pruning predicate that is
@@ -42,18 +41,9 @@ public class OpWalkerCtx implements NodeProcessorCtx {
    */
   public OpWalkerCtx(HashMap<TableScanOperator, ExprNodeDesc> opToPartPruner) {
     this.opToPartPruner = opToPartPruner;
-    hasNonPartCols = false;
   }
 
   public HashMap<TableScanOperator, ExprNodeDesc> getOpToPartPruner() {
     return opToPartPruner;
-  }
-
-  public void addHasNonPartCols(boolean val) {
-    hasNonPartCols = (hasNonPartCols || val);
-  }
-
-  public boolean getHasNonPartCols() {
-    return hasNonPartCols;
   }
 }

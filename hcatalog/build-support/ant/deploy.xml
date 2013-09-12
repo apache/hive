@@ -69,7 +69,7 @@
       <_mvnpublish module="testutils" />
     </target>
 
-    <target name="mvn-init" unless="mvn-init.complete" description="Get Maven Ant Tasts jar and deploy all Hive jars to local Maven repo">
+    <target name="mvn-init" unless="mvn-init.complete" description="Get Maven Ant Tasks jar and deploy all Hive jars to local Maven repo">
         <echo message="${ant.project.name}"/>
         <get src="${mvnrepo}/org/apache/maven/maven-ant-tasks/${maven-ant-tasks.version}/maven-ant-tasks-${maven-ant-tasks.version}.jar"
              dest="${path.to.basedir}/build/maven-ant-tasks-${maven-ant-tasks.version}.jar"
@@ -80,7 +80,7 @@
                  classpath="${path.to.basedir}/build/maven-ant-tasks-${maven-ant-tasks.version}.jar"/>
         <antcall target="hive-mvn-publish" />
         <artifact:dependencies>
-            <dependency groupId="org.apache.hcatalog" artifactId="hcatalog" version="${hcatalog.version}" scope="system" systemPath="${path.to.basedir}/pom.xml"/>
+            <dependency groupId="org.apache.hive.hcatalog" artifactId="hcatalog" version="${hcatalog.version}" scope="system" systemPath="${path.to.basedir}/pom.xml"/>
             <artifact:localRepository path="${mvn.local.repo}"/>
         </artifact:dependencies>
         <artifact:pom id="mvn.pom" file="pom.xml">

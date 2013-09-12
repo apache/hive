@@ -289,22 +289,6 @@ class Order
   ::Thrift::Struct.generate_accessors self
 end
 
-class SkewedValueList
-  include ::Thrift::Struct, ::Thrift::Struct_Union
-  SKEWEDVALUELIST = 1
-
-  FIELDS = {
-    SKEWEDVALUELIST => {:type => ::Thrift::Types::LIST, :name => 'skewedValueList', :element => {:type => ::Thrift::Types::STRING}}
-  }
-
-  def struct_fields; FIELDS; end
-
-  def validate
-  end
-
-  ::Thrift::Struct.generate_accessors self
-end
-
 class SkewedInfo
   include ::Thrift::Struct, ::Thrift::Struct_Union
   SKEWEDCOLNAMES = 1
@@ -314,7 +298,7 @@ class SkewedInfo
   FIELDS = {
     SKEWEDCOLNAMES => {:type => ::Thrift::Types::LIST, :name => 'skewedColNames', :element => {:type => ::Thrift::Types::STRING}},
     SKEWEDCOLVALUES => {:type => ::Thrift::Types::LIST, :name => 'skewedColValues', :element => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRING}}},
-    SKEWEDCOLVALUELOCATIONMAPS => {:type => ::Thrift::Types::MAP, :name => 'skewedColValueLocationMaps', :key => {:type => ::Thrift::Types::STRUCT, :class => ::SkewedValueList}, :value => {:type => ::Thrift::Types::STRING}}
+    SKEWEDCOLVALUELOCATIONMAPS => {:type => ::Thrift::Types::MAP, :name => 'skewedColValueLocationMaps', :key => {:type => ::Thrift::Types::LIST, :element => {:type => ::Thrift::Types::STRING}}, :value => {:type => ::Thrift::Types::STRING}}
   }
 
   def struct_fields; FIELDS; end

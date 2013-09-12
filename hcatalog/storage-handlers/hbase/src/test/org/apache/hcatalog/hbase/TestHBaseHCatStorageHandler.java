@@ -36,8 +36,8 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hcatalog.cli.HCatDriver;
-import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
+import org.apache.hive.hcatalog.cli.HCatDriver;
+import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hcatalog.hbase.snapshot.RevisionManager;
 import org.apache.hcatalog.hbase.snapshot.RevisionManagerConfiguration;
 import org.apache.zookeeper.KeeperException.NoNodeException;
@@ -45,197 +45,197 @@ import org.junit.Test;
 
 public class TestHBaseHCatStorageHandler extends SkeletonHBaseTest {
 
-    private static HiveConf   hcatConf;
-    private static HCatDriver hcatDriver;
-    private static Warehouse  wh;
+  private static HiveConf   hcatConf;
+  private static HCatDriver hcatDriver;
+  private static Warehouse  wh;
 
-    public void Initialize() throws Exception {
+  public void Initialize() throws Exception {
 
-        hcatConf = getHiveConf();
-        hcatConf.set(ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
-                HCatSemanticAnalyzer.class.getName());
-        URI fsuri = getFileSystem().getUri();
-        Path whPath = new Path(fsuri.getScheme(), fsuri.getAuthority(),
-                getTestDir());
-        hcatConf.set(HiveConf.ConfVars.HADOOPFS.varname, fsuri.toString());
-        hcatConf.set(ConfVars.METASTOREWAREHOUSE.varname, whPath.toString());
+    hcatConf = getHiveConf();
+    hcatConf.set(ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
+        HCatSemanticAnalyzer.class.getName());
+    URI fsuri = getFileSystem().getUri();
+    Path whPath = new Path(fsuri.getScheme(), fsuri.getAuthority(),
+        getTestDir());
+    hcatConf.set(HiveConf.ConfVars.HADOOPFS.varname, fsuri.toString());
+    hcatConf.set(ConfVars.METASTOREWAREHOUSE.varname, whPath.toString());
 
-        //Add hbase properties
-        for (Map.Entry<String, String> el : getHbaseConf()) {
-            if (el.getKey().startsWith("hbase.")) {
-                hcatConf.set(el.getKey(), el.getValue());
-            }
-        }
-        HBaseConfiguration.merge(
-                hcatConf,
-                RevisionManagerConfiguration.create());
-
-        SessionState.start(new CliSessionState(hcatConf));
-        hcatDriver = new HCatDriver();
-
+    //Add hbase properties
+    for (Map.Entry<String, String> el : getHbaseConf()) {
+      if (el.getKey().startsWith("hbase.")) {
+        hcatConf.set(el.getKey(), el.getValue());
+      }
     }
+    HBaseConfiguration.merge(
+        hcatConf,
+        RevisionManagerConfiguration.create());
 
-    @Test
-    public void testTableCreateDrop() throws Exception {
-        Initialize();
+    SessionState.start(new CliSessionState(hcatConf));
+    hcatDriver = new HCatDriver();
 
-        hcatDriver.run("drop table test_table");
-        CommandProcessorResponse response = hcatDriver
-                .run("create table test_table(key int, value string) STORED BY " +
-                		     "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
-                    + "TBLPROPERTIES ('hbase.columns.mapping'=':key,cf1:val')");
+  }
 
-        assertEquals(0, response.getResponseCode());
+  @Test
+  public void testTableCreateDrop() throws Exception {
+    Initialize();
 
-        HBaseAdmin hAdmin = new HBaseAdmin(getHbaseConf());
-        boolean doesTableExist = hAdmin.tableExists("test_table");
-
-        assertTrue(doesTableExist);
-
-        RevisionManager rm = HBaseRevisionManagerUtil.getOpenedRevisionManager(hcatConf);
-        rm.open();
-        //Should be able to successfully query revision manager
-        rm.getAbortedWriteTransactions("test_table", "cf1");
-
-        hcatDriver.run("drop table test_table");
-        doesTableExist = hAdmin.tableExists("test_table");
-        assertTrue(doesTableExist == false);
-
-        try {
-            rm.getAbortedWriteTransactions("test_table", "cf1");
-        } catch (Exception e) {
-            assertTrue(e.getCause() instanceof NoNodeException);
-        }
-        rm.close();
-
-    }
-
-    @Test
-    public void testTableCreateDropDifferentCase() throws Exception {
-        Initialize();
-
-        hcatDriver.run("drop table test_Table");
-        CommandProcessorResponse response = hcatDriver
-                .run("create table test_Table(key int, value string) STORED BY " +
-                             "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
-                    + "TBLPROPERTIES ('hbase.columns.mapping'=':key,cf1:val')");
-
-        assertEquals(0, response.getResponseCode());
-
-        //HBase table gets created with lower case unless specified as a table property.
-        HBaseAdmin hAdmin = new HBaseAdmin(getHbaseConf());
-        boolean doesTableExist = hAdmin.tableExists("test_table");
-
-        assertTrue(doesTableExist);
-
-        RevisionManager rm = HBaseRevisionManagerUtil.getOpenedRevisionManager(hcatConf);
-        rm.open();
-        //Should be able to successfully query revision manager
-        rm.getAbortedWriteTransactions("test_table", "cf1");
-
-        hcatDriver.run("drop table test_table");
-        doesTableExist = hAdmin.tableExists("test_table");
-        assertTrue(doesTableExist == false);
-
-        try {
-            rm.getAbortedWriteTransactions("test_table", "cf1");
-        } catch (Exception e) {
-            assertTrue(e.getCause() instanceof NoNodeException);
-        }
-        rm.close();
-
-    }
-
-    @Test
-    public void testTableCreateDropCaseSensitive() throws Exception {
-        Initialize();
-
-        hcatDriver.run("drop table test_Table");
-        CommandProcessorResponse response = hcatDriver
-                .run("create table test_Table(key int, value string) STORED BY " +
-                             "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
-                    + "TBLPROPERTIES ('hbase.columns.mapping'=':key,cf1:val'," +
-                    " 'hbase.table.name'='CaseSensitiveTable')");
-
-        assertEquals(0, response.getResponseCode());
-
-        HBaseAdmin hAdmin = new HBaseAdmin(getHbaseConf());
-        boolean doesTableExist = hAdmin.tableExists("CaseSensitiveTable");
-
-        assertTrue(doesTableExist);
-
-        RevisionManager rm = HBaseRevisionManagerUtil.getOpenedRevisionManager(hcatConf);
-        rm.open();
-        //Should be able to successfully query revision manager
-        rm.getAbortedWriteTransactions("CaseSensitiveTable", "cf1");
-
-        hcatDriver.run("drop table test_table");
-        doesTableExist = hAdmin.tableExists("CaseSensitiveTable");
-        assertTrue(doesTableExist == false);
-
-        try {
-            rm.getAbortedWriteTransactions("CaseSensitiveTable", "cf1");
-        } catch (Exception e) {
-            assertTrue(e.getCause() instanceof NoNodeException);
-        }
-        rm.close();
-
-    }
-
-    @Test
-    public void testTableDropNonExistent() throws Exception {
-        Initialize();
-
-        hcatDriver.run("drop table mytable");
-        CommandProcessorResponse response = hcatDriver
-                .run("create table mytable(key int, value string) STORED BY " +
+    hcatDriver.run("drop table test_table");
+    CommandProcessorResponse response = hcatDriver
+        .run("create table test_table(key int, value string) STORED BY " +
                      "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
-                    + "TBLPROPERTIES ('hbase.columns.mapping'=':key,cf1:val')");
+          + "TBLPROPERTIES ('hbase.columns.mapping'=':key,cf1:val')");
 
-        assertEquals(0, response.getResponseCode());
+    assertEquals(0, response.getResponseCode());
 
-        HBaseAdmin hAdmin = new HBaseAdmin(getHbaseConf());
-        boolean doesTableExist = hAdmin.tableExists("mytable");
-        assertTrue(doesTableExist);
+    HBaseAdmin hAdmin = new HBaseAdmin(getHbaseConf());
+    boolean doesTableExist = hAdmin.tableExists("test_table");
 
-        //Now delete the table from hbase
-        if (hAdmin.isTableEnabled("mytable")) {
-            hAdmin.disableTable("mytable");
-        }
-        hAdmin.deleteTable("mytable");
-        doesTableExist = hAdmin.tableExists("mytable");
-        assertTrue(doesTableExist == false);
+    assertTrue(doesTableExist);
 
-        CommandProcessorResponse responseTwo = hcatDriver.run("drop table mytable");
-        assertTrue(responseTwo.getResponseCode() == 0);
+    RevisionManager rm = HBaseRevisionManagerUtil.getOpenedRevisionManager(hcatConf);
+    rm.open();
+    //Should be able to successfully query revision manager
+    rm.getAbortedWriteTransactions("test_table", "cf1");
 
+    hcatDriver.run("drop table test_table");
+    doesTableExist = hAdmin.tableExists("test_table");
+    assertTrue(doesTableExist == false);
+
+    try {
+      rm.getAbortedWriteTransactions("test_table", "cf1");
+    } catch (Exception e) {
+      assertTrue(e.getCause() instanceof NoNodeException);
     }
+    rm.close();
 
-    @Test
-    public void testTableCreateExternal() throws Exception {
+  }
 
-        String tableName = "testTable";
-        HBaseAdmin hAdmin = new HBaseAdmin(getHbaseConf());
+  @Test
+  public void testTableCreateDropDifferentCase() throws Exception {
+    Initialize();
 
-        HTableDescriptor tableDesc = new HTableDescriptor(tableName);
-        tableDesc.addFamily(new HColumnDescriptor(Bytes.toBytes("key")));
-        tableDesc.addFamily(new HColumnDescriptor(Bytes.toBytes("familyone")));
-        tableDesc.addFamily(new HColumnDescriptor(Bytes.toBytes("familytwo")));
+    hcatDriver.run("drop table test_Table");
+    CommandProcessorResponse response = hcatDriver
+        .run("create table test_Table(key int, value string) STORED BY " +
+               "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
+          + "TBLPROPERTIES ('hbase.columns.mapping'=':key,cf1:val')");
 
-        hAdmin.createTable(tableDesc);
-        boolean doesTableExist = hAdmin.tableExists(tableName);
-        assertTrue(doesTableExist);
+    assertEquals(0, response.getResponseCode());
 
-        hcatDriver.run("drop table mytabletwo");
-        CommandProcessorResponse response = hcatDriver
-                .run("create external table mytabletwo(key int, valueone string, valuetwo string) STORED BY " +
-                     "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
-                    + "TBLPROPERTIES ('hbase.columns.mapping'=':key,familyone:val,familytwo:val'," +
-                    "'hbase.table.name'='testTable')");
+    //HBase table gets created with lower case unless specified as a table property.
+    HBaseAdmin hAdmin = new HBaseAdmin(getHbaseConf());
+    boolean doesTableExist = hAdmin.tableExists("test_table");
 
-        assertEquals(0, response.getResponseCode());
+    assertTrue(doesTableExist);
 
+    RevisionManager rm = HBaseRevisionManagerUtil.getOpenedRevisionManager(hcatConf);
+    rm.open();
+    //Should be able to successfully query revision manager
+    rm.getAbortedWriteTransactions("test_table", "cf1");
+
+    hcatDriver.run("drop table test_table");
+    doesTableExist = hAdmin.tableExists("test_table");
+    assertTrue(doesTableExist == false);
+
+    try {
+      rm.getAbortedWriteTransactions("test_table", "cf1");
+    } catch (Exception e) {
+      assertTrue(e.getCause() instanceof NoNodeException);
     }
+    rm.close();
+
+  }
+
+  @Test
+  public void testTableCreateDropCaseSensitive() throws Exception {
+    Initialize();
+
+    hcatDriver.run("drop table test_Table");
+    CommandProcessorResponse response = hcatDriver
+        .run("create table test_Table(key int, value string) STORED BY " +
+               "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
+          + "TBLPROPERTIES ('hbase.columns.mapping'=':key,cf1:val'," +
+          " 'hbase.table.name'='CaseSensitiveTable')");
+
+    assertEquals(0, response.getResponseCode());
+
+    HBaseAdmin hAdmin = new HBaseAdmin(getHbaseConf());
+    boolean doesTableExist = hAdmin.tableExists("CaseSensitiveTable");
+
+    assertTrue(doesTableExist);
+
+    RevisionManager rm = HBaseRevisionManagerUtil.getOpenedRevisionManager(hcatConf);
+    rm.open();
+    //Should be able to successfully query revision manager
+    rm.getAbortedWriteTransactions("CaseSensitiveTable", "cf1");
+
+    hcatDriver.run("drop table test_table");
+    doesTableExist = hAdmin.tableExists("CaseSensitiveTable");
+    assertTrue(doesTableExist == false);
+
+    try {
+      rm.getAbortedWriteTransactions("CaseSensitiveTable", "cf1");
+    } catch (Exception e) {
+      assertTrue(e.getCause() instanceof NoNodeException);
+    }
+    rm.close();
+
+  }
+
+  @Test
+  public void testTableDropNonExistent() throws Exception {
+    Initialize();
+
+    hcatDriver.run("drop table mytable");
+    CommandProcessorResponse response = hcatDriver
+        .run("create table mytable(key int, value string) STORED BY " +
+           "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
+          + "TBLPROPERTIES ('hbase.columns.mapping'=':key,cf1:val')");
+
+    assertEquals(0, response.getResponseCode());
+
+    HBaseAdmin hAdmin = new HBaseAdmin(getHbaseConf());
+    boolean doesTableExist = hAdmin.tableExists("mytable");
+    assertTrue(doesTableExist);
+
+    //Now delete the table from hbase
+    if (hAdmin.isTableEnabled("mytable")) {
+      hAdmin.disableTable("mytable");
+    }
+    hAdmin.deleteTable("mytable");
+    doesTableExist = hAdmin.tableExists("mytable");
+    assertTrue(doesTableExist == false);
+
+    CommandProcessorResponse responseTwo = hcatDriver.run("drop table mytable");
+    assertTrue(responseTwo.getResponseCode() == 0);
+
+  }
+
+  @Test
+  public void testTableCreateExternal() throws Exception {
+
+    String tableName = "testTable";
+    HBaseAdmin hAdmin = new HBaseAdmin(getHbaseConf());
+
+    HTableDescriptor tableDesc = new HTableDescriptor(tableName);
+    tableDesc.addFamily(new HColumnDescriptor(Bytes.toBytes("key")));
+    tableDesc.addFamily(new HColumnDescriptor(Bytes.toBytes("familyone")));
+    tableDesc.addFamily(new HColumnDescriptor(Bytes.toBytes("familytwo")));
+
+    hAdmin.createTable(tableDesc);
+    boolean doesTableExist = hAdmin.tableExists(tableName);
+    assertTrue(doesTableExist);
+
+    hcatDriver.run("drop table mytabletwo");
+    CommandProcessorResponse response = hcatDriver
+        .run("create external table mytabletwo(key int, valueone string, valuetwo string) STORED BY " +
+           "'org.apache.hcatalog.hbase.HBaseHCatStorageHandler'"
+          + "TBLPROPERTIES ('hbase.columns.mapping'=':key,familyone:val,familytwo:val'," +
+          "'hbase.table.name'='testTable')");
+
+    assertEquals(0, response.getResponseCode());
+
+  }
 
 
 }

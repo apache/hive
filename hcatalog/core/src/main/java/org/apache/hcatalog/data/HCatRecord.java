@@ -30,120 +30,122 @@ import org.apache.hcatalog.data.schema.HCatSchema;
  * Note :
  *   HCatRecord is designed only to be used as in-memory representation only.
  *   Don't use it to store data on the physical device.
+
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.HCatRecord} instead
  */
 public abstract class HCatRecord implements HCatRecordable {
 
-    public abstract Object get(String fieldName, HCatSchema recordSchema) throws HCatException;
+  public abstract Object get(String fieldName, HCatSchema recordSchema) throws HCatException;
 
-    public abstract void set(String fieldName, HCatSchema recordSchema, Object value) throws HCatException;
+  public abstract void set(String fieldName, HCatSchema recordSchema, Object value) throws HCatException;
 
-    public abstract void remove(int idx) throws HCatException;
+  public abstract void remove(int idx) throws HCatException;
 
-    public abstract void copy(HCatRecord r) throws HCatException;
+  public abstract void copy(HCatRecord r) throws HCatException;
 
-    protected Object get(String fieldName, HCatSchema recordSchema, Class clazz) throws HCatException {
-        // TODO : if needed, verify that recordschema entry for fieldname matches appropriate type.
-        return get(fieldName, recordSchema);
-    }
+  protected Object get(String fieldName, HCatSchema recordSchema, Class clazz) throws HCatException {
+    // TODO : if needed, verify that recordschema entry for fieldname matches appropriate type.
+    return get(fieldName, recordSchema);
+  }
 
-    public Boolean getBoolean(String fieldName, HCatSchema recordSchema) throws HCatException {
-        return (Boolean) get(fieldName, recordSchema, Boolean.class);
-    }
+  public Boolean getBoolean(String fieldName, HCatSchema recordSchema) throws HCatException {
+    return (Boolean) get(fieldName, recordSchema, Boolean.class);
+  }
 
-    public void setBoolean(String fieldName, HCatSchema recordSchema, Boolean value) throws HCatException {
-        set(fieldName, recordSchema, value);
-    }
+  public void setBoolean(String fieldName, HCatSchema recordSchema, Boolean value) throws HCatException {
+    set(fieldName, recordSchema, value);
+  }
 
-    public byte[] getByteArray(String fieldName, HCatSchema recordSchema) throws HCatException {
-        return (byte[]) get(fieldName, recordSchema, byte[].class);
-    }
+  public byte[] getByteArray(String fieldName, HCatSchema recordSchema) throws HCatException {
+    return (byte[]) get(fieldName, recordSchema, byte[].class);
+  }
 
-    public void setByteArray(String fieldName, HCatSchema recordSchema, byte[] value) throws HCatException {
-        set(fieldName, recordSchema, value);
-    }
+  public void setByteArray(String fieldName, HCatSchema recordSchema, byte[] value) throws HCatException {
+    set(fieldName, recordSchema, value);
+  }
 
-    public Byte getByte(String fieldName, HCatSchema recordSchema) throws HCatException {
-        //TINYINT
-        return (Byte) get(fieldName, recordSchema, Byte.class);
-    }
+  public Byte getByte(String fieldName, HCatSchema recordSchema) throws HCatException {
+    //TINYINT
+    return (Byte) get(fieldName, recordSchema, Byte.class);
+  }
 
-    public void setByte(String fieldName, HCatSchema recordSchema, Byte value) throws HCatException {
-        set(fieldName, recordSchema, value);
-    }
+  public void setByte(String fieldName, HCatSchema recordSchema, Byte value) throws HCatException {
+    set(fieldName, recordSchema, value);
+  }
 
-    public Short getShort(String fieldName, HCatSchema recordSchema) throws HCatException {
-        // SMALLINT
-        return (Short) get(fieldName, recordSchema, Short.class);
-    }
+  public Short getShort(String fieldName, HCatSchema recordSchema) throws HCatException {
+    // SMALLINT
+    return (Short) get(fieldName, recordSchema, Short.class);
+  }
 
-    public void setShort(String fieldName, HCatSchema recordSchema, Short value) throws HCatException {
-        set(fieldName, recordSchema, value);
-    }
+  public void setShort(String fieldName, HCatSchema recordSchema, Short value) throws HCatException {
+    set(fieldName, recordSchema, value);
+  }
 
-    public Integer getInteger(String fieldName, HCatSchema recordSchema) throws HCatException {
-        return (Integer) get(fieldName, recordSchema, Integer.class);
-    }
+  public Integer getInteger(String fieldName, HCatSchema recordSchema) throws HCatException {
+    return (Integer) get(fieldName, recordSchema, Integer.class);
+  }
 
-    public void setInteger(String fieldName, HCatSchema recordSchema, Integer value) throws HCatException {
-        set(fieldName, recordSchema, value);
-    }
+  public void setInteger(String fieldName, HCatSchema recordSchema, Integer value) throws HCatException {
+    set(fieldName, recordSchema, value);
+  }
 
-    public Long getLong(String fieldName, HCatSchema recordSchema) throws HCatException {
-        // BIGINT
-        return (Long) get(fieldName, recordSchema, Long.class);
-    }
+  public Long getLong(String fieldName, HCatSchema recordSchema) throws HCatException {
+    // BIGINT
+    return (Long) get(fieldName, recordSchema, Long.class);
+  }
 
-    public void setLong(String fieldName, HCatSchema recordSchema, Long value) throws HCatException {
-        set(fieldName, recordSchema, value);
-    }
+  public void setLong(String fieldName, HCatSchema recordSchema, Long value) throws HCatException {
+    set(fieldName, recordSchema, value);
+  }
 
-    public Float getFloat(String fieldName, HCatSchema recordSchema) throws HCatException {
-        return (Float) get(fieldName, recordSchema, Float.class);
-    }
+  public Float getFloat(String fieldName, HCatSchema recordSchema) throws HCatException {
+    return (Float) get(fieldName, recordSchema, Float.class);
+  }
 
-    public void setFloat(String fieldName, HCatSchema recordSchema, Float value) throws HCatException {
-        set(fieldName, recordSchema, value);
-    }
+  public void setFloat(String fieldName, HCatSchema recordSchema, Float value) throws HCatException {
+    set(fieldName, recordSchema, value);
+  }
 
-    public Double getDouble(String fieldName, HCatSchema recordSchema) throws HCatException {
-        return (Double) get(fieldName, recordSchema, Double.class);
-    }
+  public Double getDouble(String fieldName, HCatSchema recordSchema) throws HCatException {
+    return (Double) get(fieldName, recordSchema, Double.class);
+  }
 
-    public void setDouble(String fieldName, HCatSchema recordSchema, Double value) throws HCatException {
-        set(fieldName, recordSchema, value);
-    }
+  public void setDouble(String fieldName, HCatSchema recordSchema, Double value) throws HCatException {
+    set(fieldName, recordSchema, value);
+  }
 
-    public String getString(String fieldName, HCatSchema recordSchema) throws HCatException {
-        return (String) get(fieldName, recordSchema, String.class);
-    }
+  public String getString(String fieldName, HCatSchema recordSchema) throws HCatException {
+    return (String) get(fieldName, recordSchema, String.class);
+  }
 
-    public void setString(String fieldName, HCatSchema recordSchema, String value) throws HCatException {
-        set(fieldName, recordSchema, value);
-    }
+  public void setString(String fieldName, HCatSchema recordSchema, String value) throws HCatException {
+    set(fieldName, recordSchema, value);
+  }
 
-    @SuppressWarnings("unchecked")
-    public List<? extends Object> getStruct(String fieldName, HCatSchema recordSchema) throws HCatException {
-        return (List<? extends Object>) get(fieldName, recordSchema, List.class);
-    }
+  @SuppressWarnings("unchecked")
+  public List<? extends Object> getStruct(String fieldName, HCatSchema recordSchema) throws HCatException {
+    return (List<? extends Object>) get(fieldName, recordSchema, List.class);
+  }
 
-    public void setStruct(String fieldName, HCatSchema recordSchema, List<? extends Object> value) throws HCatException {
-        set(fieldName, recordSchema, value);
-    }
+  public void setStruct(String fieldName, HCatSchema recordSchema, List<? extends Object> value) throws HCatException {
+    set(fieldName, recordSchema, value);
+  }
 
-    public List<?> getList(String fieldName, HCatSchema recordSchema) throws HCatException {
-        return (List<?>) get(fieldName, recordSchema, List.class);
-    }
+  public List<?> getList(String fieldName, HCatSchema recordSchema) throws HCatException {
+    return (List<?>) get(fieldName, recordSchema, List.class);
+  }
 
-    public void setList(String fieldName, HCatSchema recordSchema, List<?> value) throws HCatException {
-        set(fieldName, recordSchema, value);
-    }
+  public void setList(String fieldName, HCatSchema recordSchema, List<?> value) throws HCatException {
+    set(fieldName, recordSchema, value);
+  }
 
-    public Map<?, ?> getMap(String fieldName, HCatSchema recordSchema) throws HCatException {
-        return (Map<?, ?>) get(fieldName, recordSchema, Map.class);
-    }
+  public Map<?, ?> getMap(String fieldName, HCatSchema recordSchema) throws HCatException {
+    return (Map<?, ?>) get(fieldName, recordSchema, Map.class);
+  }
 
-    public void setMap(String fieldName, HCatSchema recordSchema, Map<?, ?> value) throws HCatException {
-        set(fieldName, recordSchema, value);
-    }
+  public void setMap(String fieldName, HCatSchema recordSchema, Map<?, ?> value) throws HCatException {
+    set(fieldName, recordSchema, value);
+  }
 
 }

@@ -1,0 +1,86 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+package org.apache.hcatalog.cli;
+
+import static org.junit.Assert.assertEquals;
+
+import org.apache.hadoop.hive.cli.CliSessionState;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
+import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.ql.CommandNeedRetryException;
+import org.apache.hadoop.hive.ql.Driver;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
+import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
+import org.apache.hcatalog.common.HCatConstants;
+import org.apache.thrift.TException;
+
+import junit.framework.TestCase;
+
+public class TestStorageHandlerProperties extends TestCase {
+
+    private Driver hcatDriver;
+    private Driver hiveDriver;
+    private HiveMetaStoreClient msc;
+
+    protected void setUp() throws Exception {
+        HiveConf hcatConf = new HiveConf(this.getClass());
+        hcatConf.set(ConfVars.PREEXECHOOKS.varname, "");
+        hcatConf.set(ConfVars.POSTEXECHOOKS.varname, "");
+        hcatConf.set(ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
+
+        HiveConf hiveConf = new HiveConf(hcatConf,this.getClass());
+        hiveDriver = new Driver(hiveConf);
+
+        hcatConf.set(ConfVars.SEMANTIC_ANALYZER_HOOK.varname, HCatSemanticAnalyzer.class.getName());
+        hcatDriver = new Driver(hcatConf);
+
+        msc = new HiveMetaStoreClient(hcatConf);
+        SessionState.start(new CliSessionState(hcatConf));
+    }
+
+    public void testTableProperties() throws CommandNeedRetryException, MetaException ,TException, NoSuchObjectException{
+        hcatDriver.run("drop table test_table");
+        CommandProcessorResponse response = hcatDriver
+                .run("create table test_table(key int, value string) STORED BY " +
+                     "'org.apache.hcatalog.cli.DummyStorageHandler' ");
+
+        assertEquals(0, response.getResponseCode());
+        Table tbl = msc.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "test_table");
+        DummyStorageHandler dsh = new DummyStorageHandler();
+        assertTrue(tbl.getParameters().containsKey(HCatConstants.HCAT_ISD_CLASS));
+        assertTrue(tbl.getParameters().containsKey(HCatConstants.HCAT_OSD_CLASS));
+        assertEquals(tbl.getParameters().get(HCatConstants.HCAT_ISD_CLASS), dsh.getInputStorageDriver().getName());
+        assertEquals(tbl.getParameters().get(HCatConstants.HCAT_OSD_CLASS), dsh.getOutputStorageDriver().getName());
+    }
+
+    /* @throws java.lang.Exception
+     * @see junit.framework.TestCase#tearDown()
+     */
+    protected void tearDown() throws Exception {
+        super.tearDown();
+    }
+
+}

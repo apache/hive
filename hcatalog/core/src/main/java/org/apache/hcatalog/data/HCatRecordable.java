@@ -24,33 +24,34 @@ import org.apache.hadoop.io.Writable;
 
 /**
  * Interface that determines whether we can implement a HCatRecord on top of it
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.HCatRecordable} instead
  */
 public interface HCatRecordable extends Writable {
 
-    /**
-     * Gets the field at the specified index.
-     * @param fieldNum the field number
-     * @return the object at the specified index
-     */
-    Object get(int fieldNum);
+  /**
+   * Gets the field at the specified index.
+   * @param fieldNum the field number
+   * @return the object at the specified index
+   */
+  Object get(int fieldNum);
 
-    /**
-     * Gets all the fields of the hcat record.
-     * @return the list of fields
-     */
-    List<Object> getAll();
+  /**
+   * Gets all the fields of the hcat record.
+   * @return the list of fields
+   */
+  List<Object> getAll();
 
-    /**
-     * Sets the field at the specified index.
-     * @param fieldNum the field number
-     * @param value the value to set
-     */
-    void set(int fieldNum, Object value);
+  /**
+   * Sets the field at the specified index.
+   * @param fieldNum the field number
+   * @param value the value to set
+   */
+  void set(int fieldNum, Object value);
 
-    /**
-     * Gets the size of the hcat record.
-     * @return the size
-     */
-    int size();
+  /**
+   * Gets the size of the hcat record.
+   * @return the size
+   */
+  int size();
 
 }

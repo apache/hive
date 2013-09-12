@@ -177,6 +177,7 @@ public class HiveConf extends Configuration {
     // QL execution stuff
     SCRIPTWRAPPER("hive.exec.script.wrapper", null),
     PLAN("hive.exec.plan", ""),
+    PLAN_SERIALIZATION("hive.plan.serialization.format","kryo"),
     SCRATCHDIR("hive.exec.scratchdir", "/tmp/hive-" + System.getProperty("user.name")),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir", System.getProperty("java.io.tmpdir") + File.separator + System.getProperty("user.name")),
     SUBMITVIACHILD("hive.exec.submitviachild", false),
@@ -505,9 +506,8 @@ public class HiveConf extends Configuration {
 
     // Maximum fraction of heap that can be used by ORC file writers
     HIVE_ORC_FILE_MEMORY_POOL("hive.exec.orc.memory.pool", 0.5f), // 50%
-    // use 0.11 version of RLE encoding. if this conf is not defined or any
-    // other value specified, ORC will use the new RLE encoding
-    HIVE_ORC_WRITE_FORMAT("hive.exec.orc.write.format", "0.11"),
+    // Define the version of the file to write
+    HIVE_ORC_WRITE_FORMAT("hive.exec.orc.write.format", null),
 
     HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD("hive.exec.orc.dictionary.key.size.threshold", 0.8f),
 
@@ -525,6 +525,8 @@ public class HiveConf extends Configuration {
     HIVELIMITOPTLIMITFILE("hive.limit.optimize.limit.file", 10),
     HIVELIMITOPTENABLE("hive.limit.optimize.enable", false),
     HIVELIMITOPTMAXFETCH("hive.limit.optimize.fetch.max", 50000),
+    HIVELIMITPUSHDOWNMEMORYUSAGE("hive.limit.pushdown.memory.usage", -1f),
+
     HIVEHASHTABLETHRESHOLD("hive.hashtable.initialCapacity", 100000),
     HIVEHASHTABLELOADFACTOR("hive.hashtable.loadfactor", (float) 0.75),
     HIVEHASHTABLEFOLLOWBYGBYMAXMEMORYUSAGE("hive.mapjoin.followby.gby.localtask.max.memory.usage", (float) 0.55),
@@ -660,6 +662,8 @@ public class HiveConf extends Configuration {
     // 'minimal', 'more' (and 'all' later)
     HIVEFETCHTASKCONVERSION("hive.fetch.task.conversion", "minimal"),
 
+    HIVEFETCHTASKAGGR("hive.fetch.task.aggr", false),
+
     // Serde for FetchTask
     HIVEFETCHOUTPUTSERDE("hive.fetch.output.serde", "org.apache.hadoop.hive.serde2.DelimitedJSONSerDe"),
 
@@ -732,7 +736,13 @@ public class HiveConf extends Configuration {
     HIVE_ENTITY_SEPARATOR("hive.entity.separator", "@"),
 
     HIVE_SERVER2_THRIFT_MIN_WORKER_THREADS("hive.server2.thrift.min.worker.threads", 5),
-    HIVE_SERVER2_THRIFT_MAX_WORKER_THREADS("hive.server2.thrift.max.worker.threads", 100),
+    HIVE_SERVER2_THRIFT_MAX_WORKER_THREADS("hive.server2.thrift.max.worker.threads", 500),
+
+    // Configuration for async thread pool in SessionManager
+    // Number of async threads
+    HIVE_SERVER2_ASYNC_EXEC_THREADS("hive.server2.async.exec.threads", 50),
+    // Number of seconds HiveServer2 shutdown will wait for async threads to terminate
+    HIVE_SERVER2_ASYNC_EXEC_SHUTDOWN_TIMEOUT("hive.server2.async.exec.shutdown.timeout", 10),
 
     HIVE_SERVER2_THRIFT_PORT("hive.server2.thrift.port", 10000),
     HIVE_SERVER2_THRIFT_BIND_HOST("hive.server2.thrift.bind.host", ""),
@@ -749,6 +759,7 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_CUSTOM_AUTHENTICATION_CLASS("hive.server2.custom.authentication.class", null),
     HIVE_SERVER2_ENABLE_DOAS("hive.server2.enable.doAs", true),
     HIVE_SERVER2_TABLE_TYPE_MAPPING("hive.server2.table.type.mapping", "HIVE"),
+    HIVE_SERVER2_SESSION_HOOK("hive.server2.session.hook", ""),
 
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list", null),
 
@@ -789,12 +800,6 @@ public class HiveConf extends Configuration {
 
     // Whether to show the unquoted partition names in query results.
     HIVE_DECODE_PARTITION_NAME("hive.decode.partition.name", false),
-
-    // ptf partition constants
-    HIVE_PTF_PARTITION_PERSISTENCE_CLASS("hive.ptf.partition.persistence",
-      "org.apache.hadoop.hive.ql.exec.PTFPersistence$PartitionedByteBasedList"),
-    HIVE_PTF_PARTITION_PERSISTENT_SIZE("hive.ptf.partition.persistence.memsize",
-      (int) Math.pow(2, (5 + 10 + 10)) ), // 32MB
 
     //Vectorization enabled
     HIVE_VECTORIZATION_ENABLED("hive.vectorized.execution.enabled", false),

@@ -18,11 +18,11 @@
 
 package org.apache.hadoop.hive.ql.udf.generic;
 
-import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -65,13 +65,13 @@ public class GenericUDTFParseUrlTuple extends GenericUDTF {
   PARTNAME[] partnames; // mapping from pathnames to enum PARTNAME
   Text[] retCols; // array of returned column values
   Text[] cols;    // object pool of non-null Text, avoid creating objects all the time
-  Object[] nullCols; // array of null column values
-  ObjectInspector[] inputOIs; // input ObjectInspectors
+  private transient Object[] nullCols; // array of null column values
+  private transient ObjectInspector[] inputOIs; // input ObjectInspectors
   boolean pathParsed = false;
   boolean seenErrors = false;
-  URL url = null;
-  Pattern p = null;
-  String lastKey = null;
+  private transient URL url = null;
+  private transient Pattern p = null;
+  private transient String lastKey = null;
 
   @Override
   public void close() throws HiveException {
@@ -122,7 +122,7 @@ public class GenericUDTFParseUrlTuple extends GenericUDTF {
       // all returned type will be Text
       fieldOIs.add(PrimitiveObjectInspectorFactory.writableStringObjectInspector);
     }
-    
+
     return ObjectInspectorFactory.getStandardStructObjectInspector(fieldNames, fieldOIs);
   }
 
@@ -137,7 +137,7 @@ public class GenericUDTFParseUrlTuple extends GenericUDTF {
     if (!pathParsed) {
         for (int i = 0;i < numCols; ++i) {
           paths[i] = ((StringObjectInspector) inputOIs[i+1]).getPrimitiveJavaObject(o[i+1]);
-          
+
           if (paths[i] == null) {
             partnames[i] = PARTNAME.NULLNAME;
           } else if (paths[i].equals("HOST")) {
@@ -158,11 +158,11 @@ public class GenericUDTFParseUrlTuple extends GenericUDTF {
             partnames[i] = PARTNAME.USERINFO;
           } else if (paths[i].startsWith("QUERY:")) {
             partnames[i] = PARTNAME.QUERY_WITH_KEY;
-            paths[i] = paths[i].substring(6); // update paths[i], e.g., from "QUERY:id" to "id" 
+            paths[i] = paths[i].substring(6); // update paths[i], e.g., from "QUERY:id" to "id"
           } else {
             partnames[i] = PARTNAME.NULLNAME;
-          } 
-      }    
+          }
+      }
       pathParsed = true;
     }
 
@@ -171,9 +171,9 @@ public class GenericUDTFParseUrlTuple extends GenericUDTF {
       forward(nullCols);
       return;
     }
-    
+
     try {
-      String ret = null; 
+      String ret = null;
       url = new URL(urlStr);
       for (int i = 0; i < numCols; ++i) {
         ret = evaluate(url, i);
@@ -188,7 +188,7 @@ public class GenericUDTFParseUrlTuple extends GenericUDTF {
       }
 
       forward(retCols);
-      return;    
+      return;
     } catch (MalformedURLException e) {
       // parsing error, invalid url string
       if (!seenErrors) {
@@ -204,10 +204,11 @@ public class GenericUDTFParseUrlTuple extends GenericUDTF {
   public String toString() {
     return "parse_url_tuple";
   }
-  
+
   private String evaluate(URL url, int index) {
-    if (url == null || index < 0 || index >= partnames.length)
+    if (url == null || index < 0 || index >= partnames.length) {
       return null;
+    }
 
     switch (partnames[index]) {
       case HOST          : return url.getHost();
@@ -239,5 +240,5 @@ public class GenericUDTFParseUrlTuple extends GenericUDTF {
       return m.group(2);
     }
     return null;
-  } 
+  }
 }

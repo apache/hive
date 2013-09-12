@@ -34,8 +34,17 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 public class PerfLogger {
   public static final String ACQUIRE_READ_WRITE_LOCKS = "acquireReadWriteLocks";
   public static final String COMPILE = "compile";
+  public static final String PARSE = "parse";
+  public static final String ANALYZE = "semanticAnalyze";
   public static final String DO_AUTHORIZATION = "doAuthorization";
   public static final String DRIVER_EXECUTE = "Driver.execute";
+  public static final String INPUT_SUMMARY = "getInputSummary";
+  public static final String GET_SPLITS = "getSplits";
+  public static final String RUN_TASKS = "runTasks";
+  public static final String SERIALIZE_PLAN = "serializePlan";
+  public static final String DESERIALIZE_PLAN = "deserializePlan";
+  public static final String CLONE_PLAN = "clonePlan";
+  public static final String TASK = "task.";
   public static final String RELEASE_LOCKS = "releaseLocks";
   public static final String PRUNE_LISTING = "prune-listing";
   public static final String PARTITION_RETRIEVING = "partition-retrieving";

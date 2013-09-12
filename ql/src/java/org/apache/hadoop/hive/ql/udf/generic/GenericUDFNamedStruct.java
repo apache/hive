@@ -35,7 +35,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
     value = "_FUNC_(name1, val1, name2, val2, ...) - Creates a struct with the given " +
             "field names and values")
 public class GenericUDFNamedStruct extends GenericUDF {
-  Object[] ret;
+  private transient Object[] ret;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments)

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 import java.io.IOException;
@@ -118,8 +119,26 @@ public interface Reader {
    * @param include true for each column that should be included
    * @return a new RecordReader that will read the specified rows.
    * @throws IOException
+   * @deprecated
    */
   RecordReader rows(long offset, long length,
                     boolean[] include) throws IOException;
+
+  /**
+   * Create a RecordReader that will read a section of a file. It starts reading
+   * at the first stripe after the offset and continues to the stripe that
+   * starts at offset + length. It also accepts a list of columns to read and a
+   * search argument.
+   * @param offset the minimum offset of the first stripe to read
+   * @param length the distance from offset of the first address to stop reading
+   *               at
+   * @param include true for each column that should be included
+   * @param sarg a search argument that limits the rows that should be read.
+   * @param neededColumns the names of the included columns
+   * @return the record reader for the rows
+   */
+  RecordReader rows(long offset, long length,
+                    boolean[] include, SearchArgument sarg,
+                    String[] neededColumns) throws IOException;
 
 }

@@ -790,6 +790,9 @@
                   <void property="type"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
+                  <void property="typeName"> 
+                   <string>string</string> 
+                  </void> 
                  </object> 
                 </void> 
                </object> 
@@ -833,6 +836,13 @@
           </void> 
          </object> 
         </void> 
+        <void property="neededColumns"> 
+         <object class="java.util.ArrayList"> 
+          <void method="add"> 
+           <string>key</string> 
+          </void> 
+         </object> 
+        </void> 
         <void property="operatorId"> 
          <string>TS_0</string> 
         </void> 
@@ -851,6 +861,9 @@
               <void property="type"> 
                <object idref="PrimitiveTypeInfo0"/> 
               </void> 
+              <void property="typeName"> 
+               <string>string</string> 
+              </void> 
              </object> 
             </void> 
             <void method="add"> 
@@ -863,6 +876,9 @@
               </void> 
               <void property="type"> 
                <object idref="PrimitiveTypeInfo0"/> 
+              </void> 
+              <void property="typeName"> 
+               <string>string</string> 
               </void> 
              </object> 
             </void> 
@@ -884,6 +900,9 @@
                 </void> 
                </object> 
               </void> 
+              <void property="typeName"> 
+               <string>bigint</string> 
+              </void> 
              </object> 
             </void> 
             <void method="add"> 
@@ -899,6 +918,9 @@
               </void> 
               <void property="type"> 
                <object idref="PrimitiveTypeInfo0"/> 
+              </void> 
+              <void property="typeName"> 
+               <string>string</string> 
               </void> 
              </object> 
             </void> 
@@ -1106,6 +1128,9 @@
                   <void property="type"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
+                  <void property="typeName"> 
+                   <string>string</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void method="add"> 
@@ -1118,6 +1143,9 @@
                   </void> 
                   <void property="type"> 
                    <object idref="PrimitiveTypeInfo0"/> 
+                  </void> 
+                  <void property="typeName"> 
+                   <string>string</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -1165,6 +1193,16 @@
           </void> 
          </object> 
         </void> 
+        <void property="neededColumns"> 
+         <object class="java.util.ArrayList"> 
+          <void method="add"> 
+           <string>key</string> 
+          </void> 
+          <void method="add"> 
+           <string>value</string> 
+          </void> 
+         </object> 
+        </void> 
         <void property="operatorId"> 
          <string>TS_1</string> 
         </void> 
@@ -1183,6 +1221,9 @@
               <void property="type"> 
                <object idref="PrimitiveTypeInfo0"/> 
               </void> 
+              <void property="typeName"> 
+               <string>string</string> 
+              </void> 
              </object> 
             </void> 
             <void method="add"> 
@@ -1195,6 +1236,9 @@
               </void> 
               <void property="type"> 
                <object idref="PrimitiveTypeInfo0"/> 
+              </void> 
+              <void property="typeName"> 
+               <string>string</string> 
               </void> 
              </object> 
             </void> 
@@ -1212,6 +1256,9 @@
               <void property="type"> 
                <object idref="PrimitiveTypeInfo1"/> 
               </void> 
+              <void property="typeName"> 
+               <string>bigint</string> 
+              </void> 
              </object> 
             </void> 
             <void method="add"> 
@@ -1227,6 +1274,9 @@
               </void> 
               <void property="type"> 
                <object idref="PrimitiveTypeInfo0"/> 
+              </void> 
+              <void property="typeName"> 
+               <string>string</string> 
               </void> 
              </object> 
             </void> 
@@ -1417,6 +1467,9 @@
                   <void property="type"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
+                  <void property="typeName"> 
+                   <string>string</string> 
+                  </void> 
                  </object> 
                 </void> 
                </object> 
@@ -1460,6 +1513,13 @@
           </void> 
          </object> 
         </void> 
+        <void property="neededColumns"> 
+         <object class="java.util.ArrayList"> 
+          <void method="add"> 
+           <string>key</string> 
+          </void> 
+         </object> 
+        </void> 
         <void property="operatorId"> 
          <string>TS_2</string> 
         </void> 
@@ -1478,6 +1538,9 @@
               <void property="type"> 
                <object idref="PrimitiveTypeInfo0"/> 
               </void> 
+              <void property="typeName"> 
+               <string>string</string> 
+              </void> 
              </object> 
             </void> 
             <void method="add"> 
@@ -1490,6 +1553,9 @@
               </void> 
               <void property="type"> 
                <object idref="PrimitiveTypeInfo0"/> 
+              </void> 
+              <void property="typeName"> 
+               <string>string</string> 
               </void> 
              </object> 
             </void> 
@@ -1507,6 +1573,9 @@
               <void property="type"> 
                <object idref="PrimitiveTypeInfo1"/> 
               </void> 
+              <void property="typeName"> 
+               <string>bigint</string> 
+              </void> 
              </object> 
             </void> 
             <void method="add"> 
@@ -1522,6 +1591,9 @@
               </void> 
               <void property="type"> 
                <object idref="PrimitiveTypeInfo0"/> 
+              </void> 
+              <void property="typeName"> 
+               <string>string</string> 
               </void> 
              </object> 
             </void> 
@@ -1828,6 +1900,9 @@
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
                       </void> 
+                      <void property="typeName"> 
+                       <string>string</string> 
+                      </void> 
                      </object> 
                     </void> 
                     <void method="add"> 
@@ -1840,6 +1915,9 @@
                       </void> 
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
+                      </void> 
+                      <void property="typeName"> 
+                       <string>string</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -1948,6 +2026,9 @@
                   <void property="type"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
+                  <void property="typeName"> 
+                   <string>string</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void method="add"> 
@@ -1960,6 +2041,9 @@
                   </void> 
                   <void property="type"> 
                    <object idref="PrimitiveTypeInfo0"/> 
+                  </void> 
+                  <void property="typeName"> 
+                   <string>string</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -2224,6 +2308,9 @@
               <void property="type"> 
                <object idref="PrimitiveTypeInfo0"/> 
               </void> 
+              <void property="typeName"> 
+               <string>string</string> 
+              </void> 
              </object> 
             </void> 
             <void method="add"> 
@@ -2236,6 +2323,9 @@
               </void> 
               <void property="type"> 
                <object idref="PrimitiveTypeInfo0"/> 
+              </void> 
+              <void property="typeName"> 
+               <string>string</string> 
               </void> 
              </object> 
             </void> 

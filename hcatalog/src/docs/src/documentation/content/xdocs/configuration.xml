@@ -228,7 +228,7 @@ Using localhost in metastore uri does not work with kerberos security.
 
   <tr>
     <td><strong>templeton.storage.class</strong></td>
-    <td><code>org.apache.hcatalog.templeton.tool.ZooKeeperStorage</code></td>
+    <td><code>org.apache.hive.hcatalog.templeton.tool.ZooKeeperStorage</code></td>
     <td>The class to use as storage</td>
   </tr>
 
@@ -285,6 +285,46 @@ Using localhost in metastore uri does not work with kerberos security.
     <td>The keytab file containing the credentials for the Kerberos
         principal.</td>
   </tr>
+
+   <tr>
+     <td><strong>webhcat.proxyuser.#USER#.hosts</strong></td>
+     <td>None</td>
+     <td>List of client hosts from which the '#USER#' user is allowed to perform
+         'doAs' operations.
+
+         The '#USER#' must be replaced with the username of the user who is
+         allowed to perform 'doAs' operations.
+
+         The value can be the '*' wildcard, which means every host is allowed,
+         or a comma-separated list of hostnames.
+
+         If value is a blank string or webhcat.proxyuser.#USER#.hosts is missing,
+         no hosts will be allowed.
+
+         For multiple users copy this property and replace the user name
+         in the property name.</td>
+   </tr>
+   <tr>
+     <td><strong>webhcat.proxyuser.#USER#.groups</strong></td>
+     <td>None</td>
+     <td>List of groups the '#USER#' user is allowed to impersonate users
+         from to perform 'doAs' operations.
+
+         The '#USER#' must be replaced with the username of the user who is
+         allowed to perform 'doAs' operations.
+
+         The value can be the '*' wildcard, which means any doAs value is
+         allowed, or a comma-separated list of groups.
+
+         If value is an empty list or webhcat.proxyuser.#USER#.groups is missing,
+         every doAs call value will fail.
+
+         For multiple users copy this property and replace the user name
+         in the property name.
+
+         The username->usergroup mapping is performed using Hadoop API which is
+         controlled by hadoop.security.group.mapping property.</td>
+    </tr>
 
   </table>
   </section>

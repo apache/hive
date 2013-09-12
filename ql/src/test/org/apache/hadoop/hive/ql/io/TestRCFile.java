@@ -62,6 +62,7 @@ import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
+import org.apache.hadoop.mapred.FileSplit;
 
 /**
  * TestRCFile.
@@ -571,6 +572,50 @@ public class TestRCFile extends TestCase {
     splitInMiddleOfSync();
     splitRightAfterSync();
     splitAfterSync();
+  }
+
+  public void testSync() throws IOException {
+    Path testDir = new Path(System.getProperty("test.data.dir", ".")
+        + "/mapred/testsync");
+    Path testFile = new Path(testDir, "test_rcfile");
+    fs.delete(testFile, true);
+    int intervalRecordCount = 500;
+    CompressionCodec codec = null;
+    int writeCount = 2500;
+    Configuration cloneConf = new Configuration(conf);
+    RCFileOutputFormat.setColumnNumber(cloneConf, bytesArray.length);
+    cloneConf.setInt(RCFile.RECORD_INTERVAL_CONF_STR, intervalRecordCount);
+    RCFile.Writer writer = new RCFile.Writer(fs, cloneConf, testFile, null, codec);    
+
+    BytesRefArrayWritable bytes = new BytesRefArrayWritable(bytesArray.length);
+    for (int i = 0; i < bytesArray.length; i++) {
+      BytesRefWritable cu = null;
+      cu = new BytesRefWritable(bytesArray[i], 0, bytesArray[i].length);
+      bytes.set(i, cu);
+    }
+    for (int i = 0; i < writeCount; i++) {
+      writer.append(bytes);
+    }
+    writer.close();
+    long fileLen = fs.getFileStatus(testFile).getLen();
+
+    RCFileInputFormat inputFormat = new RCFileInputFormat();
+    JobConf jobconf = new JobConf(cloneConf);
+    jobconf.set("mapred.input.dir", testDir.toString());
+    jobconf.setLong("mapred.min.split.size", fileLen);
+    InputSplit[] splits = inputFormat.getSplits(jobconf, 1);
+    RCFileRecordReader rr = new RCFileRecordReader(jobconf, (FileSplit)splits[0]);
+    long lastSync = 0; 
+    for(int i = 0; i < 2500; i++) {
+      rr.sync(i);
+      if(rr.getPos() < lastSync) {
+        String reason = String.format("Sync at offset %d skipped sync block at location %d (returned %d instead)", i-1, rr.getPos(), lastSync);
+        System.out.println(reason);
+        fail(reason);
+      }
+      lastSync = rr.getPos();
+    }
+    rr.close();
   }
 
   private void splitBeforeSync() throws IOException {
