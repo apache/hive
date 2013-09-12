@@ -35,8 +35,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 import org.apache.hadoop.hive.serde2.thrift.ConfigurableTProtocol;
 import org.apache.hadoop.hive.serde2.thrift.TReflectionUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.ParameterizedPrimitiveTypeUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -173,9 +175,9 @@ public class DynamicSerDe extends AbstractSerDe {
           dynamicSerDeStructBaseToObjectInspector(btMap.getKeyType()),
           dynamicSerDeStructBaseToObjectInspector(btMap.getValueType()));
     } else if (bt.isPrimitive()) {
-      return PrimitiveObjectInspectorFactory
-          .getPrimitiveJavaObjectInspector(PrimitiveObjectInspectorUtils
-          .getTypeEntryFromPrimitiveJavaClass(bt.getRealType()).primitiveCategory);
+      PrimitiveTypeEntry pte = PrimitiveObjectInspectorUtils
+          .getTypeEntryFromPrimitiveJavaClass(bt.getRealType());
+      return PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(pte);
     } else {
       // Must be a struct
       DynamicSerDeStructBase btStruct = (DynamicSerDeStructBase) bt;

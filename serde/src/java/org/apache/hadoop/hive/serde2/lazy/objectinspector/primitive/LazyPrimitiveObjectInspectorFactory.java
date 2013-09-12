@@ -21,7 +21,11 @@ package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.BaseTypeParams;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeSpec;
 
 /**
  * LazyPrimitiveObjectInspectorFactory is the primary way to create new
@@ -79,9 +83,32 @@ public final class LazyPrimitiveObjectInspectorFactory {
     return result;
   }
 
+  static PrimitiveObjectInspectorUtils.ParameterizedObjectInspectorMap
+    cachedParameterizedLazyObjectInspectors =
+      new PrimitiveObjectInspectorUtils.ParameterizedObjectInspectorMap();
+
+  public static PrimitiveObjectInspector getParameterizedObjectInspector(
+      PrimitiveTypeSpec typeSpec) {
+    PrimitiveCategory primitiveCategory = typeSpec.getPrimitiveCategory();
+    BaseTypeParams typeParams = typeSpec.getTypeParams();
+    PrimitiveObjectInspector poi =
+        cachedParameterizedLazyObjectInspectors.getObjectInspector(typeSpec);
+    if (poi == null) {
+      // Object inspector hasn't been cached for this type/params yet, create now
+      switch (primitiveCategory) {
+        // Get type entry for parameterized type, and create new object inspector for type
+        // Currently no parameterized types
+
+        default:
+          throw new RuntimeException(
+              "Primitve type " + primitiveCategory + " should not take parameters");
+      }
+    }
+
+    return poi;
+  }
   public static AbstractPrimitiveLazyObjectInspector<?> getLazyObjectInspector(
       PrimitiveCategory primitiveCategory, boolean escaped, byte escapeChar) {
-
     switch (primitiveCategory) {
     case BOOLEAN:
       return LAZY_BOOLEAN_OBJECT_INSPECTOR;
@@ -112,6 +139,23 @@ public final class LazyPrimitiveObjectInspectorFactory {
     default:
       throw new RuntimeException("Internal error: Cannot find ObjectInspector "
           + " for " + primitiveCategory);
+    }
+  }
+
+  public static AbstractPrimitiveLazyObjectInspector<?> getLazyObjectInspector(
+      PrimitiveTypeSpec typeSpec, boolean escaped, byte escapeChar) {
+    PrimitiveCategory primitiveCategory = typeSpec.getPrimitiveCategory();
+    BaseTypeParams typeParams = typeSpec.getTypeParams();
+
+    if (typeParams == null) {
+      return getLazyObjectInspector(primitiveCategory, escaped, escapeChar);
+    } else {
+      switch(primitiveCategory) {
+        // call getParameterizedObjectInspector(). But no parameterized types yet
+
+        default:
+          throw new RuntimeException("Type " + primitiveCategory + " does not take parameters");
+      }
     }
   }
 
