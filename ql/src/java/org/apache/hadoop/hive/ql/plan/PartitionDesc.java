@@ -74,7 +74,7 @@ public class PartitionDesc implements Serializable, Cloneable {
     this.inputFileFormatClass = inputFileFormatClass;
     if (outputFormat != null) {
       outputFileFormatClass = HiveFileFormatUtils
-          .getOutputFormatSubstitute(outputFormat);
+          .getOutputFormatSubstitute(outputFormat,false);
     }
     if (serdeClassName != null) {
       this.serdeClassName = serdeClassName;
@@ -177,7 +177,7 @@ public class PartitionDesc implements Serializable, Cloneable {
 
   public void setOutputFileFormatClass(final Class<?> outputFileFormatClass) {
     this.outputFileFormatClass = HiveFileFormatUtils
-        .getOutputFormatSubstitute(outputFileFormatClass);
+        .getOutputFormatSubstitute(outputFileFormatClass,false);
   }
 
   @Explain(displayName = "properties", normalExplain = false)

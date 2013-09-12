@@ -314,7 +314,7 @@ public class Table implements Serializable {
 
   final public Class<? extends HiveOutputFormat> getOutputFormatClass() {
     // Replace FileOutputFormat for backward compatibility
-
+    boolean storagehandler = false;
     if (outputFormatClass == null) {
       try {
         String className = tTable.getSd().getOutputFormat();
@@ -329,7 +329,13 @@ public class Table implements Serializable {
             JavaUtils.getClassLoader());
         }
         if (!HiveOutputFormat.class.isAssignableFrom(c)) {
-          outputFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(c);
+          if (getStorageHandler() != null) {
+            storagehandler = true;
+          }
+          else {
+            storagehandler = false;
+          }
+          outputFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(c,storagehandler);
         } else {
           outputFormatClass = (Class<? extends HiveOutputFormat>)c;
         }
@@ -672,7 +678,7 @@ public class Table implements Serializable {
     try {
       Class<?> origin = Class.forName(name, true, JavaUtils.getClassLoader());
       setOutputFormatClass(HiveFileFormatUtils
-          .getOutputFormatSubstitute(origin));
+          .getOutputFormatSubstitute(origin,false));
     } catch (ClassNotFoundException e) {
       throw new HiveException("Class not found: " + name, e);
     }
