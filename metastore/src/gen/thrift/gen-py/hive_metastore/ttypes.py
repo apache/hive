@@ -1232,74 +1232,6 @@ class Order:
   def __ne__(self, other):
     return not (self == other)
 
-class SkewedValueList:
-  """
-  Attributes:
-   - skewedValueList
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.LIST, 'skewedValueList', (TType.STRING,None), None, ), # 1
-  )
-
-  def __init__(self, skewedValueList=None,):
-    self.skewedValueList = skewedValueList
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.LIST:
-          self.skewedValueList = []
-          (_etype90, _size87) = iprot.readListBegin()
-          for _i91 in xrange(_size87):
-            _elem92 = iprot.readString();
-            self.skewedValueList.append(_elem92)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('SkewedValueList')
-    if self.skewedValueList is not None:
-      oprot.writeFieldBegin('skewedValueList', TType.LIST, 1)
-      oprot.writeListBegin(TType.STRING, len(self.skewedValueList))
-      for iter93 in self.skewedValueList:
-        oprot.writeString(iter93)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
 class SkewedInfo:
   """
   Attributes:
@@ -1312,7 +1244,7 @@ class SkewedInfo:
     None, # 0
     (1, TType.LIST, 'skewedColNames', (TType.STRING,None), None, ), # 1
     (2, TType.LIST, 'skewedColValues', (TType.LIST,(TType.STRING,None)), None, ), # 2
-    (3, TType.MAP, 'skewedColValueLocationMaps', (TType.STRUCT,(SkewedValueList, SkewedValueList.thrift_spec),TType.STRING,None), None, ), # 3
+    (3, TType.MAP, 'skewedColValueLocationMaps', (TType.LIST,(TType.STRING,None),TType.STRING,None), None, ), # 3
   )
 
   def __init__(self, skewedColNames=None, skewedColValues=None, skewedColValueLocationMaps=None,):
@@ -1332,37 +1264,41 @@ class SkewedInfo:
       if fid == 1:
         if ftype == TType.LIST:
           self.skewedColNames = []
-          (_etype97, _size94) = iprot.readListBegin()
-          for _i98 in xrange(_size94):
-            _elem99 = iprot.readString();
-            self.skewedColNames.append(_elem99)
+          (_etype90, _size87) = iprot.readListBegin()
+          for _i91 in xrange(_size87):
+            _elem92 = iprot.readString();
+            self.skewedColNames.append(_elem92)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.LIST:
           self.skewedColValues = []
-          (_etype103, _size100) = iprot.readListBegin()
-          for _i104 in xrange(_size100):
-            _elem105 = []
-            (_etype109, _size106) = iprot.readListBegin()
-            for _i110 in xrange(_size106):
-              _elem111 = iprot.readString();
-              _elem105.append(_elem111)
+          (_etype96, _size93) = iprot.readListBegin()
+          for _i97 in xrange(_size93):
+            _elem98 = []
+            (_etype102, _size99) = iprot.readListBegin()
+            for _i103 in xrange(_size99):
+              _elem104 = iprot.readString();
+              _elem98.append(_elem104)
             iprot.readListEnd()
-            self.skewedColValues.append(_elem105)
+            self.skewedColValues.append(_elem98)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.MAP:
           self.skewedColValueLocationMaps = {}
-          (_ktype113, _vtype114, _size112 ) = iprot.readMapBegin() 
-          for _i116 in xrange(_size112):
-            _key117 = SkewedValueList()
-            _key117.read(iprot)
-            _val118 = iprot.readString();
-            self.skewedColValueLocationMaps[_key117] = _val118
+          (_ktype106, _vtype107, _size105 ) = iprot.readMapBegin() 
+          for _i109 in xrange(_size105):
+            _key110 = []
+            (_etype115, _size112) = iprot.readListBegin()
+            for _i116 in xrange(_size112):
+              _elem117 = iprot.readString();
+              _key110.append(_elem117)
+            iprot.readListEnd()
+            _val111 = iprot.readString();
+            self.skewedColValueLocationMaps[_key110] = _val111
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -1379,26 +1315,29 @@ class SkewedInfo:
     if self.skewedColNames is not None:
       oprot.writeFieldBegin('skewedColNames', TType.LIST, 1)
       oprot.writeListBegin(TType.STRING, len(self.skewedColNames))
-      for iter119 in self.skewedColNames:
-        oprot.writeString(iter119)
+      for iter118 in self.skewedColNames:
+        oprot.writeString(iter118)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.skewedColValues is not None:
       oprot.writeFieldBegin('skewedColValues', TType.LIST, 2)
       oprot.writeListBegin(TType.LIST, len(self.skewedColValues))
-      for iter120 in self.skewedColValues:
-        oprot.writeListBegin(TType.STRING, len(iter120))
-        for iter121 in iter120:
-          oprot.writeString(iter121)
+      for iter119 in self.skewedColValues:
+        oprot.writeListBegin(TType.STRING, len(iter119))
+        for iter120 in iter119:
+          oprot.writeString(iter120)
         oprot.writeListEnd()
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.skewedColValueLocationMaps is not None:
       oprot.writeFieldBegin('skewedColValueLocationMaps', TType.MAP, 3)
-      oprot.writeMapBegin(TType.STRUCT, TType.STRING, len(self.skewedColValueLocationMaps))
-      for kiter122,viter123 in self.skewedColValueLocationMaps.items():
-        kiter122.write(oprot)
-        oprot.writeString(viter123)
+      oprot.writeMapBegin(TType.LIST, TType.STRING, len(self.skewedColValueLocationMaps))
+      for kiter121,viter122 in self.skewedColValueLocationMaps.items():
+        oprot.writeListBegin(TType.STRING, len(kiter121))
+        for iter123 in kiter121:
+          oprot.writeString(iter123)
+        oprot.writeListEnd()
+        oprot.writeString(viter122)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
