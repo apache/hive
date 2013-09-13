@@ -30,6 +30,7 @@ import java.net.Socket;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -84,10 +85,9 @@ public class TestCliSessionState {
    */
   @Test
   public void testgetDbName() throws Exception {
-    HiveConf configuration = new HiveConf();
-    CliSessionState sessionState = new CliSessionState(configuration);
-    assertEquals(MetaStoreUtils.DEFAULT_DATABASE_NAME, sessionState.getCurrentDbName());
-
+    SessionState.start(new HiveConf());
+    assertEquals(MetaStoreUtils.DEFAULT_DATABASE_NAME,
+        SessionState.get().getCurrentDatabase());
   }
 
   /**

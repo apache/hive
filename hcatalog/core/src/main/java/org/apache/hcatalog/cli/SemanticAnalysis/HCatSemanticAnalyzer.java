@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.plan.ShowTableStatusDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hcatalog.common.ErrorType;
 import org.apache.hcatalog.common.HCatException;
 
@@ -290,14 +291,14 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
 
     ShowTablesDesc showTables = work.getShowTblsDesc();
     if (showTables != null) {
-      String dbName = showTables.getDbName() == null ? cntxt.getHive().getCurrentDatabase()
+      String dbName = showTables.getDbName() == null ? SessionState.get().getCurrentDatabase()
         : showTables.getDbName();
       authorize(cntxt.getHive().getDatabase(dbName), Privilege.SELECT);
     }
 
     ShowTableStatusDesc showTableStatus = work.getShowTblStatusDesc();
     if (showTableStatus != null) {
-      String dbName = showTableStatus.getDbName() == null ? cntxt.getHive().getCurrentDatabase()
+      String dbName = showTableStatus.getDbName() == null ? SessionState.get().getCurrentDatabase()
         : showTableStatus.getDbName();
       authorize(cntxt.getHive().getDatabase(dbName), Privilege.SELECT);
     }
@@ -315,7 +316,7 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
         //this is actually a ALTER TABLE DROP PARITITION statement
         for (PartitionSpec partSpec : dropTable.getPartSpecs()) {
           // partitions are not added as write entries in drop partitions in Hive
-          Table table = hive.getTable(hive.getCurrentDatabase(), dropTable.getTableName());
+          Table table = hive.getTable(SessionState.get().getCurrentDatabase(), dropTable.getTableName());
           List<Partition> partitions = null;
           try {
             partitions = hive.getPartitionsByFilter(table, partSpec.toString());
@@ -332,7 +333,8 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
 
     AlterTableDesc alterTable = work.getAlterTblDesc();
     if (alterTable != null) {
-      Table table = hive.getTable(hive.getCurrentDatabase(), alterTable.getOldName(), false);
+      Table table = hive.getTable(SessionState.get().getCurrentDatabase(),
+         alterTable.getOldName(), false);
 
       Partition part = null;
       if (alterTable.getPartSpec() != null) {
