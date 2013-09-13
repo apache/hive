@@ -727,7 +727,7 @@ public class Server {
   }
 
   /**
-   * Notify on a completed job.
+   * Notify on a completed job.  Called by JobTracker.
    */
   @GET
   @Path("internal/complete/{jobid}")
