@@ -59,6 +59,14 @@ fi
 srcChecksum=`find ../ -name '*.java' | grep -v generated-sources | LC_ALL=C sort | xargs md5sum | md5sum | cut -d ' ' -f 1`
 
 mkdir -p $src_dir/gen/org/apache/hive/common
+
+# In Windows, all the following string ends with \r, need to get rid of them
+branch=`echo $branch | tr -d '\r'`
+user=`echo $user | tr -d '\r'`
+date=`echo $date | tr -d '\r'`
+url=`echo $url | tr -d '\r'`
+srcChecksum=`echo $srcChecksum | tr -d '\r'`
+
 cat << EOF | \
   sed -e "s/VERSION/$version/" -e "s/USER/$user/" -e "s/DATE/$date/" \
       -e "s|URL|$url|" -e "s/REV/$revision/" \
