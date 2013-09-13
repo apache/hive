@@ -470,7 +470,7 @@ public class QTestUtil {
     // Delete any tables other than the source tables
     // and any databases other than the default database.
     for (String dbName : db.getAllDatabases()) {
-      db.setCurrentDatabase(dbName);
+      SessionState.get().setCurrentDatabase(dbName);
       for (String tblName : db.getAllTables()) {
         if (!DEFAULT_DATABASE_NAME.equals(dbName) || !srcTables.contains(tblName)) {
           Table tblObj = db.getTable(tblName);
@@ -494,7 +494,7 @@ public class QTestUtil {
         db.dropDatabase(dbName);
       }
     }
-    Hive.get().setCurrentDatabase(DEFAULT_DATABASE_NAME);
+    SessionState.get().setCurrentDatabase(DEFAULT_DATABASE_NAME);
 
     List<String> roleNames = db.getAllRoleNames();
       for (String roleName : roleNames) {
@@ -617,7 +617,8 @@ public class QTestUtil {
     db.createTable("src_sequencefile", cols, null,
         SequenceFileInputFormat.class, SequenceFileOutputFormat.class);
 
-    Table srcThrift = new Table(db.getCurrentDatabase(), "src_thrift");
+    Table srcThrift =
+        new Table(SessionState.get().getCurrentDatabase(), "src_thrift");
     srcThrift.setInputFormatClass(SequenceFileInputFormat.class.getName());
     srcThrift.setOutputFormatClass(SequenceFileOutputFormat.class.getName());
     srcThrift.setSerializationLib(ThriftDeserializer.class.getName());

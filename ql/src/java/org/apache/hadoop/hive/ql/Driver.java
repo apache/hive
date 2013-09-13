@@ -540,14 +540,14 @@ public class Driver implements CommandProcessor {
       if (op.equals(HiveOperation.CREATETABLE_AS_SELECT)
           || op.equals(HiveOperation.CREATETABLE)) {
         ss.getAuthorizer().authorize(
-            db.getDatabase(db.getCurrentDatabase()), null,
+            db.getDatabase(SessionState.get().getCurrentDatabase()), null,
             HiveOperation.CREATETABLE_AS_SELECT.getOutputRequiredPrivileges());
       } else {
         if (op.equals(HiveOperation.IMPORT)) {
           ImportSemanticAnalyzer isa = (ImportSemanticAnalyzer) sem;
           if (!isa.existsTable()) {
             ss.getAuthorizer().authorize(
-                db.getDatabase(db.getCurrentDatabase()), null,
+                db.getDatabase(SessionState.get().getCurrentDatabase()), null,
                 HiveOperation.CREATETABLE_AS_SELECT.getOutputRequiredPrivileges());
           }
         }
@@ -831,14 +831,13 @@ public class Driver implements CommandProcessor {
                                plan.getQueryStr());
 
       // Lock the database also
-      try {
-        Hive db = Hive.get(conf);
-        lockObjects.add(new HiveLockObj(
-                                        new HiveLockObject(db.getCurrentDatabase(), lockData),
-                                        HiveLockMode.SHARED));
-      } catch (HiveException e) {
-        throw new SemanticException(e.getMessage());
-      }
+      String currentDb = SessionState.get().getCurrentDatabase();
+      lockObjects.add(
+          new HiveLockObj(
+              new HiveLockObject(currentDb, lockData),
+              HiveLockMode.SHARED
+              )
+          );
 
       List<HiveLock> hiveLocks = ctx.getHiveLockMgr().lock(lockObjects, false);
 

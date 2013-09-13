@@ -47,10 +47,6 @@ public class HCatSemanticAnalyzerBase extends AbstractSemanticAnalyzerHook {
 
   private HiveAuthorizationProvider authProvider;
 
-  protected String getDbName(Hive hive, String dbName) {
-    return dbName == null ? hive.getCurrentDatabase() : dbName;
-  }
-
   public HiveAuthorizationProvider getAuthProvider() {
     if (authProvider == null) {
       authProvider = SessionState.get().getAuthorizer();

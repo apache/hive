@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.serde.serdeConstants.COLLECTION_DELIM;
 import static org.apache.hadoop.hive.serde.serdeConstants.ESCAPE_CHAR;
@@ -94,10 +93,12 @@ import org.apache.thrift.TException;
 import com.google.common.collect.Sets;
 
 /**
- * The Hive class contains information about this instance of Hive. An instance
- * of Hive represents a set of data in a file system (usually HDFS) organized
- * for easy query processing
+ * This class has functions that implement meta data/DDL operations using calls
+ * to the metastore.
+ * It has a metastore client instance it uses to communicate with the metastore.
  *
+ * It is a thread local variable, and the instances is accessed using static
+ * get methods in this class.
  */
 
 public class Hive {
@@ -106,7 +107,6 @@ public class Hive {
 
   private HiveConf conf = null;
   private IMetaStoreClient metaStoreClient;
-  private String currentDatabase;
 
   private static ThreadLocal<Hive> hiveDB = new ThreadLocal<Hive>() {
     @Override
@@ -167,9 +167,6 @@ public class Hive {
       closeCurrent();
       c.set("fs.scheme.class", "dfs");
       Hive newdb = new Hive(c);
-      if (db != null && db.getCurrentDatabase() != null){
-        newdb.setCurrentDatabase(db.getCurrentDatabase());
-      }
       hiveDB.set(newdb);
       return newdb;
     }
@@ -575,7 +572,7 @@ public class Hive {
   public void createTable(Table tbl, boolean ifNotExists) throws HiveException {
     try {
       if (tbl.getDbName() == null || "".equals(tbl.getDbName().trim())) {
-        tbl.setDbName(getCurrentDatabase());
+        tbl.setDbName(SessionState.get().getCurrentDatabase());
       }
       if (tbl.getCols().size() == 0) {
         tbl.setFields(MetaStoreUtils.getFieldsFromDeserializer(tbl.getTableName(),
@@ -651,7 +648,7 @@ public class Hive {
       throws HiveException {
 
     try {
-      String dbName = getCurrentDatabase();
+      String dbName = SessionState.get().getCurrentDatabase();
       Index old_index = null;
       try {
         old_index = getIndex(dbName, tableName, indexName);
@@ -795,7 +792,8 @@ public class Hive {
     case 3:
       return getIndex(names[0], names[1], names[2]);
     case 2:
-      return getIndex(getCurrentDatabase(), names[0], names[1]);
+      return getIndex(SessionState.get().getCurrentDatabase(),
+          names[0], names[1]);
     default:
       throw new HiveException("Invalid index name:" + qualifiedIndexName);
     }
@@ -1001,7 +999,7 @@ public class Hive {
    * @throws HiveException
    */
   public List<String> getAllTables() throws HiveException {
-    return getAllTables(getCurrentDatabase());
+    return getAllTables(SessionState.get().getCurrentDatabase());
   }
 
   /**
@@ -1024,7 +1022,8 @@ public class Hive {
    * @throws HiveException
    */
   public List<String> getTablesByPattern(String tablePattern) throws HiveException {
-    return getTablesByPattern(getCurrentDatabase(), tablePattern);
+    return getTablesByPattern(SessionState.get().getCurrentDatabase(),
+        tablePattern);
   }
 
   /**
@@ -1144,6 +1143,16 @@ public class Hive {
     } catch (Exception e) {
       throw new HiveException(e);
     }
+  }
+
+  /**
+   * Get the Database object for current database
+   * @return a Database object if this database exists, null otherwise.
+   * @throws HiveException
+   */
+  public Database getDatabaseCurrent() throws HiveException {
+    String currentDb = SessionState.get().getCurrentDatabase();
+    return getDatabase(currentDb);
   }
 
   /**
@@ -1911,25 +1920,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
     }
   }
 
-  /**
-   * Get the name of the current database
-   * @return the current database name
-   */
-  public String getCurrentDatabase() {
-    if (null == currentDatabase) {
-      currentDatabase = DEFAULT_DATABASE_NAME;
-    }
-    return currentDatabase;
-  }
-
-  /**
-   * Set the name of the current database
-   * @param currentDatabase
-   */
-  public void setCurrentDatabase(String currentDatabase) {
-    this.currentDatabase = currentDatabase;
-  }
-
   public void createRole(String roleName, String ownerName)
       throws HiveException {
     try {
@@ -2503,7 +2493,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     case 2:
       return new Table(names[0], names[1]);
     case 1:
-      return new Table(getCurrentDatabase(), names[0]);
+      return new Table(SessionState.get().getCurrentDatabase(), names[0]);
     default:
       try{
         throw new HiveException("Invalid table name: " + tableName);

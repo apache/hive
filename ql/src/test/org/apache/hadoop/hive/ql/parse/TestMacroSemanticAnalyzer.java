@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFMacro;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,6 +45,7 @@ public class TestMacroSemanticAnalyzer {
     context = new Context(conf);
     parseDriver = new ParseDriver();
     analyzer = new MacroSemanticAnalyzer(conf);
+    SessionState.start(conf);
   }
 
   private ASTNode parse(String command) throws Exception {
