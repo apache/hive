@@ -102,7 +102,9 @@ public class HDFSStorage implements TempletonStorage {
       }
       return val;
     } catch (Exception e) {
-      LOG.info("Couldn't find " + p + ": " + e.getMessage(), e);
+      //don't print stack trace since clients poll for 'exitValue', 'completed',
+      //files which are not there until job completes
+      LOG.info("Couldn't find " + p + ": " + e.getMessage());
     } finally {
       close(in);
     }
