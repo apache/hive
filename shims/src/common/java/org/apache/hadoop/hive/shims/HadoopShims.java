@@ -318,6 +318,8 @@ public interface HadoopShims {
 
   public TaskAttemptContext newTaskAttemptContext(Configuration conf, final Progressable progressable);
 
+  public TaskAttemptID newTaskAttemptID(JobID jobId, boolean isMap, int taskId, int id);
+
   public JobContext newJobContext(Job job);
 
   /**

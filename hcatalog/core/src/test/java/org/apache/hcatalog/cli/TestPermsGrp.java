@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
 public class TestPermsGrp extends TestCase {
 
   private boolean isServerRunning = false;
-  private static final int msPort = 20101;
+  private int msPort;
   private HiveConf hcatConf;
   private Warehouse clientWH;
   private HiveMetaStoreClient msc;
@@ -75,6 +75,7 @@ public class TestPermsGrp extends TestCase {
       return;
     }
 
+    msPort = MetaStoreUtils.findFreePort();
     MetaStoreUtils.startMetaStore(msPort, ShimLoader.getHadoopThriftAuthBridge());
 
     isServerRunning = true;
@@ -87,6 +88,7 @@ public class TestPermsGrp extends TestCase {
     hcatConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://127.0.0.1:" + msPort);
     hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTFAILURERETRIES, 3);
+    hcatConf.setIntVar(HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, 120);
 
     hcatConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname, HCatSemanticAnalyzer.class.getName());
     hcatConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
