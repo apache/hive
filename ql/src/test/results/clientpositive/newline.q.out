@@ -298,11 +298,11 @@ POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:str
 1\	2	NULL
 1\\t2	NULL
 1\	2	NULL
-PREHOOK: query: SELECT key FROM (SELECT TRANSFORM ('a\tb', 'c') USING '/bin/cat' AS (key, value) FROM src limit 1)a ORDER BY key ASC
+PREHOOK: query: SELECT key FROM (SELECT TRANSFORM ('a\tb', 'c') USING 'cat' AS (key, value) FROM src limit 1)a ORDER BY key ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT key FROM (SELECT TRANSFORM ('a\tb', 'c') USING '/bin/cat' AS (key, value) FROM src limit 1)a ORDER BY key ASC
+POSTHOOK: query: SELECT key FROM (SELECT TRANSFORM ('a\tb', 'c') USING 'cat' AS (key, value) FROM src limit 1)a ORDER BY key ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -317,11 +317,11 @@ POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:str
 POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: tmp_tmp.value SCRIPT [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
 a	b
-PREHOOK: query: SELECT value FROM (SELECT TRANSFORM ('a\tb', 'c') USING '/bin/cat' AS (key, value) FROM src limit 1)a ORDER BY value ASC
+PREHOOK: query: SELECT value FROM (SELECT TRANSFORM ('a\tb', 'c') USING 'cat' AS (key, value) FROM src limit 1)a ORDER BY value ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT value FROM (SELECT TRANSFORM ('a\tb', 'c') USING '/bin/cat' AS (key, value) FROM src limit 1)a ORDER BY value ASC
+POSTHOOK: query: SELECT value FROM (SELECT TRANSFORM ('a\tb', 'c') USING 'cat' AS (key, value) FROM src limit 1)a ORDER BY value ASC
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

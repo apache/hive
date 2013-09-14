@@ -212,6 +212,16 @@ public class ScriptOperator extends Operator<ScriptDesc> implements
           if (f.isFile() && f.canRead()) {
             return f;
           }
+          if (Shell.WINDOWS) {
+            // Try filename with executable extentions
+            String[] exts = new String[] {".exe", ".bat"};
+            for (String ext : exts) {
+              File fileWithExt = new File(f.toString() + ext);
+              if (fileWithExt.isFile() && fileWithExt.canRead()) {
+                return fileWithExt;
+              }
+            }
+          }
         } catch (Exception exp) {
         }
         classvalue = classvalue.substring(val + 1).trim();
