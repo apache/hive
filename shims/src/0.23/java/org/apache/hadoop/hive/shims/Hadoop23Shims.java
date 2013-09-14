@@ -106,6 +106,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   }
 
   @Override
+  public TaskAttemptID newTaskAttemptID(JobID jobId, boolean isMap, int taskId, int id) {
+    return new TaskAttemptID(jobId.getJtIdentifier(), jobId.getId(), isMap ?  TaskType.MAP : TaskType.REDUCE, taskId, id);
+  }
+
+  @Override
   public org.apache.hadoop.mapreduce.JobContext newJobContext(Job job) {
     return new JobContextImpl(job.getConfiguration(), job.getJobID());
   }

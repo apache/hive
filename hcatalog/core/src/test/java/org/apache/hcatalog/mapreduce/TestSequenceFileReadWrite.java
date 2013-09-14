@@ -27,8 +27,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import junit.framework.TestCase;
-
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -51,32 +50,40 @@ import org.apache.hcatalog.data.schema.HCatSchema;
 import org.apache.pig.ExecType;
 import org.apache.pig.PigServer;
 import org.apache.pig.data.Tuple;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
  * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.TestSequenceFileReadWrite} instead
  */
-public class TestSequenceFileReadWrite extends TestCase {
-  private static final String TEST_DATA_DIR = System.getProperty("user.dir") +
-      "/build/test/data/" + TestSequenceFileReadWrite.class.getCanonicalName();
-  private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
-  private static final String INPUT_FILE_NAME = TEST_DATA_DIR + "/input.data";
+public class TestSequenceFileReadWrite {
 
-  private static Driver driver;
-  private static PigServer server;
-  private static String[] input;
-  private static HiveConf hiveConf;
+  private File dataDir;
+  private String warehouseDir;
+  private String inputFileName;
+  private Driver driver;
+  private PigServer server;
+  private String[] input;
+  private HiveConf hiveConf;
 
-  public void Initialize() throws Exception {
+  @Before
+  public void setup() throws Exception {
+    dataDir = new File(System.getProperty("java.io.tmpdir") + File.separator + 
+        TestSequenceFileReadWrite.class.getCanonicalName() + "-" + System.currentTimeMillis());
     hiveConf = new HiveConf(this.getClass());
+    warehouseDir = new File(dataDir, "warehouse").getAbsolutePath();
+    inputFileName = new File(dataDir, "input.data").getAbsolutePath();
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
-    hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, TEST_WAREHOUSE_DIR);
+    hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, warehouseDir);
     driver = new Driver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
 
-    new File(TEST_WAREHOUSE_DIR).mkdirs();
+    if(!(new File(warehouseDir).mkdirs())) {
+      throw new RuntimeException("Could not create " + warehouseDir);
+    }
 
     int numRows = 3;
     input = new String[numRows];
@@ -85,13 +92,19 @@ public class TestSequenceFileReadWrite extends TestCase {
       String col2 = "b" + i;
       input[i] = i + "," + col1 + "," + col2;
     }
-    HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, input);
+    HcatTestUtils.createTestDataFile(inputFileName, input);
     server = new PigServer(ExecType.LOCAL);
   }
 
+  @After
+  public void teardown() throws IOException {
+    if(dataDir != null) {
+      FileUtils.deleteDirectory(dataDir);
+    }
+  }
+  
   @Test
   public void testSequenceTableWriteRead() throws Exception {
-    Initialize();
     String createTable = "CREATE TABLE demo_table(a0 int, a1 String, a2 String) STORED AS SEQUENCEFILE";
     driver.run("drop table demo_table");
     int retCode1 = driver.run(createTable).getResponseCode();
@@ -99,7 +112,7 @@ public class TestSequenceFileReadWrite extends TestCase {
 
     server.setBatchOn();
     server.registerQuery("A = load '"
-        + INPUT_FILE_NAME
+        + inputFileName
         + "' using PigStorage(',') as (a0:int,a1:chararray,a2:chararray);");
     server.registerQuery("store A into 'demo_table' using org.apache.hcatalog.pig.HCatStorer();");
     server.executeBatch();
@@ -120,7 +133,6 @@ public class TestSequenceFileReadWrite extends TestCase {
 
   @Test
   public void testTextTableWriteRead() throws Exception {
-    Initialize();
     String createTable = "CREATE TABLE demo_table_1(a0 int, a1 String, a2 String) STORED AS TEXTFILE";
     driver.run("drop table demo_table_1");
     int retCode1 = driver.run(createTable).getResponseCode();
@@ -128,7 +140,7 @@ public class TestSequenceFileReadWrite extends TestCase {
 
     server.setBatchOn();
     server.registerQuery("A = load '"
-        + INPUT_FILE_NAME
+        + inputFileName
         + "' using PigStorage(',') as (a0:int,a1:chararray,a2:chararray);");
     server.registerQuery("store A into 'demo_table_1' using org.apache.hcatalog.pig.HCatStorer();");
     server.executeBatch();
@@ -149,7 +161,6 @@ public class TestSequenceFileReadWrite extends TestCase {
 
   @Test
   public void testSequenceTableWriteReadMR() throws Exception {
-    Initialize();
     String createTable = "CREATE TABLE demo_table_2(a0 int, a1 String, a2 String) STORED AS SEQUENCEFILE";
     driver.run("drop table demo_table_2");
     int retCode1 = driver.run(createTable).getResponseCode();
@@ -165,7 +176,7 @@ public class TestSequenceFileReadWrite extends TestCase {
     job.setOutputKeyClass(NullWritable.class);
     job.setOutputValueClass(DefaultHCatRecord.class);
     job.setInputFormatClass(TextInputFormat.class);
-    TextInputFormat.setInputPaths(job, INPUT_FILE_NAME);
+    TextInputFormat.setInputPaths(job, inputFileName);
 
     HCatOutputFormat.setOutput(job, OutputJobInfo.create(
         MetaStoreUtils.DEFAULT_DATABASE_NAME, "demo_table_2", null));
@@ -196,7 +207,6 @@ public class TestSequenceFileReadWrite extends TestCase {
 
   @Test
   public void testTextTableWriteReadMR() throws Exception {
-    Initialize();
     String createTable = "CREATE TABLE demo_table_3(a0 int, a1 String, a2 String) STORED AS TEXTFILE";
     driver.run("drop table demo_table_3");
     int retCode1 = driver.run(createTable).getResponseCode();
@@ -213,7 +223,7 @@ public class TestSequenceFileReadWrite extends TestCase {
     job.setOutputValueClass(DefaultHCatRecord.class);
     job.setInputFormatClass(TextInputFormat.class);
     job.setNumReduceTasks(0);
-    TextInputFormat.setInputPaths(job, INPUT_FILE_NAME);
+    TextInputFormat.setInputPaths(job, inputFileName);
 
     HCatOutputFormat.setOutput(job, OutputJobInfo.create(
         MetaStoreUtils.DEFAULT_DATABASE_NAME, "demo_table_3", null));

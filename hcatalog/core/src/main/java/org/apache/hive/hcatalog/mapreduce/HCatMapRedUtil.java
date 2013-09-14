@@ -27,6 +27,7 @@ import org.apache.hadoop.mapred.JobContext;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.TaskAttemptContext;
 import org.apache.hadoop.mapred.TaskAttemptID;
+import org.apache.hadoop.mapreduce.JobID;
 
 public class HCatMapRedUtil {
 
@@ -43,7 +44,9 @@ public class HCatMapRedUtil {
   public static TaskAttemptContext createTaskAttemptContext(JobConf conf, TaskAttemptID id, Progressable progressable) {
     return ShimLoader.getHadoopShims().getHCatShim().createTaskAttemptContext(conf, id, (Reporter) progressable);
   }
-
+  public static org.apache.hadoop.mapreduce.TaskAttemptID createTaskAttemptID(JobID jobId, boolean isMap, int taskId, int id) {
+    return ShimLoader.getHadoopShims().newTaskAttemptID(jobId, isMap, taskId, id);
+  }
   public static org.apache.hadoop.mapred.JobContext createJobContext(org.apache.hadoop.mapreduce.JobContext context) {
     return createJobContext((JobConf)context.getConfiguration(),
                 context.getJobID(),
