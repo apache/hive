@@ -79,6 +79,10 @@ public class serdeConstants {
 
   public static final String STRING_TYPE_NAME = "string";
 
+  public static final String CHAR_TYPE_NAME = "char";
+
+  public static final String VARCHAR_TYPE_NAME = "varchar";
+
   public static final String DATE_TYPE_NAME = "date";
 
   public static final String DATETIME_TYPE_NAME = "datetime";
@@ -112,6 +116,8 @@ public class serdeConstants {
     PrimitiveTypes.add("float");
     PrimitiveTypes.add("double");
     PrimitiveTypes.add("string");
+    PrimitiveTypes.add("varchar");
+    PrimitiveTypes.add("char");
     PrimitiveTypes.add("date");
     PrimitiveTypes.add("datetime");
     PrimitiveTypes.add("timestamp");

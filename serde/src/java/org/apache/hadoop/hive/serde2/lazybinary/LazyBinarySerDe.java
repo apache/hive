@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.serde2.lazybinary;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -44,6 +46,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
@@ -231,7 +235,7 @@ public class LazyBinarySerDe extends AbstractSerDe {
    *          once already
    */
   private static boolean serializeStruct(Output byteStream, Object obj,
-      StructObjectInspector soi, boolean warnedOnceNullMapKey) {
+      StructObjectInspector soi, boolean warnedOnceNullMapKey) throws SerDeException {
     // do nothing for null struct
     if (null == obj) {
       return warnedOnceNullMapKey;
@@ -284,7 +288,8 @@ public class LazyBinarySerDe extends AbstractSerDe {
    *          once already
    */
   public static boolean serialize(Output byteStream, Object obj,
-      ObjectInspector objInspector, boolean skipLengthPrefix, boolean warnedOnceNullMapKey) {
+      ObjectInspector objInspector, boolean skipLengthPrefix, boolean warnedOnceNullMapKey)
+      throws SerDeException {
 
     // do nothing for null object
     if (null == obj) {
@@ -363,7 +368,24 @@ public class LazyBinarySerDe extends AbstractSerDe {
         byteStream.write(data, 0, length);
         return warnedOnceNullMapKey;
       }
-
+      case VARCHAR: {
+        HiveVarcharObjectInspector hcoi = (HiveVarcharObjectInspector) poi;
+        String value =
+            hcoi.getPrimitiveWritableObject(obj).getHiveVarchar().getValue();
+        int length = value.length();
+        // Write byte size
+        if (!skipLengthPrefix) {
+          LazyBinaryUtils.writeVInt(byteStream, length);
+        }
+        // Write string value
+        try {
+          ByteBuffer bb = Text.encode(value);
+          byteStream.write(bb.array(), 0, bb.limit());
+        } catch (CharacterCodingException err) {
+          throw new SerDeException(err);
+        }
+        return warnedOnceNullMapKey;
+      }
       case BINARY: {
         BinaryObjectInspector baoi = (BinaryObjectInspector) poi;
         BytesWritable bw = baoi.getPrimitiveWritableObject(obj);

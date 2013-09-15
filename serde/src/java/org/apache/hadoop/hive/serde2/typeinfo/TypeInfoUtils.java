@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -735,5 +737,25 @@ public final class TypeInfoUtils {
       return false;
     }
     return true;
+  }
+
+  /**
+   * Return the character length of the type
+   * @param typeInfo
+   * @return
+   */
+  public static int getCharacterLengthForType(PrimitiveTypeInfo typeInfo) {
+    switch (typeInfo.getPrimitiveCategory()) {
+      case STRING:
+        return HiveVarchar.MAX_VARCHAR_LENGTH;
+      case VARCHAR:
+        VarcharTypeParams varcharParams = (VarcharTypeParams) typeInfo.getTypeParams();
+        if (varcharParams == null) {
+          throw new RuntimeException("varchar type used without type params");
+        }
+        return varcharParams.getLength();
+      default:
+        return 0;
+    }
   }
 }

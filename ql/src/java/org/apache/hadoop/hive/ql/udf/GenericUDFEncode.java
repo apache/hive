@@ -19,6 +19,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
@@ -30,8 +32,8 @@ extended = "Possible options for the character set are 'US_ASCII', 'ISO-8859-1',
     "is null, the result will also be null")
 public class GenericUDFEncode extends GenericUDF {
   private transient CharsetEncoder encoder = null;
-  private transient StringObjectInspector stringOI = null;
-  private transient StringObjectInspector charsetOI = null;
+  private transient PrimitiveObjectInspector stringOI = null;
+  private transient PrimitiveObjectInspector charsetOI = null;
   private transient BytesWritable result = new BytesWritable();
 
   @Override
@@ -41,23 +43,27 @@ public class GenericUDFEncode extends GenericUDF {
     }
 
     if (arguments[0].getCategory() != Category.PRIMITIVE ||
-        ((PrimitiveObjectInspector)arguments[0]).getPrimitiveCategory() != PrimitiveCategory.STRING){
-      throw new UDFArgumentTypeException(0, "The first argument to Encode() must be a string");
+        PrimitiveGrouping.STRING_GROUP != PrimitiveObjectInspectorUtils.getPrimitiveGrouping(
+            ((PrimitiveObjectInspector)arguments[0]).getPrimitiveCategory())){
+      throw new UDFArgumentTypeException(
+          0, "The first argument to Encode() must be a string/varchar");
     }
 
-    stringOI = (StringObjectInspector) arguments[0];
+    stringOI = (PrimitiveObjectInspector) arguments[0];
 
     if (arguments[1].getCategory() != Category.PRIMITIVE ||
-        ((PrimitiveObjectInspector)arguments[1]).getPrimitiveCategory() != PrimitiveCategory.STRING){
-      throw new UDFArgumentTypeException(1, "The second argument to Encode() must be a string");
+        PrimitiveGrouping.STRING_GROUP != PrimitiveObjectInspectorUtils.getPrimitiveGrouping(
+            ((PrimitiveObjectInspector)arguments[1]).getPrimitiveCategory())){
+      throw new UDFArgumentTypeException(
+          1, "The second argument to Encode() must be a string/varchar");
     }
 
-    charsetOI = (StringObjectInspector) arguments[1];
+    charsetOI = (PrimitiveObjectInspector) arguments[1];
 
     // If the character set for encoding is constant, we can optimize that
-    StringObjectInspector charSetOI = (StringObjectInspector) arguments[1];
-    if (charSetOI instanceof ConstantObjectInspector){
-      String charSetName = ((Text) ((ConstantObjectInspector) charSetOI).getWritableConstantValue()).toString();
+    if (charsetOI instanceof ConstantObjectInspector){
+      String charSetName =
+          ((ConstantObjectInspector) arguments[1]).getWritableConstantValue().toString();
       encoder = Charset.forName(charSetName).newEncoder().onMalformedInput(CodingErrorAction.REPORT).onUnmappableCharacter(CodingErrorAction.REPORT);
     }
 
@@ -68,7 +74,7 @@ public class GenericUDFEncode extends GenericUDF {
 
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
-    String value = stringOI.getPrimitiveJavaObject(arguments[0].get());
+    String value = PrimitiveObjectInspectorUtils.getString(arguments[0].get(), stringOI);
     if (value == null) {
       return null;
     }
@@ -81,7 +87,8 @@ public class GenericUDFEncode extends GenericUDF {
         throw new HiveException(e);
       }
     } else {
-      encoded = Charset.forName(charsetOI.getPrimitiveJavaObject(arguments[1].get())).encode(value);
+      encoded = Charset.forName(
+          PrimitiveObjectInspectorUtils.getString(arguments[1].get(), charsetOI)).encode(value);
     }
     result.setSize(encoded.limit());
     encoded.get(result.getBytes(), 0, encoded.limit());
