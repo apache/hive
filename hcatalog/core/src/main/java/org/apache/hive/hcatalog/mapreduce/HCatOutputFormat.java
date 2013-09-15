@@ -29,6 +29,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
@@ -170,7 +171,7 @@ public class HCatOutputFormat extends HCatBaseOutputFormat {
         partitionCols.add(schema.getName());
       }
 
-      HCatStorageHandler storageHandler = HCatUtil.getStorageHandler(conf, storerInfo);
+      HiveStorageHandler storageHandler = HCatUtil.getStorageHandler(conf, storerInfo);
 
       //Serialize the output info into the configuration
       outputJobInfo.setTableInfo(HCatTableInfo.valueOf(table.getTTable()));

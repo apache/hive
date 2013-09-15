@@ -21,6 +21,7 @@ package org.apache.hive.hcatalog.mapreduce;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -37,7 +38,7 @@ import org.apache.hive.hcatalog.data.HCatRecord;
  */
 class DefaultRecordWriterContainer extends RecordWriterContainer {
 
-  private final HCatStorageHandler storageHandler;
+  private final HiveStorageHandler storageHandler;
   private final SerDe serDe;
   private final OutputJobInfo jobInfo;
   private final ObjectInspector hcatRecordOI;

@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
@@ -75,7 +76,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
 
   private Map<String, Map<String, String>> partitionsDiscoveredByPath;
   private Map<String, JobContext> contextDiscoveredByPath;
-  private final HCatStorageHandler cachedStorageHandler;
+  private final HiveStorageHandler cachedStorageHandler;
 
   HarOutputCommitterPostProcessor harProcessor = new HarOutputCommitterPostProcessor();
 
