@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.ParameterizedPrimitiveTypeUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -91,8 +92,7 @@ class AvroObjectInspectorGenerator {
     switch(ti.getCategory()) {
       case PRIMITIVE:
         PrimitiveTypeInfo pti = (PrimitiveTypeInfo)ti;
-        result = PrimitiveObjectInspectorFactory
-                .getPrimitiveJavaObjectInspector(pti.getPrimitiveCategory());
+        result = PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(pti);
         break;
       case STRUCT:
         StructTypeInfo sti = (StructTypeInfo)ti;

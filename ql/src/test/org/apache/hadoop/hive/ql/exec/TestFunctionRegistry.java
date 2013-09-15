@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.lang.reflect.Type;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -27,6 +26,7 @@ import java.util.List;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -44,6 +45,7 @@ public class TestFunctionRegistry extends TestCase {
   public class TestUDF {
     public void same(DoubleWritable x, DoubleWritable y) {}
     public void same(HiveDecimalWritable x, HiveDecimalWritable y) {}
+    public void same(Text x, Text y) {}
     public void one(IntWritable x, HiveDecimalWritable y) {}
     public void one(IntWritable x, DoubleWritable y) {}
     public void one(IntWritable x, IntWritable y) {}
@@ -57,8 +59,16 @@ public class TestFunctionRegistry extends TestCase {
     public void typeaffinity2(DoubleWritable x) {}
   }
 
+  TypeInfo varchar5;
+  TypeInfo varchar10;
+  TypeInfo maxVarchar;
+
   @Override
   protected void setUp() {
+    String maxVarcharTypeName = "varchar(" + HiveVarchar.MAX_VARCHAR_LENGTH + ")";
+    maxVarchar = TypeInfoFactory.getPrimitiveTypeInfo(maxVarcharTypeName);
+    varchar10 = TypeInfoFactory.getPrimitiveTypeInfo("varchar(10)");
+    varchar5 = TypeInfoFactory.getPrimitiveTypeInfo("varchar(5)");
   }
 
   private void implicit(TypeInfo a, TypeInfo b, boolean convertible) {
@@ -72,6 +82,21 @@ public class TestFunctionRegistry extends TestCase {
     implicit(TypeInfoFactory.stringTypeInfo, TypeInfoFactory.decimalTypeInfo, true);
     implicit(TypeInfoFactory.dateTypeInfo, TypeInfoFactory.decimalTypeInfo, false);
     implicit(TypeInfoFactory.timestampTypeInfo, TypeInfoFactory.decimalTypeInfo, false);
+    implicit(varchar10, TypeInfoFactory.stringTypeInfo, true);
+    implicit(TypeInfoFactory.stringTypeInfo, varchar10, true);
+
+    // Try with parameterized varchar types
+    TypeInfo varchar10 = TypeInfoFactory.getPrimitiveTypeInfo("varchar(10)");
+    TypeInfo varchar20 = TypeInfoFactory.getPrimitiveTypeInfo("varchar(20)");
+
+    implicit(varchar10, TypeInfoFactory.stringTypeInfo, true);
+    implicit(varchar20, TypeInfoFactory.stringTypeInfo, true);
+    implicit(TypeInfoFactory.stringTypeInfo, varchar10, true);
+    implicit(TypeInfoFactory.stringTypeInfo, varchar20, true);
+    implicit(varchar20, varchar10, true);
+
+    implicit(TypeInfoFactory.intTypeInfo, varchar10, true);
+    implicit(TypeInfoFactory.intTypeInfo, TypeInfoFactory.stringTypeInfo, true);
   }
 
   private static List<Method> getMethods(Class<?> udfClass, String methodName) {
@@ -136,8 +161,8 @@ public class TestFunctionRegistry extends TestCase {
     }
     assert(!throwException);
     assertEquals(2, result.getParameterTypes().length);
-    assertEquals(result.getParameterTypes()[0], a);
-    assertEquals(result.getParameterTypes()[1], b);
+    assertEquals(a, result.getParameterTypes()[0]);
+    assertEquals(b, result.getParameterTypes()[1]);
   }
 
   public void testGetMethodInternal() {
@@ -166,12 +191,15 @@ public class TestFunctionRegistry extends TestCase {
     verify(TestUDF.class, "one", TypeInfoFactory.intTypeInfo, TypeInfoFactory.intTypeInfo,
            IntWritable.class, IntWritable.class, false);
 
+    // Passing varchar arguments should prefer the version of evaluate() with Text args.
+    verify(TestUDF.class, "same", varchar5, varchar10, Text.class, Text.class, false);
+
     verify(TestUDF.class, "mismatch", TypeInfoFactory.voidTypeInfo, TypeInfoFactory.intTypeInfo,
            null, null, true);
   }
 
   private void common(TypeInfo a, TypeInfo b, TypeInfo result) {
-    assertEquals(FunctionRegistry.getCommonClass(a,b), result);
+    assertEquals(result, FunctionRegistry.getCommonClass(a,b));
   }
 
   public void testCommonClass() {
@@ -183,10 +211,13 @@ public class TestFunctionRegistry extends TestCase {
            TypeInfoFactory.decimalTypeInfo);
     common(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.stringTypeInfo,
            TypeInfoFactory.stringTypeInfo);
+
+    common(TypeInfoFactory.stringTypeInfo, varchar10, TypeInfoFactory.stringTypeInfo);
+    common(varchar10, TypeInfoFactory.stringTypeInfo, TypeInfoFactory.stringTypeInfo);
   }
 
   private void comparison(TypeInfo a, TypeInfo b, TypeInfo result) {
-    assertEquals(FunctionRegistry.getCommonClassForComparison(a,b), result);
+    assertEquals(result, FunctionRegistry.getCommonClassForComparison(a,b));
   }
 
   public void testCommonClassComparison() {
@@ -198,6 +229,61 @@ public class TestFunctionRegistry extends TestCase {
                TypeInfoFactory.decimalTypeInfo);
     comparison(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.stringTypeInfo,
                TypeInfoFactory.doubleTypeInfo);
+
+    comparison(TypeInfoFactory.dateTypeInfo, TypeInfoFactory.stringTypeInfo,
+        TypeInfoFactory.stringTypeInfo);
+    comparison(TypeInfoFactory.stringTypeInfo, TypeInfoFactory.dateTypeInfo,
+        TypeInfoFactory.stringTypeInfo);
+
+    comparison(TypeInfoFactory.stringTypeInfo, varchar10, TypeInfoFactory.stringTypeInfo);
+    comparison(varchar10, TypeInfoFactory.stringTypeInfo, TypeInfoFactory.stringTypeInfo);
+    comparison(varchar5, varchar10, varchar10);
+  }
+
+  /**
+   * Method to print out the comparison/conversion behavior for data types.
+   */
+  public void testPrintTypeCompatibility() {
+    if (true) {
+      return;
+    }
+
+    String[] typeStrings = {
+        "void", "boolean", "tinyint", "smallint", "int", "bigint", "float", "double",
+        "string", "timestamp", "date", "binary", "decimal", "varchar(10)", "varchar(5)",
+    };
+    for (String cat1 : typeStrings) {
+      TypeInfo ti1 = null;
+      try {
+        ti1 = TypeInfoUtils.getTypeInfoFromTypeString(cat1);
+      } catch (Exception err) {
+        System.out.println(err);
+        System.out.println("Unable to get TypeInfo for " + cat1 + ", skipping ...");
+        continue;
+      }
+
+      for (String cat2 : typeStrings) {
+        TypeInfo commonClass = null;
+        boolean implicitConvertable = false;
+        try {
+          TypeInfo ti2 = TypeInfoUtils.getTypeInfoFromTypeString(cat2);
+          try {
+            commonClass = FunctionRegistry.getCommonClassForComparison(ti1, ti2);
+            //implicitConvertable = FunctionRegistry.implicitConvertable(ti1, ti2);
+          } catch (Exception err) {
+            System.out.println("Failed to get common class for " + ti1 + ", " + ti2 + ": " + err);
+            err.printStackTrace();
+            //System.out.println("Unable to get TypeInfo for " + cat2 + ", skipping ...");
+          }
+          System.out.println(cat1 + " - " + cat2 + ": " + commonClass);
+          //System.out.println(cat1 + " - " + cat2 + ": " + implicitConvertable);
+        } catch (Exception err) {
+          System.out.println(err);
+          System.out.println("Unable to get TypeInfo for " + cat2 + ", skipping ...");
+          continue;
+        }
+      }
+    }
   }
 
   private void unionAll(TypeInfo a, TypeInfo b, TypeInfo result) {
@@ -213,10 +299,25 @@ public class TestFunctionRegistry extends TestCase {
         TypeInfoFactory.decimalTypeInfo);
     unionAll(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.stringTypeInfo,
         TypeInfoFactory.stringTypeInfo);
+
+    unionAll(varchar5, varchar10, varchar10);
+    unionAll(varchar10, varchar5, varchar10);
+    unionAll(varchar10, TypeInfoFactory.stringTypeInfo, TypeInfoFactory.stringTypeInfo);
+    unionAll(TypeInfoFactory.stringTypeInfo, varchar10, TypeInfoFactory.stringTypeInfo);
   }
 
   public void testGetTypeInfoForPrimitiveCategory() {
+    // varchar should take string length into account.
+    // varchar(5), varchar(10) => varchar(10)
+    assertEquals(varchar10, FunctionRegistry.getTypeInfoForPrimitiveCategory(
+        (PrimitiveTypeInfo) varchar5, (PrimitiveTypeInfo) varchar10, PrimitiveCategory.VARCHAR));
+    assertEquals(varchar10, FunctionRegistry.getTypeInfoForPrimitiveCategory(
+        (PrimitiveTypeInfo) varchar10, (PrimitiveTypeInfo) varchar5, PrimitiveCategory.VARCHAR));
+
     // non-qualified types should simply return the TypeInfo associated with that type
+    assertEquals(TypeInfoFactory.stringTypeInfo, FunctionRegistry.getTypeInfoForPrimitiveCategory(
+        (PrimitiveTypeInfo) varchar10, (PrimitiveTypeInfo) TypeInfoFactory.stringTypeInfo,
+        PrimitiveCategory.STRING));
     assertEquals(TypeInfoFactory.stringTypeInfo, FunctionRegistry.getTypeInfoForPrimitiveCategory(
         (PrimitiveTypeInfo) TypeInfoFactory.stringTypeInfo,
         (PrimitiveTypeInfo) TypeInfoFactory.stringTypeInfo,

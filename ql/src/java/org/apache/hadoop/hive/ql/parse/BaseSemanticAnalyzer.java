@@ -628,7 +628,7 @@ public abstract class BaseSemanticAnalyzer {
     case HiveParser.TOK_UNIONTYPE:
       return getUnionTypeStringFromAST(typeNode);
     default:
-      return DDLSemanticAnalyzer.getTypeName(typeNode.getType());
+      return DDLSemanticAnalyzer.getTypeName(typeNode);
     }
   }
 

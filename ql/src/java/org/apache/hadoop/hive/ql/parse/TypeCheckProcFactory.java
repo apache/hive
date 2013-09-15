@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -562,6 +563,8 @@ public final class TypeCheckProcFactory {
           serdeConstants.DOUBLE_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_STRING,
           serdeConstants.STRING_TYPE_NAME);
+      conversionFunctionTextHashMap.put(HiveParser.TOK_VARCHAR,
+          serdeConstants.VARCHAR_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_BINARY,
           serdeConstants.BINARY_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_DATE,
@@ -783,8 +786,14 @@ public final class TypeCheckProcFactory {
         if (isFunction) {
           ASTNode funcNameNode = (ASTNode)expr.getChild(0);
           switch (funcNameNode.getType()) {
-            // Get type param from AST and add to cast function.
-            // But, no parameterized types to handle at the moment
+            case HiveParser.TOK_VARCHAR:
+              // Add type params
+              VarcharTypeParams varcharTypeParams = new VarcharTypeParams();
+              varcharTypeParams.length = Integer.valueOf((funcNameNode.getChild(0).getText()));
+              if (genericUDF != null) {
+                ((SettableUDF)genericUDF).setParams(varcharTypeParams);
+              }
+              break;
             default:
               // Do nothing
               break;

@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyDateObje
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyDoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyFloatObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyHiveDecimalObjectInspector;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyHiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyIntObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyLongObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyPrimitiveObjectInspectorFactory;
@@ -113,6 +114,8 @@ public final class LazyFactory {
       return new LazyDouble((LazyDoubleObjectInspector) oi);
     case STRING:
       return new LazyString((LazyStringObjectInspector) oi);
+    case VARCHAR:
+      return new LazyHiveVarchar((LazyHiveVarcharObjectInspector) oi);
     case DATE:
       return new LazyDate((LazyDateObjectInspector) oi);
     case TIMESTAMP:

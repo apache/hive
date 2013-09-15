@@ -32,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
@@ -43,6 +44,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -484,6 +486,8 @@ public final class ObjectInspectorUtils {
         }
         return r;
       }
+      case VARCHAR:
+        return ((HiveVarcharObjectInspector)poi).getPrimitiveWritableObject(o).hashCode();
       case BINARY:
         return ((BinaryObjectInspector) poi).getPrimitiveWritableObject(o).hashCode();
 
@@ -678,6 +682,11 @@ public final class ObjectInspectorUtils {
           return s1 == null ? (s2 == null ? 0 : -1) : (s2 == null ? 1 : s1
               .compareTo(s2));
         }
+      }
+      case VARCHAR: {
+        HiveVarcharWritable t1 = ((HiveVarcharObjectInspector)poi1).getPrimitiveWritableObject(o1);
+        HiveVarcharWritable t2 = ((HiveVarcharObjectInspector)poi2).getPrimitiveWritableObject(o2);
+        return t1.compareTo(t2);
       }
       case BINARY: {
         BytesWritable bw1 = ((BinaryObjectInspector) poi1).getPrimitiveWritableObject(o1);
@@ -948,7 +957,7 @@ public final class ObjectInspectorUtils {
       case PRIMITIVE:
         PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
         return PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
-            poi.getPrimitiveCategory(), writableValue);
+            poi, writableValue);
       case LIST:
         ListObjectInspector loi = (ListObjectInspector) oi;
         return ObjectInspectorFactory.getStandardConstantListObjectInspector(

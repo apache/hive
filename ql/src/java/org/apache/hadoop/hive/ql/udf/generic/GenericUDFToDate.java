@@ -25,6 +25,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.DateConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 
 /**
  * GenericUDFToDate
@@ -49,10 +51,11 @@ public class GenericUDFToDate extends GenericUDF {
     }
     try {
       argumentOI = (PrimitiveObjectInspector) arguments[0];
-      switch (argumentOI.getPrimitiveCategory()) {
-        case DATE:
-        case STRING:
-        case TIMESTAMP:
+      PrimitiveGrouping pg =
+          PrimitiveObjectInspectorUtils.getPrimitiveGrouping(argumentOI.getPrimitiveCategory());
+      switch (pg) {
+        case DATE_GROUP:
+        case STRING_GROUP:
           break;
         default:
           throw new UDFArgumentException(

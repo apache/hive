@@ -20,14 +20,17 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseTypeParams;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 
 
 /**
@@ -116,7 +119,9 @@ public final class ParseUtils {
     typeParams = tableFieldTypeInfo.getTypeParams();
     if (typeParams != null) {
       switch (tableFieldTypeInfo.getPrimitiveCategory()) {
-        // No parameterized types yet
+        case VARCHAR:
+          // Nothing to do here - the parameter will be passed to the UDF factory method below
+          break;
         default:
           throw new SemanticException("Type cast for " + tableFieldTypeInfo.getPrimitiveCategory() +
               " does not take type parameters");
@@ -131,5 +136,23 @@ public final class ParseUtils {
         .getFuncExprNodeDescWithUdfData(baseType, typeParams, column);
 
     return ret;
+  }
+
+  public static VarcharTypeParams getVarcharParams(String typeName, ASTNode node)
+      throws SemanticException {
+    if (node.getChildCount() != 1) {
+      throw new SemanticException("Bad params for type " + typeName);
+    }
+
+    try {
+      VarcharTypeParams typeParams = new VarcharTypeParams();
+      String lengthStr = node.getChild(0).getText();
+      Integer length = Integer.valueOf(lengthStr);
+      typeParams.setLength(length.intValue());
+      typeParams.validateParams();
+      return typeParams;
+    } catch (SerDeException err) {
+      throw new SemanticException(err);
+    }
   }
 }
