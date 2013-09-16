@@ -703,12 +703,9 @@ public class BinarySortableSerDe extends AbstractSerDe {
       case VARCHAR: {
         HiveVarcharObjectInspector hcoi = (HiveVarcharObjectInspector)poi;
         HiveVarcharWritable hc = hcoi.getPrimitiveWritableObject(o);
-        try {
-          ByteBuffer bb = Text.encode(hc.getHiveVarchar().getValue());
-          serializeBytes(buffer, bb.array(), bb.limit(), invert);
-        } catch (CharacterCodingException err) {
-          throw new SerDeException(err);
-        }
+        // use varchar's text field directly
+        Text t = hc.getTextValue();
+        serializeBytes(buffer, t.getBytes(), t.getLength(), invert);
         return;
       }
 

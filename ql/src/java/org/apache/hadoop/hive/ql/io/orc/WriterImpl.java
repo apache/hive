@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -54,11 +55,14 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.ParameterizedPrimitiveTypeUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
@@ -876,12 +880,21 @@ class WriterImpl implements Writer, MemoryManager.Callback {
           defaultFloatVal);
     }
 
+    /**
+     * Method to retrieve string values from the value object, which can be overridden
+     * by subclasses.
+     * @param obj  value
+     * @return String value from obj
+     */
+    String getStringValue(Object obj) {
+      return ((StringObjectInspector) inspector).getPrimitiveJavaObject(obj);
+    }
+
     @Override
     void write(Object obj) throws IOException {
       super.write(obj);
       if (obj != null) {
-        String val = ((StringObjectInspector) inspector)
-          .getPrimitiveJavaObject(obj);
+        String val = getStringValue(obj);
         rows.add(dictionary.add(val));
         indexStatistics.updateString(val);
       }
@@ -1011,6 +1024,28 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     @Override
     long estimateMemory() {
       return rows.getSizeInBytes() + dictionary.getSizeInBytes();
+    }
+  }
+
+  /**
+   * Under the covers, varchar is written to ORC the same way as string.
+   */
+  private static class VarcharTreeWriter extends StringTreeWriter {
+
+    VarcharTreeWriter(int columnId,
+        ObjectInspector inspector,
+        StreamFactory writer,
+        boolean nullable) throws IOException {
+      super(columnId, inspector, writer, nullable);
+    }
+
+    /**
+     * Override base class implementation to support varchar values.
+     */
+    @Override
+    String getStringValue(Object obj) {
+      return (((HiveVarcharObjectInspector) inspector)
+          .getPrimitiveJavaObject(obj)).getValue();
     }
   }
 
@@ -1500,6 +1535,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
           case STRING:
             return new StringTreeWriter(streamFactory.getNextColumnId(),
                 inspector, streamFactory, nullable);
+          case VARCHAR:
+            return new VarcharTreeWriter(streamFactory.getNextColumnId(),
+                inspector, streamFactory, nullable);
           case BINARY:
             return new BinaryTreeWriter(streamFactory.getNextColumnId(),
                 inspector, streamFactory, nullable);
@@ -1564,6 +1602,18 @@ class WriterImpl implements Writer, MemoryManager.Callback {
             break;
           case STRING:
             type.setKind(OrcProto.Type.Kind.STRING);
+            break;
+          case VARCHAR:
+            // The varchar length needs to be written to file and should be available
+            // from the object inspector
+            VarcharTypeParams varcharParams = (VarcharTypeParams)
+                ParameterizedPrimitiveTypeUtils.getTypeParamsFromPrimitiveObjectInspector(
+                    (PrimitiveObjectInspector) treeWriter.inspector);
+            if (varcharParams == null) {
+              throw new IllegalArgumentException("No varchar length specified in ORC type");
+            }
+            type.setKind(Type.Kind.VARCHAR);
+            type.setMaximumLength(varcharParams.getLength());
             break;
           case BINARY:
             type.setKind(OrcProto.Type.Kind.BINARY);
