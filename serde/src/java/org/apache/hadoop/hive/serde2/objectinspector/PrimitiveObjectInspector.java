@@ -17,11 +17,14 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+import org.apache.hadoop.hive.serde2.typeinfo.BaseTypeParams;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeSpec;
+
 /**
  * PrimitiveObjectInspector.
  *
  */
-public interface PrimitiveObjectInspector extends ObjectInspector {
+public interface PrimitiveObjectInspector extends ObjectInspector, PrimitiveTypeSpec {
 
   /**
    * The primitive types supported by Hive.
@@ -74,4 +77,17 @@ public interface PrimitiveObjectInspector extends ObjectInspector {
    * most efficient way to getting data out of the Object.
    */
   boolean preferWritable();
+
+  /**
+   * If the type has type parameters (such as varchar length, or decimal precision/scale),
+   * then return the parameters for the type.
+   * @return A BaseTypeParams object representing the parameters for the type, or null
+   */
+  BaseTypeParams getTypeParams();
+
+  /**
+   * Set the type parameters for the type.
+   * @param newParams type parameters for the type
+   */
+  void setTypeParams(BaseTypeParams newParams);
 }

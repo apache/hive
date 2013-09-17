@@ -23,19 +23,21 @@ import java.io.Serializable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 
 /**
  * There are limited number of Primitive Types. All Primitive Types are defined
  * by TypeInfoFactory.isPrimitiveClass().
- * 
+ *
  * Always use the TypeInfoFactory to create new TypeInfo objects, instead of
  * directly creating an instance of this class.
  */
-public final class PrimitiveTypeInfo extends TypeInfo implements Serializable {
+public class PrimitiveTypeInfo extends TypeInfo implements Serializable, PrimitiveTypeSpec {
 
   private static final long serialVersionUID = 1L;
 
-  private String typeName;
+  protected String typeName;
+  protected BaseTypeParams typeParams;
 
   /**
    * For java serialization use only.
@@ -59,7 +61,7 @@ public final class PrimitiveTypeInfo extends TypeInfo implements Serializable {
   }
 
   public PrimitiveCategory getPrimitiveCategory() {
-    return PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(typeName).primitiveCategory;
+    return getPrimitiveTypeEntry().primitiveCategory;
   }
 
   public Class<?> getPrimitiveWritableClass() {
@@ -81,6 +83,36 @@ public final class PrimitiveTypeInfo extends TypeInfo implements Serializable {
   }
 
   /**
+   * If the type has type parameters (such as varchar length, or decimal precision/scale),
+   * then return the parameters for the type.
+   * @return A BaseTypeParams object representing the parameters for the type, or null
+   */
+  public BaseTypeParams getTypeParams() {
+    return typeParams;
+  }
+
+  /**
+   * Set the type parameters for the type.
+   * @param typeParams type parameters for the type
+   */
+  public void setTypeParams(BaseTypeParams typeParams) {
+    // Ideally could check here to make sure the type really supports parameters,
+    // however during deserialization some of the required fields are not set at the
+    // time that the type params are set. We would have to customize the way this class
+    // is serialized/deserialized for the check to work.
+    //if (typeParams != null && !getPrimitiveTypeEntry().isParameterized()) {
+    //  throw new UnsupportedOperationException(
+    //      "Attempting to add type parameters " + typeParams + " to type " + getTypeName());
+    //}
+    this.typeParams = typeParams;
+  }
+
+  public PrimitiveTypeEntry getPrimitiveTypeEntry() {
+    return PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(
+        TypeInfoUtils.getBaseName(typeName));
+  }
+
+  /**
    * Compare if 2 TypeInfos are the same. We use TypeInfoFactory to cache
    * TypeInfos, so we only need to compare the Object pointer.
    */
@@ -97,4 +129,8 @@ public final class PrimitiveTypeInfo extends TypeInfo implements Serializable {
     return typeName.hashCode();
   }
 
+  @Override
+  public String toString() {
+    return typeName;
+  }
 }

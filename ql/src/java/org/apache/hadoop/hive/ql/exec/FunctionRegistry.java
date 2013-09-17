@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.GenericUDFDecode;
 import org.apache.hadoop.hive.ql.udf.GenericUDFEncode;
+import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.UDAFPercentile;
 import org.apache.hadoop.hive.ql.udf.UDFAbs;
 import org.apache.hadoop.hive.ql.udf.UDFAcos;
@@ -1281,18 +1282,38 @@ public final class FunctionRegistry {
       return null;
     }
 
+    GenericUDF clonedUDF = null;
     if (genericUDF instanceof GenericUDFBridge) {
       GenericUDFBridge bridge = (GenericUDFBridge) genericUDF;
-      return new GenericUDFBridge(bridge.getUdfName(), bridge.isOperator(),
+      clonedUDF = new GenericUDFBridge(bridge.getUdfName(), bridge.isOperator(),
           bridge.getUdfClass());
     } else if (genericUDF instanceof GenericUDFMacro) {
       GenericUDFMacro bridge = (GenericUDFMacro) genericUDF;
-      return new GenericUDFMacro(bridge.getMacroName(), bridge.getBody(),
+      clonedUDF = new GenericUDFMacro(bridge.getMacroName(), bridge.getBody(),
           bridge.getColNames(), bridge.getColTypes());
-    }
+     } else {
+       clonedUDF = (GenericUDF) ReflectionUtils
+           .newInstance(genericUDF.getClass(), null);
+     }
+ 
+     if (clonedUDF != null) {
+       // The original may have settable info that needs to be added to the new copy.
+       if (genericUDF instanceof SettableUDF) {
+         try {
+           Object settableData = ((SettableUDF)genericUDF).getParams();
+           if (settableData != null) {
+             ((SettableUDF)clonedUDF).setParams(settableData);
+           }
+         } catch (UDFArgumentException err) {
+           // In theory this should not happen - if the original copy of the UDF had this
+           // data, we should be able to set the UDF copy with this same settableData.
+           LOG.error("Unable to add settable data to UDF " + genericUDF.getClass());
+           throw new IllegalArgumentException(err);
+         }
+       }
+     }
 
-    return (GenericUDF) ReflectionUtils
-        .newInstance(genericUDF.getClass(), null);
+     return clonedUDF;
   }
 
   /**

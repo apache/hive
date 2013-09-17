@@ -27,18 +27,18 @@ import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyMapObjectInspector
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazySimpleStructObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.LazyUnionObjectInspector;
-import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyHiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyBinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyBooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyByteObjectInspector;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyDateObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyDoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyFloatObjectInspector;
+import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyHiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyIntObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyLongObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyPrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyShortObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyStringObjectInspector;
-import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyDateObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyTimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyVoidObjectInspector;
 import org.apache.hadoop.hive.serde2.lazydio.LazyDioBoolean;
@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.BaseTypeParams;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -215,9 +216,9 @@ public final class LazyFactory {
     ObjectInspector.Category c = typeInfo.getCategory();
     switch (c) {
     case PRIMITIVE:
+      BaseTypeParams typeParams = ((PrimitiveTypeInfo)typeInfo).getTypeParams();
       return LazyPrimitiveObjectInspectorFactory.getLazyObjectInspector(
-          ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory(), escaped,
-          escapeChar);
+          (PrimitiveTypeInfo) typeInfo, escaped, escapeChar);
     case MAP:
       return LazyObjectInspectorFactory.getLazySimpleMapObjectInspector(
           createLazyObjectInspector(((MapTypeInfo) typeInfo)

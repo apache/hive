@@ -86,8 +86,7 @@ public final class ObjectInspectorUtils {
     if (oi.getCategory() == Category.PRIMITIVE) {
       PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
       if (!(poi instanceof AbstractPrimitiveWritableObjectInspector)) {
-        return PrimitiveObjectInspectorFactory
-            .getPrimitiveWritableObjectInspector(poi.getPrimitiveCategory());
+        return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(poi);
       }
     }
     return oi;
@@ -111,22 +110,20 @@ public final class ObjectInspectorUtils {
       switch (objectInspectorOption) {
       case DEFAULT: {
         if (poi.preferWritable()) {
-          result = PrimitiveObjectInspectorFactory
-              .getPrimitiveWritableObjectInspector(poi.getPrimitiveCategory());
+          result = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(poi);
         } else {
           result = PrimitiveObjectInspectorFactory
-              .getPrimitiveJavaObjectInspector(poi.getPrimitiveCategory());
+              .getPrimitiveJavaObjectInspector(poi);
         }
         break;
       }
       case JAVA: {
         result = PrimitiveObjectInspectorFactory
-            .getPrimitiveJavaObjectInspector(poi.getPrimitiveCategory());
+            .getPrimitiveJavaObjectInspector(poi);
         break;
       }
       case WRITABLE: {
-        result = PrimitiveObjectInspectorFactory
-            .getPrimitiveWritableObjectInspector(poi.getPrimitiveCategory());
+        result = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(poi);
         break;
       }
       }
