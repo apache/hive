@@ -176,6 +176,8 @@ public class Main {
              FilterMapping.REQUEST);
     root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/queue/*", 
              FilterMapping.REQUEST);
+    root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/jobs/*",
+             FilterMapping.REQUEST);
     root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/mapreduce/*", 
              FilterMapping.REQUEST);
     root.addFilter(fHolder, "/" + SERVLET_PATH + "/v1/status/*", 
