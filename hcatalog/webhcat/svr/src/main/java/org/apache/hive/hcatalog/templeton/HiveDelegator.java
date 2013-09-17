@@ -22,6 +22,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.exec.ExecuteException;
@@ -41,24 +42,26 @@ public class HiveDelegator extends LauncherDelegator {
 
   public EnqueueBean run(String user,
                String execute, String srcFile, List<String> defines,
+               List<String> hiveArgs, String otherFiles,
                String statusdir, String callback, String completedUrl)
     throws NotAuthorizedException, BadParam, BusyException, QueueException,
     ExecuteException, IOException, InterruptedException
   {
     runAs = user;
-    List<String> args = makeArgs(execute, srcFile, defines, statusdir,
+    List<String> args = makeArgs(execute, srcFile, defines, hiveArgs, otherFiles, statusdir,
                    completedUrl);
 
     return enqueueController(user, callback, args);
   }
 
   private List<String> makeArgs(String execute, String srcFile,
-      List<String> defines, String statusdir, String completedUrl)
+             List<String> defines, List<String> hiveArgs, String otherFiles,
+             String statusdir, String completedUrl)
     throws BadParam, IOException, InterruptedException
   {
     ArrayList<String> args = new ArrayList<String>();
     try {
-      args.addAll(makeBasicArgs(execute, srcFile, statusdir, completedUrl));
+      args.addAll(makeBasicArgs(execute, srcFile, otherFiles, statusdir, completedUrl));
       args.add("--");
       args.add(appConf.hivePath());
 
@@ -77,6 +80,7 @@ public class HiveDelegator extends LauncherDelegator {
         args.add("--hiveconf");
         args.add(prop);
       }
+      args.addAll(hiveArgs);
       if (TempletonUtils.isset(execute)) {
         args.add("-e");
         args.add(execute);
@@ -94,8 +98,8 @@ public class HiveDelegator extends LauncherDelegator {
     return args;
   }
 
-  private List<String> makeBasicArgs(String execute, String srcFile,
-                     String statusdir, String completedUrl)
+  private List<String> makeBasicArgs(String execute, String srcFile, String otherFiles,
+                                         String statusdir, String completedUrl)
     throws URISyntaxException, FileNotFoundException, IOException,
     InterruptedException
   {
@@ -105,6 +109,11 @@ public class HiveDelegator extends LauncherDelegator {
     if (TempletonUtils.isset(srcFile))
       allFiles.add(TempletonUtils.hadoopFsFilename(srcFile, appConf,
           runAs));
+
+    if (TempletonUtils.isset(otherFiles)) {
+      String[] ofs = TempletonUtils.hadoopFsListAsArray(otherFiles, appConf, runAs);
+      allFiles.addAll(Arrays.asList(ofs));
+    }
 
     args.addAll(makeLauncherArgs(appConf, statusdir, completedUrl, allFiles));
 
