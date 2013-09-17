@@ -714,6 +714,7 @@ class ColumnStatisticsImpl implements ColumnStatistics {
           case DOUBLE:
             return new DoubleStatisticsImpl();
           case STRING:
+          case VARCHAR:
             return new StringStatisticsImpl();
           case DECIMAL:
             return new DecimalStatisticsImpl();

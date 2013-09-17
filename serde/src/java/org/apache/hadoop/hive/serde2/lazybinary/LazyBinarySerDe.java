@@ -270,6 +270,17 @@ public class LazyBinarySerDe extends AbstractSerDe {
     return warnedOnceNullMapKey;
   }
 
+  private static void serializeText(Output byteStream, Text t, boolean skipLengthPrefix) {
+    /* write byte size of the string which is a vint */
+    int length = t.getLength();
+    if (!skipLengthPrefix) {
+      LazyBinaryUtils.writeVInt(byteStream, length);
+    }
+    /* write string itself */
+    byte[] data = t.getBytes();
+    byteStream.write(data, 0, length);
+  }
+
   /**
    * A recursive function that serialize an object to a byte buffer based on its
    * object inspector.
@@ -358,32 +369,13 @@ public class LazyBinarySerDe extends AbstractSerDe {
       case STRING: {
         StringObjectInspector soi = (StringObjectInspector) poi;
         Text t = soi.getPrimitiveWritableObject(obj);
-        /* write byte size of the string which is a vint */
-        int length = t.getLength();
-        if (!skipLengthPrefix) {
-          LazyBinaryUtils.writeVInt(byteStream, length);
-        }
-        /* write string itself */
-        byte[] data = t.getBytes();
-        byteStream.write(data, 0, length);
+        serializeText(byteStream, t, skipLengthPrefix);
         return warnedOnceNullMapKey;
       }
       case VARCHAR: {
         HiveVarcharObjectInspector hcoi = (HiveVarcharObjectInspector) poi;
-        String value =
-            hcoi.getPrimitiveWritableObject(obj).getHiveVarchar().getValue();
-        int length = value.length();
-        // Write byte size
-        if (!skipLengthPrefix) {
-          LazyBinaryUtils.writeVInt(byteStream, length);
-        }
-        // Write string value
-        try {
-          ByteBuffer bb = Text.encode(value);
-          byteStream.write(bb.array(), 0, bb.limit());
-        } catch (CharacterCodingException err) {
-          throw new SerDeException(err);
-        }
+        Text t = hcoi.getPrimitiveWritableObject(obj).getTextValue();
+        serializeText(byteStream, t, skipLengthPrefix);
         return warnedOnceNullMapKey;
       }
       case BINARY: {

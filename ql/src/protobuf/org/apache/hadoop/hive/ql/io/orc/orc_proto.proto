@@ -103,10 +103,12 @@ message Type {
     UNION = 13;
     DECIMAL = 14;
     DATE = 15;
+    VARCHAR = 16;
   }
   required Kind kind = 1;
   repeated uint32 subtypes = 2 [packed=true];
   repeated string fieldNames = 3;
+  optional uint32 maximumLength = 4;
 }
 
 message StripeInformation {

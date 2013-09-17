@@ -229,8 +229,9 @@ public final class LazyUtils {
 
     case VARCHAR: {
       HiveVarcharWritable hc = ((HiveVarcharObjectInspector)oi).getPrimitiveWritableObject(o);
-      ByteBuffer b = Text.encode(hc.toString());
-      writeEscaped(out, b.array(), 0, b.limit(), escaped, escapeChar, needsEscape);
+      Text t = hc.getTextValue();
+      writeEscaped(out, t.getBytes(), 0, t.getLength(), escaped, escapeChar,
+          needsEscape);
       break;
     }
     case BINARY: {
