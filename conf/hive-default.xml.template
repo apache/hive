@@ -1955,7 +1955,7 @@
 
 <property>
   <name>hive.server2.table.type.mapping</name>
-  <value>HIVE</value>
+  <value>CLASSIC</value>
   <description>
    This setting reflects how HiveServer will report the table types for JDBC and other
    client implementations that retrieves the available tables and supported table types

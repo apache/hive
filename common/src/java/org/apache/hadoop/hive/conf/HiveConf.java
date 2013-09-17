@@ -757,7 +757,7 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_PLAIN_LDAP_DOMAIN("hive.server2.authentication.ldap.Domain", null),
     HIVE_SERVER2_CUSTOM_AUTHENTICATION_CLASS("hive.server2.custom.authentication.class", null),
     HIVE_SERVER2_ENABLE_DOAS("hive.server2.enable.doAs", true),
-    HIVE_SERVER2_TABLE_TYPE_MAPPING("hive.server2.table.type.mapping", "HIVE"),
+    HIVE_SERVER2_TABLE_TYPE_MAPPING("hive.server2.table.type.mapping", "CLASSIC"),
     HIVE_SERVER2_SESSION_HOOK("hive.server2.session.hook", ""),
 
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list", null),
