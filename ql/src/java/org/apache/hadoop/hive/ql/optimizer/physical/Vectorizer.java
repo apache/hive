@@ -461,7 +461,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
     if (desc instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc d = (ExprNodeGenericFuncDesc) desc;
-      boolean r = validateGenericUdf(d.getGenericUDF());
+      boolean r = validateGenericUdf(d);
       if (!r) {
         return false;
       }
@@ -474,7 +474,11 @@ public class Vectorizer implements PhysicalPlanResolver {
     return true;
   }
 
-  private boolean validateGenericUdf(GenericUDF genericUDF) {
+  private boolean validateGenericUdf(ExprNodeGenericFuncDesc genericUDFExpr) {
+    if (VectorizationContext.isCustomUDF(genericUDFExpr)) {
+      return true;
+    }
+    GenericUDF genericUDF = genericUDFExpr.getGenericUDF();
     if (genericUDF instanceof GenericUDFBridge) {
       Class<? extends UDF> udf = ((GenericUDFBridge) genericUDF).getUdfClass();
       return supportedGenericUDFs.contains(udf);

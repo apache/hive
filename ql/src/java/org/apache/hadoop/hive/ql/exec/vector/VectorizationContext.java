@@ -31,6 +31,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
+import org.apache.hadoop.hive.ql.exec.FunctionInfo;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ConstantVectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterConstantBooleanVectorExpression;
@@ -64,6 +66,8 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUD
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarPopLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarSampDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarSampLong;
+import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
+import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFArgDesc;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
@@ -140,6 +144,17 @@ public class VectorizationContext {
       return columnMap.get(name);
     }
   }
+
+  /* Return true if we are running in the planner, and false if we
+   * are running in a task.
+   */
+  /*
+  private boolean isPlanner() {
+
+    // This relies on the behavior that columnMap is null in the planner.
+    return columnMap == null;
+  }
+  */
 
   private class OutputColumnManager {
     private final int initialOutputCol;
@@ -243,8 +258,12 @@ public class VectorizationContext {
       ve = getVectorExpression((ExprNodeColumnDesc) exprDesc);
     } else if (exprDesc instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc expr = (ExprNodeGenericFuncDesc) exprDesc;
-      ve = getVectorExpression(expr.getGenericUDF(),
-          expr.getChildExprs());
+      if (isCustomUDF(expr)) {
+        ve = getCustomUDFExpression(expr);
+      } else {
+        ve = getVectorExpression(expr.getGenericUDF(),
+            expr.getChildExprs());
+      }
     } else if (exprDesc instanceof ExprNodeConstantDesc) {
       ve = getConstantVectorExpression((ExprNodeConstantDesc) exprDesc);
     }
@@ -252,6 +271,21 @@ public class VectorizationContext {
       throw new HiveException("Could not vectorize expression: "+exprDesc.getName());
     }
     return ve;
+  }
+
+  // Return true if this is a custom UDF or custom GenericUDF.
+  // This is for use only in the planner. It will fail in a task.
+  public static boolean isCustomUDF(ExprNodeGenericFuncDesc expr) {
+    String udfName = expr.getFuncText();
+    if (udfName == null) {
+      return false;
+    }
+    FunctionInfo funcInfo = FunctionRegistry.getFunctionInfo(udfName);
+    if (funcInfo == null) {
+      return false;
+    }
+    boolean isNativeFunc = funcInfo.isNative();
+    return !isNativeFunc;
   }
 
   /**
@@ -472,6 +506,104 @@ public class VectorizationContext {
     }
 
     throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
+  }
+
+  /*
+   * Return vector expression for a custom (i.e. not built-in) UDF.
+   */
+  private VectorExpression getCustomUDFExpression(ExprNodeGenericFuncDesc expr)
+      throws HiveException {
+
+    //GenericUDFBridge udfBridge = (GenericUDFBridge) expr.getGenericUDF();
+    List<ExprNodeDesc> childExprList = expr.getChildExprs();
+
+    // argument descriptors
+    VectorUDFArgDesc[] argDescs = new VectorUDFArgDesc[expr.getChildExprs().size()];
+    for (int i = 0; i < argDescs.length; i++) {
+      argDescs[i] = new VectorUDFArgDesc();
+    }
+
+    // positions of variable arguments (columns or non-constant expressions)
+    List<Integer> variableArgPositions = new ArrayList<Integer>();
+
+    // Column numbers of batch corresponding to expression result arguments
+    List<Integer> exprResultColumnNums = new ArrayList<Integer>();
+
+    // Prepare children
+    List<VectorExpression> vectorExprs = new ArrayList<VectorExpression>();
+
+    for (int i = 0; i < childExprList.size(); i++) {
+      ExprNodeDesc child = childExprList.get(i);
+      if (child instanceof ExprNodeGenericFuncDesc) {
+        VectorExpression e = getVectorExpression(child);
+        vectorExprs.add(e);
+        variableArgPositions.add(i);
+        exprResultColumnNums.add(e.getOutputColumn());
+        argDescs[i].setVariable(e.getOutputColumn());
+      } else if (child instanceof ExprNodeColumnDesc) {
+        variableArgPositions.add(i);
+        argDescs[i].setVariable(getInputColumnIndex(((ExprNodeColumnDesc) child).getColumn()));
+      } else if (child instanceof ExprNodeConstantDesc) {
+
+        // this is a constant
+        argDescs[i].setConstant((ExprNodeConstantDesc) child);
+      } else {
+        throw new HiveException("Unable to vectorize Custom UDF");
+      }
+    }
+
+    // Allocate output column and get column number;
+    int outputCol = -1;
+    String resultColVectorType;
+    String resultType = expr.getTypeInfo().getTypeName();
+    if (resultType.equalsIgnoreCase("string")) {
+      resultColVectorType = "String";
+    } else if (isIntFamily(resultType)) {
+      resultColVectorType = "Long";
+    } else if (isFloatFamily(resultType)) {
+      resultColVectorType = "Double";
+    } else if (resultType.equalsIgnoreCase("timestamp")) {
+      resultColVectorType = "Long";
+    } else {
+      throw new HiveException("Unable to vectorize due to unsupported custom UDF return type "
+                                + resultType);
+    }
+    outputCol = ocm.allocateOutputColumn(resultColVectorType);
+
+    // Make vectorized operator
+    VectorExpression ve;
+    ve = new VectorUDFAdaptor(expr, outputCol, resultColVectorType, argDescs);
+
+    // Set child expressions
+    VectorExpression[] childVEs = null;
+    if (exprResultColumnNums.size() != 0) {
+      childVEs = new VectorExpression[exprResultColumnNums.size()];
+      for (int i = 0; i < childVEs.length; i++) {
+        childVEs[i] = vectorExprs.get(i);
+      }
+    }
+    ve.setChildExpressions(childVEs);
+
+    // Free output columns if inputs have non-leaf expression trees.
+    for (Integer i : exprResultColumnNums) {
+      ocm.freeOutputColumn(i);
+    }
+    return ve;
+  }
+
+  // return true if this is any kind of float
+  public static boolean isFloatFamily(String resultType) {
+    return resultType.equalsIgnoreCase("double")
+        || resultType.equalsIgnoreCase("float");
+  }
+
+  // Return true if this data type is handled in the output vector as an integer.
+  public static boolean isIntFamily(String resultType) {
+    return resultType.equalsIgnoreCase("tinyint")
+        || resultType.equalsIgnoreCase("smallint")
+        || resultType.equalsIgnoreCase("int")
+        || resultType.equalsIgnoreCase("bigint")
+        || resultType.equalsIgnoreCase("boolean");
   }
 
   /* Return a unary string vector expression. This is used for functions like
