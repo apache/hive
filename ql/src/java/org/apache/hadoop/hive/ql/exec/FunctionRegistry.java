@@ -383,6 +383,7 @@ public final class FunctionRegistry {
     registerGenericUDAF("histogram_numeric", new GenericUDAFHistogramNumeric());
     registerGenericUDAF("percentile_approx", new GenericUDAFPercentileApprox());
     registerGenericUDAF("collect_set", new GenericUDAFCollectSet());
+    registerGenericUDAF("collect_list", new GenericUDAFCollectList());
 
     registerGenericUDAF("ngrams", new GenericUDAFnGrams());
     registerGenericUDAF("context_ngrams", new GenericUDAFContextNGrams());
