@@ -659,7 +659,7 @@ public final class TypeCheckProcFactory {
 
       List<ExprNodeDesc> childrenList = new ArrayList<ExprNodeDesc>(children.length);
       childrenList.addAll(Arrays.asList(children));
-      return ExprNodeGenericFuncDesc.newInstance(genericUDF, childrenList);
+      return ExprNodeGenericFuncDesc.newInstance(genericUDF, udfName, childrenList);
     }
 
     static ExprNodeDesc getXpathOrFuncExprNodeDesc(ASTNode expr,
@@ -724,7 +724,7 @@ public final class TypeCheckProcFactory {
           // Calculate TypeInfo
           TypeInfo t = ((ListTypeInfo) myt).getListElementTypeInfo();
           desc = new ExprNodeGenericFuncDesc(t, FunctionRegistry
-              .getGenericUDFForIndex(), children);
+              .getGenericUDFForIndex(), funcText, children);
         } else if (myt.getCategory() == Category.MAP) {
           // Only allow constant map key for now
           if (!(children.get(1) instanceof ExprNodeConstantDesc)) {
@@ -740,7 +740,7 @@ public final class TypeCheckProcFactory {
           // Calculate TypeInfo
           TypeInfo t = ((MapTypeInfo) myt).getMapValueTypeInfo();
           desc = new ExprNodeGenericFuncDesc(t, FunctionRegistry
-              .getGenericUDFForIndex(), children);
+              .getGenericUDFForIndex(), funcText, children);
         } else {
           throw new SemanticException(ErrorMsg.NON_COLLECTION_TYPE.getMsg(expr,
               myt.getTypeName()));
@@ -861,7 +861,7 @@ public final class TypeCheckProcFactory {
           }
         }
 
-        desc = ExprNodeGenericFuncDesc.newInstance(fi.getGenericUDF(), children);
+        desc = ExprNodeGenericFuncDesc.newInstance(fi.getGenericUDF(), funcText, children);
       }
       // UDFOPPositive is a no-op.
       // However, we still create it, and then remove it here, to make sure we
