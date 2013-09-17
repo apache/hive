@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.serde2.binarysortable;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,6 +33,7 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -39,6 +42,7 @@ import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -56,14 +60,18 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.ParameterizedPrimitiveTypeUtils.HiveVarcharSerDeHelper;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.ParameterizedPrimitiveTypeUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -276,48 +284,18 @@ public class BinarySortableSerDe extends AbstractSerDe {
       }
       case STRING: {
         Text r = reuse == null ? new Text() : (Text) reuse;
-        // Get the actual length first
-        int start = buffer.tell();
-        int length = 0;
-        do {
-          byte b = buffer.read(invert);
-          if (b == 0) {
-            // end of string
-            break;
-          }
-          if (b == 1) {
-            // the last char is an escape char. read the actual char
-            buffer.read(invert);
-          }
-          length++;
-        } while (true);
+        return deserializeText(buffer, invert, r);
+      }
 
-        if (length == buffer.tell() - start) {
-          // No escaping happened, so we are already done.
-          r.set(buffer.getData(), start, length);
-        } else {
-          // Escaping happened, we need to copy byte-by-byte.
-          // 1. Set the length first.
-          r.set(buffer.getData(), start, length);
-          // 2. Reset the pointer.
-          buffer.seek(start);
-          // 3. Copy the data.
-          byte[] rdata = r.getBytes();
-          for (int i = 0; i < length; i++) {
-            byte b = buffer.read(invert);
-            if (b == 1) {
-              // The last char is an escape char, read the actual char.
-              // The serialization format escape \0 to \1, and \1 to \2,
-              // to make sure the string is null-terminated.
-              b = (byte) (buffer.read(invert) - 1);
-            }
-            rdata[i] = b;
-          }
-          // 4. Read the null terminator.
-          byte b = buffer.read(invert);
-          assert (b == 0);
-        }
-        return r;
+      case VARCHAR: {
+        HiveVarcharWritable r =
+            reuse == null ? new HiveVarcharWritable() : (HiveVarcharWritable) reuse;
+            // Use HiveVarchar's internal Text member to read the value.
+            deserializeText(buffer, invert, r.getTextValue());
+            // If we cache helper data for deserialization we could avoid having
+            // to call getVarcharMaxLength() on every deserialize call.
+            r.enforceMaxLength(getVarcharMaxLength(type));
+            return r;
       }
 
       case BINARY: {
@@ -552,6 +530,60 @@ public class BinarySortableSerDe extends AbstractSerDe {
     return v;
   }
 
+  static int getVarcharMaxLength(TypeInfo type) {
+    VarcharTypeParams typeParams = (VarcharTypeParams) ((PrimitiveTypeInfo) type).getTypeParams();
+    if (typeParams != null ) {
+      return typeParams.length;
+    }
+    return -1;
+  }
+
+  static Text deserializeText(InputByteBuffer buffer, boolean invert, Text r)
+      throws IOException {
+    // Get the actual length first
+    int start = buffer.tell();
+    int length = 0;
+    do {
+      byte b = buffer.read(invert);
+      if (b == 0) {
+        // end of string
+        break;
+      }
+      if (b == 1) {
+        // the last char is an escape char. read the actual char
+        buffer.read(invert);
+      }
+      length++;
+    } while (true);
+
+    if (length == buffer.tell() - start) {
+      // No escaping happened, so we are already done.
+      r.set(buffer.getData(), start, length);
+    } else {
+      // Escaping happened, we need to copy byte-by-byte.
+      // 1. Set the length first.
+      r.set(buffer.getData(), start, length);
+      // 2. Reset the pointer.
+      buffer.seek(start);
+      // 3. Copy the data.
+      byte[] rdata = r.getBytes();
+      for (int i = 0; i < length; i++) {
+        byte b = buffer.read(invert);
+        if (b == 1) {
+          // The last char is an escape char, read the actual char.
+          // The serialization format escape \0 to \1, and \1 to \2,
+          // to make sure the string is null-terminated.
+          b = (byte) (buffer.read(invert) - 1);
+        }
+        rdata[i] = b;
+      }
+      // 4. Read the null terminator.
+      byte b = buffer.read(invert);
+      assert (b == 0);
+    }
+    return r;
+  }
+
   BytesWritable serializeBytesWritable = new BytesWritable();
   OutputByteBuffer outputByteBuffer = new OutputByteBuffer();
 
@@ -572,7 +604,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
   }
 
   static void serialize(OutputByteBuffer buffer, Object o, ObjectInspector oi,
-      boolean invert) {
+      boolean invert) throws SerDeException {
     // Is this field a null?
     if (o == null) {
       buffer.write((byte) 0, invert);
@@ -667,6 +699,18 @@ public class BinarySortableSerDe extends AbstractSerDe {
         serializeBytes(buffer, t.getBytes(), t.getLength(), invert);
         return;
           }
+
+      case VARCHAR: {
+        HiveVarcharObjectInspector hcoi = (HiveVarcharObjectInspector)poi;
+        HiveVarcharWritable hc = hcoi.getPrimitiveWritableObject(o);
+        try {
+          ByteBuffer bb = Text.encode(hc.getHiveVarchar().getValue());
+          serializeBytes(buffer, bb.array(), bb.limit(), invert);
+        } catch (CharacterCodingException err) {
+          throw new SerDeException(err);
+        }
+        return;
+      }
 
       case BINARY: {
         BinaryObjectInspector baoi = (BinaryObjectInspector) poi;

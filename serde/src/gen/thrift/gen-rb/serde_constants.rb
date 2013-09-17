@@ -53,6 +53,10 @@ DOUBLE_TYPE_NAME = %q"double"
 
 STRING_TYPE_NAME = %q"string"
 
+CHAR_TYPE_NAME = %q"char"
+
+VARCHAR_TYPE_NAME = %q"varchar"
+
 DATE_TYPE_NAME = %q"date"
 
 DATETIME_TYPE_NAME = %q"datetime"
@@ -85,6 +89,8 @@ PrimitiveTypes = Set.new([
   %q"float",
   %q"double",
   %q"string",
+  %q"varchar",
+  %q"char",
   %q"date",
   %q"datetime",
   %q"timestamp",

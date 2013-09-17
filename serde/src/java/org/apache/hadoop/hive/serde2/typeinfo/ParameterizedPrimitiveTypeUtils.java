@@ -1,5 +1,9 @@
 package org.apache.hadoop.hive.serde2.typeinfo;
 
+import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 
@@ -40,4 +44,28 @@ public class ParameterizedPrimitiveTypeUtils {
     return oi.getTypeParams();
   }
 
+  /**
+   * Utils for varchar type
+   */
+  public static class HiveVarcharSerDeHelper {
+    public int maxLength;
+    public HiveVarcharWritable writable = new HiveVarcharWritable();
+
+    public HiveVarcharSerDeHelper(VarcharTypeParams typeParams) {
+      if (typeParams == null) {
+        throw new RuntimeException("varchar type used without type params");
+      }
+      maxLength = typeParams.getLength();
+    }
+  }
+
+  public static boolean doesWritableMatchTypeParams(HiveVarcharWritable writable,
+      VarcharTypeParams typeParams) {
+    return (typeParams == null || typeParams.length >= writable.getCharacterLength());
+  }
+
+  public static boolean doesPrimitiveMatchTypeParams(HiveVarchar value,
+      VarcharTypeParams typeParams) {
+    return (typeParams == null || typeParams.length == value.getCharacterLength());
+  }
 }

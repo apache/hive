@@ -29,12 +29,14 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
@@ -45,6 +47,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseTypeParams;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeSpec;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -172,7 +175,7 @@ public final class PrimitiveObjectInspectorUtils {
         return result;
       } catch (Exception err) {
         LOG.error("Error while setting type parameters: " + err);
-        return null;
+        throw new RuntimeException(err);
       }
     }
 
@@ -212,7 +215,8 @@ public final class PrimitiveObjectInspectorUtils {
           return null;
         }
       } catch (Exception err) {
-        throw new SerDeException("Error creating type params for " + typeName, err);
+        throw new SerDeException("Error creating type params for " + typeName
+            + ": " + err, err);
       }
     }
 
@@ -296,6 +300,9 @@ public final class PrimitiveObjectInspectorUtils {
   public static final PrimitiveTypeEntry decimalTypeEntry = new PrimitiveTypeEntry(
       PrimitiveCategory.DECIMAL, serdeConstants.DECIMAL_TYPE_NAME, null,
       HiveDecimal.class, HiveDecimalWritable.class, null);
+  public static final PrimitiveTypeEntry varcharTypeEntry = new PrimitiveTypeEntry(
+      PrimitiveCategory.VARCHAR, serdeConstants.VARCHAR_TYPE_NAME, null, HiveVarchar.class,
+      HiveVarcharWritable.class, VarcharTypeParams.class);
 
   // The following is a complex type for special handling
   public static final PrimitiveTypeEntry unknownTypeEntry = new PrimitiveTypeEntry(
@@ -304,6 +311,7 @@ public final class PrimitiveObjectInspectorUtils {
   static {
     registerType(binaryTypeEntry);
     registerType(stringTypeEntry);
+    registerType(varcharTypeEntry);
     registerType(booleanTypeEntry);
     registerType(intTypeEntry);
     registerType(longTypeEntry);
@@ -428,14 +436,24 @@ public final class PrimitiveObjectInspectorUtils {
   public static PrimitiveTypeEntry getTypeEntryFromTypeSpecs(
       PrimitiveCategory primitiveCategory,
       BaseTypeParams typeParams) {
-    String typeString = primitiveCategory.toString().toLowerCase();
-    if (typeParams != null) {
-      typeString += typeParams.toString();
+    if (typeParams == null) {
+      // No type params, can just use the primitive category
+      return getTypeEntryFromPrimitiveCategory(primitiveCategory);
     }
+
+    // Type params were passed in. First check for cached version
+    String typeString = primitiveCategory.toString().toLowerCase();
+    typeString += typeParams.toString();
     PrimitiveTypeEntry typeEntry = getTypeEntryFromTypeName(typeString);
     if (typeEntry == null) {
       // Parameterized type doesn't exist yet, create now.
-      typeEntry = (PrimitiveTypeEntry)getTypeEntryFromTypeSpecs(primitiveCategory, null).clone();
+      typeEntry = 
+          (PrimitiveTypeEntry) getTypeEntryFromPrimitiveCategory(primitiveCategory).clone();
+      if (!typeEntry.isParameterized()) {
+        throw new IllegalArgumentException(
+            primitiveCategory + " type was being used with type parameters "
+            + typeParams + ", which should not be allowed");
+      }
       typeEntry.typeParams = typeParams;
       addParameterizedType(typeEntry);
     }
@@ -490,6 +508,10 @@ public final class PrimitiveObjectInspectorUtils {
       Writable t2 = ((StringObjectInspector) oi2)
           .getPrimitiveWritableObject(o2);
       return t1.equals(t2);
+    }
+    case VARCHAR: {
+      return ((HiveVarcharObjectInspector)oi1).getPrimitiveWritableObject(o1)
+          .equals(((HiveVarcharObjectInspector)oi2).getPrimitiveWritableObject(o2));
     }
     case DATE: {
       return ((DateObjectInspector) oi1).getPrimitiveWritableObject(o1)
@@ -694,6 +716,10 @@ public final class PrimitiveObjectInspectorUtils {
       }
       break;
     }
+    case VARCHAR: {
+      result = Integer.parseInt(getString(o, oi));
+      break;
+    }
     case TIMESTAMP:
       result = (int) (((TimestampObjectInspector) oi)
           .getPrimitiveWritableObject(o).getSeconds());
@@ -753,6 +779,10 @@ public final class PrimitiveObjectInspectorUtils {
         result = Long.parseLong(s);
       }
       break;
+    case VARCHAR: {
+      result = Long.parseLong(getString(o, oi));
+      break;
+    }
     case TIMESTAMP:
       result = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o)
           .getSeconds();
@@ -805,6 +835,9 @@ public final class PrimitiveObjectInspectorUtils {
       StringObjectInspector soi = (StringObjectInspector) oi;
       String s = soi.getPrimitiveJavaObject(o);
       result = Double.parseDouble(s);
+      break;
+    case VARCHAR:
+      result = Double.parseDouble(getString(o, oi));
       break;
     case TIMESTAMP:
       result = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o).getDouble();
@@ -871,6 +904,10 @@ public final class PrimitiveObjectInspectorUtils {
       StringObjectInspector soi = (StringObjectInspector) oi;
       result = soi.getPrimitiveJavaObject(o);
       break;
+    case VARCHAR:
+      HiveVarcharObjectInspector hcoi = (HiveVarcharObjectInspector) oi;
+      result = hcoi.getPrimitiveJavaObject(o).toString();
+      break;
     case DATE:
       result = ((DateObjectInspector) oi).getPrimitiveWritableObject(o).toString();
       break;
@@ -884,6 +921,28 @@ public final class PrimitiveObjectInspectorUtils {
     default:
       throw new RuntimeException("Hive 2 Internal error: unknown type: "
           + oi.getTypeName());
+    }
+    return result;
+  }
+
+  public static HiveVarchar getHiveVarchar(Object o, PrimitiveObjectInspector oi) {
+
+    if (o == null) {
+      return null;
+    }
+
+    HiveVarchar result = null;
+    switch (oi.getPrimitiveCategory()) {
+      case VARCHAR:
+        result = ((HiveVarcharObjectInspector)oi).getPrimitiveJavaObject(o);
+        break;
+      default:
+        // Is there a way to provide char length here?
+        // It might actually be ok as long as there is an object inspector (with char length)
+        // receiving this value.
+        result = new HiveVarchar();
+        result.setValue(getString(o, oi));
+        break;
     }
     return result;
   }
@@ -951,6 +1010,9 @@ public final class PrimitiveObjectInspectorUtils {
     case STRING:
       result = new HiveDecimal(((StringObjectInspector) oi).getPrimitiveJavaObject(o));
       break;
+    case VARCHAR:
+      result = new HiveDecimal(getString(o, oi));
+      break;
     case TIMESTAMP:
       Double ts = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o)
         .getDouble();
@@ -986,6 +1048,15 @@ public final class PrimitiveObjectInspectorUtils {
         result = null;
       }
       break;
+    case VARCHAR: {
+      try {
+        String val = getString(o, oi).trim();
+        result = Date.valueOf(val);
+      } catch (IllegalArgumentException e) {
+        result = null;
+      }
+      break;
+    }
     case DATE:
       result = ((DateObjectInspector) oi).getPrimitiveWritableObject(o).get();
       break;
@@ -1040,6 +1111,9 @@ public final class PrimitiveObjectInspectorUtils {
       StringObjectInspector soi = (StringObjectInspector) oi;
       String s = soi.getPrimitiveJavaObject(o);
       result = getTimestampFromString(s);
+      break;
+    case VARCHAR:
+      result = getTimestampFromString(getString(o, oi));
       break;
     case DATE:
       result = new Timestamp(
@@ -1109,6 +1183,7 @@ public final class PrimitiveObjectInspectorUtils {
       case DECIMAL:
         return PrimitiveGrouping.NUMERIC_GROUP;
       case STRING:
+      case VARCHAR:
         return PrimitiveGrouping.STRING_GROUP;
       case BOOLEAN:
         return PrimitiveGrouping.BOOLEAN_GROUP;

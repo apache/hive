@@ -21,9 +21,11 @@ package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseTypeParams;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeSpec;
 
@@ -65,6 +67,8 @@ public final class LazyPrimitiveObjectInspectorFactory {
       new LazyBinaryObjectInspector();
   public static final LazyHiveDecimalObjectInspector LAZY_BIG_DECIMAL_OBJECT_INSPECTOR =
       new LazyHiveDecimalObjectInspector();
+  public static final LazyHiveVarcharObjectInspector LAZY_VARCHAR_OBJECT_INSPECTOR =
+      new LazyHiveVarcharObjectInspector(PrimitiveObjectInspectorUtils.varcharTypeEntry);
 
   static HashMap<ArrayList<Object>, LazyStringObjectInspector> cachedLazyStringObjectInspector =
       new HashMap<ArrayList<Object>, LazyStringObjectInspector>();
@@ -96,8 +100,14 @@ public final class LazyPrimitiveObjectInspectorFactory {
     if (poi == null) {
       // Object inspector hasn't been cached for this type/params yet, create now
       switch (primitiveCategory) {
-        // Get type entry for parameterized type, and create new object inspector for type
-        // Currently no parameterized types
+        case VARCHAR:
+          PrimitiveTypeEntry typeEntry = PrimitiveObjectInspectorUtils.getTypeEntryFromTypeSpecs(
+              primitiveCategory,
+              typeParams);
+          poi = new LazyHiveVarcharObjectInspector(typeEntry);
+          poi.setTypeParams(typeParams);
+          cachedParameterizedLazyObjectInspectors.setObjectInspector(poi);
+          break;
 
         default:
           throw new RuntimeException(
@@ -126,6 +136,8 @@ public final class LazyPrimitiveObjectInspectorFactory {
       return LAZY_DOUBLE_OBJECT_INSPECTOR;
     case STRING:
       return getLazyStringObjectInspector(escaped, escapeChar);
+    case VARCHAR:
+      return LAZY_VARCHAR_OBJECT_INSPECTOR;
     case BINARY:
       return LAZY_BINARY_OBJECT_INSPECTOR;
     case VOID:
@@ -151,7 +163,10 @@ public final class LazyPrimitiveObjectInspectorFactory {
       return getLazyObjectInspector(primitiveCategory, escaped, escapeChar);
     } else {
       switch(primitiveCategory) {
-        // call getParameterizedObjectInspector(). But no parameterized types yet
+        case VARCHAR:
+          LazyHiveVarcharObjectInspector oi = (LazyHiveVarcharObjectInspector)
+            getParameterizedObjectInspector(typeSpec);
+          return oi;
 
         default:
           throw new RuntimeException("Type " + primitiveCategory + " does not take parameters");

@@ -133,9 +133,14 @@ public abstract class GenericUDFBaseCompare extends GenericUDF {
       TypeInfo oiTypeInfo0 = TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[0]);
       TypeInfo oiTypeInfo1 = TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[1]);
 
-      if (oiTypeInfo0 != oiTypeInfo1) {
+      if (oiTypeInfo0 == oiTypeInfo1
+          || TypeInfoUtils.doPrimitiveCategoriesMatch(oiTypeInfo0, oiTypeInfo1)) {
+        compareType = CompareType.SAME_TYPE;
+      } else {
         compareType = CompareType.NEED_CONVERT;
-        TypeInfo compareType = FunctionRegistry.getCommonClassForComparison(oiTypeInfo0, oiTypeInfo1);
+        TypeInfo compareType = FunctionRegistry.getCommonClassForComparison(
+            oiTypeInfo0, oiTypeInfo1);
+
         // For now, we always convert to double if we can't find a common type
         compareOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
             (compareType == null) ?
@@ -143,8 +148,6 @@ public abstract class GenericUDFBaseCompare extends GenericUDF {
 
         converter0 = ObjectInspectorConverters.getConverter(arguments[0], compareOI);
         converter1 = ObjectInspectorConverters.getConverter(arguments[1], compareOI);
-      } else {
-        compareType = CompareType.SAME_TYPE;
       }
     }
     return PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;

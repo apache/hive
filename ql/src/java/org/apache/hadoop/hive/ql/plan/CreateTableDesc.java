@@ -25,10 +25,13 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -36,7 +39,8 @@ import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer;
 import org.apache.hadoop.hive.ql.parse.ParseUtils;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
  * CreateTableDesc.
@@ -45,6 +49,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 @Explain(displayName = "Create Table")
 public class CreateTableDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
+  private static Log LOG = LogFactory.getLog(CreateTableDesc.class);
   String databaseName;
   String tableName;
   boolean isExternal;
@@ -461,12 +466,15 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
       while (partColsIter.hasNext()) {
         FieldSchema fs = partColsIter.next();
         String partCol = fs.getName();
-        PrimitiveObjectInspectorUtils.PrimitiveTypeEntry pte = PrimitiveObjectInspectorUtils
-            .getTypeEntryFromTypeName(
-            fs.getType());
-        if(null == pte){
+        TypeInfo pti = null;
+        try {
+          pti = TypeInfoFactory.getPrimitiveTypeInfo(fs.getType());
+        } catch (Exception err) {
+          LOG.error(err);
+        }
+        if(null == pti){
           throw new SemanticException(ErrorMsg.PARTITION_COLUMN_NON_PRIMITIVE.getMsg() + " Found "
-        + partCol + " of type: " + fs.getType());
+              + partCol + " of type: " + fs.getType());
         }
         Iterator<String> colNamesIter = colNames.iterator();
         while (colNamesIter.hasNext()) {

@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 
@@ -67,6 +68,16 @@ public final class TypeInfoFactory {
         }
       } else {
         // No type params
+
+        // Prevent creation of varchar TypeInfo with no length specification.
+        // This can happen if an old-style UDF uses a varchar type either as an
+        // argument or return type in an evaluate() function, or other instances
+        // of using reflection-based methods for retrieving a TypeInfo.
+        if (typeEntry.primitiveCategory == PrimitiveCategory.VARCHAR) {
+          LOG.error("varchar type used with no type params");
+          throw new RuntimeException("varchar type used with no type params");
+        }
+
         result = new PrimitiveTypeInfo(parts.typeName);
       }
 

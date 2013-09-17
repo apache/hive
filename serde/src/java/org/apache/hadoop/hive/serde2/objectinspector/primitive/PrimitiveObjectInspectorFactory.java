@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseTypeParams;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeSpec;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -68,6 +70,8 @@ public final class PrimitiveObjectInspectorFactory {
       new JavaDoubleObjectInspector();
   public static final JavaStringObjectInspector javaStringObjectInspector =
       new JavaStringObjectInspector();
+  public static final JavaHiveVarcharObjectInspector javaHiveVarcharObjectInspector =
+      new JavaHiveVarcharObjectInspector(PrimitiveObjectInspectorUtils.varcharTypeEntry);
   public static final JavaVoidObjectInspector javaVoidObjectInspector =
       new JavaVoidObjectInspector();
   public static final JavaDateObjectInspector javaDateObjectInspector =
@@ -95,6 +99,8 @@ public final class PrimitiveObjectInspectorFactory {
       new WritableDoubleObjectInspector();
   public static final WritableStringObjectInspector writableStringObjectInspector =
       new WritableStringObjectInspector();
+  public static final WritableHiveVarcharObjectInspector writableHiveVarcharObjectInspector =
+      new WritableHiveVarcharObjectInspector(PrimitiveObjectInspectorUtils.varcharTypeEntry);
   public static final WritableVoidObjectInspector writableVoidObjectInspector =
       new WritableVoidObjectInspector();
   public static final WritableDateObjectInspector writableDateObjectInspector =
@@ -125,6 +131,8 @@ public final class PrimitiveObjectInspectorFactory {
         writableDoubleObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.STRING,
         writableStringObjectInspector);
+    cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.VARCHAR,
+        writableHiveVarcharObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.VOID,
         writableVoidObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.DATE,
@@ -156,6 +164,8 @@ public final class PrimitiveObjectInspectorFactory {
         javaDoubleObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.STRING,
         javaStringObjectInspector);
+    cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.VARCHAR,
+        javaHiveVarcharObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.VOID,
         javaVoidObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.DATE,
@@ -229,7 +239,14 @@ public final class PrimitiveObjectInspectorFactory {
       if (oi == null) {
         // Do a bit of validation - not all primitive types use parameters.
         switch (primitiveCategory) {
-          // Currently no parameterized types
+          case VARCHAR:
+            PrimitiveTypeEntry typeEntry = PrimitiveObjectInspectorUtils.getTypeEntryFromTypeSpecs(
+                primitiveCategory,
+                primitiveTypeParams);
+            oi = new WritableHiveVarcharObjectInspector(typeEntry);
+            oi.setTypeParams(primitiveTypeParams);
+            cachedParameterizedPrimitiveWritableObjectInspectorCache.setObjectInspector(oi);
+            break;
           default:
             throw new RuntimeException(
                 "Primitve type " + primitiveCategory + " should not take parameters");
@@ -248,6 +265,24 @@ public final class PrimitiveObjectInspectorFactory {
    */
   public static ConstantObjectInspector getPrimitiveWritableConstantObjectInspector(
       PrimitiveCategory primitiveCategory, Object value) {
+    return getPrimitiveWritableConstantObjectInspector(
+        PrimitiveObjectInspectorUtils.getTypeEntryFromTypeSpecs(primitiveCategory, null),
+        value);
+  }
+
+  /**
+   * Returns a PrimitiveWritableObjectInspector which implements ConstantObjectInspector
+   * for the PrimitiveCategory.
+   *
+   * @param primitiveCategory
+   * @param typeParams  Type qualifiers for the type (if applicable)
+   * @param value
+   */
+  public static ConstantObjectInspector getPrimitiveWritableConstantObjectInspector(
+      PrimitiveTypeSpec typeSpecs, Object value) {
+    PrimitiveCategory primitiveCategory = typeSpecs.getPrimitiveCategory();
+    BaseTypeParams typeParams = typeSpecs.getTypeParams();
+
     switch (primitiveCategory) {
     case BOOLEAN:
       return new WritableConstantBooleanObjectInspector((BooleanWritable)value);
@@ -265,6 +300,9 @@ public final class PrimitiveObjectInspectorFactory {
       return new WritableConstantDoubleObjectInspector((DoubleWritable)value);
     case STRING:
       return new WritableConstantStringObjectInspector((Text)value);
+    case VARCHAR:
+      return new WritableConstantHiveVarcharObjectInspector((HiveVarcharWritable)value,
+          (VarcharTypeParams) typeParams);
     case DATE:
       return new WritableConstantDateObjectInspector((DateWritable)value);
     case TIMESTAMP:
@@ -328,8 +366,14 @@ public final class PrimitiveObjectInspectorFactory {
       if (oi == null) {
         // Do a bit of validation - not all primitive types use parameters.
         switch (primitiveCategory) {
-          // Create type info and add to cache
-          // Currently no existing parameterized types
+          case VARCHAR:
+            PrimitiveTypeEntry typeEntry = PrimitiveObjectInspectorUtils.getTypeEntryFromTypeSpecs(
+                primitiveCategory,
+                primitiveTypeParams);
+            oi = new JavaHiveVarcharObjectInspector(typeEntry);
+            oi.setTypeParams(primitiveTypeParams);
+            cachedParameterizedPrimitiveJavaObjectInspectorCache.setObjectInspector(oi);
+            break;
           default:
             throw new RuntimeException(
                 "Primitve type " + primitiveCategory + " should not take parameters");

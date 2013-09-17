@@ -39,6 +39,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -159,6 +160,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.w3c.dom.Document;
@@ -361,6 +363,8 @@ public final class FunctionRegistry {
         GenericUDFToBinary.class);
     registerGenericUDF(serdeConstants.DECIMAL_TYPE_NAME,
         GenericUDFToDecimal.class);
+    registerGenericUDF(serdeConstants.VARCHAR_TYPE_NAME,
+        GenericUDFToVarchar.class);
 
     // Aggregate functions
     registerGenericUDAF("max", new GenericUDAFMax());
@@ -626,6 +630,17 @@ public final class FunctionRegistry {
     registerNumericType(PrimitiveCategory.STRING, 8);
   }
 
+  static int getCommonLength(int aLen, int bLen) {
+    int maxLength;
+    if (aLen < 0 || bLen < 0) {
+      // negative length should take precedence over positive value?
+      maxLength = -1;
+    } else {
+      maxLength = Math.max(aLen, bLen);
+    }
+    return maxLength;
+  }
+
   /**
    * Given 2 TypeInfo types and the PrimitiveCategory selected as the common class between the two,
    * return a TypeInfo corresponding to the common PrimitiveCategory, and with type qualifiers
@@ -643,6 +658,16 @@ public final class FunctionRegistry {
     // For types with parameters (like varchar), we need to determine the type parameters
     // that should be added to this type, based on the original 2 TypeInfos.
     switch (typeCategory) {
+      case VARCHAR:
+        int maxLength = getCommonLength(
+            TypeInfoUtils.getCharacterLengthForType(a),
+            TypeInfoUtils.getCharacterLengthForType(b));
+        VarcharTypeParams varcharParams = new VarcharTypeParams();
+        varcharParams.setLength(maxLength);
+        // Generate type name so that we can retrieve the TypeInfo for that type.
+        String typeName = PrimitiveObjectInspectorUtils
+            .getTypeEntryFromTypeSpecs(typeCategory, varcharParams).toString();
+        return TypeInfoFactory.getPrimitiveTypeInfo(typeName);
 
       default:
         // Type doesn't require any qualifiers.
@@ -840,7 +865,6 @@ public final class FunctionRegistry {
     return false;
   }
 
-
   /**
    * Get the GenericUDAF evaluator for the name and argumentClasses.
    *
@@ -1019,7 +1043,8 @@ public final class FunctionRegistry {
    */
   public static int matchCost(TypeInfo argumentPassed,
       TypeInfo argumentAccepted, boolean exact) {
-    if (argumentAccepted.equals(argumentPassed)) {
+    if (argumentAccepted.equals(argumentPassed)
+        || TypeInfoUtils.doPrimitiveCategoriesMatch(argumentPassed, argumentAccepted)) {
       // matches
       return 0;
     }
@@ -1468,6 +1493,7 @@ public final class FunctionRegistry {
         udfClass == UDFToDouble.class || udfClass == UDFToFloat.class ||
         udfClass == UDFToInteger.class || udfClass == UDFToLong.class ||
         udfClass == UDFToShort.class || udfClass == UDFToString.class ||
+        udfClass == GenericUDFToVarchar.class ||
         udfClass == GenericUDFTimestamp.class || udfClass == GenericUDFToBinary.class ||
         udfClass == GenericUDFToDate.class;
   }

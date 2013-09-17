@@ -83,6 +83,7 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     case DOUBLE:
       return new GenericUDAFDoubleStatsEvaluator();
     case STRING:
+    case VARCHAR:
       return new GenericUDAFStringStatsEvaluator();
     case BINARY:
       return new GenericUDAFBinaryStatsEvaluator();
@@ -102,12 +103,12 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
 
     /* Object Inspector corresponding to the input parameter.
      */
-    private PrimitiveObjectInspector inputOI;
+    private transient PrimitiveObjectInspector inputOI;
 
     /* Partial aggregation result returned by TerminatePartial. Partial result is a struct
      * containing a long field named "count".
      */
-    private Object[] partialResult;
+    private transient Object[] partialResult;
 
     /* Object Inspectors corresponding to the struct returned by TerminatePartial and the long
      * field within the struct - "count"
@@ -115,17 +116,17 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     private transient StructObjectInspector soi;
 
     private transient StructField countTruesField;
-    private WritableLongObjectInspector countTruesFieldOI;
+    private transient WritableLongObjectInspector countTruesFieldOI;
 
     private transient StructField countFalsesField;
-    private WritableLongObjectInspector countFalsesFieldOI;
+    private transient WritableLongObjectInspector countFalsesFieldOI;
 
     private transient StructField countNullsField;
-    private WritableLongObjectInspector countNullsFieldOI;
+    private transient WritableLongObjectInspector countNullsFieldOI;
 
     /* Output of final result of the aggregation
      */
-    private Object[] result;
+    private transient Object[] result;
 
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters)
@@ -305,13 +306,13 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
 
     /* Object Inspector corresponding to the input parameter.
      */
-    private PrimitiveObjectInspector inputOI;
+    private transient PrimitiveObjectInspector inputOI;
     private transient PrimitiveObjectInspector numVectorsOI;
 
     /* Partial aggregation result returned by TerminatePartial. Partial result is a struct
      * containing a long field named "count".
      */
-    private Object[] partialResult;
+    private transient Object[] partialResult;
 
     /* Object Inspectors corresponding to the struct returned by TerminatePartial and the long
      * field within the struct - "count"
@@ -319,23 +320,23 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     private transient StructObjectInspector soi;
 
     private transient StructField minField;
-    private WritableLongObjectInspector minFieldOI;
+    private transient WritableLongObjectInspector minFieldOI;
 
     private transient StructField maxField;
-    private WritableLongObjectInspector maxFieldOI;
+    private transient WritableLongObjectInspector maxFieldOI;
 
     private transient StructField countNullsField;
-    private WritableLongObjectInspector countNullsFieldOI;
+    private transient WritableLongObjectInspector countNullsFieldOI;
 
     private transient StructField ndvField;
-    private WritableStringObjectInspector ndvFieldOI;
+    private transient WritableStringObjectInspector ndvFieldOI;
 
     private transient StructField numBitVectorsField;
-    private WritableIntObjectInspector numBitVectorsFieldOI;
+    private transient WritableIntObjectInspector numBitVectorsFieldOI;
 
     /* Output of final result of the aggregation
      */
-    private Object[] result;
+    private transient Object[] result;
 
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
@@ -601,13 +602,13 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
 
     /* Object Inspector corresponding to the input parameter.
      */
-    private PrimitiveObjectInspector inputOI;
+    private transient PrimitiveObjectInspector inputOI;
     private transient PrimitiveObjectInspector numVectorsOI;
 
     /* Partial aggregation result returned by TerminatePartial. Partial result is a struct
      * containing a long field named "count".
      */
-    private Object[] partialResult;
+    private transient Object[] partialResult;
 
     /* Object Inspectors corresponding to the struct returned by TerminatePartial and the long
      * field within the struct - "count"
@@ -615,23 +616,23 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     private transient StructObjectInspector soi;
 
     private transient StructField minField;
-    private WritableDoubleObjectInspector minFieldOI;
+    private transient WritableDoubleObjectInspector minFieldOI;
 
     private transient StructField maxField;
-    private WritableDoubleObjectInspector maxFieldOI;
+    private transient WritableDoubleObjectInspector maxFieldOI;
 
     private transient StructField countNullsField;
-    private WritableLongObjectInspector countNullsFieldOI;
+    private transient WritableLongObjectInspector countNullsFieldOI;
 
     private transient StructField ndvField;
-    private WritableStringObjectInspector ndvFieldOI;
+    private transient WritableStringObjectInspector ndvFieldOI;
 
     private transient StructField numBitVectorsField;
-    private WritableIntObjectInspector numBitVectorsFieldOI;
+    private transient WritableIntObjectInspector numBitVectorsFieldOI;
 
     /* Output of final result of the aggregation
      */
-    private Object[] result;
+    private transient Object[] result;
 
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
@@ -898,13 +899,13 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
 
     /* Object Inspector corresponding to the input parameter.
      */
-    private PrimitiveObjectInspector inputOI;
+    private transient PrimitiveObjectInspector inputOI;
     private transient PrimitiveObjectInspector numVectorsOI;
 
     /* Partial aggregation result returned by TerminatePartial. Partial result is a struct
      * containing a long field named "count".
      */
-    private Object[] partialResult;
+    private transient Object[] partialResult;
 
     /* Object Inspectors corresponding to the struct returned by TerminatePartial and the
      * fields within the struct - "maxLength", "sumLength", "count", "countNulls", "ndv"
@@ -912,26 +913,26 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     private transient StructObjectInspector soi;
 
     private transient StructField maxLengthField;
-    private WritableLongObjectInspector maxLengthFieldOI;
+    private transient WritableLongObjectInspector maxLengthFieldOI;
 
     private transient StructField sumLengthField;
-    private WritableLongObjectInspector sumLengthFieldOI;
+    private transient WritableLongObjectInspector sumLengthFieldOI;
 
     private transient StructField countField;
-    private WritableLongObjectInspector countFieldOI;
+    private transient WritableLongObjectInspector countFieldOI;
 
     private transient StructField countNullsField;
-    private WritableLongObjectInspector countNullsFieldOI;
+    private transient WritableLongObjectInspector countNullsFieldOI;
 
     private transient StructField ndvField;
-    private WritableStringObjectInspector ndvFieldOI;
+    private transient WritableStringObjectInspector ndvFieldOI;
 
     private transient StructField numBitVectorsField;
-    private WritableIntObjectInspector numBitVectorsFieldOI;
+    private transient WritableIntObjectInspector numBitVectorsFieldOI;
 
     /* Output of final result of the aggregation
      */
-    private Object[] result;
+    private transient Object[] result;
 
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
@@ -1217,12 +1218,12 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
 
     /* Object Inspector corresponding to the input parameter.
      */
-    private PrimitiveObjectInspector inputOI;
+    private transient PrimitiveObjectInspector inputOI;
 
     /* Partial aggregation result returned by TerminatePartial. Partial result is a struct
      * containing a long field named "count".
      */
-    private Object[] partialResult;
+    private transient Object[] partialResult;
 
     /* Object Inspectors corresponding to the struct returned by TerminatePartial and the
      * fields within the struct - "maxLength", "sumLength", "count", "countNulls"
@@ -1230,20 +1231,20 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     private transient StructObjectInspector soi;
 
     private transient StructField maxLengthField;
-    private WritableLongObjectInspector maxLengthFieldOI;
+    private transient WritableLongObjectInspector maxLengthFieldOI;
 
     private transient StructField sumLengthField;
-    private WritableLongObjectInspector sumLengthFieldOI;
+    private transient WritableLongObjectInspector sumLengthFieldOI;
 
     private transient StructField countField;
-    private WritableLongObjectInspector countFieldOI;
+    private transient WritableLongObjectInspector countFieldOI;
 
     private transient StructField countNullsField;
-    private WritableLongObjectInspector countNullsFieldOI;
+    private transient WritableLongObjectInspector countNullsFieldOI;
 
     /* Output of final result of the aggregation
      */
-    private Object[] result;
+    private transient Object[] result;
 
     @Override
     public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
