@@ -659,12 +659,25 @@ public class Server {
 
   /**
    * Run a Hive job.
+   * @param execute    SQL statement to run, equivalent to "-e" from hive command line
+   * @param srcFile    name of hive script file to run, equivalent to "-f" from hive
+   *                   command line
+   * @param hiveArgs   additional command line argument passed to the hive command line. 
+   *                   Please check https://cwiki.apache.org/Hive/languagemanual-cli.html
+   *                   for detailed explanation of command line arguments
+   * @param otherFiles additional files to be shipped to the launcher, such as the jars
+   *                   used in "add jar" statement in hive script
+   * @param defines    shortcut for command line arguments "--define"
+   * @param statusdir  where the stderr/stdout of templeton controller job goes
+   * @param callback   callback url when the hive job finishes
    */
   @POST
   @Path("hive")
   @Produces({MediaType.APPLICATION_JSON})
   public EnqueueBean hive(@FormParam("execute") String execute,
               @FormParam("file") String srcFile,
+              @FormParam("arg") List<String> hiveArgs,
+              @FormParam("files") String otherFiles,
               @FormParam("define") List<String> defines,
               @FormParam("statusdir") String statusdir,
               @FormParam("callback") String callback)
@@ -675,7 +688,7 @@ public class Server {
       throw new BadParam("Either execute or file parameter required");
 
     HiveDelegator d = new HiveDelegator(appConf);
-    return d.run(getDoAsUser(), execute, srcFile, defines,
+    return d.run(getDoAsUser(), execute, srcFile, defines, hiveArgs, otherFiles,
       statusdir, callback, getCompletedUrl());
   }
 
