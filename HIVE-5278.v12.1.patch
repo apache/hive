@@ -1,0 +1,729 @@
+diff --git ql/src/java/org/apache/hadoop/hive/ql/exec/FunctionRegistry.java ql/src/java/org/apache/hadoop/hive/ql/exec/FunctionRegistry.java
+index 173484d..d151eb4 100644
+--- ql/src/java/org/apache/hadoop/hive/ql/exec/FunctionRegistry.java
++++ ql/src/java/org/apache/hadoop/hive/ql/exec/FunctionRegistry.java
+@@ -56,7 +56,6 @@
+ import org.apache.hadoop.hive.ql.udf.UDFBase64;
+ import org.apache.hadoop.hive.ql.udf.UDFBin;
+ import org.apache.hadoop.hive.ql.udf.UDFCeil;
+-import org.apache.hadoop.hive.ql.udf.UDFConcat;
+ import org.apache.hadoop.hive.ql.udf.UDFConv;
+ import org.apache.hadoop.hive.ql.udf.UDFCos;
+ import org.apache.hadoop.hive.ql.udf.UDFDate;
+@@ -80,7 +79,6 @@
+ import org.apache.hadoop.hive.ql.udf.UDFLog;
+ import org.apache.hadoop.hive.ql.udf.UDFLog10;
+ import org.apache.hadoop.hive.ql.udf.UDFLog2;
+-import org.apache.hadoop.hive.ql.udf.UDFLower;
+ import org.apache.hadoop.hive.ql.udf.UDFLpad;
+ import org.apache.hadoop.hive.ql.udf.UDFMinute;
+ import org.apache.hadoop.hive.ql.udf.UDFMonth;
+@@ -129,7 +127,6 @@
+ import org.apache.hadoop.hive.ql.udf.UDFType;
+ import org.apache.hadoop.hive.ql.udf.UDFUnbase64;
+ import org.apache.hadoop.hive.ql.udf.UDFUnhex;
+-import org.apache.hadoop.hive.ql.udf.UDFUpper;
+ import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
+ import org.apache.hadoop.hive.ql.udf.UDFYear;
+ import org.apache.hadoop.hive.ql.udf.generic.*;
+@@ -197,7 +194,7 @@
+ 
+ 
+   static {
+-    registerUDF("concat", UDFConcat.class, false);
++    registerGenericUDF("concat", GenericUDFConcat.class);
+     registerUDF("substr", UDFSubstr.class, false);
+     registerUDF("substring", UDFSubstr.class, false);
+     registerUDF("space", UDFSpace.class, false);
+@@ -246,10 +243,10 @@
+     registerGenericUDF("encode", GenericUDFEncode.class);
+     registerGenericUDF("decode", GenericUDFDecode.class);
+ 
+-    registerUDF("upper", UDFUpper.class, false);
+-    registerUDF("lower", UDFLower.class, false);
+-    registerUDF("ucase", UDFUpper.class, false);
+-    registerUDF("lcase", UDFLower.class, false);
++    registerGenericUDF("upper", GenericUDFUpper.class);
++    registerGenericUDF("lower", GenericUDFLower.class);
++    registerGenericUDF("ucase", GenericUDFUpper.class);
++    registerGenericUDF("lcase", GenericUDFLower.class);
+     registerUDF("trim", UDFTrim.class, false);
+     registerUDF("ltrim", UDFLTrim.class, false);
+     registerUDF("rtrim", UDFRTrim.class, false);
+diff --git ql/src/java/org/apache/hadoop/hive/ql/udf/UDFConcat.java ql/src/java/org/apache/hadoop/hive/ql/udf/UDFConcat.java
+deleted file mode 100755
+index ed4d3ab..0000000
+--- ql/src/java/org/apache/hadoop/hive/ql/udf/UDFConcat.java
++++ /dev/null
+@@ -1,75 +0,0 @@
+-/**
+- * Licensed to the Apache Software Foundation (ASF) under one
+- * or more contributor license agreements.  See the NOTICE file
+- * distributed with this work for additional information
+- * regarding copyright ownership.  The ASF licenses this file
+- * to you under the Apache License, Version 2.0 (the
+- * "License"); you may not use this file except in compliance
+- * with the License.  You may obtain a copy of the License at
+- *
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-
+-package org.apache.hadoop.hive.ql.udf;
+-
+-import org.apache.hadoop.hive.ql.exec.Description;
+-import org.apache.hadoop.hive.ql.exec.UDF;
+-import org.apache.hadoop.io.BytesWritable;
+-import org.apache.hadoop.io.Text;
+-
+-/**
+- * UDFConcat.
+- *
+- */
+-@Description(name = "concat",
+-    value = "_FUNC_(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN or "+
+-            "_FUNC_(bin1, bin2, ... binN) - returns the concatenation of bytes in binary data " +
+-            " bin1, bin2, ... binN",
+-    extended = "Returns NULL if any argument is NULL.\n"
+-    + "Example:\n"
+-    + "  > SELECT _FUNC_('abc', 'def') FROM src LIMIT 1;\n"
+-    + "  'abcdef'")
+-public class UDFConcat extends UDF {
+-
+-  public UDFConcat() {
+-  }
+-
+-  private final Text text = new Text();
+-
+-  public Text evaluate(Text... args) {
+-    text.clear();
+-    for (Text arg : args) {
+-      if (arg == null) {
+-        return null;
+-      }
+-      text.append(arg.getBytes(), 0, arg.getLength());
+-    }
+-    return text;
+-  }
+-
+-  public BytesWritable evaluate(BytesWritable... bw){
+-
+-    int len = 0;
+-    for(BytesWritable bytes : bw){
+-      if (bytes == null){
+-        return null;
+-}
+-      len += bytes.getLength();
+-    }
+-
+-    byte[] out = new byte[len];
+-    int curLen = 0;
+-    // Need to iterate twice since BytesWritable doesn't support append.
+-    for (BytesWritable bytes : bw){
+-      System.arraycopy(bytes.getBytes(), 0, out, curLen, bytes.getLength());
+-      curLen += bytes.getLength();
+-    }
+-    return new BytesWritable(out);
+-  }
+-}
+diff --git ql/src/java/org/apache/hadoop/hive/ql/udf/UDFLower.java ql/src/java/org/apache/hadoop/hive/ql/udf/UDFLower.java
+deleted file mode 100755
+index f79cbdf..0000000
+--- ql/src/java/org/apache/hadoop/hive/ql/udf/UDFLower.java
++++ /dev/null
+@@ -1,47 +0,0 @@
+-/**
+- * Licensed to the Apache Software Foundation (ASF) under one
+- * or more contributor license agreements.  See the NOTICE file
+- * distributed with this work for additional information
+- * regarding copyright ownership.  The ASF licenses this file
+- * to you under the Apache License, Version 2.0 (the
+- * "License"); you may not use this file except in compliance
+- * with the License.  You may obtain a copy of the License at
+- *
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-
+-package org.apache.hadoop.hive.ql.udf;
+-
+-import org.apache.hadoop.hive.ql.exec.Description;
+-import org.apache.hadoop.hive.ql.exec.UDF;
+-import org.apache.hadoop.io.Text;
+-
+-/**
+- * UDFLower.
+- *
+- */
+-@Description(name = "lower,lcase",
+-    value = "_FUNC_(str) - Returns str with all characters changed to lowercase",
+-    extended = "Example:\n"
+-    + "  > SELECT _FUNC_('Facebook') FROM src LIMIT 1;\n" + "  'facebook'")
+-public class UDFLower extends UDF {
+-  private Text t = new Text();
+-
+-  public UDFLower() {
+-  }
+-
+-  public Text evaluate(Text s) {
+-    if (s == null) {
+-      return null;
+-    }
+-    t.set(s.toString().toLowerCase());
+-    return t;
+-  }
+-
+-}
+diff --git ql/src/java/org/apache/hadoop/hive/ql/udf/UDFUpper.java ql/src/java/org/apache/hadoop/hive/ql/udf/UDFUpper.java
+deleted file mode 100755
+index 7dc682b..0000000
+--- ql/src/java/org/apache/hadoop/hive/ql/udf/UDFUpper.java
++++ /dev/null
+@@ -1,48 +0,0 @@
+-/**
+- * Licensed to the Apache Software Foundation (ASF) under one
+- * or more contributor license agreements.  See the NOTICE file
+- * distributed with this work for additional information
+- * regarding copyright ownership.  The ASF licenses this file
+- * to you under the Apache License, Version 2.0 (the
+- * "License"); you may not use this file except in compliance
+- * with the License.  You may obtain a copy of the License at
+- *
+- *     http://www.apache.org/licenses/LICENSE-2.0
+- *
+- * Unless required by applicable law or agreed to in writing, software
+- * distributed under the License is distributed on an "AS IS" BASIS,
+- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+- * See the License for the specific language governing permissions and
+- * limitations under the License.
+- */
+-
+-package org.apache.hadoop.hive.ql.udf;
+-
+-import org.apache.hadoop.hive.ql.exec.Description;
+-import org.apache.hadoop.hive.ql.exec.UDF;
+-import org.apache.hadoop.io.Text;
+-
+-/**
+- * UDFUpper.
+- *
+- */
+-@Description(name = "upper,ucase",
+-    value = "_FUNC_(str) - Returns str with all characters changed to uppercase",
+-    extended = "Example:\n"
+-    + "  > SELECT _FUNC_('Facebook') FROM src LIMIT 1;\n" + "  'FACEBOOK'")
+-public class UDFUpper extends UDF {
+-
+-  Text t = new Text();
+-
+-  public UDFUpper() {
+-  }
+-
+-  public Text evaluate(Text s) {
+-    if (s == null) {
+-      return null;
+-    }
+-    t.set(s.toString().toUpperCase());
+-    return t;
+-  }
+-
+-}
+diff --git ql/src/java/org/apache/hadoop/hive/ql/udf/generic/GenericUDFConcat.java ql/src/java/org/apache/hadoop/hive/ql/udf/generic/GenericUDFConcat.java
+new file mode 100644
+index 0000000..0ce1825
+--- /dev/null
++++ ql/src/java/org/apache/hadoop/hive/ql/udf/generic/GenericUDFConcat.java
+@@ -0,0 +1,203 @@
++/**
++ * Licensed to the Apache Software Foundation (ASF) under one
++ * or more contributor license agreements.  See the NOTICE file
++ * distributed with this work for additional information
++ * regarding copyright ownership.  The ASF licenses this file
++ * to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance
++ * with the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.hadoop.hive.ql.udf.generic;
++
++import org.apache.hadoop.hive.common.type.HiveVarchar;
++import org.apache.hadoop.hive.ql.exec.Description;
++import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
++import org.apache.hadoop.hive.ql.metadata.HiveException;
++import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
++import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
++import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
++import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
++import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
++import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.StringConverter;
++import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
++import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
++import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
++import org.apache.hadoop.io.BytesWritable;
++
++/**
++ * GenericUDFConcat.
++ */
++@Description(name = "concat",
++value = "_FUNC_(str1, str2, ... strN) - returns the concatenation of str1, str2, ... strN or "+
++        "_FUNC_(bin1, bin2, ... binN) - returns the concatenation of bytes in binary data " +
++        " bin1, bin2, ... binN",
++extended = "Returns NULL if any argument is NULL.\n"
+++ "Example:\n"
+++ "  > SELECT _FUNC_('abc', 'def') FROM src LIMIT 1;\n"
+++ "  'abcdef'")
++public class GenericUDFConcat extends GenericUDF {
++  private transient ObjectInspector[] argumentOIs;
++  private transient StringConverter[] stringConverters;
++  private transient PrimitiveCategory returnType = PrimitiveCategory.STRING;
++  private transient BytesWritable[] bw;
++  private transient GenericUDFUtils.StringHelper returnHelper;
++
++  @Override
++  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
++
++    // Loop through all the inputs to determine the appropriate return type/length.
++    // Either all arguments are binary, or all columns are non-binary.
++    // Return type:
++    //  All VARCHAR inputs: return VARCHAR
++    //  All BINARY inputs: return BINARY
++    //  Otherwise return STRING
++    argumentOIs = arguments;
++
++    PrimitiveCategory currentCategory;
++    PrimitiveObjectInspector poi;
++    boolean fixedLengthReturnValue = true;
++    int returnLength = 0;  // Only for char/varchar return types
++    for (int idx = 0; idx < arguments.length; ++idx) {
++      if (arguments[idx].getCategory() != Category.PRIMITIVE) {
++        throw new UDFArgumentException("CONCAT only takes primitive arguments");
++      }
++      poi = (PrimitiveObjectInspector)arguments[idx];
++      currentCategory = poi.getPrimitiveCategory();
++      if (idx == 0) {
++        returnType = currentCategory;
++      }
++      switch (currentCategory) {
++        case BINARY:
++          fixedLengthReturnValue = false;
++          if (returnType != currentCategory) {
++            throw new UDFArgumentException(
++                "CONCAT cannot take a mix of binary and non-binary arguments");
++          }
++          break;
++        case VARCHAR:
++          if (returnType == PrimitiveCategory.BINARY) {
++            throw new UDFArgumentException(
++                "CONCAT cannot take a mix of binary and non-binary arguments");
++          }
++          break;
++        default:
++          if (returnType == PrimitiveCategory.BINARY) {
++            throw new UDFArgumentException(
++                "CONCAT cannot take a mix of binary and non-binary arguments");
++          }
++          returnType = PrimitiveCategory.STRING;
++          fixedLengthReturnValue = false;
++          break;
++      }
++
++      // If all arguments are of known length then we can keep track of the max
++      // length of the return type. However if the return length exceeds the
++      // max length for the char/varchar, then the return type reverts to string.
++      if (fixedLengthReturnValue) {
++        returnLength += GenericUDFUtils.StringHelper.getFixedStringSizeForType(poi);
++        if (returnType == PrimitiveCategory.VARCHAR
++            && returnLength > HiveVarchar.MAX_VARCHAR_LENGTH) {
++          returnType = PrimitiveCategory.STRING;
++          fixedLengthReturnValue = false;
++        }
++      }
++    }
++
++    if (returnType == PrimitiveCategory.BINARY) {
++      bw = new BytesWritable[arguments.length];
++      return PrimitiveObjectInspectorFactory.writableBinaryObjectInspector;
++    } else {
++      // treat all inputs as string, the return value will be converted to the appropriate type.
++      createStringConverters();
++      returnHelper = new GenericUDFUtils.StringHelper(returnType);
++      switch (returnType) {
++        case STRING:
++          return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
++        case VARCHAR:
++          VarcharTypeParams varcharParams = new VarcharTypeParams();
++          varcharParams.setLength(returnLength);
++          return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
++              PrimitiveObjectInspectorUtils.getTypeEntryFromTypeSpecs(returnType, varcharParams));
++        default:
++          throw new UDFArgumentException("Unexpected CONCAT return type of " + returnType);
++      }
++    }
++  }
++
++  private void createStringConverters() {
++    stringConverters = new StringConverter[argumentOIs.length];
++    for (int idx = 0; idx < argumentOIs.length; ++idx) {
++      stringConverters[idx] = new StringConverter((PrimitiveObjectInspector) argumentOIs[idx]);
++    }
++  }
++
++  @Override
++  public Object evaluate(DeferredObject[] arguments) throws HiveException {
++    if (returnType == PrimitiveCategory.BINARY) {
++      return binaryEvaluate(arguments);
++    } else {
++      return returnHelper.setReturnValue(stringEvaluate(arguments));
++    }
++  }
++
++  public Object binaryEvaluate(DeferredObject[] arguments) throws HiveException {
++    int len = 0;
++    for (int idx = 0; idx < arguments.length; ++idx) {
++      bw[idx] = ((BinaryObjectInspector)argumentOIs[idx])
++          .getPrimitiveWritableObject(arguments[idx].get());
++      if (bw[idx] == null){
++        return null;
++      }
++      len += bw[idx].getLength();
++    }
++
++    byte[] out = new byte[len];
++    int curLen = 0;
++    // Need to iterate twice since BytesWritable doesn't support append.
++    for (BytesWritable bytes : bw){
++      System.arraycopy(bytes.getBytes(), 0, out, curLen, bytes.getLength());
++      curLen += bytes.getLength();
++    }
++    return new BytesWritable(out);
++  }
++
++  public String stringEvaluate(DeferredObject[] arguments) throws HiveException {
++    StringBuilder sb = new StringBuilder();
++    for (int idx = 0; idx < arguments.length; ++idx) {
++      String val = null;
++      if (arguments[idx] != null) {
++        val = (String) stringConverters[idx].convert(arguments[idx].get());
++      }
++      if (val == null) {
++        return null;
++      }
++      sb.append(val);
++    }
++    return sb.toString();
++  }
++
++  @Override
++  public String getDisplayString(String[] children) {
++    StringBuilder sb = new StringBuilder();
++    sb.append("concat(");
++    if (children.length > 0) {
++      sb.append(children[0]);
++      for (int i = 1; i < children.length; i++) {
++        sb.append(", ");
++        sb.append(children[i]);
++      }
++    }
++    sb.append(")");
++    return sb.toString();
++  }
++
++}
+diff --git ql/src/java/org/apache/hadoop/hive/ql/udf/generic/GenericUDFLower.java ql/src/java/org/apache/hadoop/hive/ql/udf/generic/GenericUDFLower.java
+new file mode 100644
+index 0000000..366d9e6
+--- /dev/null
++++ ql/src/java/org/apache/hadoop/hive/ql/udf/generic/GenericUDFLower.java
+@@ -0,0 +1,111 @@
++/**
++ * Licensed to the Apache Software Foundation (ASF) under one
++ * or more contributor license agreements.  See the NOTICE file
++ * distributed with this work for additional information
++ * regarding copyright ownership.  The ASF licenses this file
++ * to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance
++ * with the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.hadoop.hive.ql.udf.generic;
++
++import org.apache.hadoop.hive.ql.exec.Description;
++import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
++import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
++import org.apache.hadoop.hive.ql.metadata.HiveException;
++import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
++import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
++import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
++import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
++import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
++import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.StringConverter;
++import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
++import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
++
++/**
++ * UDFLower.
++ *
++ */
++@Description(name = "lower,lcase",
++value = "_FUNC_(str) - Returns str with all characters changed to lowercase",
++extended = "Example:\n"
+++ "  > SELECT _FUNC_('Facebook') FROM src LIMIT 1;\n" + "  'facebook'")
++public class GenericUDFLower extends GenericUDF {
++  private transient PrimitiveObjectInspector argumentOI;
++  private transient StringConverter stringConverter;
++  private transient PrimitiveCategory returnType = PrimitiveCategory.STRING;
++  private transient GenericUDFUtils.StringHelper returnHelper;
++
++  @Override
++  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
++    if (arguments.length < 0) {
++      throw new UDFArgumentLengthException(
++          "LOWER requires 1 argument, got " + arguments.length);
++    }
++
++    if (arguments[0].getCategory() != Category.PRIMITIVE) {
++      throw new UDFArgumentException(
++          "LOWER only takes primitive types, got " + argumentOI.getTypeName());
++    }
++    argumentOI = (PrimitiveObjectInspector) arguments[0];
++
++    stringConverter = new PrimitiveObjectInspectorConverter.StringConverter(argumentOI);
++    PrimitiveCategory inputType = argumentOI.getPrimitiveCategory();
++    ObjectInspector outputOI = null;
++    switch (inputType) {
++      case VARCHAR:
++        // return type should have same length as the input.
++        returnType = inputType;
++        VarcharTypeParams varcharParams = new VarcharTypeParams();
++        varcharParams.setLength(
++            GenericUDFUtils.StringHelper.getFixedStringSizeForType(argumentOI));
++        outputOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
++            argumentOI);
++        break;
++      default:
++        returnType = PrimitiveCategory.STRING;
++        outputOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
++        break;
++    }
++    returnHelper = new GenericUDFUtils.StringHelper(returnType);
++    return outputOI;
++  }
++
++  @Override
++  public Object evaluate(DeferredObject[] arguments) throws HiveException {
++    String val = null;
++    if (arguments[0] != null) {
++      val = (String) stringConverter.convert(arguments[0].get());
++    }
++    if (val == null) {
++      return null;
++    }
++    val = val.toLowerCase();
++    return returnHelper.setReturnValue(val);
++  }
++
++  @Override
++  public String getDisplayString(String[] children) {
++    StringBuilder sb = new StringBuilder();
++    sb.append("lower(");
++    if (children.length > 0) {
++      sb.append(children[0]);
++      for (int i = 1; i < children.length; i++) {
++        sb.append(",");
++        sb.append(children[i]);
++      }
++    }
++    sb.append(")");
++    return sb.toString();
++  }
++
++}
+diff --git ql/src/java/org/apache/hadoop/hive/ql/udf/generic/GenericUDFUpper.java ql/src/java/org/apache/hadoop/hive/ql/udf/generic/GenericUDFUpper.java
+new file mode 100644
+index 0000000..1bb164a
+--- /dev/null
++++ ql/src/java/org/apache/hadoop/hive/ql/udf/generic/GenericUDFUpper.java
+@@ -0,0 +1,111 @@
++/**
++ * Licensed to the Apache Software Foundation (ASF) under one
++ * or more contributor license agreements.  See the NOTICE file
++ * distributed with this work for additional information
++ * regarding copyright ownership.  The ASF licenses this file
++ * to you under the Apache License, Version 2.0 (the
++ * "License"); you may not use this file except in compliance
++ * with the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package org.apache.hadoop.hive.ql.udf.generic;
++
++import org.apache.hadoop.hive.ql.exec.Description;
++import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
++import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
++import org.apache.hadoop.hive.ql.metadata.HiveException;
++import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
++import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
++import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
++import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
++import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
++import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.StringConverter;
++import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
++import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
++
++/**
++ * UDFUpper.
++ *
++ */
++@Description(name = "upper,ucase",
++    value = "_FUNC_(str) - Returns str with all characters changed to uppercase",
++    extended = "Example:\n"
++    + "  > SELECT _FUNC_('Facebook') FROM src LIMIT 1;\n" + "  'FACEBOOK'")
++public class GenericUDFUpper extends GenericUDF {
++  private transient PrimitiveObjectInspector argumentOI;
++  private transient StringConverter stringConverter;
++  private transient PrimitiveCategory returnType = PrimitiveCategory.STRING;
++  private transient GenericUDFUtils.StringHelper returnHelper;
++
++  @Override
++  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
++    if (arguments.length < 0) {
++      throw new UDFArgumentLengthException(
++          "UPPER requires 1 argument, got " + arguments.length);
++    }
++
++    if (arguments[0].getCategory() != Category.PRIMITIVE) {
++      throw new UDFArgumentException(
++          "UPPER only takes primitive types, got " + argumentOI.getTypeName());
++    }
++    argumentOI = (PrimitiveObjectInspector) arguments[0];
++
++    stringConverter = new PrimitiveObjectInspectorConverter.StringConverter(argumentOI);
++    PrimitiveCategory inputType = argumentOI.getPrimitiveCategory();
++    ObjectInspector outputOI = null;
++    switch (inputType) {
++      case VARCHAR:
++        // return type should have same length as the input.
++        returnType = inputType;
++        VarcharTypeParams varcharParams = new VarcharTypeParams();
++        varcharParams.setLength(
++            GenericUDFUtils.StringHelper.getFixedStringSizeForType(argumentOI));
++        outputOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
++            argumentOI);
++        break;
++      default:
++        returnType = PrimitiveCategory.STRING;
++        outputOI = PrimitiveObjectInspectorFactory.writableStringObjectInspector;
++        break;
++    }
++    returnHelper = new GenericUDFUtils.StringHelper(returnType);
++    return outputOI;
++  }
++
++  @Override
++  public Object evaluate(DeferredObject[] arguments) throws HiveException {
++    String val = null;
++    if (arguments[0] != null) {
++      val = (String) stringConverter.convert(arguments[0].get());
++    }
++    if (val == null) {
++      return null;
++    }
++    val = val.toUpperCase();
++    return returnHelper.setReturnValue(val);
++  }
++
++  @Override
++  public String getDisplayString(String[] children) {
++    StringBuilder sb = new StringBuilder();
++    sb.append("upper(");
++    if (children.length > 0) {
++      sb.append(children[0]);
++      for (int i = 1; i < children.length; i++) {
++        sb.append(",");
++        sb.append(children[i]);
++      }
++    }
++    sb.append(")");
++    return sb.toString();
++  }
++
++}
+diff --git ql/src/test/results/compiler/plan/groupby2.q.xml ql/src/test/results/compiler/plan/groupby2.q.xml
+index d06f9cf..607cd2b 100755
+--- ql/src/test/results/compiler/plan/groupby2.q.xml
++++ ql/src/test/results/compiler/plan/groupby2.q.xml
+@@ -1499,17 +1499,7 @@
+                  </object> 
+                 </void> 
+                 <void property="genericUDF"> 
+-                 <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
+-                  <void property="udfClass"> 
+-                   <class>org.apache.hadoop.hive.ql.udf.UDFConcat</class> 
+-                  </void> 
+-                  <void property="udfClassName"> 
+-                   <string>org.apache.hadoop.hive.ql.udf.UDFConcat</string> 
+-                  </void> 
+-                  <void property="udfName"> 
+-                   <string>concat</string> 
+-                  </void> 
+-                 </object> 
++                 <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat"/> 
+                 </void> 
+                 <void property="typeInfo"> 
+                  <object idref="PrimitiveTypeInfo0"/> 
+diff --git ql/src/test/results/compiler/plan/udf6.q.xml ql/src/test/results/compiler/plan/udf6.q.xml
+index 7d05dc4..d291202 100644
+--- ql/src/test/results/compiler/plan/udf6.q.xml
++++ ql/src/test/results/compiler/plan/udf6.q.xml
+@@ -379,17 +379,7 @@
+                  </object> 
+                 </void> 
+                 <void property="genericUDF"> 
+-                 <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
+-                  <void property="udfClass"> 
+-                   <class>org.apache.hadoop.hive.ql.udf.UDFConcat</class> 
+-                  </void> 
+-                  <void property="udfClassName"> 
+-                   <string>org.apache.hadoop.hive.ql.udf.UDFConcat</string> 
+-                  </void> 
+-                  <void property="udfName"> 
+-                   <string>concat</string> 
+-                  </void> 
+-                 </object> 
++                 <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat"/> 
+                 </void> 
+                 <void property="typeInfo"> 
+                  <object idref="PrimitiveTypeInfo0"/> 

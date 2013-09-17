@@ -56,7 +56,6 @@ import org.apache.hadoop.hive.ql.udf.UDFAtan;
 import org.apache.hadoop.hive.ql.udf.UDFBase64;
 import org.apache.hadoop.hive.ql.udf.UDFBin;
 import org.apache.hadoop.hive.ql.udf.UDFCeil;
-import org.apache.hadoop.hive.ql.udf.UDFConcat;
 import org.apache.hadoop.hive.ql.udf.UDFConv;
 import org.apache.hadoop.hive.ql.udf.UDFCos;
 import org.apache.hadoop.hive.ql.udf.UDFDate;
@@ -80,7 +79,6 @@ import org.apache.hadoop.hive.ql.udf.UDFLn;
 import org.apache.hadoop.hive.ql.udf.UDFLog;
 import org.apache.hadoop.hive.ql.udf.UDFLog10;
 import org.apache.hadoop.hive.ql.udf.UDFLog2;
-import org.apache.hadoop.hive.ql.udf.UDFLower;
 import org.apache.hadoop.hive.ql.udf.UDFLpad;
 import org.apache.hadoop.hive.ql.udf.UDFMinute;
 import org.apache.hadoop.hive.ql.udf.UDFMonth;
@@ -129,7 +127,6 @@ import org.apache.hadoop.hive.ql.udf.UDFTrim;
 import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.ql.udf.UDFUnbase64;
 import org.apache.hadoop.hive.ql.udf.UDFUnhex;
-import org.apache.hadoop.hive.ql.udf.UDFUpper;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.*;
@@ -197,7 +194,7 @@ public final class FunctionRegistry {
 
 
   static {
-    registerUDF("concat", UDFConcat.class, false);
+    registerGenericUDF("concat", GenericUDFConcat.class);
     registerUDF("substr", UDFSubstr.class, false);
     registerUDF("substring", UDFSubstr.class, false);
     registerUDF("space", UDFSpace.class, false);
@@ -246,10 +243,10 @@ public final class FunctionRegistry {
     registerGenericUDF("encode", GenericUDFEncode.class);
     registerGenericUDF("decode", GenericUDFDecode.class);
 
-    registerUDF("upper", UDFUpper.class, false);
-    registerUDF("lower", UDFLower.class, false);
-    registerUDF("ucase", UDFUpper.class, false);
-    registerUDF("lcase", UDFLower.class, false);
+    registerGenericUDF("upper", GenericUDFUpper.class);
+    registerGenericUDF("lower", GenericUDFLower.class);
+    registerGenericUDF("ucase", GenericUDFUpper.class);
+    registerGenericUDF("lcase", GenericUDFLower.class);
     registerUDF("trim", UDFTrim.class, false);
     registerUDF("ltrim", UDFLTrim.class, false);
     registerUDF("rtrim", UDFRTrim.class, false);
