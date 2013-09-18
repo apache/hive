@@ -503,7 +503,7 @@ public class HadoopJobExecHelper {
       }
     } else {
       console.printInfo("Execution completed successfully");
-      console.printInfo("Mapred Local Task Succeeded . Convert the Join into MapJoin");
+      console.printInfo("MapredLocal task succeeded");
     }
     return exitVal;
   }

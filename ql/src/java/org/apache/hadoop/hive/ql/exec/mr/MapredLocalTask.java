@@ -270,7 +270,6 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
         }
       } else {
         LOG.info("Execution completed successfully");
-        console.printInfo("Mapred Local Task Succeeded . Convert the Join into MapJoin");
       }
 
       return exitVal;
