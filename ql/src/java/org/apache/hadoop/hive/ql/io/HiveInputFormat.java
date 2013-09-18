@@ -65,8 +65,8 @@ import org.apache.hadoop.util.ReflectionUtils;
 public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     implements InputFormat<K, V>, JobConfigurable {
 
-  public static final Log LOG = LogFactory
-      .getLog("org.apache.hadoop.hive.ql.io.HiveInputFormat");
+  public static final String CLASS_NAME = HiveInputFormat.class.getName();
+  public static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   /**
    * HiveInputSplit encapsulates an InputSplit with its corresponding
@@ -259,7 +259,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
-    perfLogger.PerfLogBegin(LOG, PerfLogger.GET_SPLITS);
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_SPLITS);
     init(job);
 
     Path[] dirs = FileInputFormat.getInputPaths(job);
@@ -298,7 +298,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     }
 
     LOG.info("number of splits " + result.size());
-    perfLogger.PerfLogEnd(LOG, PerfLogger.GET_SPLITS);
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
     return result.toArray(new HiveInputSplit[result.size()]);
   }
 
