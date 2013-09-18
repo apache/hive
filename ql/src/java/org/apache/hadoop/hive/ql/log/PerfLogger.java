@@ -92,9 +92,9 @@ public class PerfLogger {
    * @param _log the logging object to be used.
    * @param method method or ID that identifies this perf log element.
    */
-  public void PerfLogBegin(Log _log, String method) {
+  public void PerfLogBegin(String callerName, String method) {
     long startTime = System.currentTimeMillis();
-    _log.info("<PERFLOG method=" + method + ">");
+    LOG.info("<PERFLOG method=" + method + " from=" + callerName + ">");
     startTimes.put(method, new Long(startTime));
   }
 
@@ -104,7 +104,7 @@ public class PerfLogger {
    * @param method
    * @return long duration  the difference between now and startTime, or -1 if startTime is null
    */
-  public long PerfLogEnd(Log _log, String method) {
+  public long PerfLogEnd(String callerName, String method) {
     Long startTime = startTimes.get(method);
     long endTime = System.currentTimeMillis();
     long duration = -1;
@@ -120,8 +120,8 @@ public class PerfLogger {
       duration = endTime - startTime.longValue();
       sb.append(" duration=").append(duration);
     }
-    sb.append(">");
-    _log.info(sb);
+    sb.append(" from=").append(callerName).append(">");
+    LOG.info(sb);
 
     return duration;
   }
