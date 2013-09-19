@@ -206,7 +206,7 @@ public class Context {
             throw new RuntimeException("Cannot make directory: "
                                        + dirPath.toString());
           } else {
-            FsPermission fsPermission = new FsPermission(scratchDirPermission);
+            FsPermission fsPermission = new FsPermission(Short.parseShort(scratchDirPermission));
             fs.setPermission(dirPath, fsPermission);
           }
           if (isHDFSCleanup) {
