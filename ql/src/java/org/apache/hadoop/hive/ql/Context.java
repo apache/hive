@@ -40,6 +40,7 @@ import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.TaskRunner;
@@ -72,6 +73,9 @@ public class Context {
 
   // scratch directory to use for local file system tmp folders
   private final String localScratchDir;
+
+  // the permission to scratch directory (local and hdfs)
+  private final String scratchDirPermission;
 
   // Keeps track of scratch directories created for different scheme/authority
   private final Map<String, String> fsScratchDirs = new HashMap<String, String>();
@@ -118,6 +122,7 @@ public class Context {
                executionId);
     localScratchDir = new Path(HiveConf.getVar(conf, HiveConf.ConfVars.LOCALSCRATCHDIR),
             executionId).toUri().getPath();
+    scratchDirPermission= HiveConf.getVar(conf, HiveConf.ConfVars.SCRATCHDIRPERMISSION);
   }
 
 
@@ -200,6 +205,9 @@ public class Context {
           if (!fs.mkdirs(dirPath)) {
             throw new RuntimeException("Cannot make directory: "
                                        + dirPath.toString());
+          } else {
+            FsPermission fsPermission = new FsPermission(scratchDirPermission);
+            fs.setPermission(dirPath, fsPermission);
           }
           if (isHDFSCleanup) {
             fs.deleteOnExit(dirPath);
