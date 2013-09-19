@@ -137,6 +137,18 @@ public class ExecServiceImpl implements ExecService {
     String enc = appConf.get(AppConfig.EXEC_ENCODING_NAME);
     res.stdout = outStream.toString(enc);
     res.stderr = errStream.toString(enc);
+    try {
+      watchdog.checkException();
+    }
+    catch (Exception ex) {
+      LOG.error("Command: " + cmd + " failed:", ex);
+    }
+    if(watchdog.killedProcess()) {
+      String msg = " was terminated due to timeout(" + timeout + "ms).  See " + AppConfig
+              .EXEC_TIMEOUT_NAME + " property"; 
+      LOG.warn("Command: " + cmd + msg);
+      res.stderr += " Command " + msg; 
+    }
 
     return res;
   }
