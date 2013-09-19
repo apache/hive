@@ -102,7 +102,6 @@ class RecordReaderImpl implements RecordReader {
     this.included = included;
     this.sarg = sarg;
     if (sarg != null) {
-      System.out.println("DEBUG XXXX SARG is not null");
       sargLeaves = sarg.getLeaves();
       filterColumns = new int[sargLeaves.size()];
       for(int i=0; i < filterColumns.length; ++i) {
@@ -110,7 +109,6 @@ class RecordReaderImpl implements RecordReader {
         filterColumns[i] = findColumns(columnNames, colName);
       }
     } else {
-      System.out.println("DEBUG XXXX SARG is null");
       sargLeaves = null;
       filterColumns = null;
     }

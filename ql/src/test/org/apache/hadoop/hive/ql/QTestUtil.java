@@ -107,8 +107,7 @@ public class QTestUtil {
   public static final HashSet<String> srcTables = new HashSet<String>
     (Arrays.asList(new String [] {
         "src", "src1", "srcbucket", "srcbucket2", "src_json", "src_thrift",
-        "src_sequencefile", "srcpart",
-        AllVectorTypesRecord.TABLE_NAME
+        "src_sequencefile", "srcpart", "alltypesorc"
       }));
 
   private ParseDriver pd;

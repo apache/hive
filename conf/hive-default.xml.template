@@ -1985,4 +1985,13 @@
   </description>
 </property>
 
+<property>
+  <name>hive.vectorized.execution.enabled</name>
+  <value>false</value>
+  <description>
+  This flag should be set to true to enable vectorized mode of query execution.
+  The default value is false.
+  </description>
+</property>
+
 </configuration>
