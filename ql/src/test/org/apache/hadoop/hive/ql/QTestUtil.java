@@ -873,6 +873,15 @@ public class QTestUtil {
     }
   }
 
+  private final Pattern[] xmlPlanMask = toPattern(new String[] {
+      "<java version=\".*\" class=\"java.beans.XMLDecoder\">",
+      "<string>.*/tmp/.*</string>",
+      "<string>file:.*</string>",
+      "<string>pfile:.*</string>",
+      "<string>[0-9]{10}</string>",
+      "<string>/.*/warehouse/.*</string>"
+  });
+
   public int checkPlan(String tname, List<Task<? extends Serializable>> tasks) throws Exception {
 
     if (tasks != null) {
@@ -887,18 +896,9 @@ public class QTestUtil {
       for (Task<? extends Serializable> plan : tasks) {
         Utilities.serializeObject(plan, ofs);
       }
-
-      String[] patterns = new String[] {
-          "<java version=\".*\" class=\"java.beans.XMLDecoder\">",
-          "<string>.*/tmp/.*</string>",
-          "<string>file:.*</string>",
-          "<string>pfile:.*</string>",
-          "<string>[0-9]{10}</string>",
-          "<string>/.*/warehouse/.*</string>"
-      };
       
       fixXml4JDK7(outf.getPath());
-      maskPatterns(patterns, outf.getPath());
+      maskPatterns(xmlPlanMask, outf.getPath());
 
       int exitVal = executeDiffCommand(outf.getPath(), planFile, true, false);
 
@@ -1037,13 +1037,21 @@ public class QTestUtil {
    * Get the value of the element in input. (Note: the returned value has no quotes.)
    */
   private static String getElementValue(String line, String name) {
-    assert(line.indexOf("<" + name + ">") != -1);
+    assert(line.contains("<" + name + ">"));
     int start = line.indexOf("<" + name + ">") + name.length() + 2;
     int end = line.indexOf("</" + name + ">");
     return line.substring(start, end);
   }
 
-  private void maskPatterns(String[] patterns, String fname) throws Exception {
+  private Pattern[] toPattern(String[] patternStrs) {
+    Pattern[] patterns = new Pattern[patternStrs.length];
+    for (int i = 0; i < patternStrs.length; i++) {
+      patterns[i] = Pattern.compile(patternStrs[i]);
+    }
+    return patterns;
+  }
+
+  private void maskPatterns(Pattern[] patterns, String fname) throws Exception {
     String maskPattern = "#### A masked pattern was here ####";
 
     String line;
@@ -1064,8 +1072,8 @@ public class QTestUtil {
 
     boolean lastWasMasked = false;
     while (null != (line = in.readLine())) {
-      for (String pattern : patterns) {
-        line = line.replaceAll(pattern, maskPattern);
+      for (Pattern pattern : patterns) {
+        line = pattern.matcher(line).replaceAll(maskPattern);
       }
 
       if (line.equals(maskPattern)) {
@@ -1086,47 +1094,46 @@ public class QTestUtil {
     out.close();
   }
 
+  private final Pattern[] planMask = toPattern(new String[] {
+      ".*file:.*",
+      ".*pfile:.*",
+      ".*hdfs:.*",
+      ".*/tmp/.*",
+      ".*invalidscheme:.*",
+      ".*lastUpdateTime.*",
+      ".*lastAccessTime.*",
+      ".*lastModifiedTime.*",
+      ".*[Oo]wner.*",
+      ".*CreateTime.*",
+      ".*LastAccessTime.*",
+      ".*Location.*",
+      ".*LOCATION '.*",
+      ".*transient_lastDdlTime.*",
+      ".*last_modified_.*",
+      ".*at org.*",
+      ".*at sun.*",
+      ".*at java.*",
+      ".*at junit.*",
+      ".*Caused by:.*",
+      ".*LOCK_QUERYID:.*",
+      ".*LOCK_TIME:.*",
+      ".*grantTime.*",
+      ".*[.][.][.] [0-9]* more.*",
+      ".*job_[0-9_]*.*",
+      ".*job_local[0-9_]*.*",
+      ".*USING 'java -cp.*",
+      "^Deleted.*",
+  });
+
   public int checkCliDriverResults(String tname) throws Exception {
     String[] cmdArray;
-    String[] patterns;
     assert(qMap.containsKey(tname));
 
     String outFileName = outPath(outDir, tname + ".out");
 
-    patterns = new String[] {
-        ".*file:.*",
-        ".*pfile:.*",
-        ".*hdfs:.*",
-        ".*/tmp/.*",
-        ".*invalidscheme:.*",
-        ".*lastUpdateTime.*",
-        ".*lastAccessTime.*",
-        ".*lastModifiedTime.*",
-        ".*[Oo]wner.*",
-        ".*CreateTime.*",
-        ".*LastAccessTime.*",
-        ".*Location.*",
-        ".*LOCATION '.*",
-        ".*transient_lastDdlTime.*",
-        ".*last_modified_.*",
-        ".*at org.*",
-        ".*at sun.*",
-        ".*at java.*",
-        ".*at junit.*",
-        ".*Caused by:.*",
-        ".*LOCK_QUERYID:.*",
-        ".*LOCK_TIME:.*",
-        ".*grantTime.*",
-        ".*[.][.][.] [0-9]* more.*",
-        ".*job_[0-9_]*.*",
-        ".*job_local[0-9_]*.*",
-        ".*USING 'java -cp.*",
-        "^Deleted.*",
-    };
-
     File f = new File(logDir, tname + ".out");
 
-    maskPatterns(patterns, f.getPath());
+    maskPatterns(planMask, f.getPath());
     int exitVal = executeDiffCommand(f.getPath(),
                                      outFileName, false,
                                      qSortSet.contains(tname));
