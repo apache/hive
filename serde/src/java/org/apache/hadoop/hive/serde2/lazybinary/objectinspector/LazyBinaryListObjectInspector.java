@@ -28,6 +28,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.StandardListObjectInspector
  */
 public class LazyBinaryListObjectInspector extends StandardListObjectInspector {
 
+  protected LazyBinaryListObjectInspector() {
+    super();
+  }
   protected LazyBinaryListObjectInspector(
       ObjectInspector listElementObjectInspector) {
     super(listElementObjectInspector);

@@ -1,0 +1,131 @@
+PREHOOK: query: drop table varchar_2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table varchar_2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table varchar_2 (
+  key varchar(10),
+  value varchar(20)
+)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table varchar_2 (
+  key varchar(10),
+  value varchar(20)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@varchar_2
+PREHOOK: query: insert overwrite table varchar_2 select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@varchar_2
+POSTHOOK: query: insert overwrite table varchar_2 select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@varchar_2
+POSTHOOK: Lineage: varchar_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select value, sum(cast(key as int)), count(*) numrows
+from src
+group by value
+order by value asc
+limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select value, sum(cast(key as int)), count(*) numrows
+from src
+group by value
+order by value asc
+limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: Lineage: varchar_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+val_0	0	3
+val_10	10	1
+val_100	200	2
+val_103	206	2
+val_104	208	2
+PREHOOK: query: -- should match the query from src
+select value, sum(cast(key as int)), count(*) numrows
+from varchar_2
+group by value
+order by value asc
+limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_2
+#### A masked pattern was here ####
+POSTHOOK: query: -- should match the query from src
+select value, sum(cast(key as int)), count(*) numrows
+from varchar_2
+group by value
+order by value asc
+limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: varchar_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+val_0	0	3
+val_10	10	1
+val_100	200	2
+val_103	206	2
+val_104	208	2
+PREHOOK: query: select value, sum(cast(key as int)), count(*) numrows
+from src
+group by value
+order by value desc
+limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: select value, sum(cast(key as int)), count(*) numrows
+from src
+group by value
+order by value desc
+limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: Lineage: varchar_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+val_98	196	2
+val_97	194	2
+val_96	96	1
+val_95	190	2
+val_92	92	1
+PREHOOK: query: -- should match the query from src
+select value, sum(cast(key as int)), count(*) numrows
+from varchar_2
+group by value
+order by value desc
+limit 5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@varchar_2
+#### A masked pattern was here ####
+POSTHOOK: query: -- should match the query from src
+select value, sum(cast(key as int)), count(*) numrows
+from varchar_2
+group by value
+order by value desc
+limit 5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@varchar_2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: varchar_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+val_98	196	2
+val_97	194	2
+val_96	96	1
+val_95	190	2
+val_92	92	1
+PREHOOK: query: drop table varchar_2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@varchar_2
+PREHOOK: Output: default@varchar_2
+POSTHOOK: query: drop table varchar_2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@varchar_2
+POSTHOOK: Output: default@varchar_2
+POSTHOOK: Lineage: varchar_2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: varchar_2.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]

@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.serde2.SerDe;
@@ -66,7 +67,6 @@ import org.apache.hive.hcatalog.mapreduce.HCatOutputFormat;
 import org.apache.hive.hcatalog.mapreduce.HCatTableInfo;
 import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
 import org.apache.hive.hcatalog.mapreduce.OutputJobInfo;
-import org.apache.hive.hcatalog.mapreduce.HCatStorageHandler;
 import org.apache.thrift.TBase;
 import org.apache.zookeeper.ZooKeeper;
 
@@ -78,7 +78,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * tables through HCatalog. The implementation is very similar to the
  * HiveHBaseStorageHandler, with more details to suit HCatalog.
  */
-public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveMetaHook, Configurable {
+public class HBaseHCatStorageHandler extends  DefaultStorageHandler implements HiveMetaHook, Configurable {
 
   public final static String DEFAULT_PREFIX = "default.";
   private final static String PROPERTY_INT_OUTPUT_LOCATION = "hcat.hbase.mapreduce.intermediateOutputLocation";
@@ -87,6 +87,7 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
   private Configuration jobConf;
   private HBaseAdmin admin;
 
+  @Deprecated
   @Override
   public void configureInputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
     // Populate jobProperties with input table name, table columns, RM snapshot,
@@ -135,6 +136,7 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
     }
   }
 
+  @Deprecated
   @Override
   public void configureOutputJobProperties(TableDesc tableDesc, Map<String, String> jobProperties) {
     // Populate jobProperties with output table name, hbase-default.xml, hbase-site.xml, OutputJobInfo
@@ -198,6 +200,7 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
   * @see org.apache.hive.hcatalog.storagehandler.HCatStorageHandler#
   * getAuthorizationProvider()
   */
+  @Deprecated
   @Override
   public HiveAuthorizationProvider getAuthorizationProvider()
     throws HiveException {
@@ -215,6 +218,7 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
    * @see org.apache.hive.hcatalog.storagehandler.HCatStorageHandler
    * #commitCreateTable(org.apache.hadoop.hive.metastore.api.Table)
    */
+  @Deprecated
   @Override
   public void commitCreateTable(Table table) throws MetaException {
   }
@@ -229,6 +233,7 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
    * @see org.apache.hive.hcatalog.storagehandler.HCatStorageHandler
    * #commitDropTable(org.apache.hadoop.hive.metastore.api.Table, boolean)
    */
+  @Deprecated
   @Override
   public void commitDropTable(Table tbl, boolean deleteData)
     throws MetaException {
@@ -244,6 +249,7 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
    * @see org.apache.hive.hcatalog.storagehandler.HCatStorageHandler
    * #preCreateTable(org.apache.hadoop.hive.metastore.api.Table)
    */
+  @Deprecated
   @Override
   public void preCreateTable(Table tbl) throws MetaException {
     boolean isExternal = MetaStoreUtils.isExternalTable(tbl);
@@ -262,7 +268,7 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
       if (hbaseColumnsMapping == null) {
         throw new MetaException(
           "No hbase.columns.mapping defined in table"
-            + " properties.");
+              + " properties.");
       }
 
       List<String> hbaseColumnFamilies = new ArrayList<String>();
@@ -346,6 +352,7 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
    * @see org.apache.hive.hcatalog.storagehandler.HCatStorageHandler
    * #preDropTable(org.apache.hadoop.hive.metastore.api.Table)
    */
+  @Deprecated
   @Override
   public void preDropTable(Table table) throws MetaException {
   }
@@ -358,6 +365,7 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
    * @see org.apache.hive.hcatalog.storagehandler.HCatStorageHandler
    * #rollbackCreateTable(org.apache.hadoop.hive.metastore.api.Table)
    */
+  @Deprecated
   @Override
   public void rollbackCreateTable(Table table) throws MetaException {
     checkDeleteTable(table);
@@ -371,6 +379,7 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
    * @see org.apache.hive.hcatalog.storagehandler.HCatStorageHandler
    * #rollbackDropTable(org.apache.hadoop.hive.metastore.api.Table)
    */
+  @Deprecated
   @Override
   public void rollbackDropTable(Table table) throws MetaException {
   }
@@ -380,6 +389,7 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
    *
    * @see org.apache.hive.hcatalog.storagehandler.HCatStorageHandler#getMetaHook()
    */
+  @Deprecated
   @Override
   public HiveMetaHook getMetaHook() {
     return this;
@@ -432,6 +442,7 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
     return qualifiedName;
   }
 
+  @Deprecated
   @Override
   public Class<? extends InputFormat> getInputFormatClass() {
     return HBaseInputFormat.class;
@@ -450,6 +461,7 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
   * @see
   * org.apache.hive.hcatalog.storagehandler.HCatStorageHandler#getSerDeClass()
   */
+  @Deprecated
   @Override
   public Class<? extends SerDe> getSerDeClass()
     throws UnsupportedOperationException {
@@ -460,6 +472,7 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
     return jobConf;
   }
 
+  @Deprecated
   @Override
   public Configuration getConf() {
 
@@ -469,6 +482,7 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
     return hbaseConf;
   }
 
+  @Deprecated
   @Override
   public void setConf(Configuration conf) {
     //setConf is called both during DDL operations and  mapred read/write jobs.

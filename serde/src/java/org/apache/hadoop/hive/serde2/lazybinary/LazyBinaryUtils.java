@@ -196,6 +196,11 @@ public final class LazyBinaryUtils {
         recordInfo.elementSize = vInt.value;
         break;
 
+      case VARCHAR:
+        LazyBinaryUtils.readVInt(bytes, offset, vInt);
+        recordInfo.elementOffset = vInt.length;
+        recordInfo.elementSize = vInt.value;
+        break;
       case BINARY:
         // using vint instead of 4 bytes
         LazyBinaryUtils.readVInt(bytes, offset, vInt);
@@ -425,8 +430,7 @@ public final class LazyBinaryUtils {
       switch (typeInfo.getCategory()) {
       case PRIMITIVE: {
         result = PrimitiveObjectInspectorFactory
-            .getPrimitiveWritableObjectInspector(((PrimitiveTypeInfo) typeInfo)
-            .getPrimitiveCategory());
+            .getPrimitiveWritableObjectInspector(((PrimitiveTypeInfo) typeInfo));
         break;
       }
       case LIST: {

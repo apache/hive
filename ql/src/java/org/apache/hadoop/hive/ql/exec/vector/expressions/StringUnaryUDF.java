@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.udf.IUDFUnaryString;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -29,6 +28,11 @@ import org.apache.hadoop.io.Text;
  * the vector.
  */
 public class StringUnaryUDF extends VectorExpression {
+
+  public interface IUDFUnaryString {
+    Text evaluate(Text s);
+  }
+
   private static final long serialVersionUID = 1L;
   private int colNum;
   private int outputColumn;

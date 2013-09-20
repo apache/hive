@@ -70,7 +70,7 @@ public class TestHCatPartitionPublish {
   private static FileSystem fs = null;
   private static MiniMRCluster mrCluster = null;
   private static boolean isServerRunning = false;
-  private static final int msPort = 20101;
+  private static int msPort;
   private static HiveConf hcatConf;
   private static HiveMetaStoreClient msc;
   private static SecurityManager securityManager;
@@ -98,6 +98,8 @@ public class TestHCatPartitionPublish {
       return;
     }
 
+    msPort = MetaStoreUtils.findFreePort();
+
     MetaStoreUtils.startMetaStore(msPort, ShimLoader
         .getHadoopThriftAuthBridge());
     Thread.sleep(10000);
@@ -111,6 +113,7 @@ public class TestHCatPartitionPublish {
         + msPort);
     hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     hcatConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTFAILURERETRIES, 3);
+    hcatConf.setIntVar(HiveConf.ConfVars.METASTORE_CLIENT_SOCKET_TIMEOUT, 120);
     hcatConf.set(HiveConf.ConfVars.SEMANTIC_ANALYZER_HOOK.varname,
         HCatSemanticAnalyzer.class.getName());
     hcatConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");

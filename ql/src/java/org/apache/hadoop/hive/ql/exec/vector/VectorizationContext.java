@@ -79,7 +79,6 @@ import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
 import org.apache.hadoop.hive.ql.udf.UDFHour;
 import org.apache.hadoop.hive.ql.udf.UDFLength;
 import org.apache.hadoop.hive.ql.udf.UDFLike;
-import org.apache.hadoop.hive.ql.udf.UDFLower;
 import org.apache.hadoop.hive.ql.udf.UDFMinute;
 import org.apache.hadoop.hive.ql.udf.UDFMonth;
 import org.apache.hadoop.hive.ql.udf.UDFOPDivide;
@@ -90,11 +89,11 @@ import org.apache.hadoop.hive.ql.udf.UDFOPNegative;
 import org.apache.hadoop.hive.ql.udf.UDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
 import org.apache.hadoop.hive.ql.udf.UDFSecond;
-import org.apache.hadoop.hive.ql.udf.UDFUpper;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLower;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqualOrGreaterThan;
@@ -107,6 +106,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.io.Text;
@@ -444,6 +444,10 @@ public class VectorizationContext {
       return getVectorExpression((GenericUDFBridge) udf, childExpr);
     } else if(udf instanceof GenericUDFToUnixTimeStamp) {
       return getVectorExpression((GenericUDFToUnixTimeStamp) udf, childExpr);
+    } else if (udf instanceof GenericUDFLower) {
+      return getUnaryStringExpression("StringLower", "String", childExpr);
+    } else if (udf instanceof GenericUDFUpper) {
+      return getUnaryStringExpression("StringUpper", "String", childExpr);
     }
     throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
   }
@@ -497,10 +501,6 @@ public class VectorizationContext {
       return getTimestampFieldExpression(cl.getSimpleName(), childExpr);
     } else if (cl.equals(UDFLike.class)) {
       return getLikeExpression(childExpr);
-    } else if (cl.equals(UDFLower.class)) {
-      return getUnaryStringExpression("StringLower", "String", childExpr);
-    } else if (cl.equals(UDFUpper.class)) {
-      return getUnaryStringExpression("StringUpper", "String", childExpr);
     } else if (cl.equals(UDFLength.class)) {
       return getUnaryStringExpression("StringLength", "Long", childExpr);
     }

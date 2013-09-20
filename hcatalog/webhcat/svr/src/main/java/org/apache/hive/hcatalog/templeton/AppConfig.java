@@ -158,7 +158,7 @@ public class AppConfig extends Configuration {
       File f = new File(dir, fname);
       if (f.exists()) {
         addResource(new Path(f.getAbsolutePath()));
-        LOG.debug("loaded config file " + f.getAbsolutePath());
+        LOG.info("loaded config file " + f.getAbsolutePath());
         return true;
       }
     }

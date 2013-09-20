@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.io.Writable;
@@ -58,7 +59,7 @@ class HCatRecordReader extends RecordReader<WritableComparable, HCatRecord> {
   private org.apache.hadoop.mapred.RecordReader<WritableComparable, Writable> baseRecordReader;
 
   /** The storage handler used */
-  private final HCatStorageHandler storageHandler;
+  private final HiveStorageHandler storageHandler;
 
   private Deserializer deserializer;
 
@@ -70,7 +71,7 @@ class HCatRecordReader extends RecordReader<WritableComparable, HCatRecord> {
   /**
    * Instantiates a new hcat record reader.
    */
-  public HCatRecordReader(HCatStorageHandler storageHandler,
+  public HCatRecordReader(HiveStorageHandler storageHandler,
               Map<String, String> valuesNotInDataCols) {
     this.storageHandler = storageHandler;
     this.valuesNotInDataCols = valuesNotInDataCols;
@@ -106,7 +107,7 @@ class HCatRecordReader extends RecordReader<WritableComparable, HCatRecord> {
   }
 
   private org.apache.hadoop.mapred.RecordReader createBaseRecordReader(HCatSplit hcatSplit,
-                                     HCatStorageHandler storageHandler, TaskAttemptContext taskContext) throws IOException {
+                                     HiveStorageHandler storageHandler, TaskAttemptContext taskContext) throws IOException {
 
     JobConf jobConf = HCatUtil.getJobConfFromContext(taskContext);
     HCatUtil.copyJobPropertiesToJobConf(hcatSplit.getPartitionInfo().getJobProperties(), jobConf);
@@ -116,7 +117,7 @@ class HCatRecordReader extends RecordReader<WritableComparable, HCatRecord> {
       InternalUtil.createReporter(taskContext));
   }
 
-  private void createDeserializer(HCatSplit hcatSplit, HCatStorageHandler storageHandler,
+  private void createDeserializer(HCatSplit hcatSplit, HiveStorageHandler storageHandler,
                   TaskAttemptContext taskContext) throws IOException {
 
     deserializer = ReflectionUtils.newInstance(storageHandler.getSerDeClass(),

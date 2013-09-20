@@ -30,13 +30,19 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.ParameterizedPrimitiveTypeUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
@@ -119,7 +125,8 @@ public class RegexSerDe extends AbstractSerDe {
      */
     List<ObjectInspector> columnOIs = new ArrayList<ObjectInspector>(columnNames.size());
     for (int c = 0; c < numColumns; c++) {
-      String typeName = columnTypes.get(c).getTypeName();
+      TypeInfo typeInfo = columnTypes.get(c);
+      String typeName = typeInfo.getTypeName();
       if (typeName.equals(serdeConstants.STRING_TYPE_NAME)) {
         columnOIs.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
       } else if (typeName.equals(serdeConstants.TINYINT_TYPE_NAME)) {
@@ -142,6 +149,13 @@ public class RegexSerDe extends AbstractSerDe {
         columnOIs.add(PrimitiveObjectInspectorFactory.javaDateObjectInspector);
       } else if (typeName.equals(serdeConstants.DECIMAL_TYPE_NAME)) {
         columnOIs.add(PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector);
+      }  else if (typeInfo instanceof PrimitiveTypeInfo
+          &&
+          ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory() == PrimitiveCategory.VARCHAR) {
+        VarcharTypeParams varcharParams = (VarcharTypeParams)
+            ParameterizedPrimitiveTypeUtils.getTypeParamsFromTypeInfo(typeInfo);
+        columnOIs.add(PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+            (PrimitiveTypeInfo) typeInfo));
       } else {
          throw new SerDeException(getClass().getName()
          + " doesn't allow column [" + c + "] named "
@@ -202,7 +216,8 @@ public class RegexSerDe extends AbstractSerDe {
     for (int c = 0; c < numColumns; c++) {
       try {
         String t = m.group(c+1);
-        String typeName = columnTypes.get(c).getTypeName();
+        TypeInfo typeInfo = columnTypes.get(c);
+        String typeName = typeInfo.getTypeName();
 
         // Convert the column to the correct type when needed and set in row obj
         if (typeName.equals(serdeConstants.STRING_TYPE_NAME)) {
@@ -247,6 +262,13 @@ public class RegexSerDe extends AbstractSerDe {
           HiveDecimal bd;
           bd = new HiveDecimal(t);
           row.set(c, bd);
+        } else if (typeInfo instanceof PrimitiveTypeInfo
+            &&
+            ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory() == PrimitiveCategory.VARCHAR) {
+          VarcharTypeParams varcharParams = (VarcharTypeParams)
+              ParameterizedPrimitiveTypeUtils.getTypeParamsFromTypeInfo(typeInfo);
+          HiveVarchar hv = new HiveVarchar(t, varcharParams != null ? varcharParams.length : -1);
+          row.set(c, hv);
         }
       } catch (RuntimeException e) {
          partialMatchedRowsCount++;

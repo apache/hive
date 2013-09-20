@@ -1019,12 +1019,10 @@ public class TestOrcFile {
       stripeCount += 1;
       rowCount += stripe.getNumberOfRows();
       if (currentOffset < 0) {
-        currentOffset = stripe.getOffset() + stripe.getIndexLength() +
-            stripe.getDataLength() + stripe.getFooterLength();
+        currentOffset = stripe.getOffset() + stripe.getLength();
       } else {
         assertEquals(currentOffset, stripe.getOffset());
-        currentOffset += stripe.getIndexLength() +
-            stripe.getDataLength() + stripe.getFooterLength();
+        currentOffset += stripe.getLength();
       }
     }
     assertEquals(reader.getNumberOfRows(), rowCount);

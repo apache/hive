@@ -60,12 +60,12 @@ public class CompleteDelegator extends TempletonDelegator {
     try {
       state = new JobState(id, Main.getAppConfigInstance());
       if (state.getCompleteStatus() == null)
-        failed("Job not yet complete", null);
+        failed("Job not yet complete. jobId=" + id, null);
 
       Long notified = state.getNotifiedTime();
       if (notified != null)
-        return acceptWithError("Callback already run on "
-          + new Date(notified.longValue()));
+        return acceptWithError("Callback already run for jobId=" + id +
+                " at " + new Date(notified));
 
       String callback = state.getCallback();
       if (callback == null)

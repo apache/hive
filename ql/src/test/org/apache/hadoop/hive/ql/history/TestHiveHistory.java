@@ -64,6 +64,7 @@ public class TestHiveHistory extends TestCase {
   protected void setUp() {
     try {
       conf = new HiveConf(HiveHistory.class);
+      SessionState.start(conf);
 
       fs = FileSystem.get(conf);
       if (fs.exists(tmppath) && !fs.getFileStatus(tmppath).isDir()) {

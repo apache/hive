@@ -18,8 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.udf.IUDFUnaryString;
-import org.apache.hadoop.hive.ql.udf.UDFUpper;
+import org.apache.hadoop.io.Text;
 
 /**
  * Expression to convert a string to lower case.
@@ -29,7 +28,19 @@ public class StringUpper extends StringUnaryUDF {
   private static final long serialVersionUID = 1L;
 
   public StringUpper(int colNum, int outputColumn) {
-    super(colNum, outputColumn, (IUDFUnaryString) new UDFUpper());
+    super(colNum, outputColumn, new IUDFUnaryString() {
+
+      Text t = new Text();
+
+      @Override
+      public Text evaluate(Text s) {
+        if (s == null) {
+          return null;
+        }
+        t.set(s.toString().toUpperCase());
+        return t;
+      }
+    });
   }
 
   public StringUpper() {

@@ -16,32 +16,32 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf;
+package org.apache.hadoop.hive.ql.io;
 
-import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.io.Text;
+import java.io.IOException;
 
-/**
- * UDFLower.
- *
- */
-@Description(name = "lower,lcase",
-    value = "_FUNC_(str) - Returns str with all characters changed to lowercase",
-    extended = "Example:\n"
-    + "  > SELECT _FUNC_('Facebook') FROM src LIMIT 1;\n" + "  'facebook'")
-public class UDFLower extends UDF implements IUDFUnaryString {
-  private Text t = new Text();
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableComparable;
 
-  public UDFLower() {
+
+public class HivePassThroughRecordWriter <K extends WritableComparable<?>, V extends Writable>
+implements RecordWriter {
+
+  private final org.apache.hadoop.mapred.RecordWriter<K, V> mWriter;
+
+  public HivePassThroughRecordWriter(org.apache.hadoop.mapred.RecordWriter<K, V> writer) {
+    this.mWriter = writer;
   }
 
-  public Text evaluate(Text s) {
-    if (s == null) {
-      return null;
-    }
-    t.set(s.toString().toLowerCase());
-    return t;
+  @SuppressWarnings("unchecked")
+  public void write(Writable r) throws IOException {
+    mWriter.write(null, (V) r);
   }
 
+  public void close(boolean abort) throws IOException {
+    //close with null reporter
+    mWriter.close(null);
+  }
 }
+

@@ -25,11 +25,13 @@ import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.DefaultHiveAuthorizationProvider;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.common.HCatUtil;
@@ -44,7 +46,7 @@ import java.util.Map;
  *  artifacts of tables which don't define a SerDe. This StorageHandler assumes
  *  the supplied storage artifacts are for a file-based storage system.
  */
-public class FosterStorageHandler extends HCatStorageHandler {
+public class FosterStorageHandler extends DefaultStorageHandler {
 
   public Configuration conf;
   /** The directory under which data is initially written for a partitioned table */
@@ -89,6 +91,11 @@ public class FosterStorageHandler extends HCatStorageHandler {
   @Override
   public HiveMetaHook getMetaHook() {
     return null;
+  }
+
+  @Override
+  public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
+    //do nothing currently
   }
 
   @Override
@@ -161,7 +168,11 @@ public class FosterStorageHandler extends HCatStorageHandler {
 
   }
 
-  @Override
+  public void configureTableJobProperties(TableDesc tableDesc,
+      Map<String, String> jobProperties) {
+    return;
+  }
+
   OutputFormatContainer getOutputFormatContainer(
     org.apache.hadoop.mapred.OutputFormat outputFormat) {
     return new FileOutputFormatContainer(outputFormat);

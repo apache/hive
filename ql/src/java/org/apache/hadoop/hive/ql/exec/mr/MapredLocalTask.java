@@ -236,7 +236,6 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
         // then additional params need to be set so that the command is run as
         // intended user
         SecureCmdDoAs secureDoAs = new SecureCmdDoAs(conf);
-        cmdLine = secureDoAs.addArg(cmdLine);
         secureDoAs.addEnv(variables);
       }
 
@@ -271,7 +270,6 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
         }
       } else {
         LOG.info("Execution completed successfully");
-        console.printInfo("Mapred Local Task Succeeded . Convert the Join into MapJoin");
       }
 
       return exitVal;

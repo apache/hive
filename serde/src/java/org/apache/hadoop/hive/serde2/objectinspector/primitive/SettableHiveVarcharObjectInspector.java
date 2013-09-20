@@ -15,14 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
-package org.apache.hadoop.hive.ql.udf;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 
-import org.apache.hadoop.io.Text;
+public interface SettableHiveVarcharObjectInspector extends HiveVarcharObjectInspector {
+  Object set(Object o, HiveVarchar value);
 
-/**
- * Interface to support use of standard UDFs inside the vectorized execution code path.
- */
-public interface IUDFUnaryString {
-  Text evaluate(Text s);
+  Object set(Object o, String value);
+
+  Object create(HiveVarchar value);
+
 }

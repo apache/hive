@@ -31,6 +31,9 @@ public class WritableConstantIntObjectInspector extends
 
   private IntWritable value;
 
+  protected WritableConstantIntObjectInspector() {
+    super();
+  }
   WritableConstantIntObjectInspector(IntWritable value) {
     super();
     this.value = value;

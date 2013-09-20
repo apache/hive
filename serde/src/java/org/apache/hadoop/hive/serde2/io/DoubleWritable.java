@@ -17,7 +17,7 @@
  */
 
 /**
- * This file is back-ported from hadoop-0.19, to make sure hive can run 
+ * This file is back-ported from hadoop-0.19, to make sure hive can run
  * with hadoop-0.17.
  */
 package org.apache.hadoop.hive.serde2.io;

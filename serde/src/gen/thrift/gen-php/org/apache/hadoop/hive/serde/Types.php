@@ -62,6 +62,10 @@ $GLOBALS['serde_CONSTANTS']['DOUBLE_TYPE_NAME'] = "double";
 
 $GLOBALS['serde_CONSTANTS']['STRING_TYPE_NAME'] = "string";
 
+$GLOBALS['serde_CONSTANTS']['CHAR_TYPE_NAME'] = "char";
+
+$GLOBALS['serde_CONSTANTS']['VARCHAR_TYPE_NAME'] = "varchar";
+
 $GLOBALS['serde_CONSTANTS']['DATE_TYPE_NAME'] = "date";
 
 $GLOBALS['serde_CONSTANTS']['DATETIME_TYPE_NAME'] = "datetime";
@@ -94,6 +98,8 @@ $GLOBALS['serde_CONSTANTS']['PrimitiveTypes'] = array(
   "float" => true,
   "double" => true,
   "string" => true,
+  "varchar" => true,
+  "char" => true,
   "date" => true,
   "datetime" => true,
   "timestamp" => true,

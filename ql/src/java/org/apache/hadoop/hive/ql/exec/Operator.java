@@ -226,7 +226,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    * optimizer and built during semantic analysis contains only key elements for
    * reduce sink and group by op
    */
-  protected transient Map<String, ExprNodeDesc> colExprMap;
+  protected Map<String, ExprNodeDesc> colExprMap;
 
   public void setId(String id) {
     this.id = id;

@@ -25,8 +25,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 public class CustomNonSettableListObjectInspector1  implements ListObjectInspector {
 
-  ObjectInspector listElementObjectInspector;
+  private ObjectInspector listElementObjectInspector;
 
+  protected CustomNonSettableListObjectInspector1() {
+    super();
+  }
   protected CustomNonSettableListObjectInspector1(
       ObjectInspector listElementObjectInspector) {
     this.listElementObjectInspector = listElementObjectInspector;

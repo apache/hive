@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.util.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -60,6 +61,11 @@ final class ReaderImpl implements Reader {
     @Override
     public long getOffset() {
       return stripe.getOffset();
+    }
+
+    @Override
+    public long getLength() {
+      return stripe.getDataLength() + getIndexLength() + getFooterLength();
     }
 
     @Override
@@ -269,7 +275,7 @@ final class ReaderImpl implements Reader {
     ByteBuffer buffer = ByteBuffer.allocate(readSize);
     file.readFully(buffer.array(), buffer.arrayOffset() + buffer.position(),
       buffer.remaining());
-    int psLen = buffer.get(readSize - 1);
+    int psLen = buffer.get(readSize - 1) & 0xff;
     ensureOrcFooter(file, path, psLen, buffer);
     int psOffset = readSize - 1 - psLen;
     CodedInputStream in = CodedInputStream.newInstance(buffer.array(),

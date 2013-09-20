@@ -806,7 +806,8 @@ public class CliDriver {
     if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.CLIPRINTCURRENTDB)) {
       return "";
     }
-    String currDb = ss.getCurrentDbName();
+    //BUG: This will not work in remote mode - HIVE-5153
+    String currDb = SessionState.get().getCurrentDatabase();
 
     if (currDb == null) {
       return "";

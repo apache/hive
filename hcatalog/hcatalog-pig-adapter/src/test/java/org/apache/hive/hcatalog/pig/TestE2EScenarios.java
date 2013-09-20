@@ -25,6 +25,7 @@ import java.util.Iterator;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.cli.CliSessionState;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.JobID;
 import org.apache.hadoop.mapreduce.OutputCommitter;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.RecordWriter;
@@ -55,8 +57,8 @@ import org.apache.pig.data.Tuple;
 
 public class TestE2EScenarios extends TestCase {
 
-  private static final String TEST_DATA_DIR = System.getProperty("user.dir") +
-    "/build/test/data/" + TestHCatLoader.class.getCanonicalName();
+  private static final String TEST_DATA_DIR = System.getProperty("java.io.tmpdir") + File.separator
+      + TestHCatLoader.class.getCanonicalName() + "-" + System.currentTimeMillis();
   private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
 
   private static final String TEXTFILE_LOCN = TEST_DATA_DIR + "/textfile";
@@ -74,7 +76,9 @@ public class TestE2EScenarios extends TestCase {
     if (f.exists()) {
       FileUtil.fullyDelete(f);
     }
-    new File(TEST_WAREHOUSE_DIR).mkdirs();
+    if(!(new File(TEST_WAREHOUSE_DIR).mkdirs())) {
+      throw new RuntimeException("Could not create " + TEST_WAREHOUSE_DIR);
+    }
 
     HiveConf hiveConf = new HiveConf(this.getClass());
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
@@ -88,9 +92,13 @@ public class TestE2EScenarios extends TestCase {
 
   @Override
   protected void tearDown() throws Exception {
-    dropTable("inpy");
-    dropTable("rc5318");
-    dropTable("orc5318");
+    try {
+      dropTable("inpy");
+      dropTable("rc5318");
+      dropTable("orc5318");
+    } finally {
+      FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
+    }
   }
 
   private void dropTable(String tablename) throws IOException, CommandNeedRetryException {
@@ -191,9 +199,9 @@ public class TestE2EScenarios extends TestCase {
 
   private TaskAttemptContext createTaskAttemptContext(Configuration tconf) {
     Configuration conf = (tconf == null) ? (new Configuration()) : tconf;
-    TaskAttemptID taskId = new TaskAttemptID();
+    TaskAttemptID taskId = HCatMapRedUtil.createTaskAttemptID(new JobID("200908190029", 1), false, 1, 1);
     conf.setInt("mapred.task.partition", taskId.getId());
-    conf.set("mapred.task.id", "attempt__0000_r_000000_" + taskId.getId());
+    conf.set("mapred.task.id", taskId.toString());
     TaskAttemptContext rtaskContext = HCatMapRedUtil.createTaskAttemptContext(conf , taskId);
     return rtaskContext;
   }

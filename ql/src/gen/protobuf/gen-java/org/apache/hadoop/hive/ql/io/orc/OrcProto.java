@@ -8925,6 +8925,16 @@ public final class OrcProto {
      */
     com.google.protobuf.ByteString
         getFieldNamesBytes(int index);
+
+    // optional uint32 maximumLength = 4;
+    /**
+     * <code>optional uint32 maximumLength = 4;</code>
+     */
+    boolean hasMaximumLength();
+    /**
+     * <code>optional uint32 maximumLength = 4;</code>
+     */
+    int getMaximumLength();
   }
   /**
    * Protobuf type {@code org.apache.hadoop.hive.ql.io.orc.Type}
@@ -9015,6 +9025,11 @@ public final class OrcProto {
                 mutable_bitField0_ |= 0x00000004;
               }
               fieldNames_.add(input.readBytes());
+              break;
+            }
+            case 32: {
+              bitField0_ |= 0x00000002;
+              maximumLength_ = input.readUInt32();
               break;
             }
           }
@@ -9131,6 +9146,10 @@ public final class OrcProto {
        * <code>DATE = 15;</code>
        */
       DATE(15, 15),
+      /**
+       * <code>VARCHAR = 16;</code>
+       */
+      VARCHAR(16, 16),
       ;
 
       /**
@@ -9197,6 +9216,10 @@ public final class OrcProto {
        * <code>DATE = 15;</code>
        */
       public static final int DATE_VALUE = 15;
+      /**
+       * <code>VARCHAR = 16;</code>
+       */
+      public static final int VARCHAR_VALUE = 16;
 
 
       public final int getNumber() { return value; }
@@ -9219,6 +9242,7 @@ public final class OrcProto {
           case 13: return UNION;
           case 14: return DECIMAL;
           case 15: return DATE;
+          case 16: return VARCHAR;
           default: return null;
         }
       }
@@ -9341,10 +9365,27 @@ public final class OrcProto {
       return fieldNames_.getByteString(index);
     }
 
+    // optional uint32 maximumLength = 4;
+    public static final int MAXIMUMLENGTH_FIELD_NUMBER = 4;
+    private int maximumLength_;
+    /**
+     * <code>optional uint32 maximumLength = 4;</code>
+     */
+    public boolean hasMaximumLength() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    /**
+     * <code>optional uint32 maximumLength = 4;</code>
+     */
+    public int getMaximumLength() {
+      return maximumLength_;
+    }
+
     private void initFields() {
       kind_ = org.apache.hadoop.hive.ql.io.orc.OrcProto.Type.Kind.BOOLEAN;
       subtypes_ = java.util.Collections.emptyList();
       fieldNames_ = com.google.protobuf.LazyStringArrayList.EMPTY;
+      maximumLength_ = 0;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -9374,6 +9415,9 @@ public final class OrcProto {
       }
       for (int i = 0; i < fieldNames_.size(); i++) {
         output.writeBytes(3, fieldNames_.getByteString(i));
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeUInt32(4, maximumLength_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -9410,6 +9454,10 @@ public final class OrcProto {
         }
         size += dataSize;
         size += 1 * getFieldNamesList().size();
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeUInt32Size(4, maximumLength_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -9533,6 +9581,8 @@ public final class OrcProto {
         bitField0_ = (bitField0_ & ~0x00000002);
         fieldNames_ = com.google.protobuf.LazyStringArrayList.EMPTY;
         bitField0_ = (bitField0_ & ~0x00000004);
+        maximumLength_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000008);
         return this;
       }
 
@@ -9576,6 +9626,10 @@ public final class OrcProto {
           bitField0_ = (bitField0_ & ~0x00000004);
         }
         result.fieldNames_ = fieldNames_;
+        if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.maximumLength_ = maximumLength_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -9614,6 +9668,9 @@ public final class OrcProto {
             fieldNames_.addAll(other.fieldNames_);
           }
           onChanged();
+        }
+        if (other.hasMaximumLength()) {
+          setMaximumLength(other.getMaximumLength());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -9837,6 +9894,39 @@ public final class OrcProto {
   }
   ensureFieldNamesIsMutable();
         fieldNames_.add(value);
+        onChanged();
+        return this;
+      }
+
+      // optional uint32 maximumLength = 4;
+      private int maximumLength_ ;
+      /**
+       * <code>optional uint32 maximumLength = 4;</code>
+       */
+      public boolean hasMaximumLength() {
+        return ((bitField0_ & 0x00000008) == 0x00000008);
+      }
+      /**
+       * <code>optional uint32 maximumLength = 4;</code>
+       */
+      public int getMaximumLength() {
+        return maximumLength_;
+      }
+      /**
+       * <code>optional uint32 maximumLength = 4;</code>
+       */
+      public Builder setMaximumLength(int value) {
+        bitField0_ |= 0x00000008;
+        maximumLength_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>optional uint32 maximumLength = 4;</code>
+       */
+      public Builder clearMaximumLength() {
+        bitField0_ = (bitField0_ & ~0x00000008);
+        maximumLength_ = 0;
         onChanged();
         return this;
       }
@@ -14335,33 +14425,34 @@ public final class OrcProto {
       "treams\030\001 \003(\0132(.org.apache.hadoop.hive.ql" +
       ".io.orc.Stream\022A\n\007columns\030\002 \003(\01320.org.ap",
       "ache.hadoop.hive.ql.io.orc.ColumnEncodin" +
-      "g\"\250\002\n\004Type\0229\n\004kind\030\001 \002(\0162+.org.apache.ha" +
+      "g\"\314\002\n\004Type\0229\n\004kind\030\001 \002(\0162+.org.apache.ha" +
       "doop.hive.ql.io.orc.Type.Kind\022\024\n\010subtype" +
-      "s\030\002 \003(\rB\002\020\001\022\022\n\nfieldNames\030\003 \003(\t\"\272\001\n\004Kind" +
-      "\022\013\n\007BOOLEAN\020\000\022\010\n\004BYTE\020\001\022\t\n\005SHORT\020\002\022\007\n\003IN" +
-      "T\020\003\022\010\n\004LONG\020\004\022\t\n\005FLOAT\020\005\022\n\n\006DOUBLE\020\006\022\n\n\006" +
-      "STRING\020\007\022\n\n\006BINARY\020\010\022\r\n\tTIMESTAMP\020\t\022\010\n\004L" +
-      "IST\020\n\022\007\n\003MAP\020\013\022\n\n\006STRUCT\020\014\022\t\n\005UNION\020\r\022\013\n" +
-      "\007DECIMAL\020\016\022\010\n\004DATE\020\017\"x\n\021StripeInformatio" +
-      "n\022\016\n\006offset\030\001 \001(\004\022\023\n\013indexLength\030\002 \001(\004\022\022",
-      "\n\ndataLength\030\003 \001(\004\022\024\n\014footerLength\030\004 \001(\004" +
-      "\022\024\n\014numberOfRows\030\005 \001(\004\"/\n\020UserMetadataIt" +
-      "em\022\014\n\004name\030\001 \002(\t\022\r\n\005value\030\002 \002(\014\"\356\002\n\006Foot" +
-      "er\022\024\n\014headerLength\030\001 \001(\004\022\025\n\rcontentLengt" +
-      "h\030\002 \001(\004\022D\n\007stripes\030\003 \003(\01323.org.apache.ha" +
-      "doop.hive.ql.io.orc.StripeInformation\0225\n" +
-      "\005types\030\004 \003(\0132&.org.apache.hadoop.hive.ql" +
-      ".io.orc.Type\022D\n\010metadata\030\005 \003(\01322.org.apa" +
-      "che.hadoop.hive.ql.io.orc.UserMetadataIt" +
-      "em\022\024\n\014numberOfRows\030\006 \001(\004\022F\n\nstatistics\030\007",
-      " \003(\01322.org.apache.hadoop.hive.ql.io.orc." +
-      "ColumnStatistics\022\026\n\016rowIndexStride\030\010 \001(\r" +
-      "\"\255\001\n\nPostScript\022\024\n\014footerLength\030\001 \001(\004\022F\n" +
-      "\013compression\030\002 \001(\01621.org.apache.hadoop.h" +
-      "ive.ql.io.orc.CompressionKind\022\034\n\024compres" +
-      "sionBlockSize\030\003 \001(\004\022\023\n\007version\030\004 \003(\rB\002\020\001" +
-      "\022\016\n\005magic\030\300> \001(\t*:\n\017CompressionKind\022\010\n\004N" +
-      "ONE\020\000\022\010\n\004ZLIB\020\001\022\n\n\006SNAPPY\020\002\022\007\n\003LZO\020\003"
+      "s\030\002 \003(\rB\002\020\001\022\022\n\nfieldNames\030\003 \003(\t\022\025\n\rmaxim" +
+      "umLength\030\004 \001(\r\"\307\001\n\004Kind\022\013\n\007BOOLEAN\020\000\022\010\n\004" +
+      "BYTE\020\001\022\t\n\005SHORT\020\002\022\007\n\003INT\020\003\022\010\n\004LONG\020\004\022\t\n\005" +
+      "FLOAT\020\005\022\n\n\006DOUBLE\020\006\022\n\n\006STRING\020\007\022\n\n\006BINAR" +
+      "Y\020\010\022\r\n\tTIMESTAMP\020\t\022\010\n\004LIST\020\n\022\007\n\003MAP\020\013\022\n\n" +
+      "\006STRUCT\020\014\022\t\n\005UNION\020\r\022\013\n\007DECIMAL\020\016\022\010\n\004DAT" +
+      "E\020\017\022\013\n\007VARCHAR\020\020\"x\n\021StripeInformation\022\016\n",
+      "\006offset\030\001 \001(\004\022\023\n\013indexLength\030\002 \001(\004\022\022\n\nda" +
+      "taLength\030\003 \001(\004\022\024\n\014footerLength\030\004 \001(\004\022\024\n\014" +
+      "numberOfRows\030\005 \001(\004\"/\n\020UserMetadataItem\022\014" +
+      "\n\004name\030\001 \002(\t\022\r\n\005value\030\002 \002(\014\"\356\002\n\006Footer\022\024" +
+      "\n\014headerLength\030\001 \001(\004\022\025\n\rcontentLength\030\002 " +
+      "\001(\004\022D\n\007stripes\030\003 \003(\01323.org.apache.hadoop" +
+      ".hive.ql.io.orc.StripeInformation\0225\n\005typ" +
+      "es\030\004 \003(\0132&.org.apache.hadoop.hive.ql.io." +
+      "orc.Type\022D\n\010metadata\030\005 \003(\01322.org.apache." +
+      "hadoop.hive.ql.io.orc.UserMetadataItem\022\024",
+      "\n\014numberOfRows\030\006 \001(\004\022F\n\nstatistics\030\007 \003(\013" +
+      "22.org.apache.hadoop.hive.ql.io.orc.Colu" +
+      "mnStatistics\022\026\n\016rowIndexStride\030\010 \001(\r\"\255\001\n" +
+      "\nPostScript\022\024\n\014footerLength\030\001 \001(\004\022F\n\013com" +
+      "pression\030\002 \001(\01621.org.apache.hadoop.hive." +
+      "ql.io.orc.CompressionKind\022\034\n\024compression" +
+      "BlockSize\030\003 \001(\004\022\023\n\007version\030\004 \003(\rB\002\020\001\022\016\n\005" +
+      "magic\030\300> \001(\t*:\n\017CompressionKind\022\010\n\004NONE\020" +
+      "\000\022\010\n\004ZLIB\020\001\022\n\n\006SNAPPY\020\002\022\007\n\003LZO\020\003"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -14445,7 +14536,7 @@ public final class OrcProto {
           internal_static_org_apache_hadoop_hive_ql_io_orc_Type_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_org_apache_hadoop_hive_ql_io_orc_Type_descriptor,
-              new java.lang.String[] { "Kind", "Subtypes", "FieldNames", });
+              new java.lang.String[] { "Kind", "Subtypes", "FieldNames", "MaximumLength", });
           internal_static_org_apache_hadoop_hive_ql_io_orc_StripeInformation_descriptor =
             getDescriptor().getMessageTypes().get(13);
           internal_static_org_apache_hadoop_hive_ql_io_orc_StripeInformation_fieldAccessorTable = new

@@ -403,6 +403,8 @@ public enum ErrorMsg {
   COLUMNSTATSCOLLECTOR_PARSE_ERROR(30009, "Encountered parse error while parsing rewritten query"),
   COLUMNSTATSCOLLECTOR_IO_ERROR(30010, "Encountered I/O exception while parsing rewritten query"),
   DROP_COMMAND_NOT_ALLOWED_FOR_PARTITION(30011, "Partition protected from being dropped"),
+  COLUMNSTATSCOLLECTOR_INVALID_COLUMN(30012, "Column statistics are not supported "
+      + "for partition columns"),
     ;
 
   private int errorCode;

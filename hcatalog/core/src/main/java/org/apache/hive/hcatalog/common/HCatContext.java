@@ -65,10 +65,12 @@ public enum HCatContext {
     }
 
     if (conf != newConf) {
-      for (Map.Entry<String, String> entry : conf) {
-        if ((entry.getKey().matches("hcat.*")) && (newConf.get(entry.getKey()) == null)) {
-          newConf.set(entry.getKey(), entry.getValue());
-        }
+      synchronized (conf) {
+        for (Map.Entry<String, String> entry : conf) {
+          if ((entry.getKey().matches("hcat.*")) && (newConf.get(entry.getKey()) == null)) {
+            newConf.set(entry.getKey(), entry.getValue());
+          }
+        }        
       }
       conf = newConf;
     }

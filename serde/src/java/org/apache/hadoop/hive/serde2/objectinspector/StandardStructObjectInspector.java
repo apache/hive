@@ -29,10 +29,10 @@ import org.apache.commons.logging.LogFactory;
  * ListStructObjectInspector works on struct data that is stored as a Java List
  * or Java Array object. Basically, the fields are stored sequentially in the
  * List object.
- * 
+ *
  * The names of the struct fields and the internal structure of the struct
  * fields are specified in the ctor of the StructObjectInspector.
- * 
+ *
  * Always use the ObjectInspectorFactory to create new ObjectInspector objects,
  * instead of directly creating an instance of this class.
  */
@@ -48,6 +48,10 @@ public class StandardStructObjectInspector extends
     protected ObjectInspector fieldObjectInspector;
     protected String fieldComment;
 
+    protected MyField() {
+      super();
+    }
+    
     public MyField(int fieldID, String fieldName,
         ObjectInspector fieldObjectInspector) {
       this.fieldID = fieldID;
@@ -85,10 +89,9 @@ public class StandardStructObjectInspector extends
 
   protected List<MyField> fields;
 
-  public String getTypeName() {
-    return ObjectInspectorUtils.getStandardStructTypeName(this);
+  protected StandardStructObjectInspector() {
+    super();
   }
-
   /**
    * Call ObjectInspectorFactory.getStandardListObjectInspector instead.
    */
@@ -131,6 +134,10 @@ public class StandardStructObjectInspector extends
       this.fields.add(new MyField(i, fields.get(i).getFieldName(), fields
           .get(i).getFieldObjectInspector()));
     }
+  }
+
+  public String getTypeName() {
+    return ObjectInspectorUtils.getStandardStructTypeName(this);
   }
 
   public final Category getCategory() {
