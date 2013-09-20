@@ -802,6 +802,7 @@ public class DDLWork implements Serializable {
   /**
    * @return information about the partitions we want to add.
    */
+  @Explain(displayName = "Add Partition Operator")
   public AddPartitionDesc getAddPartitionDesc() {
     return addPartitionDesc;
   }
