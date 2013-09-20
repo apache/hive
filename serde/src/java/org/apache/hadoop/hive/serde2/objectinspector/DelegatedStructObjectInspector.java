@@ -26,6 +26,9 @@ public class DelegatedStructObjectInspector extends StructObjectInspector {
   private StructObjectInspector delegate;
   private List<DelegatedStructField> fields;
 
+  protected DelegatedStructObjectInspector() {
+    super();
+  }
   public DelegatedStructObjectInspector(StructObjectInspector delegate) {
     this.delegate = delegate;
   }
@@ -58,6 +61,7 @@ public class DelegatedStructObjectInspector extends StructObjectInspector {
     }
   }
 
+  @Override
   public List<? extends StructField> getAllStructFieldRefs() {
     if (fields != null || delegate.getAllStructFieldRefs() == null) {
       return fields;
@@ -70,15 +74,18 @@ public class DelegatedStructObjectInspector extends StructObjectInspector {
     return this.fields = delegate;
   }
 
+  @Override
   public StructField getStructFieldRef(String fieldName) {
     StructField field = delegate.getStructFieldRef(fieldName);
     return field == null ? null : new DelegatedStructField(field);
   }
 
+  @Override
   public Object getStructFieldData(Object data, StructField fieldRef) {
     return delegate.getStructFieldData(data, ((DelegatedStructField) fieldRef).field);
   }
 
+  @Override
   public List<Object> getStructFieldsDataAsList(Object data) {
     return delegate.getStructFieldsDataAsList(data);
   }

@@ -138,7 +138,7 @@ public class VirtualColumn implements Serializable {
     for (VirtualColumn vc : vcs) {
       names.add(vc.getName());
       inspectors.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-          vc.getTypeInfo().getPrimitiveCategory()));
+          vc.getTypeInfo()));
     }
     return ObjectInspectorFactory.getStandardStructObjectInspector(names, inspectors);
   }

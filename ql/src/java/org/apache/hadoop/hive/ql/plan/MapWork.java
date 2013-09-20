@@ -102,8 +102,8 @@ public class MapWork extends BaseWork {
   public static final int SAMPLING_ON_START = 2;    // sampling on task running
 
   // the following two are used for join processing
-  private transient QBJoinTree joinTree;
-  private transient LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap;
+  private QBJoinTree joinTree;
+  private LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap;
 
   private boolean mapperCannotSpanPartns;
 

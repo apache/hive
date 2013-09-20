@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  */
 public abstract class ExprNodeDesc implements Serializable, Node {
   private static final long serialVersionUID = 1L;
-  TypeInfo typeInfo;
+  protected TypeInfo typeInfo;
 
   public ExprNodeDesc() {
   }

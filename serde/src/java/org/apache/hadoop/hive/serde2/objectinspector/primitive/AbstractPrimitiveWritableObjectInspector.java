@@ -25,6 +25,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 public abstract class AbstractPrimitiveWritableObjectInspector extends
     AbstractPrimitiveObjectInspector {
 
+  protected AbstractPrimitiveWritableObjectInspector() {
+    super();
+  }
   protected AbstractPrimitiveWritableObjectInspector(
       PrimitiveTypeEntry typeEntry) {
     super(typeEntry);

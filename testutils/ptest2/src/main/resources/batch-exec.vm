@@ -32,11 +32,12 @@ export ANT_OPTS="-Xmx1g -XX:MaxPermSize=256m -Djava.io.tmpdir=$logDir/tmp ${antE
 export HADOOP_ROOT_LOGGER=INFO,console
 export HADOOP_OPTS="-Dhive.log.dir=$logDir -Dhive.query.id=hadoop -Djava.io.tmpdir=$logDir/tmp"
 cd $localDir/$instanceName/${repositoryName}-source && \
-  timeout 2h ant -Divy.cache.ttl.default=eternal $antArgs \
+  timeout 2h ant test -Dtest.junit.output.format=xml $antArgs \
    -Divy.default.ivy.user.dir=$localDir/$instanceName/ivy \
+   -Divy.default.always.check.exact.revision=false \
+   -Divy.cache.ttl.default=eternal -Divy.checkmodified=false \
    -Dmvn.local.repo=$localDir/$instanceName/maven \
-   -Dtest.junit.output.format=xml test \
-   $testArguments 1>$logDir/ant-test.txt 2>&1
+   $antArgs $testArguments 1>$logDir/ant-test.txt 2>&1
 ret=$?
 if [[ $ret -ne 0 ]]
 then

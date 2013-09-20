@@ -18,6 +18,11 @@
  */
 package org.apache.hcatalog.pig;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -29,8 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import junit.framework.TestCase;
-
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -48,13 +52,16 @@ import org.apache.pig.data.DataType;
 import org.apache.pig.data.Tuple;
 import org.apache.pig.impl.logicalLayer.schema.Schema;
 import org.apache.pig.impl.logicalLayer.schema.Schema.FieldSchema;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * @deprecated Use/modify {@link org.apache.hive.hcatalog.pig.TestHCatLoader} instead
  */
-public class TestHCatLoader extends TestCase {
-  private static final String TEST_DATA_DIR = System.getProperty("user.dir") +
-    "/build/test/data/" + TestHCatLoader.class.getCanonicalName();
+public class TestHCatLoader {
+  private static final String TEST_DATA_DIR = System.getProperty("java.io.tmpdir") + File.separator
+      + TestHCatLoader.class.getCanonicalName() + "-" + System.currentTimeMillis();
   private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
   private static final String BASIC_FILE_NAME = TEST_DATA_DIR + "/basic.input.data";
   private static final String COMPLEX_FILE_NAME = TEST_DATA_DIR + "/complex.input.data";
@@ -63,13 +70,9 @@ public class TestHCatLoader extends TestCase {
   private static final String COMPLEX_TABLE = "junit_unparted_complex";
   private static final String PARTITIONED_TABLE = "junit_parted_basic";
   private static final String SPECIFIC_SIZE_TABLE = "junit_specific_size";
-  private static Driver driver;
 
-  private static int guardTestCount = 6; // ugh, instantiate using introspection in guardedSetupBeforeClass
-  private static boolean setupHasRun = false;
-
-
-  private static Map<Integer, Pair<Integer, String>> basicInputData;
+  private Driver driver;
+  private Map<Integer, Pair<Integer, String>> basicInputData;
 
   protected String storageFormat() {
     return "RCFILE tblproperties('hcat.isd'='org.apache.hcatalog.rcfile.RCFileInputDriver'," +
@@ -97,18 +100,16 @@ public class TestHCatLoader extends TestCase {
     createTable(tablename, schema, null);
   }
 
-  protected void guardedSetUpBeforeClass() throws Exception {
-    if (!setupHasRun) {
-      setupHasRun = true;
-    } else {
-      return;
-    }
+  @Before
+  public void setup() throws Exception {
 
     File f = new File(TEST_WAREHOUSE_DIR);
     if (f.exists()) {
       FileUtil.fullyDelete(f);
     }
-    new File(TEST_WAREHOUSE_DIR).mkdirs();
+    if(!(new File(TEST_WAREHOUSE_DIR).mkdirs())) {
+      throw new RuntimeException("Could not create " + TEST_WAREHOUSE_DIR);
+    }
 
     HiveConf hiveConf = new HiveConf(this.getClass());
     hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
@@ -117,8 +118,6 @@ public class TestHCatLoader extends TestCase {
     hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.varname, TEST_WAREHOUSE_DIR);
     driver = new Driver(hiveConf);
     SessionState.start(new CliSessionState(hiveConf));
-
-    cleanup();
 
     createTable(BASIC_TABLE, "a int, b string");
     createTable(COMPLEX_TABLE,
@@ -172,29 +171,16 @@ public class TestHCatLoader extends TestCase {
 
   }
 
-  private void cleanup() throws IOException, CommandNeedRetryException {
-    dropTable(BASIC_TABLE);
-    dropTable(COMPLEX_TABLE);
-    dropTable(PARTITIONED_TABLE);
-    dropTable(SPECIFIC_SIZE_TABLE);
-  }
-
-  protected void guardedTearDownAfterClass() throws Exception {
-    guardTestCount--;
-    if (guardTestCount > 0) {
-      return;
+  @After
+  public void tearDown() throws Exception {
+    try {
+      dropTable(BASIC_TABLE);
+      dropTable(COMPLEX_TABLE);
+      dropTable(PARTITIONED_TABLE);
+      dropTable(SPECIFIC_SIZE_TABLE);
+    } finally {
+      FileUtils.deleteDirectory(new File(TEST_DATA_DIR));
     }
-    cleanup();
-  }
-
-  @Override
-  protected void setUp() throws Exception {
-    guardedSetUpBeforeClass();
-  }
-
-  @Override
-  protected void tearDown() throws Exception {
-    guardedTearDownAfterClass();
   }
 
   public void testSchemaLoadBasic() throws IOException {
@@ -213,6 +199,7 @@ public class TestHCatLoader extends TestCase {
 
   }
 
+  @Test
   public void testReadDataBasic() throws IOException {
     PigServer server = new PigServer(ExecType.LOCAL);
 
@@ -230,7 +217,7 @@ public class TestHCatLoader extends TestCase {
     }
     assertEquals(basicInputData.size(), numTuplesRead);
   }
-
+  @Test
   public void testSchemaLoadComplex() throws IOException {
 
     PigServer server = new PigServer(ExecType.LOCAL);
@@ -287,7 +274,7 @@ public class TestHCatLoader extends TestCase {
     }
 
   }
-
+  @Test
   public void testReadPartitionedBasic() throws IOException, CommandNeedRetryException {
     PigServer server = new PigServer(ExecType.LOCAL);
 
@@ -350,7 +337,7 @@ public class TestHCatLoader extends TestCase {
     }
     assertEquals(6, count2);
   }
-
+  @Test
   public void testProjectionsBasic() throws IOException {
 
     PigServer server = new PigServer(ExecType.LOCAL);
@@ -395,21 +382,21 @@ public class TestHCatLoader extends TestCase {
     }
     assertEquals(basicInputData.size(), numTuplesRead);
   }
-
+  @Test
   public void testGetInputBytes() throws Exception {
     File file = new File(TEST_WAREHOUSE_DIR + "/" + SPECIFIC_SIZE_TABLE + "/part-m-00000");
     file.deleteOnExit();
     RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
     randomAccessFile.setLength(2L * 1024 * 1024 * 1024);
-
+    randomAccessFile.close();
     Job job = new Job();
     HCatLoader hCatLoader = new HCatLoader();
-    hCatLoader.setUDFContextSignature(this.getName());
+    hCatLoader.setUDFContextSignature("testGetInputBytes");
     hCatLoader.setLocation(SPECIFIC_SIZE_TABLE, job);
     ResourceStatistics statistics = hCatLoader.getStatistics(file.getAbsolutePath(), job);
     assertEquals(2048, (long) statistics.getmBytes());
   }
-
+  @Test
   public void testConvertBooleanToInt() throws Exception {
     String tbl = "test_convert_boolean_to_int";
     String inputFileName = TEST_DATA_DIR + "/testConvertBooleanToInt/data.txt";

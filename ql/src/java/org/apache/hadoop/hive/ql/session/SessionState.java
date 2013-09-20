@@ -17,6 +17,7 @@
  */
 
 package org.apache.hadoop.hive.ql.session;
+import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 
 import java.io.File;
 import java.io.IOException;
@@ -132,6 +133,8 @@ public class SessionState {
   private Map<String, String> overriddenConfigurations;
 
   private Map<String, List<String>> localMapRedErrors;
+
+  private String currentDatabase;
 
   /**
    * Lineage state.
@@ -765,6 +768,17 @@ public class SessionState {
 
   public void setLocalMapRedErrors(Map<String, List<String>> localMapRedErrors) {
     this.localMapRedErrors = localMapRedErrors;
+  }
+
+  public String getCurrentDatabase() {
+    if (currentDatabase == null) {
+      currentDatabase = DEFAULT_DATABASE_NAME;
+    }
+    return currentDatabase;
+  }
+
+  public void setCurrentDatabase(String currentDatabase) {
+    this.currentDatabase = currentDatabase;
   }
 
   public void close() throws IOException {

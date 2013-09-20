@@ -31,6 +31,9 @@ public class WritableConstantByteObjectInspector extends
 
   private ByteWritable value;
 
+  protected WritableConstantByteObjectInspector() {
+    super();
+  }
   WritableConstantByteObjectInspector(ByteWritable value) {
     super();
     this.value = value;

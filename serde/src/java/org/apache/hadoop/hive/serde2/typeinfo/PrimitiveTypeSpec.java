@@ -16,33 +16,22 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf;
+package org.apache.hadoop.hive.serde2.typeinfo;
 
-import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.UDF;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 
 /**
- * UDFUpper.
+ * Interface to encapsulate retrieving of type information, for the object inspector factory.
  *
  */
-@Description(name = "upper,ucase",
-    value = "_FUNC_(str) - Returns str with all characters changed to uppercase",
-    extended = "Example:\n"
-    + "  > SELECT _FUNC_('Facebook') FROM src LIMIT 1;\n" + "  'FACEBOOK'")
-public class UDFUpper extends UDF implements IUDFUnaryString {
+public interface PrimitiveTypeSpec {
+  /**
+   * @return  PrimitiveCategory referred to by the PrimitiveTypeSpec
+   */
+  PrimitiveCategory getPrimitiveCategory();
 
-  Text t = new Text();
-
-  public UDFUpper() {
-  }
-
-  public Text evaluate(Text s) {
-    if (s == null) {
-      return null;
-    }
-    t.set(s.toString().toUpperCase());
-    return t;
-  }
-
+  /**
+   * @return Type params referred to by the PrimitiveTypeSpec
+   */
+  BaseTypeParams getTypeParams();
 }

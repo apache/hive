@@ -46,6 +46,10 @@ class ColumnarStructObjectInspector extends StructObjectInspector {
     protected ObjectInspector fieldObjectInspector;
     protected String fieldComment;
 
+    protected MyField() {
+      super();
+    }
+
     public MyField(int fieldID, String fieldName,
         ObjectInspector fieldObjectInspector) {
       this.fieldID = fieldID;
@@ -80,13 +84,11 @@ class ColumnarStructObjectInspector extends StructObjectInspector {
     }
   }
 
-  protected List<MyField> fields;
+  private List<MyField> fields;
 
-  @Override
-  public String getTypeName() {
-    return ObjectInspectorUtils.getStandardStructTypeName(this);
+  protected ColumnarStructObjectInspector() {
+    super();
   }
-
   /**
    * Call ObjectInspectorFactory.getLazySimpleStructObjectInspector instead.
    */
@@ -126,6 +128,11 @@ class ColumnarStructObjectInspector extends StructObjectInspector {
       this.fields.add(new MyField(i, fields.get(i).getFieldName(), fields
           .get(i).getFieldObjectInspector(), fields.get(i).getFieldComment()));
     }
+  }
+
+  @Override
+  public String getTypeName() {
+    return ObjectInspectorUtils.getStandardStructTypeName(this);
   }
 
   @Override

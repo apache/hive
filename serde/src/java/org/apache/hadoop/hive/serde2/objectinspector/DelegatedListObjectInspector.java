@@ -22,9 +22,12 @@ import java.util.List;
 
 public class DelegatedListObjectInspector implements ListObjectInspector {
 
-  ListObjectInspector delegate;
-  ObjectInspector element;
+  private ListObjectInspector delegate;
+  private ObjectInspector element;
 
+  protected DelegatedListObjectInspector() {
+    super();
+  }
   public DelegatedListObjectInspector(ListObjectInspector delegate) {
     this.delegate = delegate;
   }

@@ -54,7 +54,7 @@ public class ColumnInfo implements Serializable {
    */
   private boolean isVirtualCol;
 
-  private transient ObjectInspector objectInspector;
+  private ObjectInspector objectInspector;
 
   private boolean isHiddenVirtualCol;
 

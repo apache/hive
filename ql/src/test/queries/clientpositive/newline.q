@@ -52,6 +52,6 @@ select * from tmp_tmp ORDER BY key ASC, value ASC;
 SELECT TRANSFORM(key, value) USING
 'cat' AS (key, value) FROM tmp_tmp;
 
-SELECT key FROM (SELECT TRANSFORM ('a\tb', 'c') USING '/bin/cat' AS (key, value) FROM src limit 1)a ORDER BY key ASC;
+SELECT key FROM (SELECT TRANSFORM ('a\tb', 'c') USING 'cat' AS (key, value) FROM src limit 1)a ORDER BY key ASC;
 
-SELECT value FROM (SELECT TRANSFORM ('a\tb', 'c') USING '/bin/cat' AS (key, value) FROM src limit 1)a ORDER BY value ASC;
+SELECT value FROM (SELECT TRANSFORM ('a\tb', 'c') USING 'cat' AS (key, value) FROM src limit 1)a ORDER BY value ASC;

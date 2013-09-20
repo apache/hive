@@ -27,8 +27,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 public class WritableConstantHiveDecimalObjectInspector extends WritableHiveDecimalObjectInspector
     implements ConstantObjectInspector {
 
-  private final HiveDecimalWritable value;
+  private HiveDecimalWritable value;
 
+  protected WritableConstantHiveDecimalObjectInspector() {
+    super();
+  }
   WritableConstantHiveDecimalObjectInspector(HiveDecimalWritable value) {
     this.value = value;
   }

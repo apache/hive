@@ -68,8 +68,8 @@ import org.apache.hadoop.mapred.TextInputFormat;
 public class CombineHiveInputFormat<K extends WritableComparable, V extends Writable>
     extends HiveInputFormat<K, V> {
 
-  public static final Log LOG = LogFactory
-      .getLog("org.apache.hadoop.hive.ql.io.CombineHiveInputFormat");
+  private static final String CLASS_NAME = CombineHiveInputFormat.class.getName();
+  public static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   /**
    * CombineHiveInputSplit encapsulates an InputSplit with its corresponding
@@ -264,7 +264,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
   @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
-    perfLogger.PerfLogBegin(LOG, PerfLogger.GET_SPLITS);
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_SPLITS);
     init(job);
     Map<String, ArrayList<String>> pathToAliases = mrwork.getPathToAliases();
     Map<String, Operator<? extends OperatorDesc>> aliasToWork =
@@ -275,7 +275,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     InputSplit[] splits = null;
     if (combine == null) {
       splits = super.getSplits(job, numSplits);
-      perfLogger.PerfLogEnd(LOG, PerfLogger.GET_SPLITS);
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
       return splits;
     }
 
@@ -328,7 +328,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
             dirs.offer(path);
           } else if ((new CompressionCodecFactory(job)).getCodec(path) != null) {
             splits = super.getSplits(job, numSplits);
-            perfLogger.PerfLogEnd(LOG, PerfLogger.GET_SPLITS);
+            perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
             return splits;
           }
 
@@ -341,7 +341,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
               } else if ((new CompressionCodecFactory(job)).getCodec(
                   fStatus[idx].getPath()) != null) {
                 splits = super.getSplits(job, numSplits);
-                perfLogger.PerfLogEnd(LOG, PerfLogger.GET_SPLITS);
+                perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
                 return splits;
               }
             }
@@ -351,7 +351,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
 
       if (inputFormat instanceof SymlinkTextInputFormat) {
         splits = super.getSplits(job, numSplits);
-        perfLogger.PerfLogEnd(LOG, PerfLogger.GET_SPLITS);
+        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
         return splits;
       }
 
@@ -422,7 +422,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     }
 
     LOG.info("number of splits " + result.size());
-    perfLogger.PerfLogEnd(LOG, PerfLogger.GET_SPLITS);
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
     return result.toArray(new CombineHiveInputSplit[result.size()]);
   }
 

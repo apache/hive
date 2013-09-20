@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
-import junit.framework.TestCase;
 import static org.junit.Assert.*;
 
 import org.apache.commons.logging.Log;
@@ -40,6 +39,7 @@ import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.AbstractSerDe;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
@@ -63,55 +63,49 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.FileSplit;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * TestRCFile.
  *
  */
-public class TestRCFile extends TestCase {
+public class TestRCFile {
 
   private static final Log LOG = LogFactory.getLog(TestRCFile.class);
 
-  private static Configuration conf = new Configuration();
-
-  private static ColumnarSerDe serDe;
-
-  private static Path file;
-
-  private static FileSystem fs;
-
-  private static Properties tbl;
-
-  static {
-    try {
-      fs = FileSystem.getLocal(conf);
-      Path dir = new Path(System.getProperty("test.data.dir", ".") + "/mapred");
-      file = new Path(dir, "test_rcfile");
-      fs.delete(dir, true);
-      // the SerDe part is from TestLazySimpleSerDe
-      serDe = new ColumnarSerDe();
-      // Create the SerDe
-      tbl = createProperties();
-      serDe.initialize(conf, tbl);
-    } catch (Exception e) {
-    }
-  }
+  private Configuration conf;
+  private ColumnarSerDe serDe;
+  private Path dir, file;
+  private FileSystem fs;
+  private Properties tbl;
 
   // Data
 
-  private static Writable[] expectedFieldsData = {
+  private Writable[] expectedFieldsData = {
       new ByteWritable((byte) 123), new ShortWritable((short) 456),
       new IntWritable(789), new LongWritable(1000), new DoubleWritable(5.3),
       new Text("hive and hadoop"), null, null};
 
-  private static Object[] expectedPartitalFieldsData = {null, null,
+  private Object[] expectedPartitalFieldsData = {null, null,
       new IntWritable(789), new LongWritable(1000), null, null, null, null};
-  private static BytesRefArrayWritable patialS = new BytesRefArrayWritable();
+  private BytesRefArrayWritable patialS = new BytesRefArrayWritable();
+  private byte[][] bytesArray;
+  private BytesRefArrayWritable s;
 
-  private static byte[][] bytesArray = null;
-
-  private static BytesRefArrayWritable s = null;
-  static {
+  @Before
+  public void setup() throws Exception {
+    conf = new Configuration();
+    fs = FileSystem.getLocal(conf);
+    dir = new Path(System.getProperty("test.data.dir", ".") + "/mapred");
+    file = new Path(dir, "test_rcfile");
+    cleanup();
+    // the SerDe part is from TestLazySimpleSerDe
+    serDe = new ColumnarSerDe();
+    // Create the SerDe
+    tbl = createProperties();
+    serDe.initialize(conf, tbl);
     try {
       bytesArray = new byte[][] {"123".getBytes("UTF-8"),
           "456".getBytes("UTF-8"), "789".getBytes("UTF-8"),
@@ -139,11 +133,27 @@ public class TestRCFile extends TestCase {
       patialS.set(7, new BytesRefWritable("NULL".getBytes("UTF-8")));
 
     } catch (UnsupportedEncodingException e) {
+      throw new RuntimeException(e);
     }
   }
 
+  @After
+  public void teardown() throws Exception {
+    cleanup();
+  }
+
+  private void cleanup() throws IOException {
+    if(fs != null && dir != null) {
+      fs.delete(dir, true);
+      if(fs.exists(dir)) {
+        throw new RuntimeException("Could not delete " + dir);
+      }
+    }
+  }
+
+  @Test
   public void testSimpleReadAndWrite() throws IOException, SerDeException {
-    fs.delete(file, true);
+    cleanup();
 
     byte[][] record_1 = {"123".getBytes("UTF-8"), "456".getBytes("UTF-8"),
         "789".getBytes("UTF-8"), "1000".getBytes("UTF-8"),
@@ -222,13 +232,14 @@ public class TestRCFile extends TestCase {
 
     reader.close();
   }
-  
+
   /**
    * Tests {@link RCFile.Reader#getColumn(int, BytesRefArrayWritable) } method.
    * @throws IOException
    */
+  @Test
   public void testGetColumn() throws IOException {
-    fs.delete(file, true);
+    cleanup();
 
     RCFileOutputFormat.setColumnNumber(conf, expectedFieldsData.length);
     RCFile.Writer writer =
@@ -238,26 +249,26 @@ public class TestRCFile extends TestCase {
                                               new Text("cat"),
                                               new Text("dog")),
                         new DefaultCodec());
-    
+
     byte[][] record_1 = {
-        "123".getBytes("UTF-8"), 
+        "123".getBytes("UTF-8"),
         "456".getBytes("UTF-8"),
-        "789".getBytes("UTF-8"), 
+        "789".getBytes("UTF-8"),
         "1000".getBytes("UTF-8"),
-        "5.3".getBytes("UTF-8"), 
+        "5.3".getBytes("UTF-8"),
         "hive and hadoop".getBytes("UTF-8"),
-        new byte[0], 
+        new byte[0],
         "NULL".getBytes("UTF-8") };
     byte[][] record_2 = {
-        "100".getBytes("UTF-8"), 
+        "100".getBytes("UTF-8"),
         "200".getBytes("UTF-8"),
-        "123".getBytes("UTF-8"), 
+        "123".getBytes("UTF-8"),
         "1000".getBytes("UTF-8"),
-        "5.3".getBytes("UTF-8"), 
+        "5.3".getBytes("UTF-8"),
         "hive and hadoop".getBytes("UTF-8"),
-        new byte[0], 
+        new byte[0],
         "NULL".getBytes("UTF-8")};
-    
+
     BytesRefArrayWritable bytes = new BytesRefArrayWritable(record_1.length);
     for (int i = 0; i < record_1.length; i++) {
       BytesRefWritable cu = new BytesRefWritable(record_1[i], 0,
@@ -275,14 +286,14 @@ public class TestRCFile extends TestCase {
     writer.close();
 
     RCFile.Reader reader = new RCFile.Reader(fs, file, conf);
-    
+
     LongWritable rowID = new LongWritable();
     assertTrue(reader.next(rowID));
     assertEquals(rowID.get(), 0L);
-    
+
     assertTrue(reader.next(rowID));
     assertEquals(rowID.get(), 1L);
-    
+
     BytesRefArrayWritable result = null;
     BytesRefWritable brw;
     for (int col=0; col < 8; col++) {
@@ -291,10 +302,10 @@ public class TestRCFile extends TestCase {
         assertNotNull(result2);
         result = result2;
       } else {
-        // #getColumn(2) should return the instance passed in: 
+        // #getColumn(2) should return the instance passed in:
         assertSame(result2, result);
       }
-      // each column has height of 2: 
+      // each column has height of 2:
       assertEquals(2, result.size());
       for (int row=0; row<result.size(); row++) {
         brw = result.get(row);
@@ -304,15 +315,16 @@ public class TestRCFile extends TestCase {
         byte[] expectedData = (row == 0) ? record_1[col] : record_2[col];
         assertArrayEquals("col="+col+" : row="+row,  expectedData, actualData);
       }
-      
+
       result.clear();
     }
-    
+
     reader.close();
   }
 
+  @Test
   public void testReadCorruptFile() throws IOException, SerDeException {
-    fs.delete(file, true);
+    cleanup();
 
     byte[][] record = {null, null, null, null, null, null, null, null};
 
@@ -364,6 +376,7 @@ public class TestRCFile extends TestCase {
     reader.close();
   }
 
+  @Test
   public void testReadOldFileHeader() throws IOException {
     String[] row = new String[]{"Tester", "Bart", "333 X St.", "Reno", "NV",
                                 "USA"};
@@ -381,11 +394,13 @@ public class TestRCFile extends TestCase {
     reader.close();
   }
 
+  @Test
   public void testWriteAndFullyRead() throws IOException, SerDeException {
     writeTest(fs, 10000, file, bytesArray);
     fullyReadTest(fs, 10000, file);
   }
 
+  @Test
   public void testWriteAndPartialRead() throws IOException, SerDeException {
     writeTest(fs, 10000, file, bytesArray);
     partialReadTest(fs, 10000, file);
@@ -395,6 +410,14 @@ public class TestRCFile extends TestCase {
   public static void main(String[] args) throws Exception {
     int count = 10000;
     boolean create = true;
+    Configuration conf = new Configuration();
+    FileSystem fs = FileSystem.getLocal(conf);
+    Path file = null;
+    // the SerDe part is from TestLazySimpleSerDe
+    AbstractSerDe serDe = new ColumnarSerDe();
+    // Create the SerDe
+    Properties tbl = createProperties();
+    serDe.initialize(conf, tbl);
 
     String usage = "Usage: RCFile " + "[-count N]" + " file";
     if (args.length == 0) {
@@ -428,7 +451,11 @@ public class TestRCFile extends TestCase {
       // test.performanceTest();
 
       test.testSimpleReadAndWrite();
-
+      byte[][] bytesArray = new byte[][] {"123".getBytes("UTF-8"),
+          "456".getBytes("UTF-8"), "789".getBytes("UTF-8"),
+          "1000".getBytes("UTF-8"), "5.3".getBytes("UTF-8"),
+          "hive and hadoop".getBytes("UTF-8"), new byte[0],
+          "NULL".getBytes("UTF-8")};
       test.writeTest(fs, count, file, bytesArray);
       test.fullyReadTest(fs, count, file);
       test.partialReadTest(fs, count, file);
@@ -445,7 +472,7 @@ public class TestRCFile extends TestCase {
 
   private void writeTest(FileSystem fs, int count, Path file,
       byte[][] fieldsData, Configuration conf) throws IOException, SerDeException {
-    fs.delete(file, true);
+    cleanup();
 
     RCFileOutputFormat.setColumnNumber(conf, fieldsData.length);
     RCFile.Writer writer = new RCFile.Writer(fs, conf, file, null,
@@ -566,6 +593,7 @@ public class TestRCFile extends TestCase {
     LOG.debug("reading fully costs:" + cost + " milliseconds");
   }
 
+  @Test
   public void testSynAndSplit() throws IOException {
     splitBeforeSync();
     splitRightBeforeSync();
@@ -574,6 +602,7 @@ public class TestRCFile extends TestCase {
     splitAfterSync();
   }
 
+  @Test
   public void testSync() throws IOException {
     Path testDir = new Path(System.getProperty("test.data.dir", ".")
         + "/mapred/testsync");
@@ -585,7 +614,7 @@ public class TestRCFile extends TestCase {
     Configuration cloneConf = new Configuration(conf);
     RCFileOutputFormat.setColumnNumber(cloneConf, bytesArray.length);
     cloneConf.setInt(RCFile.RECORD_INTERVAL_CONF_STR, intervalRecordCount);
-    RCFile.Writer writer = new RCFile.Writer(fs, cloneConf, testFile, null, codec);    
+    RCFile.Writer writer = new RCFile.Writer(fs, cloneConf, testFile, null, codec);
 
     BytesRefArrayWritable bytes = new BytesRefArrayWritable(bytesArray.length);
     for (int i = 0; i < bytesArray.length; i++) {
@@ -605,7 +634,7 @@ public class TestRCFile extends TestCase {
     jobconf.setLong("mapred.min.split.size", fileLen);
     InputSplit[] splits = inputFormat.getSplits(jobconf, 1);
     RCFileRecordReader rr = new RCFileRecordReader(jobconf, (FileSplit)splits[0]);
-    long lastSync = 0; 
+    long lastSync = 0;
     for(int i = 0; i < 2500; i++) {
       rr.sync(i);
       if(rr.getPos() < lastSync) {
@@ -709,6 +738,7 @@ public class TestRCFile extends TestCase {
     }
   }
 
+  @Test
   public void testCloseForErroneousRCFile() throws IOException {
     Configuration conf = new Configuration();
     LocalFileSystem fs = FileSystem.getLocal(conf);
@@ -740,7 +770,6 @@ public class TestRCFile extends TestCase {
 
   public void testRCFileHeader(char[] expected, Configuration conf)
       throws IOException, SerDeException {
-
     writeTest(fs, 10000, file, bytesArray, conf);
     DataInputStream di = fs.open(file, 10000);
     byte[] bytes = new byte[3];
@@ -751,6 +780,7 @@ public class TestRCFile extends TestCase {
     di.close();
   }
 
+  @Test
   public void testNonExplicitRCFileHeader() throws IOException, SerDeException {
     Configuration conf = new Configuration();
     conf.setBoolean(HiveConf.ConfVars.HIVEUSEEXPLICITRCFILEHEADER.varname, false);
@@ -758,6 +788,7 @@ public class TestRCFile extends TestCase {
     testRCFileHeader(expected, conf);
   }
 
+  @Test
   public void testExplicitRCFileHeader() throws IOException, SerDeException {
     Configuration conf = new Configuration();
     conf.setBoolean(HiveConf.ConfVars.HIVEUSEEXPLICITRCFILEHEADER.varname, true);

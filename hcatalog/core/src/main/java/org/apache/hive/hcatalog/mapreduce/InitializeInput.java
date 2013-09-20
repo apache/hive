@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -154,7 +155,7 @@ class InitializeInput {
     StorerInfo storerInfo = InternalUtil.extractStorerInfo(sd, parameters);
 
     Properties hcatProperties = new Properties();
-    HCatStorageHandler storageHandler = HCatUtil.getStorageHandler(conf, storerInfo);
+    HiveStorageHandler storageHandler = HCatUtil.getStorageHandler(conf, storerInfo);
 
     // copy the properties from storageHandler to jobProperties
     Map<String, String> jobProperties = HCatUtil.getInputJobProperties(storageHandler, inputJobInfo);

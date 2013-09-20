@@ -26,6 +26,9 @@ public class DelegatedMapObjectInspector implements MapObjectInspector {
   private ObjectInspector key;
   private ObjectInspector value;
 
+  protected DelegatedMapObjectInspector() {
+    super();
+  }
   public DelegatedMapObjectInspector(MapObjectInspector delegate) {
     this.delegate = delegate;
   }

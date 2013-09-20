@@ -32,6 +32,9 @@ public class StandardConstantListObjectInspector extends StandardListObjectInspe
 
   private List<?> value;
 
+  protected StandardConstantListObjectInspector() {
+    super();
+  }
   /**
    * Call ObjectInspectorFactory.getStandardListObjectInspector instead.
    */

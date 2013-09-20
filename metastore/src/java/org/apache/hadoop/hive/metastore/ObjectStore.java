@@ -1389,11 +1389,10 @@ public class ObjectStore implements RawStore, Configurable {
       int maxParts, boolean allowSql, boolean allowJdo) throws MetaException {
     assert allowSql || allowJdo;
     boolean doTrace = LOG.isDebugEnabled();
-    List<Partition> parts = null;
-    boolean doUseDirectSql = allowSql
-        && HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL);
+    boolean doUseDirectSql = canUseDirectSql(allowSql);
 
     boolean success = false;
+    List<Partition> parts = null;
     try {
       long start = doTrace ? System.nanoTime() : 0;
       openTransaction();
@@ -1703,11 +1702,10 @@ public class ObjectStore implements RawStore, Configurable {
           throws MetaException, NoSuchObjectException {
     assert allowSql || allowJdo;
     boolean doTrace = LOG.isDebugEnabled();
-    List<Partition> results = null;
-    boolean doUseDirectSql = allowSql
-        && HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL);
+    boolean doUseDirectSql = canUseDirectSql(allowSql);
 
     boolean success = false;
+    List<Partition> results = null;
     try {
       long start = doTrace ? System.nanoTime() : 0;
       openTransaction();
@@ -1745,6 +1743,8 @@ public class ObjectStore implements RawStore, Configurable {
       }
       throw new MetaException(ex.getMessage());
     }
+    rollbackTransaction();
+    openTransaction();
   }
 
   private List<Partition> getPartitionsViaOrm(
@@ -1794,9 +1794,7 @@ public class ObjectStore implements RawStore, Configurable {
       throws MetaException, NoSuchObjectException {
     assert allowSql || allowJdo;
     boolean doTrace = LOG.isDebugEnabled();
-    // There's no portable SQL limit. It doesn't make a lot of sense w/o offset anyway.
-    boolean doUseDirectSql = allowSql
-      && HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL);
+    boolean doUseDirectSql = canUseDirectSql(allowSql);
     dbName = dbName.toLowerCase();
     tblName = tblName.toLowerCase();
     List<Partition> results = null;
@@ -1820,6 +1818,7 @@ public class ObjectStore implements RawStore, Configurable {
           handleDirectSqlError(allowJdo, ex);
           doUseDirectSql = false;
           start = doTrace ? System.nanoTime() : 0;
+          mtable = ensureGetMTable(dbName, tblName); // detached on rollback, get again
         }
       }
       if (!doUseDirectSql) {
@@ -1835,6 +1834,16 @@ public class ObjectStore implements RawStore, Configurable {
         rollbackTransaction();
       }
     }
+  }
+
+  private boolean canUseDirectSql(boolean allowSql) {
+    // We don't allow direct SQL usage if we are inside a larger transaction (e.g. droptable).
+    // That is because some databases (e.g. Postgres) abort the entire transaction when
+    // any query fails, so the fallback from failed SQL to JDO is not possible.
+    // TODO: Drop table can be very slow on large tables, we might want to address this.
+    return allowSql
+      && HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL)
+      && !isActiveTransaction();
   }
 
   private MTable ensureGetMTable(String dbName, String tblName) throws NoSuchObjectException {

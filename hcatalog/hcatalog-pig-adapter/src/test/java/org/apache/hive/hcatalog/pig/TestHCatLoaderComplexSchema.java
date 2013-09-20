@@ -211,7 +211,7 @@ public class TestHCatLoaderComplexSchema {
       while (it.hasNext()) {
         Tuple input = data.get(i++);
         Tuple output = it.next();
-        Assert.assertEquals(input.toString(), output.toString());
+        compareTuples(input, output);
         LOG.info("tuple : {} ", output);
       }
       Schema dumpedXSchema = server.dumpSchema("X");
@@ -224,6 +224,24 @@ public class TestHCatLoaderComplexSchema {
     } finally {
       dropTable(tablename);
     }
+  }
+  
+  private void compareTuples(Tuple t1, Tuple t2) throws ExecException {
+    Assert.assertEquals("Tuple Sizes don't match", t1.size(), t2.size());
+    for (int i = 0; i < t1.size(); i++) {
+      Object f1 = t1.get(i);
+      Object f2 = t2.get(i);
+      Assert.assertNotNull("left", f1);
+      Assert.assertNotNull("right", f2);
+      String msg = "right: " + f1 + ", left: " + f2;
+      Assert.assertEquals(msg, noOrder(f1.toString()), noOrder(f2.toString()));
+    }
+  }
+  
+  private String noOrder(String s) {
+    char[] chars = s.toCharArray();
+    Arrays.sort(chars);
+    return new String(chars);
   }
 
   private String compareIgnoreFiledNames(Schema expected, Schema got) throws FrontendException {

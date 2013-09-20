@@ -28,6 +28,9 @@ import org.apache.hadoop.io.Writable;
 public abstract class AbstractPrimitiveLazyObjectInspector<T extends Writable>
     extends AbstractPrimitiveObjectInspector {
 
+  protected AbstractPrimitiveLazyObjectInspector() {
+    super();
+  }
   protected AbstractPrimitiveLazyObjectInspector(PrimitiveTypeEntry typeEntry) {
     super(typeEntry);
   }

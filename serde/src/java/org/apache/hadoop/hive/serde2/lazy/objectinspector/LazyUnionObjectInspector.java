@@ -41,24 +41,27 @@ public class LazyUnionObjectInspector implements UnionObjectInspector {
   public static final Log LOG = LogFactory
       .getLog(LazyUnionObjectInspector.class.getName());
 
-  protected List<ObjectInspector> ois;
 
-  @Override
-  public String getTypeName() {
-    return ObjectInspectorUtils.getStandardUnionTypeName(this);
+  private  List<ObjectInspector> ois;
+  private byte separator;
+  private Text nullSequence;
+  private boolean escaped;
+  private byte escapeChar;
+
+  protected LazyUnionObjectInspector() {
+    super();
   }
-
-  byte separator;
-  Text nullSequence;
-  boolean escaped;
-  byte escapeChar;
-
   protected LazyUnionObjectInspector(
       List<ObjectInspector> ois, byte separator,
       Text nullSequence, boolean escaped,
       byte escapeChar) {
     init(ois, separator,
         nullSequence, escaped, escapeChar);
+  }
+
+  @Override
+  public String getTypeName() {
+    return ObjectInspectorUtils.getStandardUnionTypeName(this);
   }
 
   protected void init(

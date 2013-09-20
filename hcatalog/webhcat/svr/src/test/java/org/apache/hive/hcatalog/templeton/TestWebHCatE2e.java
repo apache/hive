@@ -26,6 +26,7 @@ import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -57,7 +58,7 @@ import java.util.Map;
 public class TestWebHCatE2e {
   private static final Logger LOG =
       LoggerFactory.getLogger(TestWebHCatE2e.class);
-  private static final String templetonBaseUrl =
+  private static String templetonBaseUrl =
       "http://localhost:50111/templeton/v1";
   private static final String username= "johndoe";
   private static final String ERROR_CODE = "errorCode";
@@ -65,8 +66,18 @@ public class TestWebHCatE2e {
   private static final String charSet = "UTF-8";
   @BeforeClass
   public static void startHebHcatInMem() {
-    templetonServer = new Main(new String[] {"-D" + AppConfig.UNIT_TEST_MODE + "=true"});
-    LOG.info("Starting Main");
+    int webhcatPort = 50111;
+    try {
+      //in case concurrent tests are running on the same machine
+      webhcatPort = MetaStoreUtils.findFreePort();
+    }
+    catch (IOException ex) {
+      LOG.warn("Unable to find free port; using default: " + webhcatPort);
+    }
+    templetonBaseUrl = templetonBaseUrl.replace("50111", Integer.toString(webhcatPort));
+    templetonServer = new Main(new String[] {"-D" + 
+            AppConfig.UNIT_TEST_MODE + "=true", "-D" + AppConfig.PORT + "=" + webhcatPort});
+    LOG.info("Starting Main; WebHCat using port: " + webhcatPort);
     templetonServer.run();
     LOG.info("Main started");
   }

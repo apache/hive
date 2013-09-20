@@ -68,7 +68,6 @@ import org.apache.hadoop.hive.ql.exec.SMBMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
-import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
@@ -168,6 +167,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -603,7 +603,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     qb.getParseInfo().setSrcForAlias(alias, tableTree);
 
-    unparseTranslator.addTableNameTranslation(tableTree, db.getCurrentDatabase());
+    unparseTranslator.addTableNameTranslation(tableTree, SessionState.get().getCurrentDatabase());
     if (aliasIndex != 0) {
       unparseTranslator.addIdentifierTranslation((ASTNode) tabref
           .getChild(aliasIndex));
@@ -802,7 +802,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         break;
 
       case HiveParser.TOK_INSERT_INTO:
-        String currentDatabase = db.getCurrentDatabase();
+        String currentDatabase = SessionState.get().getCurrentDatabase();
         String tab_name = getUnescapedName((ASTNode) ast.getChild(0).getChild(0), currentDatabase);
         qbp.addInsertIntoTable(tab_name);
 
@@ -5394,9 +5394,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             // cannot convert to complex types
             column = null;
           } else {
-            column = TypeCheckProcFactory.DefaultExprProcessor
-                .getFuncExprNodeDesc(tableFieldTypeInfo.getTypeName(),
-                    column);
+            column = ParseUtils.createConversionCast(
+                column, (PrimitiveTypeInfo)tableFieldTypeInfo);
           }
           if (column == null) {
             String reason = "Cannot convert column " + i + " from "
@@ -5638,9 +5637,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           // cannot convert to complex types
           column = null;
         } else {
-          column = TypeCheckProcFactory.DefaultExprProcessor
-              .getFuncExprNodeDesc(tableFieldTypeInfo.getTypeName(),
-                  column);
+          column = ParseUtils.createConversionCast(
+              column, (PrimitiveTypeInfo)tableFieldTypeInfo);
         }
         if (column == null) {
           String reason = "Cannot convert column " + posn + " from "
@@ -6217,11 +6215,13 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       // Add implicit type conversion if necessary
       for (int i = 0; i < right.length; i++) {
-        if (!commonType.equals(keys.get(i).get(k).getTypeInfo())) {
+        if (TypeInfoUtils.isConversionRequiredForComparison(
+                keys.get(i).get(k).getTypeInfo(),
+                commonType)) {
           keys.get(i).set(
               k,
-              TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc(
-                  commonType.getTypeName(), keys.get(i).get(k)));
+              ParseUtils.createConversionCast(
+                  keys.get(i).get(k), (PrimitiveTypeInfo)commonType));
         }
       }
     }
@@ -7600,12 +7600,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * @param unionalias
    *          The alias of the union.
    * @return
-   * @throws UDFArgumentException
+   * @throws SemanticException
    */
   private Operator<? extends OperatorDesc> genInputSelectForUnion(
       Operator<? extends OperatorDesc> origInputOp, Map<String, ColumnInfo> origInputFieldMap,
       String origInputAlias, RowResolver unionoutRR, String unionalias)
-      throws UDFArgumentException {
+      throws SemanticException {
 
     List<ExprNodeDesc> columns = new ArrayList<ExprNodeDesc>();
     boolean needsCast = false;
@@ -7616,8 +7616,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           lInfo.getTabAlias(), lInfo.getIsVirtualCol(), lInfo.isSkewedCol());
       if (!lInfo.getType().equals(unionEntry.getValue().getType())) {
         needsCast = true;
-        column = TypeCheckProcFactory.DefaultExprProcessor.getFuncExprNodeDesc(
-            unionEntry.getValue().getType().getTypeName(), column);
+        column = ParseUtils.createConversionCast(
+            column, (PrimitiveTypeInfo)unionEntry.getValue().getType());
       }
       columns.add(column);
     }
@@ -8327,7 +8327,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       viewSelect = child;
       // prevent view from referencing itself
-      viewsExpanded.add(db.getCurrentDatabase() + "." + createVwDesc.getViewName());
+      viewsExpanded.add(SessionState.get().getCurrentDatabase() + "." + createVwDesc.getViewName());
     }
 
     // continue analyzing from the child ASTNode.

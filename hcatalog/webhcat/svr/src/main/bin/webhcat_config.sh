@@ -77,27 +77,38 @@ else
 fi
 WEBHCAT_CONF_DIR="${WEBHCAT_CONF_DIR:-$DEFAULT_CONF_DIR}"
 
+#users can add various env vars to webhcat-env.sh in the conf
+#rather than having to export them before running the command
+if [ -f "${WEBHCAT_CONF_DIR}/webhcat-env.sh" ]; then
+  source "${WEBHCAT_CONF_DIR}/webhcat-env.sh"
+fi
+
 #set defaults for HCAT_PREFIX, HIVE_HOME, TEMPLETON_HOME that work for default directory structure
 DEFAULT_HCAT_PREFIX="${WEBHCAT_PREFIX}"
 export HCAT_PREFIX="${HCAT_PREFIX:-$DEFAULT_HCAT_PREFIX}"
 if [ ! -f ${HCAT_PREFIX}/bin/hcat ]; then
     die "HCAT_PREFIX=${HCAT_PREFIX} is invalid";
 fi
+
+#hcat script can sometimes determine HIVE_HOME itslef
+#so HIVE_HOME does not need to be always set at this point
 DEFAULT_HIVE_HOME="${WEBHCAT_PREFIX}/.."
-export HIVE_HOME="${HIVE_HOME:-$DEFAULT_HIVE_HOME}"
-if [ ! -f ${HIVE_HOME}/bin/hive ]; then
-    die "HIVE_HOME=${HIVE_HOME} is invalid";
+if [ -n "$HIVE_HOME" ]; then
+    echo "Lenght of string is non zero"
+    if  [ ! -f ${HIVE_HOME}/bin/hive ]; then
+        die "HIVE_HOME=${HIVE_HOME} is invalid";
+    fi
+elif [ -f ${DEFAULT_HIVE_HOME}/bin/hive ]; then
+    export HIVE_HOME="${HIVE_HOME:-$DEFAULT_HIVE_HOME}"
+    echo "Setting HIVE_HOME $HIVE_HOME"
 fi
+
+
+
 DEFAULT_TEMPLETON_HOME="${WEBHCAT_PREFIX}"
 export TEMPLETON_HOME="${TEMPLETON_HOME:-$DEFAULT_TEMPLETON_HOME}"
 if [ ! -d ${TEMPLETON_HOME}/share/webhcat ]; then
     die "TEMPLETON_HOME=${TEMPLETON_HOME} is invalid";
-fi
-
-#users can add various env vars to webhcat-env.sh in the conf
-#rather than having to export them before running the command
-if [ -f "${WEBHCAT_CONF_DIR}/webhcat-env.sh" ]; then
-  source "${WEBHCAT_CONF_DIR}/webhcat-env.sh"
 fi
 
 #====================================

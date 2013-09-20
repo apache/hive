@@ -79,6 +79,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.antlr.runtime.CommonToken;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.logging.Log;
@@ -98,6 +99,7 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
@@ -177,6 +179,7 @@ import org.apache.hadoop.util.Shell;
 import com.esotericsoftware.kryo.Kryo;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;
+import com.esotericsoftware.kryo.serializers.FieldSerializer;
 
 /**
  * Utilities.
@@ -216,7 +219,8 @@ public final class Utilities {
 
   private static Map<Path, BaseWork> gWorkMap = Collections
       .synchronizedMap(new HashMap<Path, BaseWork>());
-  private static final Log LOG = LogFactory.getLog(Utilities.class.getName());
+  private static final String CLASS_NAME = Utilities.class.getName();
+  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   public static void clearWork(Configuration conf) {
     Path mapPath = getPlanPath(conf, MAP_PLAN_NAME);
@@ -633,6 +637,34 @@ public final class Utilities {
 
   }
 
+  private static class CommonTokenSerializer extends com.esotericsoftware.kryo.Serializer<CommonToken> {
+    @Override
+    public CommonToken read(Kryo kryo, Input input, Class<CommonToken> clazz) {
+      return new CommonToken(input.readInt(), input.readString());
+    }
+
+    @Override
+  public void write(Kryo kryo, Output output, CommonToken token) {
+      output.writeInt(token.getType());
+      output.writeString(token.getText());
+    }
+  }
+  private static void serializePlan(Object plan, OutputStream out, Configuration conf, boolean cloningPlan) {
+    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SERIALIZE_PLAN);
+    String serializationType = conf.get(HiveConf.ConfVars.PLAN_SERIALIZATION.varname, "kryo");
+    LOG.info("Serializing " + plan.getClass().getSimpleName() + " via " + serializationType);
+    if("javaXML".equalsIgnoreCase(serializationType)) {
+      serializeObjectByJavaXML(plan, out);
+    } else {
+      if(cloningPlan) {
+        serializeObjectByKryo(cloningQueryPlanKryo.get(), plan, out);
+      } else {
+        serializeObjectByKryo(runtimeSerializationKryo.get(), plan, out);
+      }
+    }
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SERIALIZE_PLAN);
+  }
   /**
    * Serializes the plan.
    * @param plan The plan, such as QueryPlan, MapredWork, etc.
@@ -640,16 +672,27 @@ public final class Utilities {
    * @param conf to pick which serialization format is desired.
    */
   public static void serializePlan(Object plan, OutputStream out, Configuration conf) {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger();
-    perfLogger.PerfLogBegin(LOG, PerfLogger.SERIALIZE_PLAN);
-    if(conf.get(HiveConf.ConfVars.PLAN_SERIALIZATION.varname, "kryo").equals("javaXML")) {
-      serializeObjectByJavaXML(plan, out);
-    } else {
-      serializeObjectByKryo(plan, out);
-    }
-    perfLogger.PerfLogEnd(LOG, PerfLogger.SERIALIZE_PLAN);
+    serializePlan(plan, out, conf, false);
   }
 
+  private static <T> T deserializePlan(InputStream in, Class<T> planClass, Configuration conf, boolean cloningPlan) {
+    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DESERIALIZE_PLAN);
+    T plan;
+    String serializationType = conf.get(HiveConf.ConfVars.PLAN_SERIALIZATION.varname, "kryo");
+    LOG.info("Deserializing " + planClass.getSimpleName() + " via " + serializationType);
+    if("javaXML".equalsIgnoreCase(serializationType)) {
+      plan = deserializeObjectByJavaXML(in);
+    } else {
+      if(cloningPlan) {
+        plan = deserializeObjectByKryo(cloningQueryPlanKryo.get(), in, planClass);
+      } else {
+        plan = deserializeObjectByKryo(runtimeSerializationKryo.get(), in, planClass);
+      }
+    }
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DESERIALIZE_PLAN);
+    return plan;
+  }
   /**
    * Deserializes the plan.
    * @param in The stream to read from.
@@ -657,16 +700,7 @@ public final class Utilities {
    * @param To know what serialization format plan is in
    */
   public static <T> T deserializePlan(InputStream in, Class<T> planClass, Configuration conf) {
-    PerfLogger perfLogger = PerfLogger.getPerfLogger();
-    perfLogger.PerfLogBegin(LOG, PerfLogger.DESERIALIZE_PLAN);
-    T plan;
-    if(conf.get(HiveConf.ConfVars.PLAN_SERIALIZATION.varname, "kryo").equals("javaXML")) {
-      plan = deserializeObjectByJavaXML(in);
-    } else {
-      plan = deserializeObjectByKryo(in, planClass);
-    }
-    perfLogger.PerfLogEnd(LOG, PerfLogger.DESERIALIZE_PLAN);
-    return plan;
+    return deserializePlan(in, planClass, conf, false);
   }
 
   /**
@@ -677,12 +711,13 @@ public final class Utilities {
   public static MapredWork clonePlan(MapredWork plan) {
     // TODO: need proper clone. Meanwhile, let's at least keep this horror in one place
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
-    perfLogger.PerfLogBegin(LOG, PerfLogger.CLONE_PLAN);
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    Utilities.serializeObjectByJavaXML(plan, baos);
-    MapredWork newPlan = Utilities.deserializeObjectByJavaXML(
-      new ByteArrayInputStream(baos.toByteArray()));
-    perfLogger.PerfLogEnd(LOG, PerfLogger.CLONE_PLAN);
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.CLONE_PLAN);
+    ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
+    Configuration conf = new Configuration();
+    serializePlan(plan, baos, conf, true);
+    MapredWork newPlan = deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
+        MapredWork.class, conf, true);
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.CLONE_PLAN);
     return newPlan;
   }
 
@@ -716,9 +751,9 @@ public final class Utilities {
    * @param plan Usually of type MapredWork, MapredLocalWork etc.
    * @param out stream in which serialized plan is written into
    */
-  private static void serializeObjectByKryo(Object plan, OutputStream out) {
+  private static void serializeObjectByKryo(Kryo kryo, Object plan, OutputStream out) {
     Output output = new Output(out);
-    kryo.get().writeObject(output, plan);
+    kryo.writeObject(output, plan);
     output.close();
   }
 
@@ -739,26 +774,44 @@ public final class Utilities {
     }
   }
 
-  private static <T> T deserializeObjectByKryo(InputStream in, Class<T> clazz ) {
+  private static <T> T deserializeObjectByKryo(Kryo kryo, InputStream in, Class<T> clazz ) {
     Input inp = new Input(in);
-    T t = kryo.get().readObject(inp,clazz);
+    T t = kryo.readObject(inp,clazz);
     inp.close();
     return t;
   }
 
   // Kryo is not thread-safe,
   // Also new Kryo() is expensive, so we want to do it just once.
-  private static ThreadLocal<Kryo> kryo = new ThreadLocal<Kryo>() {
-
+  private static ThreadLocal<Kryo> runtimeSerializationKryo = new ThreadLocal<Kryo>() {
     @Override
     protected synchronized Kryo initialValue() {
       Kryo kryo = new Kryo();
       kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
       kryo.register(java.sql.Date.class, new SqlDateSerializer());
+      removeField(kryo, Operator.class, "colExprMap");
+      removeField(kryo, ColumnInfo.class, "objectInspector");
+      removeField(kryo, MapWork.class, "opParseCtxMap");
+      removeField(kryo, MapWork.class, "joinTree");
       return kryo;
     };
   };
-
+  @SuppressWarnings("rawtypes")
+  protected static void removeField(Kryo kryo, Class type, String fieldName) {
+    FieldSerializer fld = new FieldSerializer(kryo, type);
+    fld.removeField(fieldName);
+    kryo.register(type, fld);
+  }
+  private static ThreadLocal<Kryo> cloningQueryPlanKryo = new ThreadLocal<Kryo>() {
+    @Override
+    protected synchronized Kryo initialValue() {
+      Kryo kryo = new Kryo();
+      kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
+      kryo.register(CommonToken.class, new CommonTokenSerializer());
+      kryo.register(java.sql.Date.class, new SqlDateSerializer());
+      return kryo;
+    };
+  };
 
   public static TableDesc defaultTd;
   static {
@@ -1934,7 +1987,7 @@ public final class Utilities {
   public static ContentSummary getInputSummary(Context ctx, MapWork work, PathFilter filter)
       throws IOException {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
-    perfLogger.PerfLogBegin(LOG, PerfLogger.INPUT_SUMMARY);
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
 
     long[] summary = {0, 0, 0};
 
@@ -2070,7 +2123,7 @@ public final class Utilities {
               + cs.getFileCount() + " directory count: " + cs.getDirectoryCount());
         }
 
-        perfLogger.PerfLogEnd(LOG, PerfLogger.INPUT_SUMMARY);
+        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
         return new ContentSummary(summary[0], summary[1], summary[2]);
       } finally {
         HiveInterruptUtils.remove(interrup);

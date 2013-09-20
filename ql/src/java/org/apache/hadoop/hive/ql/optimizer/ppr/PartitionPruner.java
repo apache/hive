@@ -66,8 +66,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 public class PartitionPruner implements Transform {
 
   // The log
-  private static final Log LOG = LogFactory
-    .getLog("hive.ql.optimizer.ppr.PartitionPruner");
+  public static final String CLASS_NAME = PartitionPruner.class.getName();
+  public static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   /*
    * (non-Javadoc)
@@ -307,7 +307,7 @@ public class PartitionPruner implements Transform {
   static private boolean pruneBySequentialScan(Table tab, Set<Partition> partitions,
       ExprNodeDesc prunerExpr, HiveConf conf) throws Exception {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
-    perfLogger.PerfLogBegin(LOG, PerfLogger.PRUNE_LISTING);
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PRUNE_LISTING);
 
     List<String> partNames = Hive.get().getPartitionNames(
         tab.getDbName(), tab.getTableName(), (short) -1);
@@ -317,13 +317,13 @@ public class PartitionPruner implements Transform {
 
     boolean hasUnknownPartitions = prunePartitionNames(
         partCols, prunerExpr, defaultPartitionName, partNames);
-    perfLogger.PerfLogEnd(LOG, PerfLogger.PRUNE_LISTING);
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PRUNE_LISTING);
 
-    perfLogger.PerfLogBegin(LOG, PerfLogger.PARTITION_RETRIEVING);
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
     if (!partNames.isEmpty()) {
       partitions.addAll(Hive.get().getPartitionsByNames(tab, partNames));
     }
-    perfLogger.PerfLogEnd(LOG, PerfLogger.PARTITION_RETRIEVING);
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
     return hasUnknownPartitions;
   }
 
