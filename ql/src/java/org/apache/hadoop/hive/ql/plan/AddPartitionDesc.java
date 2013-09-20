@@ -131,6 +131,7 @@ public class AddPartitionDesc extends DDLDesc implements Serializable {
   /**
    * @return location of partition in relation to table
    */
+  @Explain(displayName = "Location")
   public String getLocation() {
     return location;
   }
@@ -148,6 +149,11 @@ public class AddPartitionDesc extends DDLDesc implements Serializable {
    */
   public LinkedHashMap<String, String> getPartSpec() {
     return partSpec;
+  }
+
+  @Explain(displayName = "Spec")
+  public String getPartSpecString() {
+    return partSpec.toString();
   }
 
   /**
