@@ -130,7 +130,7 @@ public class TestJdbcDriver2 extends TestCase {
 
     stmt.execute("create table " + partitionedTableName
         + " (under_col int, value string) comment '"+partitionedTableComment
-            +"' partitioned by (" + partitionedColumnName + " STRING)");
+        +"' partitioned by (" + partitionedColumnName + " STRING)");
 
     // load data
     stmt.execute("load data local inpath '"
@@ -145,7 +145,7 @@ public class TestJdbcDriver2 extends TestCase {
       fail(ex.toString());
     }
 
-   stmt.execute("create table " + dataTypeTableName
+    stmt.execute("create table " + dataTypeTableName
         + " (c1 int, c2 boolean, c3 double, c4 string,"
         + " c5 array<int>, c6 map<int,string>, c7 map<string,string>,"
         + " c8 struct<r:string,s:int,t:double>,"
@@ -158,7 +158,7 @@ public class TestJdbcDriver2 extends TestCase {
         + " c18 decimal, "
         + " c19 binary, "
         + " c20 date) comment'" + dataTypeTableComment
-            +"' partitioned by (dt STRING)");
+        +"' partitioned by (dt STRING)");
 
     stmt.execute("load data local inpath '"
         + dataTypeDataFilePath.toString() + "' into table " + dataTypeTableName
@@ -173,7 +173,7 @@ public class TestJdbcDriver2 extends TestCase {
 
     // create view
     stmt.execute("create view " + viewName + " comment '"+viewComment
-            +"' as select * from "+ tableName);
+        +"' as select * from "+ tableName);
   }
 
   @Override
@@ -205,7 +205,7 @@ public class TestJdbcDriver2 extends TestCase {
   public void testBadURL() throws Exception {
     checkBadUrl("jdbc:hive2://localhost:10000;principal=test");
     checkBadUrl("jdbc:hive2://localhost:10000;" +
-    		"principal=hive/HiveServer2Host@YOUR-REALM.COM");
+        "principal=hive/HiveServer2Host@YOUR-REALM.COM");
     checkBadUrl("jdbc:hive2://localhost:10000test");
   }
 
@@ -270,7 +270,7 @@ public class TestJdbcDriver2 extends TestCase {
 
     ResultSet res = stmt.executeQuery(
         "explain select c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, " +
-        "c1*2, sentences(null, null, null) as b from " + dataTypeTableName + " limit 1");
+            "c1*2, sentences(null, null, null) as b from " + dataTypeTableName + " limit 1");
 
     ResultSetMetaData md = res.getMetaData();
     assertEquals(md.getColumnCount(), 1); // only one result column
@@ -288,7 +288,7 @@ public class TestJdbcDriver2 extends TestCase {
         + " and date '2012-01-01' = date ?"
         + " ) t  select '2011-03-25' ddate,'China',true bv, 10 num limit 10";
 
-     ///////////////////////////////////////////////
+    ///////////////////////////////////////////////
     //////////////////// correct testcase
     //////////////////////////////////////////////
     try {
@@ -340,7 +340,7 @@ public class TestJdbcDriver2 extends TestCase {
       fail(e.toString());
     }
 
-     ///////////////////////////////////////////////
+    ///////////////////////////////////////////////
     //////////////////// other failure testcases
     //////////////////////////////////////////////
     // set nothing for prepared sql
@@ -506,15 +506,13 @@ public class TestJdbcDriver2 extends TestCase {
   public void testNullResultSet() throws Exception {
     List<String> setupQueries = new ArrayList<String>();
     String testQuery;
-    boolean hasResultSet;
     Statement stmt = con.createStatement();
 
     // -select- should return a ResultSet
     try {
       stmt.executeQuery("select * from " + tableName);
       System.out.println("select: success");
-    }
-    catch(SQLException e) {
+    } catch(SQLException e) {
       failWithExceptionMsg(e);
     }
 
@@ -538,6 +536,39 @@ public class TestJdbcDriver2 extends TestCase {
     setupQueries.clear();
 
     stmt.close();
+  }
+
+  public void testCloseResultSet() throws Exception {
+    Statement stmt = con.createStatement();
+
+    // execute query, ignore exception if any
+    ResultSet res = stmt.executeQuery("select * from " + tableName);
+    // close ResultSet, ignore exception if any
+    res.close();
+    // A statement should be open even after ResultSet#close
+    assertFalse(stmt.isClosed());
+    // A Statement#cancel after ResultSet#close should be a no-op
+    try {
+      stmt.cancel();
+    } catch(SQLException e) {
+      failWithExceptionMsg(e);
+    }
+    stmt.close();
+
+    stmt = con.createStatement();
+    // execute query, ignore exception if any
+    res = stmt.executeQuery("select * from " + tableName);
+    // close ResultSet, ignore exception if any
+    res.close();
+    // A Statement#execute after ResultSet#close should be fine too
+    try {
+      stmt.executeQuery("select * from " + tableName);
+    } catch(SQLException e) {
+      failWithExceptionMsg(e);
+    }
+    // A Statement#close after ResultSet#close should close the statement
+    stmt.close();
+    assertTrue(stmt.isClosed());
   }
 
   public void testDataTypes() throws Exception {
@@ -673,7 +704,7 @@ public class TestJdbcDriver2 extends TestCase {
     ResultSetMetaData meta = res.getMetaData();
     int expectedColCount = isPartitionTable ? 3 : 2;
     assertEquals(
-      "Unexpected column count", expectedColCount, meta.getColumnCount());
+        "Unexpected column count", expectedColCount, meta.getColumnCount());
 
     boolean moreRow = res.next();
     while (moreRow) {
@@ -740,7 +771,7 @@ public class TestJdbcDriver2 extends TestCase {
     doTestErrorCase("SELECT invalid_column FROM " + tableName,
         "Invalid table alias or column reference", invalidSyntaxSQLState, 10004);
     doTestErrorCase("SELECT invalid_function(under_col) FROM " + tableName,
-    "Invalid function", invalidSyntaxSQLState, 10011);
+        "Invalid function", invalidSyntaxSQLState, 10011);
 
     // TODO: execute errors like this currently don't return good error
     // codes and messages. This should be fixed.
@@ -817,8 +848,8 @@ public class TestJdbcDriver2 extends TestCase {
   private void getTablesTest(String tableTypeName, String viewTypeName) throws SQLException {
     Map<String, Object[]> tests = new HashMap<String, Object[]>();
     tests.put("test%jdbc%", new Object[]{"testhivejdbcdriver_table"
-            , "testhivejdbcdriverpartitionedtable"
-            , "testhivejdbcdriverview"});
+        , "testhivejdbcdriverpartitionedtable"
+        , "testhivejdbcdriverview"});
     tests.put("%jdbcdriver\\_table", new Object[]{"testhivejdbcdriver_table"});
     tests.put("testhivejdbcdriver\\_table", new Object[]{"testhivejdbcdriver_table"});
     tests.put("test_ivejdbcdri_er\\_table", new Object[]{"testhivejdbcdriver_table"});
@@ -826,8 +857,8 @@ public class TestJdbcDriver2 extends TestCase {
     tests.put("test_ivejdbcdri_er%table", new Object[]{
         "testhivejdbcdriver_table", "testhivejdbcdriverpartitionedtable" });
     tests.put("%jdbc%", new Object[]{ "testhivejdbcdriver_table"
-            , "testhivejdbcdriverpartitionedtable"
-            , "testhivejdbcdriverview"});
+        , "testhivejdbcdriverpartitionedtable"
+        , "testhivejdbcdriverview"});
     tests.put("", new Object[]{});
 
     for (String checkPattern: tests.keySet()) {
@@ -861,7 +892,7 @@ public class TestJdbcDriver2 extends TestCase {
 
     // only ask for the views.
     ResultSet rs = (ResultSet)con.getMetaData().getTables("default", null, null
-            , new String[]{viewTypeName});
+        , new String[]{viewTypeName});
     int cnt=0;
     while (rs.next()) {
       cnt++;
@@ -888,7 +919,7 @@ public class TestJdbcDriver2 extends TestCase {
 
     assertTrue(rs.next());
     assertEquals("default", rs.getString(1));
-//    assertNull(rs.getString(2));
+    //    assertNull(rs.getString(2));
 
     assertFalse(rs.next());
     rs.close();
@@ -949,7 +980,7 @@ public class TestJdbcDriver2 extends TestCase {
     tests.put(new String[]{"testhiveJDBC%", null}, 7);
     tests.put(new String[]{"%jdbcdriver\\_table", null}, 2);
     tests.put(new String[]{"%jdbcdriver\\_table%", "under\\_col"}, 1);
-//    tests.put(new String[]{"%jdbcdriver\\_table%", "under\\_COL"}, 1);
+    //    tests.put(new String[]{"%jdbcdriver\\_table%", "under\\_COL"}, 1);
     tests.put(new String[]{"%jdbcdriver\\_table%", "under\\_co_"}, 1);
     tests.put(new String[]{"%jdbcdriver\\_table%", "under_col"}, 1);
     tests.put(new String[]{"%jdbcdriver\\_table%", "und%"}, 1);
@@ -969,16 +1000,16 @@ public class TestJdbcDriver2 extends TestCase {
         String columnname = rs.getString("COLUMN_NAME");
         int ordinalPos = rs.getInt("ORDINAL_POSITION");
         switch(cnt) {
-          case 0:
-            assertEquals("Wrong column name found", "under_col", columnname);
-            assertEquals("Wrong ordinal position found", ordinalPos, 1);
-            break;
-          case 1:
-            assertEquals("Wrong column name found", "value", columnname);
-            assertEquals("Wrong ordinal position found", ordinalPos, 2);
-            break;
-          default:
-            break;
+        case 0:
+          assertEquals("Wrong column name found", "under_col", columnname);
+          assertEquals("Wrong ordinal position found", ordinalPos, 1);
+          break;
+        case 1:
+          assertEquals("Wrong column name found", "value", columnname);
+          assertEquals("Wrong ordinal position found", ordinalPos, 2);
+          break;
+        default:
+          break;
         }
         cnt++;
       }
@@ -992,7 +1023,7 @@ public class TestJdbcDriver2 extends TestCase {
    */
   public void testMetaDataGetColumnsMetaData() throws SQLException {
     ResultSet rs = (ResultSet)con.getMetaData().getColumns(null, null
-            , "testhivejdbcdriver\\_table", null);
+        , "testhivejdbcdriver\\_table", null);
 
     ResultSetMetaData rsmd = rs.getMetaData();
 
@@ -1045,7 +1076,7 @@ public class TestJdbcDriver2 extends TestCase {
       }
     }
   }
-  */
+   */
 
   public void testDescribeTable() throws SQLException {
     Statement stmt = con.createStatement();
@@ -1088,7 +1119,7 @@ public class TestJdbcDriver2 extends TestCase {
 
     ResultSet res = stmt.executeQuery(
         "select c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, " +
-        "c1*2, sentences(null, null, null) as b, c17, c18, c20 from " + dataTypeTableName +
+            "c1*2, sentences(null, null, null) as b, c17, c18, c20 from " + dataTypeTableName +
         " limit 1");
     ResultSetMetaData meta = res.getMetaData();
 
@@ -1312,10 +1343,10 @@ public class TestJdbcDriver2 extends TestCase {
 
   // [url] [host] [port] [db]
   private static final String[][] URL_PROPERTIES = new String[][] {
-      {"jdbc:hive2://", "", "", "default"},
-      {"jdbc:hive2://localhost:10001/default", "localhost", "10001", "default"},
-      {"jdbc:hive2://localhost/notdefault", "localhost", "10000", "notdefault"},
-      {"jdbc:hive2://foo:1243", "foo", "1243", "default"}};
+    {"jdbc:hive2://", "", "", "default"},
+    {"jdbc:hive2://localhost:10001/default", "localhost", "10001", "default"},
+    {"jdbc:hive2://localhost/notdefault", "localhost", "10000", "notdefault"},
+    {"jdbc:hive2://foo:1243", "foo", "1243", "default"}};
 
   public void testDriverProperties() throws SQLException {
     HiveDriver driver = new HiveDriver();
