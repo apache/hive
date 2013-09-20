@@ -31,7 +31,7 @@ public class StringConcatScalarCol extends VectorExpression {
   private int outputColumn;
   private byte[] value;
 
-  StringConcatScalarCol(byte[] value, int colNum, int outputColumn) {
+  public StringConcatScalarCol(byte[] value, int colNum, int outputColumn) {
     this();
     this.colNum = colNum;
     this.outputColumn = outputColumn;

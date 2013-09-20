@@ -43,6 +43,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNotNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsTrue;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringConcatColCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringConcatColScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringConcatScalarCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFUnixTimeStampLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
@@ -75,6 +78,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
 import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
 import org.apache.hadoop.hive.ql.udf.UDFHour;
 import org.apache.hadoop.hive.ql.udf.UDFLength;
@@ -448,6 +452,8 @@ public class VectorizationContext {
       return getUnaryStringExpression("StringLower", "String", childExpr);
     } else if (udf instanceof GenericUDFUpper) {
       return getUnaryStringExpression("StringUpper", "String", childExpr);
+    } else if (udf instanceof GenericUDFConcat) {
+      return getConcatExpression(childExpr);
     }
     throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
   }
@@ -506,6 +512,92 @@ public class VectorizationContext {
     }
 
     throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
+  }
+
+  /* Return a vector expression for string concatenation, including the column-scalar,
+   * scalar-column, and column-column cases.
+   */
+  private VectorExpression getConcatExpression(List<ExprNodeDesc> childExprList)
+      throws HiveException {
+    ExprNodeDesc left = childExprList.get(0);
+    ExprNodeDesc right = childExprList.get(1);
+    int inputColLeft = -1;
+    int inputColRight = -1;
+    VectorExpression vLeft = null;
+    VectorExpression vRight = null;
+    VectorExpression expr = null;
+
+    // Generate trees to evaluate non-leaf inputs, if there are any.
+    if (left instanceof ExprNodeGenericFuncDesc) {
+      vLeft = getVectorExpression(left);
+      inputColLeft = vLeft.getOutputColumn();
+    }
+
+    if (right instanceof ExprNodeGenericFuncDesc) {
+      vRight = getVectorExpression(right);
+      inputColRight = vRight.getOutputColumn();
+    }
+
+    // Handle case for left input a column and right input a constant
+    if ((left instanceof ExprNodeColumnDesc || inputColLeft != -1) &&
+        right instanceof ExprNodeConstantDesc) {
+      if (inputColLeft == -1) {
+        inputColLeft = getInputColumnIndex(((ExprNodeColumnDesc) left).getColumn());
+      }
+      int outputCol = ocm.allocateOutputColumn("String");
+      byte[] constant = (byte[]) getScalarValue((ExprNodeConstantDesc) right);
+      expr = new StringConcatColScalar(inputColLeft, outputCol, constant);
+      if (vLeft != null) {
+        expr.setChildExpressions(new VectorExpression [] {vLeft});
+      }
+    }
+
+    // Handle case for left input a constant and right input a column
+    else if ((left instanceof ExprNodeConstantDesc) &&
+        (right instanceof ExprNodeColumnDesc || inputColRight != -1)) {
+      if (inputColRight == -1) {
+        inputColRight = getInputColumnIndex(((ExprNodeColumnDesc) right).getColumn());
+      }
+      int outputCol = ocm.allocateOutputColumn("String");
+      byte[] constant = (byte[]) getScalarValue((ExprNodeConstantDesc) left);
+      expr = new StringConcatScalarCol(constant, inputColRight, outputCol);
+      if (vRight != null) {
+        expr.setChildExpressions(new VectorExpression [] {vRight});
+      }
+    }
+
+    // Handle case where both left and right inputs are columns
+    else if ((left instanceof ExprNodeColumnDesc || inputColLeft != -1) &&
+        (right instanceof ExprNodeColumnDesc || inputColRight != -1)) {
+      if (inputColLeft == -1) {
+        inputColLeft = getInputColumnIndex(((ExprNodeColumnDesc) left).getColumn());
+      }
+      if (inputColRight == -1) {
+        inputColRight = getInputColumnIndex(((ExprNodeColumnDesc) right).getColumn());
+      }
+      int outputCol = ocm.allocateOutputColumn("String");
+      expr = new StringConcatColCol(inputColLeft, inputColRight, outputCol);
+      if (vLeft == null && vRight != null) {
+        expr.setChildExpressions(new VectorExpression [] {vRight});
+      } else if (vLeft != null && vRight == null) {
+        expr.setChildExpressions(new VectorExpression [] {vLeft});
+      } else if (vLeft != null && vRight != null) {
+
+        // Both left and right have child expressions
+        expr.setChildExpressions(new VectorExpression [] {vLeft, vRight});
+      }
+    } else {
+      throw new HiveException("Failed to vectorize CONCAT()");
+    }
+
+    // Free output columns if inputs have non-leaf expression trees.
+    if (vLeft != null) {
+      ocm.freeOutputColumn(vLeft.getOutputColumn());
+    }
+    if (vRight != null) {
+      ocm.freeOutputColumn(vRight.getOutputColumn());
+    }
+    return expr;
   }
 
   /*
@@ -963,9 +1055,15 @@ public class VectorizationContext {
     }
   }
 
-  private Object getScalarValue(ExprNodeConstantDesc constDesc) {
+  private Object getScalarValue(ExprNodeConstantDesc constDesc)
+      throws HiveException {
     if (constDesc.getTypeString().equalsIgnoreCase("String")) {
-      return ((String) constDesc.getValue()).getBytes();
+      try {
+         byte[] bytes = ((String) constDesc.getValue()).getBytes("UTF-8");
+         return bytes;
+      } catch (Exception ex) {
+        throw new HiveException(ex);
+      }
     } else {
       return constDesc.getValue();
     }
