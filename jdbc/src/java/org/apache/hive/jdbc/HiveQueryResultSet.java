@@ -51,6 +51,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
 
   private TCLIService.Iface client;
   private TOperationHandle stmtHandle;
+  private HiveStatement hiveStatement;
   private TSessionHandle sessHandle;
   private int maxRows;
   private int fetchSize;
@@ -66,6 +67,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     private TCLIService.Iface client = null;
     private TOperationHandle stmtHandle = null;
     private TSessionHandle sessHandle  = null;
+    private HiveStatement hiveStatement = null;
 
     /**
      * Sets the limit for the maximum number of rows that any ResultSet object produced by this
@@ -91,6 +93,11 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
 
     public Builder setSessionHandle(TSessionHandle sessHandle) {
       this.sessHandle = sessHandle;
+      return this;
+    }
+
+    public Builder setHiveStatement(HiveStatement hiveStatement) {
+      this.hiveStatement = hiveStatement;
       return this;
     }
 
@@ -128,6 +135,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     this.stmtHandle = builder.stmtHandle;
     this.sessHandle = builder.sessHandle;
     this.fetchSize = builder.fetchSize;
+    this.hiveStatement = builder.hiveStatement;
     columnNames = new ArrayList<String>();
     columnTypes = new ArrayList<String>();
     if (builder.retrieveSchema) {
@@ -196,9 +204,13 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
 
   @Override
   public void close() throws SQLException {
+    if (hiveStatement != null) {
+      hiveStatement.closeClientOperation();
+    }
     // Need reset during re-open when needed
     client = null;
     stmtHandle = null;
+    hiveStatement = null;
     sessHandle = null;
     isClosed = true;
   }

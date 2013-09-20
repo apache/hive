@@ -43,7 +43,7 @@ import org.apache.hive.service.cli.thrift.TSessionHandle;
  */
 public class HiveStatement implements java.sql.Statement {
   private TCLIService.Iface client;
-  private TOperationHandle stmtHandle;
+  private TOperationHandle stmtHandle = null;
   private final TSessionHandle sessHandle;
   Map<String,String> sessConf = new HashMap<String,String>();
   private int fetchSize = 50;
@@ -102,6 +102,10 @@ public class HiveStatement implements java.sql.Statement {
       throw new SQLException("Can't cancel after statement has been closed");
     }
 
+    if (stmtHandle == null) {
+      return;
+    }
+
     TCancelOperationReq cancelReq = new TCancelOperationReq();
     cancelReq.setOperationHandle(stmtHandle);
     try {
@@ -134,7 +138,7 @@ public class HiveStatement implements java.sql.Statement {
     warningChain = null;
   }
 
-  private void closeClientOperation() throws SQLException {
+  void closeClientOperation() throws SQLException {
     try {
       if (stmtHandle != null) {
         TCloseOperationReq closeReq = new TCloseOperationReq();
@@ -149,17 +153,19 @@ public class HiveStatement implements java.sql.Statement {
     }
     stmtHandle = null;
   }
+
   /*
    * (non-Javadoc)
    *
    * @see java.sql.Statement#close()
    */
-
   public void close() throws SQLException {
     if (isClosed) {
       return;
     }
-    closeClientOperation();
+    if (stmtHandle != null) {
+      closeClientOperation();
+    }
     client = null;
     resultSet = null;
     isClosed = true;
@@ -182,7 +188,10 @@ public class HiveStatement implements java.sql.Statement {
     }
 
     try {
-      closeClientOperation();
+      if (stmtHandle != null) {
+        closeClientOperation();
+      }
+
       TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, sql);
       execReq.setConfOverlay(sessConf);
       TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
@@ -236,7 +245,7 @@ public class HiveStatement implements java.sql.Statement {
       return false;
     }
     resultSet =  new HiveQueryResultSet.Builder().setClient(client).setSessionHandle(sessHandle)
-        .setStmtHandle(stmtHandle).setMaxRows(maxRows).setFetchSize(fetchSize)
+        .setStmtHandle(stmtHandle).setHiveStatement(this).setMaxRows(maxRows).setFetchSize(fetchSize)
         .build();
     return true;
   }
