@@ -991,7 +991,7 @@ public class TestVectorStringExpressions {
     v.setRef(2, data3, 0, data3.length);
     v.isNull[2] = false;
 
-    StringSubstrColStart expr = new StringSubstrColStart(0, 5, 1);
+    StringSubstrColStart expr = new StringSubstrColStart(0, 6, 1);
     expr.evaluate(batch);
     BytesColumnVector outCol = (BytesColumnVector) batch.cols[1];
     Assert.assertEquals(3, batch.size);
@@ -1021,7 +1021,7 @@ public class TestVectorStringExpressions {
     outCol.isRepeating = true;
 
     // Testing negative substring index.
-    // For a string with length 11, start idx 5 should yield same results as -6
+    // Start index -6 should yield the last 6 characters of the string
 
     expr = new StringSubstrColStart(0, -6, 1);
     expr.evaluate(batch);
@@ -1050,9 +1050,9 @@ public class TestVectorStringExpressions {
     outCol.noNulls = false;
     outCol.isRepeating = true;
 
-    // Testing substring starting from index 0
+    // Testing substring starting from index 1
 
-    expr = new StringSubstrColStart(0, 0, 1);
+    expr = new StringSubstrColStart(0, 1, 1);
     expr.evaluate(batch);
     Assert.assertEquals(3, batch.size);
     Assert.assertTrue(outCol.noNulls);
@@ -1081,7 +1081,7 @@ public class TestVectorStringExpressions {
 
     // Testing with nulls
 
-    expr = new StringSubstrColStart(0, 5, 1);
+    expr = new StringSubstrColStart(0, 6, 1);
     v.noNulls = false;
     v.isNull[0] = true;
     expr.evaluate(batch);
@@ -1135,7 +1135,7 @@ public class TestVectorStringExpressions {
     batch.cols[1] = outV;
     outV.isRepeating = true;
     outV.noNulls = false;
-    expr = new StringSubstrColStart(0, 2, 1);
+    expr = new StringSubstrColStart(0, 3, 1);
     batch.size = 1;
     expr.evaluate(batch);
     outCol = (BytesColumnVector) batch.cols[1];
@@ -1154,21 +1154,22 @@ public class TestVectorStringExpressions {
     v = new BytesColumnVector();
     v.isRepeating = false;
     v.noNulls = true;
-    v.setRef(0, multiByte, 3, 10);
+    
+    // string is 2 chars long (a 3 byte and a 4 byte char)
+    v.setRef(0, multiByte, 3, 7);
     batch.cols[0] = v;
     batch.cols[1] = outV;
     outV.isRepeating = true;
     outV.noNulls = false;
     outCol = (BytesColumnVector) batch.cols[1];
-    expr = new StringSubstrColStart(0, 1, 1);
+    expr = new StringSubstrColStart(0, 2, 1);
     expr.evaluate(batch);
     Assert.assertFalse(outV.isRepeating);
     Assert.assertTrue(outV.noNulls);
     Assert.assertEquals(0,
     StringExpr.compare(
-            // Since references starts at index 3 (2nd char), substring with start idx 1
-            // will start at the 3rd char which starts at index 6
-            multiByte, 6, 10 - 6, outCol.vector[0], outCol.start[0], outCol.length[0]
+            // the result is the last 1 character, which occupies 4 bytes
+            multiByte, 6, 4, outCol.vector[0], outCol.start[0], outCol.length[0]
         )
     );
   }
@@ -1197,7 +1198,7 @@ public class TestVectorStringExpressions {
     outV.isRepeating = true;
     outV.noNulls = false;
 
-    StringSubstrColStartLen expr = new StringSubstrColStartLen(0, 5, 6, 1);
+    StringSubstrColStartLen expr = new StringSubstrColStartLen(0, 6, 6, 1);
     expr.evaluate(batch);
     BytesColumnVector outCol = (BytesColumnVector) batch.cols[1];
     Assert.assertEquals(3, batch.size);
@@ -1287,7 +1288,7 @@ public class TestVectorStringExpressions {
     outV.isRepeating = true;
     outV.noNulls = false;
 
-    expr = new StringSubstrColStartLen(0, 5, 10, 1);
+    expr = new StringSubstrColStartLen(0, 6, 10, 1);
     expr.evaluate(batch);
     outCol = (BytesColumnVector) batch.cols[1];
     Assert.assertEquals(3, batch.size);
@@ -1368,7 +1369,7 @@ public class TestVectorStringExpressions {
     batch.cols[1] = outV;
     outV.isRepeating = true;
     outV.noNulls = false;
-    expr = new StringSubstrColStartLen(0, 2, 2, 1);
+    expr = new StringSubstrColStartLen(0, 3, 2, 1);
     expr.evaluate(batch);
     Assert.assertEquals(1, batch.size);
     Assert.assertFalse(outV.isRepeating);
@@ -1391,7 +1392,7 @@ public class TestVectorStringExpressions {
     batch.cols[1] = outV;
     outV.isRepeating = true;
     outV.noNulls = false;
-    expr = new StringSubstrColStartLen(0, 1, 2, 1);
+    expr = new StringSubstrColStartLen(0, 2, 2, 1);
     expr.evaluate(batch);
     outCol = (BytesColumnVector) batch.cols[1];
     Assert.assertEquals(1, batch.size);

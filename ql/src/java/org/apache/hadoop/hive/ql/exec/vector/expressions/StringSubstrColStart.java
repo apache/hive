@@ -33,13 +33,13 @@ public class StringSubstrColStart extends VectorExpression {
   private int startIdx;
   private int colNum;
   private int outputColumn;
-  private transient static byte[] EMPTYSTRING;
+  private transient static byte[] EMPTY_STRING;
 
   // Populating the Empty string bytes. Putting it as static since it should be immutable and can
   // be shared.
   static {
     try {
-      EMPTYSTRING = "".getBytes("UTF-8");
+      EMPTY_STRING = "".getBytes("UTF-8");
     } catch(UnsupportedEncodingException e) {
       e.printStackTrace();
     }
@@ -48,7 +48,22 @@ public class StringSubstrColStart extends VectorExpression {
   public StringSubstrColStart(int colNum, int startIdx, int outputColumn) {
     this();
     this.colNum = colNum;
-    this.startIdx = startIdx;
+
+    /* Switch from a 1-based start offset (the Hive end user convention) to a 0-based start offset
+     * (the internal convention).
+     */
+    if (startIdx >= 1) {
+      this.startIdx = startIdx - 1;
+    } else if (startIdx == 0) {
+
+      // If start index is 0 in query, that is equivalent to using 1 in query.
+      // So internal offset is 0.
+      this.startIdx = 0;
+    } else {
+
+      // start index of -n means give the last n characters of the string
+      this.startIdx = startIdx;
+    }
     this.outputColumn = outputColumn;
   }
 
@@ -65,24 +80,27 @@ public class StringSubstrColStart extends VectorExpression {
    * @param substrStart the Start index for the substring operation
    */
   static int getSubstrStartOffset(byte[] utf8String, int start, int len, int substrStart) {
-    int curIdx = -1;
+    int end = start + len;
 
     if (substrStart < 0) {
       int length = 0;
-      for (int i = start; i != len; ++i) {
+      for (int i = start; i != end; ++i) {
         if ((utf8String[i] & 0xc0) != 0x80) {
           ++length;
         }
       }
+      if (-substrStart > length) {
 
-      if (-length > substrStart) {
+        /* The result is empty string if a negative start is provided
+         * whose absolute value is greater than the string length.
+         */
         return -1;
       }
 
       substrStart = length + substrStart;
     }
 
-    int end = start + len;
+    int curIdx = -1;
     for (int i = start; i != end; ++i) {
       if ((utf8String[i] & 0xc0) != 0x80) {
         ++curIdx;
@@ -109,26 +127,26 @@ public class StringSubstrColStart extends VectorExpression {
       return;
     }
 
-
     byte[][] vector = inV.vector;
     int[] sel = batch.selected;
     int[] len = inV.length;
     int[] start = inV.start;
+    outV.initBuffer();
 
     if (inV.isRepeating) {
       outV.isRepeating = true;
       if (!inV.noNulls && inV.isNull[0]) {
         outV.isNull[0] = true;
         outV.noNulls = false;
-        outV.setRef(0, EMPTYSTRING, 0, EMPTYSTRING.length);
+        outV.setVal(0, EMPTY_STRING, 0, EMPTY_STRING.length);
         return;
       } else {
         outV.noNulls = true;
-        int offset = getSubstrStartOffset(vector[0], sel[0], len[0], startIdx);
+        int offset = getSubstrStartOffset(vector[0], start[0], len[0], startIdx);
         if (offset != -1) {
-          outV.setRef(0, vector[0], offset, len[0] - offset);
+          outV.setVal(0, vector[0], offset, len[0] - (offset - start[0]));
         } else {
-          outV.setRef(0, EMPTYSTRING, 0, EMPTYSTRING.length);
+          outV.setVal(0, EMPTY_STRING, 0, EMPTY_STRING.length);
         }
       }
     } else {
@@ -143,9 +161,10 @@ public class StringSubstrColStart extends VectorExpression {
                   startIdx);
               outV.isNull[selected] = false;
               if (offset != -1) {
-                outV.setRef(selected, vector[selected], offset, len[selected] - offset);
+                outV.setVal(selected, vector[selected], offset,
+                    len[selected] - (offset - start[selected]));
               } else {
-                outV.setRef(selected, EMPTYSTRING, 0, EMPTYSTRING.length);
+                outV.setVal(selected, EMPTY_STRING, 0, EMPTY_STRING.length);
               }
             } else {
               outV.isNull[selected] = true;
@@ -158,9 +177,10 @@ public class StringSubstrColStart extends VectorExpression {
             int offset = getSubstrStartOffset(vector[selected], start[selected], len[selected],
                 startIdx);
             if (offset != -1) {
-              outV.setRef(selected, vector[selected], offset, len[selected] - offset);
+              outV.setVal(selected, vector[selected], offset,
+                  len[selected] - (offset - start[selected]));
             } else {
-              outV.setRef(selected, EMPTYSTRING, 0, EMPTYSTRING.length);
+              outV.setVal(selected, EMPTY_STRING, 0, EMPTY_STRING.length);
             }
           }
         }
@@ -172,9 +192,9 @@ public class StringSubstrColStart extends VectorExpression {
             if (!inV.isNull[i]) {
               int offset = getSubstrStartOffset(vector[i], start[i], len[i], startIdx);
               if (offset != -1) {
-                outV.setRef(i, vector[i], offset, len[i] - offset);
+                outV.setVal(i, vector[i], offset, len[i] - (offset - start[i]));
               } else {
-                outV.setRef(i, EMPTYSTRING, 0, EMPTYSTRING.length);
+                outV.setVal(i, EMPTY_STRING, 0, EMPTY_STRING.length);
               }
             }
           }
@@ -183,9 +203,9 @@ public class StringSubstrColStart extends VectorExpression {
           for (int i = 0; i != n; ++i) {
             int offset = getSubstrStartOffset(vector[i], start[i], len[i], startIdx);
             if (offset != -1) {
-              outV.setRef(i, vector[i], offset, len[i] - offset);
+              outV.setVal(i, vector[i], offset, len[i] - (offset - start[i]));
             } else {
-              outV.setRef(i, EMPTYSTRING, 0, EMPTYSTRING.length);
+              outV.setVal(i, EMPTY_STRING, 0, EMPTY_STRING.length);
             }
           }
         }

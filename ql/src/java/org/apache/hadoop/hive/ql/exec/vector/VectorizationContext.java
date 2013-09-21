@@ -46,6 +46,8 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsTrue;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringConcatColCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringConcatColScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringConcatScalarCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringSubstrColStart;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringSubstrColStartLen;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFUnixTimeStampLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.VectorAggregateExpression;
@@ -93,6 +95,7 @@ import org.apache.hadoop.hive.ql.udf.UDFOPNegative;
 import org.apache.hadoop.hive.ql.udf.UDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
 import org.apache.hadoop.hive.ql.udf.UDFSecond;
+import org.apache.hadoop.hive.ql.udf.UDFSubstr;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -509,6 +512,8 @@ public class VectorizationContext {
       return getLikeExpression(childExpr);
     } else if (cl.equals(UDFLength.class)) {
       return getUnaryStringExpression("StringLength", "Long", childExpr);
+    } else if (cl.equals(UDFSubstr.class)) {
+      return getSubstrExpression(childExpr);
     }
 
     throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
@@ -732,6 +737,65 @@ public class VectorizationContext {
     } catch (Exception ex) {
       throw new HiveException(ex);
     }
+    if (v1 != null) {
+      expr.setChildExpressions(new VectorExpression [] {v1});
+      ocm.freeOutputColumn(v1.getOutputColumn());
+    }
+    return expr;
+  }
+
+  private VectorExpression getSubstrExpression(
+      List<ExprNodeDesc> childExprList) throws HiveException {
+
+    ExprNodeDesc childExpr = childExprList.get(0);
+    ExprNodeDesc startExpr = childExprList.get(1);
+    startExpr = foldConstantsForUnaryExpression(startExpr);
+
+    // Get second and optionally third arguments
+    int start;
+    if (startExpr instanceof ExprNodeConstantDesc) {
+      ExprNodeConstantDesc constDesc = (ExprNodeConstantDesc) startExpr;
+      start = ((Integer) constDesc.getValue()).intValue();
+    } else {
+      throw new HiveException("Cannot vectorize non-constant start argument for SUBSTR");
+    }
+    ExprNodeDesc lengthExpr = null;
+    int length = 0;
+    if (childExprList.size() == 3) {
+      lengthExpr = childExprList.get(2);
+      lengthExpr = foldConstantsForUnaryExpression(lengthExpr);
+      if (lengthExpr instanceof ExprNodeConstantDesc) {
+        ExprNodeConstantDesc constDesc = (ExprNodeConstantDesc) lengthExpr;
+        length = ((Integer) constDesc.getValue()).intValue();
+      } else {
+        throw new HiveException("Cannot vectorize non-constant length argument for SUBSTR");
+      }
+    }
+
+    // Prepare first argument (whether it is a column or an expression)
+    int inputCol;
+    VectorExpression v1 = null;
+    if (childExpr instanceof ExprNodeGenericFuncDesc) {
+      v1 = getVectorExpression(childExpr);
+      inputCol = v1.getOutputColumn();
+    } else if (childExpr instanceof ExprNodeColumnDesc) {
+      ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) childExpr;
+      inputCol = getInputColumnIndex(colDesc.getColumn());
+    } else {
+      throw new HiveException("Expression not supported: " + childExpr);
+    }
+    int outputCol = ocm.allocateOutputColumn("String");
+
+    // Create appropriate vector expression for 2 or 3 argument version of SUBSTR()
+    VectorExpression expr = null;
+    if (childExprList.size() == 2) {
+      expr = new StringSubstrColStart(inputCol, start, outputCol);
+    } else if (childExprList.size() == 3) {
+      expr = new StringSubstrColStartLen(inputCol, start, length, outputCol);
+    } else {
+      throw new HiveException("Invalid number of arguments for SUBSTR()");
+    }
+
     if (v1 != null) {
       expr.setChildExpressions(new VectorExpression [] {v1});
       ocm.freeOutputColumn(v1.getOutputColumn());
