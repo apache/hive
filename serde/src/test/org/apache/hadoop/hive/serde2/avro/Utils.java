@@ -17,13 +17,14 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
-import org.apache.avro.generic.GenericData;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.rmi.server.UID;
+
+import org.apache.avro.generic.GenericData;
 
 class Utils {
   // Force Avro to serialize and de-serialize the record to make sure it has a
@@ -31,6 +32,7 @@ class Utils {
   public static AvroGenericRecordWritable
   serializeAndDeserializeRecord(GenericData.Record record) throws IOException {
     AvroGenericRecordWritable garw = new AvroGenericRecordWritable(record);
+    garw.setRecordReaderID(new UID());
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream daos = new DataOutputStream(baos);
     garw.write(daos);
@@ -39,6 +41,7 @@ class Utils {
     DataInputStream dais = new DataInputStream(bais);
 
     AvroGenericRecordWritable garw2 = new AvroGenericRecordWritable();
+    garw2.setRecordReaderID(new UID());
     garw2.readFields(dais);
     return garw2;
   }
