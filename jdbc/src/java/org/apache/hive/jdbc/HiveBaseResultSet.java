@@ -64,6 +64,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
   protected TRow row;
   protected List<String> columnNames;
   protected List<String> columnTypes;
+  protected List<JdbcColumnAttributes> columnAttributes;
 
   private TableSchema schema;
 
@@ -351,7 +352,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
   }
 
   public ResultSetMetaData getMetaData() throws SQLException {
-    return new HiveResultSetMetaData(columnNames, columnTypes);
+    return new HiveResultSetMetaData(columnNames, columnTypes, columnAttributes);
   }
 
   public Reader getNCharacterStream(int arg0) throws SQLException {
@@ -508,6 +509,8 @@ public abstract class HiveBaseResultSet implements ResultSet {
     case DOUBLE_TYPE:
       return getDoubleValue(tColumnValue.getDoubleVal());
     case STRING_TYPE:
+      return getStringValue(tColumnValue.getStringVal());
+    case VARCHAR_TYPE:
       return getStringValue(tColumnValue.getStringVal());
     case BINARY_TYPE:
       return getBinaryValue(tColumnValue.getStringVal());
