@@ -157,7 +157,9 @@ public class TestJdbcDriver2 extends TestCase {
         + " c17 timestamp, "
         + " c18 decimal, "
         + " c19 binary, "
-        + " c20 date) comment'" + dataTypeTableComment
+        + " c20 date,"
+        + " c21 varchar(20)"
+        + ") comment'" + dataTypeTableComment
         +"' partitioned by (dt STRING)");
 
     stmt.execute("load data local inpath '"
@@ -606,6 +608,7 @@ public class TestJdbcDriver2 extends TestCase {
     assertEquals(null, res.getString(19));
     assertEquals(null, res.getString(20));
     assertEquals(null, res.getDate(20));
+    assertEquals(null, res.getString(21));
 
     // row 2
     assertTrue(res.next());
@@ -631,6 +634,7 @@ public class TestJdbcDriver2 extends TestCase {
     assertEquals(null, res.getString(19));
     assertEquals(null, res.getString(20));
     assertEquals(null, res.getDate(20));
+    assertEquals(null, res.getString(21));
 
     // row 3
     assertTrue(res.next());
@@ -656,6 +660,7 @@ public class TestJdbcDriver2 extends TestCase {
     assertEquals("abcd", res.getString(19));
     assertEquals("2013-01-01", res.getString(20));
     assertEquals("2013-01-01", res.getDate(20).toString());
+    assertEquals("abc123", res.getString(21));
 
     // test getBoolean rules on non-boolean columns
     assertEquals(true, res.getBoolean(1));
@@ -1119,14 +1124,14 @@ public class TestJdbcDriver2 extends TestCase {
 
     ResultSet res = stmt.executeQuery(
         "select c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, " +
-            "c1*2, sentences(null, null, null) as b, c17, c18, c20 from " + dataTypeTableName +
+        "c1*2, sentences(null, null, null) as b, c17, c18, c20, c21 from " + dataTypeTableName +
         " limit 1");
     ResultSetMetaData meta = res.getMetaData();
 
     ResultSet colRS = con.getMetaData().getColumns(null, null,
         dataTypeTableName.toLowerCase(), null);
 
-    assertEquals(17, meta.getColumnCount());
+    assertEquals(18, meta.getColumnCount());
 
     assertTrue(colRS.next());
 
@@ -1333,6 +1338,14 @@ public class TestJdbcDriver2 extends TestCase {
     assertEquals(10, meta.getColumnDisplaySize(17));
     assertEquals(10, meta.getPrecision(17));
     assertEquals(0, meta.getScale(17));
+
+    assertEquals("c21", meta.getColumnName(18));
+    assertEquals(Types.VARCHAR, meta.getColumnType(18));
+    assertEquals("varchar", meta.getColumnTypeName(18));
+    // varchar columns should have correct display size/precision
+    assertEquals(20, meta.getColumnDisplaySize(18));
+    assertEquals(20, meta.getPrecision(18));
+    assertEquals(0, meta.getScale(18));
 
     for (int i = 1; i <= meta.getColumnCount(); i++) {
       assertFalse(meta.isAutoIncrement(i));

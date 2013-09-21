@@ -31,22 +31,22 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TStructTypeEntry implements org.apache.thrift.TBase<TStructTypeEntry, TStructTypeEntry._Fields>, java.io.Serializable, Cloneable {
-  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("TStructTypeEntry");
+public class TTypeQualifiers implements org.apache.thrift.TBase<TTypeQualifiers, TTypeQualifiers._Fields>, java.io.Serializable, Cloneable {
+  private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("TTypeQualifiers");
 
-  private static final org.apache.thrift.protocol.TField NAME_TO_TYPE_PTR_FIELD_DESC = new org.apache.thrift.protocol.TField("nameToTypePtr", org.apache.thrift.protocol.TType.MAP, (short)1);
+  private static final org.apache.thrift.protocol.TField QUALIFIERS_FIELD_DESC = new org.apache.thrift.protocol.TField("qualifiers", org.apache.thrift.protocol.TType.MAP, (short)1);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
-    schemes.put(StandardScheme.class, new TStructTypeEntryStandardSchemeFactory());
-    schemes.put(TupleScheme.class, new TStructTypeEntryTupleSchemeFactory());
+    schemes.put(StandardScheme.class, new TTypeQualifiersStandardSchemeFactory());
+    schemes.put(TupleScheme.class, new TTypeQualifiersTupleSchemeFactory());
   }
 
-  private Map<String,Integer> nameToTypePtr; // required
+  private Map<String,TTypeQualifierValue> qualifiers; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
-    NAME_TO_TYPE_PTR((short)1, "nameToTypePtr");
+    QUALIFIERS((short)1, "qualifiers");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -61,8 +61,8 @@ public class TStructTypeEntry implements org.apache.thrift.TBase<TStructTypeEntr
      */
     public static _Fields findByThriftId(int fieldId) {
       switch(fieldId) {
-        case 1: // NAME_TO_TYPE_PTR
-          return NAME_TO_TYPE_PTR;
+        case 1: // QUALIFIERS
+          return QUALIFIERS;
         default:
           return null;
       }
@@ -106,95 +106,95 @@ public class TStructTypeEntry implements org.apache.thrift.TBase<TStructTypeEntr
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
-    tmpMap.put(_Fields.NAME_TO_TYPE_PTR, new org.apache.thrift.meta_data.FieldMetaData("nameToTypePtr", org.apache.thrift.TFieldRequirementType.REQUIRED, 
+    tmpMap.put(_Fields.QUALIFIERS, new org.apache.thrift.meta_data.FieldMetaData("qualifiers", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.MapMetaData(org.apache.thrift.protocol.TType.MAP, 
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING), 
-            new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32            , "TTypeEntryPtr"))));
+            new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, TTypeQualifierValue.class))));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
-    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TStructTypeEntry.class, metaDataMap);
+    org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TTypeQualifiers.class, metaDataMap);
   }
 
-  public TStructTypeEntry() {
+  public TTypeQualifiers() {
   }
 
-  public TStructTypeEntry(
-    Map<String,Integer> nameToTypePtr)
+  public TTypeQualifiers(
+    Map<String,TTypeQualifierValue> qualifiers)
   {
     this();
-    this.nameToTypePtr = nameToTypePtr;
+    this.qualifiers = qualifiers;
   }
 
   /**
    * Performs a deep copy on <i>other</i>.
    */
-  public TStructTypeEntry(TStructTypeEntry other) {
-    if (other.isSetNameToTypePtr()) {
-      Map<String,Integer> __this__nameToTypePtr = new HashMap<String,Integer>();
-      for (Map.Entry<String, Integer> other_element : other.nameToTypePtr.entrySet()) {
+  public TTypeQualifiers(TTypeQualifiers other) {
+    if (other.isSetQualifiers()) {
+      Map<String,TTypeQualifierValue> __this__qualifiers = new HashMap<String,TTypeQualifierValue>();
+      for (Map.Entry<String, TTypeQualifierValue> other_element : other.qualifiers.entrySet()) {
 
         String other_element_key = other_element.getKey();
-        Integer other_element_value = other_element.getValue();
+        TTypeQualifierValue other_element_value = other_element.getValue();
 
-        String __this__nameToTypePtr_copy_key = other_element_key;
+        String __this__qualifiers_copy_key = other_element_key;
 
-        Integer __this__nameToTypePtr_copy_value = other_element_value;
+        TTypeQualifierValue __this__qualifiers_copy_value = new TTypeQualifierValue(other_element_value);
 
-        __this__nameToTypePtr.put(__this__nameToTypePtr_copy_key, __this__nameToTypePtr_copy_value);
+        __this__qualifiers.put(__this__qualifiers_copy_key, __this__qualifiers_copy_value);
       }
-      this.nameToTypePtr = __this__nameToTypePtr;
+      this.qualifiers = __this__qualifiers;
     }
   }
 
-  public TStructTypeEntry deepCopy() {
-    return new TStructTypeEntry(this);
+  public TTypeQualifiers deepCopy() {
+    return new TTypeQualifiers(this);
   }
 
   @Override
   public void clear() {
-    this.nameToTypePtr = null;
+    this.qualifiers = null;
   }
 
-  public int getNameToTypePtrSize() {
-    return (this.nameToTypePtr == null) ? 0 : this.nameToTypePtr.size();
+  public int getQualifiersSize() {
+    return (this.qualifiers == null) ? 0 : this.qualifiers.size();
   }
 
-  public void putToNameToTypePtr(String key, int val) {
-    if (this.nameToTypePtr == null) {
-      this.nameToTypePtr = new HashMap<String,Integer>();
+  public void putToQualifiers(String key, TTypeQualifierValue val) {
+    if (this.qualifiers == null) {
+      this.qualifiers = new HashMap<String,TTypeQualifierValue>();
     }
-    this.nameToTypePtr.put(key, val);
+    this.qualifiers.put(key, val);
   }
 
-  public Map<String,Integer> getNameToTypePtr() {
-    return this.nameToTypePtr;
+  public Map<String,TTypeQualifierValue> getQualifiers() {
+    return this.qualifiers;
   }
 
-  public void setNameToTypePtr(Map<String,Integer> nameToTypePtr) {
-    this.nameToTypePtr = nameToTypePtr;
+  public void setQualifiers(Map<String,TTypeQualifierValue> qualifiers) {
+    this.qualifiers = qualifiers;
   }
 
-  public void unsetNameToTypePtr() {
-    this.nameToTypePtr = null;
+  public void unsetQualifiers() {
+    this.qualifiers = null;
   }
 
-  /** Returns true if field nameToTypePtr is set (has been assigned a value) and false otherwise */
-  public boolean isSetNameToTypePtr() {
-    return this.nameToTypePtr != null;
+  /** Returns true if field qualifiers is set (has been assigned a value) and false otherwise */
+  public boolean isSetQualifiers() {
+    return this.qualifiers != null;
   }
 
-  public void setNameToTypePtrIsSet(boolean value) {
+  public void setQualifiersIsSet(boolean value) {
     if (!value) {
-      this.nameToTypePtr = null;
+      this.qualifiers = null;
     }
   }
 
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
-    case NAME_TO_TYPE_PTR:
+    case QUALIFIERS:
       if (value == null) {
-        unsetNameToTypePtr();
+        unsetQualifiers();
       } else {
-        setNameToTypePtr((Map<String,Integer>)value);
+        setQualifiers((Map<String,TTypeQualifierValue>)value);
       }
       break;
 
@@ -203,8 +203,8 @@ public class TStructTypeEntry implements org.apache.thrift.TBase<TStructTypeEntr
 
   public Object getFieldValue(_Fields field) {
     switch (field) {
-    case NAME_TO_TYPE_PTR:
-      return getNameToTypePtr();
+    case QUALIFIERS:
+      return getQualifiers();
 
     }
     throw new IllegalStateException();
@@ -217,8 +217,8 @@ public class TStructTypeEntry implements org.apache.thrift.TBase<TStructTypeEntr
     }
 
     switch (field) {
-    case NAME_TO_TYPE_PTR:
-      return isSetNameToTypePtr();
+    case QUALIFIERS:
+      return isSetQualifiers();
     }
     throw new IllegalStateException();
   }
@@ -227,21 +227,21 @@ public class TStructTypeEntry implements org.apache.thrift.TBase<TStructTypeEntr
   public boolean equals(Object that) {
     if (that == null)
       return false;
-    if (that instanceof TStructTypeEntry)
-      return this.equals((TStructTypeEntry)that);
+    if (that instanceof TTypeQualifiers)
+      return this.equals((TTypeQualifiers)that);
     return false;
   }
 
-  public boolean equals(TStructTypeEntry that) {
+  public boolean equals(TTypeQualifiers that) {
     if (that == null)
       return false;
 
-    boolean this_present_nameToTypePtr = true && this.isSetNameToTypePtr();
-    boolean that_present_nameToTypePtr = true && that.isSetNameToTypePtr();
-    if (this_present_nameToTypePtr || that_present_nameToTypePtr) {
-      if (!(this_present_nameToTypePtr && that_present_nameToTypePtr))
+    boolean this_present_qualifiers = true && this.isSetQualifiers();
+    boolean that_present_qualifiers = true && that.isSetQualifiers();
+    if (this_present_qualifiers || that_present_qualifiers) {
+      if (!(this_present_qualifiers && that_present_qualifiers))
         return false;
-      if (!this.nameToTypePtr.equals(that.nameToTypePtr))
+      if (!this.qualifiers.equals(that.qualifiers))
         return false;
     }
 
@@ -252,28 +252,28 @@ public class TStructTypeEntry implements org.apache.thrift.TBase<TStructTypeEntr
   public int hashCode() {
     HashCodeBuilder builder = new HashCodeBuilder();
 
-    boolean present_nameToTypePtr = true && (isSetNameToTypePtr());
-    builder.append(present_nameToTypePtr);
-    if (present_nameToTypePtr)
-      builder.append(nameToTypePtr);
+    boolean present_qualifiers = true && (isSetQualifiers());
+    builder.append(present_qualifiers);
+    if (present_qualifiers)
+      builder.append(qualifiers);
 
     return builder.toHashCode();
   }
 
-  public int compareTo(TStructTypeEntry other) {
+  public int compareTo(TTypeQualifiers other) {
     if (!getClass().equals(other.getClass())) {
       return getClass().getName().compareTo(other.getClass().getName());
     }
 
     int lastComparison = 0;
-    TStructTypeEntry typedOther = (TStructTypeEntry)other;
+    TTypeQualifiers typedOther = (TTypeQualifiers)other;
 
-    lastComparison = Boolean.valueOf(isSetNameToTypePtr()).compareTo(typedOther.isSetNameToTypePtr());
+    lastComparison = Boolean.valueOf(isSetQualifiers()).compareTo(typedOther.isSetQualifiers());
     if (lastComparison != 0) {
       return lastComparison;
     }
-    if (isSetNameToTypePtr()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.nameToTypePtr, typedOther.nameToTypePtr);
+    if (isSetQualifiers()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.qualifiers, typedOther.qualifiers);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -295,14 +295,14 @@ public class TStructTypeEntry implements org.apache.thrift.TBase<TStructTypeEntr
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder("TStructTypeEntry(");
+    StringBuilder sb = new StringBuilder("TTypeQualifiers(");
     boolean first = true;
 
-    sb.append("nameToTypePtr:");
-    if (this.nameToTypePtr == null) {
+    sb.append("qualifiers:");
+    if (this.qualifiers == null) {
       sb.append("null");
     } else {
-      sb.append(this.nameToTypePtr);
+      sb.append(this.qualifiers);
     }
     first = false;
     sb.append(")");
@@ -311,8 +311,8 @@ public class TStructTypeEntry implements org.apache.thrift.TBase<TStructTypeEntr
 
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
-    if (!isSetNameToTypePtr()) {
-      throw new org.apache.thrift.protocol.TProtocolException("Required field 'nameToTypePtr' is unset! Struct:" + toString());
+    if (!isSetQualifiers()) {
+      throw new org.apache.thrift.protocol.TProtocolException("Required field 'qualifiers' is unset! Struct:" + toString());
     }
 
     // check for sub-struct validity
@@ -334,15 +334,15 @@ public class TStructTypeEntry implements org.apache.thrift.TBase<TStructTypeEntr
     }
   }
 
-  private static class TStructTypeEntryStandardSchemeFactory implements SchemeFactory {
-    public TStructTypeEntryStandardScheme getScheme() {
-      return new TStructTypeEntryStandardScheme();
+  private static class TTypeQualifiersStandardSchemeFactory implements SchemeFactory {
+    public TTypeQualifiersStandardScheme getScheme() {
+      return new TTypeQualifiersStandardScheme();
     }
   }
 
-  private static class TStructTypeEntryStandardScheme extends StandardScheme<TStructTypeEntry> {
+  private static class TTypeQualifiersStandardScheme extends StandardScheme<TTypeQualifiers> {
 
-    public void read(org.apache.thrift.protocol.TProtocol iprot, TStructTypeEntry struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol iprot, TTypeQualifiers struct) throws org.apache.thrift.TException {
       org.apache.thrift.protocol.TField schemeField;
       iprot.readStructBegin();
       while (true)
@@ -352,22 +352,23 @@ public class TStructTypeEntry implements org.apache.thrift.TBase<TStructTypeEntr
           break;
         }
         switch (schemeField.id) {
-          case 1: // NAME_TO_TYPE_PTR
+          case 1: // QUALIFIERS
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map10 = iprot.readMapBegin();
-                struct.nameToTypePtr = new HashMap<String,Integer>(2*_map10.size);
-                for (int _i11 = 0; _i11 < _map10.size; ++_i11)
+                org.apache.thrift.protocol.TMap _map0 = iprot.readMapBegin();
+                struct.qualifiers = new HashMap<String,TTypeQualifierValue>(2*_map0.size);
+                for (int _i1 = 0; _i1 < _map0.size; ++_i1)
                 {
-                  String _key12; // required
-                  int _val13; // required
-                  _key12 = iprot.readString();
-                  _val13 = iprot.readI32();
-                  struct.nameToTypePtr.put(_key12, _val13);
+                  String _key2; // required
+                  TTypeQualifierValue _val3; // required
+                  _key2 = iprot.readString();
+                  _val3 = new TTypeQualifierValue();
+                  _val3.read(iprot);
+                  struct.qualifiers.put(_key2, _val3);
                 }
                 iprot.readMapEnd();
               }
-              struct.setNameToTypePtrIsSet(true);
+              struct.setQualifiersIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
@@ -381,18 +382,18 @@ public class TStructTypeEntry implements org.apache.thrift.TBase<TStructTypeEntr
       struct.validate();
     }
 
-    public void write(org.apache.thrift.protocol.TProtocol oprot, TStructTypeEntry struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol oprot, TTypeQualifiers struct) throws org.apache.thrift.TException {
       struct.validate();
 
       oprot.writeStructBegin(STRUCT_DESC);
-      if (struct.nameToTypePtr != null) {
-        oprot.writeFieldBegin(NAME_TO_TYPE_PTR_FIELD_DESC);
+      if (struct.qualifiers != null) {
+        oprot.writeFieldBegin(QUALIFIERS_FIELD_DESC);
         {
-          oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.I32, struct.nameToTypePtr.size()));
-          for (Map.Entry<String, Integer> _iter14 : struct.nameToTypePtr.entrySet())
+          oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, struct.qualifiers.size()));
+          for (Map.Entry<String, TTypeQualifierValue> _iter4 : struct.qualifiers.entrySet())
           {
-            oprot.writeString(_iter14.getKey());
-            oprot.writeI32(_iter14.getValue());
+            oprot.writeString(_iter4.getKey());
+            _iter4.getValue().write(oprot);
           }
           oprot.writeMapEnd();
         }
@@ -404,43 +405,44 @@ public class TStructTypeEntry implements org.apache.thrift.TBase<TStructTypeEntr
 
   }
 
-  private static class TStructTypeEntryTupleSchemeFactory implements SchemeFactory {
-    public TStructTypeEntryTupleScheme getScheme() {
-      return new TStructTypeEntryTupleScheme();
+  private static class TTypeQualifiersTupleSchemeFactory implements SchemeFactory {
+    public TTypeQualifiersTupleScheme getScheme() {
+      return new TTypeQualifiersTupleScheme();
     }
   }
 
-  private static class TStructTypeEntryTupleScheme extends TupleScheme<TStructTypeEntry> {
+  private static class TTypeQualifiersTupleScheme extends TupleScheme<TTypeQualifiers> {
 
     @Override
-    public void write(org.apache.thrift.protocol.TProtocol prot, TStructTypeEntry struct) throws org.apache.thrift.TException {
+    public void write(org.apache.thrift.protocol.TProtocol prot, TTypeQualifiers struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
-        oprot.writeI32(struct.nameToTypePtr.size());
-        for (Map.Entry<String, Integer> _iter15 : struct.nameToTypePtr.entrySet())
+        oprot.writeI32(struct.qualifiers.size());
+        for (Map.Entry<String, TTypeQualifierValue> _iter5 : struct.qualifiers.entrySet())
         {
-          oprot.writeString(_iter15.getKey());
-          oprot.writeI32(_iter15.getValue());
+          oprot.writeString(_iter5.getKey());
+          _iter5.getValue().write(oprot);
         }
       }
     }
 
     @Override
-    public void read(org.apache.thrift.protocol.TProtocol prot, TStructTypeEntry struct) throws org.apache.thrift.TException {
+    public void read(org.apache.thrift.protocol.TProtocol prot, TTypeQualifiers struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TMap _map16 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.I32, iprot.readI32());
-        struct.nameToTypePtr = new HashMap<String,Integer>(2*_map16.size);
-        for (int _i17 = 0; _i17 < _map16.size; ++_i17)
+        org.apache.thrift.protocol.TMap _map6 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.qualifiers = new HashMap<String,TTypeQualifierValue>(2*_map6.size);
+        for (int _i7 = 0; _i7 < _map6.size; ++_i7)
         {
-          String _key18; // required
-          int _val19; // required
-          _key18 = iprot.readString();
-          _val19 = iprot.readI32();
-          struct.nameToTypePtr.put(_key18, _val19);
+          String _key8; // required
+          TTypeQualifierValue _val9; // required
+          _key8 = iprot.readString();
+          _val9 = new TTypeQualifierValue();
+          _val9.read(iprot);
+          struct.qualifiers.put(_key8, _val9);
         }
       }
-      struct.setNameToTypePtrIsSet(true);
+      struct.setQualifiersIsSet(true);
     }
   }
 
