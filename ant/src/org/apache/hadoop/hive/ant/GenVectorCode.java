@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.vector.gen;
+package org.apache.hadoop.hive.ant;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -25,10 +25,13 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.Task;
+
 /**
  * This class generates java classes from the templates.
  */
-public class CodeGen {
+public class GenVectorCode extends Task {
 
   private static String [][] templateExpansions =
     {
@@ -172,7 +175,7 @@ public class CodeGen {
       {"FilterStringColumnCompareScalar", "LessEqual", "<="},
       {"FilterStringColumnCompareScalar", "Greater", ">"},
       {"FilterStringColumnCompareScalar", "GreaterEqual", ">="},
-      
+
       {"FilterStringScalarCompareColumn", "Equal", "=="},
       {"FilterStringScalarCompareColumn", "NotEqual", "!="},
       {"FilterStringScalarCompareColumn", "Less", "<"},
@@ -267,11 +270,14 @@ public class CodeGen {
     };
 
 
-  private final String expressionOutputDirectory;
-  private final String expressionTemplateDirectory;
-  private final String udafOutputDirectory;
-  private final String udafTemplateDirectory;
-  private final TestCodeGen testCodeGen;
+  private String templateBaseDir;
+  private String buildDir;
+
+  private String expressionOutputDirectory;
+  private String expressionTemplateDirectory;
+  private String udafOutputDirectory;
+  private String udafTemplateDirectory;
+  private GenVectorTestCode testCodeGen;
 
   static String joinPath(String...parts) {
     String path = parts[0];
@@ -281,36 +287,32 @@ public class CodeGen {
     return path;
   }
 
-  public CodeGen() {
-    File generationDirectory = new File(System.getProperty("user.dir"));
+  public void init(String templateBaseDir, String buildDir) {
+    File generationDirectory = new File(templateBaseDir);
 
-    expressionOutputDirectory =
-      new File(
-        joinPath(
-          generationDirectory.getAbsolutePath(),"..", "..", "java", "org",
-          "apache", "hadoop", "hive", "ql", "exec", "vector",
-          "expressions", "gen")).getAbsolutePath();
+    String buildPath = joinPath(buildDir, "ql", "gen", "vector");
+
+    File exprOutput = new File(joinPath(buildPath, "org", "apache", "hadoop",
+        "hive", "ql", "exec", "vector", "expressions", "gen"));
+    expressionOutputDirectory = exprOutput.getAbsolutePath();
 
     expressionTemplateDirectory =
-      joinPath(generationDirectory.getAbsolutePath(), "ExpressionTemplates");
+        joinPath(generationDirectory.getAbsolutePath(), "ExpressionTemplates");
 
-    udafOutputDirectory =
-      new File(
-        joinPath(
-          generationDirectory.getAbsolutePath(),"..", "..", "java", "org",
-          "apache", "hadoop", "hive", "ql", "exec", "vector",
-          "expressions", "aggregates", "gen")).getAbsolutePath();
+    File udafOutput = new File(joinPath(buildPath, "org", "apache", "hadoop",
+        "hive", "ql", "exec", "vector", "expressions", "aggregates", "gen"));
+    udafOutputDirectory = udafOutput.getAbsolutePath();
 
     udafTemplateDirectory =
-      joinPath(generationDirectory.getAbsolutePath(), "udafTemplates");
+        joinPath(generationDirectory.getAbsolutePath(), "UDAFTemplates");
 
-    testCodeGen =  new TestCodeGen(
-      new File(
-        joinPath(
-          generationDirectory.getAbsolutePath(), "..", "..","test", "org",
-          "apache", "hadoop", "hive", "ql", "exec", "vector",
-          "expressions", "gen")).getAbsolutePath(),
-      joinPath(generationDirectory.getAbsolutePath(), "TestTemplates"));
+    File testCodeOutput =
+        new File(
+            joinPath(buildDir, "ql", "test", "src", "org",
+                "apache", "hadoop", "hive", "ql", "exec", "vector",
+                "expressions", "gen"));
+    testCodeGen = new GenVectorTestCode(testCodeOutput.getAbsolutePath(),
+        joinPath(generationDirectory.getAbsolutePath(), "TestTemplates"));
   }
 
   /**
@@ -318,12 +320,24 @@ public class CodeGen {
    * @throws Exception
    */
   public static void main(String[] args) throws Exception {
-    CodeGen gen = new CodeGen();
+    GenVectorCode gen = new GenVectorCode();
+    gen.init(System.getProperty("user.dir"),
+        joinPath(System.getProperty("user.dir"), "..", "..", "..", "..", "build"));
     gen.generate();
   }
 
-  private void generate() throws Exception {
+  @Override
+  public void execute() throws BuildException {
+    init(templateBaseDir, buildDir);
+    try {
+      this.generate();
+    } catch (Exception e) {
+      new BuildException(e);
+    }
+  }
 
+  private void generate() throws Exception {
+    System.out.println("Generating vector expression code");
     for (String [] tdesc : templateExpansions) {
       if (tdesc[0].equals("ColumnArithmeticScalar")) {
         generateColumnArithmeticScalar(tdesc);
@@ -361,6 +375,7 @@ public class CodeGen {
         continue;
       }
     }
+    System.out.println("Generating vector expression test code");
     testCodeGen.generateTestSuites();
   }
 
@@ -467,10 +482,10 @@ public class CodeGen {
   private void generateFilterStringScalarCompareColumn(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
     String className = "FilterStringScalar" + operatorName + "StringColumn";
-    
+
     // Template expansion logic is the same for both column-scalar and scalar-column cases.
     generateFilterStringColumnCompareScalar(tdesc, className);
-  } 
+  }
 
   private void generateFilterStringColumnCompareScalar(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
@@ -769,6 +784,14 @@ public class CodeGen {
       return "PrimitiveObjectInspectorFactory.writableDoubleObjectInspector";
     }
     throw new Exception("Unimplemented primitive output inspector: " + primitiveType);
+  }
+
+  public void setTemplateBaseDir(String templateBaseDir) {
+    this.templateBaseDir = templateBaseDir;
+  }
+
+  public void setBuildDir(String buildDir) {
+    this.buildDir = buildDir;
   }
 }
 

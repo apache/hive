@@ -16,14 +16,14 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.vector.gen;
+package org.apache.hadoop.hive.ant;
 
 import java.io.IOException;
 import java.util.HashMap;
 
 /**
  *
- * TestCodeGen.
+ * GenVectorTestCode.
  * This class is mutable and maintains a hashmap of TestSuiteClassName to test cases.
  * The tests cases are added over the course of vectorized expressions class generation,
  * with test classes being outputted at the end. For each column vector (inputs and/or outputs)
@@ -33,7 +33,7 @@ import java.util.HashMap;
  * vector. For filter operations the selection vector is validated against the generated
  * data. Each template corresponds to a class representing a test suite.
  */
-public class TestCodeGen {
+public class GenVectorTestCode {
 
   public enum TestSuiteClassName{
     TestColumnScalarOperationVectorExpressionEvaluation,
@@ -46,7 +46,7 @@ public class TestCodeGen {
   private final String testTemplateDirectory;
   private final HashMap<TestSuiteClassName,StringBuilder> testsuites;
 
-  public TestCodeGen(String testOutputDir, String testTemplateDirectory) {
+  public GenVectorTestCode(String testOutputDir, String testTemplateDirectory) {
     this.testOutputDir = testOutputDir;
     this.testTemplateDirectory = testTemplateDirectory;
     testsuites = new HashMap<TestSuiteClassName, StringBuilder>();
@@ -65,8 +65,8 @@ public class TestCodeGen {
         TestSuiteClassName.TestColumnScalarOperationVectorExpressionEvaluation;
 
     //Read the template into a string;
-    String templateFile = CodeGen.joinPath(this.testTemplateDirectory,template.toString()+".txt");
-    String templateString = removeTemplateComments(CodeGen.readFile(templateFile));
+    String templateFile = GenVectorCode.joinPath(this.testTemplateDirectory,template.toString()+".txt");
+    String templateString = removeTemplateComments(GenVectorCode.readFile(templateFile));
 
     for(Boolean[] testMatrix :new Boolean[][]{
         // Pairwise: InitOuputColHasNulls, InitOuputColIsRepeating, ColumnHasNulls, ColumnIsRepeating
@@ -85,7 +85,7 @@ public class TestCodeGen {
       testCase = testCase.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
       testCase = testCase.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
       testCase = testCase.replaceAll("<ScalarType>", scalarType);
-      testCase = testCase.replaceAll("<CamelCaseScalarType>", CodeGen.getCamelCaseType(scalarType));
+      testCase = testCase.replaceAll("<CamelCaseScalarType>", GenVectorCode.getCamelCaseType(scalarType));
       testCase = testCase.replaceAll("<InitOuputColHasNulls>", testMatrix[0].toString());
       testCase = testCase.replaceAll("<InitOuputColIsRepeating>", testMatrix[1].toString());
       testCase = testCase.replaceAll("<ColumnHasNulls>", testMatrix[2].toString());
@@ -109,8 +109,8 @@ public class TestCodeGen {
         TestSuiteClassName.TestColumnScalarFilterVectorExpressionEvaluation;
 
     //Read the template into a string;
-    String templateFile = CodeGen.joinPath(this.testTemplateDirectory,template.toString()+".txt");
-    String templateString = removeTemplateComments(CodeGen.readFile(templateFile));
+    String templateFile = GenVectorCode.joinPath(this.testTemplateDirectory,template.toString()+".txt");
+    String templateString = removeTemplateComments(GenVectorCode.readFile(templateFile));
 
     for(Boolean[] testMatrix : new Boolean[][]{
         // Pairwise: ColumnHasNulls, ColumnIsRepeating
@@ -126,7 +126,7 @@ public class TestCodeGen {
       testCase = testCase.replaceAll("<VectorExpClassName>", vectorExpClassName);
       testCase = testCase.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
       testCase = testCase.replaceAll("<ScalarType>", scalarType);
-      testCase = testCase.replaceAll("<CamelCaseScalarType>", CodeGen.getCamelCaseType(scalarType));
+      testCase = testCase.replaceAll("<CamelCaseScalarType>", GenVectorCode.getCamelCaseType(scalarType));
       testCase = testCase.replaceAll("<ColumnHasNulls>", testMatrix[0].toString());
       testCase = testCase.replaceAll("<ColumnIsRepeating>", testMatrix[1].toString());
       testCase = testCase.replaceAll("<Operator>", operatorSymbol);
@@ -151,8 +151,8 @@ public class TestCodeGen {
      TestSuiteClassName.TestColumnColumnOperationVectorExpressionEvaluation;
 
     //Read the template into a string;
-    String templateFile = CodeGen.joinPath(this.testTemplateDirectory,template.toString()+".txt");
-    String templateString = removeTemplateComments(CodeGen.readFile(templateFile));
+    String templateFile = GenVectorCode.joinPath(this.testTemplateDirectory,template.toString()+".txt");
+    String templateString = removeTemplateComments(GenVectorCode.readFile(templateFile));
 
     for(Boolean[] testMatrix : new Boolean[][]{
         // Pairwise: InitOuputColHasNulls, InitOuputColIsRepeating, Column1HasNulls,
@@ -193,8 +193,8 @@ public class TestCodeGen {
           TestSuiteClassName.TestColumnColumnFilterVectorExpressionEvaluation;
 
       //Read the template into a string;
-      String templateFile = CodeGen.joinPath(this.testTemplateDirectory,template.toString()+".txt");
-      String templateString = removeTemplateComments(CodeGen.readFile(templateFile));
+      String templateFile = GenVectorCode.joinPath(this.testTemplateDirectory,template.toString()+".txt");
+      String templateString = removeTemplateComments(GenVectorCode.readFile(templateFile));
 
       for(Boolean[] testMatrix : new Boolean[][]{
           // Pairwise: Column1HasNulls, Column1IsRepeating, Column2HasNulls, Column2IsRepeating
@@ -224,16 +224,16 @@ public class TestCodeGen {
 
   public void generateTestSuites() throws IOException {
 
-    String templateFile = CodeGen.joinPath(this.testTemplateDirectory, "TestClass.txt");
+    String templateFile = GenVectorCode.joinPath(this.testTemplateDirectory, "TestClass.txt");
     for(TestSuiteClassName testClass : testsuites.keySet()) {
 
-      String templateString = CodeGen.readFile(templateFile);
+      String templateString = GenVectorCode.readFile(templateFile);
       templateString = templateString.replaceAll("<ClassName>", testClass.toString());
       templateString = templateString.replaceAll("<TestCases>", testsuites.get(testClass).toString());
 
-      String outputFile = CodeGen.joinPath(this.testOutputDir, testClass + ".java");
+      String outputFile = GenVectorCode.joinPath(this.testOutputDir, testClass + ".java");
 
-      CodeGen.writeFile(outputFile, templateString);
+      GenVectorCode.writeFile(outputFile, templateString);
     }
   }
 
