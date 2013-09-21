@@ -48,7 +48,6 @@ import org.apache.hadoop.hive.ql.udf.GenericUDFDecode;
 import org.apache.hadoop.hive.ql.udf.GenericUDFEncode;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.UDAFPercentile;
-import org.apache.hadoop.hive.ql.udf.UDFAbs;
 import org.apache.hadoop.hive.ql.udf.UDFAcos;
 import org.apache.hadoop.hive.ql.udf.UDFAscii;
 import org.apache.hadoop.hive.ql.udf.UDFAsin;
@@ -211,7 +210,7 @@ public final class FunctionRegistry {
     registerUDF("ceil", UDFCeil.class, false);
     registerUDF("ceiling", UDFCeil.class, false);
     registerUDF("rand", UDFRand.class, false);
-    registerUDF("abs", UDFAbs.class, false);
+    registerGenericUDF("abs", GenericUDFAbs.class);
     registerUDF("pmod", UDFPosMod.class, false);
 
     registerUDF("ln", UDFLn.class, false);
