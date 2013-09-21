@@ -19,6 +19,7 @@ class TCLIServiceConstants {
   std::set<TTypeId::type>  COMPLEX_TYPES;
   std::set<TTypeId::type>  COLLECTION_TYPES;
   std::map<TTypeId::type, std::string>  TYPE_NAMES;
+  std::string CHARACTER_MAXIMUM_LENGTH;
 };
 
 extern const TCLIServiceConstants g_TCLIService_constants;

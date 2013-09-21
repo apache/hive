@@ -19,7 +19,8 @@ namespace apache { namespace hive { namespace service { namespace cli { namespac
 struct TProtocolVersion {
   enum type {
     HIVE_CLI_SERVICE_PROTOCOL_V1 = 0,
-    HIVE_CLI_SERVICE_PROTOCOL_V2 = 1
+    HIVE_CLI_SERVICE_PROTOCOL_V2 = 1,
+    HIVE_CLI_SERVICE_PROTOCOL_V3 = 2
   };
 };
 
@@ -44,7 +45,8 @@ struct TTypeId {
     USER_DEFINED_TYPE = 14,
     DECIMAL_TYPE = 15,
     NULL_TYPE = 16,
-    DATE_TYPE = 17
+    DATE_TYPE = 17,
+    VARCHAR_TYPE = 18
   };
 };
 
@@ -168,12 +170,110 @@ typedef std::string TPattern;
 
 typedef std::string TPatternOrIdentifier;
 
+typedef struct _TTypeQualifierValue__isset {
+  _TTypeQualifierValue__isset() : i32Value(false), stringValue(false) {}
+  bool i32Value;
+  bool stringValue;
+} _TTypeQualifierValue__isset;
+
+class TTypeQualifierValue {
+ public:
+
+  static const char* ascii_fingerprint; // = "A7801670116150C65ACA43E6F679BA79";
+  static const uint8_t binary_fingerprint[16]; // = {0xA7,0x80,0x16,0x70,0x11,0x61,0x50,0xC6,0x5A,0xCA,0x43,0xE6,0xF6,0x79,0xBA,0x79};
+
+  TTypeQualifierValue() : i32Value(0), stringValue() {
+  }
+
+  virtual ~TTypeQualifierValue() throw() {}
+
+  int32_t i32Value;
+  std::string stringValue;
+
+  _TTypeQualifierValue__isset __isset;
+
+  void __set_i32Value(const int32_t val) {
+    i32Value = val;
+    __isset.i32Value = true;
+  }
+
+  void __set_stringValue(const std::string& val) {
+    stringValue = val;
+    __isset.stringValue = true;
+  }
+
+  bool operator == (const TTypeQualifierValue & rhs) const
+  {
+    if (__isset.i32Value != rhs.__isset.i32Value)
+      return false;
+    else if (__isset.i32Value && !(i32Value == rhs.i32Value))
+      return false;
+    if (__isset.stringValue != rhs.__isset.stringValue)
+      return false;
+    else if (__isset.stringValue && !(stringValue == rhs.stringValue))
+      return false;
+    return true;
+  }
+  bool operator != (const TTypeQualifierValue &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TTypeQualifierValue & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TTypeQualifierValue &a, TTypeQualifierValue &b);
+
+
+class TTypeQualifiers {
+ public:
+
+  static const char* ascii_fingerprint; // = "6C72981CFA989214285648FA8C196C47";
+  static const uint8_t binary_fingerprint[16]; // = {0x6C,0x72,0x98,0x1C,0xFA,0x98,0x92,0x14,0x28,0x56,0x48,0xFA,0x8C,0x19,0x6C,0x47};
+
+  TTypeQualifiers() {
+  }
+
+  virtual ~TTypeQualifiers() throw() {}
+
+  std::map<std::string, TTypeQualifierValue>  qualifiers;
+
+  void __set_qualifiers(const std::map<std::string, TTypeQualifierValue> & val) {
+    qualifiers = val;
+  }
+
+  bool operator == (const TTypeQualifiers & rhs) const
+  {
+    if (!(qualifiers == rhs.qualifiers))
+      return false;
+    return true;
+  }
+  bool operator != (const TTypeQualifiers &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const TTypeQualifiers & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(TTypeQualifiers &a, TTypeQualifiers &b);
+
+typedef struct _TPrimitiveTypeEntry__isset {
+  _TPrimitiveTypeEntry__isset() : typeQualifiers(false) {}
+  bool typeQualifiers;
+} _TPrimitiveTypeEntry__isset;
 
 class TPrimitiveTypeEntry {
  public:
 
-  static const char* ascii_fingerprint; // = "8BBB3D0C3B370CB38F2D1340BB79F0AA";
-  static const uint8_t binary_fingerprint[16]; // = {0x8B,0xBB,0x3D,0x0C,0x3B,0x37,0x0C,0xB3,0x8F,0x2D,0x13,0x40,0xBB,0x79,0xF0,0xAA};
+  static const char* ascii_fingerprint; // = "755674F6A5C8EB47868686AE386FBC1C";
+  static const uint8_t binary_fingerprint[16]; // = {0x75,0x56,0x74,0xF6,0xA5,0xC8,0xEB,0x47,0x86,0x86,0x86,0xAE,0x38,0x6F,0xBC,0x1C};
 
   TPrimitiveTypeEntry() : type((TTypeId::type)0) {
   }
@@ -181,14 +281,26 @@ class TPrimitiveTypeEntry {
   virtual ~TPrimitiveTypeEntry() throw() {}
 
   TTypeId::type type;
+  TTypeQualifiers typeQualifiers;
+
+  _TPrimitiveTypeEntry__isset __isset;
 
   void __set_type(const TTypeId::type val) {
     type = val;
   }
 
+  void __set_typeQualifiers(const TTypeQualifiers& val) {
+    typeQualifiers = val;
+    __isset.typeQualifiers = true;
+  }
+
   bool operator == (const TPrimitiveTypeEntry & rhs) const
   {
     if (!(type == rhs.type))
+      return false;
+    if (__isset.typeQualifiers != rhs.__isset.typeQualifiers)
+      return false;
+    else if (__isset.typeQualifiers && !(typeQualifiers == rhs.typeQualifiers))
       return false;
     return true;
   }
@@ -410,8 +522,8 @@ typedef struct _TTypeEntry__isset {
 class TTypeEntry {
  public:
 
-  static const char* ascii_fingerprint; // = "0C3ACE4054603E2D37B8BFEBA79F4159";
-  static const uint8_t binary_fingerprint[16]; // = {0x0C,0x3A,0xCE,0x40,0x54,0x60,0x3E,0x2D,0x37,0xB8,0xBF,0xEB,0xA7,0x9F,0x41,0x59};
+  static const char* ascii_fingerprint; // = "2FE56D9097E325DAA7E933738C6D325F";
+  static const uint8_t binary_fingerprint[16]; // = {0x2F,0xE5,0x6D,0x90,0x97,0xE3,0x25,0xDA,0xA7,0xE9,0x33,0x73,0x8C,0x6D,0x32,0x5F};
 
   TTypeEntry() {
   }
@@ -484,8 +596,8 @@ void swap(TTypeEntry &a, TTypeEntry &b);
 class TTypeDesc {
  public:
 
-  static const char* ascii_fingerprint; // = "60CA5B8BACFCD38D1D3EC1F0E3F1C36A";
-  static const uint8_t binary_fingerprint[16]; // = {0x60,0xCA,0x5B,0x8B,0xAC,0xFC,0xD3,0x8D,0x1D,0x3E,0xC1,0xF0,0xE3,0xF1,0xC3,0x6A};
+  static const char* ascii_fingerprint; // = "90B3C5A0B73419A84E85E0E48C452AA5";
+  static const uint8_t binary_fingerprint[16]; // = {0x90,0xB3,0xC5,0xA0,0xB7,0x34,0x19,0xA8,0x4E,0x85,0xE0,0xE4,0x8C,0x45,0x2A,0xA5};
 
   TTypeDesc() {
   }
@@ -525,8 +637,8 @@ typedef struct _TColumnDesc__isset {
 class TColumnDesc {
  public:
 
-  static const char* ascii_fingerprint; // = "0DF9A37B81B1EE73D35A0AC01F33A48D";
-  static const uint8_t binary_fingerprint[16]; // = {0x0D,0xF9,0xA3,0x7B,0x81,0xB1,0xEE,0x73,0xD3,0x5A,0x0A,0xC0,0x1F,0x33,0xA4,0x8D};
+  static const char* ascii_fingerprint; // = "EABED9009D5FCABFCA65612069F2A849";
+  static const uint8_t binary_fingerprint[16]; // = {0xEA,0xBE,0xD9,0x00,0x9D,0x5F,0xCA,0xBF,0xCA,0x65,0x61,0x20,0x69,0xF2,0xA8,0x49};
 
   TColumnDesc() : columnName(), position(0), comment() {
   }
@@ -588,8 +700,8 @@ void swap(TColumnDesc &a, TColumnDesc &b);
 class TTableSchema {
  public:
 
-  static const char* ascii_fingerprint; // = "E67E789F1EF836E4B9FC922C788AFDC8";
-  static const uint8_t binary_fingerprint[16]; // = {0xE6,0x7E,0x78,0x9F,0x1E,0xF8,0x36,0xE4,0xB9,0xFC,0x92,0x2C,0x78,0x8A,0xFD,0xC8};
+  static const char* ascii_fingerprint; // = "7A1811E49313E5977107FC667B20E39D";
+  static const uint8_t binary_fingerprint[16]; // = {0x7A,0x18,0x11,0xE4,0x93,0x13,0xE5,0x97,0x71,0x07,0xFC,0x66,0x7B,0x20,0xE3,0x9D};
 
   TTableSchema() {
   }
@@ -1469,8 +1581,8 @@ class TOpenSessionReq {
   static const char* ascii_fingerprint; // = "C8FD0F306A16C16BDA7B57F58BFAE5B2";
   static const uint8_t binary_fingerprint[16]; // = {0xC8,0xFD,0x0F,0x30,0x6A,0x16,0xC1,0x6B,0xDA,0x7B,0x57,0xF5,0x8B,0xFA,0xE5,0xB2};
 
-  TOpenSessionReq() : client_protocol((TProtocolVersion::type)1), username(), password() {
-    client_protocol = (TProtocolVersion::type)1;
+  TOpenSessionReq() : client_protocol((TProtocolVersion::type)2), username(), password() {
+    client_protocol = (TProtocolVersion::type)2;
 
   }
 
@@ -1545,8 +1657,8 @@ class TOpenSessionResp {
   static const char* ascii_fingerprint; // = "CFE7D7F4E9EC671F2518ED74FEE9F163";
   static const uint8_t binary_fingerprint[16]; // = {0xCF,0xE7,0xD7,0xF4,0xE9,0xEC,0x67,0x1F,0x25,0x18,0xED,0x74,0xFE,0xE9,0xF1,0x63};
 
-  TOpenSessionResp() : serverProtocolVersion((TProtocolVersion::type)1) {
-    serverProtocolVersion = (TProtocolVersion::type)1;
+  TOpenSessionResp() : serverProtocolVersion((TProtocolVersion::type)2) {
+    serverProtocolVersion = (TProtocolVersion::type)2;
 
   }
 
@@ -3047,8 +3159,8 @@ typedef struct _TGetResultSetMetadataResp__isset {
 class TGetResultSetMetadataResp {
  public:
 
-  static const char* ascii_fingerprint; // = "8778316D0AFC17584F192162BFF2AEDE";
-  static const uint8_t binary_fingerprint[16]; // = {0x87,0x78,0x31,0x6D,0x0A,0xFC,0x17,0x58,0x4F,0x19,0x21,0x62,0xBF,0xF2,0xAE,0xDE};
+  static const char* ascii_fingerprint; // = "42CD49B7F49CC1B6D4E6F5FA2D7BE812";
+  static const uint8_t binary_fingerprint[16]; // = {0x42,0xCD,0x49,0xB7,0xF4,0x9C,0xC1,0xB6,0xD4,0xE6,0xF5,0xFA,0x2D,0x7B,0xE8,0x12};
 
   TGetResultSetMetadataResp() {
   }
