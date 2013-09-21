@@ -400,6 +400,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       RawStore ms = threadLocalMS.get();
       if (ms == null) {
         ms = newRawStore();
+        ms.verifySchema();
         threadLocalMS.set(ms);
         ms = threadLocalMS.get();
       }
