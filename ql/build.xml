@@ -190,7 +190,7 @@
     <echo message="Project: ${ant.project.name}"/>
     <javac
      encoding="${build.encoding}"
-     srcdir="${src.dir}:${basedir}/src/gen/thrift/gen-javabean:${build.dir}/gen/antlr/gen-java:${protobuf.build.dir}"
+     srcdir="${src.dir}:${basedir}/src/gen/thrift/gen-javabean:${build.dir}/gen/antlr/gen-java:${protobuf.build.dir}:${build.dir}/gen/vector"
      includes="**/*.java"
      destdir="${build.classes}"
      debug="${javac.debug}"
