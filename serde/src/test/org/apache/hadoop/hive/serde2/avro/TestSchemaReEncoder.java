@@ -17,14 +17,14 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.junit.Test;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class TestSchemaReEncoder {
   @Test
@@ -62,8 +62,8 @@ public class TestSchemaReEncoder {
     GenericRecord record = new GenericData.Record(originalSchema);
     record.put("text", "it is a far better thing I do, yadda, yadda");
     assertTrue(GenericData.get().validate(originalSchema, record));
-    AvroDeserializer.SchemaReEncoder schemaReEncoder = new AvroDeserializer.SchemaReEncoder();
-    GenericRecord r2 = schemaReEncoder.reencode(record, evolvedSchema);
+    AvroDeserializer.SchemaReEncoder schemaReEncoder = new AvroDeserializer.SchemaReEncoder(record.getSchema(), evolvedSchema);
+    GenericRecord r2 = schemaReEncoder.reencode(record);
 
     assertTrue(GenericData.get().validate(evolvedSchema, r2));
     assertEquals("Hi!", r2.get("new_kid").toString());
@@ -104,7 +104,8 @@ public class TestSchemaReEncoder {
     record.put("a", 19);
     assertTrue(GenericData.get().validate(originalSchema2, record));
 
-    r2 = schemaReEncoder.reencode(record,  evolvedSchema2);
+    schemaReEncoder = new AvroDeserializer.SchemaReEncoder(record.getSchema(), evolvedSchema2);
+    r2 = schemaReEncoder.reencode(record);
     assertTrue(GenericData.get().validate(evolvedSchema2, r2));
     assertEquals(42l, r2.get("b"));
   }

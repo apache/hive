@@ -17,18 +17,19 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
-import org.apache.avro.Schema;
-import org.apache.avro.generic.GenericData;
-import org.apache.avro.generic.GenericRecord;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.rmi.server.UID;
 
-import static org.junit.Assert.assertEquals;
+import org.apache.avro.Schema;
+import org.apache.avro.generic.GenericData;
+import org.apache.avro.generic.GenericRecord;
+import org.junit.Test;
 
 public class TestGenericAvroRecordWritable {
   private static final String schemaJSON = "{\n" +
@@ -59,12 +60,14 @@ public class TestGenericAvroRecordWritable {
     assertEquals("Doctor", gr.get("last"));
 
     AvroGenericRecordWritable garw = new AvroGenericRecordWritable(gr);
+    garw.setRecordReaderID(new UID());
 
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream daos = new DataOutputStream(baos);
     garw.write(daos);
 
     AvroGenericRecordWritable garw2 = new AvroGenericRecordWritable(gr);
+    garw2.setRecordReaderID(new UID());
 
     ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
     DataInputStream dais = new DataInputStream(bais);
