@@ -38,7 +38,6 @@ import java.util.Set;
 
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.Tree;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
@@ -130,7 +129,6 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -2585,41 +2583,37 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeAlterTableAddParts(CommonTree ast, boolean expectView)
       throws SemanticException {
 
+    // ^(TOK_ALTERTABLE_ADDPARTS identifier ifNotExists? alterStatementSuffixAddPartitionsElement+)
     String tblName = getUnescapedName((ASTNode)ast.getChild(0));
+    boolean ifNotExists = ast.getChild(1).getType() == HiveParser.TOK_IFNOTEXISTS;
+
     Table tab = getTable(tblName, true);
     boolean isView = tab.isView();
     validateAlterTableType(tab, AlterTableTypes.ADDPARTITION, expectView);
     inputs.add(new ReadEntity(tab));
 
-    // partition name to value
-    List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
-    addTablePartsOutputs(tblName, partSpecs);
-
-    Iterator<Map<String, String>> partIter = partSpecs.iterator();
-
-    String currentLocation = null;
-    Map<String, String> currentPart = null;
-    boolean ifNotExists = false;
     List<AddPartitionDesc> partitionDescs = new ArrayList<AddPartitionDesc>();
 
     int numCh = ast.getChildCount();
-    for (int num = 1; num < numCh; num++) {
-      CommonTree child = (CommonTree) ast.getChild(num);
+    int start = ifNotExists ? 2 : 1;
+
+    String currentLocation = null;
+    Map<String, String> currentPart = null;
+    for (int num = start; num < numCh; num++) {
+      ASTNode child = (ASTNode) ast.getChild(num);
       switch (child.getToken().getType()) {
-      case HiveParser.TOK_IFNOTEXISTS:
-        ifNotExists = true;
-        break;
       case HiveParser.TOK_PARTSPEC:
         if (currentPart != null) {
-          validatePartitionValues(currentPart);
-          AddPartitionDesc addPartitionDesc = new AddPartitionDesc(
-              SessionState.get().getCurrentDatabase(), tblName, currentPart,
+          Partition partition = getPartitionForOutput(tab, currentPart);
+          if (partition == null || !ifNotExists) {
+            AddPartitionDesc addPartitionDesc = new AddPartitionDesc(
+              tab.getDbName(), tblName, currentPart,
               currentLocation, ifNotExists, expectView);
-          partitionDescs.add(addPartitionDesc);
+            partitionDescs.add(addPartitionDesc);
+          }
+          currentLocation = null;
         }
-        // create new partition, set values
-        currentLocation = null;
-        currentPart = partIter.next();
+        currentPart = getPartSpec(child);
         break;
       case HiveParser.TOK_PARTITIONLOCATION:
         // if location specified, set in partition
@@ -2632,11 +2626,18 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // add the last one
     if (currentPart != null) {
-      validatePartitionValues(currentPart);
-      AddPartitionDesc addPartitionDesc = new AddPartitionDesc(
-          SessionState.get().getCurrentDatabase(), tblName, currentPart,
+      Partition partition = getPartitionForOutput(tab, currentPart);
+      if (partition == null || !ifNotExists) {
+        AddPartitionDesc addPartitionDesc = new AddPartitionDesc(
+          tab.getDbName(), tblName, currentPart,
           currentLocation, ifNotExists, expectView);
-      partitionDescs.add(addPartitionDesc);
+        partitionDescs.add(addPartitionDesc);
+      }
+    }
+
+    if (partitionDescs.isEmpty()) {
+      // nothing to do
+      return;
     }
 
     for (AddPartitionDesc addPartitionDesc : partitionDescs) {
@@ -2694,6 +2695,21 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       inputs.addAll(driver.getPlan().getInputs());
     }
+  }
+
+  private Partition getPartitionForOutput(Table tab, Map<String, String> currentPart)
+    throws SemanticException {
+    validatePartitionValues(currentPart);
+    try {
+      Partition partition = db.getPartition(tab, currentPart, false);
+      if (partition != null) {
+        outputs.add(new WriteEntity(partition));
+      }
+      return partition;
+    } catch (HiveException e) {
+      LOG.warn("wrong partition spec " + currentPart);
+    }
+    return null;
   }
 
   /**

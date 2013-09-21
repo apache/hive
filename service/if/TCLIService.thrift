@@ -42,6 +42,9 @@ enum TProtocolVersion {
   
   // V2 adds support for asynchronous execution
   HIVE_CLI_SERVICE_PROTOCOL_V2
+
+  // V3 add varchar type, primitive type qualifiers
+  HIVE_CLI_SERVICE_PROTOCOL_V3
 }
 
 enum TTypeId {
@@ -62,7 +65,8 @@ enum TTypeId {
   USER_DEFINED_TYPE,
   DECIMAL_TYPE,
   NULL_TYPE,
-  DATE_TYPE
+  DATE_TYPE,
+  VARCHAR_TYPE
 }
   
 const set<TTypeId> PRIMITIVE_TYPES = [
@@ -79,6 +83,7 @@ const set<TTypeId> PRIMITIVE_TYPES = [
   TTypeId.DECIMAL_TYPE,
   TTypeId.NULL_TYPE
   TTypeId.DATE_TYPE
+  TTypeId.VARCHAR_TYPE
 ]
 
 const set<TTypeId> COMPLEX_TYPES = [
@@ -112,6 +117,7 @@ const map<TTypeId,string> TYPE_NAMES = {
   TTypeId.DECIMAL_TYPE: "DECIMAL",
   TTypeId.NULL_TYPE: "NULL"
   TTypeId.DATE_TYPE: "DATE"
+  TTypeId.VARCHAR_TYPE: "VARCHAR"
 }
 
 // Thrift does not support recursively defined types or forward declarations,
@@ -159,11 +165,25 @@ const map<TTypeId,string> TYPE_NAMES = {
 
 typedef i32 TTypeEntryPtr
 
+// Valid TTypeQualifiers key names
+const string CHARACTER_MAXIMUM_LENGTH = "characterMaximumLength"
+
+union TTypeQualifierValue {
+  1: optional i32 i32Value
+  2: optional string stringValue
+}
+
+// Type qualifiers for primitive type.
+struct TTypeQualifiers {
+  1: required map <string, TTypeQualifierValue> qualifiers
+}
+
 // Type entry for a primitive type.
 struct TPrimitiveTypeEntry {
   // The primitive type token. This must satisfy the condition
   // that type is in the PRIMITIVE_TYPES set.
   1: required TTypeId type
+  2: optional TTypeQualifiers typeQualifiers
 }
 
 // Type entry for an ARRAY type.
@@ -458,7 +478,7 @@ struct TOperationHandle {
 // which operations may be executed. 
 struct TOpenSessionReq {
   // The version of the HiveServer2 protocol that the client is using.
-  1: required TProtocolVersion client_protocol = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V2
+  1: required TProtocolVersion client_protocol = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V3
   
   // Username and password for authentication.
   // Depending on the authentication scheme being used,
@@ -477,7 +497,7 @@ struct TOpenSessionResp {
   1: required TStatus status
 
   // The protocol version that the server is using.
-  2: required TProtocolVersion serverProtocolVersion = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V2
+  2: required TProtocolVersion serverProtocolVersion = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V3
 
   // Session Handle
   3: optional TSessionHandle sessionHandle

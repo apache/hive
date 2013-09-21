@@ -350,14 +350,14 @@ public class TTableSchema implements org.apache.thrift.TBase<TTableSchema, TTabl
           case 1: // COLUMNS
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list28 = iprot.readListBegin();
-                struct.columns = new ArrayList<TColumnDesc>(_list28.size);
-                for (int _i29 = 0; _i29 < _list28.size; ++_i29)
+                org.apache.thrift.protocol.TList _list38 = iprot.readListBegin();
+                struct.columns = new ArrayList<TColumnDesc>(_list38.size);
+                for (int _i39 = 0; _i39 < _list38.size; ++_i39)
                 {
-                  TColumnDesc _elem30; // required
-                  _elem30 = new TColumnDesc();
-                  _elem30.read(iprot);
-                  struct.columns.add(_elem30);
+                  TColumnDesc _elem40; // optional
+                  _elem40 = new TColumnDesc();
+                  _elem40.read(iprot);
+                  struct.columns.add(_elem40);
                 }
                 iprot.readListEnd();
               }
@@ -383,9 +383,9 @@ public class TTableSchema implements org.apache.thrift.TBase<TTableSchema, TTabl
         oprot.writeFieldBegin(COLUMNS_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.columns.size()));
-          for (TColumnDesc _iter31 : struct.columns)
+          for (TColumnDesc _iter41 : struct.columns)
           {
-            _iter31.write(oprot);
+            _iter41.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -410,9 +410,9 @@ public class TTableSchema implements org.apache.thrift.TBase<TTableSchema, TTabl
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.columns.size());
-        for (TColumnDesc _iter32 : struct.columns)
+        for (TColumnDesc _iter42 : struct.columns)
         {
-          _iter32.write(oprot);
+          _iter42.write(oprot);
         }
       }
     }
@@ -421,14 +421,14 @@ public class TTableSchema implements org.apache.thrift.TBase<TTableSchema, TTabl
     public void read(org.apache.thrift.protocol.TProtocol prot, TTableSchema struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list33 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.columns = new ArrayList<TColumnDesc>(_list33.size);
-        for (int _i34 = 0; _i34 < _list33.size; ++_i34)
+        org.apache.thrift.protocol.TList _list43 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.columns = new ArrayList<TColumnDesc>(_list43.size);
+        for (int _i44 = 0; _i44 < _list43.size; ++_i44)
         {
-          TColumnDesc _elem35; // required
-          _elem35 = new TColumnDesc();
-          _elem35.read(iprot);
-          struct.columns.add(_elem35);
+          TColumnDesc _elem45; // optional
+          _elem45 = new TColumnDesc();
+          _elem45.read(iprot);
+          struct.columns.add(_elem45);
         }
       }
       struct.setColumnsIsSet(true);

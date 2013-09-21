@@ -96,7 +96,7 @@ import jline.SimpleCompletor;
 public class BeeLine {
   private static final ResourceBundle resourceBundle =
       ResourceBundle.getBundle(BeeLine.class.getName());
-  private BeeLineSignalHandler signalHandler = null;
+  private final BeeLineSignalHandler signalHandler = null;
   private static final String separator = System.getProperty("line.separator");
   private boolean exit = false;
   private final DatabaseConnections connections = new DatabaseConnections();
@@ -124,6 +124,8 @@ public class BeeLine {
   private static final int ERRNO_OK = 0;
   private static final int ERRNO_ARGS = 1;
   private static final int ERRNO_OTHER = 2;
+
+  private static final String HIVE_VAR_PREFIX = "--hivevar";
 
   private final Map<Object, Object> formats = map(new Object[] {
       "vertical", new VerticalOutputFormat(this),
@@ -502,6 +504,16 @@ public class BeeLine {
       if (args[i].equals("--help") || args[i].equals("-h")) {
         usage();
         return false;
+      }
+
+      // Parse hive variables
+      if (args[i].equals(HIVE_VAR_PREFIX)) {
+        String[] parts = split(args[++i], "=");
+        if (parts.length != 2) {
+          return false;
+        }
+        getOpts().getHiveVariables().put(parts[0], parts[1]);
+        continue;
       }
 
       // -- arguments are treated as properties

@@ -355,15 +355,15 @@ public class TUnionTypeEntry implements org.apache.thrift.TBase<TUnionTypeEntry,
           case 1: // NAME_TO_TYPE_PTR
             if (schemeField.type == org.apache.thrift.protocol.TType.MAP) {
               {
-                org.apache.thrift.protocol.TMap _map10 = iprot.readMapBegin();
-                struct.nameToTypePtr = new HashMap<String,Integer>(2*_map10.size);
-                for (int _i11 = 0; _i11 < _map10.size; ++_i11)
+                org.apache.thrift.protocol.TMap _map20 = iprot.readMapBegin();
+                struct.nameToTypePtr = new HashMap<String,Integer>(2*_map20.size);
+                for (int _i21 = 0; _i21 < _map20.size; ++_i21)
                 {
-                  String _key12; // required
-                  int _val13; // required
-                  _key12 = iprot.readString();
-                  _val13 = iprot.readI32();
-                  struct.nameToTypePtr.put(_key12, _val13);
+                  String _key22; // required
+                  int _val23; // required
+                  _key22 = iprot.readString();
+                  _val23 = iprot.readI32();
+                  struct.nameToTypePtr.put(_key22, _val23);
                 }
                 iprot.readMapEnd();
               }
@@ -389,10 +389,10 @@ public class TUnionTypeEntry implements org.apache.thrift.TBase<TUnionTypeEntry,
         oprot.writeFieldBegin(NAME_TO_TYPE_PTR_FIELD_DESC);
         {
           oprot.writeMapBegin(new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.I32, struct.nameToTypePtr.size()));
-          for (Map.Entry<String, Integer> _iter14 : struct.nameToTypePtr.entrySet())
+          for (Map.Entry<String, Integer> _iter24 : struct.nameToTypePtr.entrySet())
           {
-            oprot.writeString(_iter14.getKey());
-            oprot.writeI32(_iter14.getValue());
+            oprot.writeString(_iter24.getKey());
+            oprot.writeI32(_iter24.getValue());
           }
           oprot.writeMapEnd();
         }
@@ -417,10 +417,10 @@ public class TUnionTypeEntry implements org.apache.thrift.TBase<TUnionTypeEntry,
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.nameToTypePtr.size());
-        for (Map.Entry<String, Integer> _iter15 : struct.nameToTypePtr.entrySet())
+        for (Map.Entry<String, Integer> _iter25 : struct.nameToTypePtr.entrySet())
         {
-          oprot.writeString(_iter15.getKey());
-          oprot.writeI32(_iter15.getValue());
+          oprot.writeString(_iter25.getKey());
+          oprot.writeI32(_iter25.getValue());
         }
       }
     }
@@ -429,15 +429,15 @@ public class TUnionTypeEntry implements org.apache.thrift.TBase<TUnionTypeEntry,
     public void read(org.apache.thrift.protocol.TProtocol prot, TUnionTypeEntry struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TMap _map16 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.I32, iprot.readI32());
-        struct.nameToTypePtr = new HashMap<String,Integer>(2*_map16.size);
-        for (int _i17 = 0; _i17 < _map16.size; ++_i17)
+        org.apache.thrift.protocol.TMap _map26 = new org.apache.thrift.protocol.TMap(org.apache.thrift.protocol.TType.STRING, org.apache.thrift.protocol.TType.I32, iprot.readI32());
+        struct.nameToTypePtr = new HashMap<String,Integer>(2*_map26.size);
+        for (int _i27 = 0; _i27 < _map26.size; ++_i27)
         {
-          String _key18; // required
-          int _val19; // required
-          _key18 = iprot.readString();
-          _val19 = iprot.readI32();
-          struct.nameToTypePtr.put(_key18, _val19);
+          String _key28; // required
+          int _val29; // required
+          _key28 = iprot.readString();
+          _val29 = iprot.readI32();
+          struct.nameToTypePtr.put(_key28, _val29);
         }
       }
       struct.setNameToTypePtrIsSet(true);

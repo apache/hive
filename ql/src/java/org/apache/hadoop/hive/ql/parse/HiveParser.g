@@ -952,8 +952,12 @@ alterStatementChangeColPosition
 alterStatementSuffixAddPartitions
 @init { msgs.push("add partition statement"); }
 @after { msgs.pop(); }
-    : identifier KW_ADD ifNotExists? partitionSpec partitionLocation? (partitionSpec partitionLocation?)*
-    -> ^(TOK_ALTERTABLE_ADDPARTS identifier ifNotExists? (partitionSpec partitionLocation?)+)
+    : identifier KW_ADD ifNotExists? alterStatementSuffixAddPartitionsElement+
+    -> ^(TOK_ALTERTABLE_ADDPARTS identifier ifNotExists? alterStatementSuffixAddPartitionsElement+)
+    ;
+
+alterStatementSuffixAddPartitionsElement
+    : partitionSpec partitionLocation?
     ;
 
 alterStatementSuffixTouch
