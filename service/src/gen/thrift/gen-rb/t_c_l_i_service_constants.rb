@@ -21,6 +21,7 @@ PRIMITIVE_TYPES = Set.new([
     15,
     16,
     17,
+    18,
 ])
 
 COMPLEX_TYPES = Set.new([
@@ -54,5 +55,8 @@ TYPE_NAMES = {
     15 => %q"DECIMAL",
     16 => %q"NULL",
     17 => %q"DATE",
+    18 => %q"VARCHAR",
 }
+
+CHARACTER_MAXIMUM_LENGTH = %q"characterMaximumLength"
 

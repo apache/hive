@@ -350,14 +350,14 @@ public class TTypeDesc implements org.apache.thrift.TBase<TTypeDesc, TTypeDesc._
           case 1: // TYPES
             if (schemeField.type == org.apache.thrift.protocol.TType.LIST) {
               {
-                org.apache.thrift.protocol.TList _list20 = iprot.readListBegin();
-                struct.types = new ArrayList<TTypeEntry>(_list20.size);
-                for (int _i21 = 0; _i21 < _list20.size; ++_i21)
+                org.apache.thrift.protocol.TList _list30 = iprot.readListBegin();
+                struct.types = new ArrayList<TTypeEntry>(_list30.size);
+                for (int _i31 = 0; _i31 < _list30.size; ++_i31)
                 {
-                  TTypeEntry _elem22; // required
-                  _elem22 = new TTypeEntry();
-                  _elem22.read(iprot);
-                  struct.types.add(_elem22);
+                  TTypeEntry _elem32; // optional
+                  _elem32 = new TTypeEntry();
+                  _elem32.read(iprot);
+                  struct.types.add(_elem32);
                 }
                 iprot.readListEnd();
               }
@@ -383,9 +383,9 @@ public class TTypeDesc implements org.apache.thrift.TBase<TTypeDesc, TTypeDesc._
         oprot.writeFieldBegin(TYPES_FIELD_DESC);
         {
           oprot.writeListBegin(new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, struct.types.size()));
-          for (TTypeEntry _iter23 : struct.types)
+          for (TTypeEntry _iter33 : struct.types)
           {
-            _iter23.write(oprot);
+            _iter33.write(oprot);
           }
           oprot.writeListEnd();
         }
@@ -410,9 +410,9 @@ public class TTypeDesc implements org.apache.thrift.TBase<TTypeDesc, TTypeDesc._
       TTupleProtocol oprot = (TTupleProtocol) prot;
       {
         oprot.writeI32(struct.types.size());
-        for (TTypeEntry _iter24 : struct.types)
+        for (TTypeEntry _iter34 : struct.types)
         {
-          _iter24.write(oprot);
+          _iter34.write(oprot);
         }
       }
     }
@@ -421,14 +421,14 @@ public class TTypeDesc implements org.apache.thrift.TBase<TTypeDesc, TTypeDesc._
     public void read(org.apache.thrift.protocol.TProtocol prot, TTypeDesc struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
       {
-        org.apache.thrift.protocol.TList _list25 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
-        struct.types = new ArrayList<TTypeEntry>(_list25.size);
-        for (int _i26 = 0; _i26 < _list25.size; ++_i26)
+        org.apache.thrift.protocol.TList _list35 = new org.apache.thrift.protocol.TList(org.apache.thrift.protocol.TType.STRUCT, iprot.readI32());
+        struct.types = new ArrayList<TTypeEntry>(_list35.size);
+        for (int _i36 = 0; _i36 < _list35.size; ++_i36)
         {
-          TTypeEntry _elem27; // required
-          _elem27 = new TTypeEntry();
-          _elem27.read(iprot);
-          struct.types.add(_elem27);
+          TTypeEntry _elem37; // optional
+          _elem37 = new TTypeEntry();
+          _elem37.read(iprot);
+          struct.types.add(_elem37);
         }
       }
       struct.setTypesIsSet(true);
