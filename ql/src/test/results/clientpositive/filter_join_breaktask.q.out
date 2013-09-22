@@ -161,6 +161,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
+            GatherStats: false
             Reduce Output Operator
               key expressions:
                     expr: _col6

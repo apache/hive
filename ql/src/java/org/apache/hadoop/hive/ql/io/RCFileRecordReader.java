@@ -19,14 +19,14 @@
 package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Map;
 import java.util.WeakHashMap;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.RCFile.KeyBuffer;
 import org.apache.hadoop.hive.ql.io.RCFile.Reader;
 import org.apache.hadoop.hive.serde2.columnar.BytesRefArrayWritable;
@@ -34,8 +34,6 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.util.ReflectionUtils;
-
-import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
  * RCFileRecordReader.
@@ -71,7 +69,7 @@ public class RCFileRecordReader<K extends LongWritable, V extends BytesRefArrayW
 
     public void put(FileSplit split, long endSync) {
       Path path = split.getPath();
-      long end = split.getStart() + split.getLength();       
+      long end = split.getStart() + split.getLength();
       String key = path.toString()+"+"+String.format("%d",end);
 
       RCFileSyncEntry entry = new RCFileSyncEntry();

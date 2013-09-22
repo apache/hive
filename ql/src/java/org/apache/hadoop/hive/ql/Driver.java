@@ -615,14 +615,8 @@ public class Driver implements CommandProcessor {
             List<Integer> neededColumnIds = tableScanOp.getNeededColumnIDs();
             List<FieldSchema> columns = tbl.getCols();
             List<String> cols = new ArrayList<String>();
-            if (neededColumnIds != null && neededColumnIds.size() > 0) {
-              for (int i = 0; i < neededColumnIds.size(); i++) {
-                cols.add(columns.get(neededColumnIds.get(i)).getName());
-              }
-            } else {
-              for (int i = 0; i < columns.size(); i++) {
-                cols.add(columns.get(i).getName());
-              }
+            for (int i = 0; i < neededColumnIds.size(); i++) {
+              cols.add(columns.get(neededColumnIds.get(i)).getName());
             }
             //map may not contain all sources, since input list may have been optimized out
             //or non-existent tho such sources may still be referenced by the TableScanOperator

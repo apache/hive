@@ -562,7 +562,6 @@ public class HiveConf extends Configuration {
     HIVE_COMBINE_INPUT_FORMAT_SUPPORTS_SPLITTABLE("hive.hadoop.supports.splittable.combineinputformat", false),
 
     // Optimizer
-    HIVEOPTCP("hive.optimize.cp", true), // column pruner
     HIVEOPTINDEXFILTER("hive.optimize.index.filter", false), // automatically use indexes
     HIVEINDEXAUTOUPDATE("hive.optimize.index.autoupdate", false), //automatically update stale indexes
     HIVEOPTPPD("hive.optimize.ppd", true), // predicate pushdown

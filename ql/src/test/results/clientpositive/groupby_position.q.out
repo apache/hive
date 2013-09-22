@@ -149,6 +149,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -424,6 +425,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -669,6 +671,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -694,7 +697,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT t.key, t.value
 FROM (SELECT b.key as key, count(1) as value FROM src b WHERE b.key <= 20 GROUP BY 1) t
@@ -863,6 +865,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -878,6 +881,7 @@ STAGE PLANS:
                     expr: _col1
                     type: string
         $INTNAME1 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -923,6 +927,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col0

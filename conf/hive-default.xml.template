@@ -461,12 +461,6 @@
 </property>
 
 <property>
-  <name>hive.optimize.cp</name>
-  <value>true</value>
-  <description>Whether to enable column pruner</description>
-</property>
-
-<property>
   <name>hive.optimize.index.filter</name>
   <value>false</value>
   <description>Whether to enable automatic use of indexes</description>

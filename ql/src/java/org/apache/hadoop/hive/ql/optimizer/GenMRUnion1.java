@@ -19,15 +19,12 @@
 package org.apache.hadoop.hive.ql.optimizer;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.Operator;
-import org.apache.hadoop.hive.ql.exec.OperatorFactory;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
@@ -41,12 +38,10 @@ import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcContext.UnionParse
 import org.apache.hadoop.hive.ql.optimizer.unionproc.UnionProcFactory;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 
 /**
  * Processor for the rule - TableScan followed by Union.
@@ -131,33 +126,15 @@ public class GenMRUnion1 implements NodeProcessor {
     Context baseCtx = parseCtx.getContext();
     String taskTmpDir = baseCtx.getMRTmpFileURI();
 
-    // Create a file sink operator for this file name
-    Operator<? extends OperatorDesc> fs_op = OperatorFactory.get(
-        new FileSinkDesc(taskTmpDir, tt_desc, parseCtx.getConf().getBoolVar(
-            HiveConf.ConfVars.COMPRESSINTERMEDIATE)), parent.getSchema());
-
-    assert parent.getChildOperators().size() == 1;
-    parent.getChildOperators().set(0, fs_op);
-
-    List<Operator<? extends OperatorDesc>> parentOpList =
-        new ArrayList<Operator<? extends OperatorDesc>>();
-    parentOpList.add(parent);
-    fs_op.setParentOperators(parentOpList);
-
-    // Create a dummy table scan operator
-    Operator<? extends OperatorDesc> ts_op = OperatorFactory.get(
-        new TableScanDesc(), parent.getSchema());
-    List<Operator<? extends OperatorDesc>> childOpList =
-        new ArrayList<Operator<? extends OperatorDesc>>();
-    childOpList.add(child);
-    ts_op.setChildOperators(childOpList);
-    child.replaceParent(parent, ts_op);
+    // Create the temporary file, its corresponding FileSinkOperaotr, and
+    // its corresponding TableScanOperator.
+    TableScanOperator tableScanOp =
+        GenMapRedUtils.createTemporaryFile(parent, child, taskTmpDir, tt_desc, parseCtx);
 
     // Add the path to alias mapping
-
     uCtxTask.addTaskTmpDir(taskTmpDir);
     uCtxTask.addTTDesc(tt_desc);
-    uCtxTask.addListTopOperators(ts_op);
+    uCtxTask.addListTopOperators(tableScanOp);
 
     // The union task is empty. The files created for all the inputs are
     // assembled in the union context and later used to initialize the union

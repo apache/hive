@@ -127,11 +127,13 @@ public abstract class HCatBaseInputFormat
 
       HCatSchema allCols = new HCatSchema(new LinkedList<HCatFieldSchema>());
       for (HCatFieldSchema field :
-        inputJobInfo.getTableInfo().getDataColumns().getFields())
+        inputJobInfo.getTableInfo().getDataColumns().getFields()) {
         allCols.append(field);
+      }
       for (HCatFieldSchema field :
-        inputJobInfo.getTableInfo().getPartitionColumns().getFields())
+        inputJobInfo.getTableInfo().getPartitionColumns().getFields()) {
         allCols.append(field);
+      }
 
       HCatUtil.copyJobPropertiesToJobConf(jobProperties, jobConf);
 
@@ -227,6 +229,7 @@ public abstract class HCatBaseInputFormat
    * @see org.apache.hive.hcatalog.mapreduce.HCatBaseInputFormat#getTableSchema(org.apache.hadoop.conf.Configuration)
    * @deprecated Use {@link #getTableSchema(org.apache.hadoop.conf.Configuration)}
    */
+  @Deprecated
   public static HCatSchema getTableSchema(JobContext context)
     throws IOException {
     return getTableSchema(context.getConfiguration());
@@ -247,11 +250,13 @@ public abstract class HCatBaseInputFormat
     InputJobInfo inputJobInfo = getJobInfo(conf);
     HCatSchema allCols = new HCatSchema(new LinkedList<HCatFieldSchema>());
     for (HCatFieldSchema field :
-      inputJobInfo.getTableInfo().getDataColumns().getFields())
+      inputJobInfo.getTableInfo().getDataColumns().getFields()) {
       allCols.append(field);
+    }
     for (HCatFieldSchema field :
-      inputJobInfo.getTableInfo().getPartitionColumns().getFields())
+      inputJobInfo.getTableInfo().getPartitionColumns().getFields()) {
       allCols.append(field);
+    }
     return allCols;
   }
 

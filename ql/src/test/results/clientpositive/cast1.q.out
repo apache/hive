@@ -85,6 +85,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -98,6 +99,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
             File Output Operator
               compressed: false
               GlobalTableId: 0

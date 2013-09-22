@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.NullStructSerDe;
 
 /**
@@ -128,12 +129,15 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
       TableScanOperator node = (TableScanOperator) nd;
+      TableScanOperator tsOp = (TableScanOperator) nd;
       WalkerCtx walkerCtx = (WalkerCtx) procCtx;
-      if (((node.getNeededColumnIDs() == null) || (node.getNeededColumnIDs().size() == 0))
-          && ((node.getConf() == null) ||
-              (node.getConf().getVirtualCols() == null) ||
-              (node.getConf().getVirtualCols().isEmpty()))) {
-        walkerCtx.setMayBeMetadataOnly(node);
+      List<Integer> colIDs = tsOp.getNeededColumnIDs();
+      TableScanDesc desc = tsOp.getConf();
+      boolean noColNeeded = (colIDs == null) || (colIDs.isEmpty());
+      boolean noVCneeded = (desc == null) || (desc.getVirtualCols() == null)
+                             || (desc.getVirtualCols().isEmpty());
+      if (noColNeeded && noVCneeded) {
+        walkerCtx.setMayBeMetadataOnly(tsOp);
       }
       return nd;
     }

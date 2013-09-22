@@ -33,6 +33,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.persistence.RowContainer;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
@@ -125,8 +126,8 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
 
     int bucketSize;
 
-    // For backwards compatibility reasons we honor the older 
-    // HIVEMAPJOINBUCKETCACHESIZE if set different from default. 
+    // For backwards compatibility reasons we honor the older
+    // HIVEMAPJOINBUCKETCACHESIZE if set different from default.
     // By hive 0.13 we should remove this code.
     int oldVar = HiveConf.getIntVar(hconf, HiveConf.ConfVars.HIVEMAPJOINBUCKETCACHESIZE);
     if (oldVar != 100) {
@@ -186,34 +187,29 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
       String alias = entry.getKey();
       FetchWork fetchWork = entry.getValue();
 
-      Operator<? extends OperatorDesc> forwardOp = aliasToWork.get(alias);
-      forwardOp.setExecContext(getExecContext());
+      JobConf jobClone = new JobConf(hconf);
 
-      JobConf jobClone = cloneJobConf(hconf, forwardOp);
+      TableScanOperator ts = (TableScanOperator)aliasToWork.get(alias);
+      // push down projections
+      ColumnProjectionUtils.appendReadColumns(
+          jobClone, ts.getNeededColumnIDs(), ts.getNeededColumns());
+      // push down filters
+      HiveInputFormat.pushFilters(jobClone, ts);
+
+
+      ts.setExecContext(getExecContext());
+
       FetchOperator fetchOp = new FetchOperator(fetchWork, jobClone);
-      forwardOp.initialize(jobClone, new ObjectInspector[]{fetchOp.getOutputObjectInspector()});
+      ts.initialize(jobClone, new ObjectInspector[]{fetchOp.getOutputObjectInspector()});
       fetchOp.clearFetchContext();
 
       DummyStoreOperator sinkOp = aliasToSinkWork.get(alias);
 
-      MergeQueue mergeQueue = new MergeQueue(alias, fetchWork, jobClone, forwardOp, sinkOp);
+      MergeQueue mergeQueue = new MergeQueue(alias, fetchWork, jobClone, ts, sinkOp);
 
       aliasToMergeQueue.put(alias, mergeQueue);
       l4j.info("fetch operators for " + alias + " initialized");
     }
-  }
-
-  private JobConf cloneJobConf(Configuration hconf, Operator<?> op) {
-    JobConf jobClone = new JobConf(hconf);
-    if (op instanceof TableScanOperator) {
-      List<Integer> list = ((TableScanOperator)op).getNeededColumnIDs();
-      if (list != null) {
-        ColumnProjectionUtils.appendReadColumnIDs(jobClone, list);
-      }
-    } else {
-      ColumnProjectionUtils.setFullyReadColumns(jobClone);
-    }
-    return jobClone;
   }
 
   private byte tagForAlias(String alias) {
