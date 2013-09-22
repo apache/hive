@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.serde2.columnar;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -26,11 +27,9 @@ import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.serde2.ByteStream;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazyFactory;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
@@ -79,9 +78,10 @@ public class ColumnarSerDe extends ColumnarSerDeBase {
    *
    * @see SerDe#initialize(Configuration, Properties)
    */
-  public void initialize(Configuration job, Properties tbl) throws SerDeException {
+  @Override
+  public void initialize(Configuration conf, Properties tbl) throws SerDeException {
 
-    serdeParams = LazySimpleSerDe.initSerdeParams(job, tbl, getClass().getName());
+    serdeParams = LazySimpleSerDe.initSerdeParams(conf, tbl, getClass().getName());
 
     // Create the ObjectInspectors for the fields. Note: Currently
     // ColumnarObject uses same ObjectInpector as LazyStruct
@@ -90,14 +90,20 @@ public class ColumnarSerDe extends ColumnarSerDeBase {
             .getSeparators(), serdeParams.getNullSequence(), serdeParams
             .isEscaped(), serdeParams.getEscapeChar());
 
-    java.util.ArrayList<Integer> notSkipIDs = ColumnProjectionUtils.getReadColumnIDs(job);
-
-    cachedLazyStruct = new ColumnarStruct(cachedObjectInspector, notSkipIDs,
-        serdeParams.getNullSequence());
-
     int size = serdeParams.getColumnTypes().size();
+    List<Integer> notSkipIDs = new ArrayList<Integer>();
+    if (conf == null || ColumnProjectionUtils.isReadAllColumns(conf)) {
+      for (int i = 0; i < size; i++ ) {
+        notSkipIDs.add(i);
+      }
+    } else {
+      notSkipIDs = ColumnProjectionUtils.getReadColumnIDs(conf);
+    }
+    cachedLazyStruct = new ColumnarStruct(
+        cachedObjectInspector, notSkipIDs, serdeParams.getNullSequence());
+
     super.initialize(size);
-    LOG.debug("ColumnarSerDe initialized with: columnNames="
+    LOG.info("ColumnarSerDe initialized with: columnNames="
         + serdeParams.getColumnNames() + " columnTypes="
         + serdeParams.getColumnTypes() + " separator="
         + Arrays.asList(serdeParams.getSeparators()) + " nullstring="
@@ -114,6 +120,7 @@ public class ColumnarSerDe extends ColumnarSerDeBase {
    * @return The serialized Writable object
    * @see SerDe#serialize(Object, ObjectInspector)
    */
+  @Override
   public Writable serialize(Object obj, ObjectInspector objInspector) throws SerDeException {
 
     if (objInspector.getCategory() != Category.STRUCT) {

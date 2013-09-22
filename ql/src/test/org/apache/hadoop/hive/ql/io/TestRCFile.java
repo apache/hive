@@ -18,6 +18,14 @@
 
 package org.apache.hadoop.hive.ql.io;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,8 +35,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.Random;
-
-import static org.junit.Assert.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -58,11 +64,11 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.compress.CompressionCodec;
 import org.apache.hadoop.io.compress.DefaultCodec;
+import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.InputSplit;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
-import org.apache.hadoop.mapred.FileSplit;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -83,20 +89,21 @@ public class TestRCFile {
 
   // Data
 
-  private Writable[] expectedFieldsData = {
+  private final Writable[] expectedFieldsData = {
       new ByteWritable((byte) 123), new ShortWritable((short) 456),
       new IntWritable(789), new LongWritable(1000), new DoubleWritable(5.3),
       new Text("hive and hadoop"), null, null};
 
-  private Object[] expectedPartitalFieldsData = {null, null,
+  private final Object[] expectedPartitalFieldsData = {null, null,
       new IntWritable(789), new LongWritable(1000), null, null, null, null};
-  private BytesRefArrayWritable patialS = new BytesRefArrayWritable();
+  private final BytesRefArrayWritable patialS = new BytesRefArrayWritable();
   private byte[][] bytesArray;
   private BytesRefArrayWritable s;
 
   @Before
   public void setup() throws Exception {
     conf = new Configuration();
+    ColumnProjectionUtils.setReadAllColumns(conf);
     fs = FileSystem.getLocal(conf);
     dir = new Path(System.getProperty("test.data.dir", ".") + "/mapred");
     file = new Path(dir, "test_rcfile");
@@ -511,7 +518,7 @@ public class TestRCFile {
       throws IOException, SerDeException {
     LOG.debug("reading " + count + " records");
     long start = System.currentTimeMillis();
-    ColumnProjectionUtils.setFullyReadColumns(conf);
+    ColumnProjectionUtils.setReadAllColumns(conf);
     RCFile.Reader reader = new RCFile.Reader(fs, file, conf);
 
     LongWritable rowID = new LongWritable();
@@ -556,7 +563,7 @@ public class TestRCFile {
     java.util.ArrayList<Integer> readCols = new java.util.ArrayList<Integer>();
     readCols.add(Integer.valueOf(2));
     readCols.add(Integer.valueOf(3));
-    ColumnProjectionUtils.setReadColumnIDs(conf, readCols);
+    ColumnProjectionUtils.appendReadColumns(conf, readCols);
     RCFile.Reader reader = new RCFile.Reader(fs, file, conf);
 
     LongWritable rowID = new LongWritable();

@@ -84,6 +84,7 @@ STAGE PLANS:
             limit: -1
       Alias -> Map Local Operator Tree:
         $INTNAME 
+          TableScan
             HashTable Sink Operator
               condition expressions:
                 0 
@@ -96,6 +97,7 @@ STAGE PLANS:
                 2 [Column[_col0]]
               Position of Big Table: 1
         $INTNAME1 
+          TableScan
             HashTable Sink Operator
               condition expressions:
                 0 
@@ -112,6 +114,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME2 
+          TableScan
             Map Join Operator
               condition map:
                    Right Outer Join0 to 1
@@ -153,6 +156,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -189,6 +193,7 @@ STAGE PLANS:
             limit: -1
       Alias -> Map Local Operator Tree:
         $INTNAME1 
+          TableScan
             HashTable Sink Operator
               condition expressions:
                 0 
@@ -201,6 +206,7 @@ STAGE PLANS:
                 2 [Column[_col0]]
               Position of Big Table: 2
         $INTNAME2 
+          TableScan
             HashTable Sink Operator
               condition expressions:
                 0 
@@ -217,6 +223,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Map Join Operator
               condition map:
                    Right Outer Join0 to 1
@@ -258,6 +265,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -268,6 +276,7 @@ STAGE PLANS:
                     type: string
               tag: 2
         $INTNAME1 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -278,6 +287,7 @@ STAGE PLANS:
                     type: string
               tag: 0
         $INTNAME2 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col0

@@ -230,6 +230,9 @@
                           </void> 
                          </object> 
                         </void> 
+                        <void property="conf"> 
+                         <object class="org.apache.hadoop.hive.ql.plan.TableScanDesc"/> 
+                        </void> 
                         <void property="counterNames"> 
                          <object class="java.util.ArrayList"> 
                           <void method="add"> 
@@ -243,6 +246,26 @@
                           </void> 
                           <void method="add"> 
                            <string>CNTR_NAME_TS_10_FATAL_ERROR</string> 
+                          </void> 
+                         </object> 
+                        </void> 
+                        <void property="neededColumnIDs"> 
+                         <object class="java.util.ArrayList"> 
+                          <void method="add"> 
+                           <int>0</int> 
+                          </void> 
+                          <void method="add"> 
+                           <int>1</int> 
+                          </void> 
+                         </object> 
+                        </void> 
+                        <void property="neededColumns"> 
+                         <object class="java.util.ArrayList"> 
+                          <void method="add"> 
+                           <string>key</string> 
+                          </void> 
+                          <void method="add"> 
+                           <string>value</string> 
                           </void> 
                          </object> 
                         </void> 
@@ -743,6 +766,9 @@
                           </void> 
                          </object> 
                         </void> 
+                        <void property="conf"> 
+                         <object class="org.apache.hadoop.hive.ql.plan.TableScanDesc"/> 
+                        </void> 
                         <void property="counterNames"> 
                          <object class="java.util.ArrayList"> 
                           <void method="add"> 
@@ -756,6 +782,26 @@
                           </void> 
                           <void method="add"> 
                            <string>CNTR_NAME_TS_12_FATAL_ERROR</string> 
+                          </void> 
+                         </object> 
+                        </void> 
+                        <void property="neededColumnIDs"> 
+                         <object class="java.util.ArrayList"> 
+                          <void method="add"> 
+                           <int>0</int> 
+                          </void> 
+                          <void method="add"> 
+                           <int>1</int> 
+                          </void> 
+                         </object> 
+                        </void> 
+                        <void property="neededColumns"> 
+                         <object class="java.util.ArrayList"> 
+                          <void method="add"> 
+                           <string>key</string> 
+                          </void> 
+                          <void method="add"> 
+                           <string>value</string> 
                           </void> 
                          </object> 
                         </void> 
@@ -1260,6 +1306,9 @@
                           </void> 
                          </object> 
                         </void> 
+                        <void property="conf"> 
+                         <object class="org.apache.hadoop.hive.ql.plan.TableScanDesc"/> 
+                        </void> 
                         <void property="counterNames"> 
                          <object class="java.util.ArrayList"> 
                           <void method="add"> 
@@ -1273,6 +1322,26 @@
                           </void> 
                           <void method="add"> 
                            <string>CNTR_NAME_TS_14_FATAL_ERROR</string> 
+                          </void> 
+                         </object> 
+                        </void> 
+                        <void property="neededColumnIDs"> 
+                         <object class="java.util.ArrayList"> 
+                          <void method="add"> 
+                           <int>0</int> 
+                          </void> 
+                          <void method="add"> 
+                           <int>1</int> 
+                          </void> 
+                         </object> 
+                        </void> 
+                        <void property="neededColumns"> 
+                         <object class="java.util.ArrayList"> 
+                          <void method="add"> 
+                           <string>key</string> 
+                          </void> 
+                          <void method="add"> 
+                           <string>value</string> 
                           </void> 
                          </object> 
                         </void> 

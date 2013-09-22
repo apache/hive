@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.rmi.server.UID;
 import java.security.MessageDigest;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -1379,27 +1380,22 @@ public class RCFile {
       columnNumber = Integer.parseInt(metadata.get(
           new Text(COLUMN_NUMBER_METADATA_STR)).toString());
 
-      java.util.ArrayList<Integer> notSkipIDs = ColumnProjectionUtils
+      List<Integer> notSkipIDs = ColumnProjectionUtils
           .getReadColumnIDs(conf);
       boolean[] skippedColIDs = new boolean[columnNumber];
-      if (notSkipIDs.size() > 0) {
-        for (int i = 0; i < skippedColIDs.length; i++) {
-          skippedColIDs[i] = true;
-        }
+      if(ColumnProjectionUtils.isReadAllColumns(conf)) {
+        Arrays.fill(skippedColIDs, false);
+      } else if (notSkipIDs.size() > 0) {
+        Arrays.fill(skippedColIDs, true);
         for (int read : notSkipIDs) {
           if (read < columnNumber) {
             skippedColIDs[read] = false;
           }
         }
       } else {
-        // TODO: if no column name is specified e.g, in select count(1) from tt;
-        // skip all columns, this should be distinguished from the case:
-        // select * from tt;
-        for (int i = 0; i < skippedColIDs.length; i++) {
-          skippedColIDs[i] = false;
-        }
+        // select count(1)
+        Arrays.fill(skippedColIDs, true);
       }
-
       loadColumnNum = columnNumber;
       if (skippedColIDs.length > 0) {
         for (boolean skippedColID : skippedColIDs) {
@@ -1584,7 +1580,7 @@ public class RCFile {
         byte[] buffer = new byte[prefix+n];
         n = (int)Math.min(n, end - in.getPos());
         /* fill array with a pattern that will never match sync */
-        Arrays.fill(buffer, (byte)(~sync[0])); 
+        Arrays.fill(buffer, (byte)(~sync[0]));
         while(n > 0 && (in.getPos() + n) <= end) {
           position = in.getPos();
           in.readFully(buffer, prefix, n);

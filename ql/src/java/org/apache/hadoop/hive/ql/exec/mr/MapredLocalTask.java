@@ -25,7 +25,6 @@ import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
@@ -55,6 +54,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionException;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
@@ -376,20 +376,12 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     for (Map.Entry<String, FetchWork> entry : work.getAliasToFetchWork().entrySet()) {
       JobConf jobClone = new JobConf(job);
 
-      Operator<? extends OperatorDesc> tableScan =
-        work.getAliasToWork().get(entry.getKey());
-      boolean setColumnsNeeded = false;
-      if (tableScan instanceof TableScanOperator) {
-        ArrayList<Integer> list = ((TableScanOperator) tableScan).getNeededColumnIDs();
-        if (list != null) {
-          ColumnProjectionUtils.appendReadColumnIDs(jobClone, list);
-          setColumnsNeeded = true;
-        }
-      }
-
-      if (!setColumnsNeeded) {
-        ColumnProjectionUtils.setFullyReadColumns(jobClone);
-      }
+      TableScanOperator ts = (TableScanOperator)work.getAliasToWork().get(entry.getKey());
+      // push down projections
+      ColumnProjectionUtils.appendReadColumns(
+          jobClone, ts.getNeededColumnIDs(), ts.getNeededColumns());
+      // push down filters
+      HiveInputFormat.pushFilters(jobClone, ts);
 
       // create a fetch operator
       FetchOperator fetchOp = new FetchOperator(entry.getValue(), jobClone);

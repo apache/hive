@@ -17,22 +17,23 @@
  */
 package org.apache.hadoop.hive.serde2.columnar;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe.SerDeParameters;
+import org.apache.hadoop.hive.serde2.lazy.LazyUtils;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryFactory;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.io.Writable;
 
@@ -66,9 +67,17 @@ public class LazyBinaryColumnarSerDe extends ColumnarSerDeBase {
 
     cachedObjectInspector = LazyBinaryFactory.createColumnarStructInspector(
         columnNames, columnTypes);
-    java.util.ArrayList<Integer> notSkipIDs = ColumnProjectionUtils.getReadColumnIDs(conf);
-    cachedLazyStruct = new LazyBinaryColumnarStruct(cachedObjectInspector, notSkipIDs);
     int size = columnTypes.size();
+    List<Integer> notSkipIDs = new ArrayList<Integer>();
+    if (conf == null || ColumnProjectionUtils.isReadAllColumns(conf)) {
+      for (int i = 0; i < size; i++ ) {
+        notSkipIDs.add(i);
+      }
+    } else {
+      notSkipIDs = ColumnProjectionUtils.getReadColumnIDs(conf);
+    }
+    cachedLazyStruct = new LazyBinaryColumnarStruct(cachedObjectInspector, notSkipIDs);
+
     super.initialize(size);
   }
 

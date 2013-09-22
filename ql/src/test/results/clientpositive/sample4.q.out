@@ -161,6 +161,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
+            GatherStats: false
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -226,6 +228,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
+            GatherStats: false
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -292,6 +296,7 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
+
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT s.*
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s

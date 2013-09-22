@@ -105,14 +105,14 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
       throw new IOException("Cannot read more columns than the given table contains.");
     }
 
-    boolean addAll = (readColIDs.size() == 0);
+    boolean readAllColumns = ColumnProjectionUtils.isReadAllColumns(jobConf);
     Scan scan = new Scan();
     boolean empty = true;
 
     // The list of families that have been added to the scan
     List<String> addedFamilies = new ArrayList<String>();
 
-    if (!addAll) {
+    if (!readAllColumns) {
       for (int i : readColIDs) {
         ColumnMapping colMap = columnsMapping.get(i);
         if (colMap.hbaseRowKey) {
@@ -151,7 +151,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
           scan.addColumn(colMap.familyNameBytes, colMap.qualifierNameBytes);
         }
 
-        if (!addAll) {
+        if (!readAllColumns) {
           break;
         }
       }

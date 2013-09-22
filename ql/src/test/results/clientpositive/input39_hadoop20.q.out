@@ -138,6 +138,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -166,7 +167,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select count(1) from t1 join t2 on t1.key=t2.key where t1.ds='1' and t2.ds='1'
 PREHOOK: type: QUERY
