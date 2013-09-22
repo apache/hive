@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
@@ -95,9 +96,10 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   protected void initializeOp(Configuration hconf) throws HiveException {
 
     try {
-      keyEval = new ExprNodeEvaluator[conf.getKeyCols().size()];
+      List<ExprNodeDesc> keys = conf.getKeyCols();
+      keyEval = new ExprNodeEvaluator[keys.size()];
       int i = 0;
-      for (ExprNodeDesc e : conf.getKeyCols()) {
+      for (ExprNodeDesc e : keys) {
         keyEval[i++] = ExprNodeEvaluatorFactory.get(e);
       }
 
@@ -114,7 +116,8 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       partitionEval = new ExprNodeEvaluator[conf.getPartitionCols().size()];
       i = 0;
       for (ExprNodeDesc e : conf.getPartitionCols()) {
-        partitionEval[i++] = ExprNodeEvaluatorFactory.get(e);
+        int index = ExprNodeDescUtils.indexOf(e, keys);
+        partitionEval[i++] = index < 0 ? ExprNodeEvaluatorFactory.get(e): keyEval[index];
       }
 
       tag = conf.getTag();
@@ -277,27 +280,27 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       }
 
       // Evaluate the keys
-      Object[] distributionKeys = new Object[numDistributionKeys];
       for (int i = 0; i < numDistributionKeys; i++) {
-        distributionKeys[i] = keyEval[i].evaluate(row);
+        cachedKeys[0][i] = keyEval[i].evaluate(row);
       }
-
       if (numDistinctExprs > 0) {
         // with distinct key(s)
         for (int i = 0; i < numDistinctExprs; i++) {
-          System.arraycopy(distributionKeys, 0, cachedKeys[i], 0, numDistributionKeys);
-          Object[] distinctParameters =
-            new Object[distinctColIndices.get(i).size()];
+          if (i > 0) {
+            System.arraycopy(cachedKeys[0], 0, cachedKeys[i], 0, numDistributionKeys);
+          }
+          StandardUnion union = (StandardUnion) cachedKeys[i][numDistributionKeys];
+          if (union == null) {
+            cachedKeys[i][numDistributionKeys] =
+              union = new StandardUnion((byte)i, new Object[distinctColIndices.get(i).size()]);
+          }
+          Object[] distinctParameters = (Object[]) union.getObject();
           for (int j = 0; j < distinctParameters.length; j++) {
             distinctParameters[j] =
               keyEval[distinctColIndices.get(i).get(j)].evaluate(row);
           }
-          cachedKeys[i][numDistributionKeys] =
-              new StandardUnion((byte)i, distinctParameters);
+          union.setTag((byte) i);
         }
-      } else {
-        // no distinct key
-        System.arraycopy(distributionKeys, 0, cachedKeys[0], 0, numDistributionKeys);
       }
 
       BytesWritable value = null;
