@@ -55,6 +55,10 @@ public class TestVectorStringExpressions {
   private static byte[] mixedUpUpper;
   private static byte[] multiByte;
   private static byte[] mixPercentPattern;
+  private static byte[] blanksLeft;
+  private static byte[] blanksRight;
+  private static byte[] blanksBoth;
+  private static byte[] blankString;
 
   static {
     try {
@@ -72,6 +76,10 @@ public class TestVectorStringExpressions {
       mixPercentPattern = "mix%".getBytes("UTF-8"); // for use as wildcard pattern to test LIKE
       multiByte = new byte[100];
       addMultiByteChars(multiByte);
+      blanksLeft = "  foo".getBytes("UTF-8");
+      blanksRight = "foo  ".getBytes("UTF-8");
+      blanksBoth = "  foo  ".getBytes("UTF-8");
+      blankString = "  ".getBytes("UTF-8");
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
     }
@@ -1404,5 +1412,82 @@ public class TestVectorStringExpressions {
             multiByte, 6, 10 - 6, outCol.vector[0], outCol.start[0], outCol.length[0]
         )
     );
+  }
+  
+  @Test
+  public void testVectorLTrim() {
+    VectorizedRowBatch b = makeTrimBatch();
+    VectorExpression expr = new StringLTrim(0, 1);
+    expr.evaluate(b);
+    BytesColumnVector outV = (BytesColumnVector) b.cols[1];
+    Assert.assertEquals(0,
+        StringExpr.compare(emptyString, 0, 0, outV.vector[0], 0, 0));
+    Assert.assertEquals(0,
+        StringExpr.compare(blanksLeft, 2, 3, outV.vector[1], outV.start[1], outV.length[1]));
+    Assert.assertEquals(0, 
+        StringExpr.compare(blanksRight, 0, 5, outV.vector[2], outV.start[2], outV.length[2]));
+    Assert.assertEquals(0,
+        StringExpr.compare(blanksBoth, 2, 5, outV.vector[3], outV.start[3], outV.length[3]));
+    Assert.assertEquals(0,
+        StringExpr.compare(red, 0, 3, outV.vector[4], outV.start[4], outV.length[4]));
+    Assert.assertEquals(0,
+        StringExpr.compare(blankString, 0, 0, outV.vector[5], outV.start[5], outV.length[5]));
+  }
+
+  @Test
+  public void testVectorRTrim() {
+    VectorizedRowBatch b = makeTrimBatch();
+    VectorExpression expr = new StringRTrim(0, 1);
+    expr.evaluate(b);
+    BytesColumnVector outV = (BytesColumnVector) b.cols[1];
+    Assert.assertEquals(0,
+        StringExpr.compare(emptyString, 0, 0, outV.vector[0], 0, 0));
+    Assert.assertEquals(0,
+        StringExpr.compare(blanksLeft, 0, 5, outV.vector[1], outV.start[1], outV.length[1]));
+    Assert.assertEquals(0, 
+        StringExpr.compare(blanksRight, 0, 3, outV.vector[2], outV.start[2], outV.length[2]));
+    Assert.assertEquals(0,
+        StringExpr.compare(blanksBoth, 0, 5, outV.vector[3], outV.start[3], outV.length[3]));
+    Assert.assertEquals(0,
+        StringExpr.compare(red, 0, 3, outV.vector[4], outV.start[4], outV.length[4]));
+    Assert.assertEquals(0,
+        StringExpr.compare(blankString, 0, 0, outV.vector[5], outV.start[5], outV.length[5]));
+  }
+  
+  @Test
+  public void testVectorTrim() {
+    VectorizedRowBatch b = makeTrimBatch();
+    VectorExpression expr = new StringTrim(0, 1);
+    expr.evaluate(b);
+    BytesColumnVector outV = (BytesColumnVector) b.cols[1];
+    Assert.assertEquals(0,
+        StringExpr.compare(emptyString, 0, 0, outV.vector[0], 0, 0));
+    Assert.assertEquals(0,
+        StringExpr.compare(blanksLeft, 2, 3, outV.vector[1], outV.start[1], outV.length[1]));
+    Assert.assertEquals(0, 
+        StringExpr.compare(blanksRight, 0, 3, outV.vector[2], outV.start[2], outV.length[2]));
+    Assert.assertEquals(0,
+        StringExpr.compare(blanksBoth, 2, 3, outV.vector[3], outV.start[3], outV.length[3]));
+    Assert.assertEquals(0,
+        StringExpr.compare(red, 0, 3, outV.vector[4], outV.start[4], outV.length[4]));
+    Assert.assertEquals(0,
+        StringExpr.compare(blankString, 0, 0, outV.vector[5], outV.start[5], outV.length[5]));
+  }
+  
+  // Make a batch to test the trim functions.
+  private VectorizedRowBatch makeTrimBatch() {
+    VectorizedRowBatch b = new VectorizedRowBatch(2);
+    BytesColumnVector inV = new BytesColumnVector();
+    BytesColumnVector outV = new BytesColumnVector();
+    b.cols[0] = inV;
+    b.cols[1] = outV;
+    inV.setRef(0, emptyString, 0, 0);
+    inV.setRef(1, blanksLeft, 0, blanksLeft.length);
+    inV.setRef(2, blanksRight, 0, blanksRight.length);
+    inV.setRef(3, blanksBoth, 0, blanksBoth.length);
+    inV.setRef(4, red, 0, red.length);
+    inV.setRef(5, blankString, 0, blankString.length);
+    b.size = 5;
+    return b;
   }
  }

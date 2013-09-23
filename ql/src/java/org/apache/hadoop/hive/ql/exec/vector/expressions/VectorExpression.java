@@ -37,7 +37,7 @@ public abstract class VectorExpression implements Serializable {
    * This is the primary method to implement expression logic.
    * @param vrg
    */
-  public abstract void evaluate(VectorizedRowBatch vrg);
+  public abstract void evaluate(VectorizedRowBatch batch);
 
   /**
    * Returns the index of the output column in the array

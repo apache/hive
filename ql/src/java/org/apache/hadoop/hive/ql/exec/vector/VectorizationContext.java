@@ -83,6 +83,7 @@ import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
 import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
 import org.apache.hadoop.hive.ql.udf.UDFHour;
+import org.apache.hadoop.hive.ql.udf.UDFLTrim;
 import org.apache.hadoop.hive.ql.udf.UDFLength;
 import org.apache.hadoop.hive.ql.udf.UDFLike;
 import org.apache.hadoop.hive.ql.udf.UDFMinute;
@@ -94,8 +95,10 @@ import org.apache.hadoop.hive.ql.udf.UDFOPMultiply;
 import org.apache.hadoop.hive.ql.udf.UDFOPNegative;
 import org.apache.hadoop.hive.ql.udf.UDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
+import org.apache.hadoop.hive.ql.udf.UDFRTrim;
 import org.apache.hadoop.hive.ql.udf.UDFSecond;
 import org.apache.hadoop.hive.ql.udf.UDFSubstr;
+import org.apache.hadoop.hive.ql.udf.UDFTrim;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -458,6 +461,7 @@ public class VectorizationContext {
     } else if (udf instanceof GenericUDFConcat) {
       return getConcatExpression(childExpr);
     }
+
     throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
   }
 
@@ -514,6 +518,12 @@ public class VectorizationContext {
       return getUnaryStringExpression("StringLength", "Long", childExpr);
     } else if (cl.equals(UDFSubstr.class)) {
       return getSubstrExpression(childExpr);
+    } else if (cl.equals(UDFLTrim.class)) {
+      return getUnaryStringExpression("StringLTrim", "String", childExpr);
+    } else if (cl.equals(UDFRTrim.class)) {
+      return getUnaryStringExpression("StringRTrim", "String", childExpr);
+    } else if (cl.equals(UDFTrim.class)) {
+      return getUnaryStringExpression("StringTrim", "String", childExpr);
     }
 
     throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
