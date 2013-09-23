@@ -201,6 +201,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -385,6 +386,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Map Join Operator
               condition map:
                    Inner Join 0 to 1

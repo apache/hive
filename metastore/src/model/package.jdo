@@ -899,6 +899,17 @@
         <column name="LAST_ANALYZED" jdbc-type="BIGINT" allows-null="false"/>
       </field>
     </class>
+    <class name="MVersionTable" table="VERSION" identity-type="datastore" detachable="true">
+      <datastore-identity>
+        <column name="VER_ID"/>
+      </datastore-identity>
+      <field name ="schemaVersion">
+        <column name="SCHEMA_VERSION" length="127" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+      <field name ="versionComment">
+        <column name="VERSION_COMMENT" length="255" jdbc-type="VARCHAR" allows-null="false"/>
+      </field>
+    </class>
 
   </package>
 </jdo>

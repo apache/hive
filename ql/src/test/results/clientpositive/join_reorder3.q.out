@@ -277,6 +277,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -332,6 +333,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: (_col4 + 1)
@@ -409,6 +411,7 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+
 
 PREHOOK: query: SELECT /*+ STREAMTABLE(a,c) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key

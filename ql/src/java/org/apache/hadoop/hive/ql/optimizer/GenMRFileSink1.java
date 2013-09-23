@@ -64,7 +64,6 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.InputFormat;
 
@@ -299,7 +298,7 @@ public class GenMRFileSink1 implements NodeProcessor {
     // Create a TableScan operator
     RowSchema inputRS = fsInput.getSchema();
     Operator<? extends OperatorDesc> tsMerge =
-        OperatorFactory.get(TableScanDesc.class, inputRS);
+        GenMapRedUtils.createTemporaryTableScanOperator(inputRS);
 
     // Create a FileSink operator
     TableDesc ts = (TableDesc) fsInputDesc.getTableInfo().clone();

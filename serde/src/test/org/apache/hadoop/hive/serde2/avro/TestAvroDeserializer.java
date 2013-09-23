@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.rmi.server.UID;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -499,5 +500,65 @@ public class TestAvroDeserializer {
     } else {
       assertEquals(expected, soi.getPrimitiveJavaObject(rowElement));
     }
+  }
+
+  @Test
+  public void verifyCaching() throws SerDeException, IOException {
+    Schema s = Schema.parse(TestAvroObjectInspectorGenerator.RECORD_SCHEMA);
+    GenericData.Record record = new GenericData.Record(s);
+    GenericData.Record innerRecord = new GenericData.Record(s.getField("aRecord").schema());
+    innerRecord.put("int1", 42);
+    innerRecord.put("boolean1", true);
+    innerRecord.put("long1", 42432234234l);
+    record.put("aRecord", innerRecord);
+    assertTrue(GENERIC_DATA.validate(s, record));
+
+    AvroGenericRecordWritable garw = Utils.serializeAndDeserializeRecord(record);
+    UID recordReaderID = new UID();
+    garw.setRecordReaderID(recordReaderID);
+    AvroObjectInspectorGenerator aoig = new AvroObjectInspectorGenerator(s);
+
+    AvroDeserializer de = new AvroDeserializer();
+    ArrayList<Object> row =
+        (ArrayList<Object>) de.deserialize(aoig.getColumnNames(), aoig.getColumnTypes(), garw, s);
+
+    assertEquals(1, de.getNoEncodingNeeded().size());
+    assertEquals(0, de.getReEncoderCache().size());
+
+    // Read the record with the same record reader ID
+    row = (ArrayList<Object>) de.deserialize(aoig.getColumnNames(), aoig.getColumnTypes(), garw, s);
+
+    //Expecting not to change the size of internal structures
+    assertEquals(1, de.getNoEncodingNeeded().size());
+    assertEquals(0, de.getReEncoderCache().size());
+
+    //Read the record with **different** record reader ID
+    garw.setRecordReaderID(new UID()); //New record reader ID
+    row = (ArrayList<Object>) de.deserialize(aoig.getColumnNames(), aoig.getColumnTypes(), garw, s);
+
+    //Expecting to change the size of internal structures
+    assertEquals(2, de.getNoEncodingNeeded().size());
+    assertEquals(0, de.getReEncoderCache().size());
+
+  //Read the record with **different** record reader ID and **evolved** schema
+    Schema evolvedSchema = Schema.parse(s.toString());
+    evolvedSchema.getField("aRecord").schema().addProp("Testing", "meaningless");
+    garw.setRecordReaderID(recordReaderID = new UID()); //New record reader ID
+    row =
+            (ArrayList<Object>)de.deserialize(aoig.getColumnNames(), aoig.getColumnTypes(), garw, evolvedSchema);
+
+    //Expecting to change the size of internal structures
+    assertEquals(2, de.getNoEncodingNeeded().size());
+    assertEquals(1, de.getReEncoderCache().size());
+
+  //Read the record with existing record reader ID and same **evolved** schema
+    garw.setRecordReaderID(recordReaderID); //Reuse record reader ID
+    row =
+            (ArrayList<Object>)de.deserialize(aoig.getColumnNames(), aoig.getColumnTypes(), garw, evolvedSchema);
+
+    //Expecting NOT to change the size of internal structures
+    assertEquals(2, de.getNoEncodingNeeded().size());
+    assertEquals(1, de.getReEncoderCache().size());
+
   }
 }

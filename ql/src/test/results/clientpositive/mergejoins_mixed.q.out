@@ -618,6 +618,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col5
@@ -788,6 +789,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col5
@@ -958,6 +960,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col5
@@ -1112,6 +1115,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col5
@@ -1167,6 +1171,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col4
@@ -1244,6 +1249,7 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+
 
 PREHOOK: query: explain
 select * from a join a b on (a.key=b.key) left outer join a c on (b.value=c.key) full outer join a d on (a.key=d.key)
@@ -1318,6 +1324,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col5
@@ -1373,6 +1380,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col4
@@ -1450,6 +1458,7 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+
 
 PREHOOK: query: explain
 select * from a join a b on (a.key=b.key) right outer join a c on (b.value=c.key) left outer join a d on (a.key=d.key)
@@ -1524,6 +1533,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col5
@@ -1579,6 +1589,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col4
@@ -1657,6 +1668,7 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
+
 PREHOOK: query: explain
 select * from a join a b on (a.key=b.key) right outer join a c on (b.value=c.key) full outer join a d on (a.key=d.key)
 PREHOOK: type: QUERY
@@ -1730,6 +1742,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col5
@@ -1785,6 +1798,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col4
@@ -1862,6 +1876,7 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+
 
 PREHOOK: query: -- ((a-b)-c-d)
 explain
@@ -1937,6 +1952,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col5

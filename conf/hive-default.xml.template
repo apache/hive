@@ -461,12 +461,6 @@
 </property>
 
 <property>
-  <name>hive.optimize.cp</name>
-  <value>true</value>
-  <description>Whether to enable column pruner</description>
-</property>
-
-<property>
   <name>hive.optimize.index.filter</name>
   <value>false</value>
   <description>Whether to enable automatic use of indexes</description>
@@ -1992,6 +1986,18 @@
   This flag should be set to true to enable vectorized mode of query execution.
   The default value is false.
   </description>
+</property>
+
+<property>
+  <name>hive.metastore.schema.verification</name>
+  <value>false</value>
+   <description>
+   Enforce metastore schema version consistency.
+   True: Verify that version information stored in metastore matches with one from Hive jars.  Also disable automatic
+         schema migration attempt. Users are required to manully migrate schema after Hive upgrade which ensures
+         proper metastore schema migration. (Default)
+   False: Warn if the version information stored in metastore doesn't match with one from in Hive jars.
+   </description>
 </property>
 
 </configuration>

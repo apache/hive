@@ -207,6 +207,8 @@ public class TestHCatLoader {
     while (XIter.hasNext()) {
       Tuple t = XIter.next();
       assertEquals(2, t.size());
+      assertNotNull(t.get(0));
+      assertNotNull(t.get(1));
       assertTrue(t.get(0).getClass() == Integer.class);
       assertTrue(t.get(1).getClass() == String.class);
       assertEquals(t.get(0), basicInputData.get(numTuplesRead).first);
@@ -299,6 +301,9 @@ public class TestHCatLoader {
     while (WIter.hasNext()) {
       Tuple t = WIter.next();
       assertTrue(t.size() == 3);
+      assertNotNull(t.get(0));
+      assertNotNull(t.get(1));
+      assertNotNull(t.get(2));
       assertTrue(t.get(0).getClass() == Integer.class);
       assertTrue(t.get(1).getClass() == String.class);
       assertTrue(t.get(2).getClass() == String.class);
@@ -366,6 +371,7 @@ public class TestHCatLoader {
     while (Y2Iter.hasNext()) {
       Tuple t = Y2Iter.next();
       assertEquals(t.size(), 1);
+      assertNotNull(t.get(0));
       assertTrue(t.get(0).getClass() == Integer.class);
       assertEquals(t.get(0), basicInputData.get(numTuplesRead).first);
       numTuplesRead++;
@@ -375,8 +381,10 @@ public class TestHCatLoader {
     while (Y3Iter.hasNext()) {
       Tuple t = Y3Iter.next();
       assertEquals(t.size(), 2);
+      assertNotNull(t.get(0));
       assertTrue(t.get(0).getClass() == String.class);
       assertEquals(t.get(0), basicInputData.get(numTuplesRead).second);
+      assertNotNull(t.get(1));
       assertTrue(t.get(1).getClass() == Integer.class);
       assertEquals(t.get(1), basicInputData.get(numTuplesRead).first);
       numTuplesRead++;

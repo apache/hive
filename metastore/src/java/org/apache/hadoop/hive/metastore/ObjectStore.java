@@ -19,7 +19,6 @@
 package org.apache.hadoop.hive.metastore;
 
 import static org.apache.commons.lang.StringUtils.join;
-import static org.apache.commons.lang.StringUtils.repeat;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -34,10 +33,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
-import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import javax.jdo.JDODataStoreException;
 import javax.jdo.JDOHelper;
 import javax.jdo.JDOObjectNotFoundException;
 import javax.jdo.PersistenceManager;
@@ -119,10 +119,12 @@ import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.model.MType;
+import org.apache.hadoop.hive.metastore.model.MVersionTable;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.ANTLRNoCaseStringStream;
 import org.apache.hadoop.hive.metastore.parser.FilterLexer;
 import org.apache.hadoop.hive.metastore.parser.FilterParser;
 import org.apache.hadoop.util.StringUtils;
+import org.datanucleus.store.rdbms.exceptions.MissingTableException;
 
 /**
  * This class is the interface between the application logic and the database
@@ -163,6 +165,7 @@ public class ObjectStore implements RawStore, Configurable {
   int openTrasactionCalls = 0;
   private Transaction currentTransaction = null;
   private TXN_STATUS transactionStatus = TXN_STATUS.NO_STATE;
+  private final AtomicBoolean isSchemaVerified = new AtomicBoolean(false);
 
   public ObjectStore() {
   }
@@ -5609,4 +5612,131 @@ public class ObjectStore implements RawStore, Configurable {
     return masterKeys;
   }
 
+  // compare hive version and metastore version
+  @Override
+  public void verifySchema() throws MetaException {
+    // If the schema version is already checked, then go ahead and use this metastore
+    if (isSchemaVerified.get()) {
+      return;
+    }
+    checkSchema();
+  }
+
+  private synchronized void checkSchema() throws MetaException {
+    // recheck if it got verified by another thread while we were waiting
+    if (isSchemaVerified.get()) {
+      return;
+    }
+
+    boolean strictValidation =
+      HiveConf.getBoolVar(getConf(), HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION);
+    // read the schema version stored in metastore db
+    String schemaVer = getMetaStoreSchemaVersion();
+    if (schemaVer == null) {
+      // metastore has no schema version information
+      if (strictValidation) {
+            throw new MetaException("Version information not found in metastore. ");
+          } else {
+            LOG.warn("Version information not found in metastore. "
+                + HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString() +
+                " is not enabled so recording the schema version " +
+                MetaStoreSchemaInfo.getHiveSchemaVersion());
+            setMetaStoreSchemaVersion(MetaStoreSchemaInfo.getHiveSchemaVersion(),
+                "Set by MetaStore");
+        }
+    } else {
+      // metastore schema version is different than Hive distribution needs
+      if (strictValidation) {
+        if (!schemaVer.equalsIgnoreCase(MetaStoreSchemaInfo.getHiveSchemaVersion())) {
+          throw new MetaException("Hive Schema version "
+              + MetaStoreSchemaInfo.getHiveSchemaVersion() +
+              " does not match metastore's schema version " + schemaVer +
+              " Metastore is not upgraded or corrupt");
+        } else {
+          LOG.warn("Metastore version was " + schemaVer + " " +
+              HiveConf.ConfVars.METASTORE_SCHEMA_VERIFICATION.toString() +
+              " is not enabled so recording the new schema version " +
+              MetaStoreSchemaInfo.getHiveSchemaVersion());
+          setMetaStoreSchemaVersion(MetaStoreSchemaInfo.getHiveSchemaVersion(),
+              "Set by MetaStore");
+        }
+      }
+    }
+    isSchemaVerified.set(true);
+    return;
+  }
+
+  // load the schema version stored in metastore db
+  @Override
+  public String getMetaStoreSchemaVersion() throws MetaException {
+
+    MVersionTable mSchemaVer;
+    try {
+      mSchemaVer = getMSchemaVersion();
+    } catch (NoSuchObjectException e) {
+      return null;
+    }
+    return mSchemaVer.getSchemaVersion();
+  }
+
+  @SuppressWarnings("unchecked")
+  private MVersionTable getMSchemaVersion()
+      throws NoSuchObjectException, MetaException {
+    boolean committed = false;
+    List<MVersionTable> mVerTables = new ArrayList<MVersionTable>();
+
+    try {
+      openTransaction();
+      Query query = pm.newQuery(MVersionTable.class);
+
+      try {
+        mVerTables = (List<MVersionTable>)query.execute();
+        pm.retrieveAll(mVerTables);
+      } catch (JDODataStoreException e) {
+        if (e.getCause() instanceof MissingTableException) {
+          throw new MetaException("Version table not found. " +
+              "The metastore is not upgraded to " + MetaStoreSchemaInfo.getHiveSchemaVersion());
+        } else {
+          throw e;
+        }
+      }
+      committed = commitTransaction();
+    } finally {
+      if (!committed) {
+        rollbackTransaction();
+      }
+    }
+    if (mVerTables.isEmpty()) {
+      throw new NoSuchObjectException("No matching version found");
+    }
+    if (mVerTables.size() > 1) {
+      throw new MetaException("Metastore contains multiple versions");
+    }
+    return mVerTables.get(0);
+  }
+
+  @Override
+  public void setMetaStoreSchemaVersion(String schemaVersion, String comment) throws MetaException {
+    MVersionTable mSchemaVer;
+    boolean commited = false;
+
+    try {
+      mSchemaVer = getMSchemaVersion();
+    } catch (NoSuchObjectException e) {
+      // if the version doesn't exist, then create it
+      mSchemaVer = new MVersionTable();
+    }
+
+    mSchemaVer.setSchemaVersion(schemaVersion);
+    mSchemaVer.setVersionComment(comment);
+    try {
+      openTransaction();
+      pm.makePersistent(mSchemaVer);
+      commited = commitTransaction();
+    } finally {
+      if (!commited) {
+        rollbackTransaction();
+      }
+    }
+  }
 }

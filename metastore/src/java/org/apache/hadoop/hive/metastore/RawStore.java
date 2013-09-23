@@ -436,4 +436,10 @@ public interface RawStore extends Configurable {
 
  public abstract String[] getMasterKeys();
 
+ public abstract void verifySchema() throws MetaException;
+
+ public abstract String getMetaStoreSchemaVersion() throws  MetaException;
+
+ public abstract void setMetaStoreSchemaVersion(String version, String comment) throws MetaException;
+
 }
