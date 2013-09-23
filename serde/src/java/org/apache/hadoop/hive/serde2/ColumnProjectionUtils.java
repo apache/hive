@@ -32,87 +32,57 @@ public final class ColumnProjectionUtils {
 
   public static final String READ_COLUMN_IDS_CONF_STR = "hive.io.file.readcolumn.ids";
   public static final String READ_COLUMN_NAMES_CONF_STR = "hive.io.file.readcolumn.names";
+  private static final String READ_COLUMN_IDS_CONF_STR_DEFAULT = "";
+  private static final String READ_ALL_COLUMNS = "hive.io.file.read.all.columns";
+  private static final boolean READ_ALL_COLUMNS_DEFAULT = true;
 
   /**
-   * Sets read columns' ids(start from zero) for RCFile's Reader. Once a column
-   * is included in the list, RCFile's reader will not skip its value.
-   * 
+   * Sets the <em>READ_ALL_COLUMNS</em> flag and removes any previously
+   * set column ids.
    */
-  public static void setReadColumnIDs(Configuration conf, List<Integer> ids) {
-    String id = toReadColumnIDString(ids);
-    setReadColumnIDConf(conf, id);
+  public static void setReadAllColumns(Configuration conf) {
+    conf.setBoolean(READ_ALL_COLUMNS, true);
+    setReadColumnIDConf(conf, READ_COLUMN_IDS_CONF_STR_DEFAULT);
   }
 
   /**
-   * Sets read columns' ids(start from zero) for RCFile's Reader. Once a column
-   * is included in the list, RCFile's reader will not skip its value.
-   * 
+   * Returns the <em>READ_ALL_COLUMNS</em> columns flag.
    */
-  public static void appendReadColumnIDs(Configuration conf, List<Integer> ids) {
+  public static boolean isReadAllColumns(Configuration conf) {
+    return conf.getBoolean(READ_ALL_COLUMNS, READ_ALL_COLUMNS_DEFAULT);
+  }
+
+  /**
+   * Appends read columns' ids (start from zero). Once a column
+   * is included in the list, a underlying record reader of a columnar file format
+   * (e.g. RCFile and ORC) can know what columns are needed.
+   */
+  public static void appendReadColumns(Configuration conf, List<Integer> ids) {
     String id = toReadColumnIDString(ids);
-    if (id != null) {
-      String old = conf.get(READ_COLUMN_IDS_CONF_STR, null);
-      String newConfStr = id;
-      if (old != null) {
-        newConfStr = newConfStr + StringUtils.COMMA_STR + old;
-      }
-
-      setReadColumnIDConf(conf, newConfStr);
+    String old = conf.get(READ_COLUMN_IDS_CONF_STR, null);
+    String newConfStr = id;
+    if (old != null) {
+      newConfStr = newConfStr + StringUtils.COMMA_STR + old;
     }
+    setReadColumnIDConf(conf, newConfStr);
+    // Set READ_ALL_COLUMNS to false
+    conf.setBoolean(READ_ALL_COLUMNS, false);
   }
 
-  public static void appendReadColumnNames(Configuration conf,
-                                           List<String> cols) {
-    if (cols != null) {
-      String old = conf.get(READ_COLUMN_NAMES_CONF_STR, "");
-      StringBuilder result = new StringBuilder(old);
-      boolean first = old.isEmpty();
-      for(String col: cols) {
-        if (first) {
-          first = false;
-        } else {
-          result.append(',');
-        }
-        result.append(col);
-      }
-      conf.set(READ_COLUMN_NAMES_CONF_STR, result.toString());
-    }
-  }
-
-  private static void setReadColumnIDConf(Configuration conf, String id) {
-    if (id == null || id.length() <= 0) {
-      conf.set(READ_COLUMN_IDS_CONF_STR, "");
-      return;
-    }
-
-    conf.set(READ_COLUMN_IDS_CONF_STR, id);
-  }
-
-  private static String toReadColumnIDString(List<Integer> ids) {
-    String id = null;
-    if (ids != null) {
-      for (int i = 0; i < ids.size(); i++) {
-        if (i == 0) {
-          id = "" + ids.get(i);
-        } else {
-          id = id + StringUtils.COMMA_STR + ids.get(i);
-        }
-      }
-    }
-    return id;
+  public static void appendReadColumns(
+      Configuration conf, List<Integer> ids, List<String> names) {
+    appendReadColumns(conf, ids);
+    appendReadColumnNames(conf, names);
   }
 
   /**
    * Returns an array of column ids(start from zero) which is set in the given
    * parameter <tt>conf</tt>.
    */
-  public static ArrayList<Integer> getReadColumnIDs(Configuration conf) {
-    if (conf == null) {
-      return new ArrayList<Integer>(0);
-    }
-    String skips = conf.get(READ_COLUMN_IDS_CONF_STR, "");
+  public static List<Integer> getReadColumnIDs(Configuration conf) {
+    String skips = conf.get(READ_COLUMN_IDS_CONF_STR, READ_COLUMN_IDS_CONF_STR_DEFAULT);
     String[] list = StringUtils.split(skips);
-    ArrayList<Integer> result = new ArrayList<Integer>(list.length);
+    List<Integer> result = new ArrayList<Integer>(list.length);
     for (String element : list) {
       // it may contain duplicates, remove duplicates
       Integer toAdd = Integer.parseInt(element);
@@ -123,11 +93,39 @@ public final class ColumnProjectionUtils {
     return result;
   }
 
-  /**
-   * Clears the read column ids set in the conf, and will read all columns.
-   */
-  public static void setFullyReadColumns(Configuration conf) {
-    conf.set(READ_COLUMN_IDS_CONF_STR, "");
+  private static void setReadColumnIDConf(Configuration conf, String id) {
+    if (id.trim().isEmpty()) {
+      conf.set(READ_COLUMN_IDS_CONF_STR, READ_COLUMN_IDS_CONF_STR_DEFAULT);
+    } else {
+      conf.set(READ_COLUMN_IDS_CONF_STR, id);
+    }
+  }
+
+  private static void appendReadColumnNames(Configuration conf, List<String> cols) {
+    String old = conf.get(READ_COLUMN_NAMES_CONF_STR, "");
+    StringBuilder result = new StringBuilder(old);
+    boolean first = old.isEmpty();
+    for(String col: cols) {
+      if (first) {
+        first = false;
+      } else {
+        result.append(',');
+      }
+      result.append(col);
+    }
+    conf.set(READ_COLUMN_NAMES_CONF_STR, result.toString());
+  }
+
+  private static String toReadColumnIDString(List<Integer> ids) {
+    String id = "";
+    for (int i = 0; i < ids.size(); i++) {
+      if (i == 0) {
+        id = id + ids.get(i);
+      } else {
+        id = id + StringUtils.COMMA_STR + ids.get(i);
+      }
+    }
+    return id;
   }
 
   private ColumnProjectionUtils() {

@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.io.avro;
 
 
 import java.io.IOException;
+import java.rmi.server.UID;
 import java.util.Map;
 import java.util.Properties;
 
@@ -57,6 +58,10 @@ public class AvroGenericRecordReader implements
   final private long start;
   final private long stop;
   protected JobConf jobConf;
+  /**
+   * A unique ID for each record reader.
+   */
+  final private UID recordReaderID;
 
   public AvroGenericRecordReader(JobConf job, FileSplit split, Reporter reporter) throws IOException {
     this.jobConf = job;
@@ -78,6 +83,7 @@ public class AvroGenericRecordReader implements
     this.reader.sync(split.getStart());
     this.start = reader.tell();
     this.stop = split.getStart() + split.getLength();
+    this.recordReaderID = new UID();
   }
 
   /**
@@ -148,6 +154,7 @@ public class AvroGenericRecordReader implements
 
     GenericData.Record r = (GenericData.Record)reader.next();
     record.setRecord(r);
+    record.setRecordReaderID(recordReaderID);
 
     return true;
   }

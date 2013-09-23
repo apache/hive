@@ -551,6 +551,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -744,6 +745,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -966,6 +968,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -981,6 +984,7 @@ STAGE PLANS:
                     expr: _col2
                     type: bigint
         $INTNAME1 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col1
@@ -3778,6 +3782,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -3964,6 +3969,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col0

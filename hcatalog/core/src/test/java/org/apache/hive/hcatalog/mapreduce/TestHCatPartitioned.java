@@ -38,6 +38,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class TestHCatPartitioned extends HCatMapReduceTest {
@@ -106,7 +107,7 @@ public class TestHCatPartitioned extends HCatMapReduceTest {
       exc = e;
     }
 
-    assertTrue(exc != null);
+    assertNotNull(exc);
     assertTrue(exc instanceof HCatException);
     assertEquals(ErrorType.ERROR_DUPLICATE_PARTITION, ((HCatException) exc).getErrorType());
 
@@ -122,7 +123,7 @@ public class TestHCatPartitioned extends HCatMapReduceTest {
       exc = e;
     }
 
-    assertTrue(exc != null);
+    assertNotNull(exc);
     assertTrue(exc instanceof HCatException);
     assertEquals(ErrorType.ERROR_MISSING_PARTITION_KEY, ((HCatException) exc).getErrorType());
 
@@ -137,7 +138,7 @@ public class TestHCatPartitioned extends HCatMapReduceTest {
       exc = e;
     }
 
-    assertTrue(exc != null);
+    assertNotNull(exc);
     assertTrue(exc instanceof HCatException);
     assertEquals(ErrorType.ERROR_INVALID_PARTITION_VALUES, ((HCatException) exc).getErrorType());
 
@@ -263,11 +264,11 @@ public class TestHCatPartitioned extends HCatMapReduceTest {
     Integer i = 0;
     for (HCatRecord rec : records) {
       assertEquals(5, rec.size());
-      assertTrue(rec.get(0).equals(i));
-      assertTrue(rec.get(1).equals("c2value" + i));
-      assertTrue(rec.get(2).equals("c3value" + i));
-      assertTrue(rec.get(3).equals("p1value6"));
-      assertTrue(rec.get(4).equals("p0value6"));
+      assertEquals(rec.get(0), i);
+      assertEquals(rec.get(1), "c2value" + i);
+      assertEquals(rec.get(2), "c3value" + i);
+      assertEquals(rec.get(3), "p1value6");
+      assertEquals(rec.get(4), "p0value6");
       i++;
     }
   }

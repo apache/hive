@@ -17,6 +17,20 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -30,6 +44,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
+import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
@@ -53,21 +68,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 
 public class TestInputOutputFormat {
 
@@ -574,7 +574,7 @@ public class TestInputOutputFormat {
     reader.close();
 
     // read just the first column
-    conf.set("hive.io.file.readcolumn.ids", "0");
+    ColumnProjectionUtils.appendReadColumns(conf, Collections.singletonList(0));
     reader = in.getRecordReader(splits[0], conf, Reporter.NULL);
     key = reader.createKey();
     value = (Writable) reader.createValue();
@@ -589,7 +589,7 @@ public class TestInputOutputFormat {
     reader.close();
 
     // test the mapping of empty string to all columns
-    conf.set("hive.io.file.readcolumn.ids", "");
+    ColumnProjectionUtils.setReadAllColumns(conf);
     reader = in.getRecordReader(splits[0], conf, Reporter.NULL);
     key = reader.createKey();
     value = (Writable) reader.createValue();
@@ -655,7 +655,7 @@ public class TestInputOutputFormat {
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
     InputSplit[] splits = in.getSplits(conf, 1);
     assertEquals(1, splits.length);
-    conf.set("hive.io.file.readcolumn.ids", "1");
+    ColumnProjectionUtils.appendReadColumns(conf, Collections.singletonList(1));
     org.apache.hadoop.mapred.RecordReader reader =
         in.getRecordReader(splits[0], conf, Reporter.NULL);
     Object key = reader.createKey();

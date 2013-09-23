@@ -1471,8 +1471,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         URI originalPartitionUri = ArchiveUtils.addSlash(p.getPartitionPath().toUri());
         URI test = p.getPartitionPath().toUri();
         URI harPartitionDir = harHelper.getHarUri(originalPartitionUri, shim);
+        StringBuilder authority = new StringBuilder();
+        if(harPartitionDir.getUserInfo() != null) {
+          authority.append(harPartitionDir.getUserInfo()).append("@");
+        }
+        authority.append(harPartitionDir.getHost()).append(":");
+        if(harPartitionDir.getPort() != -1) {
+          authority.append(harPartitionDir.getPort());
+        }
         Path harPath = new Path(harPartitionDir.getScheme(),
-            harPartitionDir.getAuthority(),
+            authority.toString(),
             harPartitionDir.getPath()); // make in Path to ensure no slash at the end
         setArchived(p, harPath, partSpecInfo.values.size());
         db.alterPartition(tblName, p);

@@ -150,6 +150,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -163,6 +164,7 @@ STAGE PLANS:
                     expr: _col1
                     type: string
         $INTNAME1 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -612,6 +614,7 @@ STAGE PLANS:
             limit: -1
       Alias -> Map Local Operator Tree:
         $INTNAME 
+          TableScan
             HashTable Sink Operator
               condition expressions:
                 0 {_col0}
@@ -626,6 +629,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME1 
+          TableScan
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -677,6 +681,7 @@ STAGE PLANS:
             limit: -1
       Alias -> Map Local Operator Tree:
         $INTNAME1 
+          TableScan
             HashTable Sink Operator
               condition expressions:
                 0 {_col0}
@@ -691,6 +696,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Map Join Operator
               condition map:
                    Inner Join 0 to 1
@@ -725,6 +731,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -738,6 +745,7 @@ STAGE PLANS:
                     expr: _col1
                     type: string
         $INTNAME1 
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col0

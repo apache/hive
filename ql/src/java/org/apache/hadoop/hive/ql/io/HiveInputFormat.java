@@ -217,9 +217,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       throw new IOException("cannot find class " + inputFormatClassName, e);
     }
 
-    // clone a jobConf for setting needed columns for reading
-    JobConf cloneJobConf = new JobConf(job);
-
     if (this.mrwork == null) {
       init(job);
     }
@@ -227,22 +224,20 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     boolean nonNative = false;
     PartitionDesc part = pathToPartitionInfo.get(hsplit.getPath().toString());
     if ((part != null) && (part.getTableDesc() != null)) {
-      Utilities.copyTableJobPropertiesToConf(part.getTableDesc(), cloneJobConf);
+      Utilities.copyTableJobPropertiesToConf(part.getTableDesc(), job);
       nonNative = part.getTableDesc().isNonNative();
     }
 
-    pushProjectionsAndFilters(cloneJobConf, inputFormatClass, hsplit.getPath()
+    pushProjectionsAndFilters(job, inputFormatClass, hsplit.getPath()
       .toString(), hsplit.getPath().toUri().getPath(), nonNative);
 
-    InputFormat inputFormat = getInputFormatFromCache(inputFormatClass,
-        cloneJobConf);
+    InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
     RecordReader innerReader = null;
     try {
-      innerReader = inputFormat.getRecordReader(inputSplit,
-        cloneJobConf, reporter);
+      innerReader = inputFormat.getRecordReader(inputSplit, job, reporter);
     } catch (Exception e) {
       innerReader = HiveIOExceptionHandlerUtil
-          .handleRecordReaderCreationException(e, cloneJobConf);
+          .handleRecordReaderCreationException(e, job);
     }
     HiveRecordReader<K,V> rr = new HiveRecordReader(innerReader, job);
     rr.initIOContext(hsplit, job, inputFormatClass, innerReader);
@@ -420,20 +415,13 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     for (String alias : aliases) {
       Operator<? extends OperatorDesc> op = this.mrwork.getAliasToWork().get(
         alias);
-      if (op != null && op instanceof TableScanOperator) {
-        TableScanOperator tableScan = (TableScanOperator) op;
-
-        // push down projections
-        ArrayList<Integer> list = tableScan.getNeededColumnIDs();
-        if (list != null) {
-          ColumnProjectionUtils.appendReadColumnIDs(jobConf, list);
-        } else {
-          ColumnProjectionUtils.setFullyReadColumns(jobConf);
-        }
-        ColumnProjectionUtils.appendReadColumnNames(jobConf,
-            tableScan.getNeededColumns());
-
-        pushFilters(jobConf, tableScan);
+      if (op instanceof TableScanOperator) {
+        TableScanOperator ts = (TableScanOperator) op;
+        // push down projections.
+        ColumnProjectionUtils.appendReadColumns(
+            jobConf, ts.getNeededColumnIDs(), ts.getNeededColumns());
+        // push down filters
+        pushFilters(jobConf, ts);
       }
     }
   }
