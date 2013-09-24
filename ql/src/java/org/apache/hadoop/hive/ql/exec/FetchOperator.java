@@ -353,6 +353,11 @@ public class FetchOperator implements Serializable {
     }
   }
 
+  /**
+   * A cache of Object Inspector Settable Properties.
+   */
+  private static Map<ObjectInspector, Boolean> oiSettableProperties = new HashMap<ObjectInspector, Boolean>();
+
   private RecordReader<WritableComparable, Writable> getRecordReader() throws Exception {
     if (currPath == null) {
       getNextPath();
@@ -402,7 +407,8 @@ public class FetchOperator implements Serializable {
 
       ObjectInspector outputOI = ObjectInspectorConverters.getConvertedOI(
           serde.getObjectInspector(),
-          partitionedTableOI == null ? tblSerde.getObjectInspector() : partitionedTableOI, true);
+          partitionedTableOI == null ? tblSerde.getObjectInspector() : partitionedTableOI,
+          oiSettableProperties);
 
       partTblObjectInspectorConverter = ObjectInspectorConverters.getConverter(
           serde.getObjectInspector(), outputOI);
@@ -628,7 +634,7 @@ public class FetchOperator implements Serializable {
         partSerde.initialize(job, listPart.getOverlayedProperties());
 
         partitionedTableOI = ObjectInspectorConverters.getConvertedOI(
-            partSerde.getObjectInspector(), tableOI, true);
+            partSerde.getObjectInspector(), tableOI, oiSettableProperties);
         if (!partitionedTableOI.equals(tableOI)) {
           break;
         }
