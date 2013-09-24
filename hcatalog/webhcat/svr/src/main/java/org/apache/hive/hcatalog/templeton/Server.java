@@ -50,6 +50,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.authentication.client.PseudoAuthenticator;
+import org.apache.hive.hcatalog.templeton.LauncherDelegator.JobType;
 import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
 
 /**
@@ -591,18 +592,21 @@ public class Server {
                       @FormParam("cmdenv") List<String> cmdenvs,
                       @FormParam("arg") List<String> args,
                       @FormParam("statusdir") String statusdir,
-                      @FormParam("callback") String callback)
+                      @FormParam("callback") String callback,
+                      @FormParam("enablelog") boolean enablelog)
     throws NotAuthorizedException, BusyException, BadParam, QueueException,
     ExecuteException, IOException, InterruptedException {
     verifyUser();
     verifyParam(inputs, "input");
     verifyParam(mapper, "mapper");
     verifyParam(reducer, "reducer");
+    
+    checkEnableLogPrerequisite(enablelog, statusdir);
 
     StreamingDelegator d = new StreamingDelegator(appConf);
     return d.run(getDoAsUser(), inputs, output, mapper, reducer,
       files, defines, cmdenvs, args,
-      statusdir, callback, getCompletedUrl());
+      statusdir, callback, getCompletedUrl(), enablelog, JobType.STREAMING);
   }
 
   /**
@@ -618,18 +622,21 @@ public class Server {
                   @FormParam("arg") List<String> args,
                   @FormParam("define") List<String> defines,
                   @FormParam("statusdir") String statusdir,
-                  @FormParam("callback") String callback)
+                  @FormParam("callback") String callback,
+                  @FormParam("enablelog") boolean enablelog)
     throws NotAuthorizedException, BusyException, BadParam, QueueException,
     ExecuteException, IOException, InterruptedException {
     verifyUser();
     verifyParam(jar, "jar");
     verifyParam(mainClass, "class");
+    
+    checkEnableLogPrerequisite(enablelog, statusdir);
 
     JarDelegator d = new JarDelegator(appConf);
     return d.run(getDoAsUser(),
       jar, mainClass,
       libjars, files, args, defines,
-      statusdir, callback, getCompletedUrl());
+      statusdir, callback, getCompletedUrl(), enablelog, JobType.JAR);
   }
 
   /**
@@ -643,18 +650,21 @@ public class Server {
                @FormParam("arg") List<String> pigArgs,
                @FormParam("files") String otherFiles,
                @FormParam("statusdir") String statusdir,
-               @FormParam("callback") String callback)
+               @FormParam("callback") String callback,
+               @FormParam("enablelog") boolean enablelog)
     throws NotAuthorizedException, BusyException, BadParam, QueueException,
     ExecuteException, IOException, InterruptedException {
     verifyUser();
     if (execute == null && srcFile == null)
       throw new BadParam("Either execute or file parameter required");
+    
+    checkEnableLogPrerequisite(enablelog, statusdir);
 
     PigDelegator d = new PigDelegator(appConf);
     return d.run(getDoAsUser(),
       execute, srcFile,
       pigArgs, otherFiles,
-      statusdir, callback, getCompletedUrl());
+      statusdir, callback, getCompletedUrl(), enablelog);
   }
 
   /**
@@ -670,6 +680,7 @@ public class Server {
    * @param defines    shortcut for command line arguments "--define"
    * @param statusdir  where the stderr/stdout of templeton controller job goes
    * @param callback   callback url when the hive job finishes
+   * @param enablelog  whether to collect mapreduce log into statusdir/logs
    */
   @POST
   @Path("hive")
@@ -680,16 +691,19 @@ public class Server {
               @FormParam("files") String otherFiles,
               @FormParam("define") List<String> defines,
               @FormParam("statusdir") String statusdir,
-              @FormParam("callback") String callback)
+              @FormParam("callback") String callback,
+              @FormParam("enablelog") boolean enablelog)
     throws NotAuthorizedException, BusyException, BadParam, QueueException,
     ExecuteException, IOException, InterruptedException {
     verifyUser();
     if (execute == null && srcFile == null)
       throw new BadParam("Either execute or file parameter required");
+    
+    checkEnableLogPrerequisite(enablelog, statusdir);
 
     HiveDelegator d = new HiveDelegator(appConf);
     return d.run(getDoAsUser(), execute, srcFile, defines, hiveArgs, otherFiles,
-      statusdir, callback, getCompletedUrl());
+      statusdir, callback, getCompletedUrl(), enablelog);
   }
 
   /**
@@ -902,6 +916,7 @@ public class Server {
     return theUriInfo.getBaseUri() + VERSION
       + "/internal/complete/$jobId";
   }
+
   /**
    * Returns canonical host name from which the request is made; used for doAs validation  
    */
@@ -929,5 +944,10 @@ public class Server {
       LOG.warn(MessageFormat.format("Request remote address could not be resolved, {0}", ex.toString(), ex));
       return unkHost;
     }
+  }
+  
+  private void checkEnableLogPrerequisite(boolean enablelog, String statusdir) throws BadParam {
+    if (enablelog == true && !TempletonUtils.isset(statusdir))
+      throw new BadParam("enablelog is only applicable when statusdir is set");
   }
 }

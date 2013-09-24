@@ -33,11 +33,11 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.ws.rs.core.UriBuilder;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.hcatalog.templeton.UgiFactory;
@@ -213,22 +213,19 @@ public class TempletonUtils {
     }
   }
 
-  public static String addUserHomeDirectoryIfApplicable(String origPathStr, String user, Configuration conf) throws IOException {
-    Path path = new Path(origPathStr);
-    String result = origPathStr;
+  public static String addUserHomeDirectoryIfApplicable(String origPathStr, String user)
+    throws IOException, URISyntaxException {
+    URI uri = new URI(origPathStr);
 
-    // shortcut for s3/asv
-    // If path contains scheme, user should mean an absolute path,
-    // However, path.isAbsolute tell us otherwise.
-    // So we skip conversion for non-hdfs.
-    if (!(path.getFileSystem(conf) instanceof DistributedFileSystem)&&
-        !(path.getFileSystem(conf) instanceof LocalFileSystem)) {
-      return result;
-    }
-    if (!path.isAbsolute()) {
-      result = "/user/" + user + "/" + origPathStr;
-    }
-    return result;
+    if (uri.getPath().isEmpty()) {
+      String newPath = "/user/" + user;
+      uri = UriBuilder.fromUri(uri).replacePath(newPath).build();
+    } else if (!new Path(uri.getPath()).isAbsolute()) {
+      String newPath = "/user/" + user + "/" + uri.getPath();
+      uri = UriBuilder.fromUri(uri).replacePath(newPath).build();
+    } // no work needed for absolute paths
+
+    return uri.toString();
   }
 
   public static Path hadoopFsPath(String fname, final Configuration conf, String user)
@@ -254,7 +251,7 @@ public class TempletonUtils {
           }
         });
 
-    fname = addUserHomeDirectoryIfApplicable(fname, user, conf);
+    fname = addUserHomeDirectoryIfApplicable(fname, user);
     URI u = new URI(fname);
     Path p = new Path(u).makeQualified(defaultFs);
 

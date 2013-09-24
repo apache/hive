@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,7 +31,7 @@ import java.util.List;
  * Always use the {@link ObjectInspectorFactory} to create new ObjectInspector
  * objects, instead of directly creating an instance of this class.
  */
-public class StandardUnionObjectInspector implements UnionObjectInspector {
+public class StandardUnionObjectInspector extends SettableUnionObjectInspector {
   private List<ObjectInspector> ois;
 
   protected StandardUnionObjectInspector() {
@@ -114,6 +115,19 @@ public class StandardUnionObjectInspector implements UnionObjectInspector {
     sb.append(getClass().getName());
     sb.append(getTypeName());
     return sb.toString();
+  }
+
+  @Override
+  public Object create() {
+    ArrayList<Object> a = new ArrayList<Object>();
+    return a;
+  }
+
+  @Override
+  public Object addField(Object union, ObjectInspector oi) {
+    ArrayList<Object> a = (ArrayList<Object>) union;
+    a.add(oi);
+    return a;
   }
 
 }
