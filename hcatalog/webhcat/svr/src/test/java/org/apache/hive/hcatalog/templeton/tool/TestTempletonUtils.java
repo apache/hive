@@ -20,6 +20,7 @@ package org.apache.hive.hcatalog.templeton.tool;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.URISyntaxException;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
@@ -242,6 +243,34 @@ public class TestTempletonUtils {
     } catch (Exception e) {
       // Something else is wrong.
       e.printStackTrace();
+    }
+  }
+
+  @Test
+  public void testConstructingUserHomeDirectory() throws Exception {
+    String[] sources = new String[] { "output+", "/user/hadoop/output",
+      "hdfs://container", "hdfs://container/", "hdfs://container/path",
+      "output#link", "hdfs://cointaner/output#link",
+      "hdfs://container@acc/test" };
+    String[] expectedResults = new String[] { "/user/webhcat/output+",
+      "/user/hadoop/output", "hdfs://container/user/webhcat",
+      "hdfs://container/", "hdfs://container/path",
+      "/user/webhcat/output#link", "hdfs://cointaner/output#link",
+      "hdfs://container@acc/test" };
+    for (int i = 0; i < sources.length; i++) {
+      String source = sources[i];
+      String expectedResult = expectedResults[i];
+      String result = TempletonUtils.addUserHomeDirectoryIfApplicable(source,
+          "webhcat");
+      Assert.assertEquals(result, expectedResult);
+    }
+
+    String badUri = "c:\\some\\path";
+    try {
+      TempletonUtils.addUserHomeDirectoryIfApplicable(badUri, "webhcat");
+      Assert.fail("addUserHomeDirectoryIfApplicable should fail for bad URI: "
+          + badUri);
+    } catch (URISyntaxException ex) {
     }
   }
 

@@ -42,20 +42,20 @@ public class PigDelegator extends LauncherDelegator {
   public EnqueueBean run(String user,
                String execute, String srcFile,
                List<String> pigArgs, String otherFiles,
-               String statusdir, String callback, String completedUrl)
+               String statusdir, String callback, String completedUrl, boolean enablelog)
     throws NotAuthorizedException, BadParam, BusyException, QueueException,
     ExecuteException, IOException, InterruptedException {
     runAs = user;
     List<String> args = makeArgs(execute,
       srcFile, pigArgs,
-      otherFiles, statusdir, completedUrl);
+      otherFiles, statusdir, completedUrl, enablelog);
 
     return enqueueController(user, callback, args);
   }
 
   private List<String> makeArgs(String execute, String srcFile,
                   List<String> pigArgs, String otherFiles,
-                  String statusdir, String completedUrl)
+                  String statusdir, String completedUrl, boolean enablelog)
     throws BadParam, IOException, InterruptedException {
     ArrayList<String> args = new ArrayList<String>();
     try {
@@ -68,7 +68,7 @@ public class PigDelegator extends LauncherDelegator {
         allFiles.addAll(Arrays.asList(ofs));
       }
 
-      args.addAll(makeLauncherArgs(appConf, statusdir, completedUrl, allFiles));
+      args.addAll(makeLauncherArgs(appConf, statusdir, completedUrl, allFiles, enablelog, JobType.PIG));
       args.add("-archives");
       args.add(appConf.pigArchive());
 

@@ -43,6 +43,7 @@ import org.apache.hive.hcatalog.templeton.tool.ZooKeeperStorage;
 public class LauncherDelegator extends TempletonDelegator {
   private static final Log LOG = LogFactory.getLog(LauncherDelegator.class);
   protected String runAs = null;
+  static public enum JobType {JAR, STREAMING, PIG, HIVE};
 
   public LauncherDelegator(AppConfig appConf) {
     super(appConf);
@@ -105,7 +106,9 @@ public class LauncherDelegator extends TempletonDelegator {
 
   public List<String> makeLauncherArgs(AppConfig appConf, String statusdir,
                      String completedUrl,
-                     List<String> copyFiles) {
+                     List<String> copyFiles,
+                     boolean enablelog,
+                     JobType jobType) {
     ArrayList<String> args = new ArrayList<String>();
 
     args.add("-libjars");
@@ -123,6 +126,10 @@ public class LauncherDelegator extends TempletonDelegator {
       TempletonUtils.encodeArray(copyFiles));
     addDef(args, TempletonControllerJob.OVERRIDE_CLASSPATH,
       makeOverrideClasspath(appConf));
+    addDef(args, TempletonControllerJob.ENABLE_LOG,
+      Boolean.toString(enablelog));
+    addDef(args, TempletonControllerJob.JOB_TYPE,
+      jobType.toString());
 
     // Hadoop queue information
     addDef(args, "mapred.job.queue.name", appConf.hadoopQueueName());
