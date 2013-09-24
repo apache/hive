@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -53,6 +54,7 @@ import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.hive.hcatalog.templeton.LauncherDelegator;
 
 /**
  * A Map Reduce job that will start another job.
@@ -69,6 +71,8 @@ import org.apache.hadoop.util.ToolRunner;
 public class TempletonControllerJob extends Configured implements Tool {
   public static final String COPY_NAME = "templeton.copy";
   public static final String STATUSDIR_NAME = "templeton.statusdir";
+  public static final String ENABLE_LOG = "templeton.enablelog";
+  public static final String JOB_TYPE = "templeton.jobtype";
   public static final String JAR_ARGS_NAME = "templeton.args";
   public static final String OVERRIDE_CLASSPATH = "templeton.override-classpath";
 
@@ -155,8 +159,16 @@ public class TempletonControllerJob extends Configured implements Tool {
       String statusdir = conf.get(STATUSDIR_NAME);
 
       if (statusdir != null) {
-        statusdir = TempletonUtils.addUserHomeDirectoryIfApplicable(statusdir, conf.get("user.name"), conf);
+        try {
+          statusdir = TempletonUtils.addUserHomeDirectoryIfApplicable(statusdir,
+            conf.get("user.name"));
+        } catch (URISyntaxException e) {
+          throw new IOException("Invalid status dir URI", e);
+        }
       }
+
+      Boolean enablelog = Boolean.parseBoolean(conf.get(ENABLE_LOG));
+      LauncherDelegator.JobType jobType = LauncherDelegator.JobType.valueOf(conf.get(JOB_TYPE));
 
       ExecutorService pool = Executors.newCachedThreadPool();
       executeWatcher(pool, conf, context.getJobID(),
@@ -176,6 +188,13 @@ public class TempletonControllerJob extends Configured implements Tool {
       state.setExitValue(proc.exitValue());
       state.setCompleteStatus("done");
       state.close();
+
+      if (enablelog && TempletonUtils.isset(statusdir)) {
+        System.err.println("templeton: collecting logs for " + context.getJobID().toString()
+          + " to " + statusdir + "/logs");
+        LogRetriever logRetriever = new LogRetriever(statusdir, jobType, conf);
+        logRetriever.run();
+      }
 
       if (proc.exitValue() != 0)
         System.err.println("templeton: job failed with exit code "

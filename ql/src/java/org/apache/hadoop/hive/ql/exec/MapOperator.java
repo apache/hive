@@ -277,6 +277,8 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
         new HashMap<TableDesc, StructObjectInspector>();
     Set<TableDesc> identityConverterTableDesc = new HashSet<TableDesc>();
     try {
+      Map<ObjectInspector, Boolean> oiSettableProperties = new HashMap<ObjectInspector, Boolean>();
+
       for (String onefile : conf.getPathToAliases().keySet()) {
         PartitionDesc pd = conf.getPathToPartitionInfo().get(onefile);
         TableDesc tableDesc = pd.getTableDesc();
@@ -310,7 +312,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
           tblRawRowObjectInspector =
               (StructObjectInspector) ObjectInspectorConverters.getConvertedOI(
                   partRawRowObjectInspector,
-                  tblDeserializer.getObjectInspector(), true);
+                  tblDeserializer.getObjectInspector(), oiSettableProperties);
 
           if (identityConverterTableDesc.contains(tableDesc)) {
             if (!partRawRowObjectInspector.equals(tblRawRowObjectInspector)) {
