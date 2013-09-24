@@ -669,11 +669,6 @@ public class QTestUtil {
     // create and load data into orc table
     fpath = new Path(testFiles, AllVectorTypesRecord.TABLE_NAME);
 
-    localFs.delete(fpath, false);
-
-    OrcFileGenerator.generateOrcFile(conf, localFs, fpath,
-        AllVectorTypesRecord.class);
-
     runCreateTableCmd(AllVectorTypesRecord.TABLE_CREATE_COMMAND);
     runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toUri().getPath()
         + "' INTO  TABLE "+AllVectorTypesRecord.TABLE_NAME);
