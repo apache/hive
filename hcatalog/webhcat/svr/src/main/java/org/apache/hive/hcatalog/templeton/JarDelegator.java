@@ -41,13 +41,14 @@ public class JarDelegator extends LauncherDelegator {
   public EnqueueBean run(String user, String jar, String mainClass,
                String libjars, String files,
                List<String> jarArgs, List<String> defines,
-               String statusdir, String callback, String completedUrl)
+               String statusdir, String callback, String completedUrl,
+               boolean enablelog, JobType jobType)
     throws NotAuthorizedException, BadParam, BusyException, QueueException,
     ExecuteException, IOException, InterruptedException {
     runAs = user;
     List<String> args = makeArgs(jar, mainClass,
       libjars, files, jarArgs, defines,
-      statusdir, completedUrl);
+      statusdir, completedUrl, enablelog, jobType);
 
     return enqueueController(user, callback, args);
   }
@@ -55,7 +56,8 @@ public class JarDelegator extends LauncherDelegator {
   private List<String> makeArgs(String jar, String mainClass,
                   String libjars, String files,
                   List<String> jarArgs, List<String> defines,
-                  String statusdir, String completedUrl)
+                  String statusdir, String completedUrl,
+                  boolean enablelog, JobType jobType)
     throws BadParam, IOException, InterruptedException {
     ArrayList<String> args = new ArrayList<String>();
     try {
@@ -63,7 +65,7 @@ public class JarDelegator extends LauncherDelegator {
       allFiles.add(TempletonUtils.hadoopFsFilename(jar, appConf, runAs));
 
       args.addAll(makeLauncherArgs(appConf, statusdir,
-        completedUrl, allFiles));
+        completedUrl, allFiles, enablelog, jobType));
       args.add("--");
       args.add(appConf.clusterHadoop());
       args.add("jar");
