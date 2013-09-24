@@ -43,25 +43,25 @@ public class HiveDelegator extends LauncherDelegator {
   public EnqueueBean run(String user,
                String execute, String srcFile, List<String> defines,
                List<String> hiveArgs, String otherFiles,
-               String statusdir, String callback, String completedUrl)
+               String statusdir, String callback, String completedUrl, boolean enablelog)
     throws NotAuthorizedException, BadParam, BusyException, QueueException,
     ExecuteException, IOException, InterruptedException
   {
     runAs = user;
     List<String> args = makeArgs(execute, srcFile, defines, hiveArgs, otherFiles, statusdir,
-                   completedUrl);
+                   completedUrl, enablelog);
 
     return enqueueController(user, callback, args);
   }
 
   private List<String> makeArgs(String execute, String srcFile,
              List<String> defines, List<String> hiveArgs, String otherFiles,
-             String statusdir, String completedUrl)
+             String statusdir, String completedUrl, boolean enablelog)
     throws BadParam, IOException, InterruptedException
   {
     ArrayList<String> args = new ArrayList<String>();
     try {
-      args.addAll(makeBasicArgs(execute, srcFile, otherFiles, statusdir, completedUrl));
+      args.addAll(makeBasicArgs(execute, srcFile, otherFiles, statusdir, completedUrl, enablelog));
       args.add("--");
       args.add(appConf.hivePath());
 
@@ -99,7 +99,8 @@ public class HiveDelegator extends LauncherDelegator {
   }
 
   private List<String> makeBasicArgs(String execute, String srcFile, String otherFiles,
-                                         String statusdir, String completedUrl)
+                                         String statusdir, String completedUrl,
+                                         boolean enablelog)
     throws URISyntaxException, FileNotFoundException, IOException,
     InterruptedException
   {
@@ -115,7 +116,8 @@ public class HiveDelegator extends LauncherDelegator {
       allFiles.addAll(Arrays.asList(ofs));
     }
 
-    args.addAll(makeLauncherArgs(appConf, statusdir, completedUrl, allFiles));
+    args.addAll(makeLauncherArgs(appConf, statusdir, completedUrl, allFiles,
+                enablelog, JobType.HIVE));
 
     args.add("-archives");
     args.add(appConf.hiveArchive());
