@@ -1972,6 +1972,128 @@ class EnvironmentContext {
 
 void swap(EnvironmentContext &a, EnvironmentContext &b);
 
+
+class PartitionsByExprResult {
+ public:
+
+  static const char* ascii_fingerprint; // = "1B91CF0D2FC339DC29ABBD79CC9700E4";
+  static const uint8_t binary_fingerprint[16]; // = {0x1B,0x91,0xCF,0x0D,0x2F,0xC3,0x39,0xDC,0x29,0xAB,0xBD,0x79,0xCC,0x97,0x00,0xE4};
+
+  PartitionsByExprResult() : hasUnknownPartitions(0) {
+  }
+
+  virtual ~PartitionsByExprResult() throw() {}
+
+  std::set<Partition>  partitions;
+  bool hasUnknownPartitions;
+
+  void __set_partitions(const std::set<Partition> & val) {
+    partitions = val;
+  }
+
+  void __set_hasUnknownPartitions(const bool val) {
+    hasUnknownPartitions = val;
+  }
+
+  bool operator == (const PartitionsByExprResult & rhs) const
+  {
+    if (!(partitions == rhs.partitions))
+      return false;
+    if (!(hasUnknownPartitions == rhs.hasUnknownPartitions))
+      return false;
+    return true;
+  }
+  bool operator != (const PartitionsByExprResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PartitionsByExprResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(PartitionsByExprResult &a, PartitionsByExprResult &b);
+
+typedef struct _PartitionsByExprRequest__isset {
+  _PartitionsByExprRequest__isset() : defaultPartitionName(false), maxParts(true) {}
+  bool defaultPartitionName;
+  bool maxParts;
+} _PartitionsByExprRequest__isset;
+
+class PartitionsByExprRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "835944417A026FE6ABD0DF5A35BF52C5";
+  static const uint8_t binary_fingerprint[16]; // = {0x83,0x59,0x44,0x41,0x7A,0x02,0x6F,0xE6,0xAB,0xD0,0xDF,0x5A,0x35,0xBF,0x52,0xC5};
+
+  PartitionsByExprRequest() : dbName(), tblName(), expr(), defaultPartitionName(), maxParts(-1) {
+  }
+
+  virtual ~PartitionsByExprRequest() throw() {}
+
+  std::string dbName;
+  std::string tblName;
+  std::string expr;
+  std::string defaultPartitionName;
+  int16_t maxParts;
+
+  _PartitionsByExprRequest__isset __isset;
+
+  void __set_dbName(const std::string& val) {
+    dbName = val;
+  }
+
+  void __set_tblName(const std::string& val) {
+    tblName = val;
+  }
+
+  void __set_expr(const std::string& val) {
+    expr = val;
+  }
+
+  void __set_defaultPartitionName(const std::string& val) {
+    defaultPartitionName = val;
+    __isset.defaultPartitionName = true;
+  }
+
+  void __set_maxParts(const int16_t val) {
+    maxParts = val;
+    __isset.maxParts = true;
+  }
+
+  bool operator == (const PartitionsByExprRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tblName == rhs.tblName))
+      return false;
+    if (!(expr == rhs.expr))
+      return false;
+    if (__isset.defaultPartitionName != rhs.__isset.defaultPartitionName)
+      return false;
+    else if (__isset.defaultPartitionName && !(defaultPartitionName == rhs.defaultPartitionName))
+      return false;
+    if (__isset.maxParts != rhs.__isset.maxParts)
+      return false;
+    else if (__isset.maxParts && !(maxParts == rhs.maxParts))
+      return false;
+    return true;
+  }
+  bool operator != (const PartitionsByExprRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PartitionsByExprRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(PartitionsByExprRequest &a, PartitionsByExprRequest &b);
+
 typedef struct _MetaException__isset {
   _MetaException__isset() : message(false) {}
   bool message;

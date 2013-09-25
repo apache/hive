@@ -176,6 +176,7 @@ public final class FunctionRegistry {
    */
   static Map<String, FunctionInfo> mFunctions = Collections.synchronizedMap(new LinkedHashMap<String, FunctionInfo>());
 
+  static Set<Class<?>> nativeUdfs = Collections.synchronizedSet(new HashSet<Class<?>>());
   /*
    * PTF variables
    * */
@@ -486,6 +487,7 @@ public final class FunctionRegistry {
       FunctionInfo fI = new FunctionInfo(isNative, displayName,
           new GenericUDFBridge(displayName, isOperator, UDFClass.getName()));
       mFunctions.put(functionName.toLowerCase(), fI);
+      registerNativeStatus(fI);
     } else {
       throw new RuntimeException("Registering UDF Class " + UDFClass
           + " which does not extend " + UDF.class);
@@ -508,6 +510,7 @@ public final class FunctionRegistry {
       FunctionInfo fI = new FunctionInfo(isNative, functionName,
           (GenericUDF) ReflectionUtils.newInstance(genericUDFClass, null));
       mFunctions.put(functionName.toLowerCase(), fI);
+      registerNativeStatus(fI);
     } else {
       throw new RuntimeException("Registering GenericUDF Class "
           + genericUDFClass + " which does not extend " + GenericUDF.class);
@@ -530,6 +533,7 @@ public final class FunctionRegistry {
       FunctionInfo fI = new FunctionInfo(isNative, functionName,
           (GenericUDTF) ReflectionUtils.newInstance(genericUDTFClass, null));
       mFunctions.put(functionName.toLowerCase(), fI);
+      registerNativeStatus(fI);
     } else {
       throw new RuntimeException("Registering GenericUDTF Class "
           + genericUDTFClass + " which does not extend " + GenericUDTF.class);
@@ -955,8 +959,9 @@ public final class FunctionRegistry {
 
   public static void registerGenericUDAF(boolean isNative, String functionName,
       GenericUDAFResolver genericUDAFResolver) {
-    mFunctions.put(functionName.toLowerCase(), new FunctionInfo(isNative,
-        functionName.toLowerCase(), genericUDAFResolver));
+    FunctionInfo fi = new FunctionInfo(isNative, functionName.toLowerCase(), genericUDAFResolver);
+    mFunctions.put(functionName.toLowerCase(), fi);
+    registerNativeStatus(fi);
   }
 
   public static void registerTemporaryUDAF(String functionName,
@@ -970,9 +975,11 @@ public final class FunctionRegistry {
 
   public static void registerUDAF(boolean isNative, String functionName,
       Class<? extends UDAF> udafClass) {
-    mFunctions.put(functionName.toLowerCase(), new FunctionInfo(isNative,
+    FunctionInfo fi = new FunctionInfo(isNative,
         functionName.toLowerCase(), new GenericUDAFBridge(
-        (UDAF) ReflectionUtils.newInstance(udafClass, null))));
+        (UDAF) ReflectionUtils.newInstance(udafClass, null)));
+    mFunctions.put(functionName.toLowerCase(), fi);
+    registerNativeStatus(fi);
   }
 
   public static void unregisterTemporaryUDF(String functionName) throws HiveException {
@@ -1560,6 +1567,7 @@ public final class FunctionRegistry {
     FunctionInfo fI = new FunctionInfo(false, macroName,
         new GenericUDFMacro(macroName, body, colNames, colTypes));
     mFunctions.put(macroName.toLowerCase(), fI);
+    registerNativeStatus(fI);
   }
 
   /**
@@ -1717,6 +1725,7 @@ public final class FunctionRegistry {
   {
     FunctionInfo tInfo = new FunctionInfo(name, tFnCls);
     mFunctions.put(name.toLowerCase(), tInfo);
+    registerNativeStatus(tInfo);
   }
 
   /**
@@ -1737,5 +1746,22 @@ public final class FunctionRegistry {
       }
     }
     return false;
+  }
+
+  /**
+   * @param fnExpr Function expression.
+   * @return True iff the fnExpr represents a hive built-in function.
+   */
+  public static boolean isNativeFuncExpr(ExprNodeGenericFuncDesc fnExpr) {
+    Class<?> udfClass = getUDFClassFromExprDesc(fnExpr);
+    if (udfClass == null) {
+      udfClass = getGenericUDFClassFromExprDesc(fnExpr);
+    }
+    return nativeUdfs.contains(udfClass);
+  }
+
+  private static void registerNativeStatus(FunctionInfo fi) {
+    if (!fi.isNative()) return;
+    nativeUdfs.add(fi.getFunctionClass());
   }
 }

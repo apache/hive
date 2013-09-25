@@ -362,6 +362,8 @@ public class HiveConf extends Configuration {
         "org.apache.derby.jdbc.EmbeddedDriver"),
     METASTORE_MANAGER_FACTORY_CLASS("javax.jdo.PersistenceManagerFactoryClass",
         "org.datanucleus.api.jdo.JDOPersistenceManagerFactory"),
+    METASTORE_EXPRESSION_PROXY_CLASS("hive.metastore.expression.proxy",
+        "org.apache.hadoop.hive.ql.optimizer.ppr.PartitionExpressionForMetastore"),
     METASTORE_DETACH_ALL_ON_COMMIT("javax.jdo.option.DetachAllOnCommit", true),
     METASTORE_NON_TRANSACTIONAL_READ("javax.jdo.option.NonTransactionalRead", true),
     METASTORE_CONNECTION_USER_NAME("javax.jdo.option.ConnectionUserName", "APP"),
