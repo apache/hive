@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringUnaryUDF.IUDFUnaryString;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -39,7 +40,7 @@ import org.apache.hadoop.io.Text;
     + "  'H1'\n"
     + "  > SELECT _FUNC_('Facebook') FROM src LIMIT 1;\n"
     + "  '46616365626F6F6B'")
-public class UDFHex extends UDF {
+public class UDFHex extends UDF implements IUDFUnaryString {
   private final Text result = new Text();
   private byte[] value = new byte[16];
 

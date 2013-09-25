@@ -391,6 +391,7 @@ public class TestVectorStringExpressions {
     BytesColumnVector v = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
     batch.cols[0] = v;
     BytesColumnVector outV = new BytesColumnVector(VectorizedRowBatch.DEFAULT_SIZE);
+    outV.initBuffer();
     batch.cols[1] = outV;
     /*
      * Add these 3 values:
