@@ -41,6 +41,7 @@ STAGE PLANS:
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 Select Operator
                   expressions:
                         expr: array(1,2,3)
@@ -63,6 +64,7 @@ STAGE PLANS:
                           table:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -135,6 +137,7 @@ STAGE PLANS:
                           table:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 Select Operator
                   expressions:
                         expr: array(1,2,3)
@@ -161,6 +164,7 @@ STAGE PLANS:
                             table:
                                 input format: org.apache.hadoop.mapred.TextInputFormat
                                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -218,6 +222,7 @@ STAGE PLANS:
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
                             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               Select Operator
                 expressions:
                       expr: array(1,2,3)
@@ -241,6 +246,7 @@ STAGE PLANS:
                           table:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -322,6 +328,7 @@ STAGE PLANS:
                               table:
                                   input format: org.apache.hadoop.mapred.TextInputFormat
                                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                       Select Operator
                         expressions:
                               expr: array(1,2,3)
@@ -344,6 +351,7 @@ STAGE PLANS:
                                 table:
                                     input format: org.apache.hadoop.mapred.TextInputFormat
                                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 Select Operator
                   expressions:
                         expr: array(1,2,3)
@@ -376,6 +384,7 @@ STAGE PLANS:
                                 table:
                                     input format: org.apache.hadoop.mapred.TextInputFormat
                                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                         Select Operator
                           expressions:
                                 expr: array(1,2,3)
@@ -398,6 +407,7 @@ STAGE PLANS:
                                   table:
                                       input format: org.apache.hadoop.mapred.TextInputFormat
                                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

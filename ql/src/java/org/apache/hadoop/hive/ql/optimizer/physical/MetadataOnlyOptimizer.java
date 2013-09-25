@@ -54,6 +54,7 @@ import org.apache.hadoop.hive.ql.plan.MapredWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.NullStructSerDe;
 
 /**
@@ -210,8 +211,8 @@ public class MetadataOnlyOptimizer implements PhysicalPlanResolver {
       if (desc != null) {
         desc.setInputFileFormatClass(OneNullRowInputFormat.class);
         desc.setOutputFileFormatClass(HiveIgnoreKeyTextOutputFormat.class);
-        desc.setDeserializerClass(NullStructSerDe.class);
-        desc.setSerdeClassName(NullStructSerDe.class.getName());
+        desc.getProperties().setProperty(serdeConstants.SERIALIZATION_LIB,
+          NullStructSerDe.class.getName());
       }
       return desc;
     }

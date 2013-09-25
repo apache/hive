@@ -955,17 +955,20 @@ public final class Utilities {
   }
 
   public static TableDesc getTableDesc(Table tbl) {
-    return (new TableDesc(tbl.getDeserializer().getClass(), tbl.getInputFormatClass(), tbl
-        .getOutputFormatClass(), tbl.getMetadata()));
+    Properties props = tbl.getMetadata();
+    props.put(serdeConstants.SERIALIZATION_LIB, tbl.getDeserializer().getClass().getName());
+    return (new TableDesc(tbl.getInputFormatClass(), tbl
+        .getOutputFormatClass(), props));
   }
 
   // column names and column types are all delimited by comma
   public static TableDesc getTableDesc(String cols, String colTypes) {
-    return (new TableDesc(LazySimpleSerDe.class, SequenceFileInputFormat.class,
+    return (new TableDesc(SequenceFileInputFormat.class,
         HiveSequenceFileOutputFormat.class, Utilities.makeProperties(
-        org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode,
-        org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS, cols,
-        org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES, colTypes)));
+        serdeConstants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode,
+        serdeConstants.LIST_COLUMNS, cols,
+        serdeConstants.LIST_COLUMN_TYPES, colTypes,
+        serdeConstants.SERIALIZATION_LIB,LazySimpleSerDe.class.getName())));
   }
 
   public static PartitionDesc getPartitionDesc(Partition part) throws HiveException {
