@@ -21,6 +21,9 @@ package org.apache.hadoop.hive.metastore;
 import static org.apache.commons.lang.StringUtils.join;
 import static org.apache.commons.lang.StringUtils.repeat;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -30,10 +33,11 @@ import java.util.TreeMap;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.jdo.Transaction;
+import javax.jdo.datastore.JDOConnection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
@@ -63,9 +67,87 @@ class MetaStoreDirectSql {
   private static final Log LOG = LogFactory.getLog(MetaStoreDirectSql.class);
 
   private final PersistenceManager pm;
+  /**
+   * We want to avoid db-specific code in this class and stick with ANSI SQL. However, mysql
+   * and postgres are differently ansi-incompatible (mysql by default doesn't support quoted
+   * identifiers, and postgres contravenes ANSI by coercing unquoted ones to lower case).
+   * MySQL's way of working around this is simpler (just set ansi quotes mode on), so we will
+   * use that. MySQL detection is done by actually issuing the set-ansi-quotes command.
+   */
+  private final boolean isMySql;
+
+  /**
+   * Whether direct SQL can be used with the current datastore backing {@link #pm}.
+   */
+  private final boolean isCompatibleDatastore;
+
+  // TODO: we might also want to work around the strange and arguably non-standard behavior
+  // of postgres where it rolls back a tx after a failed select (see SQL92 4.28, on page 69
+  // about implicit rollbacks; 4.10.1 last paragraph for the "spirit" of the standard).
+  // See #canUseDirectSql in ObjectStore, isActiveTransaction is undesirable but unavoidable
+  // for postgres; in MySQL and other databases we could avoid it.
 
   public MetaStoreDirectSql(PersistenceManager pm) {
     this.pm = pm;
+    Transaction tx = pm.currentTransaction();
+    tx.begin();
+    boolean isMySql = false;
+    try {
+      trySetAnsiQuotesForMysql();
+      isMySql = true;
+    } catch (SQLException sqlEx) {
+      LOG.info("MySQL check failed, assuming we are not on mysql: " + sqlEx.getMessage());
+      tx.rollback();
+      tx = pm.currentTransaction();
+      tx.begin();
+    }
+    // This should work. If it doesn't, we will self-disable. What a PITA...
+    boolean isCompatibleDatastore = false;
+    String selfTestQuery = "select \"DB_ID\" from \"DBS\"";
+    try {
+      pm.newQuery("javax.jdo.query.SQL", selfTestQuery).execute();
+      isCompatibleDatastore = true;
+      tx.commit();
+    } catch (Exception ex) {
+      LOG.error("Self-test query [" + selfTestQuery + "] failed; direct SQL is disabled", ex);
+      tx.rollback();
+    }
+
+    this.isCompatibleDatastore = isCompatibleDatastore;
+    this.isMySql = isMySql;
+  }
+
+  public boolean isCompatibleDatastore() {
+    return isCompatibleDatastore;
+  }
+
+  /**
+   * See {@link #trySetAnsiQuotesForMysql()}.
+   */
+  private void setAnsiQuotesForMysql() throws MetaException {
+    try {
+      trySetAnsiQuotesForMysql();
+    } catch (SQLException sqlEx) {
+      throw new MetaException("Error setting ansi quotes: " + sqlEx.getMessage());
+    }
+  }
+
+  /**
+   * MySQL, by default, doesn't recognize ANSI quotes which need to have for Postgres.
+   * Try to set the ANSI quotes mode on for the session. Due to connection pooling, needs
+   * to be called in the same transaction as the actual queries.
+   */
+  private void trySetAnsiQuotesForMysql() throws SQLException {
+    final String queryText = "SET @@session.sql_mode=ANSI_QUOTES";
+    JDOConnection jdoConn = pm.getDataStoreConnection();
+    boolean doTrace = LOG.isDebugEnabled();
+    try {
+      long start = doTrace ? System.nanoTime() : 0;
+      ((Connection)jdoConn.getNativeConnection()).createStatement().execute(queryText);
+      timingTrace(doTrace, queryText, start, doTrace ? System.nanoTime() : 0);
+    } finally {
+      jdoConn.close(); // We must release the connection before we call other pm methods.
+    }
   }
 
   /**
@@ -83,7 +165,8 @@ class MetaStoreDirectSql {
     }
     String list = repeat(",?", partNames.size()).substring(1);
     return getPartitionsViaSqlFilterInternal(dbName, tblName, null,
-        "and PARTITIONS.PART_NAME in (" + list + ")", partNames, new ArrayList<String>(), max);
+        "and \"PARTITIONS\".\"PART_NAME\" in (" + list + ")",
+        partNames, new ArrayList<String>(), max);
   }
 
   /**
@@ -124,9 +207,9 @@ class MetaStoreDirectSql {
   }
 
   private boolean isViewTable(String dbName, String tblName) throws MetaException {
-    String queryText = "select TBL_TYPE from TBLS" +
-        " inner join DBS on TBLS.DB_ID = DBS.DB_ID " +
-        " where TBLS.TBL_NAME = ? and DBS.NAME = ?";
+    String queryText = "select \"TBL_TYPE\" from \"TBLS\"" +
+        " inner join \"DBS\" on \"TBLS\".\"DB_ID\" = \"DBS\".\"DB_ID\" " +
+        " where \"TBLS\".\"TBL_NAME\" = ? and \"DBS\".\"NAME\" = ?";
     Object[] params = new Object[] { tblName, dbName };
     Query query = pm.newQuery("javax.jdo.query.SQL", queryText);
     query.setUnique(true);
@@ -155,7 +238,11 @@ class MetaStoreDirectSql {
     dbName = dbName.toLowerCase();
     tblName = tblName.toLowerCase();
     // We have to be mindful of order during filtering if we are not returning all partitions.
-    String orderForFilter = (max != null) ? " order by PART_NAME asc" : "";
+    String orderForFilter = (max != null) ? " order by \"PART_NAME\" asc" : "";
+    if (isMySql) {
+      assert pm.currentTransaction().isActive();
+      setAnsiQuotesForMysql(); // must be inside tx together with queries
+    }
 
     // Get all simple fields for partitions and related objects, which we can map one-on-one.
     // We will do this in 2 queries to use different existing indices for each one.
@@ -163,13 +250,13 @@ class MetaStoreDirectSql {
     // TODO: We might want to tune the indexes instead. With current ones MySQL performs
     // poorly, esp. with 'order by' w/o index on large tables, even if the number of actual
     // results is small (query that returns 8 out of 32k partitions can go 4sec. to 0sec. by
-    // just adding a PART_ID IN (...) filter that doesn't alter the results to it, probably
+    // just adding a \"PART_ID\" IN (...) filter that doesn't alter the results to it, probably
     // causing it to not sort the entire table due to not knowing how selective the filter is.
     String queryText =
-        "select PARTITIONS.PART_ID from PARTITIONS"
-      + "  inner join TBLS on PARTITIONS.TBL_ID = TBLS.TBL_ID "
-      + "  inner join DBS on TBLS.DB_ID = DBS.DB_ID "
-      + join(joinsForFilter, ' ') + " where TBLS.TBL_NAME = ? and DBS.NAME = ? "
+        "select \"PARTITIONS\".\"PART_ID\" from \"PARTITIONS\""
+      + "  inner join \"TBLS\" on \"PARTITIONS\".\"TBL_ID\" = \"TBLS\".\"TBL_ID\" "
+      + "  inner join \"DBS\" on \"TBLS\".\"DB_ID\" = \"DBS\".\"DB_ID\" "
+      + join(joinsForFilter, ' ') + " where \"TBLS\".\"TBL_NAME\" = ? and \"DBS\".\"NAME\" = ? "
       + (sqlFilter == null ? "" : sqlFilter) + orderForFilter;
     Object[] params = new Object[paramsForFilter.size() + 2];
     params[0] = tblName;
@@ -203,14 +290,15 @@ class MetaStoreDirectSql {
 
     // Now get most of the other fields.
     queryText =
-      "select PARTITIONS.PART_ID, SDS.SD_ID, SDS.CD_ID, SERDES.SERDE_ID, "
-    + "  PARTITIONS.CREATE_TIME, PARTITIONS.LAST_ACCESS_TIME, SDS.INPUT_FORMAT, "
-    + "  SDS.IS_COMPRESSED, SDS.IS_STOREDASSUBDIRECTORIES, SDS.LOCATION,  SDS.NUM_BUCKETS, "
-    + "  SDS.OUTPUT_FORMAT, SERDES.NAME, SERDES.SLIB "
-    + "from PARTITIONS"
-    + "  left outer join SDS on PARTITIONS.SD_ID = SDS.SD_ID "
-    + "  left outer join SERDES on SDS.SERDE_ID = SERDES.SERDE_ID "
-    + "where PART_ID in (" + partIds + ") order by PART_NAME asc";
+      "select \"PARTITIONS\".\"PART_ID\", \"SDS\".\"SD_ID\", \"SDS\".\"CD_ID\","
+    + " \"SERDES\".\"SERDE_ID\", \"PARTITIONS\".\"CREATE_TIME\","
+    + " \"PARTITIONS\".\"LAST_ACCESS_TIME\", \"SDS\".\"INPUT_FORMAT\", \"SDS\".\"IS_COMPRESSED\","
+    + " \"SDS\".\"IS_STOREDASSUBDIRECTORIES\", \"SDS\".\"LOCATION\", \"SDS\".\"NUM_BUCKETS\","
+    + " \"SDS\".\"OUTPUT_FORMAT\", \"SERDES\".\"NAME\", \"SERDES\".\"SLIB\" "
+    + "from \"PARTITIONS\""
+    + "  left outer join \"SDS\" on \"PARTITIONS\".\"SD_ID\" = \"SDS\".\"SD_ID\" "
+    + "  left outer join \"SERDES\" on \"SDS\".\"SERDE_ID\" = \"SERDES\".\"SERDE_ID\" "
+    + "where \"PART_ID\" in (" + partIds + ") order by \"PART_NAME\" asc";
     start = doTrace ? System.nanoTime() : 0;
     query = pm.newQuery("javax.jdo.query.SQL", queryText);
     @SuppressWarnings("unchecked")
@@ -254,8 +342,8 @@ class MetaStoreDirectSql {
       part.setValues(new ArrayList<String>());
       part.setDbName(dbName);
       part.setTableName(tblName);
-      if (fields[4] != null) part.setCreateTime((Integer)fields[4]);
-      if (fields[5] != null) part.setLastAccessTime((Integer)fields[5]);
+      if (fields[4] != null) part.setCreateTime(extractSqlInt(fields[4]));
+      if (fields[5] != null) part.setLastAccessTime(extractSqlInt(fields[5]));
       partitions.put(partitionId, part);
 
       if (sdId == null) continue; // Probably a view.
@@ -279,7 +367,7 @@ class MetaStoreDirectSql {
       tmpBoolean = extractSqlBoolean(fields[8]);
       if (tmpBoolean != null) sd.setStoredAsSubDirectories(tmpBoolean);
       sd.setLocation((String)fields[9]);
-      if (fields[10] != null) sd.setNumBuckets((Integer)fields[10]);
+      if (fields[10] != null) sd.setNumBuckets(extractSqlInt(fields[10]));
       sd.setOutputFormat((String)fields[11]);
       sdSb.append(sdId).append(",");
       part.setSd(sd);
@@ -309,15 +397,17 @@ class MetaStoreDirectSql {
     timingTrace(doTrace, queryText, start, queryTime);
 
     // Now get all the one-to-many things. Start with partitions.
-    queryText = "select PART_ID, PARAM_KEY, PARAM_VALUE from PARTITION_PARAMS where PART_ID in ("
-        + partIds + ") and PARAM_KEY is not null order by PART_ID asc";
+    queryText = "select \"PART_ID\", \"PARAM_KEY\", \"PARAM_VALUE\" from \"PARTITION_PARAMS\""
+        + " where \"PART_ID\" in (" + partIds + ") and \"PARAM_KEY\" is not null"
+        + " order by \"PART_ID\" asc";
     loopJoinOrderedResult(partitions, queryText, 0, new ApplyFunc<Partition>() {
       public void apply(Partition t, Object[] fields) {
         t.putToParameters((String)fields[1], (String)fields[2]);
       }});
 
-    queryText = "select PART_ID, PART_KEY_VAL from PARTITION_KEY_VALS where PART_ID in ("
-        + partIds + ") and INTEGER_IDX >= 0 order by PART_ID asc, INTEGER_IDX asc";
+    queryText = "select \"PART_ID\", \"PART_KEY_VAL\" from \"PARTITION_KEY_VALS\""
+        + " where \"PART_ID\" in (" + partIds + ") and \"INTEGER_IDX\" >= 0"
+        + " order by \"PART_ID\" asc, \"INTEGER_IDX\" asc";
     loopJoinOrderedResult(partitions, queryText, 0, new ApplyFunc<Partition>() {
       public void apply(Partition t, Object[] fields) {
         t.addToValues((String)fields[1]);
@@ -332,33 +422,35 @@ class MetaStoreDirectSql {
         colIds = trimCommaList(colsSb);
 
     // Get all the stuff for SD. Don't do empty-list check - we expect partitions do have SDs.
-    queryText = "select SD_ID, PARAM_KEY, PARAM_VALUE from SD_PARAMS where SD_ID in ("
-        + sdIds + ") and PARAM_KEY is not null order by SD_ID asc";
+    queryText = "select \"SD_ID\", \"PARAM_KEY\", \"PARAM_VALUE\" from \"SD_PARAMS\""
+        + " where \"SD_ID\" in (" + sdIds + ") and \"PARAM_KEY\" is not null"
+        + " order by \"SD_ID\" asc";
     loopJoinOrderedResult(sds, queryText, 0, new ApplyFunc<StorageDescriptor>() {
       public void apply(StorageDescriptor t, Object[] fields) {
         t.putToParameters((String)fields[1], (String)fields[2]);
       }});
 
-    // Note that SORT_COLS has "ORDER" column, which is not SQL92-legal. We have two choices
-    // here - drop SQL92, or get '*' and be broken on certain schema changes. We do the latter.
-    queryText = "select SD_ID, COLUMN_NAME, SORT_COLS.* from SORT_COLS where SD_ID in ("
-        + sdIds + ") and INTEGER_IDX >= 0 order by SD_ID asc, INTEGER_IDX asc";
+    queryText = "select \"SD_ID\", \"COLUMN_NAME\", \"SORT_COLS\".\"ORDER\" from \"SORT_COLS\""
+        + " where \"SD_ID\" in (" + sdIds + ") and \"INTEGER_IDX\" >= 0"
+        + " order by \"SD_ID\" asc, \"INTEGER_IDX\" asc";
     loopJoinOrderedResult(sds, queryText, 0, new ApplyFunc<StorageDescriptor>() {
       public void apply(StorageDescriptor t, Object[] fields) {
-        if (fields[4] == null) return;
-        t.addToSortCols(new Order((String)fields[1], (Integer)fields[4]));
+        if (fields[2] == null) return;
+        t.addToSortCols(new Order((String)fields[1], extractSqlInt(fields[2])));
       }});
 
-    queryText = "select SD_ID, BUCKET_COL_NAME from BUCKETING_COLS where SD_ID in ("
-        + sdIds + ") and INTEGER_IDX >= 0 order by SD_ID asc, INTEGER_IDX asc";
+    queryText = "select \"SD_ID\", \"BUCKET_COL_NAME\" from \"BUCKETING_COLS\""
+        + " where \"SD_ID\" in (" + sdIds + ") and \"INTEGER_IDX\" >= 0"
+        + " order by \"SD_ID\" asc, \"INTEGER_IDX\" asc";
     loopJoinOrderedResult(sds, queryText, 0, new ApplyFunc<StorageDescriptor>() {
       public void apply(StorageDescriptor t, Object[] fields) {
         t.addToBucketCols((String)fields[1]);
       }});
 
     // Skewed columns stuff.
-    queryText = "select SD_ID, SKEWED_COL_NAME from SKEWED_COL_NAMES where SD_ID in ("
-        + sdIds + ") and INTEGER_IDX >= 0 order by SD_ID asc, INTEGER_IDX asc";
+    queryText = "select \"SD_ID\", \"SKEWED_COL_NAME\" from \"SKEWED_COL_NAMES\""
+        + " where \"SD_ID\" in (" + sdIds + ") and \"INTEGER_IDX\" >= 0"
+        + " order by \"SD_ID\" asc, \"INTEGER_IDX\" asc";
     boolean hasSkewedColumns =
       loopJoinOrderedResult(sds, queryText, 0, new ApplyFunc<StorageDescriptor>() {
         public void apply(StorageDescriptor t, Object[] fields) {
@@ -370,16 +462,17 @@ class MetaStoreDirectSql {
     if (hasSkewedColumns) {
       // We are skipping the SKEWED_STRING_LIST table here, as it seems to be totally useless.
       queryText =
-            "select SKEWED_VALUES.SD_ID_OID, SKEWED_STRING_LIST_VALUES.STRING_LIST_ID, "
-          + "  SKEWED_STRING_LIST_VALUES.STRING_LIST_VALUE "
-          + "from SKEWED_VALUES "
-          + "  left outer join SKEWED_STRING_LIST_VALUES on "
-          + "    SKEWED_VALUES.STRING_LIST_ID_EID = SKEWED_STRING_LIST_VALUES.STRING_LIST_ID "
-          + "where SKEWED_VALUES.SD_ID_OID in (" + sdIds + ") "
-          + "  and SKEWED_VALUES.STRING_LIST_ID_EID is not null "
-          + "  and SKEWED_VALUES.INTEGER_IDX >= 0 "
-          + "order by SKEWED_VALUES.SD_ID_OID asc, SKEWED_VALUES.INTEGER_IDX asc, "
-          + "  SKEWED_STRING_LIST_VALUES.INTEGER_IDX asc";
+            "select \"SKEWED_VALUES\".\"SD_ID_OID\","
+          + "  \"SKEWED_STRING_LIST_VALUES\".\"STRING_LIST_ID\","
+          + "  \"SKEWED_STRING_LIST_VALUES\".\"STRING_LIST_VALUE\" "
+          + "from \"SKEWED_VALUES\" "
+          + "  left outer join \"SKEWED_STRING_LIST_VALUES\" on \"SKEWED_VALUES\"."
+          + "\"STRING_LIST_ID_EID\" = \"SKEWED_STRING_LIST_VALUES\".\"STRING_LIST_ID\" "
+          + "where \"SKEWED_VALUES\".\"SD_ID_OID\" in (" + sdIds + ") "
+          + "  and \"SKEWED_VALUES\".\"STRING_LIST_ID_EID\" is not null "
+          + "  and \"SKEWED_VALUES\".\"INTEGER_IDX\" >= 0 "
+          + "order by \"SKEWED_VALUES\".\"SD_ID_OID\" asc, \"SKEWED_VALUES\".\"INTEGER_IDX\" asc,"
+          + "  \"SKEWED_STRING_LIST_VALUES\".\"INTEGER_IDX\" asc";
       loopJoinOrderedResult(sds, queryText, 0, new ApplyFunc<StorageDescriptor>() {
         private Long currentListId;
         private List<String> currentList;
@@ -404,16 +497,18 @@ class MetaStoreDirectSql {
 
       // We are skipping the SKEWED_STRING_LIST table here, as it seems to be totally useless.
       queryText =
-            "select SKEWED_COL_VALUE_LOC_MAP.SD_ID, SKEWED_STRING_LIST_VALUES.STRING_LIST_ID,"
-          + "  SKEWED_COL_VALUE_LOC_MAP.LOCATION, SKEWED_STRING_LIST_VALUES.STRING_LIST_VALUE "
-          + "from SKEWED_COL_VALUE_LOC_MAP"
-          + "  left outer join SKEWED_STRING_LIST_VALUES on SKEWED_COL_VALUE_LOC_MAP."
-          + "STRING_LIST_ID_KID = SKEWED_STRING_LIST_VALUES.STRING_LIST_ID "
-          + "where SKEWED_COL_VALUE_LOC_MAP.SD_ID in (" + sdIds + ")"
-          + "  and SKEWED_COL_VALUE_LOC_MAP.STRING_LIST_ID_KID is not null "
-          + "order by SKEWED_COL_VALUE_LOC_MAP.SD_ID asc,"
-          + "  SKEWED_STRING_LIST_VALUES.STRING_LIST_ID asc,"
-          + "  SKEWED_STRING_LIST_VALUES.INTEGER_IDX asc";
+            "select \"SKEWED_COL_VALUE_LOC_MAP\".\"SD_ID\","
+          + " \"SKEWED_STRING_LIST_VALUES\".STRING_LIST_ID,"
+          + " \"SKEWED_COL_VALUE_LOC_MAP\".\"LOCATION\","
+          + " \"SKEWED_STRING_LIST_VALUES\".\"STRING_LIST_VALUE\" "
+          + "from \"SKEWED_COL_VALUE_LOC_MAP\""
+          + "  left outer join \"SKEWED_STRING_LIST_VALUES\" on \"SKEWED_COL_VALUE_LOC_MAP\"."
+          + "\"STRING_LIST_ID_KID\" = \"SKEWED_STRING_LIST_VALUES\".\"STRING_LIST_ID\" "
+          + "where \"SKEWED_COL_VALUE_LOC_MAP\".\"SD_ID\" in (" + sdIds + ")"
+          + "  and \"SKEWED_COL_VALUE_LOC_MAP\".\"STRING_LIST_ID_KID\" is not null "
+          + "order by \"SKEWED_COL_VALUE_LOC_MAP\".\"SD_ID\" asc,"
+          + "  \"SKEWED_STRING_LIST_VALUES\".\"STRING_LIST_ID\" asc,"
+          + "  \"SKEWED_STRING_LIST_VALUES\".\"INTEGER_IDX\" asc";
 
       loopJoinOrderedResult(sds, queryText, 0, new ApplyFunc<StorageDescriptor>() {
         private Long currentListId;
@@ -447,8 +542,9 @@ class MetaStoreDirectSql {
     // Get FieldSchema stuff if any.
     if (!colss.isEmpty()) {
       // We are skipping the CDS table here, as it seems to be totally useless.
-      queryText = "select CD_ID, COMMENT, COLUMN_NAME, TYPE_NAME from COLUMNS_V2 where CD_ID in ("
-          + colIds + ") and INTEGER_IDX >= 0 order by CD_ID asc, INTEGER_IDX asc";
+      queryText = "select \"CD_ID\", \"COMMENT\", \"COLUMN_NAME\", \"TYPE_NAME\""
+          + " from \"COLUMNS_V2\" where \"CD_ID\" in (" + colIds + ") and \"INTEGER_IDX\" >= 0"
+          + " order by \"CD_ID\" asc, \"INTEGER_IDX\" asc";
       loopJoinOrderedResult(colss, queryText, 0, new ApplyFunc<List<FieldSchema>>() {
         public void apply(List<FieldSchema> t, Object[] fields) {
           t.add(new FieldSchema((String)fields[2], (String)fields[3], (String)fields[1]));
@@ -456,8 +552,9 @@ class MetaStoreDirectSql {
     }
 
     // Finally, get all the stuff for serdes - just the params.
-    queryText = "select SERDE_ID, PARAM_KEY, PARAM_VALUE from SERDE_PARAMS where SERDE_ID in ("
-        + serdeIds + ") and PARAM_KEY is not null order by SERDE_ID asc";
+    queryText = "select \"SERDE_ID\", \"PARAM_KEY\", \"PARAM_VALUE\" from \"SERDE_PARAMS\""
+        + " where \"SERDE_ID\" in (" + serdeIds + ") and \"PARAM_KEY\" is not null"
+        + " order by \"SERDE_ID\" asc";
     loopJoinOrderedResult(serdes, queryText, 0, new ApplyFunc<SerDeInfo>() {
       public void apply(SerDeInfo t, Object[] fields) {
         t.putToParameters((String)fields[1], (String)fields[2]);
@@ -469,7 +566,7 @@ class MetaStoreDirectSql {
   private void timingTrace(boolean doTrace, String queryText, long start, long queryTime) {
     if (!doTrace) return;
     LOG.debug("Direct SQL query in " + (queryTime - start) / 1000000.0 + "ms + " +
-        (System.nanoTime() - queryTime) / 1000000.0 + "ms, the query is [ " + queryText + "]");
+        (System.nanoTime() - queryTime) / 1000000.0 + "ms, the query is [" + queryText + "]");
   }
 
   private static Boolean extractSqlBoolean(Object value) throws MetaException {
@@ -484,6 +581,10 @@ class MetaStoreDirectSql {
     if (c == 'Y') return true;
     if (c == 'N') return false;
     throw new MetaException("Cannot extrace boolean from column value " + value);
+  }
+
+  private int extractSqlInt(Object field) {
+    return ((Number)field).intValue();
   }
 
   private static String trimCommaList(StringBuilder sb) {
@@ -632,12 +733,12 @@ class MetaStoreDirectSql {
         }
       }
       if (joins.get(partColIndex) == null) {
-        joins.set(partColIndex, "inner join PARTITION_KEY_VALS as FILTER" + partColIndex
-            + " on FILTER"  + partColIndex + ".PART_ID = PARTITIONS.PART_ID and FILTER"
-            + partColIndex + ".INTEGER_IDX = " + partColIndex);
+        joins.set(partColIndex, "inner join \"PARTITION_KEY_VALS\" as \"FILTER" + partColIndex
+            + "\" on \"FILTER"  + partColIndex + "\".\"PART_ID\" = \"PARTITIONS\".\"PART_ID\""
+            + " and \"FILTER" + partColIndex + "\".\"INTEGER_IDX\" = " + partColIndex);
       }
 
-      String tableValue = "FILTER" + partColIndex + ".PART_KEY_VAL";
+      String tableValue = "\"FILTER" + partColIndex + "\".\"PART_KEY_VAL\"";
       // TODO: need casts here if #doesOperatorSupportIntegral is amended to include lt/gt/etc.
       filterBuffer.append(node.isReverseOrder
           ? "(? " + node.operator.getSqlOp() + " " + tableValue + ")"
