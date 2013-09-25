@@ -437,6 +437,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Reduce Operator Tree:
         Forward
           Filter Operator
@@ -644,6 +645,7 @@ STAGE PLANS:
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           Filter Operator
             predicate:
                 expr: (KEY._col0 >= 5)

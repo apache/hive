@@ -47,6 +47,7 @@ import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.thrift.DelegationTokenIdentifier;
@@ -449,10 +450,10 @@ public class HCatUtil {
   public static Map<String, String>
   getInputJobProperties(HCatStorageHandler storageHandler,
               InputJobInfo inputJobInfo) {
-    TableDesc tableDesc = new TableDesc(storageHandler.getSerDeClass(),
-      storageHandler.getInputFormatClass(),
-      storageHandler.getOutputFormatClass(),
-      inputJobInfo.getTableInfo().getStorerInfo().getProperties());
+      Properties props = inputJobInfo.getTableInfo().getStorerInfo().getProperties();  
+      props.put(serdeConstants.SERIALIZATION_LIB,storageHandler.getSerDeClass().getName());
+      TableDesc tableDesc = new TableDesc(storageHandler.getInputFormatClass(),
+      storageHandler.getOutputFormatClass(),props);
     if (tableDesc.getJobProperties() == null) {
       tableDesc.setJobProperties(new HashMap<String, String>());
     }
@@ -482,10 +483,10 @@ public class HCatUtil {
                   OutputJobInfo outputJobInfo) {
     //TODO replace IgnoreKeyTextOutputFormat with a
     //HiveOutputFormatWrapper in StorageHandler
-    TableDesc tableDesc = new TableDesc(storageHandler.getSerDeClass(),
-      storageHandler.getInputFormatClass(),
-      IgnoreKeyTextOutputFormat.class,
-      outputJobInfo.getTableInfo().getStorerInfo().getProperties());
+    Properties props = outputJobInfo.getTableInfo().getStorerInfo().getProperties();
+    props.put(serdeConstants.SERIALIZATION_LIB,storageHandler.getSerDeClass().getName());
+    TableDesc tableDesc = new TableDesc(storageHandler.getInputFormatClass(),
+      IgnoreKeyTextOutputFormat.class,props);
     if (tableDesc.getJobProperties() == null)
       tableDesc.setJobProperties(new HashMap<String, String>());
     for (Map.Entry<String, String> el : conf) {

@@ -186,12 +186,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
     opCtx.tableName = String.valueOf(partProps.getProperty("name"));
     opCtx.partName = String.valueOf(partSpec);
 
-    Class serdeclass = pd.getDeserializerClass();
-    if (serdeclass == null) {
-      String className = checkSerdeClassName(pd.getSerdeClassName(), opCtx.tableName);
-      serdeclass = hconf.getClassByName(className);
-    }
-
+    Class serdeclass = hconf.getClassByName(pd.getSerdeClassName());
     opCtx.deserializer = (Deserializer) serdeclass.newInstance();
     opCtx.deserializer.initialize(hconf, partProps);
 
@@ -285,14 +280,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
         Properties tblProps = tableDesc.getProperties();
         // If the partition does not exist, use table properties
         Properties partProps = isPartitioned(pd) ? pd.getOverlayedProperties() : tblProps;
-
-        Class sdclass = pd.getDeserializerClass();
-        if (sdclass == null) {
-          String className = checkSerdeClassName(pd.getSerdeClassName(),
-              pd.getProperties().getProperty("name"));
-          sdclass = hconf.getClassByName(className);
-        }
-
+        Class sdclass = hconf.getClassByName(pd.getSerdeClassName());
         Deserializer partDeserializer = (Deserializer) sdclass.newInstance();
         partDeserializer.initialize(hconf, partProps);
         StructObjectInspector partRawRowObjectInspector = (StructObjectInspector) partDeserializer
@@ -301,13 +289,8 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
         StructObjectInspector tblRawRowObjectInspector = tableDescOI.get(tableDesc);
         if ((tblRawRowObjectInspector == null) ||
             (identityConverterTableDesc.contains(tableDesc))) {
-          sdclass = tableDesc.getDeserializerClass();
-          if (sdclass == null) {
-            String className = checkSerdeClassName(tableDesc.getSerdeClassName(),
-                tableDesc.getProperties().getProperty("name"));
-            sdclass = hconf.getClassByName(className);
-          }
-          Deserializer tblDeserializer = (Deserializer) sdclass.newInstance();
+            sdclass = hconf.getClassByName(tableDesc.getSerdeClassName());
+            Deserializer tblDeserializer = (Deserializer) sdclass.newInstance();
           tblDeserializer.initialize(hconf, tblProps);
           tblRawRowObjectInspector =
               (StructObjectInspector) ObjectInspectorConverters.getConvertedOI(
@@ -334,14 +317,6 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
 
   private boolean isPartitioned(PartitionDesc pd) {
     return pd.getPartSpec() != null && !pd.getPartSpec().isEmpty();
-  }
-
-  private String checkSerdeClassName(String className, String tableName) throws HiveException {
-    if (className == null || className.isEmpty()) {
-      throw new HiveException(
-          "SerDe class or the SerDe class name is not set for table: " + tableName);
-    }
-    return className;
   }
 
   public void setChildren(Configuration hconf) throws HiveException {

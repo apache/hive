@@ -279,6 +279,8 @@ STAGE PLANS:
                         columns.types string,string,int,string,bigint,string,string
                         field.delim 9
                         serialization.format 9
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   Reduce Output Operator
                     key expressions:
                           expr: _col1
@@ -333,6 +335,8 @@ STAGE PLANS:
                     columns.types string,string,int,string,bigint,string,string
                     field.delim 9
                     serialization.format 9
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               Select Operator
                 expressions:
                       expr: _col0

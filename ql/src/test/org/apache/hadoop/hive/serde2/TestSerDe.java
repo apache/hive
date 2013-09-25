@@ -53,19 +53,6 @@ public class TestSerDe extends AbstractSerDe {
     return "test_meta";
   }
 
-  static {
-    StackTraceElement[] sTrace = new Exception().getStackTrace();
-    String className = sTrace[0].getClassName();
-    try {
-      SerDeUtils.registerSerDe(shortName(), Class.forName(className));
-      // For backward compatibility: this class replaces the following class.
-      SerDeUtils.registerSerDe("org.apache.hadoop.hive.serde.TestSerDe", Class
-          .forName(className));
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   public static final String DefaultSeparator = "\002";
 
   private String separator;

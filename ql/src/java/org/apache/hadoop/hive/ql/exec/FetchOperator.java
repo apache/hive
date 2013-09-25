@@ -394,7 +394,7 @@ public class FetchOperator implements Serializable {
       this.inputSplits = inputSplits;
 
       splitNum = 0;
-      serde = partDesc.getDeserializerClass().newInstance();
+      serde = partDesc.getDeserializer();
       serde.initialize(job, partDesc.getOverlayedProperties());
 
       if (currTbl != null) {
@@ -630,7 +630,7 @@ public class FetchOperator implements Serializable {
       // Get the OI corresponding to all the partitions
       for (PartitionDesc listPart : listParts) {
         partition = listPart;
-        Deserializer partSerde = listPart.getDeserializerClass().newInstance();
+        Deserializer partSerde = listPart.getDeserializer();
         partSerde.initialize(job, listPart.getOverlayedProperties());
 
         partitionedTableOI = ObjectInspectorConverters.getConvertedOI(
