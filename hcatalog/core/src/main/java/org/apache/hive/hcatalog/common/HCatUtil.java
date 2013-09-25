@@ -483,9 +483,9 @@ public class HCatUtil {
                   OutputJobInfo outputJobInfo) {
     //TODO replace IgnoreKeyTextOutputFormat with a
     //HiveOutputFormatWrapper in StorageHandler
-   Properties props = outputJobInfo.getTableInfo().getStorerInfo().getProperties();
-   props.put(serdeConstants.SERIALIZATION_LIB,storageHandler.getSerDeClass().getName());
-   TableDesc tableDesc = new TableDesc(storageHandler.getInputFormatClass(),
+    Properties props = outputJobInfo.getTableInfo().getStorerInfo().getProperties();
+    props.put(serdeConstants.SERIALIZATION_LIB,storageHandler.getSerDeClass().getName());
+    TableDesc tableDesc = new TableDesc(storageHandler.getInputFormatClass(),
       IgnoreKeyTextOutputFormat.class,props);
     if (tableDesc.getJobProperties() == null)
       tableDesc.setJobProperties(new HashMap<String, String>());
