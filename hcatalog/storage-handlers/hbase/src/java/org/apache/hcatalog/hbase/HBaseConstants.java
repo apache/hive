@@ -19,7 +19,7 @@
 
 package org.apache.hcatalog.hbase;
 
-import org.apache.hive.hcatalog.common.HCatConstants;
+import org.apache.hcatalog.common.HCatConstants;
 
 /**
  * Constants class for constants used in HBase storage handler.

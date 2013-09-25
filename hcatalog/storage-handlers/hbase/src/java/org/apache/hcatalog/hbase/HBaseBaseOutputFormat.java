@@ -32,9 +32,9 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.util.Progressable;
-import org.apache.hive.hcatalog.common.HCatConstants;
-import org.apache.hive.hcatalog.common.HCatUtil;
-import org.apache.hive.hcatalog.mapreduce.OutputJobInfo;
+import org.apache.hcatalog.common.HCatConstants;
+import org.apache.hcatalog.common.HCatUtil;
+import org.apache.hcatalog.mapreduce.OutputJobInfo;
 
 public class HBaseBaseOutputFormat implements OutputFormat<WritableComparable<?>, Put>,
   HiveOutputFormat<WritableComparable<?>, Put> {
