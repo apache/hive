@@ -49,6 +49,7 @@ package org.apache.hadoop.hive.ql.exec;
  * partial);
  * 
  */
+@Deprecated
 public class UDAF {
 
   /**

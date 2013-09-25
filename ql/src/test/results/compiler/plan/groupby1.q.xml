@@ -546,8 +546,8 @@
                    <object class="java.util.ArrayList"> 
                     <void method="add"> 
                      <object class="org.apache.hadoop.hive.ql.plan.AggregationDesc"> 
-                      <void property="genericUDAFEvaluator"> 
-                       <object id="GenericUDAFSum$GenericUDAFSumDouble0" class="org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum$GenericUDAFSumDouble"/> 
+                      <void property="genericUDAFEvaluatorClassName"> 
+                       <string>org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum$GenericUDAFSumDouble</string> 
                       </void> 
                       <void property="genericUDAFName"> 
                        <string>sum</string> 
@@ -1458,8 +1458,8 @@
            <object class="java.util.ArrayList"> 
             <void method="add"> 
              <object class="org.apache.hadoop.hive.ql.plan.AggregationDesc"> 
-              <void property="genericUDAFEvaluator"> 
-               <object idref="GenericUDAFSum$GenericUDAFSumDouble0"/> 
+              <void property="genericUDAFEvaluatorClassName"> 
+               <string>org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum$GenericUDAFSumDouble</string> 
               </void> 
               <void property="genericUDAFName"> 
                <string>sum</string> 
