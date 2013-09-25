@@ -79,8 +79,11 @@ final class OrcUnion implements UnionObject {
   }
 
   static class OrcUnionObjectInspector implements UnionObjectInspector {
-    private final List<ObjectInspector> children;
+    private List<ObjectInspector> children;
 
+    protected OrcUnionObjectInspector() {
+      super();
+    }
     OrcUnionObjectInspector(int columnId,
                             List<OrcProto.Type> types) {
       OrcProto.Type type = types.get(columnId);

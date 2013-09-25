@@ -39,55 +39,56 @@ import org.junit.Test;
  *
  * Since {@link HCatStorer} does not allow extra parameters in the constructor, we use {@link HCatStorerWrapper}
  * that always treats the last parameter as the external path.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.pig.TestHCatStorerWrapper} instead
  */
 public class TestHCatStorerWrapper extends HCatBaseTest {
 
-    private static final String INPUT_FILE_NAME = TEST_DATA_DIR + "/input.data";
+  private static final String INPUT_FILE_NAME = TEST_DATA_DIR + "/input.data";
 
-    @Test
-    public void testStoreExternalTableWithExternalDir() throws IOException, CommandNeedRetryException{
+  @Test
+  public void testStoreExternalTableWithExternalDir() throws IOException, CommandNeedRetryException{
 
-	File tmpExternalDir = new File(SystemUtils.getJavaIoTmpDir(), UUID.randomUUID().toString());
-	tmpExternalDir.deleteOnExit();
+    File tmpExternalDir = new File(SystemUtils.getJavaIoTmpDir(), UUID.randomUUID().toString());
+    tmpExternalDir.deleteOnExit();
 
-	String part_val = "100";
+    String part_val = "100";
 
-	driver.run("drop table junit_external");
-	String createTable = "create external table junit_external(a int, b string) partitioned by (c string) stored as RCFILE";
-	Assert.assertEquals(0, driver.run(createTable).getResponseCode());
+    driver.run("drop table junit_external");
+    String createTable = "create external table junit_external(a int, b string) partitioned by (c string) stored as RCFILE";
+    Assert.assertEquals(0, driver.run(createTable).getResponseCode());
 
-	int LOOP_SIZE = 3;
-	String[] inputData = new String[LOOP_SIZE*LOOP_SIZE];
-	int k = 0;
-	for(int i = 1; i <= LOOP_SIZE; i++) {
-	    String si = i + "";
-	    for(int j=1;j<=LOOP_SIZE;j++) {
-		inputData[k++] = si + "\t"+j;
-	    }
-	}
-	HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, inputData);
-	PigServer server = new PigServer(ExecType.LOCAL);
-	server.setBatchOn();
-	logAndRegister(server, "A = load '"+INPUT_FILE_NAME+"' as (a:int, b:chararray);");
-	logAndRegister(server, "store A into 'default.junit_external' using " + HCatStorerWrapper.class.getName()
-		+ "('c=" + part_val + "','" + tmpExternalDir.getAbsolutePath() + "');");
-	server.executeBatch();
-
-	Assert.assertTrue(tmpExternalDir.exists());
-	Assert.assertTrue(new File(tmpExternalDir.getAbsoluteFile() + "/" + "part-m-00000").exists());
-
-	driver.run("select * from junit_external");
-	ArrayList<String> res = new ArrayList<String>();
-	driver.getResults(res);
-	driver.run("drop table junit_external");
-	Iterator<String> itr = res.iterator();
-	for(int i = 1; i <= LOOP_SIZE; i++) {
-	    String si = i + "";
-	    for(int j=1;j<=LOOP_SIZE;j++) {
-		Assert.assertEquals( si + "\t" + j + "\t" + part_val,itr.next());
-	    }
-	}
-	Assert.assertFalse(itr.hasNext());
-
+    int LOOP_SIZE = 3;
+    String[] inputData = new String[LOOP_SIZE*LOOP_SIZE];
+    int k = 0;
+    for(int i = 1; i <= LOOP_SIZE; i++) {
+      String si = i + "";
+      for(int j=1;j<=LOOP_SIZE;j++) {
+        inputData[k++] = si + "\t"+j;
+      }
     }
+    HcatTestUtils.createTestDataFile(INPUT_FILE_NAME, inputData);
+    PigServer server = new PigServer(ExecType.LOCAL);
+    server.setBatchOn();
+    logAndRegister(server, "A = load '"+INPUT_FILE_NAME+"' as (a:int, b:chararray);");
+    logAndRegister(server, "store A into 'default.junit_external' using " + HCatStorerWrapper.class.getName()
+        + "('c=" + part_val + "','" + tmpExternalDir.getAbsolutePath() + "');");
+    server.executeBatch();
+
+    Assert.assertTrue(tmpExternalDir.exists());
+    Assert.assertTrue(new File(tmpExternalDir.getAbsoluteFile() + "/" + "part-m-00000").exists());
+
+    driver.run("select * from junit_external");
+    ArrayList<String> res = new ArrayList<String>();
+    driver.getResults(res);
+    driver.run("drop table junit_external");
+    Iterator<String> itr = res.iterator();
+    for(int i = 1; i <= LOOP_SIZE; i++) {
+      String si = i + "";
+      for(int j=1;j<=LOOP_SIZE;j++) {
+        Assert.assertEquals( si + "\t" + j + "\t" + part_val,itr.next());
+      }
+    }
+    Assert.assertFalse(itr.hasNext());
+
+  }
 }

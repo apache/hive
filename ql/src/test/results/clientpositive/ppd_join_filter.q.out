@@ -152,6 +152,8 @@ STAGE PLANS:
                       columns _col0,_col2,_col3,_col4
                       columns.types string,double,double,double
                       escape.delim \
+                      serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
@@ -160,6 +162,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
+            GatherStats: false
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -202,6 +206,8 @@ STAGE PLANS:
               columns _col0,_col2,_col3,_col4
               columns.types string,double,double,double
               escape.delim \
+              serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -209,6 +215,8 @@ STAGE PLANS:
                 columns _col0,_col2,_col3,_col4
                 columns.types string,double,double,double
                 escape.delim \
+                serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 #### A masked pattern was here ####
           Partition
             base file name: src
@@ -288,6 +296,8 @@ STAGE PLANS:
                     escape.delim \
                     hive.serialization.extend.nesting.levels true
                     serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -485,6 +495,8 @@ STAGE PLANS:
                       columns _col0,_col2,_col3,_col4
                       columns.types string,double,double,double
                       escape.delim \
+                      serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
@@ -493,6 +505,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
+            GatherStats: false
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -535,6 +549,8 @@ STAGE PLANS:
               columns _col0,_col2,_col3,_col4
               columns.types string,double,double,double
               escape.delim \
+              serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -542,6 +558,8 @@ STAGE PLANS:
                 columns _col0,_col2,_col3,_col4
                 columns.types string,double,double,double
                 escape.delim \
+                serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 #### A masked pattern was here ####
           Partition
             base file name: src
@@ -621,6 +639,8 @@ STAGE PLANS:
                     escape.delim \
                     hive.serialization.extend.nesting.levels true
                     serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -818,6 +838,8 @@ STAGE PLANS:
                       columns _col0,_col2,_col3,_col4
                       columns.types string,double,double,double
                       escape.delim \
+                      serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
@@ -826,6 +848,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
+            GatherStats: false
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -868,6 +892,8 @@ STAGE PLANS:
               columns _col0,_col2,_col3,_col4
               columns.types string,double,double,double
               escape.delim \
+              serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -875,6 +901,8 @@ STAGE PLANS:
                 columns _col0,_col2,_col3,_col4
                 columns.types string,double,double,double
                 escape.delim \
+                serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 #### A masked pattern was here ####
           Partition
             base file name: src
@@ -954,6 +982,8 @@ STAGE PLANS:
                     escape.delim \
                     hive.serialization.extend.nesting.levels true
                     serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -1151,6 +1181,8 @@ STAGE PLANS:
                       columns _col0,_col2,_col3,_col4
                       columns.types string,double,double,double
                       escape.delim \
+                      serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
@@ -1159,6 +1191,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
+            GatherStats: false
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -1201,6 +1235,8 @@ STAGE PLANS:
               columns _col0,_col2,_col3,_col4
               columns.types string,double,double,double
               escape.delim \
+              serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -1208,6 +1244,8 @@ STAGE PLANS:
                 columns _col0,_col2,_col3,_col4
                 columns.types string,double,double,double
                 escape.delim \
+                serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 #### A masked pattern was here ####
           Partition
             base file name: src
@@ -1287,6 +1325,8 @@ STAGE PLANS:
                     escape.delim \
                     hive.serialization.extend.nesting.levels true
                     serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false

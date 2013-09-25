@@ -22,19 +22,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableBinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableBooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableByteObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableDateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableDoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableFloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveDecimalObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableIntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableLongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableShortObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableDateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
@@ -101,6 +103,10 @@ public final class ObjectInspectorConverters {
         return new PrimitiveObjectInspectorConverter.StringConverter(
             inputOI);
       }
+    case VARCHAR:
+      return new PrimitiveObjectInspectorConverter.HiveVarcharConverter(
+          inputOI,
+          (SettableHiveVarcharObjectInspector) outputOI);
     case DATE:
       return new PrimitiveObjectInspectorConverter.DateConverter(
           inputOI,
@@ -148,6 +154,9 @@ public final class ObjectInspectorConverters {
     case MAP:
       return new MapConverter(inputOI,
           (SettableMapObjectInspector) outputOI);
+    case UNION:
+      return new UnionConverter(inputOI,
+          (SettableUnionObjectInspector) outputOI);
     default:
       throw new RuntimeException("Hive internal error: conversion of "
           + inputOI.getTypeName() + " to " + outputOI.getTypeName()
@@ -155,67 +164,92 @@ public final class ObjectInspectorConverters {
     }
   }
 
-  // Return the settable equivalent object inspector for primitive categories
-  // For eg: for table T containing partitions p1 and p2 (possibly different
-  // from the table T), return the settable inspector for T. The inspector for
-  // T is settable recursively i.e all the nested fields are also settable.
-  private static ObjectInspector getSettableConvertedOI(
-      ObjectInspector inputOI) {
-    switch (inputOI.getCategory()) {
-    case PRIMITIVE:
-      PrimitiveObjectInspector primInputOI = (PrimitiveObjectInspector) inputOI;
-      return PrimitiveObjectInspectorFactory.
-          getPrimitiveWritableObjectInspector(primInputOI.getPrimitiveCategory());
-    case STRUCT:
-      return inputOI;
-    case LIST:
-      return inputOI;
-    case MAP:
-      return inputOI;
-    default:
-      throw new RuntimeException("Hive internal error: desired OI of "
-          + inputOI.getTypeName() + " not supported yet.");
-    }
+  /*
+   * getConvertedOI with caching to store settable properties of the object
+   * inspector. Caching might help when the object inspector
+   * contains complex nested data types. Caching is not explicitly required for
+   * the returned object inspector across multiple invocations since the
+   * ObjectInspectorFactory already takes care of it.
+   */
+  public static ObjectInspector getConvertedOI(
+      ObjectInspector inputOI, ObjectInspector outputOI,
+      Map<ObjectInspector, Boolean> oiSettableProperties
+      ) {
+    return getConvertedOI(inputOI, outputOI, oiSettableProperties, true);
   }
 
+  /*
+   * getConvertedOI without any caching.
+   */
   public static ObjectInspector getConvertedOI(
       ObjectInspector inputOI,
-      ObjectInspector outputOI) {
+      ObjectInspector outputOI
+      ) {
+    return getConvertedOI(inputOI, outputOI, null, true);
+  }
+
+  /*
+   * Utility function to convert from one object inspector type to another.
+   */
+  private static ObjectInspector getConvertedOI(
+      ObjectInspector inputOI,
+      ObjectInspector outputOI,
+      Map<ObjectInspector, Boolean> oiSettableProperties,
+      boolean equalsCheck) {
+    ObjectInspector retOI = outputOI.getCategory() == Category.PRIMITIVE ? inputOI : outputOI;
     // If the inputOI is the same as the outputOI, just return it
-    if (inputOI.equals(outputOI)) {
-      return outputOI;
+    // If the retOI has all fields settable, return it
+    if ((equalsCheck && inputOI.equals(outputOI)) ||
+        ObjectInspectorUtils.hasAllFieldsSettable(retOI, oiSettableProperties) == true) {
+      return retOI;
     }
+    // Return the settable equivalent object inspector for primitive categories
+    // For eg: for table T containing partitions p1 and p2 (possibly different
+    // from the table T), return the settable inspector for T. The inspector for
+    // T is settable recursively i.e all the nested fields are also settable.
     switch (outputOI.getCategory()) {
     case PRIMITIVE:
-      return outputOI;
+      PrimitiveObjectInspector primInputOI = (PrimitiveObjectInspector) inputOI;
+      return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(primInputOI);
     case STRUCT:
       StructObjectInspector structOutputOI = (StructObjectInspector) outputOI;
-      if (structOutputOI.isSettable()) {
-        return outputOI;
-      }
-      else {
-        // create a standard settable struct object inspector
-        List<? extends StructField> listFields = structOutputOI.getAllStructFieldRefs();
-        List<String> structFieldNames = new ArrayList<String>(listFields.size());
-        List<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>(
-            listFields.size());
+      // create a standard settable struct object inspector
+      List<? extends StructField> listFields = structOutputOI.getAllStructFieldRefs();
+      List<String> structFieldNames = new ArrayList<String>(listFields.size());
+      List<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>(
+          listFields.size());
 
-        for (StructField listField : listFields) {
-          structFieldNames.add(listField.getFieldName());
-          structFieldObjectInspectors.add(
-              getSettableConvertedOI(listField.getFieldObjectInspector()));
-        }
-
-        StandardStructObjectInspector structStandardOutputOI = ObjectInspectorFactory
-            .getStandardStructObjectInspector(
-                structFieldNames,
-                structFieldObjectInspectors);
-        return structStandardOutputOI;
+      for (StructField listField : listFields) {
+        structFieldNames.add(listField.getFieldName());
+        structFieldObjectInspectors.add(getConvertedOI(listField.getFieldObjectInspector(),
+            listField.getFieldObjectInspector(), oiSettableProperties, false));
       }
+      return ObjectInspectorFactory.getStandardStructObjectInspector(
+          structFieldNames,
+          structFieldObjectInspectors);
     case LIST:
-      return outputOI;
+      ListObjectInspector listOutputOI = (ListObjectInspector) outputOI;
+      return ObjectInspectorFactory.getStandardListObjectInspector(
+          getConvertedOI(listOutputOI.getListElementObjectInspector(),
+              listOutputOI.getListElementObjectInspector(), oiSettableProperties, false));
     case MAP:
-      return outputOI;
+      MapObjectInspector mapOutputOI = (MapObjectInspector) outputOI;
+      return ObjectInspectorFactory.getStandardMapObjectInspector(
+          getConvertedOI(mapOutputOI.getMapKeyObjectInspector(),
+              mapOutputOI.getMapKeyObjectInspector(), oiSettableProperties, false),
+          getConvertedOI(mapOutputOI.getMapValueObjectInspector(),
+              mapOutputOI.getMapValueObjectInspector(), oiSettableProperties, false));
+    case UNION:
+      UnionObjectInspector unionOutputOI = (UnionObjectInspector) outputOI;
+      // create a standard settable union object inspector
+      List<ObjectInspector> unionListFields = unionOutputOI.getObjectInspectors();
+      List<ObjectInspector> unionFieldObjectInspectors = new ArrayList<ObjectInspector>(
+          unionListFields.size());
+      for (ObjectInspector listField : unionListFields) {
+        unionFieldObjectInspectors.add(getConvertedOI(listField, listField, oiSettableProperties,
+            false));
+      }
+      return ObjectInspectorFactory.getStandardUnionObjectInspector(unionFieldObjectInspectors);
     default:
       throw new RuntimeException("Hive internal error: conversion of "
           + inputOI.getTypeName() + " to " + outputOI.getTypeName()
@@ -338,6 +372,67 @@ public final class ObjectInspectorConverters {
       // set the extra fields to null
       for (int f = minFields; f < outputFields.size(); f++) {
         outputOI.setStructFieldData(output, outputFields.get(f), null);
+      }
+
+      return output;
+    }
+  }
+
+  /**
+   * A converter class for Union.
+   */
+  public static class UnionConverter implements Converter {
+
+    UnionObjectInspector inputOI;
+    SettableUnionObjectInspector outputOI;
+
+    List<? extends ObjectInspector> inputFields;
+    List<? extends ObjectInspector> outputFields;
+
+    ArrayList<Converter> fieldConverters;
+
+    Object output;
+
+    public UnionConverter(ObjectInspector inputOI,
+        SettableUnionObjectInspector outputOI) {
+      if (inputOI instanceof UnionObjectInspector) {
+        this.inputOI = (UnionObjectInspector)inputOI;
+        this.outputOI = outputOI;
+        inputFields = this.inputOI.getObjectInspectors();
+        outputFields = outputOI.getObjectInspectors();
+
+        // If the output has some extra fields, set them to NULL in convert().
+        int minFields = Math.min(inputFields.size(), outputFields.size());
+        fieldConverters = new ArrayList<Converter>(minFields);
+        for (int f = 0; f < minFields; f++) {
+          fieldConverters.add(getConverter(inputFields.get(f), outputFields.get(f)));
+        }
+
+        // Create an empty output object which will be populated when convert() is invoked.
+        output = outputOI.create();
+      } else if (!(inputOI instanceof VoidObjectInspector)) {
+        throw new RuntimeException("Hive internal error: conversion of " +
+            inputOI.getTypeName() + " to " + outputOI.getTypeName() +
+            "not supported yet.");
+      }
+    }
+
+    @Override
+    public Object convert(Object input) {
+      if (input == null) {
+        return null;
+      }
+
+      int minFields = Math.min(inputFields.size(), outputFields.size());
+      // Convert the fields
+      for (int f = 0; f < minFields; f++) {
+        Object outputFieldValue = fieldConverters.get(f).convert(inputOI);
+        outputOI.addField(output, (ObjectInspector)outputFieldValue);
+      }
+
+      // set the extra fields to null
+      for (int f = minFields; f < outputFields.size(); f++) {
+        outputOI.addField(output, null);
       }
 
       return output;

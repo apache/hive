@@ -30,6 +30,7 @@ import junit.framework.TestCase;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -39,6 +40,7 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.index.HiveIndex;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer;
@@ -61,6 +63,7 @@ public class TestHive extends TestCase {
   protected void setUp() throws Exception {
     super.setUp();
     hiveConf = new HiveConf(this.getClass());
+    SessionState.start(hiveConf);
     try {
       hm = Hive.get(hiveConf);
     } catch (Exception e) {
@@ -96,6 +99,7 @@ public class TestHive extends TestCase {
         e1.printStackTrace();
         assertTrue("Unable to drop table", false);
       }
+
       Table tbl = new Table(MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
       List<FieldSchema> fields = tbl.getCols();
 
@@ -142,6 +146,7 @@ public class TestHive extends TestCase {
       tbl.setStoredAsSubDirectories(false);
 
       // create table
+      setNullCreateTableGrants();
       try {
         hm.createTable(tbl);
       } catch (HiveException e) {
@@ -168,6 +173,14 @@ public class TestHive extends TestCase {
     }
   }
 
+  private void setNullCreateTableGrants() {
+    //having a non null create table grants privileges causes problems in
+    // the tests that compares underlying thrift Table object of created
+    // table with a table object that was fetched from metastore.
+    // This is because the fetch does not populate the privileges field in Table
+    SessionState.get().setCreateTableGrants(null);
+  }
+
   /**
    * Tests create and fetch of a thrift based table.
    *
@@ -190,6 +203,8 @@ public class TestHive extends TestCase {
       tbl.setSerdeParam(serdeConstants.SERIALIZATION_FORMAT, TBinaryProtocol.class
           .getName());
       tbl.setStoredAsSubDirectories(false);
+
+      setNullCreateTableGrants();
       try {
         hm.createTable(tbl);
       } catch (HiveException e) {
@@ -487,13 +502,26 @@ public class TestHive extends TestCase {
     }
   }
 
-  public void testHiveRefreshDatabase() throws Throwable{
-    String testDatabaseName = "test_database";
-    Database testDatabase = new Database();
-    testDatabase.setName(testDatabaseName);
-    hm.createDatabase(testDatabase, true);
-    hm.setCurrentDatabase(testDatabaseName);
-    hm = Hive.get(hiveConf, true); //refresh Hive instance
-    assertEquals(testDatabaseName, hm.getCurrentDatabase());
+  public void testHiveRefreshOnConfChange() throws Throwable{
+    Hive prevHiveObj = Hive.get();
+    Hive newHiveObj;
+
+    //if HiveConf has not changed, same object should be returned
+    HiveConf newHconf = new HiveConf(hiveConf);
+    newHiveObj = Hive.get(newHconf);
+    assertTrue(prevHiveObj == newHiveObj);
+
+    //if needs refresh param is passed, it should return new object
+    newHiveObj = Hive.get(newHconf, true);
+    assertTrue(prevHiveObj != newHiveObj);
+
+    //if HiveConf has changed, new object should be returned
+    prevHiveObj = Hive.get();
+    //change value of a metavar config param in new hive conf
+    newHconf = new HiveConf(hiveConf);
+    newHconf.setIntVar(ConfVars.METASTORETHRIFTCONNECTIONRETRIES,
+        newHconf.getIntVar(ConfVars.METASTORETHRIFTCONNECTIONRETRIES) + 1);
+    newHiveObj = Hive.get(newHconf);
+    assertTrue(prevHiveObj != newHiveObj);
   }
 }

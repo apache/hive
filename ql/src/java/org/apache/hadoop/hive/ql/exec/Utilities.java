@@ -79,6 +79,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.antlr.runtime.CommonToken;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.logging.Log;
@@ -98,10 +99,13 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
+import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
+import org.apache.hadoop.hive.ql.exec.mr.ExecReducer;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
@@ -113,6 +117,13 @@ import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
 import org.apache.hadoop.hive.ql.io.OneNullRowInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFile;
 import org.apache.hadoop.hive.ql.io.ReworkMapredInputFormat;
+import org.apache.hadoop.hive.ql.io.rcfile.merge.MergeWork;
+import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileMergeMapper;
+import org.apache.hadoop.hive.ql.io.rcfile.stats.PartialScanMapper;
+import org.apache.hadoop.hive.ql.io.rcfile.stats.PartialScanWork;
+import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateMapper;
+import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateWork;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -121,10 +132,7 @@ import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -140,16 +148,10 @@ import org.apache.hadoop.hive.ql.plan.api.Graph;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.SequenceFile;
@@ -168,6 +170,11 @@ import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.Shell;
 
+import com.esotericsoftware.kryo.Kryo;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+import com.esotericsoftware.kryo.serializers.FieldSerializer;
+
 /**
  * Utilities.
  *
@@ -182,6 +189,8 @@ public final class Utilities {
   public static String HADOOP_LOCAL_FS = "file:///";
   public static String MAP_PLAN_NAME = "map.xml";
   public static String REDUCE_PLAN_NAME = "reduce.xml";
+  public static final String MAPRED_MAPPER_CLASS = "mapred.mapper.class";
+  public static final String MAPRED_REDUCER_CLASS = "mapred.reducer.class";
 
   /**
    * ReduceField:
@@ -206,7 +215,8 @@ public final class Utilities {
 
   private static Map<Path, BaseWork> gWorkMap = Collections
       .synchronizedMap(new HashMap<Path, BaseWork>());
-  private static final Log LOG = LogFactory.getLog(Utilities.class.getName());
+  private static final String CLASS_NAME = Utilities.class.getName();
+  private static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   public static void clearWork(Configuration conf) {
     Path mapPath = getPlanPath(conf, MAP_PLAN_NAME);
@@ -255,24 +265,51 @@ public final class Utilities {
     return (ReduceWork) getBaseWork(conf, REDUCE_PLAN_NAME);
   }
 
-  public static BaseWork getBaseWork(Configuration conf, String name) {
+  /**
+   * Returns the Map or Reduce plan
+   * Side effect: the BaseWork returned is also placed in the gWorkMap
+   * @param conf
+   * @param name
+   * @return BaseWork based on the name supplied will return null if name is null
+   * @throws RuntimeException if the configuration files are not proper or if plan can not be loaded
+   */
+  private static BaseWork getBaseWork(Configuration conf, String name) {
     BaseWork gWork = null;
     Path path = null;
+    InputStream in = null;
     try {
       path = getPlanPath(conf, name);
       assert path != null;
       gWork = gWorkMap.get(path);
       if (gWork == null) {
-        String jtConf = ShimLoader.getHadoopShims().getJobLauncherRpcAddress(conf);
         Path localPath;
-        if (jtConf.equals("local")) {
+        if (ShimLoader.getHadoopShims().isLocalMode(conf)) {
           localPath = path;
         } else {
           localPath = new Path(name);
         }
-        InputStream in = new FileInputStream(localPath.toUri().getPath());
-        BaseWork ret = deserializeObject(in);
-        gWork = ret;
+        in = new FileInputStream(localPath.toUri().getPath());
+        if(MAP_PLAN_NAME.equals(name)){
+          if (ExecMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))){
+            gWork = deserializePlan(in, MapWork.class, conf);
+          } else if(RCFileMergeMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
+            gWork = deserializePlan(in, MergeWork.class, conf);
+          } else if(ColumnTruncateMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
+            gWork = deserializePlan(in, ColumnTruncateWork.class, conf);
+          } else if(PartialScanMapper.class.getName().equals(conf.get(MAPRED_MAPPER_CLASS))) {
+            gWork = deserializePlan(in, PartialScanWork.class,conf);
+          } else {
+            throw new RuntimeException("unable to determine work from configuration ."
+                + MAPRED_MAPPER_CLASS + " was "+ conf.get(MAPRED_MAPPER_CLASS)) ;
+          }
+        } else if (REDUCE_PLAN_NAME.equals(name)) {
+          if(ExecReducer.class.getName().equals(conf.get(MAPRED_REDUCER_CLASS))) {
+            gWork = deserializePlan(in, ReduceWork.class, conf);
+          } else {
+            throw new RuntimeException("unable to determine work from configuration ."
+                + MAPRED_REDUCER_CLASS +" was "+ conf.get(MAPRED_REDUCER_CLASS)) ;
+          }
+        }
         gWorkMap.put(path, gWork);
       }
       return gWork;
@@ -281,9 +318,14 @@ public final class Utilities {
       LOG.debug("No plan file found: "+path);
       return null;
     } catch (Exception e) {
-      e.printStackTrace();
       LOG.error("Failed to load plan: "+path, e);
       throw new RuntimeException(e);
+    } finally {
+      if (in != null) {
+        try {
+          in.close();
+        } catch (IOException cantBlameMeForTrying) { }
+      }
     }
   }
 
@@ -482,7 +524,7 @@ public final class Utilities {
       // use the default file system of the conf
       FileSystem fs = planPath.getFileSystem(conf);
       FSDataOutputStream out = fs.create(planPath);
-      serializeObject(w, out);
+      serializePlan(w, out, conf);
 
       // Serialize the plan to the default hdfs instance
       // Except for hadoop local mode execution where we should be
@@ -538,6 +580,31 @@ public final class Utilities {
     return null;
   }
 
+  /**
+   * Serializes expression via Kryo.
+   * @param expr Expression.
+   * @return Bytes.
+   */
+  public static byte[] serializeExpressionToKryo(ExprNodeDesc expr) {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    Output output = new Output(baos);
+    runtimeSerializationKryo.get().writeClassAndObject(output, expr);
+    output.close();
+    return baos.toByteArray();
+  }
+
+  /**
+   * Deserializes expression from Kryo.
+   * @param bytes Bytes containing the expression.
+   * @return Expression; null if deserialization succeeded, but the result type is incorrect.
+   */
+  public static ExprNodeDesc deserializeExpressionFromKryo(byte[] bytes) {
+    Input inp = new Input(new ByteArrayInputStream(bytes));
+    Object o = runtimeSerializationKryo.get().readClassAndObject(inp);
+    inp.close();
+    return (o instanceof ExprNodeDesc) ? (ExprNodeDesc)o : null;
+  }
+
   public static String serializeExpression(ExprNodeDesc expr) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     XMLEncoder encoder = new XMLEncoder(baos);
@@ -589,11 +656,112 @@ public final class Utilities {
     }
   }
 
+   /** Custom Kryo serializer for sql date, otherwise Kryo gets confused between
+   java.sql.Date and java.util.Date while deserializing
+   */
+  private static class SqlDateSerializer extends
+    com.esotericsoftware.kryo.Serializer<java.sql.Date> {
+
+    @Override
+    public java.sql.Date read(Kryo kryo, Input input, Class<java.sql.Date> clazz) {
+      return new java.sql.Date(input.readLong());
+    }
+
+    @Override
+    public void write(Kryo kryo, Output output, java.sql.Date sqlDate) {
+      output.writeLong(sqlDate.getTime());
+    }
+  }
+
+  private static class CommonTokenSerializer extends com.esotericsoftware.kryo.Serializer<CommonToken> {
+    @Override
+    public CommonToken read(Kryo kryo, Input input, Class<CommonToken> clazz) {
+      return new CommonToken(input.readInt(), input.readString());
+    }
+
+    @Override
+  public void write(Kryo kryo, Output output, CommonToken token) {
+      output.writeInt(token.getType());
+      output.writeString(token.getText());
+    }
+  }
+  private static void serializePlan(Object plan, OutputStream out, Configuration conf, boolean cloningPlan) {
+    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.SERIALIZE_PLAN);
+    String serializationType = conf.get(HiveConf.ConfVars.PLAN_SERIALIZATION.varname, "kryo");
+    LOG.info("Serializing " + plan.getClass().getSimpleName() + " via " + serializationType);
+    if("javaXML".equalsIgnoreCase(serializationType)) {
+      serializeObjectByJavaXML(plan, out);
+    } else {
+      if(cloningPlan) {
+        serializeObjectByKryo(cloningQueryPlanKryo.get(), plan, out);
+      } else {
+        serializeObjectByKryo(runtimeSerializationKryo.get(), plan, out);
+      }
+    }
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.SERIALIZE_PLAN);
+  }
+  /**
+   * Serializes the plan.
+   * @param plan The plan, such as QueryPlan, MapredWork, etc.
+   * @param out The stream to write to.
+   * @param conf to pick which serialization format is desired.
+   */
+  public static void serializePlan(Object plan, OutputStream out, Configuration conf) {
+    serializePlan(plan, out, conf, false);
+  }
+
+  private static <T> T deserializePlan(InputStream in, Class<T> planClass, Configuration conf, boolean cloningPlan) {
+    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.DESERIALIZE_PLAN);
+    T plan;
+    String serializationType = conf.get(HiveConf.ConfVars.PLAN_SERIALIZATION.varname, "kryo");
+    LOG.info("Deserializing " + planClass.getSimpleName() + " via " + serializationType);
+    if("javaXML".equalsIgnoreCase(serializationType)) {
+      plan = deserializeObjectByJavaXML(in);
+    } else {
+      if(cloningPlan) {
+        plan = deserializeObjectByKryo(cloningQueryPlanKryo.get(), in, planClass);
+      } else {
+        plan = deserializeObjectByKryo(runtimeSerializationKryo.get(), in, planClass);
+      }
+    }
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.DESERIALIZE_PLAN);
+    return plan;
+  }
+  /**
+   * Deserializes the plan.
+   * @param in The stream to read from.
+   * @return The plan, such as QueryPlan, MapredWork, etc.
+   * @param To know what serialization format plan is in
+   */
+  public static <T> T deserializePlan(InputStream in, Class<T> planClass, Configuration conf) {
+    return deserializePlan(in, planClass, conf, false);
+  }
+
+  /**
+   * Clones using the powers of XML. Do not use unless necessary.
+   * @param plan The plan.
+   * @return The clone.
+   */
+  public static MapredWork clonePlan(MapredWork plan) {
+    // TODO: need proper clone. Meanwhile, let's at least keep this horror in one place
+    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.CLONE_PLAN);
+    ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
+    Configuration conf = new Configuration();
+    serializePlan(plan, baos, conf, true);
+    MapredWork newPlan = deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
+        MapredWork.class, conf, true);
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.CLONE_PLAN);
+    return newPlan;
+  }
+
   /**
    * Serialize the object. This helper function mainly makes sure that enums,
    * counters, etc are handled properly.
    */
-  public static void serializeObject(Object plan, OutputStream out) {
+  private static void serializeObjectByJavaXML(Object plan, OutputStream out) {
     XMLEncoder e = new XMLEncoder(out);
     e.setExceptionListener(new ExceptionListener() {
       public void exceptionThrown(Exception e) {
@@ -616,11 +784,21 @@ public final class Utilities {
   }
 
   /**
+   * @param plan Usually of type MapredWork, MapredLocalWork etc.
+   * @param out stream in which serialized plan is written into
+   */
+  private static void serializeObjectByKryo(Kryo kryo, Object plan, OutputStream out) {
+    Output output = new Output(out);
+    kryo.writeObject(output, plan);
+    output.close();
+  }
+
+  /**
    * De-serialize an object. This helper function mainly makes sure that enums,
    * counters, etc are handled properly.
    */
   @SuppressWarnings("unchecked")
-  public static <T> T deserializeObject(InputStream in) {
+  private static <T> T deserializeObjectByJavaXML(InputStream in) {
     XMLDecoder d = null;
     try {
       d = new XMLDecoder(in, null, null);
@@ -631,6 +809,45 @@ public final class Utilities {
       }
     }
   }
+
+  private static <T> T deserializeObjectByKryo(Kryo kryo, InputStream in, Class<T> clazz ) {
+    Input inp = new Input(in);
+    T t = kryo.readObject(inp,clazz);
+    inp.close();
+    return t;
+  }
+
+  // Kryo is not thread-safe,
+  // Also new Kryo() is expensive, so we want to do it just once.
+  private static ThreadLocal<Kryo> runtimeSerializationKryo = new ThreadLocal<Kryo>() {
+    @Override
+    protected synchronized Kryo initialValue() {
+      Kryo kryo = new Kryo();
+      kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
+      kryo.register(java.sql.Date.class, new SqlDateSerializer());
+      removeField(kryo, Operator.class, "colExprMap");
+      removeField(kryo, ColumnInfo.class, "objectInspector");
+      removeField(kryo, MapWork.class, "opParseCtxMap");
+      removeField(kryo, MapWork.class, "joinTree");
+      return kryo;
+    };
+  };
+  @SuppressWarnings("rawtypes")
+  protected static void removeField(Kryo kryo, Class type, String fieldName) {
+    FieldSerializer fld = new FieldSerializer(kryo, type);
+    fld.removeField(fieldName);
+    kryo.register(type, fld);
+  }
+  private static ThreadLocal<Kryo> cloningQueryPlanKryo = new ThreadLocal<Kryo>() {
+    @Override
+    protected synchronized Kryo initialValue() {
+      Kryo kryo = new Kryo();
+      kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
+      kryo.register(CommonToken.class, new CommonTokenSerializer());
+      kryo.register(java.sql.Date.class, new SqlDateSerializer());
+      return kryo;
+    };
+  };
 
   public static TableDesc defaultTd;
   static {
@@ -741,17 +958,20 @@ public final class Utilities {
   }
 
   public static TableDesc getTableDesc(Table tbl) {
-    return (new TableDesc(tbl.getDeserializer().getClass(), tbl.getInputFormatClass(), tbl
-        .getOutputFormatClass(), tbl.getMetadata()));
+    Properties props = tbl.getMetadata();
+    props.put(serdeConstants.SERIALIZATION_LIB, tbl.getDeserializer().getClass().getName());
+    return (new TableDesc(tbl.getInputFormatClass(), tbl
+        .getOutputFormatClass(), props));
   }
 
   // column names and column types are all delimited by comma
   public static TableDesc getTableDesc(String cols, String colTypes) {
-    return (new TableDesc(LazySimpleSerDe.class, SequenceFileInputFormat.class,
+    return (new TableDesc(SequenceFileInputFormat.class,
         HiveSequenceFileOutputFormat.class, Utilities.makeProperties(
-        org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode,
-        org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS, cols,
-        org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES, colTypes)));
+        serdeConstants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode,
+        serdeConstants.LIST_COLUMNS, cols,
+        serdeConstants.LIST_COLUMN_TYPES, colTypes,
+        serdeConstants.SERIALIZATION_LIB,LazySimpleSerDe.class.getName())));
   }
 
   public static PartitionDesc getPartitionDesc(Partition part) throws HiveException {
@@ -1805,6 +2025,8 @@ public final class Utilities {
    */
   public static ContentSummary getInputSummary(Context ctx, MapWork work, PathFilter filter)
       throws IOException {
+    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
 
     long[] summary = {0, 0, 0};
 
@@ -1940,6 +2162,7 @@ public final class Utilities {
               + cs.getFileCount() + " directory count: " + cs.getDirectoryCount());
         }
 
+        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.INPUT_SUMMARY);
         return new ContentSummary(summary[0], summary[1], summary[2]);
       } finally {
         HiveInterruptUtils.remove(interrup);
@@ -2113,7 +2336,7 @@ public final class Utilities {
       if (columnTypes.length() > 0) {
         columnTypes.append(",");
       }
-      columnTypes.append(colInfo.getType().getTypeName());
+      columnTypes.append(colInfo.getTypeName());
     }
     String columnTypesString = columnTypes.toString();
     jobConf.set(serdeConstants.LIST_COLUMN_TYPES, columnTypesString);
@@ -2182,126 +2405,6 @@ public final class Utilities {
   public static double showTime(long time) {
     double result = (double) time / (double) 1000;
     return result;
-  }
-
-  /**
-   * Check if a function can be pushed down to JDO.
-   * Now only {compares, AND, OR} are supported.
-   * @param func a generic function.
-   * @return true if this function can be pushed down to JDO filter.
-   */
-  private static boolean supportedJDOFuncs(GenericUDF func) {
-    // TODO: we might also want to add "not" and "between" here in future.
-    // TODO: change to GenericUDFBaseCompare once DN is upgraded
-    //       (see HIVE-2609 - in DN 2.0, substrings do not work in MySQL).
-    return func instanceof GenericUDFOPEqual ||
-           func instanceof GenericUDFOPNotEqual ||
-           func instanceof GenericUDFOPAnd ||
-           func instanceof GenericUDFOPOr;
-  }
-
-  /**
-   * Check if a function can be pushed down to JDO for integral types.
-   * Only {=, !=} are supported. lt/gt/etc. to be dealt with in HIVE-4888.
-   * @param func a generic function.
-   * @return true iff this function can be pushed down to JDO filter for integral types.
-   */
-  private static boolean doesJDOFuncSupportIntegral(GenericUDF func) {
-    // AND, OR etc. don't need to be specified here.
-    return func instanceof GenericUDFOPEqual ||
-           func instanceof GenericUDFOPNotEqual;
-  }
-
-  /**
-   * @param type type
-   * @param constant The constant, if any.
-   * @return true iff type is an integral type.
-   */
-  private static boolean isIntegralType(String type) {
-    return type.equals(serdeConstants.TINYINT_TYPE_NAME) ||
-           type.equals(serdeConstants.SMALLINT_TYPE_NAME) ||
-           type.equals(serdeConstants.INT_TYPE_NAME) ||
-           type.equals(serdeConstants.BIGINT_TYPE_NAME);
-  }
-
-  /**
-   * Check if the partition pruning expression can be pushed down to JDO filtering.
-   * The partition expression contains only partition columns.
-   * The criteria that an expression can be pushed down are that:
-   *  1) the expression only contains function specified in supportedJDOFuncs().
-   *     Now only {=, AND, OR} can be pushed down.
-   *  2) the partition column type and the constant type have to be String. This is
-   *     restriction by the current JDO filtering implementation.
-   * @param tab The table that contains the partition columns.
-   * @param expr the partition pruning expression
-   * @param parent parent UDF of expr if parent exists and contains a UDF; otherwise null.
-   * @return null if the partition pruning expression can be pushed down to JDO filtering.
-   */
-  public static String checkJDOPushDown(
-      Table tab, ExprNodeDesc expr, GenericUDF parent) {
-    boolean isConst = expr instanceof ExprNodeConstantDesc;
-    boolean isCol = !isConst && (expr instanceof ExprNodeColumnDesc);
-    boolean isIntegralSupported = (parent != null) && (isConst || isCol)
-        && doesJDOFuncSupportIntegral(parent);
-
-    // JDO filter now only support String typed literals, as well as integers
-    // for some operators; see Filter.g and ExpressionTree.java.
-    if (isConst) {
-      Object value = ((ExprNodeConstantDesc)expr).getValue();
-      if (value instanceof String) {
-        return null;
-      }
-      if (isIntegralSupported && isIntegralType(expr.getTypeInfo().getTypeName())) {
-        return null;
-      }
-      return "Constant " + value + " is not string "
-        + (isIntegralSupported ? "or integral ": "") + "type: " + expr.getTypeInfo().getTypeName();
-    } else if (isCol) {
-      TypeInfo type = expr.getTypeInfo();
-      if (type.getTypeName().equals(serdeConstants.STRING_TYPE_NAME)
-          || (isIntegralSupported && isIntegralType(type.getTypeName()))) {
-        String colName = ((ExprNodeColumnDesc)expr).getColumn();
-        for (FieldSchema fs: tab.getPartCols()) {
-          if (fs.getName().equals(colName)) {
-            if (fs.getType().equals(serdeConstants.STRING_TYPE_NAME)
-                || (isIntegralSupported && isIntegralType(fs.getType()))) {
-              return null;
-            }
-            return "Partition column " + fs.getName() + " is not string "
-              + (isIntegralSupported ? "or integral ": "") + "type: " + fs.getType();
-          }
-        }
-        assert(false); // cannot find the partition column!
-     } else {
-        return "Column " + expr.getExprString() + " is not string "
-          + (isIntegralSupported ? "or integral ": "") + "type: " + type.getTypeName();
-     }
-    } else if (expr instanceof ExprNodeGenericFuncDesc) {
-      ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) expr;
-      GenericUDF func = funcDesc.getGenericUDF();
-      if (!supportedJDOFuncs(func)) {
-        return "Expression " + expr.getExprString() + " cannot be evaluated";
-      }
-      boolean allChildrenConstant = true;
-      List<ExprNodeDesc> children = funcDesc.getChildExprs();
-      for (ExprNodeDesc child: children) {
-        if (!(child instanceof ExprNodeConstantDesc)) {
-          allChildrenConstant = false;
-        }
-        String message = checkJDOPushDown(tab, child, func);
-        if (message != null) {
-          return message;
-        }
-      }
-
-      // If all the children of the expression are constants then JDO cannot parse the expression
-      // see Filter.g
-      if (allChildrenConstant) {
-        return "Expression " + expr.getExprString() + " has only constants as children.";
-      }
-      return null;
-    }
-    return "Expression " + expr.getExprString() + " cannot be evaluated";
   }
 
   /**

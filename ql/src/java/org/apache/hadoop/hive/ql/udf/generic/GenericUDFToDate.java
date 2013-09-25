@@ -23,8 +23,11 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.DateConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 
 /**
  * GenericUDFToDate
@@ -49,10 +52,13 @@ public class GenericUDFToDate extends GenericUDF {
     }
     try {
       argumentOI = (PrimitiveObjectInspector) arguments[0];
-      switch (argumentOI.getPrimitiveCategory()) {
-        case DATE:
-        case STRING:
-        case TIMESTAMP:
+      PrimitiveCategory pc = argumentOI.getPrimitiveCategory();
+      PrimitiveGrouping pg =
+          PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pc);
+      switch (pg) {
+        case DATE_GROUP:
+        case STRING_GROUP:
+        case VOID_GROUP:
           break;
         default:
           throw new UDFArgumentException(

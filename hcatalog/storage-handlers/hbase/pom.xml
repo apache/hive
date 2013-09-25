@@ -22,14 +22,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <parent>
-    <groupId>org.apache.hcatalog</groupId>
+    <groupId>org.apache.hive.hcatalog</groupId>
     <artifactId>hcatalog</artifactId>
-    <version>0.12.0-SNAPSHOT</version>
+    <version>0.13.0-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
-  <groupId>org.apache.hcatalog</groupId>
   <artifactId>hbase-storage-handler</artifactId>
   <packaging>jar</packaging>
   <name>hbase-storage-handler</name>
@@ -49,8 +48,14 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.apache.hcatalog</groupId>
+      <groupId>org.apache.hive.hcatalog</groupId>
       <artifactId>hcatalog-core</artifactId>
+      <version>${hcatalog.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive.hcatalog</groupId>
+      <artifactId>hcatalog-pig-adapter</artifactId>
       <version>${hcatalog.version}</version>
       <scope>compile</scope>
     </dependency>
@@ -68,6 +73,12 @@
     </dependency>
 
     <!-- test scope -->
+    <dependency>
+      <groupId>org.apache.hive.hcatalog</groupId>
+      <artifactId>hcatalog-pig-adapter</artifactId>
+      <version>${hcatalog.version}</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>

@@ -21,23 +21,24 @@ package org.apache.hcatalog.messaging;
 
 /**
  * HCat message sent when a Table is dropped in HCatalog.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.DropTableMessage} instead
  */
 public abstract class DropTableMessage extends HCatEventMessage {
 
-    protected DropTableMessage() {
-        super(EventType.DROP_TABLE);
-    }
+  protected DropTableMessage() {
+    super(EventType.DROP_TABLE);
+  }
 
-    /**
-     * Getter for the name of the table being dropped.
-     * @return Table-name (String).
-     */
-    public abstract String getTable();
+  /**
+   * Getter for the name of the table being dropped.
+   * @return Table-name (String).
+   */
+  public abstract String getTable();
 
-    @Override
-    public HCatEventMessage checkValid() {
-        if (getTable() == null)
-            throw new IllegalStateException("Table name unset.");
-        return super.checkValid();
-    }
+  @Override
+  public HCatEventMessage checkValid() {
+    if (getTable() == null)
+      throw new IllegalStateException("Table name unset.");
+    return super.checkValid();
+  }
 }

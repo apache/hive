@@ -38,6 +38,8 @@ class serdeConstants {
   std::string FLOAT_TYPE_NAME;
   std::string DOUBLE_TYPE_NAME;
   std::string STRING_TYPE_NAME;
+  std::string CHAR_TYPE_NAME;
+  std::string VARCHAR_TYPE_NAME;
   std::string DATE_TYPE_NAME;
   std::string DATETIME_TYPE_NAME;
   std::string TIMESTAMP_TYPE_NAME;

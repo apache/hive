@@ -25,6 +25,6 @@ import org.apache.hadoop.hbase.ipc.CoprocessorProtocol;
  * (needs to extend CoprocessorProtocol)
  */
 public interface RevisionManagerProtocol extends RevisionManager,
-    CoprocessorProtocol {
+  CoprocessorProtocol {
 
 }

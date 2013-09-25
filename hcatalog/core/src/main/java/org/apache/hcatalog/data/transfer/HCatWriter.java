@@ -32,83 +32,84 @@ import org.apache.hcatalog.data.transfer.state.StateProvider;
  * This abstraction is internal to HCatalog. This is to facilitate writing to
  * HCatalog from external systems. Don't try to instantiate this directly.
  * Instead, use {@link DataTransferFactory}
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.transfer.HCatWriter} instead
  */
 
 public abstract class HCatWriter {
 
-    protected Configuration conf;
-    protected WriteEntity we; // This will be null at slave nodes.
-    protected WriterContext info;
-    protected StateProvider sp;
+  protected Configuration conf;
+  protected WriteEntity we; // This will be null at slave nodes.
+  protected WriterContext info;
+  protected StateProvider sp;
 
-    /**
-     * External system should invoke this method exactly once from a master node.
-     *
-     * @return {@link WriterContext} This should be serialized and sent to slave
-     *         nodes to construct HCatWriter there.
-     * @throws HCatException
-     */
-    public abstract WriterContext prepareWrite() throws HCatException;
+  /**
+   * External system should invoke this method exactly once from a master node.
+   *
+   * @return {@link WriterContext} This should be serialized and sent to slave
+   *         nodes to construct HCatWriter there.
+   * @throws HCatException
+   */
+  public abstract WriterContext prepareWrite() throws HCatException;
 
-    /**
-     * This method should be used at slave needs to perform writes.
-     *
-     * @param recordItr
-     *          {@link Iterator} records to be written into HCatalog.
-     * @throws {@link HCatException}
-     */
-    public abstract void write(final Iterator<HCatRecord> recordItr)
-        throws HCatException;
+  /**
+   * This method should be used at slave needs to perform writes.
+   *
+   * @param recordItr
+   *          {@link Iterator} records to be written into HCatalog.
+   * @throws {@link HCatException}
+   */
+  public abstract void write(final Iterator<HCatRecord> recordItr)
+    throws HCatException;
 
-    /**
-     * This method should be called at master node. Primary purpose of this is to
-     * do metadata commit.
-     *
-     * @throws {@link HCatException}
-     */
-    public abstract void commit(final WriterContext context) throws HCatException;
+  /**
+   * This method should be called at master node. Primary purpose of this is to
+   * do metadata commit.
+   *
+   * @throws {@link HCatException}
+   */
+  public abstract void commit(final WriterContext context) throws HCatException;
 
-    /**
-     * This method should be called at master node. Primary purpose of this is to
-     * do cleanups in case of failures.
-     *
-     * @throws {@link HCatException} *
-     */
-    public abstract void abort(final WriterContext context) throws HCatException;
+  /**
+   * This method should be called at master node. Primary purpose of this is to
+   * do cleanups in case of failures.
+   *
+   * @throws {@link HCatException} *
+   */
+  public abstract void abort(final WriterContext context) throws HCatException;
 
-    /**
-     * This constructor will be used at master node
-     *
-     * @param we
-     *          WriteEntity defines where in storage records should be written to.
-     * @param config
-     *          Any configuration which external system wants to communicate to
-     *          HCatalog for performing writes.
-     */
-    protected HCatWriter(final WriteEntity we, final Map<String, String> config) {
-        this(config);
-        this.we = we;
+  /**
+   * This constructor will be used at master node
+   *
+   * @param we
+   *          WriteEntity defines where in storage records should be written to.
+   * @param config
+   *          Any configuration which external system wants to communicate to
+   *          HCatalog for performing writes.
+   */
+  protected HCatWriter(final WriteEntity we, final Map<String, String> config) {
+    this(config);
+    this.we = we;
+  }
+
+  /**
+   * This constructor will be used at slave nodes.
+   *
+   * @param config
+   */
+  protected HCatWriter(final Configuration config, final StateProvider sp) {
+    this.conf = config;
+    this.sp = sp;
+  }
+
+  private HCatWriter(final Map<String, String> config) {
+    Configuration conf = new Configuration();
+    if (config != null) {
+      // user is providing config, so it could be null.
+      for (Entry<String, String> kv : config.entrySet()) {
+        conf.set(kv.getKey(), kv.getValue());
+      }
     }
 
-    /**
-     * This constructor will be used at slave nodes.
-     *
-     * @param config
-     */
-    protected HCatWriter(final Configuration config, final StateProvider sp) {
-        this.conf = config;
-        this.sp = sp;
-    }
-
-    private HCatWriter(final Map<String, String> config) {
-        Configuration conf = new Configuration();
-        if (config != null) {
-            // user is providing config, so it could be null.
-            for (Entry<String, String> kv : config.entrySet()) {
-                conf.set(kv.getKey(), kv.getValue());
-            }
-        }
-
-        this.conf = conf;
-    }
+    this.conf = conf;
+  }
 }

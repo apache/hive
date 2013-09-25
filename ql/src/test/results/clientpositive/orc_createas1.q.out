@@ -89,6 +89,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.orc_createas1b
 
   Stage: Stage-7
@@ -125,24 +126,28 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
             File Output Operator
               compressed: false
               GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                   name: default.orc_createas1b
 
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
             File Output Operator
               compressed: false
               GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                   name: default.orc_createas1b
 
   Stage: Stage-6
@@ -216,6 +221,7 @@ STAGE PLANS:
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator
@@ -291,6 +297,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                     output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                    serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                     name: default.orc_createas1c
 
   Stage: Stage-7
@@ -327,24 +334,28 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
             File Output Operator
               compressed: false
               GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                   name: default.orc_createas1c
 
   Stage: Stage-5
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
             File Output Operator
               compressed: false
               GlobalTableId: 0
               table:
                   input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
                   output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+                  serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
                   name: default.orc_createas1c
 
   Stage: Stage-6

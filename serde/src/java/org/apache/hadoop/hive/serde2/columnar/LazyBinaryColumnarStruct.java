@@ -18,25 +18,21 @@
 
 package org.apache.hadoop.hive.serde2.columnar;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.lazy.LazyObjectBase;
 import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryFactory;
-import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils;
-import org.apache.hadoop.hive.serde2.lazybinary.LazyBinaryUtils.VInt;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 
 public class LazyBinaryColumnarStruct extends ColumnarStructBase {
 
-  public LazyBinaryColumnarStruct(ObjectInspector oi, ArrayList<Integer> notSkippedColumnIDs) {
+  public LazyBinaryColumnarStruct(ObjectInspector oi, List<Integer> notSkippedColumnIDs) {
     super(oi, notSkippedColumnIDs);
   }
-
-  static VInt vInt = new LazyBinaryUtils.VInt();
 
   @Override
   protected int getLength(ObjectInspector objectInspector, ByteArrayRef cachedByteArrayRef,
@@ -48,8 +44,8 @@ public class LazyBinaryColumnarStruct extends ColumnarStructBase {
     if (category.equals(Category.PRIMITIVE)) {
       PrimitiveCategory primitiveCategory = ((PrimitiveObjectInspector) objectInspector)
           .getPrimitiveCategory();
-      if (primitiveCategory.equals(PrimitiveCategory.STRING) && (length == 1) && 
-            (cachedByteArrayRef.getData()[start] 
+      if (primitiveCategory.equals(PrimitiveCategory.STRING) && (length == 1) &&
+            (cachedByteArrayRef.getData()[start]
               == LazyBinaryColumnarSerDe.INVALID_UTF__SINGLE_BYTE[0])) {
         return 0;
       }

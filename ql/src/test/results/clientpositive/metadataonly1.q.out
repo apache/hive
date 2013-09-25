@@ -67,6 +67,8 @@ STAGE PLANS:
                     escape.delim \
                     hive.serialization.extend.nesting.levels true
                     serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -147,7 +149,7 @@ STAGE PLANS:
               partition_columns ds
               serialization.ddl struct test1 { i32 a, double b}
               serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
@@ -197,6 +199,8 @@ STAGE PLANS:
                     escape.delim \
                     hive.serialization.extend.nesting.levels true
                     serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -278,7 +282,7 @@ STAGE PLANS:
               partition_columns ds
               serialization.ddl struct test1 { i32 a, double b}
               serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
@@ -328,6 +332,8 @@ STAGE PLANS:
                     escape.delim \
                     hive.serialization.extend.nesting.levels true
                     serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -453,6 +459,8 @@ STAGE PLANS:
                     escape.delim \
                     hive.serialization.extend.nesting.levels true
                     serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -540,7 +548,7 @@ STAGE PLANS:
               partition_columns ds
               serialization.ddl struct test1 { i32 a, double b}
               serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
@@ -576,7 +584,7 @@ STAGE PLANS:
               partition_columns ds
               serialization.ddl struct test1 { i32 a, double b}
               serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
@@ -624,6 +632,8 @@ STAGE PLANS:
                     columns _col0
                     columns.types string
                     escape.delim \
+                    serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -632,6 +642,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
+            GatherStats: false
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -666,6 +678,8 @@ STAGE PLANS:
               columns _col0
               columns.types string
               escape.delim \
+              serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -673,6 +687,8 @@ STAGE PLANS:
                 columns _col0
                 columns.types string
                 escape.delim \
+                serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 #### A masked pattern was here ####
           Partition
             base file name: ds=1
@@ -777,6 +793,8 @@ STAGE PLANS:
                       columns _col0
                       columns.types bigint
                       escape.delim \
+                      serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
                 TotalFiles: 1
                 GatherStats: false
                 MultiFileSpray: false
@@ -785,6 +803,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
+            GatherStats: false
             Reduce Output Operator
               sort order: 
               tag: -1
@@ -803,6 +823,8 @@ STAGE PLANS:
               columns _col0
               columns.types bigint
               escape.delim \
+              serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -810,6 +832,8 @@ STAGE PLANS:
                 columns _col0
                 columns.types bigint
                 escape.delim \
+                serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Truncated Path -> Alias:
 #### A masked pattern was here ####
       Needs Tagging: false
@@ -840,6 +864,8 @@ STAGE PLANS:
                     escape.delim \
                     hive.serialization.extend.nesting.levels true
                     serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -961,7 +987,7 @@ STAGE PLANS:
               partition_columns ds/hr
               serialization.ddl struct test2 { i32 a, double b}
               serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
@@ -998,7 +1024,7 @@ STAGE PLANS:
               partition_columns ds/hr
               serialization.ddl struct test2 { i32 a, double b}
               serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
@@ -1035,7 +1061,7 @@ STAGE PLANS:
               partition_columns ds/hr
               serialization.ddl struct test2 { i32 a, double b}
               serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
@@ -1092,6 +1118,8 @@ STAGE PLANS:
                     escape.delim \
                     hive.serialization.extend.nesting.levels true
                     serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -1314,6 +1342,8 @@ STAGE PLANS:
                     escape.delim \
                     hive.serialization.extend.nesting.levels true
                     serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -1393,7 +1423,7 @@ STAGE PLANS:
               partition_columns ds
               serialization.ddl struct test1 { i32 a, double b}
               serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
@@ -1429,7 +1459,7 @@ STAGE PLANS:
               partition_columns ds
               serialization.ddl struct test1 { i32 a, double b}
               serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
@@ -1480,6 +1510,8 @@ STAGE PLANS:
                     escape.delim \
                     hive.serialization.extend.nesting.levels true
                     serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -1628,7 +1660,7 @@ STAGE PLANS:
               partition_columns ds/hr
               serialization.ddl struct test2 { i32 a, double b}
               serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
@@ -1665,7 +1697,7 @@ STAGE PLANS:
               partition_columns ds/hr
               serialization.ddl struct test2 { i32 a, double b}
               serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
@@ -1702,7 +1734,7 @@ STAGE PLANS:
               partition_columns ds/hr
               serialization.ddl struct test2 { i32 a, double b}
               serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
@@ -1739,7 +1771,7 @@ STAGE PLANS:
               partition_columns ds/hr
               serialization.ddl struct test2 { i32 a, double b}
               serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
@@ -1776,7 +1808,7 @@ STAGE PLANS:
               partition_columns ds/hr
               serialization.ddl struct test2 { i32 a, double b}
               serialization.format 1
-              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serialization.lib org.apache.hadoop.hive.serde2.NullStructSerDe
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.NullStructSerDe
           
@@ -1835,6 +1867,8 @@ STAGE PLANS:
                     escape.delim \
                     hive.serialization.extend.nesting.levels true
                     serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false

@@ -127,6 +127,9 @@ import org.apache.hadoop.hive.ql.security.authorization.PrivilegeRegistry;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 
@@ -148,6 +151,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     TokenToTypeName.put(HiveParser.TOK_FLOAT, serdeConstants.FLOAT_TYPE_NAME);
     TokenToTypeName.put(HiveParser.TOK_DOUBLE, serdeConstants.DOUBLE_TYPE_NAME);
     TokenToTypeName.put(HiveParser.TOK_STRING, serdeConstants.STRING_TYPE_NAME);
+    TokenToTypeName.put(HiveParser.TOK_VARCHAR, serdeConstants.VARCHAR_TYPE_NAME);
     TokenToTypeName.put(HiveParser.TOK_BINARY, serdeConstants.BINARY_TYPE_NAME);
     TokenToTypeName.put(HiveParser.TOK_DATE, serdeConstants.DATE_TYPE_NAME);
     TokenToTypeName.put(HiveParser.TOK_DATETIME, serdeConstants.DATETIME_TYPE_NAME);
@@ -155,12 +159,27 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     TokenToTypeName.put(HiveParser.TOK_DECIMAL, serdeConstants.DECIMAL_TYPE_NAME);
   }
 
-  public static String getTypeName(int token) throws SemanticException {
+  public static String getTypeName(ASTNode node) throws SemanticException {
+    int token = node.getType();
+    String typeName;
+
     // datetime type isn't currently supported
     if (token == HiveParser.TOK_DATETIME) {
       throw new SemanticException(ErrorMsg.UNSUPPORTED_TYPE.getMsg());
     }
-    return TokenToTypeName.get(token);
+
+    switch (token) {
+    case HiveParser.TOK_VARCHAR:
+      PrimitiveCategory primitiveCategory = PrimitiveCategory.VARCHAR;
+      typeName = TokenToTypeName.get(token);
+      VarcharTypeParams varcharParams = ParseUtils.getVarcharParams(typeName, node);
+      typeName = PrimitiveObjectInspectorUtils.getTypeEntryFromTypeSpecs(
+          primitiveCategory, varcharParams).toString();
+      break;
+    default:
+      typeName = TokenToTypeName.get(token);
+    }
+    return typeName;
   }
 
   static class TablePartition {
@@ -1120,7 +1139,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     AlterIndexDesc alterIdxDesc = new AlterIndexDesc(AlterIndexTypes.UPDATETIMESTAMP);
     alterIdxDesc.setIndexName(indexName);
     alterIdxDesc.setBaseTableName(baseTableName);
-    alterIdxDesc.setDbName(db.getCurrentDatabase());
+    alterIdxDesc.setDbName(SessionState.get().getCurrentDatabase());
     alterIdxDesc.setSpec(partSpec);
 
     Task<?> tsTask = TaskFactory.get(new DDLWork(alterIdxDesc), conf);
@@ -1142,7 +1161,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     alterIdxDesc.setProps(mapProp);
     alterIdxDesc.setIndexName(indexName);
     alterIdxDesc.setBaseTableName(baseTableName);
-    alterIdxDesc.setDbName(db.getCurrentDatabase());
+    alterIdxDesc.setDbName(SessionState.get().getCurrentDatabase());
 
     rootTasks.add(TaskFactory.get(new DDLWork(alterIdxDesc), conf));
   }
@@ -1150,7 +1169,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private List<Task<?>> getIndexBuilderMapRed(String baseTableName, String indexName,
       HashMap<String, String> partSpec) throws SemanticException {
     try {
-      String dbName = db.getCurrentDatabase();
+      String dbName = SessionState.get().getCurrentDatabase();
       Index index = db.getIndex(dbName, baseTableName, indexName);
       Table indexTbl = getTable(index.getIndexTableName());
       String baseTblName = index.getOrigTableName();
@@ -1896,10 +1915,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String[] colTypes = schema.split("#");
     prop.setProperty("columns", colTypes[0]);
     prop.setProperty("columns.types", colTypes[1]);
-
+    prop.setProperty(serdeConstants.SERIALIZATION_LIB, LazySimpleSerDe.class.getName());
     FetchWork fetch = new FetchWork(ctx.getResFile().toString(), new TableDesc(
-        LazySimpleSerDe.class, TextInputFormat.class,
-        IgnoreKeyTextOutputFormat.class, prop), -1);
+        TextInputFormat.class,IgnoreKeyTextOutputFormat.class, prop), -1);
     fetch.setSerializationNullFormat(" ");
     return (FetchTask) TaskFactory.get(fetch, conf);
   }
@@ -2056,7 +2074,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
   private void analyzeShowTables(ASTNode ast) throws SemanticException {
     ShowTablesDesc showTblsDesc;
-    String dbName = db.getCurrentDatabase();
+    String dbName = SessionState.get().getCurrentDatabase();
     String tableNames = null;
 
     if (ast.getChildCount() > 3) {
@@ -2119,7 +2137,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeShowTableStatus(ASTNode ast) throws SemanticException {
     ShowTableStatusDesc showTblStatusDesc;
     String tableNames = getUnescapedName((ASTNode) ast.getChild(0));
-    String dbName = db.getCurrentDatabase();
+    String dbName = SessionState.get().getCurrentDatabase();
     int children = ast.getChildCount();
     HashMap<String, String> partSpec = null;
     if (children >= 2) {
@@ -2152,7 +2170,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeShowTableProperties(ASTNode ast) throws SemanticException {
     ShowTblPropertiesDesc showTblPropertiesDesc;
     String tableNames = getUnescapedName((ASTNode) ast.getChild(0));
-    String dbName = db.getCurrentDatabase();
+    String dbName = SessionState.get().getCurrentDatabase();
     String propertyName = null;
     if (ast.getChildCount() > 1) {
       propertyName = unescapeSQLString(ast.getChild(1).getText());
@@ -2414,7 +2432,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     partSpecs.add(newPartSpec);
     addTablePartsOutputs(tblName, partSpecs);
     RenamePartitionDesc renamePartitionDesc = new RenamePartitionDesc(
-        db.getCurrentDatabase(), tblName, oldPartSpec, newPartSpec);
+        SessionState.get().getCurrentDatabase(), tblName, oldPartSpec, newPartSpec);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         renamePartitionDesc), conf));
   }
@@ -2504,7 +2522,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // check if table exists.
     try {
-      tab = db.getTable(db.getCurrentDatabase(), tblName, true);
+      tab = db.getTable(SessionState.get().getCurrentDatabase(), tblName, true);
       inputs.add(new ReadEntity(tab));
     } catch (HiveException e) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName));
@@ -2542,7 +2560,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     AlterTableAlterPartDesc alterTblAlterPartDesc =
-            new AlterTableAlterPartDesc(db.getCurrentDatabase(), tblName, newCol);
+            new AlterTableAlterPartDesc(SessionState.get().getCurrentDatabase(), tblName, newCol);
 
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
             alterTblAlterPartDesc), conf));
@@ -2564,41 +2582,37 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   private void analyzeAlterTableAddParts(CommonTree ast, boolean expectView)
       throws SemanticException {
 
+    // ^(TOK_ALTERTABLE_ADDPARTS identifier ifNotExists? alterStatementSuffixAddPartitionsElement+)
     String tblName = getUnescapedName((ASTNode)ast.getChild(0));
+    boolean ifNotExists = ast.getChild(1).getType() == HiveParser.TOK_IFNOTEXISTS;
+
     Table tab = getTable(tblName, true);
     boolean isView = tab.isView();
     validateAlterTableType(tab, AlterTableTypes.ADDPARTITION, expectView);
     inputs.add(new ReadEntity(tab));
 
-    // partition name to value
-    List<Map<String, String>> partSpecs = getPartitionSpecs(ast);
-    addTablePartsOutputs(tblName, partSpecs);
-
-    Iterator<Map<String, String>> partIter = partSpecs.iterator();
-
-    String currentLocation = null;
-    Map<String, String> currentPart = null;
-    boolean ifNotExists = false;
     List<AddPartitionDesc> partitionDescs = new ArrayList<AddPartitionDesc>();
 
     int numCh = ast.getChildCount();
-    for (int num = 1; num < numCh; num++) {
-      CommonTree child = (CommonTree) ast.getChild(num);
+    int start = ifNotExists ? 2 : 1;
+
+    String currentLocation = null;
+    Map<String, String> currentPart = null;
+    for (int num = start; num < numCh; num++) {
+      ASTNode child = (ASTNode) ast.getChild(num);
       switch (child.getToken().getType()) {
-      case HiveParser.TOK_IFNOTEXISTS:
-        ifNotExists = true;
-        break;
       case HiveParser.TOK_PARTSPEC:
         if (currentPart != null) {
-          validatePartitionValues(currentPart);
-          AddPartitionDesc addPartitionDesc = new AddPartitionDesc(
-              db.getCurrentDatabase(), tblName, currentPart,
+          Partition partition = getPartitionForOutput(tab, currentPart);
+          if (partition == null || !ifNotExists) {
+            AddPartitionDesc addPartitionDesc = new AddPartitionDesc(
+              tab.getDbName(), tblName, currentPart,
               currentLocation, ifNotExists, expectView);
-          partitionDescs.add(addPartitionDesc);
+            partitionDescs.add(addPartitionDesc);
+          }
+          currentLocation = null;
         }
-        // create new partition, set values
-        currentLocation = null;
-        currentPart = partIter.next();
+        currentPart = getPartSpec(child);
         break;
       case HiveParser.TOK_PARTITIONLOCATION:
         // if location specified, set in partition
@@ -2611,11 +2625,18 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // add the last one
     if (currentPart != null) {
-      validatePartitionValues(currentPart);
-      AddPartitionDesc addPartitionDesc = new AddPartitionDesc(
-          db.getCurrentDatabase(), tblName, currentPart,
+      Partition partition = getPartitionForOutput(tab, currentPart);
+      if (partition == null || !ifNotExists) {
+        AddPartitionDesc addPartitionDesc = new AddPartitionDesc(
+          tab.getDbName(), tblName, currentPart,
           currentLocation, ifNotExists, expectView);
-      partitionDescs.add(addPartitionDesc);
+        partitionDescs.add(addPartitionDesc);
+      }
+    }
+
+    if (partitionDescs.isEmpty()) {
+      // nothing to do
+      return;
     }
 
     for (AddPartitionDesc addPartitionDesc : partitionDescs) {
@@ -2675,6 +2696,21 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  private Partition getPartitionForOutput(Table tab, Map<String, String> currentPart)
+    throws SemanticException {
+    validatePartitionValues(currentPart);
+    try {
+      Partition partition = db.getPartition(tab, currentPart, false);
+      if (partition != null) {
+        outputs.add(new WriteEntity(partition));
+      }
+      return partition;
+    } catch (HiveException e) {
+      LOG.warn("wrong partition spec " + currentPart);
+    }
+    return null;
+  }
+
   /**
    * Rewrite the metadata for one or more partitions in a table. Useful when
    * an external process modifies files on HDFS and you want the pre/post
@@ -2698,7 +2734,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (partSpecs.size() == 0) {
       AlterTableSimpleDesc touchDesc = new AlterTableSimpleDesc(
-          db.getCurrentDatabase(), tblName, null,
+          SessionState.get().getCurrentDatabase(), tblName, null,
           AlterTableDesc.AlterTableTypes.TOUCH);
       outputs.add(new WriteEntity(tab));
       rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
@@ -2707,7 +2743,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       addTablePartsOutputs(tblName, partSpecs);
       for (Map<String, String> partSpec : partSpecs) {
         AlterTableSimpleDesc touchDesc = new AlterTableSimpleDesc(
-            db.getCurrentDatabase(), tblName, partSpec,
+            SessionState.get().getCurrentDatabase(), tblName, partSpec,
             AlterTableDesc.AlterTableTypes.TOUCH);
         rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
             touchDesc), conf));
@@ -2747,7 +2783,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       throw new SemanticException(e.getMessage(), e);
     }
     AlterTableSimpleDesc archiveDesc = new AlterTableSimpleDesc(
-        db.getCurrentDatabase(), tblName, partSpec,
+        SessionState.get().getCurrentDatabase(), tblName, partSpec,
         (isUnArchive ? AlterTableTypes.UNARCHIVE : AlterTableTypes.ARCHIVE));
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         archiveDesc), conf));
@@ -3240,7 +3276,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private Table getTable(String tblName, boolean throwException) throws SemanticException {
-    return getTable(db.getCurrentDatabase(), tblName, throwException);
+    return getTable(SessionState.get().getCurrentDatabase(), tblName, throwException);
   }
 
   private Table getTable(String database, String tblName, boolean throwException)

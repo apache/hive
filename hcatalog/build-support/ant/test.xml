@@ -31,8 +31,10 @@
 
       <delete dir="${test.logs}"/>
       <delete dir="${test.warehouse.dir}"/>
+      <delete dir="${test.data.dir}"/>
       <mkdir dir="${test.logs}"/>
       <mkdir dir="${test.warehouse.dir}"/>
+      <mkdir dir="${test.data.dir}"/>
 
       <junit showoutput="${test.output}"
              printsummary="yes"
@@ -45,6 +47,7 @@
              failureProperty="tests.failed">
         <sysproperty key="hadoop.log.dir" value="${test.logs}"/>
         <sysproperty key="hive.metastore.warehouse.dir" value="${test.warehouse.dir}"/>
+        <sysproperty key="test.data.dir" value="${test.data.dir}"/>
         <sysproperty key="java.security.krb5.realm" value=""/> <!-- HADOOP-7489 -->
         <sysproperty key="java.security.krb5.kdc" value=""/> <!-- HADOOP-7489 -->
         <!--HCAT_PREFIX, HIVE_HOME are needed by WebHCat tests-->

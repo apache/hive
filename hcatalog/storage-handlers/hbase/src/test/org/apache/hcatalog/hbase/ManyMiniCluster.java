@@ -44,326 +44,327 @@ import java.net.ServerSocket;
  */
 public class ManyMiniCluster {
 
-    //MR stuff
-    private boolean miniMRClusterEnabled;
-    private MiniMRCluster mrCluster;
-    private int numTaskTrackers;
-    private JobConf jobConf;
+  //MR stuff
+  private boolean miniMRClusterEnabled;
+  private MiniMRCluster mrCluster;
+  private int numTaskTrackers;
+  private JobConf jobConf;
 
-    //HBase stuff
-    private boolean miniHBaseClusterEnabled;
-    private MiniHBaseCluster hbaseCluster;
-    private String hbaseRoot;
-    private Configuration hbaseConf;
-    private String hbaseDir;
+  //HBase stuff
+  private boolean miniHBaseClusterEnabled;
+  private MiniHBaseCluster hbaseCluster;
+  private String hbaseRoot;
+  private Configuration hbaseConf;
+  private String hbaseDir;
 
-    //ZK Stuff
-    private boolean miniZookeeperClusterEnabled;
-    private MiniZooKeeperCluster zookeeperCluster;
-    private int zookeeperPort;
-    private String zookeeperDir;
+  //ZK Stuff
+  private boolean miniZookeeperClusterEnabled;
+  private MiniZooKeeperCluster zookeeperCluster;
+  private int zookeeperPort;
+  private String zookeeperDir;
 
-    //DFS Stuff
-    private MiniDFSCluster dfsCluster;
+  //DFS Stuff
+  private MiniDFSCluster dfsCluster;
 
-    //Hive Stuff
-    private boolean miniHiveMetastoreEnabled;
-    private HiveConf hiveConf;
-    private HiveMetaStoreClient hiveMetaStoreClient;
+  //Hive Stuff
+  private boolean miniHiveMetastoreEnabled;
+  private HiveConf hiveConf;
+  private HiveMetaStoreClient hiveMetaStoreClient;
 
-    private final File workDir;
-    private boolean started = false;
+  private final File workDir;
+  private boolean started = false;
 
 
-    /**
-     * create a cluster instance using a builder which will expose configurable options
-     * @param workDir working directory ManyMiniCluster will use for all of it's *Minicluster instances
-     * @return a Builder instance
-     */
-    public static Builder create(File workDir) {
-        return new Builder(workDir);
-    }
+  /**
+   * create a cluster instance using a builder which will expose configurable options
+   * @param workDir working directory ManyMiniCluster will use for all of it's *Minicluster instances
+   * @return a Builder instance
+   */
+  public static Builder create(File workDir) {
+    return new Builder(workDir);
+  }
 
-    private ManyMiniCluster(Builder b) {
-        workDir = b.workDir;
-        numTaskTrackers = b.numTaskTrackers;
-        hiveConf = b.hiveConf;
-        jobConf = b.jobConf;
-        hbaseConf = b.hbaseConf;
-        miniMRClusterEnabled = b.miniMRClusterEnabled;
-        miniHBaseClusterEnabled = b.miniHBaseClusterEnabled;
-        miniHiveMetastoreEnabled = b.miniHiveMetastoreEnabled;
-        miniZookeeperClusterEnabled = b.miniZookeeperClusterEnabled;
-    }
+  private ManyMiniCluster(Builder b) {
+    workDir = b.workDir;
+    numTaskTrackers = b.numTaskTrackers;
+    hiveConf = b.hiveConf;
+    jobConf = b.jobConf;
+    hbaseConf = b.hbaseConf;
+    miniMRClusterEnabled = b.miniMRClusterEnabled;
+    miniHBaseClusterEnabled = b.miniHBaseClusterEnabled;
+    miniHiveMetastoreEnabled = b.miniHiveMetastoreEnabled;
+    miniZookeeperClusterEnabled = b.miniZookeeperClusterEnabled;
+  }
 
-    protected synchronized void start() {
-        try {
-            if (!started) {
-                FileUtil.fullyDelete(workDir);
-                if (miniMRClusterEnabled) {
-                    setupMRCluster();
-                }
-                if (miniZookeeperClusterEnabled || miniHBaseClusterEnabled) {
-                    miniZookeeperClusterEnabled = true;
-                    setupZookeeper();
-                }
-                if (miniHBaseClusterEnabled) {
-                    setupHBaseCluster();
-                }
-                if (miniHiveMetastoreEnabled) {
-                    setUpMetastore();
-                }
-            }
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to setup cluster", e);
+  protected synchronized void start() {
+    try {
+      if (!started) {
+        FileUtil.fullyDelete(workDir);
+        if (miniMRClusterEnabled) {
+          setupMRCluster();
         }
-    }
-
-    protected synchronized void stop() {
-        if (hbaseCluster != null) {
-            HConnectionManager.deleteAllConnections(true);
-            try {
-                hbaseCluster.shutdown();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            hbaseCluster = null;
+        if (miniZookeeperClusterEnabled || miniHBaseClusterEnabled) {
+          miniZookeeperClusterEnabled = true;
+          setupZookeeper();
         }
-        if (zookeeperCluster != null) {
-            try {
-                zookeeperCluster.shutdown();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            zookeeperCluster = null;
+        if (miniHBaseClusterEnabled) {
+          setupHBaseCluster();
         }
-        if (mrCluster != null) {
-            try {
-                mrCluster.shutdown();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            mrCluster = null;
+        if (miniHiveMetastoreEnabled) {
+          setUpMetastore();
         }
-        if (dfsCluster != null) {
-            try {
-                dfsCluster.getFileSystem().close();
-                dfsCluster.shutdown();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            dfsCluster = null;
-        }
-        try {
-            FileSystem.closeAll();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        started = false;
+      }
+    } catch (Exception e) {
+      throw new IllegalStateException("Failed to setup cluster", e);
     }
+  }
 
-    /**
-     * @return Configuration of mini HBase cluster
-     */
-    public Configuration getHBaseConf() {
-        return HBaseConfiguration.create(hbaseConf);
+  protected synchronized void stop() {
+    if (hbaseCluster != null) {
+      HConnectionManager.deleteAllConnections(true);
+      try {
+        hbaseCluster.shutdown();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      hbaseCluster = null;
     }
-
-    /**
-     * @return Configuration of mini MR cluster
-     */
-    public Configuration getJobConf() {
-        return new Configuration(jobConf);
+    if (zookeeperCluster != null) {
+      try {
+        zookeeperCluster.shutdown();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      zookeeperCluster = null;
     }
-
-    /**
-     * @return Configuration of Hive Metastore, this is a standalone not a daemon
-     */
-    public HiveConf getHiveConf() {
-        return new HiveConf(hiveConf);
+    if (mrCluster != null) {
+      try {
+        mrCluster.shutdown();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      mrCluster = null;
     }
-
-    /**
-     * @return Filesystem used by MiniMRCluster and MiniHBaseCluster
-     */
-    public FileSystem getFileSystem() {
-        try {
-            return FileSystem.get(jobConf);
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to get FileSystem", e);
-        }
+    if (dfsCluster != null) {
+      try {
+        dfsCluster.getFileSystem().close();
+        dfsCluster.shutdown();
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      dfsCluster = null;
     }
-
-    /**
-     * @return Metastore client instance
-     */
-    public HiveMetaStoreClient getHiveMetaStoreClient() {
-        return hiveMetaStoreClient;
+    try {
+      FileSystem.closeAll();
+    } catch (IOException e) {
+      e.printStackTrace();
     }
+    started = false;
+  }
 
-    private void setupMRCluster() {
-        try {
-            final int jobTrackerPort = findFreePort();
-            final int taskTrackerPort = findFreePort();
+  /**
+   * @return Configuration of mini HBase cluster
+   */
+  public Configuration getHBaseConf() {
+    return HBaseConfiguration.create(hbaseConf);
+  }
 
-            if (jobConf == null)
-                jobConf = new JobConf();
+  /**
+   * @return Configuration of mini MR cluster
+   */
+  public Configuration getJobConf() {
+    return new Configuration(jobConf);
+  }
 
-            jobConf.setInt("mapred.submit.replication", 1);
-            jobConf.set("yarn.scheduler.capacity.root.queues", "default");
-            jobConf.set("yarn.scheduler.capacity.root.default.capacity", "100");
-            //conf.set("hadoop.job.history.location",new File(workDir).getAbsolutePath()+"/history");
-            System.setProperty("hadoop.log.dir", new File(workDir, "/logs").getAbsolutePath());
+  /**
+   * @return Configuration of Hive Metastore, this is a standalone not a daemon
+   */
+  public HiveConf getHiveConf() {
+    return new HiveConf(hiveConf);
+  }
 
-            mrCluster = new MiniMRCluster(jobTrackerPort,
-                taskTrackerPort,
-                numTaskTrackers,
-                getFileSystem().getUri().toString(),
-                numTaskTrackers,
-                null,
-                null,
-                null,
-                jobConf);
-
-            jobConf = mrCluster.createJobConf();
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to Setup MR Cluster", e);
-        }
+  /**
+   * @return Filesystem used by MiniMRCluster and MiniHBaseCluster
+   */
+  public FileSystem getFileSystem() {
+    try {
+      return FileSystem.get(jobConf);
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to get FileSystem", e);
     }
+  }
 
-    private void setupZookeeper() {
-        try {
-            zookeeperDir = new File(workDir, "zk").getAbsolutePath();
-            zookeeperPort = findFreePort();
-            zookeeperCluster = new MiniZooKeeperCluster();
-            zookeeperCluster.setDefaultClientPort(zookeeperPort);
-            zookeeperCluster.startup(new File(zookeeperDir));
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to Setup Zookeeper Cluster", e);
-        }
+  /**
+   * @return Metastore client instance
+   */
+  public HiveMetaStoreClient getHiveMetaStoreClient() {
+    return hiveMetaStoreClient;
+  }
+
+  private void setupMRCluster() {
+    try {
+      final int jobTrackerPort = findFreePort();
+      final int taskTrackerPort = findFreePort();
+
+      if (jobConf == null)
+        jobConf = new JobConf();
+
+      jobConf.setInt("mapred.submit.replication", 1);
+      jobConf.set("yarn.scheduler.capacity.root.queues", "default");
+      jobConf.set("yarn.scheduler.capacity.root.default.capacity", "100");
+      //conf.set("hadoop.job.history.location",new File(workDir).getAbsolutePath()+"/history");
+      System.setProperty("hadoop.log.dir", new File(workDir, "/logs").getAbsolutePath());
+
+      mrCluster = new MiniMRCluster(jobTrackerPort,
+        taskTrackerPort,
+        numTaskTrackers,
+        getFileSystem().getUri().toString(),
+        numTaskTrackers,
+        null,
+        null,
+        null,
+        jobConf);
+
+      jobConf = mrCluster.createJobConf();
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to Setup MR Cluster", e);
     }
+  }
 
-    private void setupHBaseCluster() {
-        final int numRegionServers = 1;
-
-        try {
-            hbaseDir = new File(workDir, "hbase").getAbsolutePath();
-            hbaseRoot = "file://" + hbaseDir;
-
-            if (hbaseConf == null)
-                hbaseConf = HBaseConfiguration.create();
-
-            hbaseConf.set("hbase.rootdir", hbaseRoot);
-            hbaseConf.set("hbase.master", "local");
-            hbaseConf.setInt(HConstants.ZOOKEEPER_CLIENT_PORT, zookeeperPort);
-            hbaseConf.set(HConstants.ZOOKEEPER_QUORUM, "127.0.0.1");
-            hbaseConf.setInt("hbase.master.port", findFreePort());
-            hbaseConf.setInt("hbase.master.info.port", -1);
-            hbaseConf.setInt("hbase.regionserver.port", findFreePort());
-            hbaseConf.setInt("hbase.regionserver.info.port", -1);
-
-            hbaseCluster = new MiniHBaseCluster(hbaseConf, numRegionServers);
-            hbaseConf.set("hbase.master", hbaseCluster.getMaster().getServerName().getHostAndPort());
-            //opening the META table ensures that cluster is running
-            new HTable(hbaseConf, HConstants.META_TABLE_NAME);
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to setup HBase Cluster", e);
-        }
+  private void setupZookeeper() {
+    try {
+      zookeeperDir = new File(workDir, "zk").getAbsolutePath();
+      zookeeperPort = findFreePort();
+      zookeeperCluster = new MiniZooKeeperCluster();
+      zookeeperCluster.setDefaultClientPort(zookeeperPort);
+      zookeeperCluster.startup(new File(zookeeperDir));
+    } catch (Exception e) {
+      throw new IllegalStateException("Failed to Setup Zookeeper Cluster", e);
     }
+  }
 
-    private void setUpMetastore() throws Exception {
-        if (hiveConf == null)
-            hiveConf = new HiveConf(this.getClass());
+  private void setupHBaseCluster() {
+    final int numRegionServers = 1;
 
-        //The default org.apache.hadoop.hive.ql.hooks.PreExecutePrinter hook
-        //is present only in the ql/test directory
-        hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
-        hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
-        hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
-        hiveConf.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname,
-            "jdbc:derby:" + new File(workDir + "/metastore_db") + ";create=true");
-        hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.toString(),
-            new File(workDir, "warehouse").toString());
-        //set where derby logs
-        File derbyLogFile = new File(workDir + "/derby.log");
-        derbyLogFile.createNewFile();
-        System.setProperty("derby.stream.error.file", derbyLogFile.getPath());
+    try {
+      hbaseDir = new File(workDir, "hbase").toString();
+      hbaseDir = hbaseDir.replaceAll("\\\\", "/");
+      hbaseRoot = "file://" + hbaseDir;
+
+      if (hbaseConf == null)
+        hbaseConf = HBaseConfiguration.create();
+
+      hbaseConf.set("hbase.rootdir", hbaseRoot);
+      hbaseConf.set("hbase.master", "local");
+      hbaseConf.setInt(HConstants.ZOOKEEPER_CLIENT_PORT, zookeeperPort);
+      hbaseConf.set(HConstants.ZOOKEEPER_QUORUM, "127.0.0.1");
+      hbaseConf.setInt("hbase.master.port", findFreePort());
+      hbaseConf.setInt("hbase.master.info.port", -1);
+      hbaseConf.setInt("hbase.regionserver.port", findFreePort());
+      hbaseConf.setInt("hbase.regionserver.info.port", -1);
+
+      hbaseCluster = new MiniHBaseCluster(hbaseConf, numRegionServers);
+      hbaseConf.set("hbase.master", hbaseCluster.getMaster().getServerName().getHostAndPort());
+      //opening the META table ensures that cluster is running
+      new HTable(hbaseConf, HConstants.META_TABLE_NAME);
+    } catch (Exception e) {
+      throw new IllegalStateException("Failed to setup HBase Cluster", e);
+    }
+  }
+
+  private void setUpMetastore() throws Exception {
+    if (hiveConf == null)
+      hiveConf = new HiveConf(this.getClass());
+
+    //The default org.apache.hadoop.hive.ql.hooks.PreExecutePrinter hook
+    //is present only in the ql/test directory
+    hiveConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
+    hiveConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
+    hiveConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
+    hiveConf.set(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname,
+      "jdbc:derby:" + new File(workDir + "/metastore_db") + ";create=true");
+    hiveConf.set(HiveConf.ConfVars.METASTOREWAREHOUSE.toString(),
+      new File(workDir, "warehouse").toString());
+    //set where derby logs
+    File derbyLogFile = new File(workDir + "/derby.log");
+    derbyLogFile.createNewFile();
+    System.setProperty("derby.stream.error.file", derbyLogFile.getPath());
 
 
 //    Driver driver = new Driver(hiveConf);
 //    SessionState.start(new CliSessionState(hiveConf));
 
-        hiveMetaStoreClient = new HiveMetaStoreClient(hiveConf);
+    hiveMetaStoreClient = new HiveMetaStoreClient(hiveConf);
+  }
+
+  private static int findFreePort() throws IOException {
+    ServerSocket server = new ServerSocket(0);
+    int port = server.getLocalPort();
+    server.close();
+    return port;
+  }
+
+  public static class Builder {
+    private File workDir;
+    private int numTaskTrackers = 1;
+    private JobConf jobConf;
+    private Configuration hbaseConf;
+    private HiveConf hiveConf;
+
+    private boolean miniMRClusterEnabled = true;
+    private boolean miniHBaseClusterEnabled = true;
+    private boolean miniHiveMetastoreEnabled = true;
+    private boolean miniZookeeperClusterEnabled = true;
+
+
+    private Builder(File workDir) {
+      this.workDir = workDir;
     }
 
-    private static int findFreePort() throws IOException {
-        ServerSocket server = new ServerSocket(0);
-        int port = server.getLocalPort();
-        server.close();
-        return port;
+    public Builder numTaskTrackers(int num) {
+      numTaskTrackers = num;
+      return this;
     }
 
-    public static class Builder {
-        private File workDir;
-        private int numTaskTrackers = 1;
-        private JobConf jobConf;
-        private Configuration hbaseConf;
-        private HiveConf hiveConf;
-
-        private boolean miniMRClusterEnabled = true;
-        private boolean miniHBaseClusterEnabled = true;
-        private boolean miniHiveMetastoreEnabled = true;
-        private boolean miniZookeeperClusterEnabled = true;
-
-
-        private Builder(File workDir) {
-            this.workDir = workDir;
-        }
-
-        public Builder numTaskTrackers(int num) {
-            numTaskTrackers = num;
-            return this;
-        }
-
-        public Builder jobConf(JobConf jobConf) {
-            this.jobConf = jobConf;
-            return this;
-        }
-
-        public Builder hbaseConf(Configuration hbaseConf) {
-            this.hbaseConf = hbaseConf;
-            return this;
-        }
-
-        public Builder hiveConf(HiveConf hiveConf) {
-            this.hiveConf = hiveConf;
-            return this;
-        }
-
-        public Builder miniMRClusterEnabled(boolean enabled) {
-            this.miniMRClusterEnabled = enabled;
-            return this;
-        }
-
-        public Builder miniHBaseClusterEnabled(boolean enabled) {
-            this.miniHBaseClusterEnabled = enabled;
-            return this;
-        }
-
-        public Builder miniZookeeperClusterEnabled(boolean enabled) {
-            this.miniZookeeperClusterEnabled = enabled;
-            return this;
-        }
-
-        public Builder miniHiveMetastoreEnabled(boolean enabled) {
-            this.miniHiveMetastoreEnabled = enabled;
-            return this;
-        }
-
-
-        public ManyMiniCluster build() {
-            return new ManyMiniCluster(this);
-        }
-
+    public Builder jobConf(JobConf jobConf) {
+      this.jobConf = jobConf;
+      return this;
     }
+
+    public Builder hbaseConf(Configuration hbaseConf) {
+      this.hbaseConf = hbaseConf;
+      return this;
+    }
+
+    public Builder hiveConf(HiveConf hiveConf) {
+      this.hiveConf = hiveConf;
+      return this;
+    }
+
+    public Builder miniMRClusterEnabled(boolean enabled) {
+      this.miniMRClusterEnabled = enabled;
+      return this;
+    }
+
+    public Builder miniHBaseClusterEnabled(boolean enabled) {
+      this.miniHBaseClusterEnabled = enabled;
+      return this;
+    }
+
+    public Builder miniZookeeperClusterEnabled(boolean enabled) {
+      this.miniZookeeperClusterEnabled = enabled;
+      return this;
+    }
+
+    public Builder miniHiveMetastoreEnabled(boolean enabled) {
+      this.miniHiveMetastoreEnabled = enabled;
+      return this;
+    }
+
+
+    public ManyMiniCluster build() {
+      return new ManyMiniCluster(this);
+    }
+
+  }
 }

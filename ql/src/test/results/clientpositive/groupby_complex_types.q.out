@@ -94,6 +94,7 @@ STAGE PLANS:
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
             Select Operator
               expressions:
                     expr: key
@@ -116,6 +117,7 @@ STAGE PLANS:
                   table:
                       input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -159,6 +161,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -214,6 +217,7 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
             Reduce Output Operator
               key expressions:
                     expr: _col0

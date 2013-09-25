@@ -63,22 +63,26 @@ public class JdbcColumn {
     return Utils.hiveTypeToSqlType(type);
   }
 
-  static int columnDisplaySize(int columnType) throws SQLException {
+  static int columnDisplaySize(int columnType, JdbcColumnAttributes columnAttributes)
+      throws SQLException {
     // according to hiveTypeToSqlType possible options are:
     switch(columnType) {
     case Types.BOOLEAN:
-      return columnPrecision(columnType);
+      return columnPrecision(columnType, columnAttributes);
     case Types.VARCHAR:
+      if (columnAttributes != null) {
+        return columnAttributes.precision;
+      }
       return Integer.MAX_VALUE; // hive has no max limit for strings
     case Types.TINYINT:
     case Types.SMALLINT:
     case Types.INTEGER:
     case Types.BIGINT:
-      return columnPrecision(columnType) + 1; // allow +/-
+      return columnPrecision(columnType, columnAttributes) + 1; // allow +/-
     case Types.DATE:
       return 10;
     case Types.TIMESTAMP:
-      return columnPrecision(columnType);
+      return columnPrecision(columnType, columnAttributes);
 
     // see http://download.oracle.com/javase/6/docs/api/constant-values.html#java.lang.Float.MAX_EXPONENT
     case Types.FLOAT:
@@ -87,18 +91,25 @@ public class JdbcColumn {
     case Types.DOUBLE:
       return 25; // e.g. -(17#).e-####
     case Types.DECIMAL:
+      if (columnAttributes != null) {
+        return columnAttributes.precision + 2;  // '-' sign and '.'
+      }
       return Integer.MAX_VALUE;
     default:
       throw new SQLException("Invalid column type: " + columnType);
     }
   }
 
-  static int columnPrecision(int columnType) throws SQLException {
+  static int columnPrecision(int columnType, JdbcColumnAttributes columnAttributes)
+      throws SQLException {
     // according to hiveTypeToSqlType possible options are:
     switch(columnType) {
     case Types.BOOLEAN:
       return 1;
     case Types.VARCHAR:
+      if (columnAttributes != null) {
+        return columnAttributes.precision;
+      }
       return Integer.MAX_VALUE; // hive has no max limit for strings
     case Types.TINYINT:
       return 3;
@@ -117,13 +128,17 @@ public class JdbcColumn {
     case Types.TIMESTAMP:
       return 29;
     case Types.DECIMAL:
+      if (columnAttributes != null) {
+        return columnAttributes.precision;
+      }
       return Integer.MAX_VALUE;
     default:
       throw new SQLException("Invalid column type: " + columnType);
     }
   }
 
-  static int columnScale(int columnType) throws SQLException {
+  static int columnScale(int columnType, JdbcColumnAttributes columnAttributes)
+      throws SQLException {
     // according to hiveTypeToSqlType possible options are:
     switch(columnType) {
     case Types.BOOLEAN:
@@ -141,20 +156,13 @@ public class JdbcColumn {
     case  Types.TIMESTAMP:
       return 9;
     case Types.DECIMAL:
+      if (columnAttributes != null) {
+        return columnAttributes.scale;
+      }
       return Integer.MAX_VALUE;
     default:
       throw new SQLException("Invalid column type: " + columnType);
     }
-  }
-
-  public Integer getColumnSize() throws SQLException {
-    int precision = columnPrecision(Utils.hiveTypeToSqlType(type));
-
-    return precision == 0 ? null : precision;
-  }
-
-  public Integer getDecimalDigits() throws SQLException {
-    return columnScale(Utils.hiveTypeToSqlType(type));
   }
 
   public Integer getNumPrecRadix() {

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -51,6 +53,7 @@ import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hadoop.util.Shell;
+import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * An util class for various Hive file format tasks.
@@ -69,6 +72,8 @@ public final class HiveFileFormatUtils {
     HiveFileFormatUtils.registerOutputFormatSubstitute(
         SequenceFileOutputFormat.class, HiveSequenceFileOutputFormat.class);
   }
+
+  static String realoutputFormat;
 
   @SuppressWarnings("unchecked")
   private static Map<Class<? extends OutputFormat>, Class<? extends HiveOutputFormat>>
@@ -93,14 +98,43 @@ public final class HiveFileFormatUtils {
    */
   @SuppressWarnings("unchecked")
   public static synchronized Class<? extends HiveOutputFormat> getOutputFormatSubstitute(
-      Class<?> origin) {
+      Class<?> origin, boolean storagehandlerflag) {
     if (HiveOutputFormat.class.isAssignableFrom(origin)) {
       return (Class<? extends HiveOutputFormat>) origin;
     }
     Class<? extends HiveOutputFormat> result = outputFormatSubstituteMap
         .get(origin);
+    //register this output format into the map for the first time
+    if ((storagehandlerflag == true) && (result == null)) {
+      HiveFileFormatUtils.setRealOutputFormatClassName(origin.getName());
+      result = HivePassThroughOutputFormat.class;
+      HiveFileFormatUtils.registerOutputFormatSubstitute((Class<? extends OutputFormat>) origin,HivePassThroughOutputFormat.class);
+    }
     return result;
   }
+
+  /**
+   * get a RealOutputFormatClassName corresponding to the HivePassThroughOutputFormat
+   */
+  @SuppressWarnings("unchecked")
+  public static String getRealOutputFormatClassName() 
+  {
+    return realoutputFormat;
+  }
+
+  /**
+   * set a RealOutputFormatClassName corresponding to the HivePassThroughOutputFormat
+   */
+  public static void setRealOutputFormatClassName(
+      String destination) {
+    if (destination != null){
+      realoutputFormat = destination;
+    }
+    else {
+      return;
+    }
+  }
+
 
   /**
    * get the final output path of a given FileOutputFormat.
@@ -215,9 +249,21 @@ public final class HiveFileFormatUtils {
   public static RecordWriter getHiveRecordWriter(JobConf jc,
       TableDesc tableInfo, Class<? extends Writable> outputClass,
       FileSinkDesc conf, Path outPath, Reporter reporter) throws HiveException {
+    boolean storagehandlerofhivepassthru = false;
+    HiveOutputFormat<?, ?> hiveOutputFormat;
     try {
-      HiveOutputFormat<?, ?> hiveOutputFormat = tableInfo
-          .getOutputFileFormatClass().newInstance();
+      if (tableInfo.getJobProperties() != null) {
+        if (tableInfo.getJobProperties().get(HivePassThroughOutputFormat.HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY) != null) {
+            jc.set(HivePassThroughOutputFormat.HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY,tableInfo.getJobProperties().get(HivePassThroughOutputFormat.HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY));
+            storagehandlerofhivepassthru  = true;
+         }
+      }
+      if (storagehandlerofhivepassthru) {
+         hiveOutputFormat = ReflectionUtils.newInstance(tableInfo.getOutputFileFormatClass(),jc);
+      }
+      else {
+         hiveOutputFormat = tableInfo.getOutputFileFormatClass().newInstance();
+      }
       boolean isCompressed = conf.getCompressed();
       JobConf jc_output = jc;
       if (isCompressed) {

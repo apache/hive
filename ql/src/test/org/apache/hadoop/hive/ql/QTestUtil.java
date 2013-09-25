@@ -29,9 +29,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,6 +48,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -91,6 +94,7 @@ import org.apache.zookeeper.ZooKeeper;
  */
 public class QTestUtil {
 
+  public static final String UTF_8 = "UTF-8";
   private static final Log LOG = LogFactory.getLog("QTestUtil");
 
   private String testWarehouse;
@@ -198,7 +202,7 @@ public class QTestUtil {
   public String getLogDirectory() {
     return logDir;
   }
-  
+
   private String getHadoopMainVersion(String input) {
     if (input == null) {
       return null;
@@ -324,27 +328,26 @@ public class QTestUtil {
     }
   }
 
-  public void addFile(String qFile) throws Exception {
-
-    File qf = new File(qFile);
-    addFile(qf);
+  public String readEntireFileIntoString(File queryFile) throws IOException {
+    InputStreamReader isr = new InputStreamReader(
+        new BufferedInputStream(new FileInputStream(queryFile)), QTestUtil.UTF_8);
+    StringWriter sw = new StringWriter();
+    try {
+      IOUtils.copy(isr, sw);
+    } finally {
+      if (isr != null) {
+        isr.close();
+      }
+    }
+    return sw.toString();
   }
 
-  public void addFile(File qf) throws Exception {
+  public void addFile(String queryFile) throws IOException {
+    addFile(new File(queryFile));
+  }
 
-    FileInputStream fis = new FileInputStream(qf);
-    BufferedInputStream bis = new BufferedInputStream(fis);
-    BufferedReader br = new BufferedReader(new InputStreamReader(bis, "UTF8"));
-    StringBuilder qsb = new StringBuilder();
-
-    // Read the entire query
-    String line;
-    while ((line = br.readLine()) != null) {
-      qsb.append(line + "\n");
-    }
-    br.close();
-
-    String query = qsb.toString();
+  public void addFile(File qf) throws IOException  {
+    String query = readEntireFileIntoString(qf);
     qMap.put(qf.getName(), query);
 
     if(checkHadoopVersionExclude(qf.getName(), query)
@@ -470,7 +473,7 @@ public class QTestUtil {
     // Delete any tables other than the source tables
     // and any databases other than the default database.
     for (String dbName : db.getAllDatabases()) {
-      db.setCurrentDatabase(dbName);
+      SessionState.get().setCurrentDatabase(dbName);
       for (String tblName : db.getAllTables()) {
         if (!DEFAULT_DATABASE_NAME.equals(dbName) || !srcTables.contains(tblName)) {
           Table tblObj = db.getTable(tblName);
@@ -494,7 +497,7 @@ public class QTestUtil {
         db.dropDatabase(dbName);
       }
     }
-    Hive.get().setCurrentDatabase(DEFAULT_DATABASE_NAME);
+    SessionState.get().setCurrentDatabase(DEFAULT_DATABASE_NAME);
 
     List<String> roleNames = db.getAllRoleNames();
       for (String roleName : roleNames) {
@@ -617,7 +620,8 @@ public class QTestUtil {
     db.createTable("src_sequencefile", cols, null,
         SequenceFileInputFormat.class, SequenceFileOutputFormat.class);
 
-    Table srcThrift = new Table(db.getCurrentDatabase(), "src_thrift");
+    Table srcThrift =
+        new Table(SessionState.get().getCurrentDatabase(), "src_thrift");
     srcThrift.setInputFormatClass(SequenceFileInputFormat.class.getName());
     srcThrift.setOutputFormatClass(SequenceFileOutputFormat.class.getName());
     srcThrift.setSerializationLib(ThriftDeserializer.class.getName());
@@ -872,44 +876,46 @@ public class QTestUtil {
     }
   }
 
+  private final Pattern[] xmlPlanMask = toPattern(new String[] {
+      "<java version=\".*\" class=\"java.beans.XMLDecoder\">",
+      "<string>.*/tmp/.*</string>",
+      "<string>file:.*</string>",
+      "<string>pfile:.*</string>",
+      "<string>[0-9]{10}</string>",
+      "<string>/.*/warehouse/.*</string>"
+  });
+
   public int checkPlan(String tname, List<Task<? extends Serializable>> tasks) throws Exception {
 
-    if (tasks != null) {
-      File planDir = new File(outDir, "plan");
-      String planFile = outPath(planDir.toString(), tname + ".xml");
+    if (tasks == null) {
+      throw new Exception("Plan is null");
+    }
+    File planDir = new File(outDir, "plan");
+    String planFile = outPath(planDir.toString(), tname + ".xml");
 
-      File outf = null;
-      outf = new File(logDir);
-      outf = new File(outf, tname.concat(".xml"));
+    File outf = null;
+    outf = new File(logDir);
+    outf = new File(outf, tname.concat(".xml"));
 
-      FileOutputStream ofs = new FileOutputStream(outf);
+    FileOutputStream ofs = new FileOutputStream(outf);
+    try {
+      conf.set(HiveConf.ConfVars.PLAN_SERIALIZATION.varname, "javaXML");
       for (Task<? extends Serializable> plan : tasks) {
-        Utilities.serializeObject(plan, ofs);
+        Utilities.serializePlan(plan, ofs, conf);
       }
 
-      String[] patterns = new String[] {
-          "<java version=\".*\" class=\"java.beans.XMLDecoder\">",
-          "<string>.*/tmp/.*</string>",
-          "<string>file:.*</string>",
-          "<string>pfile:.*</string>",
-          "<string>[0-9]{10}</string>",
-          "<string>/.*/warehouse/.*</string>"
-      };
-      
       fixXml4JDK7(outf.getPath());
-      maskPatterns(patterns, outf.getPath());
+      maskPatterns(xmlPlanMask, outf.getPath());
 
       int exitVal = executeDiffCommand(outf.getPath(), planFile, true, false);
 
       if (exitVal != 0 && overWrite) {
         exitVal = overwriteResults(outf.getPath(), planFile);
       }
-
       return exitVal;
-    } else {
-      throw new Exception("Plan is null");
+    } finally {
+      conf.set(HiveConf.ConfVars.PLAN_SERIALIZATION.varname, "kryo");
     }
-
   }
 
   /**
@@ -950,10 +956,10 @@ public class QTestUtil {
   /**
    * Fix the XML generated by JDK7 which is slightly different from what's generated by JDK6,
    * causing 40+ test failures. There are mainly two problems:
-   * 
+   *
    * 1. object element's properties, id and class, are in reverse order, i.e.
    *    <object class="org.apache.hadoop.hive.ql.exec.MapRedTask" id="MapRedTask0">
-   *    which needs to be fixed to 
+   *    which needs to be fixed to
    *    <object id="MapRedTask0" class="org.apache.hadoop.hive.ql.exec.MapRedTask">
    * 2. JDK introduces Enum as class, i.e.
    *    <object id="GenericUDAFEvaluator$Mode0" class="java.lang.Enum">
@@ -961,11 +967,11 @@ public class QTestUtil {
    *    which needs to be fixed to
    *    <object id="GenericUDAFEvaluator$Mode0" class="org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator$Mode"
    *     method="valueOf">
-   *    
+   *
    * Though not elegant, this allows these test cases to pass until we have a better serialization mechanism.
-   * 
+   *
    * Did I mention this is test code?
-   *    
+   *
    * @param fname the name of the file to fix
    * @throws Exception in case of IO error
    */
@@ -974,7 +980,7 @@ public class QTestUtil {
     if (!version.startsWith("1.7")) {
       return;
     }
-    
+
     BufferedReader in = new BufferedReader(new FileReader(fname));
     BufferedWriter out = new BufferedWriter(new FileWriter(fname + ".orig"));
     String line = null;
@@ -987,7 +993,7 @@ public class QTestUtil {
 
     in = new BufferedReader(new FileReader(fname + ".orig"));
     out = new BufferedWriter(new FileWriter(fname));
-    
+
     while (null != (line = in.readLine())) {
       if (line.indexOf("<object ") == -1 || line.indexOf("class=") == -1) {
         out.write(line);
@@ -997,8 +1003,9 @@ public class QTestUtil {
         sb.append( prefix );
         String postfix = line.substring(line.lastIndexOf('"') + 1);
         String id = getPropertyValue(line, "id");
-        if (id != null)
+        if (id != null) {
           sb.append(" id=" + id);
+        }
         String cls = getPropertyValue(line, "class");
         assert(cls != null);
         if (cls.equals("\"java.lang.Enum\"")) {
@@ -1011,38 +1018,47 @@ public class QTestUtil {
 
         sb.append(postfix);
         out.write(sb.toString());
-      } 
-      
+      }
+
       out.write('\n');
     }
 
     in.close();
     out.close();
   }
-  
+
   /**
    * Get the value of a property in line. The returned value has original quotes
    */
   private static String getPropertyValue(String line, String name) {
     int start = line.indexOf( name + "=" );
-    if (start == -1)
+    if (start == -1) {
       return null;
+    }
     start += name.length() + 1;
     int end = line.indexOf("\"", start + 1);
     return line.substring( start, end + 1 );
   }
-  
+
   /**
    * Get the value of the element in input. (Note: the returned value has no quotes.)
    */
   private static String getElementValue(String line, String name) {
-    assert(line.indexOf("<" + name + ">") != -1);
+    assert(line.contains("<" + name + ">"));
     int start = line.indexOf("<" + name + ">") + name.length() + 2;
     int end = line.indexOf("</" + name + ">");
     return line.substring(start, end);
   }
 
-  private void maskPatterns(String[] patterns, String fname) throws Exception {
+  private Pattern[] toPattern(String[] patternStrs) {
+    Pattern[] patterns = new Pattern[patternStrs.length];
+    for (int i = 0; i < patternStrs.length; i++) {
+      patterns[i] = Pattern.compile(patternStrs[i]);
+    }
+    return patterns;
+  }
+
+  private void maskPatterns(Pattern[] patterns, String fname) throws Exception {
     String maskPattern = "#### A masked pattern was here ####";
 
     String line;
@@ -1063,8 +1079,8 @@ public class QTestUtil {
 
     boolean lastWasMasked = false;
     while (null != (line = in.readLine())) {
-      for (String pattern : patterns) {
-        line = line.replaceAll(pattern, maskPattern);
+      for (Pattern pattern : patterns) {
+        line = pattern.matcher(line).replaceAll(maskPattern);
       }
 
       if (line.equals(maskPattern)) {
@@ -1085,47 +1101,46 @@ public class QTestUtil {
     out.close();
   }
 
+  private final Pattern[] planMask = toPattern(new String[] {
+      ".*file:.*",
+      ".*pfile:.*",
+      ".*hdfs:.*",
+      ".*/tmp/.*",
+      ".*invalidscheme:.*",
+      ".*lastUpdateTime.*",
+      ".*lastAccessTime.*",
+      ".*lastModifiedTime.*",
+      ".*[Oo]wner.*",
+      ".*CreateTime.*",
+      ".*LastAccessTime.*",
+      ".*Location.*",
+      ".*LOCATION '.*",
+      ".*transient_lastDdlTime.*",
+      ".*last_modified_.*",
+      ".*at org.*",
+      ".*at sun.*",
+      ".*at java.*",
+      ".*at junit.*",
+      ".*Caused by:.*",
+      ".*LOCK_QUERYID:.*",
+      ".*LOCK_TIME:.*",
+      ".*grantTime.*",
+      ".*[.][.][.] [0-9]* more.*",
+      ".*job_[0-9_]*.*",
+      ".*job_local[0-9_]*.*",
+      ".*USING 'java -cp.*",
+      "^Deleted.*",
+  });
+
   public int checkCliDriverResults(String tname) throws Exception {
     String[] cmdArray;
-    String[] patterns;
     assert(qMap.containsKey(tname));
 
     String outFileName = outPath(outDir, tname + ".out");
 
-    patterns = new String[] {
-        ".*file:.*",
-        ".*pfile:.*",
-        ".*hdfs:.*",
-        ".*/tmp/.*",
-        ".*invalidscheme:.*",
-        ".*lastUpdateTime.*",
-        ".*lastAccessTime.*",
-        ".*lastModifiedTime.*",
-        ".*[Oo]wner.*",
-        ".*CreateTime.*",
-        ".*LastAccessTime.*",
-        ".*Location.*",
-        ".*LOCATION '.*",
-        ".*transient_lastDdlTime.*",
-        ".*last_modified_.*",
-        ".*at org.*",
-        ".*at sun.*",
-        ".*at java.*",
-        ".*at junit.*",
-        ".*Caused by:.*",
-        ".*LOCK_QUERYID:.*",
-        ".*LOCK_TIME:.*",
-        ".*grantTime.*",
-        ".*[.][.][.] [0-9]* more.*",
-        ".*job_[0-9_]*.*",
-        ".*job_local[0-9_]*.*",
-        ".*USING 'java -cp.*",
-        "^Deleted.*",
-    };
-
     File f = new File(logDir, tname + ".out");
 
-    maskPatterns(patterns, f.getPath());
+    maskPatterns(planMask, f.getPath());
     int exitVal = executeDiffCommand(f.getPath(),
                                      outFileName, false,
                                      qSortSet.contains(tname));

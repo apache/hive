@@ -31,6 +31,9 @@ public class WritableConstantLongObjectInspector extends
 
   private LongWritable value;
 
+  protected WritableConstantLongObjectInspector() {
+    super();
+  }
   WritableConstantLongObjectInspector(LongWritable value) {
     super();
     this.value = value;

@@ -54,9 +54,11 @@ public class ColumnInfo implements Serializable {
    */
   private boolean isVirtualCol;
 
-  private transient ObjectInspector objectInspector;
+  private ObjectInspector objectInspector;
 
   private boolean isHiddenVirtualCol;
+
+  private String typeName;
 
   public ColumnInfo() {
   }
@@ -94,6 +96,7 @@ public class ColumnInfo implements Serializable {
     this.tabAlias = tabAlias;
     this.isVirtualCol = isVirtualCol;
     this.isHiddenVirtualCol = isHiddenVirtualCol;
+    this.typeName = getType().getTypeName();
   }
 
   public ColumnInfo(ColumnInfo columnInfo) {
@@ -104,6 +107,15 @@ public class ColumnInfo implements Serializable {
     this.isVirtualCol = columnInfo.getIsVirtualCol();
     this.isHiddenVirtualCol = columnInfo.isHiddenVirtualCol();
     this.setType(columnInfo.getType());
+    this.typeName = columnInfo.getType().getTypeName();
+  }
+
+  public String getTypeName() {
+    return this.typeName;
+  }
+
+  public void setTypeName(String typeName) {
+    this.typeName = typeName;
   }
 
   public TypeInfo getType() {

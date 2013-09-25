@@ -219,6 +219,8 @@ STAGE PLANS:
                   escape.delim \
                   hive.serialization.extend.nesting.levels true
                   serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
@@ -464,6 +466,8 @@ STAGE PLANS:
                   escape.delim \
                   hive.serialization.extend.nesting.levels true
                   serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
@@ -706,6 +710,8 @@ STAGE PLANS:
                   escape.delim \
                   hive.serialization.extend.nesting.levels true
                   serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
@@ -913,6 +919,8 @@ STAGE PLANS:
                   escape.delim \
                   hive.serialization.extend.nesting.levels true
                   serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
@@ -1168,6 +1176,8 @@ STAGE PLANS:
                   escape.delim \
                   hive.serialization.extend.nesting.levels true
                   serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
@@ -1433,6 +1443,8 @@ STAGE PLANS:
                   escape.delim \
                   hive.serialization.extend.nesting.levels true
                   serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
@@ -1656,6 +1668,8 @@ STAGE PLANS:
                   escape.delim \
                   hive.serialization.extend.nesting.levels true
                   serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
@@ -1842,6 +1856,8 @@ STAGE PLANS:
                   escape.delim \
                   hive.serialization.extend.nesting.levels true
                   serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
@@ -2114,6 +2130,8 @@ STAGE PLANS:
                   escape.delim \
                   hive.serialization.extend.nesting.levels true
                   serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
@@ -2373,6 +2391,8 @@ STAGE PLANS:
                   escape.delim \
                   hive.serialization.extend.nesting.levels true
                   serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
@@ -2550,6 +2570,8 @@ STAGE PLANS:
                     columns _col0,_col1,_col2,_col3,_col4,_col5
                     columns.types int,string,string,int,string,string
                     escape.delim \
+                    serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -2558,6 +2580,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
+            GatherStats: false
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2589,6 +2613,8 @@ STAGE PLANS:
               columns _col0,_col1,_col2,_col3,_col4,_col5
               columns.types int,string,string,int,string,string
               escape.delim \
+              serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2596,6 +2622,8 @@ STAGE PLANS:
                 columns _col0,_col1,_col2,_col3,_col4,_col5
                 columns.types int,string,string,int,string,string
                 escape.delim \
+                serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Truncated Path -> Alias:
 #### A masked pattern was here ####
       Needs Tagging: false
@@ -2616,6 +2644,8 @@ STAGE PLANS:
                   escape.delim \
                   hive.serialization.extend.nesting.levels true
                   serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
@@ -2874,6 +2904,8 @@ STAGE PLANS:
                     columns _col0,_col1,_col2,_col3,_col4,_col5
                     columns.types int,string,string,int,string,string
                     escape.delim \
+                    serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                  serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -2882,6 +2914,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
+            GatherStats: false
             Reduce Output Operator
               key expressions:
                     expr: _col0
@@ -2913,6 +2947,8 @@ STAGE PLANS:
               columns _col0,_col1,_col2,_col3,_col4,_col5
               columns.types int,string,string,int,string,string
               escape.delim \
+              serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -2920,6 +2956,8 @@ STAGE PLANS:
                 columns _col0,_col1,_col2,_col3,_col4,_col5
                 columns.types int,string,string,int,string,string
                 escape.delim \
+                serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Truncated Path -> Alias:
 #### A masked pattern was here ####
       Needs Tagging: false
@@ -2940,6 +2978,8 @@ STAGE PLANS:
                   escape.delim \
                   hive.serialization.extend.nesting.levels true
                   serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
@@ -3285,6 +3325,8 @@ STAGE PLANS:
                   escape.delim \
                   hive.serialization.extend.nesting.levels true
                   serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
@@ -3578,6 +3620,8 @@ STAGE PLANS:
                   escape.delim \
                   hive.serialization.extend.nesting.levels true
                   serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
@@ -3874,6 +3918,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
+            GatherStats: false
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -3939,6 +3985,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
+            GatherStats: false
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -4045,6 +4093,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
+            GatherStats: false
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -4110,6 +4160,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
+            GatherStats: false
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -4433,6 +4485,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
+            GatherStats: false
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -4513,6 +4567,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
+            GatherStats: false
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -4639,6 +4695,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
+            GatherStats: false
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -4719,6 +4777,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
+            GatherStats: false
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -4957,6 +5017,8 @@ STAGE PLANS:
                     escape.delim \
                     hive.serialization.extend.nesting.levels true
                     serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false
@@ -5176,6 +5238,8 @@ STAGE PLANS:
                   escape.delim \
                   hive.serialization.extend.nesting.levels true
                   serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
@@ -5401,6 +5465,8 @@ STAGE PLANS:
                   escape.delim \
                   hive.serialization.extend.nesting.levels true
                   serialization.format 1
+                  serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false

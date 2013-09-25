@@ -31,32 +31,33 @@ import javax.jms.TextMessage;
 /**
  * Helper Utility to assist consumers of HCat Messages in extracting
  * message-content from JMS messages.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.jms.MessagingUtils} instead
  */
 public class MessagingUtils {
 
-    /**
-     * Method to return HCatEventMessage contained in the JMS message.
-     * @param message The JMS Message instance
-     * @return The contained HCatEventMessage
-     */
-    public static HCatEventMessage getMessage(Message message) {
-        try {
-            String messageBody = ((TextMessage)message).getText();
-            String eventType   = message.getStringProperty(HCatConstants.HCAT_EVENT);
-            String messageVersion = message.getStringProperty(HCatConstants.HCAT_MESSAGE_VERSION);
-            String messageFormat = message.getStringProperty(HCatConstants.HCAT_MESSAGE_FORMAT);
+  /**
+   * Method to return HCatEventMessage contained in the JMS message.
+   * @param message The JMS Message instance
+   * @return The contained HCatEventMessage
+   */
+  public static HCatEventMessage getMessage(Message message) {
+    try {
+      String messageBody = ((TextMessage)message).getText();
+      String eventType   = message.getStringProperty(HCatConstants.HCAT_EVENT);
+      String messageVersion = message.getStringProperty(HCatConstants.HCAT_MESSAGE_VERSION);
+      String messageFormat = message.getStringProperty(HCatConstants.HCAT_MESSAGE_FORMAT);
 
-            if (StringUtils.isEmpty(messageBody) || StringUtils.isEmpty(eventType))
-                throw new IllegalArgumentException("Could not extract HCatEventMessage. " +
-                                                   "EventType and/or MessageBody is null/empty.");
+      if (StringUtils.isEmpty(messageBody) || StringUtils.isEmpty(eventType))
+        throw new IllegalArgumentException("Could not extract HCatEventMessage. " +
+                           "EventType and/or MessageBody is null/empty.");
 
-            return MessageFactory.getDeserializer(messageFormat, messageVersion).getHCatEventMessage(eventType, messageBody);
-        }
-        catch (JMSException exception) {
-            throw new IllegalArgumentException("Could not extract HCatEventMessage. ", exception);
-        }
+      return MessageFactory.getDeserializer(messageFormat, messageVersion).getHCatEventMessage(eventType, messageBody);
     }
+    catch (JMSException exception) {
+      throw new IllegalArgumentException("Could not extract HCatEventMessage. ", exception);
+    }
+  }
 
-    // Prevent construction.
-    private MessagingUtils() {}
+  // Prevent construction.
+  private MessagingUtils() {}
 }

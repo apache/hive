@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -75,6 +76,8 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
+import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
+import org.apache.hadoop.hive.metastore.api.PartitionsByExprResult;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
@@ -400,6 +403,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
       RawStore ms = threadLocalMS.get();
       if (ms == null) {
         ms = newRawStore();
+        ms.verifySchema();
         threadLocalMS.set(ms);
         ms = threadLocalMS.get();
       }
@@ -3307,6 +3311,27 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         rethrowException(e);
       } finally {
         endFunction("get_partitions_by_filter", ret != null, ex, tblName);
+      }
+      return ret;
+    }
+
+    @Override
+    public PartitionsByExprResult get_partitions_by_expr(
+        PartitionsByExprRequest req) throws TException {
+      String dbName = req.getDbName(), tblName = req.getTblName();
+      startTableFunction("get_partitions_by_expr", dbName, tblName);
+      PartitionsByExprResult ret = null;
+      Exception ex = null;
+      try {
+        Set<Partition> partitions = new LinkedHashSet<Partition>();
+        boolean hasUnknownPartitions = getMS().getPartitionsByExpr(dbName, tblName,
+            req.getExpr(), req.getDefaultPartitionName(), req.getMaxParts(), partitions);
+        ret = new PartitionsByExprResult(partitions, hasUnknownPartitions);
+      } catch (Exception e) {
+        ex = e;
+        rethrowException(e);
+      } finally {
+        endFunction("get_partitions_by_expr", ret != null, ex, tblName);
       }
       return ret;
     }

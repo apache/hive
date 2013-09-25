@@ -96,6 +96,8 @@ STAGE PLANS:
                       columns.types string:string
                       name default.merge_src2
                       serialization.format 1
+                      serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.merge_src2
                 TotalFiles: 1
                 GatherStats: true
@@ -182,6 +184,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
+            GatherStats: false
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -195,6 +199,8 @@ STAGE PLANS:
                     columns.types string:string
                     name default.merge_src2
                     serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.merge_src2
               TotalFiles: 1
               GatherStats: false
@@ -212,6 +218,8 @@ STAGE PLANS:
               columns.types string:string
               name default.merge_src2
               serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -220,6 +228,8 @@ STAGE PLANS:
                 columns.types string:string
                 name default.merge_src2
                 serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src2
             name: default.merge_src2
       Truncated Path -> Alias:
@@ -229,6 +239,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
+            GatherStats: false
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -242,6 +254,8 @@ STAGE PLANS:
                     columns.types string:string
                     name default.merge_src2
                     serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   name: default.merge_src2
               TotalFiles: 1
               GatherStats: false
@@ -259,6 +273,8 @@ STAGE PLANS:
               columns.types string:string
               name default.merge_src2
               serialization.format 1
+              serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
@@ -267,6 +283,8 @@ STAGE PLANS:
                 columns.types string:string
                 name default.merge_src2
                 serialization.format 1
+                serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.merge_src2
             name: default.merge_src2
       Truncated Path -> Alias:
@@ -2559,6 +2577,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
+            GatherStats: false
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -2627,6 +2647,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
+            GatherStats: false
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -5023,6 +5045,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
+            GatherStats: false
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -5091,6 +5115,8 @@ STAGE PLANS:
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
+          TableScan
+            GatherStats: false
             File Output Operator
               compressed: false
               GlobalTableId: 0

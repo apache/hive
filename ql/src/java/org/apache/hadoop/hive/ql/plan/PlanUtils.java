@@ -36,7 +36,9 @@ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
+import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
@@ -129,12 +131,9 @@ public final class PlanUtils {
             serdeConstants.ESCAPE_CHAR, localDirectoryDesc.getFieldEscape());
       }
       if (localDirectoryDesc.getSerName() != null) {
-        tableDesc.setSerdeClassName(localDirectoryDesc.getSerName());
         tableDesc.getProperties().setProperty(
             serdeConstants.SERIALIZATION_LIB, localDirectoryDesc.getSerName());
-        tableDesc.setDeserializerClass(
-            (Class<? extends Deserializer>) Class.forName(localDirectoryDesc.getSerName()));
-      }
+        }
       if (localDirectoryDesc.getOutputFormat() != null){
           tableDesc.setOutputFileFormatClass(Class.forName(localDirectoryDesc.getOutputFormat()));
       }
@@ -260,7 +259,8 @@ public final class PlanUtils {
       inputFormat = TextInputFormat.class;
       outputFormat = IgnoreKeyTextOutputFormat.class;
     }
-    return new TableDesc(serdeClass, inputFormat, outputFormat, properties);
+    properties.setProperty(serdeConstants.SERIALIZATION_LIB, serdeClass.getName());
+    return new TableDesc(inputFormat, outputFormat, properties);
   }
 
   public static TableDesc getDefaultQueryOutputTableDesc(String cols, String colTypes,
@@ -271,7 +271,7 @@ public final class PlanUtils {
     tblDesc.getProperties().setProperty(serdeConstants.ESCAPE_CHAR, "\\");
     //enable extended nesting levels
     tblDesc.getProperties().setProperty(
-        LazySimpleSerDe.SERIALIZATION_EXTEND_NESTING_LEVELS, "true");    
+        LazySimpleSerDe.SERIALIZATION_EXTEND_NESTING_LEVELS, "true");
     return tblDesc;
   }
 
@@ -351,11 +351,11 @@ public final class PlanUtils {
    * "array<string>".
    */
   public static TableDesc getDefaultTableDesc(String separatorCode) {
-    return new TableDesc(MetadataTypedColumnsetSerDe.class,
+    return new TableDesc(
         TextInputFormat.class, IgnoreKeyTextOutputFormat.class, Utilities
         .makeProperties(
-            org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT,
-            separatorCode));
+            org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT,separatorCode,
+            serdeConstants.SERIALIZATION_LIB,MetadataTypedColumnsetSerDe.class.getName()));
   }
 
   /**
@@ -363,25 +363,27 @@ public final class PlanUtils {
    */
   public static TableDesc getReduceKeyTableDesc(List<FieldSchema> fieldSchemas,
       String order) {
-    return new TableDesc(BinarySortableSerDe.class,
+    return new TableDesc(
         SequenceFileInputFormat.class, SequenceFileOutputFormat.class,
         Utilities.makeProperties(serdeConstants.LIST_COLUMNS, MetaStoreUtils
         .getColumnNamesFromFieldSchema(fieldSchemas),
         serdeConstants.LIST_COLUMN_TYPES, MetaStoreUtils
         .getColumnTypesFromFieldSchema(fieldSchemas),
-        serdeConstants.SERIALIZATION_SORT_ORDER, order));
+        serdeConstants.SERIALIZATION_SORT_ORDER, order,
+        serdeConstants.SERIALIZATION_LIB, BinarySortableSerDe.class.getName()));
   }
 
   /**
    * Generate the table descriptor for Map-side join key.
    */
   public static TableDesc getMapJoinKeyTableDesc(List<FieldSchema> fieldSchemas) {
-    return new TableDesc(LazyBinarySerDe.class, SequenceFileInputFormat.class,
+    return new TableDesc(SequenceFileInputFormat.class,
         SequenceFileOutputFormat.class, Utilities.makeProperties("columns",
         MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),
         "columns.types", MetaStoreUtils
         .getColumnTypesFromFieldSchema(fieldSchemas),
-        serdeConstants.ESCAPE_CHAR, "\\"));
+        serdeConstants.ESCAPE_CHAR, "\\",
+        serdeConstants.SERIALIZATION_LIB,LazyBinarySerDe.class.getName()));
   }
 
   /**
@@ -389,12 +391,13 @@ public final class PlanUtils {
    */
   public static TableDesc getMapJoinValueTableDesc(
       List<FieldSchema> fieldSchemas) {
-    return new TableDesc(LazyBinarySerDe.class, SequenceFileInputFormat.class,
+    return new TableDesc(SequenceFileInputFormat.class,
         SequenceFileOutputFormat.class, Utilities.makeProperties("columns",
         MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),
         "columns.types", MetaStoreUtils
         .getColumnTypesFromFieldSchema(fieldSchemas),
-        serdeConstants.ESCAPE_CHAR, "\\"));
+        serdeConstants.ESCAPE_CHAR, "\\",
+        serdeConstants.SERIALIZATION_LIB,LazyBinarySerDe.class.getName()));
   }
 
   /**
@@ -402,26 +405,28 @@ public final class PlanUtils {
    */
   public static TableDesc getIntermediateFileTableDesc(
       List<FieldSchema> fieldSchemas) {
-    return new TableDesc(LazyBinarySerDe.class, SequenceFileInputFormat.class,
+    return new TableDesc(SequenceFileInputFormat.class,
         SequenceFileOutputFormat.class, Utilities.makeProperties(
         serdeConstants.LIST_COLUMNS, MetaStoreUtils
         .getColumnNamesFromFieldSchema(fieldSchemas),
         serdeConstants.LIST_COLUMN_TYPES, MetaStoreUtils
         .getColumnTypesFromFieldSchema(fieldSchemas),
-        serdeConstants.ESCAPE_CHAR, "\\"));
+        serdeConstants.ESCAPE_CHAR, "\\",
+        serdeConstants.SERIALIZATION_LIB,LazyBinarySerDe.class.getName()));
   }
 
   /**
    * Generate the table descriptor for intermediate files.
    */
   public static TableDesc getReduceValueTableDesc(List<FieldSchema> fieldSchemas) {
-    return new TableDesc(LazyBinarySerDe.class, SequenceFileInputFormat.class,
+    return new TableDesc(SequenceFileInputFormat.class,
         SequenceFileOutputFormat.class, Utilities.makeProperties(
         serdeConstants.LIST_COLUMNS, MetaStoreUtils
         .getColumnNamesFromFieldSchema(fieldSchemas),
         serdeConstants.LIST_COLUMN_TYPES, MetaStoreUtils
         .getColumnTypesFromFieldSchema(fieldSchemas),
-        serdeConstants.ESCAPE_CHAR, "\\"));
+        serdeConstants.ESCAPE_CHAR, "\\",
+        serdeConstants.SERIALIZATION_LIB,LazyBinarySerDe.class.getName()));
   }
 
   /**
@@ -773,6 +778,10 @@ public final class PlanUtils {
         // for native tables, leave it null to avoid cluttering up
         // plans.
         if (!jobProperties.isEmpty()) {
+          if (tableDesc.getOutputFileFormatClass().getName() == HivePassThroughOutputFormat.HIVE_PASSTHROUGH_OF_CLASSNAME) {
+            // get the real output format when we register this for the table
+            jobProperties.put(HivePassThroughOutputFormat.HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY,HiveFileFormatUtils.getRealOutputFormatClassName());
+          }
           tableDesc.setJobProperties(jobProperties);
         }
       }

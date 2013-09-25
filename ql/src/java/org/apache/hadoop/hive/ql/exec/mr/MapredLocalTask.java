@@ -25,7 +25,6 @@ import java.io.Serializable;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
@@ -55,6 +54,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
 import org.apache.hadoop.hive.ql.exec.mapjoin.MapJoinMemoryExhaustionException;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
+import org.apache.hadoop.hive.ql.io.HiveInputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BucketMapJoinContext;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
@@ -134,14 +134,13 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
       String hiveJar = conf.getJar();
 
       String hadoopExec = conf.getVar(HiveConf.ConfVars.HADOOPBIN);
-      String libJarsOption;
 
       // write out the plan to a local file
       Path planPath = new Path(ctx.getLocalTmpFileURI(), "plan.xml");
       OutputStream out = FileSystem.getLocal(conf).create(planPath);
       MapredLocalWork plan = getWork();
       LOG.info("Generating plan file " + planPath.toString());
-      Utilities.serializeObject(plan, out);
+      Utilities.serializePlan(plan, out, conf);
 
       String isSilent = "true".equalsIgnoreCase(System.getProperty("test.silent")) ? "-nolog" : "";
 
@@ -237,7 +236,6 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
         // then additional params need to be set so that the command is run as
         // intended user
         SecureCmdDoAs secureDoAs = new SecureCmdDoAs(conf);
-        cmdLine = secureDoAs.addArg(cmdLine);
         secureDoAs.addEnv(variables);
       }
 
@@ -272,7 +270,6 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
         }
       } else {
         LOG.info("Execution completed successfully");
-        console.printInfo("Mapred Local Task Succeeded . Convert the Join into MapJoin");
       }
 
       return exitVal;
@@ -379,20 +376,12 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
     for (Map.Entry<String, FetchWork> entry : work.getAliasToFetchWork().entrySet()) {
       JobConf jobClone = new JobConf(job);
 
-      Operator<? extends OperatorDesc> tableScan =
-        work.getAliasToWork().get(entry.getKey());
-      boolean setColumnsNeeded = false;
-      if (tableScan instanceof TableScanOperator) {
-        ArrayList<Integer> list = ((TableScanOperator) tableScan).getNeededColumnIDs();
-        if (list != null) {
-          ColumnProjectionUtils.appendReadColumnIDs(jobClone, list);
-          setColumnsNeeded = true;
-        }
-      }
-
-      if (!setColumnsNeeded) {
-        ColumnProjectionUtils.setFullyReadColumns(jobClone);
-      }
+      TableScanOperator ts = (TableScanOperator)work.getAliasToWork().get(entry.getKey());
+      // push down projections
+      ColumnProjectionUtils.appendReadColumns(
+          jobClone, ts.getNeededColumnIDs(), ts.getNeededColumns());
+      // push down filters
+      HiveInputFormat.pushFilters(jobClone, ts);
 
       // create a fetch operator
       FetchOperator fetchOp = new FetchOperator(entry.getValue(), jobClone);

@@ -31,6 +31,9 @@ public class WritableConstantStringObjectInspector extends
 
   private Text value;
 
+  protected WritableConstantStringObjectInspector() {
+    super();
+  }
   WritableConstantStringObjectInspector(Text value) {
     super();
     this.value = value;

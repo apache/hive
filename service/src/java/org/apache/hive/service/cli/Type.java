@@ -54,6 +54,10 @@ public enum Type {
   STRING_TYPE("STRING",
       java.sql.Types.VARCHAR,
       TTypeId.STRING_TYPE),
+  VARCHAR_TYPE("VARCHAR",
+      java.sql.Types.VARCHAR,
+      TTypeId.VARCHAR_TYPE,
+      true, false, false),
   DATE_TYPE("DATE",
       java.sql.Types.DATE,
       TTypeId.DATE_TYPE),
@@ -66,7 +70,7 @@ public enum Type {
   DECIMAL_TYPE("DECIMAL",
       java.sql.Types.DECIMAL,
       TTypeId.DECIMAL_TYPE,
-      false, false),
+      true, false, false),
   ARRAY_TYPE("ARRAY",
       java.sql.Types.VARCHAR,
       TTypeId.STRING_TYPE,
@@ -91,24 +95,33 @@ public enum Type {
   private final String name;
   private final TTypeId tType;
   private final int javaSQLType;
+  private final boolean isQualified;
   private final boolean isComplex;
   private final boolean isCollection;
 
-
-  Type(String name, int javaSQLType, TTypeId tType, boolean isComplex, boolean isCollection) {
+  Type(String name, int javaSQLType, TTypeId tType, boolean isQualified, boolean isComplex, boolean isCollection) {
     this.name = name;
     this.javaSQLType = javaSQLType;
     this.tType = tType;
+    this.isQualified = isQualified;
     this.isComplex = isComplex;
     this.isCollection = isCollection;
   }
 
+  Type(String name, int javaSQLType, TTypeId tType, boolean isComplex, boolean isCollection) {
+    this(name, javaSQLType, tType, false, isComplex, isCollection);
+  }
+
   Type(String name, int javaSqlType, TTypeId tType) {
-    this(name, javaSqlType, tType, false, false);
+    this(name, javaSqlType, tType, false, false, false);
   }
 
   public boolean isPrimitiveType() {
     return !isComplex;
+  }
+
+  public boolean isQualifiedType() {
+    return isQualified;
   }
 
   public boolean isComplexType() {
@@ -135,7 +148,7 @@ public enum Type {
     for (Type type : values()) {
       if (name.equalsIgnoreCase(type.name)) {
         return type;
-      } else if (type.isComplexType()) {
+      } else if (type.isQualifiedType() || type.isComplexType()) {
         if (name.toUpperCase().startsWith(type.name)) {
             return type;
         }

@@ -43,6 +43,10 @@ public interface ICLIService {
       Map<String, String> confOverlay)
       throws HiveSQLException;
 
+  public abstract OperationHandle executeStatementAsync(SessionHandle sessionHandle,
+      String statement, Map<String, String> confOverlay)
+      throws HiveSQLException;
+
   public abstract OperationHandle getTypeInfo(SessionHandle sessionHandle)
       throws HiveSQLException;
 

@@ -14,9 +14,6 @@
       <void method="put"> 
        <string>src_thrift</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
-        <void property="deserializerClass"> 
-         <class>org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer</class> 
-        </void> 
         <void property="inputFileFormatClass"> 
          <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
         </void> 
@@ -74,14 +71,8 @@
           </void> 
          </object> 
         </void> 
-        <void property="serdeClassName"> 
-         <string>org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer</string> 
-        </void> 
         <void property="tableDesc"> 
          <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-          <void property="deserializerClass"> 
-           <class>org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer</class> 
-          </void> 
           <void property="inputFileFormatClass"> 
            <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
           </void> 
@@ -160,9 +151,6 @@
             </void> 
            </object> 
           </void> 
-          <void property="serdeClassName"> 
-           <string>org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer</string> 
-          </void> 
          </object> 
         </void> 
        </object> 
@@ -200,9 +188,6 @@
                       </void> 
                       <void property="tableInfo"> 
                        <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-                        <void property="deserializerClass"> 
-                         <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
-                        </void> 
                         <void property="inputFileFormatClass"> 
                          <class>org.apache.hadoop.mapred.TextInputFormat</class> 
                         </void> 
@@ -218,6 +203,10 @@
                           <void method="put"> 
                            <string>columns</string> 
                            <string>_col0,_col1,_col2</string> 
+                          </void> 
+                          <void method="put"> 
+                           <string>serialization.lib</string> 
+                           <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
                           </void> 
                           <void method="put"> 
                            <string>serialization.format</string> 
@@ -285,6 +274,9 @@
                             </void> 
                            </object> 
                           </void> 
+                          <void property="typeName"> 
+                           <string>int</string> 
+                          </void> 
                          </object> 
                         </void> 
                         <void method="add"> 
@@ -298,6 +290,9 @@
                           <void property="type"> 
                            <object idref="PrimitiveTypeInfo0"/> 
                           </void> 
+                          <void property="typeName"> 
+                           <string>int</string> 
+                          </void> 
                          </object> 
                         </void> 
                         <void method="add"> 
@@ -310,6 +305,9 @@
                           </void> 
                           <void property="type"> 
                            <object idref="PrimitiveTypeInfo0"/> 
+                          </void> 
+                          <void property="typeName"> 
+                           <string>int</string> 
                           </void> 
                          </object> 
                         </void> 
@@ -526,6 +524,9 @@
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
                       </void> 
+                      <void property="typeName"> 
+                       <string>int</string> 
+                      </void> 
                      </object> 
                     </void> 
                     <void method="add"> 
@@ -539,6 +540,9 @@
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
                       </void> 
+                      <void property="typeName"> 
+                       <string>int</string> 
+                      </void> 
                      </object> 
                     </void> 
                     <void method="add"> 
@@ -551,6 +555,9 @@
                       </void> 
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
+                      </void> 
+                      <void property="typeName"> 
+                       <string>int</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -693,6 +700,9 @@
                   <void property="type"> 
                    <object idref="ListTypeInfo1"/> 
                   </void> 
+                  <void property="typeName"> 
+                   <string>array&lt;int&gt;</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void method="add"> 
@@ -706,6 +716,9 @@
                   <void property="type"> 
                    <object idref="ListTypeInfo0"/> 
                   </void> 
+                  <void property="typeName"> 
+                   <string>array&lt;struct&lt;myint:int,mystring:string,underscore_int:int&gt;&gt;</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void method="add"> 
@@ -718,6 +731,9 @@
                   </void> 
                   <void property="type"> 
                    <object idref="MapTypeInfo0"/> 
+                  </void> 
+                  <void property="typeName"> 
+                   <string>map&lt;string,string&gt;</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -799,6 +815,9 @@
               <void property="type"> 
                <object idref="PrimitiveTypeInfo0"/> 
               </void> 
+              <void property="typeName"> 
+               <string>int</string> 
+              </void> 
              </object> 
             </void> 
             <void method="add"> 
@@ -811,6 +830,9 @@
               </void> 
               <void property="type"> 
                <object idref="PrimitiveTypeInfo1"/> 
+              </void> 
+              <void property="typeName"> 
+               <string>string</string> 
               </void> 
              </object> 
             </void> 
@@ -831,6 +853,9 @@
                  <object idref="PrimitiveTypeInfo1"/> 
                 </void> 
                </object> 
+              </void> 
+              <void property="typeName"> 
+               <string>array&lt;string&gt;</string> 
               </void> 
              </object> 
             </void> 
@@ -858,6 +883,9 @@
                 </void> 
                </object> 
               </void> 
+              <void property="typeName"> 
+               <string>bigint</string> 
+              </void> 
              </object> 
             </void> 
             <void method="add"> 
@@ -873,6 +901,9 @@
               </void> 
               <void property="type"> 
                <object idref="PrimitiveTypeInfo1"/> 
+              </void> 
+              <void property="typeName"> 
+               <string>string</string> 
               </void> 
              </object> 
             </void> 
@@ -899,9 +930,6 @@
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="baseFileName"> 
          <string>src_thrift</string> 
-        </void> 
-        <void property="deserializerClass"> 
-         <class>org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer</class> 
         </void> 
         <void property="inputFileFormatClass"> 
          <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
@@ -984,14 +1012,8 @@
           </void> 
          </object> 
         </void> 
-        <void property="serdeClassName"> 
-         <string>org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer</string> 
-        </void> 
         <void property="tableDesc"> 
          <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-          <void property="deserializerClass"> 
-           <class>org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer</class> 
-          </void> 
           <void property="inputFileFormatClass"> 
            <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
           </void> 
@@ -1069,9 +1091,6 @@
              #### A masked pattern was here #### 
             </void> 
            </object> 
-          </void> 
-          <void property="serdeClassName"> 
-           <string>org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer</string> 
           </void> 
          </object> 
         </void> 

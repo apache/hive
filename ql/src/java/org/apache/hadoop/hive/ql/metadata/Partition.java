@@ -40,7 +40,6 @@ import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Order;
-import org.apache.hadoop.hive.metastore.api.SkewedValueList;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
@@ -302,7 +301,7 @@ public class Partition implements Serializable {
   public void setOutputFormatClass(Class<? extends HiveOutputFormat> outputFormatClass) {
     this.outputFormatClass = outputFormatClass;
     tPartition.getSd().setOutputFormat(HiveFileFormatUtils
-      .getOutputFormatSubstitute(outputFormatClass).toString());
+        .getOutputFormatSubstitute(outputFormatClass, false).toString());
   }
 
   final public Class<? extends InputFormat> getInputFormatClass()
@@ -340,7 +339,7 @@ public class Partition implements Serializable {
             JavaUtils.getClassLoader()));
         // Replace FileOutputFormat for backward compatibility
         if (!HiveOutputFormat.class.isAssignableFrom(c)) {
-          outputFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(c);
+          outputFormatClass = HiveFileFormatUtils.getOutputFormatSubstitute(c,false);
         } else {
           outputFormatClass = (Class<? extends HiveOutputFormat>)c;
         }
@@ -661,18 +660,18 @@ public class Partition implements Serializable {
 
   public void setSkewedValueLocationMap(List<String> valList, String dirName)
       throws HiveException {
-    Map<SkewedValueList, String> mappings = tPartition.getSd().getSkewedInfo()
+    Map<List<String>, String> mappings = tPartition.getSd().getSkewedInfo()
         .getSkewedColValueLocationMaps();
     if (null == mappings) {
-      mappings = new HashMap<SkewedValueList, String>();
+      mappings = new HashMap<List<String>, String>();
       tPartition.getSd().getSkewedInfo().setSkewedColValueLocationMaps(mappings);
     }
 
     // Add or update new mapping
-    mappings.put(new SkewedValueList(valList), dirName);
+    mappings.put(valList, dirName);
   }
 
-  public Map<SkewedValueList, String> getSkewedColValueLocationMaps() {
+  public Map<List<String>, String> getSkewedColValueLocationMaps() {
     return tPartition.getSd().getSkewedInfo().getSkewedColValueLocationMaps();
   }
 }

@@ -20,16 +20,21 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import java.util.HashMap;
 
-import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
-import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
+import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.ParameterizedObjectInspectorMap;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
+import org.apache.hadoop.hive.serde2.typeinfo.BaseTypeParams;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeSpec;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -65,6 +70,8 @@ public final class PrimitiveObjectInspectorFactory {
       new JavaDoubleObjectInspector();
   public static final JavaStringObjectInspector javaStringObjectInspector =
       new JavaStringObjectInspector();
+  public static final JavaHiveVarcharObjectInspector javaHiveVarcharObjectInspector =
+      new JavaHiveVarcharObjectInspector(PrimitiveObjectInspectorUtils.varcharTypeEntry);
   public static final JavaVoidObjectInspector javaVoidObjectInspector =
       new JavaVoidObjectInspector();
   public static final JavaDateObjectInspector javaDateObjectInspector =
@@ -92,6 +99,8 @@ public final class PrimitiveObjectInspectorFactory {
       new WritableDoubleObjectInspector();
   public static final WritableStringObjectInspector writableStringObjectInspector =
       new WritableStringObjectInspector();
+  public static final WritableHiveVarcharObjectInspector writableHiveVarcharObjectInspector =
+      new WritableHiveVarcharObjectInspector(PrimitiveObjectInspectorUtils.varcharTypeEntry);
   public static final WritableVoidObjectInspector writableVoidObjectInspector =
       new WritableVoidObjectInspector();
   public static final WritableDateObjectInspector writableDateObjectInspector =
@@ -122,6 +131,8 @@ public final class PrimitiveObjectInspectorFactory {
         writableDoubleObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.STRING,
         writableStringObjectInspector);
+    cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.VARCHAR,
+        writableHiveVarcharObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.VOID,
         writableVoidObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.DATE,
@@ -153,6 +164,8 @@ public final class PrimitiveObjectInspectorFactory {
         javaDoubleObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.STRING,
         javaStringObjectInspector);
+    cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.VARCHAR,
+        javaHiveVarcharObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.VOID,
         javaVoidObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.DATE,
@@ -164,6 +177,20 @@ public final class PrimitiveObjectInspectorFactory {
     cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.DECIMAL,
         javaHiveDecimalObjectInspector);
   }
+
+  /**
+   * Cached Writable object inspectors for parameterized primitive types.
+   */
+  private static ParameterizedObjectInspectorMap
+      cachedParameterizedPrimitiveWritableObjectInspectorCache =
+          new ParameterizedObjectInspectorMap();
+
+  /**
+   * Cached Java object inspectors for parameterized primitive types.
+   */
+  private static ParameterizedObjectInspectorMap
+  cachedParameterizedPrimitiveJavaObjectInspectorCache =
+      new ParameterizedObjectInspectorMap();
 
   /**
    * Returns the PrimitiveWritableObjectInspector for the PrimitiveCategory.
@@ -182,6 +209,54 @@ public final class PrimitiveObjectInspectorFactory {
   }
 
   /**
+   * Returns the PrimitiveWritableObjectInspector for the PrimitiveCategory, with option to
+   * pass in parameters for the primitive type (such as char(10)).
+   * Ideally this method should be used over the method without type parameters,
+   * and the type parameters (or lack of parameters) can be determined from
+   * the input ObjectInspector, TypeInfo, or TypeEntry.
+   * However there are situations where it is not possible to get any information about
+   * type parameters, such as when getting an object inspector based on reflection from
+   * the java or primitive class.
+   * @param primitiveCategory    Primitve type category
+   * @param primitiveTypeParams  Type parameters for the primitve type.
+   *        Set to null if there are no type parameters
+   * @return
+   */
+  public static AbstractPrimitiveWritableObjectInspector getPrimitiveWritableObjectInspector(
+      PrimitiveTypeSpec typeSpec) {
+    PrimitiveCategory primitiveCategory = typeSpec.getPrimitiveCategory();
+    BaseTypeParams primitiveTypeParams = typeSpec.getTypeParams();
+
+    if (primitiveTypeParams == null) {
+      // No type params, just search the unparameterized types
+      return getPrimitiveWritableObjectInspector(primitiveCategory);
+    } else {
+      // Check our cached set of parameterized object inspectors for the primitive category,
+      // or create a new object inspector if one doesn't exist yet.
+      PrimitiveObjectInspector oi =
+          cachedParameterizedPrimitiveWritableObjectInspectorCache.getObjectInspector(
+              typeSpec);
+      if (oi == null) {
+        // Do a bit of validation - not all primitive types use parameters.
+        switch (primitiveCategory) {
+          case VARCHAR:
+            PrimitiveTypeEntry typeEntry = PrimitiveObjectInspectorUtils.getTypeEntryFromTypeSpecs(
+                primitiveCategory,
+                primitiveTypeParams);
+            oi = new WritableHiveVarcharObjectInspector(typeEntry);
+            oi.setTypeParams(primitiveTypeParams);
+            cachedParameterizedPrimitiveWritableObjectInspectorCache.setObjectInspector(oi);
+            break;
+          default:
+            throw new RuntimeException(
+                "Primitve type " + primitiveCategory + " should not take parameters");
+        }
+      }
+      return (AbstractPrimitiveWritableObjectInspector)oi;
+    }
+  }
+
+  /**
    * Returns a PrimitiveWritableObjectInspector which implements ConstantObjectInspector
    * for the PrimitiveCategory.
    *
@@ -190,6 +265,24 @@ public final class PrimitiveObjectInspectorFactory {
    */
   public static ConstantObjectInspector getPrimitiveWritableConstantObjectInspector(
       PrimitiveCategory primitiveCategory, Object value) {
+    return getPrimitiveWritableConstantObjectInspector(
+        PrimitiveObjectInspectorUtils.getTypeEntryFromTypeSpecs(primitiveCategory, null),
+        value);
+  }
+
+  /**
+   * Returns a PrimitiveWritableObjectInspector which implements ConstantObjectInspector
+   * for the PrimitiveCategory.
+   *
+   * @param primitiveCategory
+   * @param typeParams  Type qualifiers for the type (if applicable)
+   * @param value
+   */
+  public static ConstantObjectInspector getPrimitiveWritableConstantObjectInspector(
+      PrimitiveTypeSpec typeSpecs, Object value) {
+    PrimitiveCategory primitiveCategory = typeSpecs.getPrimitiveCategory();
+    BaseTypeParams typeParams = typeSpecs.getTypeParams();
+
     switch (primitiveCategory) {
     case BOOLEAN:
       return new WritableConstantBooleanObjectInspector((BooleanWritable)value);
@@ -207,6 +300,9 @@ public final class PrimitiveObjectInspectorFactory {
       return new WritableConstantDoubleObjectInspector((DoubleWritable)value);
     case STRING:
       return new WritableConstantStringObjectInspector((Text)value);
+    case VARCHAR:
+      return new WritableConstantHiveVarcharObjectInspector((HiveVarcharWritable)value,
+          (VarcharTypeParams) typeParams);
     case DATE:
       return new WritableConstantDateObjectInspector((DateWritable)value);
     case TIMESTAMP:
@@ -239,6 +335,53 @@ public final class PrimitiveObjectInspectorFactory {
     return result;
   }
 
+  /**
+   * Returns the PrimitiveJavaObjectInspector for the PrimitiveCategory, with option to
+   * pass in parameters for the primitive type (such as char(10)).
+   * Ideally this method should be used over the method without type parameters,
+   * and the type parameters (or lack of parameters) can be determined from
+   * the input ObjectInspector, TypeInfo, or TypeEntry.
+   * However there are situations where it is not possible to get any information about
+   * type parameters, such as when getting an object inspector based on reflection from
+   * the java or primitive class.
+   * @param primitiveCategory    Primitve type category
+   * @param primitiveTypeParams  Type parameters for the primitve type.
+   *        Set to null if there are no type parameters
+   * @return
+   */
+  public static AbstractPrimitiveJavaObjectInspector getPrimitiveJavaObjectInspector(
+        PrimitiveTypeSpec typeSpec) {
+    PrimitiveCategory primitiveCategory = typeSpec.getPrimitiveCategory();
+    BaseTypeParams primitiveTypeParams = typeSpec.getTypeParams();
+
+    if (primitiveTypeParams == null) {
+      // No type params, just search the unparameterized types
+      return getPrimitiveJavaObjectInspector(primitiveCategory);
+    } else {
+      // Check our cached set of parameterized object inspectors for the primitive category,
+      // or create a new object inspector if one doesn't exist yet.
+      PrimitiveObjectInspector oi =
+          cachedParameterizedPrimitiveJavaObjectInspectorCache.getObjectInspector(
+              typeSpec);
+      if (oi == null) {
+        // Do a bit of validation - not all primitive types use parameters.
+        switch (primitiveCategory) {
+          case VARCHAR:
+            PrimitiveTypeEntry typeEntry = PrimitiveObjectInspectorUtils.getTypeEntryFromTypeSpecs(
+                primitiveCategory,
+                primitiveTypeParams);
+            oi = new JavaHiveVarcharObjectInspector(typeEntry);
+            oi.setTypeParams(primitiveTypeParams);
+            cachedParameterizedPrimitiveJavaObjectInspectorCache.setObjectInspector(oi);
+            break;
+          default:
+            throw new RuntimeException(
+                "Primitve type " + primitiveCategory + " should not take parameters");
+        }
+      }
+      return (AbstractPrimitiveJavaObjectInspector)oi;
+    }
+  }
   /**
    * Returns an ObjectInspector for a primitive Class. The Class can be a Hive
    * Writable class, or a Java Primitive Class.

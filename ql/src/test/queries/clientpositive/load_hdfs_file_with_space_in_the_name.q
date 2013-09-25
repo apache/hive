@@ -1,4 +1,4 @@
-dfs -mkdir hdfs:///tmp/test/;
+dfs ${system:test.dfs.mkdir} hdfs:///tmp/test/;
 
 dfs -copyFromLocal ../data/files hdfs:///tmp/test/.;
 

@@ -36,65 +36,66 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Utility methods for tests
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.HcatTestUtils} instead
  */
 public class HcatTestUtils {
-    private static final Logger LOG = LoggerFactory.getLogger(HcatTestUtils.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HcatTestUtils.class);
 
-    public static FsPermission perm007 = FsPermission.createImmutable((short) 0007); // -------rwx
-    public static FsPermission perm070 = FsPermission.createImmutable((short) 0070); // ----rwx---
-    public static FsPermission perm700 = FsPermission.createImmutable((short) 0700); // -rwx------
-    public static FsPermission perm755 = FsPermission.createImmutable((short) 0755); // -rwxr-xr-x
-    public static FsPermission perm777 = FsPermission.createImmutable((short) 0777); // -rwxrwxrwx
-    public static FsPermission perm300 = FsPermission.createImmutable((short) 0300); // --wx------
-    public static FsPermission perm500 = FsPermission.createImmutable((short) 0500); // -r-x------
-    public static FsPermission perm555 = FsPermission.createImmutable((short) 0555); // -r-xr-xr-x
+  public static FsPermission perm007 = FsPermission.createImmutable((short) 0007); // -------rwx
+  public static FsPermission perm070 = FsPermission.createImmutable((short) 0070); // ----rwx---
+  public static FsPermission perm700 = FsPermission.createImmutable((short) 0700); // -rwx------
+  public static FsPermission perm755 = FsPermission.createImmutable((short) 0755); // -rwxr-xr-x
+  public static FsPermission perm777 = FsPermission.createImmutable((short) 0777); // -rwxrwxrwx
+  public static FsPermission perm300 = FsPermission.createImmutable((short) 0300); // --wx------
+  public static FsPermission perm500 = FsPermission.createImmutable((short) 0500); // -r-x------
+  public static FsPermission perm555 = FsPermission.createImmutable((short) 0555); // -r-xr-xr-x
 
-    /**
-     * Returns the database path.
-     */
-    public static Path getDbPath(Hive hive, Warehouse wh, String dbName) throws MetaException, HiveException {
-        return wh.getDatabasePath(hive.getDatabase(dbName));
+  /**
+   * Returns the database path.
+   */
+  public static Path getDbPath(Hive hive, Warehouse wh, String dbName) throws MetaException, HiveException {
+    return wh.getDatabasePath(hive.getDatabase(dbName));
+  }
+
+  /**
+   * Removes all databases and tables from the metastore
+   */
+  public static void cleanupHMS(Hive hive, Warehouse wh, FsPermission defaultPerm)
+    throws HiveException, MetaException, NoSuchObjectException {
+    for (String dbName : hive.getAllDatabases()) {
+      if (dbName.equals("default")) {
+        continue;
+      }
+      try {
+        Path path = getDbPath(hive, wh, dbName);
+        FileSystem whFs = path.getFileSystem(hive.getConf());
+        whFs.setPermission(path, defaultPerm);
+      } catch (IOException ex) {
+        //ignore
+      }
+      hive.dropDatabase(dbName, true, true, true);
     }
 
-    /**
-     * Removes all databases and tables from the metastore
-     */
-    public static void cleanupHMS(Hive hive, Warehouse wh, FsPermission defaultPerm)
-        throws HiveException, MetaException, NoSuchObjectException {
-        for (String dbName : hive.getAllDatabases()) {
-            if (dbName.equals("default")) {
-                continue;
-            }
-            try {
-                Path path = getDbPath(hive, wh, dbName);
-                FileSystem whFs = path.getFileSystem(hive.getConf());
-                whFs.setPermission(path, defaultPerm);
-            } catch (IOException ex) {
-                //ignore
-            }
-            hive.dropDatabase(dbName, true, true, true);
-        }
+    //clean tables in default db
+    for (String tablename : hive.getAllTables("default")) {
+      hive.dropTable("default", tablename, true, true);
+    }
+  }
 
-        //clean tables in default db
-        for (String tablename : hive.getAllTables("default")) {
-            hive.dropTable("default", tablename, true, true);
-        }
+  public static void createTestDataFile(String filename, String[] lines) throws IOException {
+    FileWriter writer = null;
+    try {
+      File file = new File(filename);
+      file.deleteOnExit();
+      writer = new FileWriter(file);
+      for (String line : lines) {
+        writer.write(line + "\n");
+      }
+    } finally {
+      if (writer != null) {
+        writer.close();
+      }
     }
 
-    public static void createTestDataFile(String filename, String[] lines) throws IOException {
-        FileWriter writer = null;
-        try {
-            File file = new File(filename);
-            file.deleteOnExit();
-            writer = new FileWriter(file);
-            for (String line : lines) {
-                writer.write(line + "\n");
-            }
-        } finally {
-            if (writer != null) {
-                writer.close();
-            }
-        }
-
-    }
+  }
 }

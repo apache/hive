@@ -20,15 +20,17 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-
-import java.util.Iterator;
-import java.util.Map;
-
-import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.serde2.SerDeException;
+import org.apache.hadoop.hive.serde2.typeinfo.BaseTypeParams;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 
 
 /**
@@ -99,5 +101,58 @@ public final class ParseUtils {
       colNames.add(colName);
     }
     return colNames;
+  }
+
+  /**
+   * @param column  column expression to convert
+   * @param tableFieldTypeInfo TypeInfo to convert to
+   * @return Expression converting column to the type specified by tableFieldTypeInfo
+   */
+  static ExprNodeDesc createConversionCast(ExprNodeDesc column, PrimitiveTypeInfo tableFieldTypeInfo)
+      throws SemanticException {
+    ExprNodeDesc ret;
+
+    // Get base type, since type string may be parameterized
+    String baseType = TypeInfoUtils.getBaseName(tableFieldTypeInfo.getTypeName());
+    BaseTypeParams typeParams = null;
+    // If TypeInfo is parameterized, provide the params to the UDF factory method.
+    typeParams = tableFieldTypeInfo.getTypeParams();
+    if (typeParams != null) {
+      switch (tableFieldTypeInfo.getPrimitiveCategory()) {
+        case VARCHAR:
+          // Nothing to do here - the parameter will be passed to the UDF factory method below
+          break;
+        default:
+          throw new SemanticException("Type cast for " + tableFieldTypeInfo.getPrimitiveCategory() +
+              " does not take type parameters");
+      }
+    }
+
+    // If the type cast UDF is for a parameterized type, then it should implement
+    // the SettableUDF interface so that we can pass in the params.
+    // Not sure if this is the cleanest solution, but there does need to be a way
+    // to provide the type params to the type cast.
+    ret = TypeCheckProcFactory.DefaultExprProcessor
+        .getFuncExprNodeDescWithUdfData(baseType, typeParams, column);
+
+    return ret;
+  }
+
+  public static VarcharTypeParams getVarcharParams(String typeName, ASTNode node)
+      throws SemanticException {
+    if (node.getChildCount() != 1) {
+      throw new SemanticException("Bad params for type " + typeName);
+    }
+
+    try {
+      VarcharTypeParams typeParams = new VarcharTypeParams();
+      String lengthStr = node.getChild(0).getText();
+      Integer length = Integer.valueOf(lengthStr);
+      typeParams.setLength(length.intValue());
+      typeParams.validateParams();
+      return typeParams;
+    } catch (SerDeException err) {
+      throw new SemanticException(err);
+    }
   }
 }

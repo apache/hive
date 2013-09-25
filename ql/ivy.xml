@@ -48,6 +48,7 @@
                 rev="${protobuf.version}" transitive="false"/>
     <dependency org="org.iq80.snappy" name="snappy" 
                 rev="${snappy.version}" transitive="false"/>
+
     <dependency org="org.apache.tez" name="tez-dag-api" rev="${tez.version}" conf="compile->master" />
     <dependency org="org.apache.tez" name="tez-dag" rev="${tez.version}" conf="compile->master" />
     <dependency org="org.apache.tez" name="tez-engine-api" rev="${tez.version}" conf="compile->master" />
@@ -60,6 +61,8 @@
                 conf="compile->master" transitive="false" />
     <dependency org="org.apache.hadoop" name="hadoop-yarn-client" rev="${hadoop-0.23.version}" 
                 conf="compile->master" transitive="false" />
+    <dependency org="com.esotericsoftware.kryo" name="kryo" 
+                rev="${kryo.version}" />
 
     <dependency org="org.json" name="json" rev="${json.version}"/>
     <dependency org="commons-collections" name="commons-collections" rev="${commons-collections.version}"/>

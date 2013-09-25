@@ -1,0 +1,1 @@
+FAILED: RuntimeException Error creating type parameters for varchar(100000): org.apache.hadoop.hive.serde2.SerDeException: Error creating type params for varchar: org.apache.hadoop.hive.serde2.SerDeException: Length 100000 exceeds max varchar length of 65535

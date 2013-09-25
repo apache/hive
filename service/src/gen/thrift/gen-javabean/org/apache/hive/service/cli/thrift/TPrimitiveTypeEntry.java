@@ -35,6 +35,7 @@ public class TPrimitiveTypeEntry implements org.apache.thrift.TBase<TPrimitiveTy
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("TPrimitiveTypeEntry");
 
   private static final org.apache.thrift.protocol.TField TYPE_FIELD_DESC = new org.apache.thrift.protocol.TField("type", org.apache.thrift.protocol.TType.I32, (short)1);
+  private static final org.apache.thrift.protocol.TField TYPE_QUALIFIERS_FIELD_DESC = new org.apache.thrift.protocol.TField("typeQualifiers", org.apache.thrift.protocol.TType.STRUCT, (short)2);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -43,6 +44,7 @@ public class TPrimitiveTypeEntry implements org.apache.thrift.TBase<TPrimitiveTy
   }
 
   private TTypeId type; // required
+  private TTypeQualifiers typeQualifiers; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -50,7 +52,8 @@ public class TPrimitiveTypeEntry implements org.apache.thrift.TBase<TPrimitiveTy
      * 
      * @see TTypeId
      */
-    TYPE((short)1, "type");
+    TYPE((short)1, "type"),
+    TYPE_QUALIFIERS((short)2, "typeQualifiers");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -67,6 +70,8 @@ public class TPrimitiveTypeEntry implements org.apache.thrift.TBase<TPrimitiveTy
       switch(fieldId) {
         case 1: // TYPE
           return TYPE;
+        case 2: // TYPE_QUALIFIERS
+          return TYPE_QUALIFIERS;
         default:
           return null;
       }
@@ -107,11 +112,14 @@ public class TPrimitiveTypeEntry implements org.apache.thrift.TBase<TPrimitiveTy
   }
 
   // isset id assignments
+  private _Fields optionals[] = {_Fields.TYPE_QUALIFIERS};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.TYPE, new org.apache.thrift.meta_data.FieldMetaData("type", org.apache.thrift.TFieldRequirementType.REQUIRED, 
         new org.apache.thrift.meta_data.EnumMetaData(org.apache.thrift.protocol.TType.ENUM, TTypeId.class)));
+    tmpMap.put(_Fields.TYPE_QUALIFIERS, new org.apache.thrift.meta_data.FieldMetaData("typeQualifiers", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
+        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, TTypeQualifiers.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(TPrimitiveTypeEntry.class, metaDataMap);
   }
@@ -133,6 +141,9 @@ public class TPrimitiveTypeEntry implements org.apache.thrift.TBase<TPrimitiveTy
     if (other.isSetType()) {
       this.type = other.type;
     }
+    if (other.isSetTypeQualifiers()) {
+      this.typeQualifiers = new TTypeQualifiers(other.typeQualifiers);
+    }
   }
 
   public TPrimitiveTypeEntry deepCopy() {
@@ -142,6 +153,7 @@ public class TPrimitiveTypeEntry implements org.apache.thrift.TBase<TPrimitiveTy
   @Override
   public void clear() {
     this.type = null;
+    this.typeQualifiers = null;
   }
 
   /**
@@ -175,6 +187,29 @@ public class TPrimitiveTypeEntry implements org.apache.thrift.TBase<TPrimitiveTy
     }
   }
 
+  public TTypeQualifiers getTypeQualifiers() {
+    return this.typeQualifiers;
+  }
+
+  public void setTypeQualifiers(TTypeQualifiers typeQualifiers) {
+    this.typeQualifiers = typeQualifiers;
+  }
+
+  public void unsetTypeQualifiers() {
+    this.typeQualifiers = null;
+  }
+
+  /** Returns true if field typeQualifiers is set (has been assigned a value) and false otherwise */
+  public boolean isSetTypeQualifiers() {
+    return this.typeQualifiers != null;
+  }
+
+  public void setTypeQualifiersIsSet(boolean value) {
+    if (!value) {
+      this.typeQualifiers = null;
+    }
+  }
+
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case TYPE:
@@ -185,6 +220,14 @@ public class TPrimitiveTypeEntry implements org.apache.thrift.TBase<TPrimitiveTy
       }
       break;
 
+    case TYPE_QUALIFIERS:
+      if (value == null) {
+        unsetTypeQualifiers();
+      } else {
+        setTypeQualifiers((TTypeQualifiers)value);
+      }
+      break;
+
     }
   }
 
@@ -192,6 +235,9 @@ public class TPrimitiveTypeEntry implements org.apache.thrift.TBase<TPrimitiveTy
     switch (field) {
     case TYPE:
       return getType();
+
+    case TYPE_QUALIFIERS:
+      return getTypeQualifiers();
 
     }
     throw new IllegalStateException();
@@ -206,6 +252,8 @@ public class TPrimitiveTypeEntry implements org.apache.thrift.TBase<TPrimitiveTy
     switch (field) {
     case TYPE:
       return isSetType();
+    case TYPE_QUALIFIERS:
+      return isSetTypeQualifiers();
     }
     throw new IllegalStateException();
   }
@@ -232,6 +280,15 @@ public class TPrimitiveTypeEntry implements org.apache.thrift.TBase<TPrimitiveTy
         return false;
     }
 
+    boolean this_present_typeQualifiers = true && this.isSetTypeQualifiers();
+    boolean that_present_typeQualifiers = true && that.isSetTypeQualifiers();
+    if (this_present_typeQualifiers || that_present_typeQualifiers) {
+      if (!(this_present_typeQualifiers && that_present_typeQualifiers))
+        return false;
+      if (!this.typeQualifiers.equals(that.typeQualifiers))
+        return false;
+    }
+
     return true;
   }
 
@@ -243,6 +300,11 @@ public class TPrimitiveTypeEntry implements org.apache.thrift.TBase<TPrimitiveTy
     builder.append(present_type);
     if (present_type)
       builder.append(type.getValue());
+
+    boolean present_typeQualifiers = true && (isSetTypeQualifiers());
+    builder.append(present_typeQualifiers);
+    if (present_typeQualifiers)
+      builder.append(typeQualifiers);
 
     return builder.toHashCode();
   }
@@ -261,6 +323,16 @@ public class TPrimitiveTypeEntry implements org.apache.thrift.TBase<TPrimitiveTy
     }
     if (isSetType()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.type, typedOther.type);
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+    }
+    lastComparison = Boolean.valueOf(isSetTypeQualifiers()).compareTo(typedOther.isSetTypeQualifiers());
+    if (lastComparison != 0) {
+      return lastComparison;
+    }
+    if (isSetTypeQualifiers()) {
+      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.typeQualifiers, typedOther.typeQualifiers);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -292,6 +364,16 @@ public class TPrimitiveTypeEntry implements org.apache.thrift.TBase<TPrimitiveTy
       sb.append(this.type);
     }
     first = false;
+    if (isSetTypeQualifiers()) {
+      if (!first) sb.append(", ");
+      sb.append("typeQualifiers:");
+      if (this.typeQualifiers == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.typeQualifiers);
+      }
+      first = false;
+    }
     sb.append(")");
     return sb.toString();
   }
@@ -303,6 +385,9 @@ public class TPrimitiveTypeEntry implements org.apache.thrift.TBase<TPrimitiveTy
     }
 
     // check for sub-struct validity
+    if (typeQualifiers != null) {
+      typeQualifiers.validate();
+    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -347,6 +432,15 @@ public class TPrimitiveTypeEntry implements org.apache.thrift.TBase<TPrimitiveTy
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
+          case 2: // TYPE_QUALIFIERS
+            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+              struct.typeQualifiers = new TTypeQualifiers();
+              struct.typeQualifiers.read(iprot);
+              struct.setTypeQualifiersIsSet(true);
+            } else { 
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+            }
+            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -364,6 +458,13 @@ public class TPrimitiveTypeEntry implements org.apache.thrift.TBase<TPrimitiveTy
         oprot.writeFieldBegin(TYPE_FIELD_DESC);
         oprot.writeI32(struct.type.getValue());
         oprot.writeFieldEnd();
+      }
+      if (struct.typeQualifiers != null) {
+        if (struct.isSetTypeQualifiers()) {
+          oprot.writeFieldBegin(TYPE_QUALIFIERS_FIELD_DESC);
+          struct.typeQualifiers.write(oprot);
+          oprot.writeFieldEnd();
+        }
       }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -383,6 +484,14 @@ public class TPrimitiveTypeEntry implements org.apache.thrift.TBase<TPrimitiveTy
     public void write(org.apache.thrift.protocol.TProtocol prot, TPrimitiveTypeEntry struct) throws org.apache.thrift.TException {
       TTupleProtocol oprot = (TTupleProtocol) prot;
       oprot.writeI32(struct.type.getValue());
+      BitSet optionals = new BitSet();
+      if (struct.isSetTypeQualifiers()) {
+        optionals.set(0);
+      }
+      oprot.writeBitSet(optionals, 1);
+      if (struct.isSetTypeQualifiers()) {
+        struct.typeQualifiers.write(oprot);
+      }
     }
 
     @Override
@@ -390,6 +499,12 @@ public class TPrimitiveTypeEntry implements org.apache.thrift.TBase<TPrimitiveTy
       TTupleProtocol iprot = (TTupleProtocol) prot;
       struct.type = TTypeId.findByValue(iprot.readI32());
       struct.setTypeIsSet(true);
+      BitSet incoming = iprot.readBitSet(1);
+      if (incoming.get(0)) {
+        struct.typeQualifiers = new TTypeQualifiers();
+        struct.typeQualifiers.read(iprot);
+        struct.setTypeQualifiersIsSet(true);
+      }
     }
   }
 

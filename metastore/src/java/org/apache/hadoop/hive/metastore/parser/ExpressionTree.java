@@ -18,7 +18,6 @@
 package org.apache.hadoop.hive.metastore.parser;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -26,11 +25,12 @@ import java.util.Stack;
 import org.antlr.runtime.ANTLRStringStream;
 import org.antlr.runtime.CharStream;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.metastore.ObjectStore;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.serde.serdeConstants;
 
 import com.google.common.collect.Sets;
 
@@ -39,6 +39,8 @@ import com.google.common.collect.Sets;
  * at intermediate level and the leaf level nodes are of type LeafNode.
  */
 public class ExpressionTree {
+  /** The empty tree that can be returned for an empty filter. */
+  public static final ExpressionTree EMPTY_TREE = new ExpressionTree();
 
   /** The logical operations supported. */
   public enum LogicalOperator {
@@ -104,9 +106,81 @@ public class ExpressionTree {
 
   }
 
-  public static interface TreeVisitor {
-    void visit(TreeNode node) throws MetaException;
-    void visit(LeafNode node) throws MetaException;
+  /**
+   * Depth first traversal of ExpressionTree.
+   * The users should override the subset of methods to do their stuff.
+   */
+  public static class TreeVisitor {
+    private void visit(TreeNode node) throws MetaException {
+      if (shouldStop()) return;
+      assert node != null && node.getLhs() != null && node.getRhs() != null;
+      beginTreeNode(node);
+      node.lhs.accept(this);
+      midTreeNode(node);
+      node.rhs.accept(this);
+      endTreeNode(node);
+    }
+
+    protected void beginTreeNode(TreeNode node) throws MetaException {}
+    protected void midTreeNode(TreeNode node) throws MetaException {}
+    protected void endTreeNode(TreeNode node) throws MetaException {}
+    protected void visit(LeafNode node) throws MetaException {}
+    protected boolean shouldStop() {
+      return false;
+    }
+  }
+
+  /**
+   * Helper class that wraps the stringbuilder used to build the filter over the tree,
+   * as well as error propagation in two modes - expect errors, i.e. filter might as well
+   * be unbuildable and that's not a failure condition; or don't expect errors, i.e. filter
+   * must be buildable.
+   */
+  public static class FilterBuilder {
+    private final StringBuilder result = new StringBuilder();
+    private String errorMessage = null;
+    private boolean expectNoErrors = false;
+
+    public FilterBuilder(boolean expectNoErrors) {
+      this.expectNoErrors = expectNoErrors;
+    }
+
+    public String getFilter() throws MetaException {
+      assert errorMessage == null;
+      if (errorMessage != null) {
+        throw new MetaException("Trying to get result after error: " + errorMessage);
+      }
+      return result.toString();
+    }
+
+    @Override
+    public String toString() {
+      try {
+        return getFilter();
+      } catch (MetaException ex) {
+        throw new RuntimeException(ex);
+      }
+    }
+
+    public String getErrorMessage() {
+      return errorMessage;
+    }
+
+    public boolean hasError() {
+      return errorMessage != null;
+    }
+
+    public FilterBuilder append(String filterPart) {
+      this.result.append(filterPart);
+      return this;
+    }
+
+    public void setError(String errorMessage) throws MetaException {
+      this.errorMessage = errorMessage;
+      if (expectNoErrors) {
+        throw new MetaException(errorMessage);
+      }
+    }
   }
 
   /**
@@ -139,7 +213,7 @@ public class ExpressionTree {
     }
 
     /** Double dispatch for TreeVisitor. */
-    public void accept(TreeVisitor visitor) throws MetaException {
+    protected void accept(TreeVisitor visitor) throws MetaException {
       visitor.visit(this);
     }
 
@@ -153,16 +227,16 @@ public class ExpressionTree {
      *        tables that match the filter.
      * @param params
      *        A map of parameter key to values for the filter statement.
+     * @param filterBuilder The filter builder that is used to build filter.
      * @return a JDO filter statement
      * @throws MetaException
      */
-    public String generateJDOFilter(Table table, Map<String, Object> params)
-    throws MetaException {
-      StringBuilder filterBuffer = new StringBuilder();
-
-      if ( lhs != null) {
+    public void generateJDOFilter(Table table, Map<String, Object> params,
+        FilterBuilder filterBuffer) throws MetaException {
+      if (filterBuffer.hasError()) return;
+      if (lhs != null) {
         filterBuffer.append (" (");
-        filterBuffer.append(lhs.generateJDOFilter(table, params));
+        lhs.generateJDOFilter(table, params, filterBuffer);
 
         if (rhs != null) {
           if( andOr == LogicalOperator.AND ) {
@@ -171,12 +245,10 @@ public class ExpressionTree {
             filterBuffer.append(" || ");
           }
 
-          filterBuffer.append(rhs.generateJDOFilter(table, params));
+          rhs.generateJDOFilter(table, params, filterBuffer);
         }
         filterBuffer.append (") ");
       }
-
-      return filterBuffer.toString();
     }
   }
 
@@ -192,18 +264,17 @@ public class ExpressionTree {
     private static final String PARAM_PREFIX = "hive_filter_param_";
 
     @Override
-    public void accept(TreeVisitor visitor) throws MetaException {
+    protected void accept(TreeVisitor visitor) throws MetaException {
       visitor.visit(this);
     }
 
     @Override
-    public String generateJDOFilter(Table table,
-        Map<String, Object> params)
-        throws MetaException {
+    public void generateJDOFilter(Table table, Map<String, Object> params,
+        FilterBuilder filterBuilder) throws MetaException {
       if (table != null) {
-        return generateJDOFilterOverPartitions(table, params);
+        generateJDOFilterOverPartitions(table, params, filterBuilder);
       } else {
-        return generateJDOFilterOverTables(params);
+        generateJDOFilterOverTables(params, filterBuilder);
       }
     }
 
@@ -212,20 +283,22 @@ public class ExpressionTree {
     private static final Set<Operator> TABLE_FILTER_OPS = Sets.newHashSet(
         Operator.EQUALS, Operator.NOTEQUALS, Operator.NOTEQUALS2);
 
-    private String generateJDOFilterOverTables(Map<String, Object> params)
-        throws MetaException {
+    private void generateJDOFilterOverTables(Map<String, Object> params,
+        FilterBuilder filterBuilder) throws MetaException {
       if (keyName.equals(hive_metastoreConstants.HIVE_FILTER_FIELD_OWNER)) {
         keyName = "this.owner";
       } else if (keyName.equals(hive_metastoreConstants.HIVE_FILTER_FIELD_LAST_ACCESS)) {
         //lastAccessTime expects an integer, so we cannot use the "like operator"
         if (operator == Operator.LIKE) {
-          throw new MetaException("Like is not supported for HIVE_FILTER_FIELD_LAST_ACCESS");
+          filterBuilder.setError("Like is not supported for HIVE_FILTER_FIELD_LAST_ACCESS");
+          return;
         }
         keyName = "this.lastAccessTime";
       } else if (keyName.startsWith(hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS)) {
         if (!TABLE_FILTER_OPS.contains(operator)) {
-          throw new MetaException("Only " + TABLE_FILTER_OPS + " are supported " +
+          filterBuilder.setError("Only " + TABLE_FILTER_OPS + " are supported " +
             "operators for HIVE_FILTER_FIELD_PARAMS");
+          return;
         }
         String paramKeyName = keyName.substring(hive_metastoreConstants.HIVE_FILTER_FIELD_PARAMS.length());
         keyName = "this.parameters.get(\"" + paramKeyName + "\")";
@@ -233,10 +306,11 @@ public class ExpressionTree {
         // in case we get a long.
         value = value.toString();
       } else {
-        throw new MetaException("Invalid key name in filter.  " +
+        filterBuilder.setError("Invalid key name in filter.  " +
           "Use constants from org.apache.hadoop.hive.metastore.api");
+        return;
       }
-      return generateJDOFilterGeneral(params);
+      generateJDOFilterGeneral(params, filterBuilder);
     }
 
     /**
@@ -247,70 +321,73 @@ public class ExpressionTree {
      * Currently supported types for value are String and Long.
      * The LIKE operator for Longs is unsupported.
      */
-    private String generateJDOFilterGeneral(Map<String, Object> params)
-        throws MetaException {
+    private void generateJDOFilterGeneral(Map<String, Object> params,
+        FilterBuilder filterBuilder) throws MetaException {
       String paramName = PARAM_PREFIX + params.size();
       params.put(paramName, value);
-      String filter;
 
       if (isReverseOrder) {
         if (operator == Operator.LIKE) {
-          throw new MetaException(
-              "Value should be on the RHS for LIKE operator : " +
+          filterBuilder.setError("Value should be on the RHS for LIKE operator : " +
               "Key <" + keyName + ">");
         } else {
-          filter = paramName + " " + operator.getJdoOp() + " " + keyName;
+          filterBuilder.append(paramName + " " + operator.getJdoOp() + " " + keyName);
         }
       } else {
         if (operator == Operator.LIKE) {
-          filter = " " + keyName + "." + operator.getJdoOp() + "(" + paramName + ") ";
+          filterBuilder.append(" " + keyName + "." + operator.getJdoOp() + "(" + paramName + ") ");
         } else {
-          filter = " " + keyName + " " + operator.getJdoOp() + " " + paramName;
+          filterBuilder.append(" " + keyName + " " + operator.getJdoOp() + " " + paramName);
         }
       }
-      return filter;
     }
 
-    private String generateJDOFilterOverPartitions(Table table, Map<String, Object> params)
-    throws MetaException {
+    private void generateJDOFilterOverPartitions(Table table, Map<String, Object> params,
+        FilterBuilder filterBuilder) throws MetaException {
       int partitionColumnCount = table.getPartitionKeys().size();
-      int partitionColumnIndex = getPartColIndexForFilter(table);
+      int partitionColumnIndex = getPartColIndexForFilter(table, filterBuilder);
+      if (filterBuilder.hasError()) return;
 
-      String valueAsString = getFilterPushdownParam(table, partitionColumnIndex);
+      String valueAsString = getFilterPushdownParam(table, partitionColumnIndex, filterBuilder);
+      if (filterBuilder.hasError()) return;
+
       String paramName = PARAM_PREFIX + params.size();
       params.put(paramName, valueAsString);
 
       boolean isOpEquals = operator == Operator.EQUALS;
       if (isOpEquals || operator == Operator.NOTEQUALS || operator == Operator.NOTEQUALS2) {
-        return makeFilterForEquals(keyName, valueAsString, paramName, params,
-            partitionColumnIndex, partitionColumnCount, isOpEquals);
+        makeFilterForEquals(keyName, valueAsString, paramName, params,
+            partitionColumnIndex, partitionColumnCount, isOpEquals, filterBuilder);
+        return;
       }
 
       String keyEqual = FileUtils.escapePathName(keyName) + "=";
-      int keyEqualLength = keyEqual.length();
-      String valString;
-      // partitionname ==>  (key=value/)*(key=value)
-      if (partitionColumnIndex == (partitionColumnCount - 1)) {
-        valString = "partitionName.substring(partitionName.indexOf(\"" + keyEqual + "\")+" + keyEqualLength + ")";
+      String valString = "partitionName.substring(";
+      String indexOfKeyStr = "";
+      if (partitionColumnIndex != 0) {
+        keyEqual = "/" + keyEqual;
+        indexOfKeyStr = "partitionName.indexOf(\"" + keyEqual + "\") + ";
+        valString += indexOfKeyStr;
       }
-      else {
-        valString = "partitionName.substring(partitionName.indexOf(\"" + keyEqual + "\")+" + keyEqualLength + ").substring(0, partitionName.substring(partitionName.indexOf(\"" + keyEqual + "\")+" + keyEqualLength + ").indexOf(\"/\"))";
+      valString += keyEqual.length();
+      if (partitionColumnIndex != (partitionColumnCount - 1)) {
+        valString += ", partitionName.indexOf(\"/\", " + indexOfKeyStr + keyEqual.length() + ")";
       }
+      valString += ")";
 
       if (operator == Operator.LIKE) {
         if (isReverseOrder) {
-          //For LIKE, the value should be on the RHS
-          throw new MetaException(
+          // For LIKE, the value should be on the RHS.
+          filterBuilder.setError(
               "Value should be on the RHS for LIKE operator : Key <" + keyName + ">");
         }
-        //generate this.values.get(i).matches("abc%")
-        return " " + valString + "." + operator.getJdoOp() + "(" + paramName + ") ";
+        // TODO: in all likelihood, this won't actually work. Keep it for backward compat.
+        filterBuilder.append(" " + valString + "." + operator.getJdoOp() + "(" + paramName + ") ");
+      } else {
+        filterBuilder.append(isReverseOrder
+            ? paramName + " " + operator.getJdoOp() + " " + valString
+            : " " + valString + " " + operator.getJdoOp() + " " + paramName);
       }
-
-      // TODO: support for other ops for numbers to be handled in HIVE-4888.
-      return isReverseOrder
-          ? paramName + " " + operator.getJdoOp() + " " + valString
-          : " " + valString + " " + operator.getJdoOp() + " " + paramName;
     }
 
     /**
@@ -339,9 +416,11 @@ public class ExpressionTree {
      * Get partition column index in the table partition column list that
      * corresponds to the key that is being filtered on by this tree node.
      * @param table The table.
+     * @param filterBuilder filter builder used to report error, if any.
      * @return The index.
      */
-    public int getPartColIndexForFilter(Table table) throws MetaException {
+    public int getPartColIndexForFilter(
+        Table table, FilterBuilder filterBuilder) throws MetaException {
       int partitionColumnIndex;
       assert (table.getPartitionKeys().size() > 0);
       for (partitionColumnIndex = 0; partitionColumnIndex < table.getPartitionKeys().size();
@@ -351,9 +430,10 @@ public class ExpressionTree {
           break;
         }
       }
-      if( partitionColumnIndex == table.getPartitionKeys().size() ) {
-        throw new MetaException("Specified key <" + keyName +
+      if( partitionColumnIndex == table.getPartitionKeys().size()) {
+        filterBuilder.setError("Specified key <" + keyName +
             "> is not a partitioning key for the table");
+        return -1;
       }
 
       return partitionColumnIndex;
@@ -365,25 +445,35 @@ public class ExpressionTree {
      * In future this may become different for SQL and JDOQL filter pushdown.
      * @param table The table.
      * @param partColIndex The index of the column to check.
+     * @param filterBuilder filter builder used to report error, if any.
      * @return The parameter string.
      */
-    public String getFilterPushdownParam(Table table, int partColIndex) throws MetaException {
+    public String getFilterPushdownParam(
+        Table table, int partColIndex, FilterBuilder filterBuilder) throws MetaException {
       boolean isIntegralSupported = doesOperatorSupportIntegral(operator);
       String colType = table.getPartitionKeys().get(partColIndex).getType();
       // Can only support partitions whose types are string, or maybe integers
       if (!colType.equals(serdeConstants.STRING_TYPE_NAME)
           && (!isIntegralSupported || !isIntegralType(colType))) {
-        throw new MetaException("Filtering is supported only on partition keys of type " +
+        filterBuilder.setError("Filtering is supported only on partition keys of type " +
             "string" + (isIntegralSupported ? ", or integral types" : ""));
+        return null;
       }
 
       boolean isStringValue = value instanceof String;
       if (!isStringValue && (!isIntegralSupported || !(value instanceof Long))) {
-        throw new MetaException("Filtering is supported only on partition keys of type " +
+        filterBuilder.setError("Filtering is supported only on partition keys of type " +
             "string" + (isIntegralSupported ? ", or integral types" : ""));
+        return null;
       }
 
       return isStringValue ? (String) value : Long.toString((Long) value);
+    }
+  }
+
+  public void accept(TreeVisitor treeVisitor) throws MetaException {
+    if (this.root != null) {
+      this.root.accept(treeVisitor);
     }
   }
 
@@ -400,24 +490,24 @@ public class ExpressionTree {
    * Case where the partition key column is at the end of the name. (no
    * tailing '/')
    *
-   * @param keyName name of the partition col e.g. ds
-   * @param value
-   * @param paramName name of the parameter to use for JDOQL
-   * @param params a map from the parameter name to their values
+   * @param keyName name of the partition column e.g. ds.
+   * @param value The value to compare to.
+   * @param paramName name of the parameter to use for JDOQL.
+   * @param params a map from the parameter name to their values.
+   * @param keyPos The index of the requisite partition column in the list of such columns.
+   * @param keyCount Partition column count for the table.
    * @param isEq whether the operator is equals, or not-equals.
-   * @return
-   * @throws MetaException
+   * @param fltr Filter builder used to append the filter, or report errors.
    */
-  private static String makeFilterForEquals(String keyName, String value, String paramName,
-      Map<String, Object> params, int keyPos, int keyCount, boolean isEq)
-      throws MetaException {
+  private static void makeFilterForEquals(String keyName, String value, String paramName,
+      Map<String, Object> params, int keyPos, int keyCount, boolean isEq, FilterBuilder fltr)
+          throws MetaException {
     Map<String, String> partKeyToVal = new HashMap<String, String>();
     partKeyToVal.put(keyName, value);
     // If a partition has multiple partition keys, we make the assumption that
     // makePartName with one key will return a substring of the name made
     // with both all the keys.
     String escapedNameFragment = Warehouse.makePartName(partKeyToVal, false);
-    StringBuilder fltr = new StringBuilder();
     if (keyCount == 1) {
       // Case where this is no other partition columns
       params.put(paramName, escapedNameFragment);
@@ -427,13 +517,13 @@ public class ExpressionTree {
       // be a leading '/' but no trailing '/'
       params.put(paramName, "/" + escapedNameFragment);
       fltr.append(isEq ? "" : "!").append("partitionName.endsWith(")
-        .append(paramName).append(')');
+        .append(paramName).append(")");
     } else if (keyPos == 0) {
-      // Case where the parttion column is at the beginning of the name. There will
+      // Case where the partition column is at the beginning of the name. There will
       // be a trailing '/' but no leading '/'
       params.put(paramName, escapedNameFragment + "/");
       fltr.append(isEq ? "" : "!").append("partitionName.startsWith(")
-        .append(paramName).append(')');
+        .append(paramName).append(")");
     } else {
       // Case where the partition column is in the middle of the name. There will
       // be a leading '/' and an trailing '/'
@@ -441,7 +531,6 @@ public class ExpressionTree {
       fltr.append("partitionName.indexOf(").append(paramName).append(")")
         .append(isEq ? ">= 0" : "< 0");
     }
-    return fltr.toString();
   }
 
   /**
@@ -489,18 +578,18 @@ public class ExpressionTree {
    * @param params the input map which is updated with the
    *     the parameterized values. Keys are the parameter names and values
    *     are the parameter values
-   * @return the string representation of the expression tree
-   * @throws MetaException
+   * @param filterBuilder the filter builder to append to.
    */
-  public String generateJDOFilter(Table table,
-        Map<String, Object> params) throws MetaException {
-    if( root == null ) {
-      return "";
+  public void generateJDOFilterFragment(Table table, Map<String, Object> params,
+      FilterBuilder filterBuilder) throws MetaException {
+    if (root == null) {
+      return;
     }
 
-    return root.generateJDOFilter(table, params);
+    filterBuilder.append(" && ( ");
+    root.generateJDOFilter(table, params, filterBuilder);
+    filterBuilder.append(" )");
   }
-
 
   /** Case insensitive ANTLR string stream */
   public static class ANTLRNoCaseStringStream extends ANTLRStringStream {

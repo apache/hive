@@ -47,20 +47,6 @@ public class MetadataTypedColumnsetSerDe extends AbstractSerDe {
   public static final Log LOG = LogFactory
       .getLog(MetadataTypedColumnsetSerDe.class.getName());
 
-  static {
-    StackTraceElement[] sTrace = new Exception().getStackTrace();
-    String className = sTrace[0].getClassName();
-    try {
-      // For backward compatibility: this class replaces the columnsetSerDe
-      // class.
-      SerDeUtils.registerSerDe(
-          "org.apache.hadoop.hive.serde.thrift.columnsetSerDe", Class
-          .forName(className));
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
-
   public static final String DefaultSeparator = "\001";
   private String separator;
 

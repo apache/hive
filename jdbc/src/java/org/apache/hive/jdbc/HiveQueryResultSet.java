@@ -30,6 +30,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.thrift.TCLIService;
+import org.apache.hive.service.cli.thrift.TCLIServiceConstants;
 import org.apache.hive.service.cli.thrift.TColumnDesc;
 import org.apache.hive.service.cli.thrift.TFetchOrientation;
 import org.apache.hive.service.cli.thrift.TFetchResultsReq;
@@ -37,9 +38,12 @@ import org.apache.hive.service.cli.thrift.TFetchResultsResp;
 import org.apache.hive.service.cli.thrift.TGetResultSetMetadataReq;
 import org.apache.hive.service.cli.thrift.TGetResultSetMetadataResp;
 import org.apache.hive.service.cli.thrift.TOperationHandle;
+import org.apache.hive.service.cli.thrift.TPrimitiveTypeEntry;
 import org.apache.hive.service.cli.thrift.TRow;
 import org.apache.hive.service.cli.thrift.TSessionHandle;
 import org.apache.hive.service.cli.thrift.TTableSchema;
+import org.apache.hive.service.cli.thrift.TTypeQualifierValue;
+import org.apache.hive.service.cli.thrift.TTypeQualifiers;
 
 /**
  * HiveQueryResultSet.
@@ -51,6 +55,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
 
   private TCLIService.Iface client;
   private TOperationHandle stmtHandle;
+  private HiveStatement hiveStatement;
   private TSessionHandle sessHandle;
   private int maxRows;
   private int fetchSize;
@@ -66,6 +71,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     private TCLIService.Iface client = null;
     private TOperationHandle stmtHandle = null;
     private TSessionHandle sessHandle  = null;
+    private HiveStatement hiveStatement = null;
 
     /**
      * Sets the limit for the maximum number of rows that any ResultSet object produced by this
@@ -76,6 +82,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     private boolean retrieveSchema = true;
     private List<String> colNames;
     private List<String> colTypes;
+    private List<JdbcColumnAttributes> colAttributes;
     private int fetchSize = 50;
     private boolean emptyResultSet = false;
 
@@ -94,16 +101,34 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       return this;
     }
 
+    public Builder setHiveStatement(HiveStatement hiveStatement) {
+      this.hiveStatement = hiveStatement;
+      return this;
+    }
+
     public Builder setMaxRows(int maxRows) {
       this.maxRows = maxRows;
       return this;
     }
 
     public Builder setSchema(List<String> colNames, List<String> colTypes) {
+      // no column attributes provided - create list of null attributes.
+      List<JdbcColumnAttributes> colAttributes =
+          new ArrayList<JdbcColumnAttributes>();
+      for (int idx = 0; idx < colTypes.size(); ++idx) {
+        colAttributes.add(null);
+      }
+      return setSchema(colNames, colTypes, colAttributes);
+    }
+
+    public Builder setSchema(List<String> colNames, List<String> colTypes,
+        List<JdbcColumnAttributes> colAttributes) {
       this.colNames = new ArrayList<String>();
       this.colNames.addAll(colNames);
       this.colTypes = new ArrayList<String>();
       this.colTypes.addAll(colTypes);
+      this.colAttributes = new ArrayList<JdbcColumnAttributes>();
+      this.colAttributes.addAll(colAttributes);
       this.retrieveSchema = false;
       return this;
     }
@@ -128,13 +153,14 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     this.stmtHandle = builder.stmtHandle;
     this.sessHandle = builder.sessHandle;
     this.fetchSize = builder.fetchSize;
+    this.hiveStatement = builder.hiveStatement;
     columnNames = new ArrayList<String>();
     columnTypes = new ArrayList<String>();
+    columnAttributes = new ArrayList<JdbcColumnAttributes>();
     if (builder.retrieveSchema) {
       retrieveSchema();
     } else {
-      this.columnNames.addAll(builder.colNames);
-      this.columnTypes.addAll(builder.colTypes);
+      this.setSchema(builder.colNames, builder.colTypes, builder.colAttributes);
     }
     this.emptyResultSet = builder.emptyResultSet;
     if (builder.emptyResultSet) {
@@ -142,6 +168,32 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     } else {
       this.maxRows = builder.maxRows;
     }
+  }
+
+  /**
+   * Generate ColumnAttributes object from a TTypeQualifiers
+   * @param primitiveTypeEntry primitive type
+   * @return generated ColumnAttributes, or null
+   */
+  private static JdbcColumnAttributes getColumnAttributes(
+      TPrimitiveTypeEntry primitiveTypeEntry) {
+    JdbcColumnAttributes ret = null;
+    if (primitiveTypeEntry.isSetTypeQualifiers()) {
+      TTypeQualifiers tq = primitiveTypeEntry.getTypeQualifiers();
+      switch (primitiveTypeEntry.getType()) {
+        case VARCHAR_TYPE:
+          TTypeQualifierValue val =
+              tq.getQualifiers().get(TCLIServiceConstants.CHARACTER_MAXIMUM_LENGTH);
+          if (val != null) {
+            // precision is char length
+            ret = new JdbcColumnAttributes(val.getI32Value(), 0);
+          }
+          break;
+        default:
+          break;
+      }
+    }
+    return ret;
   }
 
   /**
@@ -172,9 +224,11 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
         }
         String columnName = columns.get(pos).getColumnName();
         columnNames.add(columnName);
-        String columnTypeName = TYPE_NAMES.get(
-            columns.get(pos).getTypeDesc().getTypes().get(0).getPrimitiveEntry().getType());
+        TPrimitiveTypeEntry primitiveTypeEntry =
+            columns.get(pos).getTypeDesc().getTypes().get(0).getPrimitiveEntry();
+        String columnTypeName = TYPE_NAMES.get(primitiveTypeEntry.getType());
         columnTypes.add(columnTypeName);
+        columnAttributes.add(getColumnAttributes(primitiveTypeEntry));
       }
     } catch (SQLException eS) {
       throw eS; // rethrow the SQLException as is
@@ -189,16 +243,22 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
    * @param colNames
    * @param colTypes
    */
-  public void setSchema(List<String> colNames, List<String> colTypes) {
+  private void setSchema(List<String> colNames, List<String> colTypes,
+      List<JdbcColumnAttributes> colAttributes) {
     columnNames.addAll(colNames);
     columnTypes.addAll(colTypes);
+    columnAttributes.addAll(colAttributes);
   }
 
   @Override
   public void close() throws SQLException {
+    if (hiveStatement != null) {
+      hiveStatement.closeClientOperation();
+    }
     // Need reset during re-open when needed
     client = null;
     stmtHandle = null;
+    hiveStatement = null;
     sessHandle = null;
     isClosed = true;
   }

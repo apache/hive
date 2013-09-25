@@ -223,8 +223,10 @@
     <target name="javadoc" depends="jar" description="Generate Javadoc documentation" unless="skip.javadoc">
         <mkdir dir="${build.javadoc}"/>
         <record name="${build.dir}/javadoc.log" action="start"/>
+        <!--NOTE: old org.apache.hcatalog is intentionally excluded since 0.11 
+        version of the JavaDocs is available online-->
         <javadoc overview="${src.dir}/../docs/overview.html"
-                 packagenames="org.apache.hcatalog.*"
+                 packagenames="org.apache.hive.hcatalog.*" 
                  destdir="${build.javadoc}"
                  author="true"
                  version="true"
@@ -242,17 +244,14 @@
             <packageset dir="webhcat/svr/src/main/java"/>
             <packageset dir="webhcat/java-client/src/main/java"/>
             <classpath>
-                <fileset dir="core/build/lib/test"/>
-                <fileset dir="hcatalog-pig-adapter/build/lib/compile"/>
-                <fileset dir="hcatalog-pig-adapter/build/lib/provided"/>
-                <fileset dir="server-extensions/build/lib/compile"/>
-                <fileset dir="server-extensions/build/lib/provided"/>
-                <fileset dir="storage-handlers/hbase/build/lib/compile"/>
-                <fileset dir="storage-handlers/hbase/build/lib/provided"/>
-                <fileset dir="webhcat/svr/build/lib/compile"/>
-                <fileset dir="webhcat/svr/build/lib/provided"/>
+                <fileset dir="core/build/lib/compile"/>
+                <fileset dir="hcatalog-pig-adapter/build/lib/compile" includes="pig*.jar"/>
+                <fileset dir="server-extensions/build/lib/compile" includes="jms*.jar"/>
+                <fileset dir="storage-handlers/hbase/build/lib/compile" includes="hbase*.jar,hive-hbase*.jar"/>
+                <fileset dir="webhcat/svr/build/lib/provided" includes="hcatalog-core*.jar"/>
+                <fileset dir="webhcat/svr/build/lib/compile" includes="jetty*.jar,jersey*.jar,commons-exec*.jar,jul-to-slf4j*.jar"/>
             </classpath>
-            <group title="hcatalog" packages="org.apache.hcatalog.*"/>
+            <group title="hcatalog" packages="org.apache.hive.hcatalog.*"/>
         </javadoc>
         <record name="${build.dir}/javadoc.log" action="stop"/>
         <condition property="javadoc.warnings">
@@ -362,6 +361,8 @@
         <copy todir="${dist.dir}/bin">
             <fileset dir="bin/">
                 <include name="hcat"/>
+                <include name="hcat.py"/>
+                <include name="hcatcfg.py"/>
             </fileset>
 
         </copy>
@@ -406,6 +407,8 @@
             </fileset>
             <fileset dir="bin">
                 <include name="hcat_server.sh"/>
+                <include name="hcat_server.py"/>
+                <include name="hcatcfg.py"/>
             </fileset>
         </copy>
 
@@ -428,21 +431,19 @@
             <property name="dist.handlers.dir" value="${handlers.dir}"/>
         </ant>
 
-        <!--
-        While ant has a native tar task, we call out to the command-line
-        tar command because it preserves file permissions of our carefully
-        constructed package dir.
-        -->
-        <!--
-        <exec executable="tar">
-            <arg value="-C"/>
-            <arg value="${build.dir}"/>
-            <arg value="-czf"/>
-            <arg value="${build.dir}/${final.name}.tar.gz"/>
-            <arg value="${final.name}"/>
-        </exec>
+        <tar destfile="${build.dir}/${final.name}.tar.gz" longfile="gnu" compression="gzip">
+            <tarfileset dir="${build.dir}" filemode="755">
+                <include name="${final.name}/bin/**"/>
+                <include name="${final.name}/sbin/**"/>
+            </tarfileset>
+            <tarfileset dir="${build.dir}">
+                <include name="${final.name}/**"/>
+                <exclude name="${final.name}/bin/**"/>
+                <exclude name="${final.name}/sbin/**"/>
+            </tarfileset>
+        </tar>
         <checksum file="${build.dir}/${final.name}.tar.gz" forceOverwrite="yes"/>
-        -->
+
     </target>
 
     <target name="releaseaudit" depends="init" description="generate a release audit report">
@@ -514,5 +515,6 @@
     <import file="build-support/ant/deploy.xml"/>
     <import file="build-support/ant/findbugs.xml"/>
     <import file="build-support/ant/test.xml"/>
-
+    
+    <target name="make-pom" description="no-op in hcatalog, here to make hive's build work"/>
 </project>

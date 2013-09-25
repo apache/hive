@@ -49,6 +49,15 @@ public abstract class TypeInfo implements Serializable {
    */
   public abstract String getTypeName();
 
+  /**
+   * String representing the qualified type name.
+   * Qualified types should override this method.
+   * @return
+   */
+  public String getQualifiedName() {
+    return getTypeName();
+  }
+
   @Override
   public String toString() {
     return getTypeName();

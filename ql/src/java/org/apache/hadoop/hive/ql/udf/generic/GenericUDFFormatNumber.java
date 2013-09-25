@@ -54,10 +54,10 @@ import org.apache.hadoop.io.Text;
     + "  '12,332.1235'")
 public class GenericUDFFormatNumber extends GenericUDF {
   private transient ObjectInspector[] argumentOIs;
-  private final Text resultText = new Text();
-  private final StringBuilder pattern = new StringBuilder("");
-  private final DecimalFormat numberFormat = new DecimalFormat("");
-  private int lastDValue = -1;
+  private transient final Text resultText = new Text();
+  private transient final StringBuilder pattern = new StringBuilder("");
+  private transient final DecimalFormat numberFormat = new DecimalFormat("");
+  private transient int lastDValue = -1;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {

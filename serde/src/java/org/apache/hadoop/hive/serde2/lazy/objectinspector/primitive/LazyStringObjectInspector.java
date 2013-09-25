@@ -28,8 +28,12 @@ import org.apache.hadoop.io.Text;
 public class LazyStringObjectInspector extends
     AbstractPrimitiveLazyObjectInspector<Text> implements StringObjectInspector {
 
-  boolean escaped;
-  byte escapeChar;
+  private boolean escaped;
+  private byte escapeChar;
+
+  protected LazyStringObjectInspector() {
+    super();
+  }
 
   LazyStringObjectInspector(boolean escaped, byte escapeChar) {
     super(PrimitiveObjectInspectorUtils.stringTypeEntry);

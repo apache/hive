@@ -60,7 +60,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
   private static final long serialVersionUID = 1L;
 
-  private Configuration configuration;
+  private transient Configuration configuration;
   protected List<Operator<? extends OperatorDesc>> childOperators;
   protected List<Operator<? extends OperatorDesc>> parentOperators;
   protected String operatorId;
@@ -206,7 +206,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   // non-bean fields needed during compilation
-  private transient RowSchema rowSchema;
+  private RowSchema rowSchema;
 
   public void setSchema(RowSchema rowSchema) {
     this.rowSchema = rowSchema;
@@ -236,7 +236,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    * optimizer and built during semantic analysis contains only key elements for
    * reduce sink and group by op
    */
-  protected transient Map<String, ExprNodeDesc> colExprMap;
+  protected Map<String, ExprNodeDesc> colExprMap;
 
   public void setId(String id) {
     this.id = id;
@@ -622,6 +622,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       for (Operator<? extends OperatorDesc> op : childOperators) {
         op.close(abort);
       }
+
+      out = null;
 
       LOG.info(id + " Close done");
     } catch (HiveException e) {

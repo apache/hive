@@ -34,7 +34,6 @@ import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
-import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
@@ -69,313 +68,303 @@ import static org.junit.Assert.assertTrue;
 /**
  * Test for HCatOutputFormat. Writes a partition using HCatOutputFormat and reads
  * it back using HCatInputFormat, checks the column values and counts.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.HCatMapReduceTest} instead
  */
 public abstract class HCatMapReduceTest extends HCatBaseTest {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HCatMapReduceTest.class);
-    protected static String dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
-    protected static String tableName = "testHCatMapReduceTable";
+  private static final Logger LOG = LoggerFactory.getLogger(HCatMapReduceTest.class);
+  protected static String dbName = MetaStoreUtils.DEFAULT_DATABASE_NAME;
+  protected static String tableName = "testHCatMapReduceTable";
 
-    private static List<HCatRecord> writeRecords = new ArrayList<HCatRecord>();
-    private static List<HCatRecord> readRecords = new ArrayList<HCatRecord>();
+  private static List<HCatRecord> writeRecords = new ArrayList<HCatRecord>();
+  private static List<HCatRecord> readRecords = new ArrayList<HCatRecord>();
 
-    protected abstract List<FieldSchema> getPartitionKeys();
+  protected abstract List<FieldSchema> getPartitionKeys();
 
-    protected abstract List<FieldSchema> getTableColumns();
+  protected abstract List<FieldSchema> getTableColumns();
 
-    private static FileSystem fs;
+  private static FileSystem fs;
 
-    protected Boolean isTableExternal() {
-        return false;
+  protected String inputFormat() { 
+    return RCFileInputFormat.class.getName();
+  }
+
+  protected String outputFormat() { 
+    return RCFileOutputFormat.class.getName(); 
+  }
+
+  protected String serdeClass() { 
+    return ColumnarSerDe.class.getName(); 
+  }
+
+  @BeforeClass
+  public static void setUpOneTime() throws Exception {
+    fs = new LocalFileSystem();
+    fs.initialize(fs.getWorkingDirectory().toUri(), new Configuration());
+
+    HiveConf hiveConf = new HiveConf();
+    hiveConf.setInt(HCatConstants.HCAT_HIVE_CLIENT_EXPIRY_TIME, 0);
+    // Hack to initialize cache with 0 expiry time causing it to return a new hive client every time
+    // Otherwise the cache doesn't play well with the second test method with the client gets closed() in the
+    // tearDown() of the previous test
+    HCatUtil.getHiveClient(hiveConf);
+
+    MapCreate.writeCount = 0;
+    MapRead.readCount = 0;
+  }
+
+  @After
+  public void deleteTable() throws Exception {
+    try {
+      String databaseName = (dbName == null) ? MetaStoreUtils.DEFAULT_DATABASE_NAME : dbName;
+
+      client.dropTable(databaseName, tableName);
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw e;
+    }
+  }
+
+  @Before
+  public void createTable() throws Exception {
+    String databaseName = (dbName == null) ? MetaStoreUtils.DEFAULT_DATABASE_NAME : dbName;
+
+    try {
+      client.dropTable(databaseName, tableName);
+    } catch (Exception e) {
+    } //can fail with NoSuchObjectException
+
+
+    Table tbl = new Table();
+    tbl.setDbName(databaseName);
+    tbl.setTableName(tableName);
+    tbl.setTableType("MANAGED_TABLE");
+    StorageDescriptor sd = new StorageDescriptor();
+
+    sd.setCols(getTableColumns());
+    tbl.setPartitionKeys(getPartitionKeys());
+
+    tbl.setSd(sd);
+
+    sd.setBucketCols(new ArrayList<String>(2));
+    sd.setSerdeInfo(new SerDeInfo());
+    sd.getSerdeInfo().setName(tbl.getTableName());
+    sd.getSerdeInfo().setParameters(new HashMap<String, String>());
+    sd.getSerdeInfo().getParameters().put(serdeConstants.SERIALIZATION_FORMAT, "1");
+    sd.getSerdeInfo().setSerializationLib(serdeClass());
+    sd.setInputFormat(inputFormat());
+    sd.setOutputFormat(outputFormat());
+
+    Map<String, String> tableParams = new HashMap<String, String>();
+    tbl.setParameters(tableParams);
+
+    client.createTable(tbl);
+  }
+
+  //Create test input file with specified number of rows
+  private void createInputFile(Path path, int rowCount) throws IOException {
+
+    if (fs.exists(path)) {
+      fs.delete(path, true);
     }
 
-    protected String inputFormat() { 
-        return RCFileInputFormat.class.getName();
-    }
-    
-    protected String outputFormat() { 
-        return RCFileOutputFormat.class.getName(); 
-    }
-    
-    protected String serdeClass() { 
-        return ColumnarSerDe.class.getName(); 
-    }
-    
-    @BeforeClass
-    public static void setUpOneTime() throws Exception {
-        fs = new LocalFileSystem();
-        fs.initialize(fs.getWorkingDirectory().toUri(), new Configuration());
+    FSDataOutputStream os = fs.create(path);
 
-        HiveConf hiveConf = new HiveConf();
-        hiveConf.setInt(HCatConstants.HCAT_HIVE_CLIENT_EXPIRY_TIME, 0);
-        // Hack to initialize cache with 0 expiry time causing it to return a new hive client every time
-        // Otherwise the cache doesn't play well with the second test method with the client gets closed() in the
-        // tearDown() of the previous test
-        HCatUtil.getHiveClient(hiveConf);
-
-        MapCreate.writeCount = 0;
-        MapRead.readCount = 0;
+    for (int i = 0; i < rowCount; i++) {
+      os.writeChars(i + "\n");
     }
 
-    @After
-    public void deleteTable() throws Exception {
+    os.close();
+  }
+
+  public static class MapCreate extends
+      Mapper<LongWritable, Text, BytesWritable, HCatRecord> {
+
+    static int writeCount = 0; //test will be in local mode
+
+    @Override
+    public void map(LongWritable key, Text value, Context context
+    ) throws IOException, InterruptedException {
+      {
         try {
-            String databaseName = (dbName == null) ? MetaStoreUtils.DEFAULT_DATABASE_NAME : dbName;
+          HCatRecord rec = writeRecords.get(writeCount);
+          context.write(null, rec);
+          writeCount++;
 
-            client.dropTable(databaseName, tableName);
         } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
+
+          e.printStackTrace(System.err); //print since otherwise exception is lost
+          throw new IOException(e);
         }
+      }
     }
+  }
 
-    @Before
-    public void createTable() throws Exception {
-        String databaseName = (dbName == null) ? MetaStoreUtils.DEFAULT_DATABASE_NAME : dbName;
+  public static class MapRead extends
+      Mapper<WritableComparable, HCatRecord, BytesWritable, Text> {
 
+    static int readCount = 0; //test will be in local mode
+
+    @Override
+    public void map(WritableComparable key, HCatRecord value, Context context
+    ) throws IOException, InterruptedException {
+      {
         try {
-            client.dropTable(databaseName, tableName);
+          readRecords.add(value);
+          readCount++;
         } catch (Exception e) {
-        } //can fail with NoSuchObjectException
-
-
-        Table tbl = new Table();
-        tbl.setDbName(databaseName);
-        tbl.setTableName(tableName);
-        if (isTableExternal()){
-            tbl.setTableType(TableType.EXTERNAL_TABLE.toString());
-        } else {
-            tbl.setTableType(TableType.MANAGED_TABLE.toString());
+          e.printStackTrace(); //print since otherwise exception is lost
+          throw new IOException(e);
         }
-        StorageDescriptor sd = new StorageDescriptor();
+      }
+    }
+  }
 
-        sd.setCols(getTableColumns());
-        tbl.setPartitionKeys(getPartitionKeys());
+  Job runMRCreate(Map<String, String> partitionValues,
+          List<HCatFieldSchema> partitionColumns, List<HCatRecord> records,
+          int writeCount, boolean assertWrite) throws Exception {
+    return runMRCreate(partitionValues, partitionColumns, records, writeCount, assertWrite, true);
+  }
 
-        tbl.setSd(sd);
+  /**
+   * Run a local map reduce job to load data from in memory records to an HCatalog Table
+   * @param partitionValues
+   * @param partitionColumns
+   * @param records data to be written to HCatalog table
+   * @param writeCount
+   * @param assertWrite
+   * @param asSingleMapTask
+   * @return
+   * @throws Exception
+   */
+  Job runMRCreate(Map<String, String> partitionValues,
+          List<HCatFieldSchema> partitionColumns, List<HCatRecord> records,
+          int writeCount, boolean assertWrite, boolean asSingleMapTask) throws Exception {
 
-        sd.setBucketCols(new ArrayList<String>(2));
-        sd.setSerdeInfo(new SerDeInfo());
-        sd.getSerdeInfo().setName(tbl.getTableName());
-        sd.getSerdeInfo().setParameters(new HashMap<String, String>());
-        sd.getSerdeInfo().getParameters().put(serdeConstants.SERIALIZATION_FORMAT, "1");
-        if (isTableExternal()){
-            sd.getSerdeInfo().getParameters().put("EXTERNAL", "TRUE");
-        }
-        sd.getSerdeInfo().setSerializationLib(serdeClass());
-        sd.setInputFormat(inputFormat());
-        sd.setOutputFormat(outputFormat());
+    writeRecords = records;
+    MapCreate.writeCount = 0;
 
-        Map<String, String> tableParams = new HashMap<String, String>();
-        tbl.setParameters(tableParams);
+    Configuration conf = new Configuration();
+    Job job = new Job(conf, "hcat mapreduce write test");
+    job.setJarByClass(this.getClass());
+    job.setMapperClass(HCatMapReduceTest.MapCreate.class);
 
-        client.createTable(tbl);
+    // input/output settings
+    job.setInputFormatClass(TextInputFormat.class);
+
+    if (asSingleMapTask) {
+      // One input path would mean only one map task
+      Path path = new Path(fs.getWorkingDirectory(), "mapred/testHCatMapReduceInput");
+      createInputFile(path, writeCount);
+      TextInputFormat.setInputPaths(job, path);
+    } else {
+      // Create two input paths so that two map tasks get triggered. There could be other ways
+      // to trigger two map tasks.
+      Path path = new Path(fs.getWorkingDirectory(), "mapred/testHCatMapReduceInput");
+      createInputFile(path, writeCount / 2);
+
+      Path path2 = new Path(fs.getWorkingDirectory(), "mapred/testHCatMapReduceInput2");
+      createInputFile(path2, (writeCount - writeCount / 2));
+
+      TextInputFormat.setInputPaths(job, path, path2);
     }
 
-    //Create test input file with specified number of rows
-    private void createInputFile(Path path, int rowCount) throws IOException {
+    job.setOutputFormatClass(HCatOutputFormat.class);
 
-        if (fs.exists(path)) {
-            fs.delete(path, true);
-        }
+    OutputJobInfo outputJobInfo = OutputJobInfo.create(dbName, tableName, partitionValues);
+    HCatOutputFormat.setOutput(job, outputJobInfo);
 
-        FSDataOutputStream os = fs.create(path);
+    job.setMapOutputKeyClass(BytesWritable.class);
+    job.setMapOutputValueClass(DefaultHCatRecord.class);
 
-        for (int i = 0; i < rowCount; i++) {
-            os.writeChars(i + "\n");
-        }
+    job.setNumReduceTasks(0);
 
-        os.close();
+    HCatOutputFormat.setSchema(job, new HCatSchema(partitionColumns));
+
+    boolean success = job.waitForCompletion(true);
+
+    // Ensure counters are set when data has actually been read.
+    if (partitionValues != null) {
+      assertTrue(job.getCounters().getGroup("FileSystemCounters")
+          .findCounter("FILE_BYTES_READ").getValue() > 0);
     }
 
-    public static class MapCreate extends
-            Mapper<LongWritable, Text, BytesWritable, HCatRecord> {
-
-        static int writeCount = 0; //test will be in local mode
-
-        @Override
-        public void map(LongWritable key, Text value, Context context
-        ) throws IOException, InterruptedException {
-            {
-                try {
-                    HCatRecord rec = writeRecords.get(writeCount);
-                    context.write(null, rec);
-                    writeCount++;
-
-                } catch (Exception e) {
-
-                    e.printStackTrace(System.err); //print since otherwise exception is lost
-                    throw new IOException(e);
-                }
-            }
-        }
+    if (!HCatUtil.isHadoop23()) {
+      // Local mode outputcommitter hook is not invoked in Hadoop 1.x
+      if (success) {
+        new FileOutputCommitterContainer(job, null).commitJob(job);
+      } else {
+        new FileOutputCommitterContainer(job, null).abortJob(job, JobStatus.State.FAILED);
+      }
+    }
+    if (assertWrite) {
+      // we assert only if we expected to assert with this call.
+      Assert.assertEquals(writeCount, MapCreate.writeCount);
     }
 
-    public static class MapRead extends
-            Mapper<WritableComparable, HCatRecord, BytesWritable, Text> {
+    return job;
+  }
 
-        static int readCount = 0; //test will be in local mode
+  List<HCatRecord> runMRRead(int readCount) throws Exception {
+    return runMRRead(readCount, null);
+  }
 
-        @Override
-        public void map(WritableComparable key, HCatRecord value, Context context
-        ) throws IOException, InterruptedException {
-            {
-                try {
-                    readRecords.add(value);
-                    readCount++;
-                } catch (Exception e) {
-                    e.printStackTrace(); //print since otherwise exception is lost
-                    throw new IOException(e);
-                }
-            }
-        }
+  /**
+   * Run a local map reduce job to read records from HCatalog table and verify if the count is as expected
+   * @param readCount
+   * @param filter
+   * @return
+   * @throws Exception
+   */
+  List<HCatRecord> runMRRead(int readCount, String filter) throws Exception {
+
+    MapRead.readCount = 0;
+    readRecords.clear();
+
+    Configuration conf = new Configuration();
+    Job job = new Job(conf, "hcat mapreduce read test");
+    job.setJarByClass(this.getClass());
+    job.setMapperClass(HCatMapReduceTest.MapRead.class);
+
+    // input/output settings
+    job.setInputFormatClass(HCatInputFormat.class);
+    job.setOutputFormatClass(TextOutputFormat.class);
+
+    HCatInputFormat.setInput(job, dbName, tableName).setFilter(filter);
+
+    job.setMapOutputKeyClass(BytesWritable.class);
+    job.setMapOutputValueClass(Text.class);
+
+    job.setNumReduceTasks(0);
+
+    Path path = new Path(fs.getWorkingDirectory(), "mapred/testHCatMapReduceOutput");
+    if (fs.exists(path)) {
+      fs.delete(path, true);
     }
 
-    Job runMRCreate(Map<String, String> partitionValues,
-                    List<HCatFieldSchema> partitionColumns, List<HCatRecord> records,
-                    int writeCount, boolean assertWrite) throws Exception {
-        return runMRCreate(partitionValues, partitionColumns, records, writeCount, assertWrite, true);
-    }
+    TextOutputFormat.setOutputPath(job, path);
 
-    /**
-     * Run a local map reduce job to load data from in memory records to an HCatalog Table
-     * @param partitionValues
-     * @param partitionColumns
-     * @param records data to be written to HCatalog table
-     * @param writeCount
-     * @param assertWrite
-     * @param asSingleMapTask
-     * @return
-     * @throws Exception
-     */
-    Job runMRCreate(Map<String, String> partitionValues,
-                    List<HCatFieldSchema> partitionColumns, List<HCatRecord> records,
-                    int writeCount, boolean assertWrite, boolean asSingleMapTask) throws Exception {
+    job.waitForCompletion(true);
+    Assert.assertEquals(readCount, MapRead.readCount);
 
-        writeRecords = records;
-        MapCreate.writeCount = 0;
-
-        Configuration conf = new Configuration();
-        Job job = new Job(conf, "hcat mapreduce write test");
-        job.setJarByClass(this.getClass());
-        job.setMapperClass(HCatMapReduceTest.MapCreate.class);
-
-        // input/output settings
-        job.setInputFormatClass(TextInputFormat.class);
-
-        if (asSingleMapTask) {
-            // One input path would mean only one map task
-            Path path = new Path(fs.getWorkingDirectory(), "mapred/testHCatMapReduceInput");
-            createInputFile(path, writeCount);
-            TextInputFormat.setInputPaths(job, path);
-        } else {
-            // Create two input paths so that two map tasks get triggered. There could be other ways
-            // to trigger two map tasks.
-            Path path = new Path(fs.getWorkingDirectory(), "mapred/testHCatMapReduceInput");
-            createInputFile(path, writeCount / 2);
-
-            Path path2 = new Path(fs.getWorkingDirectory(), "mapred/testHCatMapReduceInput2");
-            createInputFile(path2, (writeCount - writeCount / 2));
-
-            TextInputFormat.setInputPaths(job, path, path2);
-        }
-
-        job.setOutputFormatClass(HCatOutputFormat.class);
-
-        OutputJobInfo outputJobInfo = OutputJobInfo.create(dbName, tableName, partitionValues);
-        HCatOutputFormat.setOutput(job, outputJobInfo);
-
-        job.setMapOutputKeyClass(BytesWritable.class);
-        job.setMapOutputValueClass(DefaultHCatRecord.class);
-
-        job.setNumReduceTasks(0);
-
-        HCatOutputFormat.setSchema(job, new HCatSchema(partitionColumns));
-
-        boolean success = job.waitForCompletion(true);
-
-        // Ensure counters are set when data has actually been read.
-        if (partitionValues != null) {
-            assertTrue(job.getCounters().getGroup("FileSystemCounters")
-                    .findCounter("FILE_BYTES_READ").getValue() > 0);
-        }
-
-        if (!HCatUtil.isHadoop23()) {
-            // Local mode outputcommitter hook is not invoked in Hadoop 1.x
-            if (success) {
-                new FileOutputCommitterContainer(job, null).commitJob(job);
-            } else {
-                new FileOutputCommitterContainer(job, null).abortJob(job, JobStatus.State.FAILED);
-            }
-        }
-        if (assertWrite) {
-            // we assert only if we expected to assert with this call.
-            Assert.assertEquals(writeCount, MapCreate.writeCount);
-        }
-
-        return job;
-    }
-
-    List<HCatRecord> runMRRead(int readCount) throws Exception {
-        return runMRRead(readCount, null);
-    }
-
-    /**
-     * Run a local map reduce job to read records from HCatalog table and verify if the count is as expected
-     * @param readCount
-     * @param filter
-     * @return
-     * @throws Exception
-     */
-    List<HCatRecord> runMRRead(int readCount, String filter) throws Exception {
-
-        MapRead.readCount = 0;
-        readRecords.clear();
-
-        Configuration conf = new Configuration();
-        Job job = new Job(conf, "hcat mapreduce read test");
-        job.setJarByClass(this.getClass());
-        job.setMapperClass(HCatMapReduceTest.MapRead.class);
-
-        // input/output settings
-        job.setInputFormatClass(HCatInputFormat.class);
-        job.setOutputFormatClass(TextOutputFormat.class);
-
-        HCatInputFormat.setInput(job, dbName, tableName).setFilter(filter);
-
-        job.setMapOutputKeyClass(BytesWritable.class);
-        job.setMapOutputValueClass(Text.class);
-
-        job.setNumReduceTasks(0);
-
-        Path path = new Path(fs.getWorkingDirectory(), "mapred/testHCatMapReduceOutput");
-        if (fs.exists(path)) {
-            fs.delete(path, true);
-        }
-
-        TextOutputFormat.setOutputPath(job, path);
-
-        job.waitForCompletion(true);
-        Assert.assertEquals(readCount, MapRead.readCount);
-
-        return readRecords;
-    }
+    return readRecords;
+  }
 
 
-    protected HCatSchema getTableSchema() throws Exception {
+  protected HCatSchema getTableSchema() throws Exception {
 
-        Configuration conf = new Configuration();
-        Job job = new Job(conf, "hcat mapreduce read schema test");
-        job.setJarByClass(this.getClass());
+    Configuration conf = new Configuration();
+    Job job = new Job(conf, "hcat mapreduce read schema test");
+    job.setJarByClass(this.getClass());
 
-        // input/output settings
-        job.setInputFormatClass(HCatInputFormat.class);
-        job.setOutputFormatClass(TextOutputFormat.class);
+    // input/output settings
+    job.setInputFormatClass(HCatInputFormat.class);
+    job.setOutputFormatClass(TextOutputFormat.class);
 
-        HCatInputFormat.setInput(job, dbName, tableName);
+    HCatInputFormat.setInput(job, dbName, tableName);
 
-        return HCatInputFormat.getTableSchema(job);
-    }
+    return HCatInputFormat.getTableSchema(job);
+  }
 
 }
 

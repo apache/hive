@@ -20,6 +20,13 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Random;
+
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -36,13 +43,6 @@ import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Random;
-
 public class PartitionKeySampler implements OutputCollector<HiveKey, Object> {
 
   public static final Comparator<byte[]> C = new Comparator<byte[]>() {
@@ -51,7 +51,7 @@ public class PartitionKeySampler implements OutputCollector<HiveKey, Object> {
     }
   };
 
-  private List<byte[]> sampled = new ArrayList<byte[]>();
+  private final List<byte[]> sampled = new ArrayList<byte[]>();
 
   public void addSampleFile(Path inputPath, JobConf job) throws IOException {
     FileSystem fs = inputPath.getFileSystem(job);
@@ -134,6 +134,8 @@ public class PartitionKeySampler implements OutputCollector<HiveKey, Object> {
     private float samplePercent = 0.1f;
     private final Random random = new Random();
 
+    private int sampled;
+
     public FetchSampler(FetchWork work, JobConf job, Operator<?> operator) {
       super(work, job, operator, null);
     }
@@ -148,12 +150,22 @@ public class PartitionKeySampler implements OutputCollector<HiveKey, Object> {
 
     @Override
     public boolean pushRow() throws IOException, HiveException {
-      InspectableObject row = getNextRow();
-      if (row != null && random.nextFloat() < samplePercent) {
-        sampleNum--;
-        pushRow(row);
+      if (!super.pushRow()) {
+        return false;
       }
-      return sampleNum > 0 && row != null;
+      if (sampled < sampleNum) {
+        return true;
+      }
+      operator.flush();
+      return false;
+    }
+
+    @Override
+    protected void pushRow(InspectableObject row) throws HiveException {
+      if (random.nextFloat() < samplePercent) {
+        sampled++;
+        super.pushRow(row);
+      }
     }
   }
 }

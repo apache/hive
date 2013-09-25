@@ -28,6 +28,12 @@ public interface StripeInformation {
   long getOffset();
 
   /**
+   * Get the total length of the stripe in bytes.
+   * @return the number of bytes in the stripe
+   */
+  long getLength();
+
+  /**
    * Get the length of the stripe's indexes.
    * @return the number of bytes in the index
    */

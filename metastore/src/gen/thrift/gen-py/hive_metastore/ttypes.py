@@ -1232,74 +1232,6 @@ class Order:
   def __ne__(self, other):
     return not (self == other)
 
-class SkewedValueList:
-  """
-  Attributes:
-   - skewedValueList
-  """
-
-  thrift_spec = (
-    None, # 0
-    (1, TType.LIST, 'skewedValueList', (TType.STRING,None), None, ), # 1
-  )
-
-  def __init__(self, skewedValueList=None,):
-    self.skewedValueList = skewedValueList
-
-  def read(self, iprot):
-    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
-      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
-      return
-    iprot.readStructBegin()
-    while True:
-      (fname, ftype, fid) = iprot.readFieldBegin()
-      if ftype == TType.STOP:
-        break
-      if fid == 1:
-        if ftype == TType.LIST:
-          self.skewedValueList = []
-          (_etype90, _size87) = iprot.readListBegin()
-          for _i91 in xrange(_size87):
-            _elem92 = iprot.readString();
-            self.skewedValueList.append(_elem92)
-          iprot.readListEnd()
-        else:
-          iprot.skip(ftype)
-      else:
-        iprot.skip(ftype)
-      iprot.readFieldEnd()
-    iprot.readStructEnd()
-
-  def write(self, oprot):
-    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
-      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
-      return
-    oprot.writeStructBegin('SkewedValueList')
-    if self.skewedValueList is not None:
-      oprot.writeFieldBegin('skewedValueList', TType.LIST, 1)
-      oprot.writeListBegin(TType.STRING, len(self.skewedValueList))
-      for iter93 in self.skewedValueList:
-        oprot.writeString(iter93)
-      oprot.writeListEnd()
-      oprot.writeFieldEnd()
-    oprot.writeFieldStop()
-    oprot.writeStructEnd()
-
-  def validate(self):
-    return
-
-
-  def __repr__(self):
-    L = ['%s=%r' % (key, value)
-      for key, value in self.__dict__.iteritems()]
-    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
-
-  def __eq__(self, other):
-    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
-
-  def __ne__(self, other):
-    return not (self == other)
-
 class SkewedInfo:
   """
   Attributes:
@@ -1312,7 +1244,7 @@ class SkewedInfo:
     None, # 0
     (1, TType.LIST, 'skewedColNames', (TType.STRING,None), None, ), # 1
     (2, TType.LIST, 'skewedColValues', (TType.LIST,(TType.STRING,None)), None, ), # 2
-    (3, TType.MAP, 'skewedColValueLocationMaps', (TType.STRUCT,(SkewedValueList, SkewedValueList.thrift_spec),TType.STRING,None), None, ), # 3
+    (3, TType.MAP, 'skewedColValueLocationMaps', (TType.LIST,(TType.STRING,None),TType.STRING,None), None, ), # 3
   )
 
   def __init__(self, skewedColNames=None, skewedColValues=None, skewedColValueLocationMaps=None,):
@@ -1332,37 +1264,41 @@ class SkewedInfo:
       if fid == 1:
         if ftype == TType.LIST:
           self.skewedColNames = []
-          (_etype97, _size94) = iprot.readListBegin()
-          for _i98 in xrange(_size94):
-            _elem99 = iprot.readString();
-            self.skewedColNames.append(_elem99)
+          (_etype90, _size87) = iprot.readListBegin()
+          for _i91 in xrange(_size87):
+            _elem92 = iprot.readString();
+            self.skewedColNames.append(_elem92)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 2:
         if ftype == TType.LIST:
           self.skewedColValues = []
-          (_etype103, _size100) = iprot.readListBegin()
-          for _i104 in xrange(_size100):
-            _elem105 = []
-            (_etype109, _size106) = iprot.readListBegin()
-            for _i110 in xrange(_size106):
-              _elem111 = iprot.readString();
-              _elem105.append(_elem111)
+          (_etype96, _size93) = iprot.readListBegin()
+          for _i97 in xrange(_size93):
+            _elem98 = []
+            (_etype102, _size99) = iprot.readListBegin()
+            for _i103 in xrange(_size99):
+              _elem104 = iprot.readString();
+              _elem98.append(_elem104)
             iprot.readListEnd()
-            self.skewedColValues.append(_elem105)
+            self.skewedColValues.append(_elem98)
           iprot.readListEnd()
         else:
           iprot.skip(ftype)
       elif fid == 3:
         if ftype == TType.MAP:
           self.skewedColValueLocationMaps = {}
-          (_ktype113, _vtype114, _size112 ) = iprot.readMapBegin() 
-          for _i116 in xrange(_size112):
-            _key117 = SkewedValueList()
-            _key117.read(iprot)
-            _val118 = iprot.readString();
-            self.skewedColValueLocationMaps[_key117] = _val118
+          (_ktype106, _vtype107, _size105 ) = iprot.readMapBegin() 
+          for _i109 in xrange(_size105):
+            _key110 = []
+            (_etype115, _size112) = iprot.readListBegin()
+            for _i116 in xrange(_size112):
+              _elem117 = iprot.readString();
+              _key110.append(_elem117)
+            iprot.readListEnd()
+            _val111 = iprot.readString();
+            self.skewedColValueLocationMaps[_key110] = _val111
           iprot.readMapEnd()
         else:
           iprot.skip(ftype)
@@ -1379,26 +1315,29 @@ class SkewedInfo:
     if self.skewedColNames is not None:
       oprot.writeFieldBegin('skewedColNames', TType.LIST, 1)
       oprot.writeListBegin(TType.STRING, len(self.skewedColNames))
-      for iter119 in self.skewedColNames:
-        oprot.writeString(iter119)
+      for iter118 in self.skewedColNames:
+        oprot.writeString(iter118)
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.skewedColValues is not None:
       oprot.writeFieldBegin('skewedColValues', TType.LIST, 2)
       oprot.writeListBegin(TType.LIST, len(self.skewedColValues))
-      for iter120 in self.skewedColValues:
-        oprot.writeListBegin(TType.STRING, len(iter120))
-        for iter121 in iter120:
-          oprot.writeString(iter121)
+      for iter119 in self.skewedColValues:
+        oprot.writeListBegin(TType.STRING, len(iter119))
+        for iter120 in iter119:
+          oprot.writeString(iter120)
         oprot.writeListEnd()
       oprot.writeListEnd()
       oprot.writeFieldEnd()
     if self.skewedColValueLocationMaps is not None:
       oprot.writeFieldBegin('skewedColValueLocationMaps', TType.MAP, 3)
-      oprot.writeMapBegin(TType.STRUCT, TType.STRING, len(self.skewedColValueLocationMaps))
-      for kiter122,viter123 in self.skewedColValueLocationMaps.items():
-        kiter122.write(oprot)
-        oprot.writeString(viter123)
+      oprot.writeMapBegin(TType.LIST, TType.STRING, len(self.skewedColValueLocationMaps))
+      for kiter121,viter122 in self.skewedColValueLocationMaps.items():
+        oprot.writeListBegin(TType.STRING, len(kiter121))
+        for iter123 in kiter121:
+          oprot.writeString(iter123)
+        oprot.writeListEnd()
+        oprot.writeString(viter122)
       oprot.writeMapEnd()
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
@@ -3260,6 +3199,205 @@ class EnvironmentContext:
     oprot.writeStructEnd()
 
   def validate(self):
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class PartitionsByExprResult:
+  """
+  Attributes:
+   - partitions
+   - hasUnknownPartitions
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.SET, 'partitions', (TType.STRUCT,(Partition, Partition.thrift_spec)), None, ), # 1
+    (2, TType.BOOL, 'hasUnknownPartitions', None, None, ), # 2
+  )
+
+  def __init__(self, partitions=None, hasUnknownPartitions=None,):
+    self.partitions = partitions
+    self.hasUnknownPartitions = hasUnknownPartitions
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.SET:
+          self.partitions = set()
+          (_etype230, _size227) = iprot.readSetBegin()
+          for _i231 in xrange(_size227):
+            _elem232 = Partition()
+            _elem232.read(iprot)
+            self.partitions.add(_elem232)
+          iprot.readSetEnd()
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.BOOL:
+          self.hasUnknownPartitions = iprot.readBool();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('PartitionsByExprResult')
+    if self.partitions is not None:
+      oprot.writeFieldBegin('partitions', TType.SET, 1)
+      oprot.writeSetBegin(TType.STRUCT, len(self.partitions))
+      for iter233 in self.partitions:
+        iter233.write(oprot)
+      oprot.writeSetEnd()
+      oprot.writeFieldEnd()
+    if self.hasUnknownPartitions is not None:
+      oprot.writeFieldBegin('hasUnknownPartitions', TType.BOOL, 2)
+      oprot.writeBool(self.hasUnknownPartitions)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.partitions is None:
+      raise TProtocol.TProtocolException(message='Required field partitions is unset!')
+    if self.hasUnknownPartitions is None:
+      raise TProtocol.TProtocolException(message='Required field hasUnknownPartitions is unset!')
+    return
+
+
+  def __repr__(self):
+    L = ['%s=%r' % (key, value)
+      for key, value in self.__dict__.iteritems()]
+    return '%s(%s)' % (self.__class__.__name__, ', '.join(L))
+
+  def __eq__(self, other):
+    return isinstance(other, self.__class__) and self.__dict__ == other.__dict__
+
+  def __ne__(self, other):
+    return not (self == other)
+
+class PartitionsByExprRequest:
+  """
+  Attributes:
+   - dbName
+   - tblName
+   - expr
+   - defaultPartitionName
+   - maxParts
+  """
+
+  thrift_spec = (
+    None, # 0
+    (1, TType.STRING, 'dbName', None, None, ), # 1
+    (2, TType.STRING, 'tblName', None, None, ), # 2
+    (3, TType.STRING, 'expr', None, None, ), # 3
+    (4, TType.STRING, 'defaultPartitionName', None, None, ), # 4
+    (5, TType.I16, 'maxParts', None, -1, ), # 5
+  )
+
+  def __init__(self, dbName=None, tblName=None, expr=None, defaultPartitionName=None, maxParts=thrift_spec[5][4],):
+    self.dbName = dbName
+    self.tblName = tblName
+    self.expr = expr
+    self.defaultPartitionName = defaultPartitionName
+    self.maxParts = maxParts
+
+  def read(self, iprot):
+    if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
+      fastbinary.decode_binary(self, iprot.trans, (self.__class__, self.thrift_spec))
+      return
+    iprot.readStructBegin()
+    while True:
+      (fname, ftype, fid) = iprot.readFieldBegin()
+      if ftype == TType.STOP:
+        break
+      if fid == 1:
+        if ftype == TType.STRING:
+          self.dbName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 2:
+        if ftype == TType.STRING:
+          self.tblName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.expr = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.STRING:
+          self.defaultPartitionName = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.I16:
+          self.maxParts = iprot.readI16();
+        else:
+          iprot.skip(ftype)
+      else:
+        iprot.skip(ftype)
+      iprot.readFieldEnd()
+    iprot.readStructEnd()
+
+  def write(self, oprot):
+    if oprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and self.thrift_spec is not None and fastbinary is not None:
+      oprot.trans.write(fastbinary.encode_binary(self, (self.__class__, self.thrift_spec)))
+      return
+    oprot.writeStructBegin('PartitionsByExprRequest')
+    if self.dbName is not None:
+      oprot.writeFieldBegin('dbName', TType.STRING, 1)
+      oprot.writeString(self.dbName)
+      oprot.writeFieldEnd()
+    if self.tblName is not None:
+      oprot.writeFieldBegin('tblName', TType.STRING, 2)
+      oprot.writeString(self.tblName)
+      oprot.writeFieldEnd()
+    if self.expr is not None:
+      oprot.writeFieldBegin('expr', TType.STRING, 3)
+      oprot.writeString(self.expr)
+      oprot.writeFieldEnd()
+    if self.defaultPartitionName is not None:
+      oprot.writeFieldBegin('defaultPartitionName', TType.STRING, 4)
+      oprot.writeString(self.defaultPartitionName)
+      oprot.writeFieldEnd()
+    if self.maxParts is not None:
+      oprot.writeFieldBegin('maxParts', TType.I16, 5)
+      oprot.writeI16(self.maxParts)
+      oprot.writeFieldEnd()
+    oprot.writeFieldStop()
+    oprot.writeStructEnd()
+
+  def validate(self):
+    if self.dbName is None:
+      raise TProtocol.TProtocolException(message='Required field dbName is unset!')
+    if self.tblName is None:
+      raise TProtocol.TProtocolException(message='Required field tblName is unset!')
+    if self.expr is None:
+      raise TProtocol.TProtocolException(message='Required field expr is unset!')
     return
 
 

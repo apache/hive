@@ -26,6 +26,9 @@ public class DelegatedUnionObjectInspector implements UnionObjectInspector {
   private UnionObjectInspector delegate;
   private List<ObjectInspector> children;
 
+  protected DelegatedUnionObjectInspector() {
+    super();
+  }
   public DelegatedUnionObjectInspector(UnionObjectInspector delegate) {
     this.delegate = delegate;
   }

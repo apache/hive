@@ -37,50 +37,51 @@ import java.io.IOException;
 
 /**
  * Simplify writing HCatalog tests that require a HiveMetaStore.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.HCatBaseTest} instead
  */
 public class HCatBaseTest {
-    protected static final Logger LOG = LoggerFactory.getLogger(HCatBaseTest.class);
-    protected static final String TEST_DATA_DIR = System.getProperty("user.dir") +
-            "/build/test/data/" + HCatBaseTest.class.getCanonicalName();
-    protected static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
+  protected static final Logger LOG = LoggerFactory.getLogger(HCatBaseTest.class);
+  protected static final String TEST_DATA_DIR = System.getProperty("user.dir") +
+      "/build/test/data/" + HCatBaseTest.class.getCanonicalName();
+  protected static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
 
-    protected HiveConf hiveConf = null;
-    protected Driver driver = null;
-    protected HiveMetaStoreClient client = null;
+  protected HiveConf hiveConf = null;
+  protected Driver driver = null;
+  protected HiveMetaStoreClient client = null;
 
-    @BeforeClass
-    public static void setUpTestDataDir() throws Exception {
-        LOG.info("Using warehouse directory " + TEST_WAREHOUSE_DIR);
-        File f = new File(TEST_WAREHOUSE_DIR);
-        if (f.exists()) {
-            FileUtil.fullyDelete(f);
-        }
-        Assert.assertTrue(new File(TEST_WAREHOUSE_DIR).mkdirs());
+  @BeforeClass
+  public static void setUpTestDataDir() throws Exception {
+    LOG.info("Using warehouse directory " + TEST_WAREHOUSE_DIR);
+    File f = new File(TEST_WAREHOUSE_DIR);
+    if (f.exists()) {
+      FileUtil.fullyDelete(f);
     }
+    Assert.assertTrue(new File(TEST_WAREHOUSE_DIR).mkdirs());
+  }
 
-    @Before
-    public void setUp() throws Exception {
-        if (driver == null) {
-            setUpHiveConf();
-            driver = new Driver(hiveConf);
-            client = new HiveMetaStoreClient(hiveConf);
-            SessionState.start(new CliSessionState(hiveConf));
-        }
+  @Before
+  public void setUp() throws Exception {
+    if (driver == null) {
+      setUpHiveConf();
+      driver = new Driver(hiveConf);
+      client = new HiveMetaStoreClient(hiveConf);
+      SessionState.start(new CliSessionState(hiveConf));
     }
+  }
 
-    /**
-     * Create a new HiveConf and set properties necessary for unit tests.
-     */
-    protected void setUpHiveConf() {
-        hiveConf = new HiveConf(this.getClass());
-        hiveConf.setVar(HiveConf.ConfVars.PREEXECHOOKS, "");
-        hiveConf.setVar(HiveConf.ConfVars.POSTEXECHOOKS, "");
-        hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
-        hiveConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, TEST_WAREHOUSE_DIR);
-    }
+  /**
+   * Create a new HiveConf and set properties necessary for unit tests.
+   */
+  protected void setUpHiveConf() {
+    hiveConf = new HiveConf(this.getClass());
+    hiveConf.setVar(HiveConf.ConfVars.PREEXECHOOKS, "");
+    hiveConf.setVar(HiveConf.ConfVars.POSTEXECHOOKS, "");
+    hiveConf.setBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY, false);
+    hiveConf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE, TEST_WAREHOUSE_DIR);
+  }
 
-    protected void logAndRegister(PigServer server, String query) throws IOException {
-        LOG.info("Registering pig query: " + query);
-        server.registerQuery(query);
-    }
+  protected void logAndRegister(PigServer server, String query) throws IOException {
+    LOG.info("Registering pig query: " + query);
+    server.registerQuery(query);
+  }
 }

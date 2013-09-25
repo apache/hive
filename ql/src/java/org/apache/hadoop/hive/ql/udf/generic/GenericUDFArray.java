@@ -38,8 +38,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
 @Description(name = "array",
     value = "_FUNC_(n0, n1...) - Creates an array with the given elements ")
 public class GenericUDFArray extends GenericUDF {
-  private Converter[] converters;
-  private ArrayList<Object> ret = new ArrayList<Object>();
+  private transient Converter[] converters;
+  private transient ArrayList<Object> ret = new ArrayList<Object>();
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {

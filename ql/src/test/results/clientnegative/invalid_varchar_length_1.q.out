@@ -1,0 +1,5 @@
+PREHOOK: query: drop table if exists invalid_varchar_length_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table if exists invalid_varchar_length_1
+POSTHOOK: type: DROPTABLE
+FAILED: SemanticException org.apache.hadoop.hive.serde2.SerDeException: Length 1000000 exceeds max varchar length of 65535

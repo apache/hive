@@ -25,35 +25,35 @@ import org.apache.hadoop.hbase.HBaseConfiguration;
 public class RevisionManagerConfiguration {
 
 
-    public static Configuration addResources(Configuration conf) {
-        conf.addDefaultResource("revision-manager-default.xml");
-        conf.addResource("revision-manager-site.xml");
-        return conf;
-    }
+  public static Configuration addResources(Configuration conf) {
+    conf.addDefaultResource("revision-manager-default.xml");
+    conf.addResource("revision-manager-site.xml");
+    return conf;
+  }
 
-    /**
-     * Creates a Configuration with Revision Manager resources
-     * @return a Configuration with Revision Manager resources
-     */
-    public static Configuration create() {
-        Configuration conf = new Configuration();
-        return addResources(conf);
-    }
+  /**
+   * Creates a Configuration with Revision Manager resources
+   * @return a Configuration with Revision Manager resources
+   */
+  public static Configuration create() {
+    Configuration conf = new Configuration();
+    return addResources(conf);
+  }
 
-    /**
-     * Creates a clone of passed configuration.
-     * @param that Configuration to clone.
-     * @return a Configuration created with the revision-manager-*.xml files plus
-     * the given configuration.
-     */
-    public static Configuration create(final Configuration that) {
-        Configuration conf = create();
-        //we need to merge things instead of doing new Configuration(that)
-        //because of a bug in Configuration wherein the config
-        //set on the MR fronted will get loaded on the backend as resouce called job.xml
-        //hence adding resources on the backed could potentially overwrite properties
-        //set on the frontend which we shouldn't be doing here
-        HBaseConfiguration.merge(conf, that);
-        return conf;
-    }
+  /**
+   * Creates a clone of passed configuration.
+   * @param that Configuration to clone.
+   * @return a Configuration created with the revision-manager-*.xml files plus
+   * the given configuration.
+   */
+  public static Configuration create(final Configuration that) {
+    Configuration conf = create();
+    //we need to merge things instead of doing new Configuration(that)
+    //because of a bug in Configuration wherein the config
+    //set on the MR fronted will get loaded on the backend as resouce called job.xml
+    //hence adding resources on the backed could potentially overwrite properties
+    //set on the frontend which we shouldn't be doing here
+    HBaseConfiguration.merge(conf, that);
+    return conf;
+  }
 }

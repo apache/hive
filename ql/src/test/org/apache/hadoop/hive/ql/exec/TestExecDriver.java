@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -78,7 +79,8 @@ public class TestExecDriver extends TestCase {
   static {
     try {
       conf = new HiveConf(ExecDriver.class);
-
+      SessionState.start(conf);
+      
       fs = FileSystem.get(conf);
       if (fs.exists(tmppath) && !fs.getFileStatus(tmppath).isDir()) {
         throw new RuntimeException(tmpdir + " exists but is not a directory");

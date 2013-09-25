@@ -29,7 +29,7 @@ import org.apache.hadoop.io.Text;
 
 /**
  * LazyListObjectInspector works on array data that is stored in LazyArray.
- * 
+ *
  * Always use the ObjectInspectorFactory to create new ObjectInspector objects,
  * instead of directly creating an instance of this class.
  */
@@ -38,13 +38,15 @@ public class LazyListObjectInspector implements ListObjectInspector {
   public static final Log LOG = LogFactory.getLog(LazyListObjectInspector.class
       .getName());
 
-  ObjectInspector listElementObjectInspector;
+  private ObjectInspector listElementObjectInspector;
+  private byte separator;
+  private Text nullSequence;
+  private boolean escaped;
+  private byte escapeChar;
 
-  byte separator;
-  Text nullSequence;
-  boolean escaped;
-  byte escapeChar;
-
+  protected LazyListObjectInspector() {
+    super();
+  }
   /**
    * Call ObjectInspectorFactory.getLazySimpleListObjectInspector instead.
    */

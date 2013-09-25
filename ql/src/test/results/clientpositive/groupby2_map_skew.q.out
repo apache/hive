@@ -55,8 +55,6 @@ STAGE PLANS:
                   Map-reduce partition columns:
                         expr: _col0
                         type: string
-                        expr: _col1
-                        type: string
                   tag: -1
                   value expressions:
                         expr: _col2

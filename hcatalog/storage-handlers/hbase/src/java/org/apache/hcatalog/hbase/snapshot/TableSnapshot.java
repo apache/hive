@@ -28,63 +28,63 @@ import java.util.Map;
  */
 public class TableSnapshot implements Serializable {
 
-    private String name;
+  private String name;
 
-    private Map<String, Long> cfRevisionMap;
+  private Map<String, Long> cfRevisionMap;
 
-    private long latestRevision;
+  private long latestRevision;
 
 
-    public TableSnapshot(String name, Map<String, Long> cfRevMap, long latestRevision) {
-        this.name = name;
-        if (cfRevMap == null) {
-            throw new IllegalArgumentException("revision map cannot be null");
-        }
-        this.cfRevisionMap = cfRevMap;
-        this.latestRevision = latestRevision;
+  public TableSnapshot(String name, Map<String, Long> cfRevMap, long latestRevision) {
+    this.name = name;
+    if (cfRevMap == null) {
+      throw new IllegalArgumentException("revision map cannot be null");
     }
+    this.cfRevisionMap = cfRevMap;
+    this.latestRevision = latestRevision;
+  }
 
-    /**
-     * Gets the table name.
-     *
-     * @return String The name of the table.
-     */
-    public String getTableName() {
-        return name;
-    }
+  /**
+   * Gets the table name.
+   *
+   * @return String The name of the table.
+   */
+  public String getTableName() {
+    return name;
+  }
 
-    /**
-     * Gets the column families.
-     *
-     * @return List<String> A list of column families associated with the snapshot.
-     */
-    public List<String> getColumnFamilies(){
-        return  new ArrayList<String>(this.cfRevisionMap.keySet());
-    }
+  /**
+   * Gets the column families.
+   *
+   * @return List<String> A list of column families associated with the snapshot.
+   */
+  public List<String> getColumnFamilies(){
+    return  new ArrayList<String>(this.cfRevisionMap.keySet());
+  }
 
-    /**
-     * Gets the revision.
-     *
-     * @param familyName The name of the column family.
-     * @return the revision
-     */
-    public long getRevision(String familyName){
-        if(cfRevisionMap.containsKey(familyName))
-            return cfRevisionMap.get(familyName);
-        return latestRevision;
-    }
+  /**
+   * Gets the revision.
+   *
+   * @param familyName The name of the column family.
+   * @return the revision
+   */
+  public long getRevision(String familyName){
+    if(cfRevisionMap.containsKey(familyName))
+      return cfRevisionMap.get(familyName);
+    return latestRevision;
+  }
 
-    /**
-     * @return the latest committed revision when this snapshot was taken
-     */
-    public long getLatestRevision() {
-        return latestRevision;
-    }
+  /**
+   * @return the latest committed revision when this snapshot was taken
+   */
+  public long getLatestRevision() {
+    return latestRevision;
+  }
 
-    @Override
-    public String toString() {
-        String snapshot = "Table Name : " + name +" Latest Revision: " + latestRevision
-                + " Column Familiy revision : " + cfRevisionMap.toString();
-        return snapshot;
-    }
+  @Override
+  public String toString() {
+    String snapshot = "Table Name : " + name +" Latest Revision: " + latestRevision
+        + " Column Familiy revision : " + cfRevisionMap.toString();
+    return snapshot;
+  }
 }

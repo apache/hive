@@ -30,6 +30,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -37,6 +38,7 @@ import javax.security.auth.Subject;
 import javax.security.auth.login.LoginException;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -65,6 +67,7 @@ import org.apache.hadoop.mapred.lib.CombineFileInputFormat;
 import org.apache.hadoop.mapred.lib.CombineFileSplit;
 import org.apache.hadoop.mapred.lib.TotalOrderPartitioner;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.JobID;
 import org.apache.hadoop.mapreduce.TaskAttemptID;
 import org.apache.hadoop.security.SecurityUtil;
 import org.apache.hadoop.security.UnixUserGroupInformation;
@@ -631,6 +634,38 @@ public class Hadoop20Shims implements HadoopShims {
   }
 
   @Override
+  public Iterator<FileStatus> listLocatedStatus(final FileSystem fs,
+                                                final Path path,
+                                                final PathFilter filter
+                                               ) throws IOException {
+    return new Iterator<FileStatus>() {
+      private final FileStatus[] result = fs.listStatus(path, filter);
+      private int current = 0;
+
+      @Override
+      public boolean hasNext() {
+        return current < result.length;
+      }
+
+      @Override
+      public FileStatus next() {
+        return result[current++];
+      }
+
+      @Override
+      public void remove() {
+        throw new IllegalArgumentException("Not supported");
+      }
+    };
+  }
+
+  @Override
+  public BlockLocation[] getLocations(FileSystem fs,
+                                      FileStatus status) throws IOException {
+    return fs.getFileBlockLocations(status, 0, status.getLen());
+  }
+
+  @Override
   public boolean isSecurityEnabled() {
     return false;
   }
@@ -674,6 +709,11 @@ public class Hadoop20Shims implements HadoopShims {
         progressable.progress();
       }
     };
+  }
+
+  @Override
+  public TaskAttemptID newTaskAttemptID(JobID jobId, boolean isMap, int taskId, int id) {
+    return new TaskAttemptID(jobId.getJtIdentifier(), jobId.getId(), isMap, taskId, id);
   }
 
   @Override
@@ -740,7 +780,7 @@ public class Hadoop20Shims implements HadoopShims {
       throw new UnsupportedOperationException("HCatalog does not support Hadoop 0.20.x");
   }
   @Override
-  public WebHCatJTShim getWebHCatShim(Configuration conf) throws IOException {
+  public WebHCatJTShim getWebHCatShim(Configuration conf, UserGroupInformation ugi) throws IOException {
       throw new UnsupportedOperationException("WebHCat does not support Hadoop 0.20.x");
   }
 }

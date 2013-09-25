@@ -21,69 +21,72 @@ package org.apache.hcatalog.data.transfer;
 
 import java.util.Map;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.transfer.ReadEntity} instead
+ */
 public class ReadEntity extends EntityBase.Entity {
+
+  private String filterString;
+
+  /**
+   * Don't instantiate {@link ReadEntity} directly. Use,
+   * {@link ReadEntity.Builder} instead.
+   *
+   */
+  private ReadEntity() {
+    // Not allowed
+  }
+
+  private ReadEntity(Builder builder) {
+
+    this.region = builder.region;
+    this.dbName = builder.dbName;
+    this.tableName = builder.tableName;
+    this.partitionKVs = builder.partitionKVs;
+    this.filterString = builder.filterString;
+  }
+
+  public String getFilterString() {
+    return this.filterString;
+  }
+
+  /**
+   * This class should be used to build {@link ReadEntity}. It follows builder
+   * pattern, letting you build your {@link ReadEntity} with whatever level of
+   * detail you want.
+   *
+   */
+  public static class Builder extends EntityBase {
 
     private String filterString;
 
-    /**
-     * Don't instantiate {@link ReadEntity} directly. Use,
-     * {@link ReadEntity.Builder} instead.
-     *
-     */
-    private ReadEntity() {
-        // Not allowed
+    public Builder withRegion(final String region) {
+      this.region = region;
+      return this;
     }
 
-    private ReadEntity(Builder builder) {
-
-        this.region = builder.region;
-        this.dbName = builder.dbName;
-        this.tableName = builder.tableName;
-        this.partitionKVs = builder.partitionKVs;
-        this.filterString = builder.filterString;
+    public Builder withDatabase(final String dbName) {
+      this.dbName = dbName;
+      return this;
     }
 
-    public String getFilterString() {
-        return this.filterString;
+    public Builder withTable(final String tblName) {
+      this.tableName = tblName;
+      return this;
     }
 
-    /**
-     * This class should be used to build {@link ReadEntity}. It follows builder
-     * pattern, letting you build your {@link ReadEntity} with whatever level of
-     * detail you want.
-     *
-     */
-    public static class Builder extends EntityBase {
-
-        private String filterString;
-
-        public Builder withRegion(final String region) {
-            this.region = region;
-            return this;
-        }
-
-        public Builder withDatabase(final String dbName) {
-            this.dbName = dbName;
-            return this;
-        }
-
-        public Builder withTable(final String tblName) {
-            this.tableName = tblName;
-            return this;
-        }
-
-        public Builder withPartition(final Map<String, String> partKVs) {
-            this.partitionKVs = partKVs;
-            return this;
-        }
-
-        public Builder withFilter(String filterString) {
-            this.filterString = filterString;
-            return this;
-        }
-
-        public ReadEntity build() {
-            return new ReadEntity(this);
-        }
+    public Builder withPartition(final Map<String, String> partKVs) {
+      this.partitionKVs = partKVs;
+      return this;
     }
+
+    public Builder withFilter(String filterString) {
+      this.filterString = filterString;
+      return this;
+    }
+
+    public ReadEntity build() {
+      return new ReadEntity(this);
+    }
+  }
 }
