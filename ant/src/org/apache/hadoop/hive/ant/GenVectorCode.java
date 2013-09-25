@@ -216,6 +216,43 @@ public class GenVectorCode extends Task {
         {"FilterColumnCompareColumn", "GreaterEqual", "long", "long", ">="},
         {"FilterColumnCompareColumn", "GreaterEqual", "double", "long", ">="},
 
+      // template, <ClassNamePrefix>, <ReturnType>, <OperandType>, <FuncName>, <OperandCast>,
+      //   <ResultCast>
+      {"ColumnUnaryFunc", "FuncRound", "double", "double", "MathExpr.round", "", ""},
+      // round(longCol) returns a long and is a no-op. So it will not be implemented here.
+      // round(Col, N) is a special case and will be implemented separately from this template
+      {"ColumnUnaryFunc", "FuncFloor", "long", "double", "Math.floor", "", "(long)"},
+      // Note: floor(long) is a no-op so code generation should remove it or use
+      // an IdentityExpression
+      {"ColumnUnaryFunc", "FuncCeil", "long", "double", "Math.ceil", "", "(long)"},
+      // Similarly, ceil(long) is a no-op, so not generating code for it here
+      {"ColumnUnaryFunc", "FuncExp", "double", "double", "Math.exp", "", ""},
+      {"ColumnUnaryFunc", "FuncLn", "double", "double", "Math.log", "", ""},
+      {"ColumnUnaryFunc", "FuncLn", "double", "long", "Math.log", "(double)", ""},
+      {"ColumnUnaryFunc", "FuncLog10", "double", "double", "Math.log10", "", ""},
+      {"ColumnUnaryFunc", "FuncLog10", "double", "long", "Math.log10", "(double)", ""},
+      // The MathExpr class contains helper functions for cases when existing library
+      // routines can't be used directly.
+      {"ColumnUnaryFunc", "FuncLog2", "double", "double", "MathExpr.log2", "", ""},
+      {"ColumnUnaryFunc", "FuncLog2", "double", "long", "MathExpr.log2", "(double)", ""},
+      // Log(base, Col) is a special case and will be implemented separately from this template
+      // Pow(col, P) and Power(col, P) are special cases implemented separately from this template
+      {"ColumnUnaryFunc", "FuncSqrt", "double", "double", "Math.sqrt", "", ""},
+      {"ColumnUnaryFunc", "FuncSqrt", "double", "long", "Math.sqrt", "(double)", ""},
+      {"ColumnUnaryFunc", "FuncAbs", "double", "double", "Math.abs", "", ""},
+      {"ColumnUnaryFunc", "FuncAbs", "long", "long", "MathExpr.abs", "", ""},
+      {"ColumnUnaryFunc", "FuncSin", "double", "double", "Math.sin", "", ""},
+      {"ColumnUnaryFunc", "FuncASin", "double", "double", "Math.asin", "", ""},
+      {"ColumnUnaryFunc", "FuncCos", "double", "double", "Math.cos", "", ""},
+      {"ColumnUnaryFunc", "FuncACos", "double", "double", "Math.acos", "", ""},
+      {"ColumnUnaryFunc", "FuncTan", "double", "double", "Math.tan", "", ""},
+      {"ColumnUnaryFunc", "FuncATan", "double", "double", "Math.atan", "", ""},
+      {"ColumnUnaryFunc", "FuncDegrees", "double", "double", "Math.toDegrees", "", ""},
+      {"ColumnUnaryFunc", "FuncRadians", "double", "double", "Math.toRadians", "", ""},
+      {"ColumnUnaryFunc", "FuncSign", "double", "double", "MathExpr.sign", "", ""},
+      {"ColumnUnaryFunc", "FuncSign", "double", "long", "MathExpr.sign", "", ""},
+
+
         {"ColumnUnaryMinus", "long"},
         {"ColumnUnaryMinus", "double"},
 
@@ -355,6 +392,8 @@ public class GenVectorCode extends Task {
         generateColumnArithmeticColumn(tdesc);
       } else if (tdesc[0].equals("ColumnUnaryMinus")) {
         generateColumnUnaryMinus(tdesc);
+      } else if (tdesc[0].equals("ColumnUnaryFunc")) {
+        generateColumnUnaryFunc(tdesc);
       } else if (tdesc[0].equals("VectorUDAFMinMax")) {
         generateVectorUDAFMinMax(tdesc);
       } else if (tdesc[0].equals("VectorUDAFMinMaxString")) {
@@ -538,6 +577,33 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
     templateString = templateString.replaceAll("<OperandType>", operandType);
     templateString = templateString.replaceAll("<ReturnType>", returnType);
+    writeFile(outputFile, templateString);
+  }
+
+  // template, <ClassNamePrefix>, <ReturnType>, <OperandType>, <FuncName>, <OperandCast>, <ResultCast>
+  private void generateColumnUnaryFunc(String[] tdesc) throws IOException {
+    String classNamePrefix = tdesc[1];
+    String operandType = tdesc[3];
+    String inputColumnVectorType = this.getColumnVectorType(operandType);
+    String returnType = tdesc[2];
+    String outputColumnVectorType = this.getColumnVectorType(returnType);
+    String className = classNamePrefix + getCamelCaseType(operandType) + "To"
+      + getCamelCaseType(returnType);
+    String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
+    String templateFile = joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt");
+    String templateString = readFile(templateFile);
+    String funcName = tdesc[4];
+    String operandCast = tdesc[5];
+    String resultCast = tdesc[6];
+    // Expand, and write result
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
+    templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+    templateString = templateString.replaceAll("<OperandType>", operandType);
+    templateString = templateString.replaceAll("<ReturnType>", returnType);
+    templateString = templateString.replaceAll("<FuncName>", funcName);
+    templateString = templateString.replaceAll("<OperandCast>", operandCast);
+    templateString = templateString.replaceAll("<ResultCast>", resultCast);
     writeFile(outputFile, templateString);
   }
 

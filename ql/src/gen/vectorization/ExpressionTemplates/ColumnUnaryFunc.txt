@@ -19,14 +19,11 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.MathExpr;
 import org.apache.hadoop.hive.ql.exec.vector.*;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
-/**
- * Generated from template ColumnUnaryMinus.txt, which covers unary negation operator. 
- */
 public class <ClassName> extends VectorExpression {
-
   private static final long serialVersionUID = 1L;
 
   private int colNum;
@@ -37,7 +34,7 @@ public class <ClassName> extends VectorExpression {
     this.colNum = colNum;
     this.outputColumn = outputColumn;
   }
-
+  
   public <ClassName>() {
     super();
   }
@@ -67,32 +64,32 @@ public class <ClassName> extends VectorExpression {
     if (inputColVector.isRepeating) {
       //All must be selected otherwise size would be zero
       //Repeating property will not change.
-      outputVector[0] = - vector[0];
+      outputVector[0] = <ResultCast> <FuncName>(<OperandCast> vector[0]);
       // Even if there are no nulls, we always copy over entry 0. Simplifies code.
       outputIsNull[0] = inputIsNull[0]; 
       outputColVector.isRepeating = true;
     } else if (inputColVector.noNulls) {
       if (batch.selectedInUse) {
-        for(int j=0; j != n; j++) {
+        for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = -vector[i];
+          outputVector[i] = <ResultCast> <FuncName>(<OperandCast> vector[i]);
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = -vector[i];
+          outputVector[i] = <ResultCast> <FuncName>(<OperandCast> vector[i]);
         }
       }
       outputColVector.isRepeating = false;
     } else /* there are nulls */ {
       if (batch.selectedInUse) {
-        for(int j=0; j != n; j++) {
+        for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = -vector[i];
+          outputVector[i] = <ResultCast> <FuncName>(<OperandCast> vector[i]);
           outputIsNull[i] = inputIsNull[i];
-        }
+	    }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = -vector[i];
+          outputVector[i] = <ResultCast> <FuncName>(<OperandCast> vector[i]);
         }
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }

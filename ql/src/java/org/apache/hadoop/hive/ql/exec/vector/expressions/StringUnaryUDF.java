@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.io.Text;
@@ -65,6 +67,7 @@ public class StringUnaryUDF extends VectorExpression {
     int [] start = inputColVector.start;
     int [] length = inputColVector.length;
     BytesColumnVector outV = (BytesColumnVector) batch.cols[outputColumn];
+    outV.initBuffer();
     Text t;
 
     if (n == 0) {
@@ -79,25 +82,33 @@ public class StringUnaryUDF extends VectorExpression {
     // existing built-in function.
 
     if (inputColVector.noNulls) {
-      outV.noNulls = true;
+      outV.noNulls = true; 
       if (inputColVector.isRepeating) {
         outV.isRepeating = true;
         s.set(vector[0], start[0], length[0]);
         t = func.evaluate(s);
-        outV.setRef(0, t.getBytes(), 0, t.getLength());
+        setString(outV, 0, t);
       } else if (batch.selectedInUse) {
-        for(int j=0; j != n; j++) {
+        for(int j = 0; j != n; j++) {
           int i = sel[j];
+          
+          /* Fill output isNull with false for selected elements since there is a chance we'll
+           * convert to noNulls == false in setString();
+           */     
+          outV.isNull[i] = false;
           s.set(vector[i], start[i], length[i]);
           t = func.evaluate(s);
-          outV.setRef(i, t.getBytes(), 0, t.getLength());
+          setString(outV, i, t);
         }
         outV.isRepeating = false;
       } else {
+        
+        // Set all elements to not null. The setString call can override this.
+        Arrays.fill(outV.isNull, 0, n - 1, false);
         for(int i = 0; i != n; i++) {
           s.set(vector[i], start[i], length[i]);
           t = func.evaluate(s);
-          outV.setRef(i, t.getBytes(), 0, t.getLength());
+          setString(outV, i, t);
         }
         outV.isRepeating = false;
       }
@@ -107,35 +118,49 @@ public class StringUnaryUDF extends VectorExpression {
       outV.noNulls = false;
       if (inputColVector.isRepeating) {
         outV.isRepeating = true;
-        outV.isNull[0] = inputColVector.isNull[0];
+        outV.isNull[0] = inputColVector.isNull[0]; // setString can override this
         if (!inputColVector.isNull[0]) {
           s.set(vector[0], start[0], length[0]);
           t = func.evaluate(s);
-          outV.setRef(0, t.getBytes(), 0, t.getLength());
+          setString(outV, 0, t);
         }
       } else if (batch.selectedInUse) {
-        for(int j=0; j != n; j++) {
+        for(int j = 0; j != n; j++) {
           int i = sel[j];
+          outV.isNull[i] = inputColVector.isNull[i]; // setString can override this          
           if (!inputColVector.isNull[i]) {
             s.set(vector[i], start[i], length[i]);
             t = func.evaluate(s);
-            outV.setRef(i, t.getBytes(), 0, t.getLength());
-          }
-          outV.isNull[i] = inputColVector.isNull[i];
+            setString(outV, i, t);
+          }  
         }
         outV.isRepeating = false;
       } else {
+        
+        // setString can override this null propagation
+        System.arraycopy(inputColVector.isNull, 0, outV.isNull, 0, n); 
         for(int i = 0; i != n; i++) {
           if (!inputColVector.isNull[i]) {
             s.set(vector[i], start[i], length[i]);
             t = func.evaluate(s);
-            outV.setRef(i, t.getBytes(), 0, t.getLength());
+            setString(outV, i, t);
           }
-          outV.isNull[i] = inputColVector.isNull[i];
         }
         outV.isRepeating = false;
       }
     }
+  }
+  
+  /* Set the output string entry i to the contents of Text object t.
+   * If t is a null object reference, record that the value is a SQL NULL.
+   */
+  private static void setString(BytesColumnVector outV, int i, Text t) {
+    if (t == null) {
+      outV.noNulls = false;
+      outV.isNull[i] = true;
+      return;
+    }
+    outV.setVal(i, t.getBytes(), 0, t.getLength());
   }
 
   @Override
