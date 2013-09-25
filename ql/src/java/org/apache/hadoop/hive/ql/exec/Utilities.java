@@ -129,10 +129,7 @@ import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -148,16 +145,10 @@ import org.apache.hadoop.hive.ql.plan.api.Graph;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.SequenceFile;
@@ -586,6 +577,31 @@ public final class Utilities {
     return null;
   }
 
+  /**
+   * Serializes expression via Kryo.
+   * @param expr Expression.
+   * @return Bytes.
+   */
+  public static byte[] serializeExpressionToKryo(ExprNodeDesc expr) {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    Output output = new Output(baos);
+    runtimeSerializationKryo.get().writeClassAndObject(output, expr);
+    output.close();
+    return baos.toByteArray();
+  }
+
+  /**
+   * Deserializes expression from Kryo.
+   * @param bytes Bytes containing the expression.
+   * @return Expression; null if deserialization succeeded, but the result type is incorrect.
+   */
+  public static ExprNodeDesc deserializeExpressionFromKryo(byte[] bytes) {
+    Input inp = new Input(new ByteArrayInputStream(bytes));
+    Object o = runtimeSerializationKryo.get().readClassAndObject(inp);
+    inp.close();
+    return (o instanceof ExprNodeDesc) ? (ExprNodeDesc)o : null;
+  }
+
   public static String serializeExpression(ExprNodeDesc expr) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     XMLEncoder encoder = new XMLEncoder(baos);
@@ -652,7 +668,6 @@ public final class Utilities {
     public void write(Kryo kryo, Output output, java.sql.Date sqlDate) {
       output.writeLong(sqlDate.getTime());
     }
-
   }
 
   private static class CommonTokenSerializer extends com.esotericsoftware.kryo.Serializer<CommonToken> {
@@ -940,17 +955,20 @@ public final class Utilities {
   }
 
   public static TableDesc getTableDesc(Table tbl) {
-    return (new TableDesc(tbl.getDeserializer().getClass(), tbl.getInputFormatClass(), tbl
-        .getOutputFormatClass(), tbl.getMetadata()));
+    Properties props = tbl.getMetadata();
+    props.put(serdeConstants.SERIALIZATION_LIB, tbl.getDeserializer().getClass().getName());
+    return (new TableDesc(tbl.getInputFormatClass(), tbl
+        .getOutputFormatClass(), props));
   }
 
   // column names and column types are all delimited by comma
   public static TableDesc getTableDesc(String cols, String colTypes) {
-    return (new TableDesc(LazySimpleSerDe.class, SequenceFileInputFormat.class,
+    return (new TableDesc(SequenceFileInputFormat.class,
         HiveSequenceFileOutputFormat.class, Utilities.makeProperties(
-        org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode,
-        org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS, cols,
-        org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES, colTypes)));
+        serdeConstants.SERIALIZATION_FORMAT, "" + Utilities.ctrlaCode,
+        serdeConstants.LIST_COLUMNS, cols,
+        serdeConstants.LIST_COLUMN_TYPES, colTypes,
+        serdeConstants.SERIALIZATION_LIB,LazySimpleSerDe.class.getName())));
   }
 
   public static PartitionDesc getPartitionDesc(Partition part) throws HiveException {
@@ -2364,126 +2382,6 @@ public final class Utilities {
   public static double showTime(long time) {
     double result = (double) time / (double) 1000;
     return result;
-  }
-
-  /**
-   * Check if a function can be pushed down to JDO.
-   * Now only {compares, AND, OR} are supported.
-   * @param func a generic function.
-   * @return true if this function can be pushed down to JDO filter.
-   */
-  private static boolean supportedJDOFuncs(GenericUDF func) {
-    // TODO: we might also want to add "not" and "between" here in future.
-    // TODO: change to GenericUDFBaseCompare once DN is upgraded
-    //       (see HIVE-2609 - in DN 2.0, substrings do not work in MySQL).
-    return func instanceof GenericUDFOPEqual ||
-           func instanceof GenericUDFOPNotEqual ||
-           func instanceof GenericUDFOPAnd ||
-           func instanceof GenericUDFOPOr;
-  }
-
-  /**
-   * Check if a function can be pushed down to JDO for integral types.
-   * Only {=, !=} are supported. lt/gt/etc. to be dealt with in HIVE-4888.
-   * @param func a generic function.
-   * @return true iff this function can be pushed down to JDO filter for integral types.
-   */
-  private static boolean doesJDOFuncSupportIntegral(GenericUDF func) {
-    // AND, OR etc. don't need to be specified here.
-    return func instanceof GenericUDFOPEqual ||
-           func instanceof GenericUDFOPNotEqual;
-  }
-
-  /**
-   * @param type type
-   * @param constant The constant, if any.
-   * @return true iff type is an integral type.
-   */
-  private static boolean isIntegralType(String type) {
-    return type.equals(serdeConstants.TINYINT_TYPE_NAME) ||
-           type.equals(serdeConstants.SMALLINT_TYPE_NAME) ||
-           type.equals(serdeConstants.INT_TYPE_NAME) ||
-           type.equals(serdeConstants.BIGINT_TYPE_NAME);
-  }
-
-  /**
-   * Check if the partition pruning expression can be pushed down to JDO filtering.
-   * The partition expression contains only partition columns.
-   * The criteria that an expression can be pushed down are that:
-   *  1) the expression only contains function specified in supportedJDOFuncs().
-   *     Now only {=, AND, OR} can be pushed down.
-   *  2) the partition column type and the constant type have to be String. This is
-   *     restriction by the current JDO filtering implementation.
-   * @param tab The table that contains the partition columns.
-   * @param expr the partition pruning expression
-   * @param parent parent UDF of expr if parent exists and contains a UDF; otherwise null.
-   * @return null if the partition pruning expression can be pushed down to JDO filtering.
-   */
-  public static String checkJDOPushDown(
-      Table tab, ExprNodeDesc expr, GenericUDF parent) {
-    boolean isConst = expr instanceof ExprNodeConstantDesc;
-    boolean isCol = !isConst && (expr instanceof ExprNodeColumnDesc);
-    boolean isIntegralSupported = (parent != null) && (isConst || isCol)
-        && doesJDOFuncSupportIntegral(parent);
-
-    // JDO filter now only support String typed literals, as well as integers
-    // for some operators; see Filter.g and ExpressionTree.java.
-    if (isConst) {
-      Object value = ((ExprNodeConstantDesc)expr).getValue();
-      if (value instanceof String) {
-        return null;
-      }
-      if (isIntegralSupported && isIntegralType(expr.getTypeInfo().getTypeName())) {
-        return null;
-      }
-      return "Constant " + value + " is not string "
-        + (isIntegralSupported ? "or integral ": "") + "type: " + expr.getTypeInfo().getTypeName();
-    } else if (isCol) {
-      TypeInfo type = expr.getTypeInfo();
-      if (type.getTypeName().equals(serdeConstants.STRING_TYPE_NAME)
-          || (isIntegralSupported && isIntegralType(type.getTypeName()))) {
-        String colName = ((ExprNodeColumnDesc)expr).getColumn();
-        for (FieldSchema fs: tab.getPartCols()) {
-          if (fs.getName().equals(colName)) {
-            if (fs.getType().equals(serdeConstants.STRING_TYPE_NAME)
-                || (isIntegralSupported && isIntegralType(fs.getType()))) {
-              return null;
-            }
-            return "Partition column " + fs.getName() + " is not string "
-              + (isIntegralSupported ? "or integral ": "") + "type: " + fs.getType();
-          }
-        }
-        assert(false); // cannot find the partition column!
-     } else {
-        return "Column " + expr.getExprString() + " is not string "
-          + (isIntegralSupported ? "or integral ": "") + "type: " + type.getTypeName();
-     }
-    } else if (expr instanceof ExprNodeGenericFuncDesc) {
-      ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) expr;
-      GenericUDF func = funcDesc.getGenericUDF();
-      if (!supportedJDOFuncs(func)) {
-        return "Expression " + expr.getExprString() + " cannot be evaluated";
-      }
-      boolean allChildrenConstant = true;
-      List<ExprNodeDesc> children = funcDesc.getChildExprs();
-      for (ExprNodeDesc child: children) {
-        if (!(child instanceof ExprNodeConstantDesc)) {
-          allChildrenConstant = false;
-        }
-        String message = checkJDOPushDown(tab, child, func);
-        if (message != null) {
-          return message;
-        }
-      }
-
-      // If all the children of the expression are constants then JDO cannot parse the expression
-      // see Filter.g
-      if (allChildrenConstant) {
-        return "Expression " + expr.getExprString() + " has only constants as children.";
-      }
-      return null;
-    }
-    return "Expression " + expr.getExprString() + " cannot be evaluated";
   }
 
   /**

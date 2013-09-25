@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -55,6 +56,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -120,10 +122,17 @@ import org.apache.hadoop.hive.metastore.model.MTableColumnStatistics;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
 import org.apache.hadoop.hive.metastore.model.MType;
 import org.apache.hadoop.hive.metastore.model.MVersionTable;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.ANTLRNoCaseStringStream;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LeafNode;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
 import org.apache.hadoop.hive.metastore.parser.FilterLexer;
 import org.apache.hadoop.hive.metastore.parser.FilterParser;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.thrift.TException;
 import org.datanucleus.store.rdbms.exceptions.MissingTableException;
 
 /**
@@ -161,6 +170,7 @@ public class ObjectStore implements RawStore, Configurable {
   private boolean isInitialized = false;
   private PersistenceManager pm = null;
   private MetaStoreDirectSql directSql = null;
+  private PartitionExpressionProxy expressionProxy = null;
   private Configuration hiveConf;
   int openTrasactionCalls = 0;
   private Transaction currentTransaction = null;
@@ -202,6 +212,7 @@ public class ObjectStore implements RawStore, Configurable {
       // most recent instance of the pmf
       pm = null;
       directSql = null;
+      expressionProxy = null;
       openTrasactionCalls = 0;
       currentTransaction = null;
       transactionStatus = TXN_STATUS.NO_STATE;
@@ -234,9 +245,30 @@ public class ObjectStore implements RawStore, Configurable {
     pm = getPersistenceManager();
     isInitialized = pm != null;
     if (isInitialized) {
+      expressionProxy = createExpressionProxy(hiveConf);
       directSql = new MetaStoreDirectSql(pm);
     }
-    return;
+  }
+
+  /**
+   * Creates the proxy used to evaluate expressions. This is here to prevent circular
+   * dependency - ql -&gt; metastore client &lt;-&gt metastore server -&gt ql. If server and
+   * client are split, this can be removed.
+   * @param conf Configuration.
+   * @return The partition expression proxy.
+   */
+  private static PartitionExpressionProxy createExpressionProxy(Configuration conf) {
+    String className = HiveConf.getVar(conf, HiveConf.ConfVars.METASTORE_EXPRESSION_PROXY_CLASS);
+    try {
+      @SuppressWarnings("unchecked")
+      Class<? extends PartitionExpressionProxy> clazz =
+          (Class<? extends PartitionExpressionProxy>)MetaStoreUtils.getClass(className);
+      return (PartitionExpressionProxy)MetaStoreUtils.newInstance(
+          clazz, new Class<?>[0], new Object[0]);
+    } catch (MetaException e) {
+      LOG.error("Error loading PartitionExpressionProxy", e);
+      throw new RuntimeException("Error loading PartitionExpressionProxy: " + e.getMessage());
+    }
   }
 
   /**
@@ -1493,13 +1525,22 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
 
-  private List<Partition> convertToParts(List<MPartition> mparts)
+  private List<Partition> convertToParts(List<MPartition> mparts) throws MetaException {
+    return convertToParts(mparts, null);
+  }
+
+  private List<Partition> convertToParts(List<MPartition> src, List<Partition> dest)
       throws MetaException {
-    List<Partition> parts = new ArrayList<Partition>(mparts.size());
-    for (MPartition mp : mparts) {
-      parts.add(convertToPart(mp));
+    if (src == null) {
+      return dest;
     }
-    return parts;
+    if (dest == null) {
+      dest = new ArrayList<Partition>(src.size());
+    }
+    for (MPartition mp : src) {
+      dest.add(convertToPart(mp));
+    }
+    return dest;
   }
 
   private List<Partition> convertToParts(String dbName, String tblName, List<MPartition> mparts)
@@ -1514,32 +1555,38 @@ public class ObjectStore implements RawStore, Configurable {
   // TODO:pc implement max
   public List<String> listPartitionNames(String dbName, String tableName,
       short max) throws MetaException {
-    List<String> pns = new ArrayList<String>();
+    List<String> pns = null;
     boolean success = false;
     try {
       openTransaction();
       LOG.debug("Executing getPartitionNames");
-      dbName = dbName.toLowerCase().trim();
-      tableName = tableName.toLowerCase().trim();
-      Query q = pm.newQuery(
-          "select partitionName from org.apache.hadoop.hive.metastore.model.MPartition "
-          + "where table.database.name == t1 && table.tableName == t2 "
-          + "order by partitionName asc");
-      q.declareParameters("java.lang.String t1, java.lang.String t2");
-      q.setResult("partitionName");
-
-      if(max > 0) {
-        q.setRange(0, max);
-      }
-      Collection names = (Collection) q.execute(dbName, tableName);
-      for (Iterator i = names.iterator(); i.hasNext();) {
-        pns.add((String) i.next());
-      }
+      pns = getPartitionNamesNoTxn(dbName, tableName, max);
       success = commitTransaction();
     } finally {
       if (!success) {
         rollbackTransaction();
       }
+    }
+    return pns;
+  }
+
+  private List<String> getPartitionNamesNoTxn(String dbName, String tableName, short max) {
+    List<String> pns = new ArrayList<String>();
+    dbName = dbName.toLowerCase().trim();
+    tableName = tableName.toLowerCase().trim();
+    Query q = pm.newQuery(
+        "select partitionName from org.apache.hadoop.hive.metastore.model.MPartition "
+        + "where table.database.name == t1 && table.tableName == t2 "
+        + "order by partitionName asc");
+    q.declareParameters("java.lang.String t1, java.lang.String t2");
+    q.setResult("partitionName");
+
+    if(max > 0) {
+      q.setRange(0, max);
+    }
+    Collection names = (Collection) q.execute(dbName, tableName);
+    for (Iterator i = names.iterator(); i.hasNext();) {
+      pns.add((String) i.next());
     }
     return pns;
   }
@@ -1704,6 +1751,8 @@ public class ObjectStore implements RawStore, Configurable {
       List<String> partNames, boolean allowSql, boolean allowJdo)
           throws MetaException, NoSuchObjectException {
     assert allowSql || allowJdo;
+    dbName = dbName.toLowerCase();
+    tblName = tblName.toLowerCase();
     boolean doTrace = LOG.isDebugEnabled();
     boolean doUseDirectSql = canUseDirectSql(allowSql);
 
@@ -1723,19 +1772,224 @@ public class ObjectStore implements RawStore, Configurable {
       }
 
       if (!doUseDirectSql) {
-        results = getPartitionsViaOrm(dbName, tblName, partNames);
+        results = getPartitionsViaOrmFilter(dbName, tblName, partNames);
       }
       success = commitTransaction();
       if (doTrace) {
         LOG.debug(results.size() + " partition retrieved using " + (doUseDirectSql ? "SQL" : "ORM")
             + " in " + ((System.nanoTime() - start) / 1000000.0) + "ms");
       }
-      return results;
     } finally {
       if (!success) {
         rollbackTransaction();
       }
     }
+    return results;
+  }
+
+  @Override
+  public boolean getPartitionsByExpr(String dbName, String tblName, byte[] expr,
+      String defaultPartitionName, short maxParts, Set<Partition> result) throws TException {
+    return getPartitionsByExprInternal(
+        dbName, tblName, expr, defaultPartitionName, maxParts, result, true, true);
+  }
+
+  protected boolean getPartitionsByExprInternal(String dbName, String tblName,
+      byte[] expr, String defaultPartitionName, short maxParts, Set<Partition> result,
+      boolean allowSql, boolean allowJdo) throws TException {
+    assert allowSql || allowJdo;
+    assert result != null;
+    dbName = dbName.toLowerCase();
+    tblName = tblName.toLowerCase();
+
+    // We will try pushdown first, so make the filter. This will also validate the expression,
+    // if serialization fails we will throw incompatible metastore error to the client.
+    String filter = null;
+    try {
+      filter = expressionProxy.convertExprToFilter(expr);
+    } catch (MetaException ex) {
+      throw new IMetaStoreClient.IncompatibleMetastoreException(ex.getMessage());
+    }
+
+    // Make a tree out of the filter.
+    // TODO: this is all pretty ugly. The only reason we need all these transformations
+    //       is to maintain support for simple filters for HCat users that query metastore.
+    //       If forcing everyone to use thick client is out of the question, maybe we could
+    //       parse the filter into standard hive expressions and not all this separate tree
+    //       Filter.g stuff. That way this method and ...ByFilter would just be merged.
+    ExpressionTree exprTree = makeExpressionTree(filter);
+
+    boolean doUseDirectSql = allowSql && isDirectSqlEnabled(maxParts);
+    boolean doTrace = LOG.isDebugEnabled();
+    List<Partition> partitions = null;
+    boolean hasUnknownPartitions = false;
+    boolean success = false;
+    try {
+      long start = doTrace ? System.nanoTime() : 0;
+      openTransaction();
+      Table table = ensureGetTable(dbName, tblName);
+      if (doUseDirectSql) {
+        try {
+          if (exprTree != null) {
+            // We have some sort of expression tree, try SQL filter pushdown.
+            partitions = directSql.getPartitionsViaSqlFilter(table, exprTree, null);
+          }
+          if (partitions == null) {
+            // We couldn't do SQL filter pushdown. Get names via normal means.
+            List<String> partNames = new LinkedList<String>();
+            hasUnknownPartitions = getPartitionNamesPrunedByExprNoTxn(
+                table, expr, defaultPartitionName, maxParts, partNames);
+            partitions = directSql.getPartitionsViaSqlFilter(dbName, tblName, partNames, null);
+          }
+        } catch (Exception ex) {
+          handleDirectSqlError(allowJdo, ex);
+          doUseDirectSql = false;
+          table = ensureGetTable(dbName, tblName); // Get again, detached on rollback.
+        }
+      }
+
+      if (!doUseDirectSql) {
+        assert partitions == null;
+        if (exprTree != null) {
+          // We have some sort of expression tree, try JDOQL filter pushdown.
+          partitions = getPartitionsViaOrmFilter(table, exprTree, maxParts, false);
+        }
+        if (partitions == null) {
+          // We couldn't do JDOQL filter pushdown. Get names via normal means.
+          List<String> partNames = new ArrayList<String>();
+          hasUnknownPartitions = getPartitionNamesPrunedByExprNoTxn(
+              table, expr, defaultPartitionName, maxParts, partNames);
+          partitions = getPartitionsViaOrmFilter(dbName, tblName, partNames);
+        }
+      }
+      success = commitTransaction();
+      if (doTrace) {
+        double time = ((System.nanoTime() - start) / 1000000.0);
+        LOG.debug(partitions.size() + " partition retrieved using "
+          + (doUseDirectSql ? "SQL" : "ORM") + " in " + time + "ms");
+      }
+    } finally {
+      if (!success) {
+        rollbackTransaction();
+      }
+    }
+    result.addAll(partitions);
+    return hasUnknownPartitions;
+  }
+
+  private boolean isDirectSqlEnabled(short maxParts) {
+    // There's no portable SQL limit. It doesn't make a lot of sense w/o offset anyway.
+    return (maxParts < 0)
+        && HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL);
+  }
+
+  private class LikeChecker extends ExpressionTree.TreeVisitor {
+    private boolean hasLike;
+
+    public boolean hasLike() {
+      return hasLike;
+    }
+
+    @Override
+    protected boolean shouldStop() {
+      return hasLike;
+    }
+
+    @Override
+    protected void visit(LeafNode node) throws MetaException {
+      hasLike = hasLike || (node.operator == Operator.LIKE);
+    }
+  }
+
+  /**
+   * Makes expression tree out of expr.
+   * @param filter Filter.
+   * @return Expression tree. Null if there was an error.
+   */
+  private ExpressionTree makeExpressionTree(String filter) throws MetaException {
+    // TODO: ExprNodeDesc is an expression tree, we could just use that and be rid of Filter.g.
+    if (filter == null || filter.isEmpty()) {
+      return ExpressionTree.EMPTY_TREE;
+    }
+    LOG.debug("Filter specified is " + filter);
+    ExpressionTree tree = null;
+    try {
+      tree = getFilterParser(filter).tree;
+    } catch (MetaException ex) {
+      LOG.info("Unable to make the expression tree from expression string ["
+          + filter + "]" + ex.getMessage()); // Don't log the stack, this is normal.
+    }
+    if (tree == null) {
+      return null;
+    }
+    // We suspect that LIKE pushdown into JDO is invalid; see HIVE-5134. Check for like here.
+    LikeChecker lc = new LikeChecker();
+    tree.accept(lc);
+    return lc.hasLike() ? null : tree;
+  }
+
+  /**
+   * Gets the partition names from a table, pruned using an expression.
+   * @param table Table.
+   * @param expr Expression.
+   * @param defaultPartName Default partition name from job config, if any.
+   * @param maxParts Maximum number of partition names to return.
+   * @param result The resulting names.
+   * @return Whether the result contains any unknown partitions.
+   */
+  private boolean getPartitionNamesPrunedByExprNoTxn(Table table, byte[] expr,
+      String defaultPartName, short maxParts, List<String> result) throws MetaException {
+    result.addAll(getPartitionNamesNoTxn(
+        table.getDbName(), table.getTableName(), maxParts));
+    List<String> columnNames = new ArrayList<String>();
+    for (FieldSchema fs : table.getPartitionKeys()) {
+      columnNames.add(fs.getName());
+    }
+    if (defaultPartName == null || defaultPartName.isEmpty()) {
+      defaultPartName = HiveConf.getVar(getConf(), HiveConf.ConfVars.DEFAULTPARTITIONNAME);
+    }
+    return expressionProxy.filterPartitionsByExpr(
+        columnNames, expr, defaultPartName, result);
+  }
+
+  /**
+   * Gets partition names from the table via ORM (JDOQL) filter pushdown.
+   * @param table The table.
+   * @param tree The expression tree from which JDOQL filter will be made.
+   * @param maxParts Maximum number of partitions to return.
+   * @param isValidatedFilter Whether the filter was pre-validated for JDOQL pushdown by a client
+   *   (old hive client or non-hive one); if it was and we fail to create a filter, we will throw.
+   * @return Resulting partitions. Can be null if isValidatedFilter is false, and
+   *         there was error deriving the JDO filter.
+   */
+  private List<Partition> getPartitionsViaOrmFilter(Table table, ExpressionTree tree,
+      short maxParts, boolean isValidatedFilter) throws MetaException {
+    Map<String, Object> params = new HashMap<String, Object>();
+    String jdoFilter = makeQueryFilterString(
+        table.getDbName(), table, tree, params, isValidatedFilter);
+    if (jdoFilter == null) {
+      assert !isValidatedFilter;
+      return null;
+    }
+    Query query = pm.newQuery(MPartition.class, jdoFilter);
+    if (maxParts >= 0) {
+      // User specified a row limit, set it on the Query
+      query.setRange(0, maxParts);
+    }
+
+    String parameterDeclaration = makeParameterDeclarationStringObj(params);
+    query.declareParameters(parameterDeclaration);
+    query.setOrdering("partitionName ascending");
+
+    @SuppressWarnings("unchecked")
+    List<MPartition> mparts = (List<MPartition>) query.executeWithMap(params);
+
+    LOG.debug("Done executing query for getPartitionsViaOrmFilter");
+    pm.retrieveAll(mparts); // TODO: why is this inconsistent with what we get by names?
+    LOG.debug("Done retrieving all objects for getPartitionsViaOrmFilter");
+    List<Partition> results = convertToParts(mparts);
+    query.closeAll();
+    return results;
   }
 
   private void handleDirectSqlError(boolean allowJdo, Exception ex) throws MetaException {
@@ -1750,8 +2004,18 @@ public class ObjectStore implements RawStore, Configurable {
     openTransaction();
   }
 
-  private List<Partition> getPartitionsViaOrm(
+  /**
+   * Gets partition names from the table via ORM (JDOQL) name filter.
+   * @param dbName Database name.
+   * @param tblName Table name.
+   * @param partNames Partition names to get the objects for.
+   * @return Resulting partitions.
+   */
+  private List<Partition> getPartitionsViaOrmFilter(
       String dbName, String tblName, List<String> partNames) throws MetaException {
+    if (partNames.isEmpty()) {
+      return new ArrayList<Partition>();
+    }
     StringBuilder sb = new StringBuilder(
         "table.tableName == t1 && table.database.name == t2 && (");
     int n = 0;
@@ -1778,6 +2042,7 @@ public class ObjectStore implements RawStore, Configurable {
     query.declareParameters(parameterDeclaration);
     query.setOrdering("partitionName ascending");
 
+    @SuppressWarnings("unchecked")
     List<MPartition> mparts = (List<MPartition>) query.executeWithMap(params);
     // pm.retrieveAll(mparts); // retrieveAll is pessimistic. some fields may not be needed
     List<Partition> results = convertToParts(dbName, tblName, mparts);
@@ -1798,39 +2063,43 @@ public class ObjectStore implements RawStore, Configurable {
     assert allowSql || allowJdo;
     boolean doTrace = LOG.isDebugEnabled();
     boolean doUseDirectSql = canUseDirectSql(allowSql);
+
     dbName = dbName.toLowerCase();
     tblName = tblName.toLowerCase();
-    List<Partition> results = null;
-    FilterParser parser = null;
-    if (filter != null && filter.length() != 0) {
-      LOG.debug("Filter specified is " + filter);
-      parser = getFilterParser(filter);
-    }
+    ExpressionTree tree = (filter != null && !filter.isEmpty())
+        ? getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
 
+    List<Partition> results = null;
     boolean success = false;
     try {
       long start = doTrace ? System.nanoTime() : 0;
       openTransaction();
-      MTable mtable = ensureGetMTable(dbName, tblName);
+      Table table = ensureGetTable(dbName, tblName);
       if (doUseDirectSql) {
         try {
-          Table table = convertToTable(mtable);
           Integer max = (maxParts < 0) ? null : (int)maxParts;
-          results = directSql.getPartitionsViaSqlFilter(table, parser, max);
+          results = directSql.getPartitionsViaSqlFilter(table, tree, max);
+          if (results == null) {
+            // Cannot push down SQL filter. The message has been logged internally.
+            // This is not an error so don't roll back, just go to JDO.
+            doUseDirectSql = false;
+          }
         } catch (Exception ex) {
           handleDirectSqlError(allowJdo, ex);
           doUseDirectSql = false;
           start = doTrace ? System.nanoTime() : 0;
-          mtable = ensureGetMTable(dbName, tblName); // detached on rollback, get again
+          table = ensureGetTable(dbName, tblName); // detached on rollback, get again
         }
       }
+
       if (!doUseDirectSql) {
-        results = convertToParts(listMPartitionsByFilterNoTxn(
-            mtable, dbName, tblName, parser, maxParts));
+        results = getPartitionsViaOrmFilter(table, tree, maxParts, true);
       }
       success = commitTransaction();
-      LOG.info(results.size() + " partitions retrieved using " + (doUseDirectSql ? "SQL" : "ORM")
-          + (doTrace ? (" in " + ((System.nanoTime() - start) / 1000000.0) + "ms") : ""));
+      if (doTrace) {
+        LOG.debug(results.size() + " partition retrieved using " + (doUseDirectSql ? "SQL" : "ORM")
+            + " in " + ((System.nanoTime() - start) / 1000000.0) + "ms");
+      }
       return results;
     } finally {
       if (!success) {
@@ -1849,13 +2118,20 @@ public class ObjectStore implements RawStore, Configurable {
       && !isActiveTransaction();
   }
 
-  private MTable ensureGetMTable(String dbName, String tblName) throws NoSuchObjectException {
+  /**
+   * Gets the table object for a given table, throws if anything goes wrong.
+   * @param dbName Database name.
+   * @param tblName Table name.
+   * @return Table object.
+   */
+  private Table ensureGetTable(
+      String dbName, String tblName) throws NoSuchObjectException, MetaException {
     MTable mtable = getMTable(dbName, tblName);
     if (mtable == null) {
       throw new NoSuchObjectException("Specified database/table does not exist : "
           + dbName + "." + tblName);
     }
-    return mtable;
+    return convertToTable(mtable);
   }
 
   private FilterParser getFilterParser(String filter) throws MetaException {
@@ -1881,56 +2157,55 @@ public class ObjectStore implements RawStore, Configurable {
   }
 
   /**
-   * Makes a JDO query filter string
-   * if mtable is not null, generates the query to filter over partitions in a table.
-   * if mtable is null, generates the query to filter over tables in a database
+   * Makes a JDO query filter string.
+   * Makes a JDO query filter string for tables or partitions.
+   * @param dbName Database name.
+   * @param table Table. If null, the query returned is over tables in a database.
+   *   If not null, the query returned is over partitions in a table.
+   * @param filter The filter from which JDOQL filter will be made.
+   * @param params Parameters for the filter. Some parameters may be added here.
+   * @return Resulting filter.
    */
-  private String makeQueryFilterString(MTable mtable, String filter,
+  private String makeQueryFilterString(String dbName, MTable mtable, String filter,
       Map<String, Object> params) throws MetaException {
-    FilterParser parser =
-        (filter != null && filter.length() != 0) ? getFilterParser(filter) : null;
-    return makeQueryFilterString(mtable, parser, params);
+    ExpressionTree tree = (filter != null && !filter.isEmpty())
+        ? getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
+    return makeQueryFilterString(dbName, convertToTable(mtable), tree, params, true);
   }
 
   /**
-   * Makes a JDO query filter string
-   * if mtable is not null, generates the query to filter over partitions in a table.
-   * if mtable is null, generates the query to filter over tables in a database
+   * Makes a JDO query filter string for tables or partitions.
+   * @param dbName Database name.
+   * @param table Table. If null, the query returned is over tables in a database.
+   *   If not null, the query returned is over partitions in a table.
+   * @param tree The expression tree from which JDOQL filter will be made.
+   * @param params Parameters for the filter. Some parameters may be added here.
+   * @param isValidatedFilter Whether the filter was pre-validated for JDOQL pushdown
+   *   by the client; if it was and we fail to create a filter, we will throw.
+   * @return Resulting filter. Can be null if isValidatedFilter is false, and there was error.
    */
-  private String makeQueryFilterString(MTable mtable, FilterParser parser,
-      Map<String, Object> params)
-      throws MetaException {
-
-    StringBuilder queryBuilder = new StringBuilder();
-    if (mtable != null) {
+  private String makeQueryFilterString(String dbName, Table table, ExpressionTree tree,
+      Map<String, Object> params, boolean isValidatedFilter) throws MetaException {
+    assert tree != null;
+    FilterBuilder queryBuilder = new FilterBuilder(isValidatedFilter);
+    if (table != null) {
       queryBuilder.append("table.tableName == t1 && table.database.name == t2");
+      params.put("t1", table.getTableName());
+      params.put("t2", table.getDbName());
     } else {
       queryBuilder.append("database.name == dbName");
+      params.put("dbName", dbName);
     }
 
-    if (parser != null) {
-      String jdoFilter;
-      if (mtable != null) {
-        Table table = convertToTable(mtable);
-        jdoFilter = parser.tree.generateJDOFilter(table, params);
-      } else {
-        jdoFilter = parser.tree.generateJDOFilter(null, params);
-      }
-      LOG.debug("jdoFilter = " + jdoFilter);
-
-      if( jdoFilter.trim().length() > 0 ) {
-        queryBuilder.append(" && ( ");
-        queryBuilder.append(jdoFilter.trim());
-        queryBuilder.append(" )");
-      }
+    tree.generateJDOFilterFragment(table, params, queryBuilder);
+    if (queryBuilder.hasError()) {
+      assert !isValidatedFilter;
+      LOG.info("JDO filter pushdown cannot be used: " + queryBuilder.getErrorMessage());
+      return null;
     }
-    return queryBuilder.toString();
-  }
-
-  private String makeTableQueryFilterString(String filter,
-      Map<String, Object> params)
-      throws MetaException {
-    return makeQueryFilterString(null, filter, params);
+    String jdoFilter = queryBuilder.getFilter();
+    LOG.debug("jdoFilter = " + jdoFilter);
+    return jdoFilter;
   }
 
   private String makeParameterDeclarationString(Map<String, String> params) {
@@ -1954,38 +2229,6 @@ public class ObjectStore implements RawStore, Configurable {
     return paramDecl.toString();
   }
 
-  private List<MPartition> listMPartitionsByFilterNoTxn(MTable mtable, String dbName,
-      String tableName, FilterParser parser, short maxParts)
-          throws MetaException, NoSuchObjectException {
-    List<MPartition> mparts = null;
-    LOG.debug("Executing listMPartitionsByFilterNoTxn");
-    Map<String, Object> params = new HashMap<String, Object>();
-    String queryFilterString = makeQueryFilterString(mtable, parser, params);
-
-    Query query = pm.newQuery(MPartition.class,
-        queryFilterString);
-
-    if( maxParts >= 0 ) {
-      //User specified a row limit, set it on the Query
-      query.setRange(0, maxParts);
-    }
-
-    LOG.debug("JDOQL filter is " + queryFilterString);
-
-    params.put("t1", tableName.trim());
-    params.put("t2", dbName.trim());
-
-    String parameterDeclaration = makeParameterDeclarationStringObj(params);
-    query.declareParameters(parameterDeclaration);
-    query.setOrdering("partitionName ascending");
-
-    mparts = (List<MPartition>) query.executeWithMap(params);
-
-    LOG.debug("Done executing query for listMPartitionsByFilterNoTxn");
-    pm.retrieveAll(mparts);
-    return mparts;
-  }
-
   @Override
   public List<String> listTableNamesByFilter(String dbName, String filter, short maxTables)
       throws MetaException {
@@ -1996,7 +2239,7 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("Executing listTableNamesByFilter");
       dbName = dbName.toLowerCase().trim();
       Map<String, Object> params = new HashMap<String, Object>();
-      String queryFilterString = makeTableQueryFilterString(filter, params);
+      String queryFilterString = makeQueryFilterString(dbName, null, filter, params);
       Query query = pm.newQuery(MTable.class);
       query.declareImports("import java.lang.String");
       query.setResult("tableName");
@@ -2005,7 +2248,6 @@ public class ObjectStore implements RawStore, Configurable {
         query.setRange(0, maxTables);
       }
       LOG.debug("filter specified is " + filter + "," + " JDOQL filter is " + queryFilterString);
-      params.put("dbName", dbName);
       for (Entry<String, Object> entry : params.entrySet()) {
         LOG.debug("key: " + entry.getKey() + " value: " + entry.getValue() +
             " class: " + entry.getValue().getClass().getName());
@@ -2050,7 +2292,7 @@ public class ObjectStore implements RawStore, Configurable {
         return partNames;
       }
       Map<String, Object> params = new HashMap<String, Object>();
-      String queryFilterString = makeQueryFilterString(mtable, filter, params);
+      String queryFilterString = makeQueryFilterString(dbName, mtable, filter, params);
       Query query = pm.newQuery(
           "select partitionName from org.apache.hadoop.hive.metastore.model.MPartition "
           + "where " + queryFilterString);
@@ -2063,9 +2305,6 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("Filter specified is " + filter + "," +
           " JDOQL filter is " + queryFilterString);
       LOG.debug("Parms is " + params);
-
-      params.put("t1", tableName.trim());
-      params.put("t2", dbName.trim());
 
       String parameterDeclaration = makeParameterDeclarationStringObj(params);
       query.declareParameters(parameterDeclaration);

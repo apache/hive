@@ -43,7 +43,7 @@ import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
-import org.apache.hadoop.hive.metastore.parser.FilterParser;
+import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LeafNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LogicalOperator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
@@ -78,6 +78,9 @@ class MetaStoreDirectSql {
    */
   public List<Partition> getPartitionsViaSqlFilter(
       String dbName, String tblName, List<String> partNames, Integer max) throws MetaException {
+    if (partNames.isEmpty()) {
+      return new ArrayList<Partition>();
+    }
     String list = repeat(",?", partNames.size()).substring(1);
     return getPartitionsViaSqlFilterInternal(dbName, tblName, null,
         "and PARTITIONS.PART_NAME in (" + list + ")", partNames, new ArrayList<String>(), max);
@@ -86,15 +89,18 @@ class MetaStoreDirectSql {
   /**
    * Gets partitions by using direct SQL queries.
    * @param table The table.
-   * @param parser The parsed filter from which the SQL filter will be generated.
+   * @param tree The expression tree from which the SQL filter will be derived.
    * @param max The maximum number of partitions to return.
-   * @return List of partitions.
+   * @return List of partitions. Null if SQL filter cannot be derived.
    */
   public List<Partition> getPartitionsViaSqlFilter(
-      Table table, FilterParser parser, Integer max) throws MetaException {
+      Table table, ExpressionTree tree, Integer max) throws MetaException {
+    assert tree != null;
     List<String> params = new ArrayList<String>(), joins = new ArrayList<String>();
-    String sqlFilter = (parser == null) ? null
-        : PartitionFilterGenerator.generateSqlFilter(table, parser.tree, params, joins);
+    String sqlFilter = PartitionFilterGenerator.generateSqlFilter(table, tree, params, joins);
+    if (sqlFilter == null) {
+      return null; // Cannot make SQL filter to push down.
+    }
     return getPartitionsViaSqlFilterInternal(table.getDbName(), table.getTableName(),
         isViewTable(table), sqlFilter, params, joins, max);
   }
@@ -135,12 +141,12 @@ class MetaStoreDirectSql {
    * @param tblName Metastore table name.
    * @param isView Whether table is a view. Can be passed as null if not immediately
    *               known, then this method will get it only if necessary.
-   * @param sqlFilter SQL filter to use. Better be SQL92-compliant. Can be null.
+   * @param sqlFilter SQL filter to use. Better be SQL92-compliant.
    * @param paramsForFilter params for ?-s in SQL filter text. Params must be in order.
    * @param joinsForFilter if the filter needs additional join statement, they must be in
    *                       this list. Better be SQL92-compliant.
    * @param max The maximum number of partitions to return.
-   * @return List of partition objects. FieldSchema is currently not populated.
+   * @return List of partition objects.
    */
   private List<Partition> getPartitionsViaSqlFilterInternal(String dbName, String tblName,
       Boolean isView, String sqlFilter, List<String> paramsForFilter,
@@ -163,8 +169,8 @@ class MetaStoreDirectSql {
         "select PARTITIONS.PART_ID from PARTITIONS"
       + "  inner join TBLS on PARTITIONS.TBL_ID = TBLS.TBL_ID "
       + "  inner join DBS on TBLS.DB_ID = DBS.DB_ID "
-      + join(joinsForFilter, ' ') + " where TBLS.TBL_NAME = ? and DBS.NAME = ?"
-      + ((sqlFilter == null) ? "" : " " + sqlFilter) + orderForFilter;
+      + join(joinsForFilter, ' ') + " where TBLS.TBL_NAME = ? and DBS.NAME = ? "
+      + (sqlFilter == null ? "" : sqlFilter) + orderForFilter;
     Object[] params = new Object[paramsForFilter.size() + 2];
     params[0] = tblName;
     params[1] = dbName;
@@ -539,17 +545,18 @@ class MetaStoreDirectSql {
     return rv;
   }
 
-  private static class PartitionFilterGenerator implements TreeVisitor {
+  private static class PartitionFilterGenerator extends TreeVisitor {
     private final Table table;
-    private final StringBuilder filterBuffer;
+    private final FilterBuilder filterBuffer;
     private final List<String> params;
     private final List<String> joins;
 
-    private PartitionFilterGenerator(Table table, List<String> params, List<String> joins) {
+    private PartitionFilterGenerator(
+        Table table, List<String> params, List<String> joins) {
       this.table = table;
       this.params = params;
       this.joins = joins;
-      this.filterBuffer = new StringBuilder();
+      this.filterBuffer = new FilterBuilder(false);
     }
 
     /**
@@ -566,37 +573,53 @@ class MetaStoreDirectSql {
         return "";
       }
       PartitionFilterGenerator visitor = new PartitionFilterGenerator(table, params, joins);
-      tree.getRoot().accept(visitor);
+      tree.accept(visitor);
+      if (visitor.filterBuffer.hasError()) {
+        LOG.info("Unable to push down SQL filter: " + visitor.filterBuffer.getErrorMessage());
+        return null;
+      }
+
       // Some joins might be null (see processNode for LeafNode), clean them up.
       for (int i = 0; i < joins.size(); ++i) {
         if (joins.get(i) != null) continue;
         joins.remove(i--);
       }
-      return "and (" + visitor.filterBuffer.toString() + ")";
+      return "and (" + visitor.filterBuffer.getFilter() + ")";
     }
 
     @Override
-    public void visit(TreeNode node) throws MetaException {
-      assert node != null && node.getLhs() != null && node.getRhs() != null;
-      filterBuffer.append (" (");
-      node.getLhs().accept(this);
+    protected void beginTreeNode(TreeNode node) throws MetaException {
+      filterBuffer.append(" (");
+    }
+
+    @Override
+    protected void midTreeNode(TreeNode node) throws MetaException {
       filterBuffer.append((node.getAndOr() == LogicalOperator.AND) ? " and " : " or ");
-      node.getRhs().accept(this);
-      filterBuffer.append (") ");
+    }
+
+    @Override
+    protected void endTreeNode(TreeNode node) throws MetaException {
+      filterBuffer.append(") ");
+    }
+
+    @Override
+    protected boolean shouldStop() {
+      return filterBuffer.hasError();
     }
 
     @Override
     public void visit(LeafNode node) throws MetaException {
       if (node.operator == Operator.LIKE) {
-        // ANSI92 supports || for concatenation (we need to concat '%'-s to the parameter),
-        // but it doesn't work on all RDBMSes, e.g. on MySQL by default. So don't use it for now.
-        throw new MetaException("LIKE is not supported for SQL filter pushdown");
+        filterBuffer.setError("LIKE is not supported for SQL filter pushdown");
+        return;
       }
       int partColCount = table.getPartitionKeys().size();
-      int partColIndex = node.getPartColIndexForFilter(table);
+      int partColIndex = node.getPartColIndexForFilter(table, filterBuffer);
+      if (filterBuffer.hasError()) return;
 
-      String valueAsString = node.getFilterPushdownParam(table, partColIndex);
       // Add parameters linearly; we are traversing leaf nodes LTR, so they would match correctly.
+      String valueAsString = node.getFilterPushdownParam(table, partColIndex, filterBuffer);
+      if (filterBuffer.hasError()) return;
       params.add(valueAsString);
 
       if (joins.isEmpty()) {

@@ -81,9 +81,6 @@
           </void> 
           <void property="table"> 
            <object id="TableDesc0" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-            <void property="deserializerClass"> 
-             <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
-            </void> 
             <void property="inputFileFormatClass"> 
              <class>org.apache.hadoop.mapred.TextInputFormat</class> 
             </void> 
@@ -138,9 +135,6 @@
               </void> 
              </object> 
             </void> 
-            <void property="serdeClassName"> 
-             <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
-            </void> 
            </object> 
           </void> 
           <void property="tmpDir"> 
@@ -167,9 +161,6 @@
       <void method="put"> 
        <string>tmap:src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
-        <void property="deserializerClass"> 
-         <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
-        </void> 
         <void property="inputFileFormatClass"> 
          <class>org.apache.hadoop.mapred.TextInputFormat</class> 
         </void> 
@@ -223,14 +214,8 @@
           </void> 
          </object> 
         </void> 
-        <void property="serdeClassName"> 
-         <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
-        </void> 
         <void property="tableDesc"> 
          <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-          <void property="deserializerClass"> 
-           <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
-          </void> 
           <void property="inputFileFormatClass"> 
            <class>org.apache.hadoop.mapred.TextInputFormat</class> 
           </void> 
@@ -304,9 +289,6 @@
              #### A masked pattern was here #### 
             </void> 
            </object> 
-          </void> 
-          <void property="serdeClassName"> 
-           <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
           </void> 
          </object> 
         </void> 
@@ -384,9 +366,6 @@
                           </void> 
                           <void property="keySerializeInfo"> 
                            <object id="TableDesc1" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-                            <void property="deserializerClass"> 
-                             <class>org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe</class> 
-                            </void> 
                             <void property="inputFileFormatClass"> 
                              <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
                             </void> 
@@ -398,6 +377,10 @@
                               <void method="put"> 
                                <string>columns</string> 
                                <string>reducesinkkey0</string> 
+                              </void> 
+                              <void method="put"> 
+                               <string>serialization.lib</string> 
+                               <string>org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe</string> 
                               </void> 
                               <void method="put"> 
                                <string>serialization.sort.order</string> 
@@ -463,9 +446,6 @@
                           </void> 
                           <void property="valueSerializeInfo"> 
                            <object id="TableDesc2" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-                            <void property="deserializerClass"> 
-                             <class>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</class> 
-                            </void> 
                             <void property="inputFileFormatClass"> 
                              <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
                             </void> 
@@ -477,6 +457,10 @@
                               <void method="put"> 
                                <string>columns</string> 
                                <string>_col0,_col1</string> 
+                              </void> 
+                              <void method="put"> 
+                               <string>serialization.lib</string> 
+                               <string>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</string> 
                               </void> 
                               <void method="put"> 
                                <string>columns.types</string> 
@@ -654,9 +638,6 @@
                   </void> 
                   <void property="scriptErrInfo"> 
                    <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-                    <void property="deserializerClass"> 
-                     <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
-                    </void> 
                     <void property="inputFileFormatClass"> 
                      <class>org.apache.hadoop.mapred.TextInputFormat</class> 
                     </void> 
@@ -674,6 +655,10 @@
                        <string>KEY</string> 
                       </void> 
                       <void method="put"> 
+                       <string>serialization.lib</string> 
+                       <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
+                      </void> 
+                      <void method="put"> 
                        <string>serialization.format</string> 
                        <string>9</string> 
                       </void> 
@@ -683,9 +668,6 @@
                   </void> 
                   <void property="scriptInputInfo"> 
                    <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-                    <void property="deserializerClass"> 
-                     <class>org.apache.hadoop.hive.serde2.DelimitedJSONSerDe</class> 
-                    </void> 
                     <void property="inputFileFormatClass"> 
                      <class>org.apache.hadoop.mapred.TextInputFormat</class> 
                     </void> 
@@ -701,6 +683,10 @@
                       <void method="put"> 
                        <string>columns</string> 
                        <string>_col0,_col1</string> 
+                      </void> 
+                      <void method="put"> 
+                       <string>serialization.lib</string> 
+                       <string>org.apache.hadoop.hive.serde2.DelimitedJSONSerDe</string> 
                       </void> 
                       <void method="put"> 
                        <string>serialization.format</string> 
@@ -716,9 +702,6 @@
                   </void> 
                   <void property="scriptOutputInfo"> 
                    <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-                    <void property="deserializerClass"> 
-                     <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
-                    </void> 
                     <void property="inputFileFormatClass"> 
                      <class>org.apache.hadoop.mapred.TextInputFormat</class> 
                     </void> 
@@ -734,6 +717,10 @@
                       <void method="put"> 
                        <string>columns</string> 
                        <string>_col0,_col1</string> 
+                      </void> 
+                      <void method="put"> 
+                       <string>serialization.lib</string> 
+                       <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
                       </void> 
                       <void method="put"> 
                        <string>serialization.format</string> 
@@ -1060,9 +1047,6 @@
         <void property="baseFileName"> 
          <string>src</string> 
         </void> 
-        <void property="deserializerClass"> 
-         <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
-        </void> 
         <void property="inputFileFormatClass"> 
          <class>org.apache.hadoop.mapred.TextInputFormat</class> 
         </void> 
@@ -1140,14 +1124,8 @@
           </void> 
          </object> 
         </void> 
-        <void property="serdeClassName"> 
-         <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
-        </void> 
         <void property="tableDesc"> 
          <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-          <void property="deserializerClass"> 
-           <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
-          </void> 
           <void property="inputFileFormatClass"> 
            <class>org.apache.hadoop.mapred.TextInputFormat</class> 
           </void> 
@@ -1221,9 +1199,6 @@
              #### A masked pattern was here #### 
             </void> 
            </object> 
-          </void> 
-          <void property="serdeClassName"> 
-           <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
           </void> 
          </object> 
         </void> 
