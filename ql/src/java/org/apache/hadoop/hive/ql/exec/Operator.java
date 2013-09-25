@@ -613,6 +613,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
         op.close(abort);
       }
 
+      out = null;
+
       LOG.info(id + " Close done");
     } catch (HiveException e) {
       e.printStackTrace();
