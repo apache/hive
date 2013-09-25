@@ -49,6 +49,7 @@ import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
@@ -80,6 +81,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.session.CreateTableAutomaticGrant;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -1899,13 +1901,43 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getMSC().listPartitionsByFilter(
         tbl.getDbName(), tbl.getTableName(), filter, (short)-1);
-    List<Partition> results = new ArrayList<Partition>(tParts.size());
+    return convertFromMetastore(tbl, tParts, null);
+  }
 
-    for (org.apache.hadoop.hive.metastore.api.Partition tPart: tParts) {
-      Partition part = new Partition(tbl, tPart);
-      results.add(part);
+  private static List<Partition> convertFromMetastore(Table tbl,
+      List<org.apache.hadoop.hive.metastore.api.Partition> src,
+      List<Partition> dest) throws HiveException {
+    if (src == null) {
+      return dest;
     }
-    return results;
+    if (dest == null) {
+      dest = new ArrayList<Partition>(src.size());
+    }
+    for (org.apache.hadoop.hive.metastore.api.Partition tPart : src) {
+      dest.add(new Partition(tbl, tPart));
+    }
+    return dest;
+  }
+
+  /**
+   * Get a list of Partitions by expr.
+   * @param tbl The table containing the partitions.
+   * @param expr A serialized expression for partition predicates.
+   * @param conf Hive config.
+   * @param result the resulting list of partitions
+   * @return whether the resulting list contains partitions which may or may not match the expr
+   */
+  public boolean getPartitionsByExpr(Table tbl, ExprNodeDesc expr, HiveConf conf,
+      List<Partition> result) throws HiveException, TException {
+    assert result != null;
+    byte[] exprBytes = Utilities.serializeExpressionToKryo(expr);
+    String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
+    List<org.apache.hadoop.hive.metastore.api.Partition> msParts =
+        new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>();
+    boolean hasUnknownParts = getMSC().listPartitionsByExpr(tbl.getDbName(),
+        tbl.getTableName(), exprBytes, defaultPartitionName, (short)-1, msParts);
+    convertFromMetastore(tbl, msParts, result);
+    return hasUnknownParts;
   }
 
   public void validatePartitionNameCharacters(List<String> partVals) throws HiveException {

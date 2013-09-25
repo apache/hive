@@ -271,6 +271,21 @@ struct EnvironmentContext {
   1: map<string, string> properties
 }
 
+// Return type for get_partitions_by_expr
+struct PartitionsByExprResult {
+  1: required set<Partition> partitions,
+  // Whether the results has any (currently, all) partitions which may or may not match
+  2: required bool hasUnknownPartitions
+}
+
+struct PartitionsByExprRequest {
+  1: required string dbName,
+  2: required string tblName,
+  3: required binary expr,
+  4: optional string defaultPartitionName,
+  5: optional i16 maxParts=-1
+}
+
 exception MetaException {
   1: string message
 }
@@ -490,6 +505,12 @@ service ThriftHiveMetastore extends fb303.FacebookService
   // get the partitions matching the given partition filter
   list<Partition> get_partitions_by_filter(1:string db_name 2:string tbl_name
     3:string filter, 4:i16 max_parts=-1)
+                       throws(1:MetaException o1, 2:NoSuchObjectException o2)
+
+  // get the partitions matching the given partition filter
+  // unlike get_partitions_by_filter, takes serialized hive expression, and with that can work
+  // with any filter (get_partitions_by_filter only works if the filter can be pushed down to JDOQL.
+  PartitionsByExprResult get_partitions_by_expr(1:PartitionsByExprRequest req)
                        throws(1:MetaException o1, 2:NoSuchObjectException o2)
 
   // get partitions give a list of partition names
