@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.apache.hcatalog.hbase;
+package org.apache.hive.hcatalog.hbase;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -176,7 +176,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
     assertEquals("key",fields.get(0).alias.toLowerCase());
 
     assertEquals( DataType.CHARARRAY,fields.get(1).type);
-    assertEquals("testQualifier1".toLowerCase(), fields.get(1).alias.toLowerCase()); 
+    assertEquals("testQualifier1".toLowerCase(), fields.get(1).alias.toLowerCase());
 
     assertEquals( DataType.INTEGER,fields.get(2).type);
     assertEquals("testQualifier2".toLowerCase(), fields.get(2).alias.toLowerCase());
@@ -266,7 +266,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
     String tableQuery = "CREATE TABLE " + databaseName + "." + tableName
         + "(key int, testqualifier1 float, testqualifier2 string) STORED BY " +
         "'org.apache.hadoop.hive.hbase.HBaseStorageHandler'"
-        + " WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,testFamily:testQualifier1,testFamily:testQualifier2')" 
+        + " WITH SERDEPROPERTIES ('hbase.columns.mapping'=':key,testFamily:testQualifier1,testFamily:testQualifier2')"
         + " TBLPROPERTIES ('hbase.table.default.storage.type'='binary')";
 
 
@@ -305,10 +305,10 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
     assertEquals("key",fields.get(0).alias.toLowerCase());
 
     assertEquals( DataType.FLOAT,fields.get(1).type);
-    assertEquals("testQualifier1".toLowerCase(), fields.get(1).alias.toLowerCase());	    
+    assertEquals("testQualifier1".toLowerCase(), fields.get(1).alias.toLowerCase());
 
     assertEquals( DataType.CHARARRAY,fields.get(2).type);
-    assertEquals("testQualifier2".toLowerCase(), fields.get(2).alias.toLowerCase());	    
+    assertEquals("testQualifier2".toLowerCase(), fields.get(2).alias.toLowerCase());
 
     //Query the hbase table and check the key is valid and only 5  are present
     Configuration conf = new Configuration(getHbaseConf());

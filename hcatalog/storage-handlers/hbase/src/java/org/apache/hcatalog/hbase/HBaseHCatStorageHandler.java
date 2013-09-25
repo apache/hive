@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.serde2.SerDe;
@@ -55,18 +54,19 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.hive.hcatalog.common.HCatConstants;
-import org.apache.hive.hcatalog.common.HCatUtil;
-import org.apache.hive.hcatalog.data.schema.HCatSchema;
+import org.apache.hcatalog.common.HCatConstants;
+import org.apache.hcatalog.common.HCatUtil;
+import org.apache.hcatalog.data.schema.HCatSchema;
+import org.apache.hcatalog.mapreduce.HCatStorageHandler;
 import org.apache.hcatalog.hbase.HBaseBulkOutputFormat.HBaseBulkOutputCommitter;
 import org.apache.hcatalog.hbase.HBaseDirectOutputFormat.HBaseDirectOutputCommitter;
 import org.apache.hcatalog.hbase.snapshot.RevisionManager;
 import org.apache.hcatalog.hbase.snapshot.RevisionManagerConfiguration;
 import org.apache.hcatalog.hbase.snapshot.Transaction;
-import org.apache.hive.hcatalog.mapreduce.HCatOutputFormat;
-import org.apache.hive.hcatalog.mapreduce.HCatTableInfo;
-import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
-import org.apache.hive.hcatalog.mapreduce.OutputJobInfo;
+import org.apache.hcatalog.mapreduce.HCatOutputFormat;
+import org.apache.hcatalog.mapreduce.HCatTableInfo;
+import org.apache.hcatalog.mapreduce.InputJobInfo;
+import org.apache.hcatalog.mapreduce.OutputJobInfo;
 import org.apache.thrift.TBase;
 import org.apache.zookeeper.ZooKeeper;
 
@@ -77,8 +77,13 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  * This class HBaseHCatStorageHandler provides functionality to create HBase
  * tables through HCatalog. The implementation is very similar to the
  * HiveHBaseStorageHandler, with more details to suit HCatalog.
+ *
+ * Note : As of 0.12, this class is considered deprecated and a candidate for future removal
+ * All new code must use the Hive HBaseStorageHandler instead
+ *
+ * @deprecated Use/modify {@link org.apache.hadoop.hive.hbase.HBaseStorageHandler} instead
  */
-public class HBaseHCatStorageHandler extends  DefaultStorageHandler implements HiveMetaHook, Configurable {
+public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveMetaHook, Configurable {
 
   public final static String DEFAULT_PREFIX = "default.";
   private final static String PROPERTY_INT_OUTPUT_LOCATION = "hcat.hbase.mapreduce.intermediateOutputLocation";
@@ -448,6 +453,7 @@ public class HBaseHCatStorageHandler extends  DefaultStorageHandler implements H
     return HBaseInputFormat.class;
   }
 
+  @Deprecated
   @Override
   public Class<? extends OutputFormat> getOutputFormatClass() {
     return HBaseBaseOutputFormat.class;
@@ -468,8 +474,15 @@ public class HBaseHCatStorageHandler extends  DefaultStorageHandler implements H
     return HBaseSerDe.class;
   }
 
+  @Deprecated
   public Configuration getJobConf() {
     return jobConf;
+  }
+
+  @Deprecated
+  @Override
+  public void configureJobConf(TableDesc tableDesc, JobConf jobConf) {
+    // do nothing
   }
 
   @Deprecated
