@@ -28,8 +28,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +60,8 @@ import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.PartitionEventType;
+import org.apache.hadoop.hive.metastore.api.PartitionsByExprRequest;
+import org.apache.hadoop.hive.metastore.api.PartitionsByExprResult;
 import org.apache.hadoop.hive.metastore.api.PrincipalPrivilegeSet;
 import org.apache.hadoop.hive.metastore.api.PrincipalType;
 import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
@@ -73,6 +77,7 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.StringUtils;
+import org.apache.thrift.TApplicationException;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TFramedTransport;
@@ -797,6 +802,37 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
         client.get_partitions_by_filter(db_name, tbl_name, filter, max_parts));
   }
 
+  @Override
+  public boolean listPartitionsByExpr(String db_name, String tbl_name, byte[] expr,
+      String default_partition_name, short max_parts, List<Partition> result)
+          throws TException {
+    assert result != null;
+    PartitionsByExprRequest req = new PartitionsByExprRequest(
+        db_name, tbl_name, ByteBuffer.wrap(expr));
+    if (default_partition_name != null) {
+      req.setDefaultPartitionName(default_partition_name);
+    }
+    if (max_parts >= 0) {
+      req.setMaxParts(max_parts);
+    }
+    PartitionsByExprResult r = null;
+    try {
+      r = client.get_partitions_by_expr(req);
+    } catch (TApplicationException te) {
+      // TODO: backward compat for Hive <= 0.12. Can be removed later.
+      if (te.getType() != TApplicationException.UNKNOWN_METHOD
+          && te.getType() != TApplicationException.WRONG_METHOD_NAME) {
+        throw te;
+      }
+      throw new IncompatibleMetastoreException(
+          "Metastore doesn't support listPartitionsByExpr: " + te.getMessage());
+    }
+    // TODO: in these methods, do we really need to deepcopy?
+    deepCopyPartitions(r.getPartitions(), result);
+    return !r.isSetHasUnknownPartitions() || r.isHasUnknownPartitions(); // Assume the worst.
+  }
+
+
   /**
    * @param name
    * @return the database
@@ -1204,14 +1240,21 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
   }
 
   private List<Partition> deepCopyPartitions(List<Partition> partitions) {
-    List<Partition> copy = null;
-    if (partitions != null) {
-      copy = new ArrayList<Partition>();
-      for (Partition part : partitions) {
-        copy.add(deepCopy(part));
-      }
+    return deepCopyPartitions(partitions, null);
+  }
+
+  private List<Partition> deepCopyPartitions(
+      Collection<Partition> src, List<Partition> dest) {
+    if (src == null) {
+      return dest;
     }
-    return copy;
+    if (dest == null) {
+      dest = new ArrayList<Partition>(src.size());
+    }
+    for (Partition part : src) {
+      dest.add(deepCopy(part));
+    }
+    return dest;
   }
 
   private List<Table> deepCopyTables(List<Table> tables) {
@@ -1398,5 +1441,4 @@ public class HiveMetaStoreClient implements IMetaStoreClient {
     assert partKVs != null;
     return client.isPartitionMarkedForEvent(db_name, tbl_name, partKVs, eventType);
   }
-
 }

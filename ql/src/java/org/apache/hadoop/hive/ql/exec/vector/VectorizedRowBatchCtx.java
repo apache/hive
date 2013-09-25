@@ -124,28 +124,17 @@ public class VectorizedRowBatchCtx {
     PartitionDesc part = HiveFileFormatUtils
         .getPartitionDescFromPathRecursively(pathToPartitionInfo,
             split.getPath(), IOPrepareCache.get().getPartitionDescMap());
-    Class serdeclass = part.getDeserializerClass();
 
     String partitionPath = split.getPath().getParent().toString();
     columnTypeMap = Utilities
         .getMapRedWork(hiveConf).getMapWork().getScratchColumnVectorTypes()
         .get(partitionPath);
 
-    if (serdeclass == null) {
-      String className = part.getSerdeClassName();
-      if ((className == null) || (className.isEmpty())) {
-        throw new HiveException(
-            "SerDe class or the SerDe class name is not set for table: "
-                + part.getProperties().getProperty("name"));
-      }
-      serdeclass = hiveConf.getClassByName(className);
-    }
-
     Properties partProps =
         (part.getPartSpec() == null || part.getPartSpec().isEmpty()) ?
             part.getTableDesc().getProperties() : part.getProperties();
 
-    Deserializer partDeserializer = (Deserializer) serdeclass.newInstance();
+    Deserializer partDeserializer = part.getDeserializer();
     partDeserializer.initialize(hiveConf, partProps);
     StructObjectInspector partRawRowObjectInspector = (StructObjectInspector) partDeserializer
         .getObjectInspector();

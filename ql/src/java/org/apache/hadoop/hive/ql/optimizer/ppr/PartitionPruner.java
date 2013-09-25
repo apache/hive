@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.ObjectPair;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -241,6 +242,19 @@ public class PartitionPruner implements Transform {
     return expr;
   }
 
+  /**
+   * @param expr Expression.
+   * @return True iff expr contains any non-native user-defined functions.
+   */
+  static private boolean hasUserFunctions(ExprNodeDesc expr) {
+    if (!(expr instanceof ExprNodeGenericFuncDesc)) return false;
+    if (!FunctionRegistry.isNativeFuncExpr((ExprNodeGenericFuncDesc)expr)) return true;
+    for (ExprNodeDesc child : expr.getChildren()) {
+      if (hasUserFunctions(child)) return true;
+    }
+    return false;
+  }
+
   private static PrunedPartitionList getPartitionsFromServer(Table tab,
       ExprNodeDesc prunerExpr, HiveConf conf, String alias) throws HiveException {
     try {
@@ -258,36 +272,55 @@ public class PartitionPruner implements Transform {
       }
 
       if (prunerExpr == null) {
-        // This can happen when hive.mapred.mode=nonstrict and there is no predicates at all.
+        // Non-strict mode, and there is no predicates at all - get everything.
         return new PrunedPartitionList(tab, Hive.get().getAllPartitionsForPruner(tab), false);
       }
 
-      // Remove virtual columns. See javadoc for details.
+      // Replace virtual columns with nulls. See javadoc for details.
       prunerExpr = removeNonPartCols(prunerExpr, extractPartColNames(tab));
-      // Remove all unknown parts e.g. non-partition columns. See javadoc for details.
+      // Remove all parts that are not partition columns. See javadoc for details.
       ExprNodeDesc compactExpr = compactExpr(prunerExpr.clone());
       String oldFilter = prunerExpr.getExprString();
       if (compactExpr == null) {
-        // This could happen when hive.mapred.mode=nonstrict and all the predicates
-        // are on non-partition columns.
+        // Non-strict mode, and all the predicates are on non-partition columns - get everything.
         LOG.debug("Filter " + oldFilter + " was null after compacting");
         return new PrunedPartitionList(tab, Hive.get().getAllPartitionsForPruner(tab), true);
       }
 
-      Set<Partition> partitions = new LinkedHashSet<Partition>();
+      LOG.debug("Filter w/ compacting: " + compactExpr.getExprString()
+        + "; filter w/o compacting: " + oldFilter);
+
+      // Finally, check the filter for non-built-in UDFs. If these are present, we cannot
+      // do filtering on the server, and have to fall back to client path.
+      boolean doEvalClientSide = hasUserFunctions(compactExpr);
+
+      // Now filter.
+      List<Partition> partitions = new ArrayList<Partition>();
       boolean hasUnknownPartitions = false;
-      String message = Utilities.checkJDOPushDown(tab, compactExpr, null);
-      if (message != null) {
-        LOG.info(ErrorMsg.INVALID_JDO_FILTER_EXPRESSION.getMsg("by condition '"
-            + message + "'"));
-        hasUnknownPartitions = pruneBySequentialScan(tab, partitions, prunerExpr, conf);
-      } else {
-        String filter = compactExpr.getExprString();
-        LOG.debug("Filter w/ compacting: " + filter +"; filter w/o compacting: " + oldFilter);
-        hasUnknownPartitions = !filter.equals(oldFilter);
-        partitions.addAll(Hive.get().getPartitionsByFilter(tab, filter));
+      PerfLogger perfLogger = PerfLogger.getPerfLogger();
+      if (!doEvalClientSide) {
+        perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
+        try {
+          hasUnknownPartitions = Hive.get().getPartitionsByExpr(
+              tab, compactExpr, conf, partitions);
+        } catch (IMetaStoreClient.IncompatibleMetastoreException ime) {
+          // TODO: backward compat for Hive <= 0.12. Can be removed later.
+          LOG.warn("Metastore doesn't support getPartitionsByExpr", ime);
+          doEvalClientSide = true;
+        } finally {
+          perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
+        }
       }
-      return new PrunedPartitionList(tab, partitions, hasUnknownPartitions);
+      if (doEvalClientSide) {
+        // Either we have user functions, or metastore is old version - filter names locally.
+        hasUnknownPartitions = pruneBySequentialScan(tab, partitions, compactExpr, conf);
+      }
+      // The partitions are "unknown" if the call says so due to the expression
+      // evaluator returning null for a partition, or if we sent a partial expression to
+      // metastore and so some partitions may have no data based on other filters.
+      boolean isPruningByExactFilter = oldFilter.equals(compactExpr.getExprString());
+      return new PrunedPartitionList(tab, new LinkedHashSet<Partition>(partitions),
+          hasUnknownPartitions || !isPruningByExactFilter);
     } catch (HiveException e) {
       throw e;
     } catch (Exception e) {
@@ -297,15 +330,15 @@ public class PartitionPruner implements Transform {
 
   /**
    * Pruning partition by getting the partition names first and pruning using Hive expression
-   * evaluator.
+   * evaluator on client.
    * @param tab the table containing the partitions.
    * @param partitions the resulting partitions.
    * @param prunerExpr the SQL predicate that involves partition columns.
    * @param conf Hive Configuration object, can not be NULL.
    * @return true iff the partition pruning expression contains non-partition columns.
    */
-  static private boolean pruneBySequentialScan(Table tab, Set<Partition> partitions,
-      ExprNodeDesc prunerExpr, HiveConf conf) throws Exception {
+  static private boolean pruneBySequentialScan(Table tab, List<Partition> partitions,
+      ExprNodeDesc prunerExpr, HiveConf conf) throws HiveException, MetaException {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PRUNE_LISTING);
 

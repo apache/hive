@@ -1915,10 +1915,9 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     String[] colTypes = schema.split("#");
     prop.setProperty("columns", colTypes[0]);
     prop.setProperty("columns.types", colTypes[1]);
-
+    prop.setProperty(serdeConstants.SERIALIZATION_LIB, LazySimpleSerDe.class.getName());
     FetchWork fetch = new FetchWork(ctx.getResFile().toString(), new TableDesc(
-        LazySimpleSerDe.class, TextInputFormat.class,
-        IgnoreKeyTextOutputFormat.class, prop), -1);
+        TextInputFormat.class,IgnoreKeyTextOutputFormat.class, prop), -1);
     fetch.setSerializationNullFormat(" ");
     return (FetchTask) TaskFactory.get(fetch, conf);
   }

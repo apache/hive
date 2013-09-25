@@ -38,11 +38,11 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.DataInputBuffer;
 import org.apache.hadoop.io.DataOutputBuffer;
 import org.apache.hadoop.mapred.RecordReader;
-import org.apache.hive.hcatalog.common.HCatUtil;
+import org.apache.hcatalog.common.HCatUtil;
 import org.apache.hcatalog.hbase.snapshot.FamilyRevision;
 import org.apache.hcatalog.hbase.snapshot.RevisionManager;
 import org.apache.hcatalog.hbase.snapshot.TableSnapshot;
-import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
+import org.apache.hcatalog.mapreduce.InputJobInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

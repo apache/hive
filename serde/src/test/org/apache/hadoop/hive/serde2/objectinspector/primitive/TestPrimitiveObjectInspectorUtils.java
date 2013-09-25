@@ -39,7 +39,7 @@ public class TestPrimitiveObjectInspectorUtils extends TestCase {
 
     assertEquals(PrimitiveGrouping.UNKNOWN_GROUP,
         PrimitiveObjectInspectorUtils.getPrimitiveGrouping(PrimitiveCategory.UNKNOWN));
-    assertEquals(PrimitiveGrouping.UNKNOWN_GROUP,
+    assertEquals(PrimitiveGrouping.VOID_GROUP,
         PrimitiveObjectInspectorUtils.getPrimitiveGrouping(PrimitiveCategory.VOID));
   }
 }

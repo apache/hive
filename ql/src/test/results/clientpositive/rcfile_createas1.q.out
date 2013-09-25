@@ -91,6 +91,7 @@ STAGE PLANS:
                 table:
                     input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
                     output format: org.apache.hadoop.hive.ql.io.RCFileOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
                     name: default.rcfile_createas1b
 
   Stage: Stage-7

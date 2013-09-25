@@ -26,6 +26,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -37,6 +38,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.NoSuchObjectException;
 import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.thrift.TException;
 
 class VerifyingObjectStore extends ObjectStore {
   private static final Log LOG = LogFactory.getLog(VerifyingObjectStore.class);
@@ -53,7 +55,7 @@ class VerifyingObjectStore extends ObjectStore {
         dbName, tblName, filter, maxParts, true, false);
     List<Partition> ormResults = getPartitionsByFilterInternal(
         dbName, tblName, filter, maxParts, false, true);
-    compareParts(sqlResults, ormResults);
+    verifyParts(sqlResults, ormResults);
     return sqlResults;
   }
 
@@ -64,8 +66,25 @@ class VerifyingObjectStore extends ObjectStore {
         dbName, tblName, partNames, true, false);
     List<Partition> ormResults = getPartitionsByNamesInternal(
         dbName, tblName, partNames, false, true);
-    compareParts(sqlResults, ormResults);
+    verifyParts(sqlResults, ormResults);
     return sqlResults;
+  }
+
+  @Override
+  public boolean getPartitionsByExpr(String dbName, String tblName, byte[] expr,
+      String defaultPartitionName, short maxParts, Set<Partition> result) throws TException {
+    Set<Partition> ormParts = new LinkedHashSet<Partition>();
+    boolean sqlResult = getPartitionsByExprInternal(
+        dbName, tblName, expr, defaultPartitionName, maxParts, result, true, false);
+    boolean ormResult = getPartitionsByExprInternal(
+        dbName, tblName, expr, defaultPartitionName, maxParts, ormParts, false, true);
+    if (sqlResult != ormResult) {
+      String msg = "The unknown flag is different - SQL " + sqlResult + ", ORM " + ormResult;
+      LOG.error(msg);
+      throw new MetaException(msg);
+    }
+    verifyParts(result, ormParts);
+    return sqlResult;
   }
 
   @Override
@@ -73,12 +92,13 @@ class VerifyingObjectStore extends ObjectStore {
       String dbName, String tableName, int maxParts) throws MetaException {
     List<Partition> sqlResults = getPartitionsInternal(dbName, tableName, maxParts, true, false);
     List<Partition> ormResults = getPartitionsInternal(dbName, tableName, maxParts, false, true);
-    compareParts(sqlResults, ormResults);
+    verifyParts(sqlResults, ormResults);
     return sqlResults;
   };
 
-  private void compareParts(List<Partition> sqlResults, List<Partition> ormResults)
+  private void verifyParts(Collection<Partition> sqlResults, Collection<Partition> ormResults)
       throws MetaException {
+    final int MAX_DIFFS = 5;
     if (sqlResults.size() != ormResults.size()) {
       String msg = "Lists are not the same size: SQL " + sqlResults.size()
           + ", ORM " + ormResults.size();
@@ -86,9 +106,12 @@ class VerifyingObjectStore extends ObjectStore {
       throw new MetaException(msg);
     }
 
+    Iterator<Partition> sqlIter = sqlResults.iterator(), ormIter = ormResults.iterator();
     StringBuilder errorStr = new StringBuilder();
+    int errors = 0;
     for (int partIx = 0; partIx < sqlResults.size(); ++partIx) {
-      Partition p1 = sqlResults.get(partIx), p2 = ormResults.get(partIx);
+      assert sqlIter.hasNext() && ormIter.hasNext();
+      Partition p1 = sqlIter.next(), p2 = ormIter.next();
       if (EqualsBuilder.reflectionEquals(p1, p2)) continue;
       errorStr.append("Results are different at list index " + partIx + ": \n");
       try {
@@ -100,6 +123,10 @@ class VerifyingObjectStore extends ObjectStore {
         String msg = "Error getting the diff at list index " + partIx;
         errorStr.append("\n\n" + msg);
         LOG.error(msg, t);
+        break;
+      }
+      if (++errors == MAX_DIFFS) {
+        errorStr.append("\n\nToo many diffs, giving up (lists might be sorted differently)");
         break;
       }
     }
