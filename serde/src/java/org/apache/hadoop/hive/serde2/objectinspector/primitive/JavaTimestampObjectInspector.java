@@ -43,6 +43,9 @@ public class JavaTimestampObjectInspector
   }
 
   public Object set(Object o, Timestamp value) {
+    if (value == null) {
+      return null;
+    }
     ((Timestamp) o).setTime(value.getTime());
     return o;
   }
@@ -53,6 +56,9 @@ public class JavaTimestampObjectInspector
   }
 
   public Object set(Object o, TimestampWritable tw) {
+    if (tw == null) {
+      return null;
+    }
     Timestamp t = (Timestamp) o;
     t.setTime(tw.getTimestamp().getTime());
     t.setNanos(tw.getTimestamp().getNanos());

@@ -48,11 +48,17 @@ public class WritableTimestampObjectInspector extends
   }
 
   public Object set(Object o, Timestamp t) {
+    if (t == null) {
+      return null;
+    }
     ((TimestampWritable) o).set(t);
     return o;
   }
 
   public Object set(Object o, TimestampWritable t) {
+    if (t == null) {
+      return null;
+    }
     ((TimestampWritable) o).set(t);
     return o;
   }

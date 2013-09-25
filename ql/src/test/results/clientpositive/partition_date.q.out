@@ -93,12 +93,12 @@ POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE
 POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 2000-01-01
 2013-08-08
-PREHOOK: query: select *, cast(dt as timestamp) from partition_date_1 where dt = '2000-01-01' and region = 2 order by key,value
+PREHOOK: query: select * from partition_date_1 where dt = '2000-01-01' and region = 2 order by key,value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@partition_date_1
 PREHOOK: Input: default@partition_date_1@dt=2000-01-01/region=2
 #### A masked pattern was here ####
-POSTHOOK: query: select *, cast(dt as timestamp) from partition_date_1 where dt = '2000-01-01' and region = 2 order by key,value
+POSTHOOK: query: select * from partition_date_1 where dt = '2000-01-01' and region = 2 order by key,value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@partition_date_1
 POSTHOOK: Input: default@partition_date_1@dt=2000-01-01/region=2
@@ -111,11 +111,11 @@ POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).key SIMPL
 POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=10).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-165	val_165	2000-01-01	2	1969-12-31 16:00:00
-238	val_238	2000-01-01	2	1969-12-31 16:00:00
-27	val_27	2000-01-01	2	1969-12-31 16:00:00
-311	val_311	2000-01-01	2	1969-12-31 16:00:00
-86	val_86	2000-01-01	2	1969-12-31 16:00:00
+165	val_165	2000-01-01	2
+238	val_238	2000-01-01	2
+27	val_27	2000-01-01	2
+311	val_311	2000-01-01	2
+86	val_86	2000-01-01	2
 PREHOOK: query: -- 15
 select count(*) from partition_date_1 where dt = date '2000-01-01'
 PREHOOK: type: QUERY
