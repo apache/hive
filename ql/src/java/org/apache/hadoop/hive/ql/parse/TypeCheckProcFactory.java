@@ -55,12 +55,14 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
+import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBaseCompare;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -561,6 +563,8 @@ public final class TypeCheckProcFactory {
           serdeConstants.DOUBLE_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_STRING,
           serdeConstants.STRING_TYPE_NAME);
+      conversionFunctionTextHashMap.put(HiveParser.TOK_VARCHAR,
+          serdeConstants.VARCHAR_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_BINARY,
           serdeConstants.BINARY_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_DATE,
@@ -643,7 +647,7 @@ public final class TypeCheckProcFactory {
      *
      * @throws UDFArgumentException
      */
-    public static ExprNodeDesc getFuncExprNodeDesc(String udfName,
+    static ExprNodeDesc getFuncExprNodeDescWithUdfData(String udfName, Object udfData,
         ExprNodeDesc... children) throws UDFArgumentException {
 
       FunctionInfo fi = FunctionRegistry.getFunctionInfo(udfName);
@@ -657,9 +661,21 @@ public final class TypeCheckProcFactory {
             + " is an aggregation function or a table function.");
       }
 
+      // Add udfData to UDF if necessary
+      if (udfData != null) {
+        if (genericUDF instanceof SettableUDF) {
+          ((SettableUDF)genericUDF).setParams(udfData);
+        }
+      }
+
       List<ExprNodeDesc> childrenList = new ArrayList<ExprNodeDesc>(children.length);
       childrenList.addAll(Arrays.asList(children));
       return ExprNodeGenericFuncDesc.newInstance(genericUDF, childrenList);
+    }
+
+    public static ExprNodeDesc getFuncExprNodeDesc(String udfName,
+        ExprNodeDesc... children) throws UDFArgumentException {
+      return getFuncExprNodeDescWithUdfData(udfName, null, children);
     }
 
     static ExprNodeDesc getXpathOrFuncExprNodeDesc(ASTNode expr,
@@ -758,9 +774,30 @@ public final class TypeCheckProcFactory {
           }
         }
 
+        // getGenericUDF() actually clones the UDF. Just call it once and reuse.
+        GenericUDF genericUDF = fi.getGenericUDF();
+
         if (!fi.isNative()) {
           ctx.getUnparseTranslator().addIdentifierTranslation(
               (ASTNode) expr.getChild(0));
+        }
+
+        // Handle type casts that may contain type parameters
+        if (isFunction) {
+          ASTNode funcNameNode = (ASTNode)expr.getChild(0);
+          switch (funcNameNode.getType()) {
+            case HiveParser.TOK_VARCHAR:
+              // Add type params
+              VarcharTypeParams varcharTypeParams = new VarcharTypeParams();
+              varcharTypeParams.length = Integer.valueOf((funcNameNode.getChild(0).getText()));
+              if (genericUDF != null) {
+                ((SettableUDF)genericUDF).setParams(varcharTypeParams);
+              }
+              break;
+            default:
+              // Do nothing
+              break;
+          }
         }
 
         // Detect UDTF's in nested SELECT, GROUP BY, etc as they aren't
@@ -777,8 +814,8 @@ public final class TypeCheckProcFactory {
             throw new SemanticException(ErrorMsg.UDAF_INVALID_LOCATION.getMsg(expr));
           }
         }
-        if (!ctx.getAllowStatefulFunctions() && (fi.getGenericUDF() != null)) {
-          if (FunctionRegistry.isStateful(fi.getGenericUDF())) {
+        if (!ctx.getAllowStatefulFunctions() && (genericUDF != null)) {
+          if (FunctionRegistry.isStateful(genericUDF)) {
             throw new SemanticException(
               ErrorMsg.UDF_STATEFUL_INVALID_LOCATION.getMsg());
           }
@@ -786,7 +823,7 @@ public final class TypeCheckProcFactory {
 
         // Try to infer the type of the constant only if there are two
         // nodes, one of them is column and the other is numeric const
-        if (fi.getGenericUDF() instanceof GenericUDFBaseCompare
+        if (genericUDF instanceof GenericUDFBaseCompare
             && children.size() == 2
             && ((children.get(0) instanceof ExprNodeConstantDesc
                 && children.get(1) instanceof ExprNodeColumnDesc)
@@ -843,7 +880,7 @@ public final class TypeCheckProcFactory {
               // however, if we already tried this, or the column is NUMBER type and
               // the operator is EQUAL, return false due to the type mismatch
               if (triedDouble ||
-                  (fi.getGenericUDF() instanceof GenericUDFOPEqual
+                  (genericUDF instanceof GenericUDFOPEqual
                   && !columnType.equals(serdeConstants.STRING_TYPE_NAME))) {
                 return new ExprNodeConstantDesc(false);
               }
@@ -861,7 +898,7 @@ public final class TypeCheckProcFactory {
           }
         }
 
-        desc = ExprNodeGenericFuncDesc.newInstance(fi.getGenericUDF(), children);
+        desc = ExprNodeGenericFuncDesc.newInstance(genericUDF, children);
       }
       // UDFOPPositive is a no-op.
       // However, we still create it, and then remove it here, to make sure we

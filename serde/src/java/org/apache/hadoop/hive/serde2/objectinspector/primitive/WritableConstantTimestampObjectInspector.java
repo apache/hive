@@ -31,6 +31,9 @@ public class WritableConstantTimestampObjectInspector extends
 
   private TimestampWritable value;
 
+  protected WritableConstantTimestampObjectInspector() {
+    super();
+  }
   WritableConstantTimestampObjectInspector(TimestampWritable value) {
     super();
     this.value = value;

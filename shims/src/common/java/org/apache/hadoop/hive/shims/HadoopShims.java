@@ -25,6 +25,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.PrivilegedExceptionAction;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.security.auth.login.LoginException;
@@ -32,6 +33,7 @@ import javax.security.auth.login.LoginException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -316,6 +318,8 @@ public interface HadoopShims {
 
   public TaskAttemptContext newTaskAttemptContext(Configuration conf, final Progressable progressable);
 
+  public TaskAttemptID newTaskAttemptID(JobID jobId, boolean isMap, int taskId, int id);
+
   public JobContext newJobContext(Job job);
 
   /**
@@ -468,6 +472,28 @@ public interface HadoopShims {
         Class<RecordReader<K, V>> rrClass) throws IOException;
   }
 
+  /**
+   * Get the block locations for the given directory.
+   * @param fs the file system
+   * @param path the directory name to get the status and block locations
+   * @param filter a filter that needs to accept the file (or null)
+   * @return an iterator for the located file status objects
+   * @throws IOException
+   */
+  Iterator<FileStatus> listLocatedStatus(FileSystem fs, Path path,
+                                         PathFilter filter) throws IOException;
+
+  /**
+   * For file status returned by listLocatedStatus, convert them into a list
+   * of block locations.
+   * @param fs the file system
+   * @param status the file information
+   * @return the block locations of the file
+   * @throws IOException
+   */
+  BlockLocation[] getLocations(FileSystem fs,
+                               FileStatus status) throws IOException;
+
   public HCatHadoopShims getHCatShim();
   public interface HCatHadoopShims {
 
@@ -509,7 +535,7 @@ public interface HadoopShims {
    * Provides a Hadoop JobTracker shim.
    * @param conf not {@code null}
    */
-  public WebHCatJTShim getWebHCatShim(Configuration conf) throws IOException;
+  public WebHCatJTShim getWebHCatShim(Configuration conf, UserGroupInformation ugi) throws IOException;
   public interface WebHCatJTShim {
     /**
      * Grab a handle to a job that is already known to the JobTracker.

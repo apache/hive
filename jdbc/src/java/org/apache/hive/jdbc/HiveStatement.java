@@ -32,6 +32,8 @@ import org.apache.hive.service.cli.thrift.TCloseOperationReq;
 import org.apache.hive.service.cli.thrift.TCloseOperationResp;
 import org.apache.hive.service.cli.thrift.TExecuteStatementReq;
 import org.apache.hive.service.cli.thrift.TExecuteStatementResp;
+import org.apache.hive.service.cli.thrift.TGetOperationStatusReq;
+import org.apache.hive.service.cli.thrift.TGetOperationStatusResp;
 import org.apache.hive.service.cli.thrift.TOperationHandle;
 import org.apache.hive.service.cli.thrift.TSessionHandle;
 
@@ -41,7 +43,7 @@ import org.apache.hive.service.cli.thrift.TSessionHandle;
  */
 public class HiveStatement implements java.sql.Statement {
   private TCLIService.Iface client;
-  private TOperationHandle stmtHandle;
+  private TOperationHandle stmtHandle = null;
   private final TSessionHandle sessHandle;
   Map<String,String> sessConf = new HashMap<String,String>();
   private int fetchSize = 50;
@@ -100,6 +102,10 @@ public class HiveStatement implements java.sql.Statement {
       throw new SQLException("Can't cancel after statement has been closed");
     }
 
+    if (stmtHandle == null) {
+      return;
+    }
+
     TCancelOperationReq cancelReq = new TCancelOperationReq();
     cancelReq.setOperationHandle(stmtHandle);
     try {
@@ -132,7 +138,7 @@ public class HiveStatement implements java.sql.Statement {
     warningChain = null;
   }
 
-  private void closeClientOperation() throws SQLException {
+  void closeClientOperation() throws SQLException {
     try {
       if (stmtHandle != null) {
         TCloseOperationReq closeReq = new TCloseOperationReq();
@@ -147,17 +153,19 @@ public class HiveStatement implements java.sql.Statement {
     }
     stmtHandle = null;
   }
+
   /*
    * (non-Javadoc)
    *
    * @see java.sql.Statement#close()
    */
-
   public void close() throws SQLException {
     if (isClosed) {
       return;
     }
-    closeClientOperation();
+    if (stmtHandle != null) {
+      closeClientOperation();
+    }
     client = null;
     resultSet = null;
     isClosed = true;
@@ -180,7 +188,10 @@ public class HiveStatement implements java.sql.Statement {
     }
 
     try {
-      closeClientOperation();
+      if (stmtHandle != null) {
+        closeClientOperation();
+      }
+
       TExecuteStatementReq execReq = new TExecuteStatementReq(sessHandle, sql);
       execReq.setConfOverlay(sessConf);
       TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
@@ -193,10 +204,48 @@ public class HiveStatement implements java.sql.Statement {
     }
 
     if (!stmtHandle.isHasResultSet()) {
+      // Poll until the query has completed one way or another. DML queries will not return a result
+      // set, but we should not return from this method until the query has completed to avoid
+      // racing with possible subsequent session shutdown, or queries that depend on the results
+      // materialised here.
+      TGetOperationStatusReq statusReq = new TGetOperationStatusReq(stmtHandle);
+      boolean requestComplete = false;
+      while (!requestComplete) {
+        try {
+          TGetOperationStatusResp statusResp = client.GetOperationStatus(statusReq);
+          Utils.verifySuccessWithInfo(statusResp.getStatus());
+          if (statusResp.isSetOperationState()) {
+            switch (statusResp.getOperationState()) {
+            case CLOSED_STATE:
+            case FINISHED_STATE:
+              return false;
+            case CANCELED_STATE:
+              // 01000 -> warning
+              throw new SQLException("Query was cancelled", "01000");
+            case ERROR_STATE:
+              // HY000 -> general error
+              throw new SQLException("Query failed", "HY000");
+            case UKNOWN_STATE:
+              throw new SQLException("Unknown query", "HY000");
+            case INITIALIZED_STATE:
+            case RUNNING_STATE:
+              break;
+            }
+          }
+        } catch (Exception ex) {
+          throw new SQLException(ex.toString(), "08S01", ex);
+        }
+
+        try {
+          Thread.sleep(100);
+        } catch (InterruptedException ex) {
+          // Ignore
+        }
+      }
       return false;
     }
     resultSet =  new HiveQueryResultSet.Builder().setClient(client).setSessionHandle(sessHandle)
-        .setStmtHandle(stmtHandle).setMaxRows(maxRows).setFetchSize(fetchSize)
+        .setStmtHandle(stmtHandle).setHiveStatement(this).setMaxRows(maxRows).setFetchSize(fetchSize)
         .build();
     return true;
   }

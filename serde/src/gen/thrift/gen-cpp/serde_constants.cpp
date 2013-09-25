@@ -57,6 +57,10 @@ serdeConstants::serdeConstants() {
 
   STRING_TYPE_NAME = "string";
 
+  CHAR_TYPE_NAME = "char";
+
+  VARCHAR_TYPE_NAME = "varchar";
+
   DATE_TYPE_NAME = "date";
 
   DATETIME_TYPE_NAME = "datetime";
@@ -88,6 +92,8 @@ serdeConstants::serdeConstants() {
   PrimitiveTypes.insert("float");
   PrimitiveTypes.insert("double");
   PrimitiveTypes.insert("string");
+  PrimitiveTypes.insert("varchar");
+  PrimitiveTypes.insert("char");
   PrimitiveTypes.insert("date");
   PrimitiveTypes.insert("datetime");
   PrimitiveTypes.insert("timestamp");

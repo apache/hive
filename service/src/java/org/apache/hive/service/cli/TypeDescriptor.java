@@ -20,6 +20,11 @@ package org.apache.hive.service.cli;
 
 import java.util.List;
 
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
+import org.apache.hadoop.hive.serde2.typeinfo.BaseTypeParams;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hive.service.cli.thrift.TPrimitiveTypeEntry;
 import org.apache.hive.service.cli.thrift.TTypeDesc;
 import org.apache.hive.service.cli.thrift.TTypeEntry;
@@ -32,6 +37,7 @@ public class TypeDescriptor {
 
   private final Type type;
   private String typeName = null;
+  private TypeQualifiers typeQualifiers = null;
 
   public TypeDescriptor(Type type) {
     this.type = type;
@@ -41,12 +47,21 @@ public class TypeDescriptor {
     List<TTypeEntry> tTypeEntries = tTypeDesc.getTypes();
     TPrimitiveTypeEntry top = tTypeEntries.get(0).getPrimitiveEntry();
     this.type = Type.getType(top.getType());
+    if (top.isSetTypeQualifiers()) {
+      setTypeQualifiers(TypeQualifiers.fromTTypeQualifiers(top.getTypeQualifiers()));
+    }
   }
 
   public TypeDescriptor(String typeName) {
     this.type = Type.getType(typeName);
     if (this.type.isComplexType()) {
       this.typeName = typeName;
+    } else if (this.type.isQualifiedType()) {
+      TypeInfo pti = TypeInfoFactory.getPrimitiveTypeInfo(typeName);
+      BaseTypeParams typeParams = ((PrimitiveTypeInfo) pti).getTypeParams();
+      if (typeParams != null) {
+        setTypeQualifiers(TypeQualifiers.fromBaseTypeParams(typeParams));
+      }
     }
   }
 
@@ -55,7 +70,12 @@ public class TypeDescriptor {
   }
 
   public TTypeDesc toTTypeDesc() {
-    TTypeEntry entry = TTypeEntry.primitiveEntry(new TPrimitiveTypeEntry(type.toTType()));
+    TPrimitiveTypeEntry primitiveEntry = new TPrimitiveTypeEntry(type.toTType());
+    if (getTypeQualifiers() != null) {
+      primitiveEntry.setTypeQualifiers(getTypeQualifiers().toTTypeQualifiers());
+    }
+    TTypeEntry entry = TTypeEntry.primitiveEntry(primitiveEntry);
+
     TTypeDesc desc = new TTypeDesc();
     desc.addToTypes(entry);
     return desc;
@@ -67,5 +87,13 @@ public class TypeDescriptor {
     } else {
       return type.getName();
     }
+  }
+
+  public TypeQualifiers getTypeQualifiers() {
+    return typeQualifiers;
+  }
+
+  public void setTypeQualifiers(TypeQualifiers typeQualifiers) {
+    this.typeQualifiers = typeQualifiers;
   }
 }

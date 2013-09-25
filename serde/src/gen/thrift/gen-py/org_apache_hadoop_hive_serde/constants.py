@@ -32,6 +32,8 @@ BIGINT_TYPE_NAME = "bigint"
 FLOAT_TYPE_NAME = "float"
 DOUBLE_TYPE_NAME = "double"
 STRING_TYPE_NAME = "string"
+CHAR_TYPE_NAME = "char"
+VARCHAR_TYPE_NAME = "varchar"
 DATE_TYPE_NAME = "date"
 DATETIME_TYPE_NAME = "datetime"
 TIMESTAMP_TYPE_NAME = "timestamp"
@@ -53,6 +55,8 @@ PrimitiveTypes = set([
   "float",
   "double",
   "string",
+  "varchar",
+  "char",
   "date",
   "datetime",
   "timestamp",

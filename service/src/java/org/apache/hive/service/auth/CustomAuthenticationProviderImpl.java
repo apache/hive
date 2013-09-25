@@ -33,7 +33,7 @@ public class CustomAuthenticationProviderImpl
     HiveConf conf = new HiveConf();
     this.customHandlerClass = (Class<? extends PasswdAuthenticationProvider>)
         conf.getClass(
-            HiveConf.ConfVars.HIVE_SERVER2_CUSTOM_AUTHENTICATION_CLASS.name(),
+            HiveConf.ConfVars.HIVE_SERVER2_CUSTOM_AUTHENTICATION_CLASS.varname,
             PasswdAuthenticationProvider.class);
     this.customProvider =
         ReflectionUtils.newInstance(this.customHandlerClass, conf);

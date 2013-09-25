@@ -39,6 +39,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -67,8 +68,8 @@ import org.apache.hadoop.mapred.TextInputFormat;
 public class CombineHiveInputFormat<K extends WritableComparable, V extends Writable>
     extends HiveInputFormat<K, V> {
 
-  public static final Log LOG = LogFactory
-      .getLog("org.apache.hadoop.hive.ql.io.CombineHiveInputFormat");
+  private static final String CLASS_NAME = CombineHiveInputFormat.class.getName();
+  public static final Log LOG = LogFactory.getLog(CLASS_NAME);
 
   /**
    * CombineHiveInputSplit encapsulates an InputSplit with its corresponding
@@ -262,6 +263,8 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
    */
   @Override
   public InputSplit[] getSplits(JobConf job, int numSplits) throws IOException {
+    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.GET_SPLITS);
     init(job);
     Map<String, ArrayList<String>> pathToAliases = mrwork.getPathToAliases();
     Map<String, Operator<? extends OperatorDesc>> aliasToWork =
@@ -269,8 +272,11 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     CombineFileInputFormatShim combine = ShimLoader.getHadoopShims()
         .getCombineFileInputFormat();
 
+    InputSplit[] splits = null;
     if (combine == null) {
-      return super.getSplits(job, numSplits);
+      splits = super.getSplits(job, numSplits);
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
+      return splits;
     }
 
     if (combine.getInputPathsShim(job).length == 0) {
@@ -301,8 +307,8 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       Class inputFormatClass = part.getInputFileFormatClass();
       String inputFormatClassName = inputFormatClass.getName();
       InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
-      String deserializerClassName = part.getDeserializerClass() == null ? null
-          : part.getDeserializerClass().getName();
+      String deserializerClassName = part.getDeserializer() == null ? null
+          : part.getDeserializer().getClass().getName();
 
       // Since there is no easy way of knowing whether MAPREDUCE-1597 is present in the tree or not,
       // we use a configuration variable for the same
@@ -320,9 +326,10 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
           // If path is a directory
           if (fStats.isDir()) {
             dirs.offer(path);
-          }
-          else if ((new CompressionCodecFactory(job)).getCodec(path) != null) {
-            return super.getSplits(job, numSplits);
+          } else if ((new CompressionCodecFactory(job)).getCodec(path) != null) {
+            splits = super.getSplits(job, numSplits);
+            perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
+            return splits;
           }
 
           while (dirs.peek() != null) {
@@ -331,9 +338,11 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
             for (int idx = 0; idx < fStatus.length; idx++) {
               if (fStatus[idx].isDir()) {
                 dirs.offer(fStatus[idx].getPath());
-              }
-              else if ((new CompressionCodecFactory(job)).getCodec(fStatus[idx].getPath()) != null) {
-                return super.getSplits(job, numSplits);
+              } else if ((new CompressionCodecFactory(job)).getCodec(
+                  fStatus[idx].getPath()) != null) {
+                splits = super.getSplits(job, numSplits);
+                perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
+                return splits;
               }
             }
           }
@@ -341,7 +350,9 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       }
 
       if (inputFormat instanceof SymlinkTextInputFormat) {
-        return super.getSplits(job, numSplits);
+        splits = super.getSplits(job, numSplits);
+        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
+        return splits;
       }
 
       Path filterPath = path;
@@ -411,10 +422,11 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     }
 
     LOG.info("number of splits " + result.size());
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
     return result.toArray(new CombineHiveInputSplit[result.size()]);
   }
 
-    private void processPaths(JobConf job, CombineFileInputFormatShim combine,
+  private void processPaths(JobConf job, CombineFileInputFormatShim combine,
       List<InputSplitShim> iss, Path... path) throws IOException {
     JobConf currJob = new JobConf(job);
     FileInputFormat.setInputPaths(currJob, path);

@@ -18,9 +18,7 @@
 
 package org.apache.hadoop.hive.ql.optimizer.physical;
 
-import java.io.ByteArrayInputStream;
 import java.io.Serializable;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -29,6 +27,7 @@ import java.util.Map;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
@@ -40,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
+import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ConditionalResolverSkewJoin;
@@ -56,7 +56,6 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
-import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
@@ -159,6 +158,7 @@ public final class GenMRSkewJoinProcessor {
         .getProperties());
 
     Map<Byte, TableDesc> tableDescList = new HashMap<Byte, TableDesc>();
+    Map<Byte, RowSchema> rowSchemaList = new HashMap<Byte, RowSchema>();
     Map<Byte, List<ExprNodeDesc>> newJoinValues = new HashMap<Byte, List<ExprNodeDesc>>();
     Map<Byte, List<ExprNodeDesc>> newJoinKeys = new HashMap<Byte, List<ExprNodeDesc>>();
     // used for create mapJoinDesc, should be in order
@@ -176,13 +176,17 @@ public final class GenMRSkewJoinProcessor {
       int columnSize = valueCols.size();
       List<ExprNodeDesc> newValueExpr = new ArrayList<ExprNodeDesc>();
       List<ExprNodeDesc> newKeyExpr = new ArrayList<ExprNodeDesc>();
+      ArrayList<ColumnInfo> columnInfos = new ArrayList<ColumnInfo>();
 
       boolean first = true;
       for (int k = 0; k < columnSize; k++) {
         TypeInfo type = valueCols.get(k).getTypeInfo();
         String newColName = i + "_VALUE_" + k; // any name, it does not matter.
-        newValueExpr
-            .add(new ExprNodeColumnDesc(type, newColName, "" + i, false));
+        ColumnInfo columnInfo = new ColumnInfo(newColName, type, alias.toString(), false);
+        columnInfos.add(columnInfo);
+        newValueExpr.add(new ExprNodeColumnDesc(
+            columnInfo.getType(), columnInfo.getInternalName(),
+            columnInfo.getTabAlias(), false));
         if (!first) {
           colNames = colNames + ",";
           colTypes = colTypes + ",";
@@ -201,14 +205,18 @@ public final class GenMRSkewJoinProcessor {
         first = false;
         colNames = colNames + joinKeys.get(k);
         colTypes = colTypes + joinKeyTypes.get(k);
-        newKeyExpr.add(new ExprNodeColumnDesc(TypeInfoFactory
-            .getPrimitiveTypeInfo(joinKeyTypes.get(k)), joinKeys.get(k),
-            "" + i, false));
+        ColumnInfo columnInfo = new ColumnInfo(joinKeys.get(k), TypeInfoFactory
+            .getPrimitiveTypeInfo(joinKeyTypes.get(k)), alias.toString(), false);
+        columnInfos.add(columnInfo);
+        newKeyExpr.add(new ExprNodeColumnDesc(
+            columnInfo.getType(), columnInfo.getInternalName(),
+            columnInfo.getTabAlias(), false));
       }
 
       newJoinValues.put(alias, newValueExpr);
       newJoinKeys.put(alias, newKeyExpr);
       tableDescList.put(alias, Utilities.getTableDesc(colNames, colTypes));
+      rowSchemaList.put(alias, new RowSchema(columnInfos));
 
       // construct value table Desc
       String valueColNames = "";
@@ -241,21 +249,12 @@ public final class GenMRSkewJoinProcessor {
           HiveConf.ConfVars.HIVE_MAPPER_CANNOT_SPAN_MULTIPLE_PARTITIONS);
       newPlan.setMapperCannotSpanPartns(mapperCannotSpanPartns);
 
-      MapredWork clonePlan = null;
-      try {
-        String xmlPlan = currPlan.toXML();
-        StringBuilder sb = new StringBuilder(xmlPlan);
-        ByteArrayInputStream bis;
-        bis = new ByteArrayInputStream(sb.toString().getBytes("UTF-8"));
-        clonePlan = Utilities.deserializeObject(bis);
-      } catch (UnsupportedEncodingException e) {
-        throw new SemanticException(e);
-      }
+      MapredWork clonePlan = Utilities.clonePlan(currPlan);
 
       Operator<? extends OperatorDesc>[] parentOps = new TableScanOperator[tags.length];
       for (int k = 0; k < tags.length; k++) {
-        Operator<? extends OperatorDesc> ts = OperatorFactory.get(
-            TableScanDesc.class, (RowSchema) null);
+        Operator<? extends OperatorDesc> ts =
+            GenMapRedUtils.createTemporaryTableScanOperator(rowSchemaList.get((byte)k));
         ((TableScanOperator)ts).setTableDesc(tableDescList.get((byte)k));
         parentOps[k] = ts;
       }
@@ -267,12 +266,8 @@ public final class GenMRSkewJoinProcessor {
       String bigKeyDirPath = bigKeysDirMap.get(src);
       newPlan.getPathToAliases().put(bigKeyDirPath, aliases);
 
-
-
-
       newPlan.getAliasToWork().put(alias, tblScan_op);
       PartitionDesc part = new PartitionDesc(tableDescList.get(src), null);
-
 
       newPlan.getPathToPartitionInfo().put(bigKeyDirPath, part);
       newPlan.getAliasToPartnInfo().put(alias, part);

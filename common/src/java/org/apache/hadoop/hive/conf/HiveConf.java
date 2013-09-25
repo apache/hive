@@ -177,8 +177,10 @@ public class HiveConf extends Configuration {
     // QL execution stuff
     SCRIPTWRAPPER("hive.exec.script.wrapper", null),
     PLAN("hive.exec.plan", ""),
+    PLAN_SERIALIZATION("hive.plan.serialization.format","kryo"),
     SCRATCHDIR("hive.exec.scratchdir", "/tmp/hive-" + System.getProperty("user.name")),
     LOCALSCRATCHDIR("hive.exec.local.scratchdir", System.getProperty("java.io.tmpdir") + File.separator + System.getProperty("user.name")),
+    SCRATCHDIRPERMISSION("hive.scratch.dir.permission", "700"),
     SUBMITVIACHILD("hive.exec.submitviachild", false),
     SCRIPTERRORLIMIT("hive.exec.script.maxerrsize", 100000),
     ALLOWPARTIALCONSUMP("hive.exec.script.allow.partial.consumption", false),
@@ -322,6 +324,8 @@ public class HiveConf extends Configuration {
     METASTORE_VALIDATE_CONSTRAINTS("datanucleus.validateConstraints", false),
     METASTORE_STORE_MANAGER_TYPE("datanucleus.storeManagerType", "rdbms"),
     METASTORE_AUTO_CREATE_SCHEMA("datanucleus.autoCreateSchema", true),
+    METASTORE_FIXED_DATASTORE("datanucleus.fixedDatastore", false),
+    METASTORE_SCHEMA_VERIFICATION("hive.metastore.schema.verification", false),
     METASTORE_AUTO_START_MECHANISM_MODE("datanucleus.autoStartMechanismMode", "checked"),
     METASTORE_TRANSACTION_ISOLATION("datanucleus.transactionIsolation", "read-committed"),
     METASTORE_CACHE_LEVEL2("datanucleus.cache.level2", false),
@@ -358,6 +362,8 @@ public class HiveConf extends Configuration {
         "org.apache.derby.jdbc.EmbeddedDriver"),
     METASTORE_MANAGER_FACTORY_CLASS("javax.jdo.PersistenceManagerFactoryClass",
         "org.datanucleus.api.jdo.JDOPersistenceManagerFactory"),
+    METASTORE_EXPRESSION_PROXY_CLASS("hive.metastore.expression.proxy",
+        "org.apache.hadoop.hive.ql.optimizer.ppr.PartitionExpressionForMetastore"),
     METASTORE_DETACH_ALL_ON_COMMIT("javax.jdo.option.DetachAllOnCommit", true),
     METASTORE_NON_TRANSACTIONAL_READ("javax.jdo.option.NonTransactionalRead", true),
     METASTORE_CONNECTION_USER_NAME("javax.jdo.option.ConnectionUserName", "APP"),
@@ -558,7 +564,6 @@ public class HiveConf extends Configuration {
     HIVE_COMBINE_INPUT_FORMAT_SUPPORTS_SPLITTABLE("hive.hadoop.supports.splittable.combineinputformat", false),
 
     // Optimizer
-    HIVEOPTCP("hive.optimize.cp", true), // column pruner
     HIVEOPTINDEXFILTER("hive.optimize.index.filter", false), // automatically use indexes
     HIVEINDEXAUTOUPDATE("hive.optimize.index.autoupdate", false), //automatically update stale indexes
     HIVEOPTPPD("hive.optimize.ppd", true), // predicate pushdown
@@ -661,6 +666,8 @@ public class HiveConf extends Configuration {
     // 'minimal', 'more' (and 'all' later)
     HIVEFETCHTASKCONVERSION("hive.fetch.task.conversion", "minimal"),
 
+    HIVEFETCHTASKAGGR("hive.fetch.task.aggr", false),
+
     // Serde for FetchTask
     HIVEFETCHOUTPUTSERDE("hive.fetch.output.serde", "org.apache.hadoop.hive.serde2.DelimitedJSONSerDe"),
 
@@ -733,7 +740,13 @@ public class HiveConf extends Configuration {
     HIVE_ENTITY_SEPARATOR("hive.entity.separator", "@"),
 
     HIVE_SERVER2_THRIFT_MIN_WORKER_THREADS("hive.server2.thrift.min.worker.threads", 5),
-    HIVE_SERVER2_THRIFT_MAX_WORKER_THREADS("hive.server2.thrift.max.worker.threads", 100),
+    HIVE_SERVER2_THRIFT_MAX_WORKER_THREADS("hive.server2.thrift.max.worker.threads", 500),
+
+    // Configuration for async thread pool in SessionManager
+    // Number of async threads
+    HIVE_SERVER2_ASYNC_EXEC_THREADS("hive.server2.async.exec.threads", 50),
+    // Number of seconds HiveServer2 shutdown will wait for async threads to terminate
+    HIVE_SERVER2_ASYNC_EXEC_SHUTDOWN_TIMEOUT("hive.server2.async.exec.shutdown.timeout", 10),
 
     HIVE_SERVER2_THRIFT_PORT("hive.server2.thrift.port", 10000),
     HIVE_SERVER2_THRIFT_BIND_HOST("hive.server2.thrift.bind.host", ""),
@@ -749,7 +762,7 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_PLAIN_LDAP_DOMAIN("hive.server2.authentication.ldap.Domain", null),
     HIVE_SERVER2_CUSTOM_AUTHENTICATION_CLASS("hive.server2.custom.authentication.class", null),
     HIVE_SERVER2_ENABLE_DOAS("hive.server2.enable.doAs", true),
-    HIVE_SERVER2_TABLE_TYPE_MAPPING("hive.server2.table.type.mapping", "HIVE"),
+    HIVE_SERVER2_TABLE_TYPE_MAPPING("hive.server2.table.type.mapping", "CLASSIC"),
     HIVE_SERVER2_SESSION_HOOK("hive.server2.session.hook", ""),
 
     HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list", null),
@@ -1134,6 +1147,11 @@ public class HiveConf extends Configuration {
 
     if (auxJars == null) {
       auxJars = this.get(ConfVars.HIVEAUXJARS.varname);
+    }
+
+    if (getBoolVar(ConfVars.METASTORE_SCHEMA_VERIFICATION)) {
+      setBoolVar(ConfVars.METASTORE_AUTO_CREATE_SCHEMA, false);
+      setBoolVar(ConfVars.METASTORE_FIXED_DATASTORE, true);
     }
 
     // setup list of conf vars that are not allowed to change runtime

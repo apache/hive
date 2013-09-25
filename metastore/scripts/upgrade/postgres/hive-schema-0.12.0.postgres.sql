@@ -516,6 +516,16 @@ CREATE TABLE "TAB_COL_STATS" (
 );
 
 --
+-- Table structure for VERSION
+--
+CREATE TABLE "VERSION" (
+  "VER_ID" bigint,
+  "SCHEMA_VERSION" character varying(127) NOT NULL,
+  "VERSION_COMMENT" character varying(255) NOT NULL,
+  PRIMARY KEY ("VER_ID")
+);
+
+--
 -- Name: PART_COL_STATS Type: TABLE; Schema: public; Owner: hiveuser; Tablespace:
 --
 
@@ -1379,6 +1389,9 @@ ALTER TABLE ONLY "TAB_COL_STATS" ADD CONSTRAINT "TAB_COL_STATS_fkey" FOREIGN KEY
 --
 ALTER TABLE ONLY "PART_COL_STATS" ADD CONSTRAINT "PART_COL_STATS_fkey" FOREIGN KEY("PART_ID") REFERENCES "PARTITIONS"("PART_ID") DEFERRABLE;
 
+
+ALTER TABLE ONLY "VERSION" ADD CONSTRAINT "VERSION_pkey" PRIMARY KEY ("VER_ID");
+
 --
 -- Name: public; Type: ACL; Schema: -; Owner: hiveuser
 --
@@ -1387,6 +1400,7 @@ REVOKE ALL ON SCHEMA public FROM PUBLIC;
 GRANT ALL ON SCHEMA public TO PUBLIC;
 
 
+INSERT INTO VERSION (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '0.12.0', 'Hive release version 0.12.0');
 --
 -- PostgreSQL database dump complete
 --

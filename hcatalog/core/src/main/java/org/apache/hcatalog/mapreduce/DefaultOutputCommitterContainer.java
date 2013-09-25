@@ -23,7 +23,7 @@ import java.io.IOException;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
-import org.apache.hadoop.mapred.HCatMapRedUtil;
+import org.apache.hive.hcatalog.mapreduce.HCatMapRedUtil;
 import org.apache.hadoop.mapreduce.JobContext;
 import org.apache.hadoop.mapreduce.JobStatus.State;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
@@ -35,74 +35,75 @@ import org.slf4j.LoggerFactory;
 /**
  * Part of the DefaultOutput*Container classes
  * See {@link DefaultOutputFormatContainer} for more information
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.DefaultOutputCommitterContainer} instead
  */
 class DefaultOutputCommitterContainer extends OutputCommitterContainer {
 
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultOutputCommitterContainer.class);
+  private static final Logger LOG = LoggerFactory.getLogger(DefaultOutputCommitterContainer.class);
 
-    /**
-     * @param context current JobContext
-     * @param baseCommitter OutputCommitter to contain
-     * @throws IOException
-     */
-    public DefaultOutputCommitterContainer(JobContext context, org.apache.hadoop.mapred.OutputCommitter baseCommitter) throws IOException {
-        super(context, baseCommitter);
+  /**
+   * @param context current JobContext
+   * @param baseCommitter OutputCommitter to contain
+   * @throws IOException
+   */
+  public DefaultOutputCommitterContainer(JobContext context, org.apache.hadoop.mapred.OutputCommitter baseCommitter) throws IOException {
+    super(context, baseCommitter);
+  }
+
+  @Override
+  public void abortTask(TaskAttemptContext context) throws IOException {
+    getBaseOutputCommitter().abortTask(HCatMapRedUtil.createTaskAttemptContext(context));
+  }
+
+  @Override
+  public void commitTask(TaskAttemptContext context) throws IOException {
+    getBaseOutputCommitter().commitTask(HCatMapRedUtil.createTaskAttemptContext(context));
+  }
+
+  @Override
+  public boolean needsTaskCommit(TaskAttemptContext context) throws IOException {
+    return getBaseOutputCommitter().needsTaskCommit(HCatMapRedUtil.createTaskAttemptContext(context));
+  }
+
+  @Override
+  public void setupJob(JobContext context) throws IOException {
+    getBaseOutputCommitter().setupJob(HCatMapRedUtil.createJobContext(context));
+  }
+
+  @Override
+  public void setupTask(TaskAttemptContext context) throws IOException {
+    getBaseOutputCommitter().setupTask(HCatMapRedUtil.createTaskAttemptContext(context));
+  }
+
+  @Override
+  public void abortJob(JobContext jobContext, State state) throws IOException {
+    getBaseOutputCommitter().abortJob(HCatMapRedUtil.createJobContext(jobContext), state);
+    cleanupJob(jobContext);
+  }
+
+  @Override
+  public void commitJob(JobContext jobContext) throws IOException {
+    getBaseOutputCommitter().commitJob(HCatMapRedUtil.createJobContext(jobContext));
+    cleanupJob(jobContext);
+  }
+
+  @Override
+  public void cleanupJob(JobContext context) throws IOException {
+    getBaseOutputCommitter().cleanupJob(HCatMapRedUtil.createJobContext(context));
+
+    //Cancel HCat and JobTracker tokens
+    HiveMetaStoreClient client = null;
+    try {
+      HiveConf hiveConf = HCatUtil.getHiveConf(context.getConfiguration());
+      client = HCatUtil.getHiveClient(hiveConf);
+      String tokenStrForm = client.getTokenStrForm();
+      if (tokenStrForm != null && context.getConfiguration().get(HCatConstants.HCAT_KEY_TOKEN_SIGNATURE) != null) {
+        client.cancelDelegationToken(tokenStrForm);
+      }
+    } catch (Exception e) {
+      LOG.warn("Failed to cancel delegation token", e);
+    } finally {
+      HCatUtil.closeHiveClientQuietly(client);
     }
-
-    @Override
-    public void abortTask(TaskAttemptContext context) throws IOException {
-        getBaseOutputCommitter().abortTask(HCatMapRedUtil.createTaskAttemptContext(context));
-    }
-
-    @Override
-    public void commitTask(TaskAttemptContext context) throws IOException {
-        getBaseOutputCommitter().commitTask(HCatMapRedUtil.createTaskAttemptContext(context));
-    }
-
-    @Override
-    public boolean needsTaskCommit(TaskAttemptContext context) throws IOException {
-        return getBaseOutputCommitter().needsTaskCommit(HCatMapRedUtil.createTaskAttemptContext(context));
-    }
-
-    @Override
-    public void setupJob(JobContext context) throws IOException {
-        getBaseOutputCommitter().setupJob(HCatMapRedUtil.createJobContext(context));
-    }
-
-    @Override
-    public void setupTask(TaskAttemptContext context) throws IOException {
-        getBaseOutputCommitter().setupTask(HCatMapRedUtil.createTaskAttemptContext(context));
-    }
-
-    @Override
-    public void abortJob(JobContext jobContext, State state) throws IOException {
-        getBaseOutputCommitter().abortJob(HCatMapRedUtil.createJobContext(jobContext), state);
-        cleanupJob(jobContext);
-    }
-
-    @Override
-    public void commitJob(JobContext jobContext) throws IOException {
-        getBaseOutputCommitter().commitJob(HCatMapRedUtil.createJobContext(jobContext));
-        cleanupJob(jobContext);
-    }
-
-    @Override
-    public void cleanupJob(JobContext context) throws IOException {
-        getBaseOutputCommitter().cleanupJob(HCatMapRedUtil.createJobContext(context));
-
-        //Cancel HCat and JobTracker tokens
-        HiveMetaStoreClient client = null;
-        try {
-            HiveConf hiveConf = HCatUtil.getHiveConf(context.getConfiguration());
-            client = HCatUtil.getHiveClient(hiveConf);
-            String tokenStrForm = client.getTokenStrForm();
-            if (tokenStrForm != null && context.getConfiguration().get(HCatConstants.HCAT_KEY_TOKEN_SIGNATURE) != null) {
-                client.cancelDelegationToken(tokenStrForm);
-            }
-        } catch (Exception e) {
-            LOG.warn("Failed to cancel delegation token", e);
-        } finally {
-            HCatUtil.closeHiveClientQuietly(client);
-        }
-    }
+  }
 }

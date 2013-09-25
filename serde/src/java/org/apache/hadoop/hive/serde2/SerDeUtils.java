@@ -21,30 +21,28 @@ package org.apache.hadoop.hive.serde2;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.UnionObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
@@ -66,36 +64,9 @@ public final class SerDeUtils {
   // lower case null is used within json objects
   private static final String JSON_NULL = "null";
 
-  private static ConcurrentHashMap<String, Class<?>> serdes =
-    new ConcurrentHashMap<String, Class<?>>();
-
   public static final Log LOG = LogFactory.getLog(SerDeUtils.class.getName());
 
-  public static void registerSerDe(String name, Class<?> serde) {
-    if (serdes.containsKey(name)) {
-      LOG.warn("double registering serde " + name);
-      return;
-    }
-    serdes.put(name, serde);
-  }
-
-  public static Deserializer lookupDeserializer(String name) throws SerDeException {
-    Class<?> c;
-    if (serdes.containsKey(name)) {
-      c = serdes.get(name);
-    } else {
-      try {
-        c = Class.forName(name, true, JavaUtils.getClassLoader());
-      } catch (ClassNotFoundException e) {
-        throw new SerDeException("SerDe " + name + " does not exist");
-      }
-    }
-    try {
-      return (Deserializer) c.newInstance();
-    } catch (Exception e) {
-      throw new SerDeException(e);
-    }
-  }
+  public static void registerSerDe(String name, Class<?> serde) {}
 
   private static List<String> nativeSerDeNames = new ArrayList<String>();
   static {
@@ -284,6 +255,13 @@ public final class SerDeUtils {
           sb.append('"');
           break;
         }
+        case VARCHAR: {
+          sb.append('"');
+          sb.append(escapeString(((HiveVarcharObjectInspector) poi)
+              .getPrimitiveJavaObject(o).toString()));
+          sb.append('"');
+          break;
+        }
         case DATE: {
           sb.append('"');
           sb.append(((DateObjectInspector) poi)
@@ -405,7 +383,7 @@ public final class SerDeUtils {
   /**
    * return false though element is null if nullsafe flag is true for that
    */
-  public static boolean hasAnyNullObject(List o, StandardStructObjectInspector loi,
+  public static boolean hasAnyNullObject(List o, StructObjectInspector loi,
       boolean[] nullSafes) {
     List<? extends StructField> fields = loi.getAllStructFieldRefs();
     for (int i = 0; i < o.size();i++) {

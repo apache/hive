@@ -24,31 +24,32 @@ import java.util.Map;
 
 /**
  * The HCat message sent when partition(s) are added to a table.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.AddPartitionMessage} instead
  */
 public abstract class AddPartitionMessage extends HCatEventMessage {
 
-    protected AddPartitionMessage() {
-        super(EventType.ADD_PARTITION);
-    }
+  protected AddPartitionMessage() {
+    super(EventType.ADD_PARTITION);
+  }
 
-    /**
-     * Getter for name of table (where partitions are added).
-     * @return Table-name (String).
-     */
-    public abstract String getTable();
+  /**
+   * Getter for name of table (where partitions are added).
+   * @return Table-name (String).
+   */
+  public abstract String getTable();
 
-    /**
-     * Getter for list of partitions added.
-     * @return List of maps, where each map identifies values for each partition-key, for every added partition.
-     */
-    public abstract List<Map<String, String>> getPartitions ();
+  /**
+   * Getter for list of partitions added.
+   * @return List of maps, where each map identifies values for each partition-key, for every added partition.
+   */
+  public abstract List<Map<String, String>> getPartitions ();
 
-    @Override
-    public HCatEventMessage checkValid() {
-        if (getTable() == null)
-            throw new IllegalStateException("Table name unset.");
-        if (getPartitions() == null)
-            throw new IllegalStateException("Partition-list unset.");
-        return super.checkValid();
-    }
+  @Override
+  public HCatEventMessage checkValid() {
+    if (getTable() == null)
+      throw new IllegalStateException("Table name unset.");
+    if (getPartitions() == null)
+      throw new IllegalStateException("Partition-list unset.");
+    return super.checkValid();
+  }
 }

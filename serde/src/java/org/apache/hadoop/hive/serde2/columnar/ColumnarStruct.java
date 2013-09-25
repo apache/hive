@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.serde2.columnar;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -49,22 +49,10 @@ public class ColumnarStruct extends ColumnarStructBase {
    *
    * @param oi
    *          the ObjectInspector representing the type of this LazyStruct.
-   */
-  public ColumnarStruct(ObjectInspector oi) {
-    this(oi, null, null);
-  }
-
-  /**
-   * Construct a ColumnarStruct object with the TypeInfo. It creates the first
-   * level object at the first place
-   *
-   * @param oi
-   *          the ObjectInspector representing the type of this LazyStruct.
    * @param notSkippedColumnIDs
    *          the column ids that should not be skipped
    */
-  public ColumnarStruct(ObjectInspector oi,
-      ArrayList<Integer> notSkippedColumnIDs, Text nullSequence) {
+  public ColumnarStruct(ObjectInspector oi, List<Integer> notSkippedColumnIDs, Text nullSequence) {
     super(oi, notSkippedColumnIDs);
     if (nullSequence != null) {
       this.nullSequence = nullSequence;
@@ -84,7 +72,7 @@ public class ColumnarStruct extends ColumnarStructBase {
     }
     return fieldLen;
   }
-  
+
   @Override
   protected LazyObjectBase createLazyObjectBase(ObjectInspector objectInspector) {
     return LazyFactory.createLazyObject(objectInspector);

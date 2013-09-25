@@ -14,9 +14,6 @@
       <void method="put"> 
        <string>src</string> 
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
-        <void property="deserializerClass"> 
-         <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
-        </void> 
         <void property="inputFileFormatClass"> 
          <class>org.apache.hadoop.mapred.TextInputFormat</class> 
         </void> 
@@ -70,14 +67,8 @@
           </void> 
          </object> 
         </void> 
-        <void property="serdeClassName"> 
-         <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
-        </void> 
         <void property="tableDesc"> 
          <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-          <void property="deserializerClass"> 
-           <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
-          </void> 
           <void property="inputFileFormatClass"> 
            <class>org.apache.hadoop.mapred.TextInputFormat</class> 
           </void> 
@@ -152,9 +143,6 @@
             </void> 
            </object> 
           </void> 
-          <void property="serdeClassName"> 
-           <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
-          </void> 
          </object> 
         </void> 
        </object> 
@@ -196,6 +184,24 @@
                         </void> 
                        </object> 
                       </void> 
+                      <void method="put"> 
+                       <string>VALUE._col0</string> 
+                       <object id="ExprNodeColumnDesc1" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                        <void property="column"> 
+                         <string>_col1</string> 
+                        </void> 
+                        <void property="tabAlias"> 
+                         <string></string> 
+                        </void> 
+                        <void property="typeInfo"> 
+                         <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                          <void property="typeName"> 
+                           <string>double</string> 
+                          </void> 
+                         </object> 
+                        </void> 
+                       </object> 
+                      </void> 
                      </object> 
                     </void> 
                     <void property="conf"> 
@@ -212,9 +218,6 @@
                       </void> 
                       <void property="keySerializeInfo"> 
                        <object id="TableDesc0" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-                        <void property="deserializerClass"> 
-                         <class>org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe</class> 
-                        </void> 
                         <void property="inputFileFormatClass"> 
                          <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
                         </void> 
@@ -226,6 +229,10 @@
                           <void method="put"> 
                            <string>columns</string> 
                            <string>_col0</string> 
+                          </void> 
+                          <void method="put"> 
+                           <string>serialization.lib</string> 
+                           <string>org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe</string> 
                           </void> 
                           <void method="put"> 
                            <string>serialization.sort.order</string> 
@@ -268,29 +275,12 @@
                       <void property="valueCols"> 
                        <object class="java.util.ArrayList"> 
                         <void method="add"> 
-                         <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                          <void property="column"> 
-                           <string>_col1</string> 
-                          </void> 
-                          <void property="tabAlias"> 
-                           <string></string> 
-                          </void> 
-                          <void property="typeInfo"> 
-                           <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                            <void property="typeName"> 
-                             <string>double</string> 
-                            </void> 
-                           </object> 
-                          </void> 
-                         </object> 
+                         <object idref="ExprNodeColumnDesc1"/> 
                         </void> 
                        </object> 
                       </void> 
                       <void property="valueSerializeInfo"> 
                        <object id="TableDesc1" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-                        <void property="deserializerClass"> 
-                         <class>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</class> 
-                        </void> 
                         <void property="inputFileFormatClass"> 
                          <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
                         </void> 
@@ -302,6 +292,10 @@
                           <void method="put"> 
                            <string>columns</string> 
                            <string>_col0</string> 
+                          </void> 
+                          <void method="put"> 
+                           <string>serialization.lib</string> 
+                           <string>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</string> 
                           </void> 
                           <void method="put"> 
                            <string>columns.types</string> 
@@ -355,6 +349,9 @@
                           <void property="type"> 
                            <object idref="PrimitiveTypeInfo0"/> 
                           </void> 
+                          <void property="typeName"> 
+                           <string>string</string> 
+                          </void> 
                          </object> 
                         </void> 
                         <void method="add"> 
@@ -364,6 +361,9 @@
                           </void> 
                           <void property="type"> 
                            <object idref="PrimitiveTypeInfo1"/> 
+                          </void> 
+                          <void property="typeName"> 
+                           <string>double</string> 
                           </void> 
                          </object> 
                         </void> 
@@ -379,7 +379,7 @@
                  <object class="java.util.HashMap"> 
                   <void method="put"> 
                    <string>_col0</string> 
-                   <object id="ExprNodeColumnDesc1" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                   <object id="ExprNodeColumnDesc2" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                     <void property="column"> 
                      <string>key</string> 
                     </void> 
@@ -399,8 +399,8 @@
                    <object class="java.util.ArrayList"> 
                     <void method="add"> 
                      <object class="org.apache.hadoop.hive.ql.plan.AggregationDesc"> 
-                      <void property="genericUDAFEvaluator"> 
-                       <object id="GenericUDAFSum$GenericUDAFSumDouble0" class="org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum$GenericUDAFSumDouble"/> 
+                      <void property="genericUDAFEvaluatorClassName"> 
+                       <string>org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum$GenericUDAFSumDouble</string> 
                       </void> 
                       <void property="genericUDAFName"> 
                        <string>sum</string> 
@@ -447,9 +447,6 @@
                           </void> 
                           <void property="genericUDF"> 
                            <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
-                            <void property="udfClass"> 
-                             <class>org.apache.hadoop.hive.ql.udf.UDFSubstr</class> 
-                            </void> 
                             <void property="udfClassName"> 
                              <string>org.apache.hadoop.hive.ql.udf.UDFSubstr</string> 
                             </void> 
@@ -478,7 +475,7 @@
                   <void property="keys"> 
                    <object class="java.util.ArrayList"> 
                     <void method="add"> 
-                     <object idref="ExprNodeColumnDesc1"/> 
+                     <object idref="ExprNodeColumnDesc2"/> 
                     </void> 
                    </object> 
                   </void> 
@@ -549,6 +546,9 @@
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
                       </void> 
+                      <void property="typeName"> 
+                       <string>string</string> 
+                      </void> 
                      </object> 
                     </void> 
                     <void method="add"> 
@@ -561,6 +561,9 @@
                       </void> 
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="typeName"> 
+                       <string>double</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -730,6 +733,9 @@
                   <void property="type"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
+                  <void property="typeName"> 
+                   <string>string</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void method="add"> 
@@ -742,6 +748,9 @@
                   </void> 
                   <void property="type"> 
                    <object idref="PrimitiveTypeInfo0"/> 
+                  </void> 
+                  <void property="typeName"> 
+                   <string>string</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -826,6 +835,9 @@
               <void property="type"> 
                <object idref="PrimitiveTypeInfo2"/> 
               </void> 
+              <void property="typeName"> 
+               <string>bigint</string> 
+              </void> 
              </object> 
             </void> 
             <void method="add"> 
@@ -841,6 +853,9 @@
               </void> 
               <void property="type"> 
                <object idref="PrimitiveTypeInfo0"/> 
+              </void> 
+              <void property="typeName"> 
+               <string>string</string> 
               </void> 
              </object> 
             </void> 
@@ -867,9 +882,6 @@
        <object class="org.apache.hadoop.hive.ql.plan.PartitionDesc"> 
         <void property="baseFileName"> 
          <string>src</string> 
-        </void> 
-        <void property="deserializerClass"> 
-         <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
         </void> 
         <void property="inputFileFormatClass"> 
          <class>org.apache.hadoop.mapred.TextInputFormat</class> 
@@ -948,14 +960,8 @@
           </void> 
          </object> 
         </void> 
-        <void property="serdeClassName"> 
-         <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
-        </void> 
         <void property="tableDesc"> 
          <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-          <void property="deserializerClass"> 
-           <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
-          </void> 
           <void property="inputFileFormatClass"> 
            <class>org.apache.hadoop.mapred.TextInputFormat</class> 
           </void> 
@@ -1030,9 +1036,6 @@
             </void> 
            </object> 
           </void> 
-          <void property="serdeClassName"> 
-           <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
-          </void> 
          </object> 
         </void> 
        </object> 
@@ -1073,9 +1076,6 @@
                   </void> 
                   <void property="tableInfo"> 
                    <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-                    <void property="deserializerClass"> 
-                     <class>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</class> 
-                    </void> 
                     <void property="inputFileFormatClass"> 
                      <class>org.apache.hadoop.mapred.TextInputFormat</class> 
                     </void> 
@@ -1091,6 +1091,10 @@
                       <void method="put"> 
                        <string>columns</string> 
                        <string>_col0,_col1</string> 
+                      </void> 
+                      <void method="put"> 
+                       <string>serialization.lib</string> 
+                       <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
                       </void> 
                       <void method="put"> 
                        <string>serialization.format</string> 
@@ -1154,6 +1158,9 @@
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo0"/> 
                       </void> 
+                      <void property="typeName"> 
+                       <string>string</string> 
+                      </void> 
                      </object> 
                     </void> 
                     <void method="add"> 
@@ -1166,6 +1173,9 @@
                       </void> 
                       <void property="type"> 
                        <object idref="PrimitiveTypeInfo1"/> 
+                      </void> 
+                      <void property="typeName"> 
+                       <string>double</string> 
                       </void> 
                      </object> 
                     </void> 
@@ -1181,7 +1191,7 @@
              <object class="java.util.HashMap"> 
               <void method="put"> 
                <string>_col1</string> 
-               <object id="ExprNodeColumnDesc2" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+               <object id="ExprNodeColumnDesc3" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                 <void property="column"> 
                  <string>_col1</string> 
                 </void> 
@@ -1195,7 +1205,7 @@
               </void> 
               <void method="put"> 
                <string>_col0</string> 
-               <object id="ExprNodeColumnDesc3" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+               <object id="ExprNodeColumnDesc4" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
                 <void property="column"> 
                  <string>_col0</string> 
                 </void> 
@@ -1214,10 +1224,10 @@
               <void property="colList"> 
                <object class="java.util.ArrayList"> 
                 <void method="add"> 
-                 <object idref="ExprNodeColumnDesc3"/> 
+                 <object idref="ExprNodeColumnDesc4"/> 
                 </void> 
                 <void method="add"> 
-                 <object idref="ExprNodeColumnDesc2"/> 
+                 <object idref="ExprNodeColumnDesc3"/> 
                 </void> 
                </object> 
               </void> 
@@ -1274,6 +1284,9 @@
                   <void property="type"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
+                  <void property="typeName"> 
+                   <string>string</string> 
+                  </void> 
                  </object> 
                 </void> 
                 <void method="add"> 
@@ -1286,6 +1299,9 @@
                   </void> 
                   <void property="type"> 
                    <object idref="PrimitiveTypeInfo1"/> 
+                  </void> 
+                  <void property="typeName"> 
+                   <string>double</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -1301,7 +1317,7 @@
          <object class="java.util.HashMap"> 
           <void method="put"> 
            <string>_col0</string> 
-           <object id="ExprNodeColumnDesc4" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+           <object id="ExprNodeColumnDesc5" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
             <void property="column"> 
              <string>KEY._col0</string> 
             </void> 
@@ -1318,8 +1334,8 @@
            <object class="java.util.ArrayList"> 
             <void method="add"> 
              <object class="org.apache.hadoop.hive.ql.plan.AggregationDesc"> 
-              <void property="genericUDAFEvaluator"> 
-               <object idref="GenericUDAFSum$GenericUDAFSumDouble0"/> 
+              <void property="genericUDAFEvaluatorClassName"> 
+               <string>org.apache.hadoop.hive.ql.udf.generic.GenericUDAFSum$GenericUDAFSumDouble</string> 
               </void> 
               <void property="genericUDAFName"> 
                <string>sum</string> 
@@ -1353,7 +1369,7 @@
           <void property="keys"> 
            <object class="java.util.ArrayList"> 
             <void method="add"> 
-             <object idref="ExprNodeColumnDesc4"/> 
+             <object idref="ExprNodeColumnDesc5"/> 
             </void> 
            </object> 
           </void> 
@@ -1424,6 +1440,9 @@
               <void property="type"> 
                <object idref="PrimitiveTypeInfo0"/> 
               </void> 
+              <void property="typeName"> 
+               <string>string</string> 
+              </void> 
              </object> 
             </void> 
             <void method="add"> 
@@ -1436,6 +1455,9 @@
               </void> 
               <void property="type"> 
                <object idref="PrimitiveTypeInfo1"/> 
+              </void> 
+              <void property="typeName"> 
+               <string>double</string> 
               </void> 
              </object> 
             </void> 

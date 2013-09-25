@@ -24,22 +24,23 @@ import java.util.Map;
 
 /**
  * HCat message sent when a partition is dropped in HCatalog.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.messaging.DropPartitionMessage} instead
  */
 public abstract class DropPartitionMessage extends HCatEventMessage {
 
-    protected DropPartitionMessage() {
-        super(EventType.DROP_PARTITION);
-    }
+  protected DropPartitionMessage() {
+    super(EventType.DROP_PARTITION);
+  }
 
-    public abstract String getTable();
-    public abstract List<Map<String, String>> getPartitions ();
+  public abstract String getTable();
+  public abstract List<Map<String, String>> getPartitions ();
 
-    @Override
-    public HCatEventMessage checkValid() {
-        if (getTable() == null)
-            throw new IllegalStateException("Table name unset.");
-        if (getPartitions() == null)
-            throw new IllegalStateException("Partition-list unset.");
-        return super.checkValid();
-    }
+  @Override
+  public HCatEventMessage checkValid() {
+    if (getTable() == null)
+      throw new IllegalStateException("Table name unset.");
+    if (getPartitions() == null)
+      throw new IllegalStateException("Partition-list unset.");
+    return super.checkValid();
+  }
 }

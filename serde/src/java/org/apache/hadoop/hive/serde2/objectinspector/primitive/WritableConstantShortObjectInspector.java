@@ -31,6 +31,9 @@ public class WritableConstantShortObjectInspector extends
 
   private ShortWritable value;
 
+  protected WritableConstantShortObjectInspector() {
+    super();
+  }
   WritableConstantShortObjectInspector(ShortWritable value) {
     super();
     this.value = value;

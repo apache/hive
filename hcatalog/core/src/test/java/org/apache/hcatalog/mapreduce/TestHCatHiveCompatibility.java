@@ -34,96 +34,99 @@ import org.apache.pig.data.Tuple;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.TestHCatHiveCompatibility} instead
+ */
 public class TestHCatHiveCompatibility extends HCatBaseTest {
-    private static final String INPUT_FILE_NAME = TEST_DATA_DIR + "/input.data";
+  private static final String INPUT_FILE_NAME = TEST_DATA_DIR + "/input.data";
 
-    @BeforeClass
-    public static void createInputData() throws Exception {
-        int LOOP_SIZE = 11;
-        File file = new File(INPUT_FILE_NAME);
-        file.deleteOnExit();
-        FileWriter writer = new FileWriter(file);
-        for (int i = 0; i < LOOP_SIZE; i++) {
-            writer.write(i + "\t1\n");
-        }
-        writer.close();
+  @BeforeClass
+  public static void createInputData() throws Exception {
+    int LOOP_SIZE = 11;
+    File file = new File(INPUT_FILE_NAME);
+    file.deleteOnExit();
+    FileWriter writer = new FileWriter(file);
+    for (int i = 0; i < LOOP_SIZE; i++) {
+      writer.write(i + "\t1\n");
+    }
+    writer.close();
+  }
+
+  @Test
+  public void testUnpartedReadWrite() throws Exception {
+
+    driver.run("drop table if exists junit_unparted_noisd");
+    String createTable = "create table junit_unparted_noisd(a int) stored as RCFILE";
+    Assert.assertEquals(0, driver.run(createTable).getResponseCode());
+
+    // assert that the table created has no hcat instrumentation, and that we're still able to read it.
+    Table table = client.getTable("default", "junit_unparted_noisd");
+    Assert.assertTrue(table.getSd().getInputFormat().equals(HCatConstants.HIVE_RCFILE_IF_CLASS));
+
+    PigServer server = new PigServer(ExecType.LOCAL);
+    logAndRegister(server, "A = load '" + INPUT_FILE_NAME + "' as (a:int);");
+    logAndRegister(server, "store A into 'default.junit_unparted_noisd' using org.apache.hcatalog.pig.HCatStorer();");
+    logAndRegister(server, "B = load 'default.junit_unparted_noisd' using org.apache.hcatalog.pig.HCatLoader();");
+    Iterator<Tuple> itr = server.openIterator("B");
+
+    int i = 0;
+
+    while (itr.hasNext()) {
+      Tuple t = itr.next();
+      Assert.assertEquals(1, t.size());
+      Assert.assertEquals(t.get(0), i);
+      i++;
     }
 
-    @Test
-    public void testUnpartedReadWrite() throws Exception {
+    Assert.assertFalse(itr.hasNext());
+    Assert.assertEquals(11, i);
 
-        driver.run("drop table if exists junit_unparted_noisd");
-        String createTable = "create table junit_unparted_noisd(a int) stored as RCFILE";
-        Assert.assertEquals(0, driver.run(createTable).getResponseCode());
+    // assert that the table created still has no hcat instrumentation
+    Table table2 = client.getTable("default", "junit_unparted_noisd");
+    Assert.assertTrue(table2.getSd().getInputFormat().equals(HCatConstants.HIVE_RCFILE_IF_CLASS));
 
-        // assert that the table created has no hcat instrumentation, and that we're still able to read it.
-        Table table = client.getTable("default", "junit_unparted_noisd");
-        Assert.assertTrue(table.getSd().getInputFormat().equals(HCatConstants.HIVE_RCFILE_IF_CLASS));
+    driver.run("drop table junit_unparted_noisd");
+  }
 
-        PigServer server = new PigServer(ExecType.LOCAL);
-        logAndRegister(server, "A = load '" + INPUT_FILE_NAME + "' as (a:int);");
-        logAndRegister(server, "store A into 'default.junit_unparted_noisd' using org.apache.hcatalog.pig.HCatStorer();");
-        logAndRegister(server, "B = load 'default.junit_unparted_noisd' using org.apache.hcatalog.pig.HCatLoader();");
-        Iterator<Tuple> itr = server.openIterator("B");
+  @Test
+  public void testPartedRead() throws Exception {
 
-        int i = 0;
+    driver.run("drop table if exists junit_parted_noisd");
+    String createTable = "create table junit_parted_noisd(a int) partitioned by (b string) stored as RCFILE";
+    Assert.assertEquals(0, driver.run(createTable).getResponseCode());
 
-        while (itr.hasNext()) {
-            Tuple t = itr.next();
-            Assert.assertEquals(1, t.size());
-            Assert.assertEquals(t.get(0), i);
-            i++;
-        }
+    // assert that the table created has no hcat instrumentation, and that we're still able to read it.
+    Table table = client.getTable("default", "junit_parted_noisd");
+    Assert.assertTrue(table.getSd().getInputFormat().equals(HCatConstants.HIVE_RCFILE_IF_CLASS));
 
-        Assert.assertFalse(itr.hasNext());
-        Assert.assertEquals(11, i);
+    PigServer server = new PigServer(ExecType.LOCAL);
+    logAndRegister(server, "A = load '" + INPUT_FILE_NAME + "' as (a:int);");
+    logAndRegister(server, "store A into 'default.junit_parted_noisd' using org.apache.hcatalog.pig.HCatStorer('b=42');");
+    logAndRegister(server, "B = load 'default.junit_parted_noisd' using org.apache.hcatalog.pig.HCatLoader();");
+    Iterator<Tuple> itr = server.openIterator("B");
 
-        // assert that the table created still has no hcat instrumentation
-        Table table2 = client.getTable("default", "junit_unparted_noisd");
-        Assert.assertTrue(table2.getSd().getInputFormat().equals(HCatConstants.HIVE_RCFILE_IF_CLASS));
+    int i = 0;
 
-        driver.run("drop table junit_unparted_noisd");
+    while (itr.hasNext()) {
+      Tuple t = itr.next();
+      Assert.assertEquals(2, t.size()); // Contains explicit field "a" and partition "b".
+      Assert.assertEquals(t.get(0), i);
+      Assert.assertEquals(t.get(1), "42");
+      i++;
     }
 
-    @Test
-    public void testPartedRead() throws Exception {
+    Assert.assertFalse(itr.hasNext());
+    Assert.assertEquals(11, i);
 
-        driver.run("drop table if exists junit_parted_noisd");
-        String createTable = "create table junit_parted_noisd(a int) partitioned by (b string) stored as RCFILE";
-        Assert.assertEquals(0, driver.run(createTable).getResponseCode());
+    // assert that the table created still has no hcat instrumentation
+    Table table2 = client.getTable("default", "junit_parted_noisd");
+    Assert.assertTrue(table2.getSd().getInputFormat().equals(HCatConstants.HIVE_RCFILE_IF_CLASS));
 
-        // assert that the table created has no hcat instrumentation, and that we're still able to read it.
-        Table table = client.getTable("default", "junit_parted_noisd");
-        Assert.assertTrue(table.getSd().getInputFormat().equals(HCatConstants.HIVE_RCFILE_IF_CLASS));
+    // assert that there is one partition present, and it had hcat instrumentation inserted when it was created.
+    Partition ptn = client.getPartition("default", "junit_parted_noisd", Arrays.asList("42"));
 
-        PigServer server = new PigServer(ExecType.LOCAL);
-        logAndRegister(server, "A = load '" + INPUT_FILE_NAME + "' as (a:int);");
-        logAndRegister(server, "store A into 'default.junit_parted_noisd' using org.apache.hcatalog.pig.HCatStorer('b=42');");
-        logAndRegister(server, "B = load 'default.junit_parted_noisd' using org.apache.hcatalog.pig.HCatLoader();");
-        Iterator<Tuple> itr = server.openIterator("B");
-
-        int i = 0;
-
-        while (itr.hasNext()) {
-            Tuple t = itr.next();
-            Assert.assertEquals(2, t.size()); // Contains explicit field "a" and partition "b".
-            Assert.assertEquals(t.get(0), i);
-            Assert.assertEquals(t.get(1), "42");
-            i++;
-        }
-
-        Assert.assertFalse(itr.hasNext());
-        Assert.assertEquals(11, i);
-
-        // assert that the table created still has no hcat instrumentation
-        Table table2 = client.getTable("default", "junit_parted_noisd");
-        Assert.assertTrue(table2.getSd().getInputFormat().equals(HCatConstants.HIVE_RCFILE_IF_CLASS));
-
-        // assert that there is one partition present, and it had hcat instrumentation inserted when it was created.
-        Partition ptn = client.getPartition("default", "junit_parted_noisd", Arrays.asList("42"));
-
-        Assert.assertNotNull(ptn);
-        Assert.assertTrue(ptn.getSd().getInputFormat().equals(HCatConstants.HIVE_RCFILE_IF_CLASS));
-        driver.run("drop table junit_unparted_noisd");
-    }
+    Assert.assertNotNull(ptn);
+    Assert.assertTrue(ptn.getSd().getInputFormat().equals(HCatConstants.HIVE_RCFILE_IF_CLASS));
+    driver.run("drop table junit_unparted_noisd");
+  }
 }

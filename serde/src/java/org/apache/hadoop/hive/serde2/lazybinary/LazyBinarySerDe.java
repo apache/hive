@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.serde2.lazybinary;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -44,6 +46,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
@@ -231,7 +235,7 @@ public class LazyBinarySerDe extends AbstractSerDe {
    *          once already
    */
   private static boolean serializeStruct(Output byteStream, Object obj,
-      StructObjectInspector soi, boolean warnedOnceNullMapKey) {
+      StructObjectInspector soi, boolean warnedOnceNullMapKey) throws SerDeException {
     // do nothing for null struct
     if (null == obj) {
       return warnedOnceNullMapKey;
@@ -266,6 +270,17 @@ public class LazyBinarySerDe extends AbstractSerDe {
     return warnedOnceNullMapKey;
   }
 
+  private static void serializeText(Output byteStream, Text t, boolean skipLengthPrefix) {
+    /* write byte size of the string which is a vint */
+    int length = t.getLength();
+    if (!skipLengthPrefix) {
+      LazyBinaryUtils.writeVInt(byteStream, length);
+    }
+    /* write string itself */
+    byte[] data = t.getBytes();
+    byteStream.write(data, 0, length);
+  }
+
   /**
    * A recursive function that serialize an object to a byte buffer based on its
    * object inspector.
@@ -284,7 +299,8 @@ public class LazyBinarySerDe extends AbstractSerDe {
    *          once already
    */
   public static boolean serialize(Output byteStream, Object obj,
-      ObjectInspector objInspector, boolean skipLengthPrefix, boolean warnedOnceNullMapKey) {
+      ObjectInspector objInspector, boolean skipLengthPrefix, boolean warnedOnceNullMapKey)
+      throws SerDeException {
 
     // do nothing for null object
     if (null == obj) {
@@ -353,17 +369,15 @@ public class LazyBinarySerDe extends AbstractSerDe {
       case STRING: {
         StringObjectInspector soi = (StringObjectInspector) poi;
         Text t = soi.getPrimitiveWritableObject(obj);
-        /* write byte size of the string which is a vint */
-        int length = t.getLength();
-        if (!skipLengthPrefix) {
-          LazyBinaryUtils.writeVInt(byteStream, length);
-        }
-        /* write string itself */
-        byte[] data = t.getBytes();
-        byteStream.write(data, 0, length);
+        serializeText(byteStream, t, skipLengthPrefix);
         return warnedOnceNullMapKey;
       }
-
+      case VARCHAR: {
+        HiveVarcharObjectInspector hcoi = (HiveVarcharObjectInspector) poi;
+        Text t = hcoi.getPrimitiveWritableObject(obj).getTextValue();
+        serializeText(byteStream, t, skipLengthPrefix);
+        return warnedOnceNullMapKey;
+      }
       case BINARY: {
         BinaryObjectInspector baoi = (BinaryObjectInspector) poi;
         BytesWritable bw = baoi.getPrimitiveWritableObject(obj);

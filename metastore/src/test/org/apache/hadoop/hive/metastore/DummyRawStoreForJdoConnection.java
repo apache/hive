@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.metastore;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import junit.framework.Assert;
 
@@ -51,6 +52,7 @@ import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
 import org.apache.hadoop.hive.metastore.model.MRoleMap;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
+import org.apache.thrift.TException;
 
 /**
  *
@@ -319,6 +321,12 @@ public class DummyRawStoreForJdoConnection implements RawStore {
       List<String> partNames) throws MetaException, NoSuchObjectException {
 
     return null;
+  }
+
+  @Override
+  public boolean getPartitionsByExpr(String dbName, String tblName, byte[] expr,
+      String defaultPartitionName, short maxParts, Set<Partition> result) throws TException {
+    return false;
   }
 
   @Override
@@ -592,6 +600,19 @@ public class DummyRawStoreForJdoConnection implements RawStore {
   public boolean updatePartitionColumnStatistics(ColumnStatistics statsObj,List<String> partVals)
     throws NoSuchObjectException, MetaException, InvalidObjectException {
     return false;
+  }
+
+  @Override
+  public void verifySchema() throws MetaException {
+  }
+
+  @Override
+  public String getMetaStoreSchemaVersion() throws MetaException {
+    return null;
+  }
+
+  @Override
+  public void setMetaStoreSchemaVersion(String version, String comment) throws MetaException {
   }
 }
 

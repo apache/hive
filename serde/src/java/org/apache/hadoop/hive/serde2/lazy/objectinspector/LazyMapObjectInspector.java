@@ -29,7 +29,7 @@ import org.apache.hadoop.io.Text;
 
 /**
  * LazyMapObjectInspector works on struct data that is stored in LazyStruct.
- * 
+ *
  * Always use the ObjectInspectorFactory to create new ObjectInspector objects,
  * instead of directly creating an instance of this class.
  */
@@ -38,15 +38,17 @@ public class LazyMapObjectInspector implements MapObjectInspector {
   public static final Log LOG = LogFactory.getLog(LazyMapObjectInspector.class
       .getName());
 
-  ObjectInspector mapKeyObjectInspector;
-  ObjectInspector mapValueObjectInspector;
+  private ObjectInspector mapKeyObjectInspector;
+  private ObjectInspector mapValueObjectInspector;
+  private byte itemSeparator;
+  private byte keyValueSeparator;
+  private Text nullSequence;
+  private boolean escaped;
+  private byte escapeChar;
 
-  byte itemSeparator;
-  byte keyValueSeparator;
-  Text nullSequence;
-  boolean escaped;
-  byte escapeChar;
-
+  protected LazyMapObjectInspector() {
+    super();
+  }
   /**
    * Call ObjectInspectorFactory.getStandardListObjectInspector instead.
    */

@@ -20,6 +20,7 @@ package org.apache.hive.jdbc;
 
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.hive.serde.serdeConstants;
@@ -31,11 +32,14 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
   private final List<String> columnNames;
   private final List<String> columnTypes;
+  private final List<JdbcColumnAttributes> columnAttributes;
 
   public HiveResultSetMetaData(List<String> columnNames,
-      List<String> columnTypes) {
+      List<String> columnTypes,
+      List<JdbcColumnAttributes> columnAttributes) {
     this.columnNames = columnNames;
     this.columnTypes = columnTypes;
+    this.columnAttributes = columnAttributes;
   }
 
   public String getCatalogName(int column) throws SQLException {
@@ -53,7 +57,7 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
   public int getColumnDisplaySize(int column) throws SQLException {
     int columnType = getColumnType(column);
 
-    return JdbcColumn.columnDisplaySize(columnType);
+    return JdbcColumn.columnDisplaySize(columnType, columnAttributes.get(column - 1));
   }
 
   public String getColumnLabel(int column) throws SQLException {
@@ -89,6 +93,8 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
     String type = columnTypes.get(column - 1);
     if ("string".equalsIgnoreCase(type)) {
       return serdeConstants.STRING_TYPE_NAME;
+    } else if ("varchar".equalsIgnoreCase(type)) {
+      return serdeConstants.VARCHAR_TYPE_NAME;
     } else if ("float".equalsIgnoreCase(type)) {
       return serdeConstants.FLOAT_TYPE_NAME;
     } else if ("double".equalsIgnoreCase(type)) {
@@ -127,13 +133,13 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
   public int getPrecision(int column) throws SQLException {
     int columnType = getColumnType(column);
 
-    return JdbcColumn.columnPrecision(columnType);
+    return JdbcColumn.columnPrecision(columnType, columnAttributes.get(column - 1));
   }
 
   public int getScale(int column) throws SQLException {
     int columnType = getColumnType(column);
 
-    return JdbcColumn.columnScale(columnType);
+    return JdbcColumn.columnScale(columnType, columnAttributes.get(column - 1));
   }
 
   public String getSchemaName(int column) throws SQLException {

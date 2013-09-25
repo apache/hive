@@ -31,47 +31,49 @@ import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 
-/* Unit test for GitHub Howl issue #3 */
+/** Unit test for GitHub Howl issue #3 
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.cli.TestUseDatabase} instead
+ */
 public class TestUseDatabase extends TestCase {
 
-    private Driver hcatDriver;
+  private Driver hcatDriver;
 
-    @Override
-    protected void setUp() throws Exception {
+  @Override
+  protected void setUp() throws Exception {
 
-        HiveConf hcatConf = new HiveConf(this.getClass());
-        hcatConf.set(ConfVars.PREEXECHOOKS.varname, "");
-        hcatConf.set(ConfVars.POSTEXECHOOKS.varname, "");
-        hcatConf.set(ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
+    HiveConf hcatConf = new HiveConf(this.getClass());
+    hcatConf.set(ConfVars.PREEXECHOOKS.varname, "");
+    hcatConf.set(ConfVars.POSTEXECHOOKS.varname, "");
+    hcatConf.set(ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
 
-        hcatConf.set(ConfVars.SEMANTIC_ANALYZER_HOOK.varname, HCatSemanticAnalyzer.class.getName());
-        hcatDriver = new Driver(hcatConf);
-        SessionState.start(new CliSessionState(hcatConf));
-    }
+    hcatConf.set(ConfVars.SEMANTIC_ANALYZER_HOOK.varname, HCatSemanticAnalyzer.class.getName());
+    hcatDriver = new Driver(hcatConf);
+    SessionState.start(new CliSessionState(hcatConf));
+  }
 
-    String query;
-    private final String dbName = "testUseDatabase_db";
-    private final String tblName = "testUseDatabase_tbl";
+  String query;
+  private final String dbName = "testUseDatabase_db";
+  private final String tblName = "testUseDatabase_tbl";
 
-    public void testAlterTablePass() throws IOException, CommandNeedRetryException {
+  public void testAlterTablePass() throws IOException, CommandNeedRetryException {
 
-        hcatDriver.run("create database " + dbName);
-        hcatDriver.run("use " + dbName);
-        hcatDriver.run("create table " + tblName + " (a int) partitioned by (b string) stored as RCFILE");
+    hcatDriver.run("create database " + dbName);
+    hcatDriver.run("use " + dbName);
+    hcatDriver.run("create table " + tblName + " (a int) partitioned by (b string) stored as RCFILE");
 
-        CommandProcessorResponse response;
+    CommandProcessorResponse response;
 
-        response = hcatDriver.run("alter table " + tblName + " add partition (b='2') location '/tmp'");
-        assertEquals(0, response.getResponseCode());
-        assertNull(response.getErrorMessage());
+    response = hcatDriver.run("alter table " + tblName + " add partition (b='2') location '/tmp'");
+    assertEquals(0, response.getResponseCode());
+    assertNull(response.getErrorMessage());
 
-        response = hcatDriver.run("alter table " + tblName + " set fileformat INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat' OUTPUTFORMAT " +
-                "'org.apache.hadoop.hive.ql.io.RCFileOutputFormat' inputdriver 'mydriver' outputdriver 'yourdriver'");
-        assertEquals(0, response.getResponseCode());
-        assertNull(response.getErrorMessage());
+    response = hcatDriver.run("alter table " + tblName + " set fileformat INPUTFORMAT 'org.apache.hadoop.hive.ql.io.RCFileInputFormat' OUTPUTFORMAT " +
+        "'org.apache.hadoop.hive.ql.io.RCFileOutputFormat' inputdriver 'mydriver' outputdriver 'yourdriver'");
+    assertEquals(0, response.getResponseCode());
+    assertNull(response.getErrorMessage());
 
-        hcatDriver.run("drop table " + tblName);
-        hcatDriver.run("drop database " + dbName);
-    }
+    hcatDriver.run("drop table " + tblName);
+    hcatDriver.run("drop database " + dbName);
+  }
 
 }

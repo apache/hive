@@ -59,7 +59,7 @@
   <property name="test.output" value="true"/>
   <property name="test.junit.output.format" value="xml"/>
   <property name="test.junit.output.usefile" value="true"/>
-  <property name="minimr.query.files" value="list_bucket_dml_10.q,input16_cc.q,scriptfile1.q,bucket4.q,bucketmapjoin6.q,disable_merge_for_bucketing.q,reduce_deduplicate.q,smb_mapjoin_8.q,join1.q,groupby2.q,bucketizedhiveinputformat.q,bucketmapjoin7.q,optrstat_groupby.q,bucket_num_reducers.q,bucket5.q,load_fs2.q,bucket_num_reducers2.q,infer_bucket_sort_merge.q,infer_bucket_sort_reducers_power_two.q,infer_bucket_sort_dyn_part.q,infer_bucket_sort_bucketed_table.q,infer_bucket_sort_map_operators.q,infer_bucket_sort_num_buckets.q,leftsemijoin_mr.q,schemeAuthority.q,schemeAuthority2.q,truncate_column_buckets.q,remote_script.q,,load_hdfs_file_with_space_in_the_name.q,parallel_orderby.q"/>
+  <property name="minimr.query.files" value="list_bucket_dml_10.q,input16_cc.q,scriptfile1.q,scriptfile1_win.q,bucket4.q,bucketmapjoin6.q,disable_merge_for_bucketing.q,reduce_deduplicate.q,smb_mapjoin_8.q,join1.q,groupby2.q,bucketizedhiveinputformat.q,bucketmapjoin7.q,optrstat_groupby.q,bucket_num_reducers.q,bucket5.q,load_fs2.q,bucket_num_reducers2.q,infer_bucket_sort_merge.q,infer_bucket_sort_reducers_power_two.q,infer_bucket_sort_dyn_part.q,infer_bucket_sort_bucketed_table.q,infer_bucket_sort_map_operators.q,infer_bucket_sort_num_buckets.q,leftsemijoin_mr.q,schemeAuthority.q,schemeAuthority2.q,truncate_column_buckets.q,remote_script.q,,load_hdfs_file_with_space_in_the_name.q,parallel_orderby.q"/>
   <property name="minimr.query.negative.files" value="cluster_tasklog_retrieval.q,minimr_broken_pipe.q,mapreduce_stack_trace.q,mapreduce_stack_trace_turnoff.q,mapreduce_stack_trace_hadoop20.q,mapreduce_stack_trace_turnoff_hadoop20.q" />
   <property name="test.silent" value="true"/>
   <property name="hadoopVersion" value="${hadoop.version.ant-internal}"/>
@@ -308,8 +308,6 @@
      destdir="${test.build.classes}"
      debug="${javac.debug}"
      optimize="${javac.optimize}"
-     target="${javac.version}"
-     source="${javac.version}"
      deprecation="${javac.deprecation}"
      includeantruntime="false">
       <compilerarg line="${javac.args} ${javac.args.warnings}" />
@@ -322,8 +320,6 @@
      destdir="${test.build.classes}"
      debug="${javac.debug}"
      optimize="${javac.optimize}"
-     target="${javac.version}"
-     source="${javac.version}"
      deprecation="${javac.deprecation}"
      includeantruntime="false">
       <compilerarg line="${javac.args} ${javac.args.warnings}" />
@@ -341,6 +337,10 @@
         <fileset dir="${test.build.classes}" includes="**/udf/*.class"/>
         <fileset dir="${test.build.classes}" includes="**/udf/generic/*.class"/>
     </jar>
+    <delete file="${test.build.dir}/test-serdes.jar"/>
+    <jar jarfile="${test.build.dir}/test-serdes.jar">
+        <fileset dir="${test.build.classes}" includes="**/serde2/*.class"/>
+    </jar>  	
   </target>
 
   <target name="test-conditions">
@@ -432,9 +432,11 @@
       <equals arg1="windows" arg2="${os.family}"/>
       <then>
         <property name="junit.script.extension" value=".cmd"/>
+        <property name="junit.file.schema" value=""/>
       </then>
       <else>
         <property name="junit.script.extension" value=""/>
+        <property name="junit.file.schema" value="file://"/>
       </else>
     </if>
     <if>
@@ -458,9 +460,9 @@
       <sysproperty key="test.dfs.mkdir" value="${test.dfs.mkdir}"/>
       <sysproperty key="test.service.standalone.server" value="${standalone}"/>
       <sysproperty key="test.service.disable.server" value="${disableserver}"/>
-      <sysproperty key="log4j.configuration" value="file:///${test.src.data.dir}/conf/hive-log4j.properties"/>
+      <sysproperty key="log4j.configuration" value="${junit.file.schema}${test.src.data.dir}/conf/hive-log4j.properties"/>
       <sysproperty key="derby.stream.error.file" value="${test.build.dir}/derby.log"/>
-      <sysproperty key="hive.aux.jars.path" value="file:///${test.build.dir}/test-udfs.jar"/>
+      <sysproperty key="hive.aux.jars.path" value="${junit.file.schema}${test.build.dir}/test-udfs.jar"/>
       <sysproperty key="ql.test.query.clientpositive.dir" value="${ql.test.query.clientpositive.dir}"/>
       <sysproperty key="ql.test.results.clientpositive.dir" value="${ql.test.results.clientpositive.dir}"/>
       <sysproperty key="test.log.dir" value="${test.log.dir}"/>
@@ -481,6 +483,7 @@
       <sysproperty key="java.net.preferIPv4Stack" value="${java.net.preferIPv4Stack}"/>
       <sysproperty key="hadoop.bin.path" value="${test.hadoop.bin.path}${junit.script.extension}"/>
       <sysproperty key="test.concurrency.num.threads" value="${test.concurrency.num.threads}"/>
+      <sysproperty key="hive.home" value="${hive.root}/build/dist"/>
       <jvmarg line="${junit.jvm.args}"/>
 
       <classpath refid="test.local.classpath"/>

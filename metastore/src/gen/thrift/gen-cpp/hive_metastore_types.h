@@ -799,49 +799,6 @@ class Order {
 
 void swap(Order &a, Order &b);
 
-typedef struct _SkewedValueList__isset {
-  _SkewedValueList__isset() : skewedValueList(false) {}
-  bool skewedValueList;
-} _SkewedValueList__isset;
-
-class SkewedValueList {
- public:
-
-  static const char* ascii_fingerprint; // = "ACE4F644F0FDD289DDC4EE5B83BC13C0";
-  static const uint8_t binary_fingerprint[16]; // = {0xAC,0xE4,0xF6,0x44,0xF0,0xFD,0xD2,0x89,0xDD,0xC4,0xEE,0x5B,0x83,0xBC,0x13,0xC0};
-
-  SkewedValueList() {
-  }
-
-  virtual ~SkewedValueList() throw() {}
-
-  std::vector<std::string>  skewedValueList;
-
-  _SkewedValueList__isset __isset;
-
-  void __set_skewedValueList(const std::vector<std::string> & val) {
-    skewedValueList = val;
-  }
-
-  bool operator == (const SkewedValueList & rhs) const
-  {
-    if (!(skewedValueList == rhs.skewedValueList))
-      return false;
-    return true;
-  }
-  bool operator != (const SkewedValueList &rhs) const {
-    return !(*this == rhs);
-  }
-
-  bool operator < (const SkewedValueList & ) const;
-
-  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
-  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
-
-};
-
-void swap(SkewedValueList &a, SkewedValueList &b);
-
 typedef struct _SkewedInfo__isset {
   _SkewedInfo__isset() : skewedColNames(false), skewedColValues(false), skewedColValueLocationMaps(false) {}
   bool skewedColNames;
@@ -852,8 +809,8 @@ typedef struct _SkewedInfo__isset {
 class SkewedInfo {
  public:
 
-  static const char* ascii_fingerprint; // = "F4A067072461B8071E4F5A6BE5276FC0";
-  static const uint8_t binary_fingerprint[16]; // = {0xF4,0xA0,0x67,0x07,0x24,0x61,0xB8,0x07,0x1E,0x4F,0x5A,0x6B,0xE5,0x27,0x6F,0xC0};
+  static const char* ascii_fingerprint; // = "4BF2ED84BC3C3EB297A2AE2FA8427EB1";
+  static const uint8_t binary_fingerprint[16]; // = {0x4B,0xF2,0xED,0x84,0xBC,0x3C,0x3E,0xB2,0x97,0xA2,0xAE,0x2F,0xA8,0x42,0x7E,0xB1};
 
   SkewedInfo() {
   }
@@ -862,7 +819,7 @@ class SkewedInfo {
 
   std::vector<std::string>  skewedColNames;
   std::vector<std::vector<std::string> >  skewedColValues;
-  std::map<SkewedValueList, std::string>  skewedColValueLocationMaps;
+  std::map<std::vector<std::string> , std::string>  skewedColValueLocationMaps;
 
   _SkewedInfo__isset __isset;
 
@@ -874,7 +831,7 @@ class SkewedInfo {
     skewedColValues = val;
   }
 
-  void __set_skewedColValueLocationMaps(const std::map<SkewedValueList, std::string> & val) {
+  void __set_skewedColValueLocationMaps(const std::map<std::vector<std::string> , std::string> & val) {
     skewedColValueLocationMaps = val;
   }
 
@@ -920,8 +877,8 @@ typedef struct _StorageDescriptor__isset {
 class StorageDescriptor {
  public:
 
-  static const char* ascii_fingerprint; // = "283664579DDA891300CFDE15F5771323";
-  static const uint8_t binary_fingerprint[16]; // = {0x28,0x36,0x64,0x57,0x9D,0xDA,0x89,0x13,0x00,0xCF,0xDE,0x15,0xF5,0x77,0x13,0x23};
+  static const char* ascii_fingerprint; // = "CA8C9AA5FE4C32643757D8639CEF0CD7";
+  static const uint8_t binary_fingerprint[16]; // = {0xCA,0x8C,0x9A,0xA5,0xFE,0x4C,0x32,0x64,0x37,0x57,0xD8,0x63,0x9C,0xEF,0x0C,0xD7};
 
   StorageDescriptor() : location(), inputFormat(), outputFormat(), compressed(0), numBuckets(0), storedAsSubDirectories(0) {
   }
@@ -1058,8 +1015,8 @@ typedef struct _Table__isset {
 class Table {
  public:
 
-  static const char* ascii_fingerprint; // = "AEBB39149C622C62B239988E19489807";
-  static const uint8_t binary_fingerprint[16]; // = {0xAE,0xBB,0x39,0x14,0x9C,0x62,0x2C,0x62,0xB2,0x39,0x98,0x8E,0x19,0x48,0x98,0x07};
+  static const char* ascii_fingerprint; // = "68640B4B66B355CF317429AF70D2C260";
+  static const uint8_t binary_fingerprint[16]; // = {0x68,0x64,0x0B,0x4B,0x66,0xB3,0x55,0xCF,0x31,0x74,0x29,0xAF,0x70,0xD2,0xC2,0x60};
 
   Table() : tableName(), dbName(), owner(), createTime(0), lastAccessTime(0), retention(0), viewOriginalText(), viewExpandedText(), tableType() {
   }
@@ -1195,8 +1152,8 @@ typedef struct _Partition__isset {
 class Partition {
  public:
 
-  static const char* ascii_fingerprint; // = "81AD5F7E827DDC1A37C18BF73ECA603F";
-  static const uint8_t binary_fingerprint[16]; // = {0x81,0xAD,0x5F,0x7E,0x82,0x7D,0xDC,0x1A,0x37,0xC1,0x8B,0xF7,0x3E,0xCA,0x60,0x3F};
+  static const char* ascii_fingerprint; // = "31A52241B88A426C34087FE38343FF51";
+  static const uint8_t binary_fingerprint[16]; // = {0x31,0xA5,0x22,0x41,0xB8,0x8A,0x42,0x6C,0x34,0x08,0x7F,0xE3,0x83,0x43,0xFF,0x51};
 
   Partition() : dbName(), tableName(), createTime(0), lastAccessTime(0) {
   }
@@ -1299,8 +1256,8 @@ typedef struct _Index__isset {
 class Index {
  public:
 
-  static const char* ascii_fingerprint; // = "A2822E71566DF57594774A6CF56D11B5";
-  static const uint8_t binary_fingerprint[16]; // = {0xA2,0x82,0x2E,0x71,0x56,0x6D,0xF5,0x75,0x94,0x77,0x4A,0x6C,0xF5,0x6D,0x11,0xB5};
+  static const char* ascii_fingerprint; // = "09EEF655216AC81802850988D6C470A6";
+  static const uint8_t binary_fingerprint[16]; // = {0x09,0xEE,0xF6,0x55,0x21,0x6A,0xC8,0x18,0x02,0x85,0x09,0x88,0xD6,0xC4,0x70,0xA6};
 
   Index() : indexName(), indexHandlerClass(), dbName(), origTableName(), createTime(0), lastAccessTime(0), indexTableName(), deferredRebuild(0) {
   }
@@ -2014,6 +1971,128 @@ class EnvironmentContext {
 };
 
 void swap(EnvironmentContext &a, EnvironmentContext &b);
+
+
+class PartitionsByExprResult {
+ public:
+
+  static const char* ascii_fingerprint; // = "1B91CF0D2FC339DC29ABBD79CC9700E4";
+  static const uint8_t binary_fingerprint[16]; // = {0x1B,0x91,0xCF,0x0D,0x2F,0xC3,0x39,0xDC,0x29,0xAB,0xBD,0x79,0xCC,0x97,0x00,0xE4};
+
+  PartitionsByExprResult() : hasUnknownPartitions(0) {
+  }
+
+  virtual ~PartitionsByExprResult() throw() {}
+
+  std::set<Partition>  partitions;
+  bool hasUnknownPartitions;
+
+  void __set_partitions(const std::set<Partition> & val) {
+    partitions = val;
+  }
+
+  void __set_hasUnknownPartitions(const bool val) {
+    hasUnknownPartitions = val;
+  }
+
+  bool operator == (const PartitionsByExprResult & rhs) const
+  {
+    if (!(partitions == rhs.partitions))
+      return false;
+    if (!(hasUnknownPartitions == rhs.hasUnknownPartitions))
+      return false;
+    return true;
+  }
+  bool operator != (const PartitionsByExprResult &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PartitionsByExprResult & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(PartitionsByExprResult &a, PartitionsByExprResult &b);
+
+typedef struct _PartitionsByExprRequest__isset {
+  _PartitionsByExprRequest__isset() : defaultPartitionName(false), maxParts(true) {}
+  bool defaultPartitionName;
+  bool maxParts;
+} _PartitionsByExprRequest__isset;
+
+class PartitionsByExprRequest {
+ public:
+
+  static const char* ascii_fingerprint; // = "835944417A026FE6ABD0DF5A35BF52C5";
+  static const uint8_t binary_fingerprint[16]; // = {0x83,0x59,0x44,0x41,0x7A,0x02,0x6F,0xE6,0xAB,0xD0,0xDF,0x5A,0x35,0xBF,0x52,0xC5};
+
+  PartitionsByExprRequest() : dbName(), tblName(), expr(), defaultPartitionName(), maxParts(-1) {
+  }
+
+  virtual ~PartitionsByExprRequest() throw() {}
+
+  std::string dbName;
+  std::string tblName;
+  std::string expr;
+  std::string defaultPartitionName;
+  int16_t maxParts;
+
+  _PartitionsByExprRequest__isset __isset;
+
+  void __set_dbName(const std::string& val) {
+    dbName = val;
+  }
+
+  void __set_tblName(const std::string& val) {
+    tblName = val;
+  }
+
+  void __set_expr(const std::string& val) {
+    expr = val;
+  }
+
+  void __set_defaultPartitionName(const std::string& val) {
+    defaultPartitionName = val;
+    __isset.defaultPartitionName = true;
+  }
+
+  void __set_maxParts(const int16_t val) {
+    maxParts = val;
+    __isset.maxParts = true;
+  }
+
+  bool operator == (const PartitionsByExprRequest & rhs) const
+  {
+    if (!(dbName == rhs.dbName))
+      return false;
+    if (!(tblName == rhs.tblName))
+      return false;
+    if (!(expr == rhs.expr))
+      return false;
+    if (__isset.defaultPartitionName != rhs.__isset.defaultPartitionName)
+      return false;
+    else if (__isset.defaultPartitionName && !(defaultPartitionName == rhs.defaultPartitionName))
+      return false;
+    if (__isset.maxParts != rhs.__isset.maxParts)
+      return false;
+    else if (__isset.maxParts && !(maxParts == rhs.maxParts))
+      return false;
+    return true;
+  }
+  bool operator != (const PartitionsByExprRequest &rhs) const {
+    return !(*this == rhs);
+  }
+
+  bool operator < (const PartitionsByExprRequest & ) const;
+
+  uint32_t read(::apache::thrift::protocol::TProtocol* iprot);
+  uint32_t write(::apache::thrift::protocol::TProtocol* oprot) const;
+
+};
+
+void swap(PartitionsByExprRequest &a, PartitionsByExprRequest &b);
 
 typedef struct _MetaException__isset {
   _MetaException__isset() : message(false) {}

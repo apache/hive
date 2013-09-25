@@ -40,10 +40,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -112,8 +112,9 @@ import org.apache.hadoop.hive.ql.plan.AlterDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.AlterIndexDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableAlterPartDesc;
 import org.apache.hadoop.hive.ql.plan.AlterTableDesc;
-import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
+import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.AlterTableExchangePartition;
+import org.apache.hadoop.hive.ql.plan.AlterTableSimpleDesc;
 import org.apache.hadoop.hive.ql.plan.CreateDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.CreateIndexDesc;
 import org.apache.hadoop.hive.ql.plan.CreateTableDesc;
@@ -151,20 +152,19 @@ import org.apache.hadoop.hive.ql.plan.ShowTblPropertiesDesc;
 import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
-import org.apache.hadoop.hive.ql.plan.AlterTableDesc.AlterTableTypes;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
-import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.ToolRunner;
 import org.stringtemplate.v4.ST;
 
@@ -535,7 +535,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             dbName = dbTab[0];
             tableName = dbTab[1];
           } else {
-            dbName = db.getCurrentDatabase();
+            dbName = SessionState.get().getCurrentDatabase();
             tableName = obj;
           }
           dbObj = db.getDatabase(dbName);
@@ -701,7 +701,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
             dbName = dbTab[0];
             tableName = dbTab[1];
           } else {
-            dbName = db.getCurrentDatabase();
+            dbName = SessionState.get().getCurrentDatabase();
             tableName = obj;
           }
           dbObj = db.getDatabase(dbName);
@@ -874,7 +874,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   }
 
   private int dropIndex(Hive db, DropIndexDesc dropIdx) throws HiveException {
-    db.dropIndex(db.getCurrentDatabase(), dropIdx.getTableName(),
+    db.dropIndex(SessionState.get().getCurrentDatabase(), dropIdx.getTableName(),
         dropIdx.getIndexName(), true);
     return 0;
   }
@@ -897,7 +897,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (HiveUtils.getIndexHandler(conf, crtIndex.getIndexTypeHandlerClass()).usesIndexTable()) {
         String indexTableName =
             crtIndex.getIndexTableName() != null ? crtIndex.getIndexTableName() :
-            MetaStoreUtils.getIndexTableName(db.getCurrentDatabase(),
+            MetaStoreUtils.getIndexTableName(SessionState.get().getCurrentDatabase(),
             crtIndex.getTableName(), crtIndex.getIndexName());
         Table indexTable = db.getTable(indexTableName);
         work.getOutputs().add(new WriteEntity(indexTable));
@@ -919,7 +919,10 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         try {
           Map<String, String> props = new HashMap<String, String>();
           Map<Map<String, String>, Long> basePartTs = new HashMap<Map<String, String>, Long>();
-          Table baseTbl = db.getTable(db.getCurrentDatabase(), baseTableName);
+
+          Table baseTbl = db.getTable(SessionState.get().getCurrentDatabase(),
+              baseTableName);
+
           if (baseTbl.isPartitioned()) {
             List<Partition> baseParts;
             if (alterIndex.getSpec() != null) {
@@ -1467,8 +1470,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         URI originalPartitionUri = ArchiveUtils.addSlash(p.getPartitionPath().toUri());
         URI test = p.getPartitionPath().toUri();
         URI harPartitionDir = harHelper.getHarUri(originalPartitionUri, shim);
+        StringBuilder authority = new StringBuilder();
+        if(harPartitionDir.getUserInfo() != null) {
+          authority.append(harPartitionDir.getUserInfo()).append("@");
+        }
+        authority.append(harPartitionDir.getHost()).append(":");
+        if(harPartitionDir.getPort() != -1) {
+          authority.append(harPartitionDir.getPort());
+        }
         Path harPath = new Path(harPartitionDir.getScheme(),
-            harPartitionDir.getAuthority(),
+            authority.toString(),
             harPartitionDir.getPath()); // make in Path to ensure no slash at the end
         setArchived(p, harPath, partSpecInfo.values.size());
         db.alterPartition(tblName, p);
@@ -3411,11 +3422,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    */
   private void validateSerDe(String serdeName) throws HiveException {
     try {
-      Deserializer d = SerDeUtils.lookupDeserializer(serdeName);
+
+      Deserializer d = ReflectionUtils.newInstance(conf.getClassByName(serdeName).
+        asSubclass(Deserializer.class), conf);
       if (d != null) {
         LOG.debug("Found class for " + serdeName);
       }
-    } catch (SerDeException e) {
+    } catch (Exception e) {
       throw new HiveException("Cannot validate serde: " + serdeName, e);
     }
   }
@@ -3475,7 +3488,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (!db.databaseExists(dbName)) {
       throw new HiveException(ErrorMsg.DATABASE_NOT_EXISTS, dbName);
     }
-    db.setCurrentDatabase(dbName);
+    SessionState.get().setCurrentDatabase(dbName);
 
     // set database specific parameters
     Database database = db.getDatabase(dbName);

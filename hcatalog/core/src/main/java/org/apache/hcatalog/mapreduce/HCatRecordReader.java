@@ -43,243 +43,244 @@ import org.slf4j.LoggerFactory;
  * this ensures that the initialize on
  * the underlying record reader is done with the underlying split,
  * not with HCatSplit.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.HCatRecordReader} instead
  */
 class HCatRecordReader extends RecordReader<WritableComparable, HCatRecord> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HCatRecordReader.class);
+  private static final Logger LOG = LoggerFactory.getLogger(HCatRecordReader.class);
 
-    private InputErrorTracker errorTracker;
+  private InputErrorTracker errorTracker;
 
-    WritableComparable currentKey;
-    Writable currentValue;
-    HCatRecord currentHCatRecord;
+  WritableComparable currentKey;
+  Writable currentValue;
+  HCatRecord currentHCatRecord;
 
-    /** The underlying record reader to delegate to. */
-    private org.apache.hadoop.mapred.RecordReader<WritableComparable, Writable> baseRecordReader;
+  /** The underlying record reader to delegate to. */
+  private org.apache.hadoop.mapred.RecordReader<WritableComparable, Writable> baseRecordReader;
 
-    /** The storage handler used */
-    private final HCatStorageHandler storageHandler;
+  /** The storage handler used */
+  private final HCatStorageHandler storageHandler;
 
-    private Deserializer deserializer;
+  private Deserializer deserializer;
 
-    private Map<String, String> valuesNotInDataCols;
+  private Map<String, String> valuesNotInDataCols;
 
-    private HCatSchema outputSchema = null;
-    private HCatSchema dataSchema = null;
+  private HCatSchema outputSchema = null;
+  private HCatSchema dataSchema = null;
 
-    /**
-     * Instantiates a new hcat record reader.
-     */
-    public HCatRecordReader(HCatStorageHandler storageHandler,
-                            Map<String, String> valuesNotInDataCols) {
-        this.storageHandler = storageHandler;
-        this.valuesNotInDataCols = valuesNotInDataCols;
+  /**
+   * Instantiates a new hcat record reader.
+   */
+  public HCatRecordReader(HCatStorageHandler storageHandler,
+              Map<String, String> valuesNotInDataCols) {
+    this.storageHandler = storageHandler;
+    this.valuesNotInDataCols = valuesNotInDataCols;
+  }
+
+  /* (non-Javadoc)
+   * @see org.apache.hadoop.mapreduce.RecordReader#initialize(
+   * org.apache.hadoop.mapreduce.InputSplit,
+   * org.apache.hadoop.mapreduce.TaskAttemptContext)
+   */
+  @Override
+  public void initialize(org.apache.hadoop.mapreduce.InputSplit split,
+               TaskAttemptContext taskContext) throws IOException, InterruptedException {
+
+    HCatSplit hcatSplit = InternalUtil.castToHCatSplit(split);
+
+    baseRecordReader = createBaseRecordReader(hcatSplit, storageHandler, taskContext);
+    createDeserializer(hcatSplit, storageHandler, taskContext);
+
+    // Pull the output schema out of the TaskAttemptContext
+    outputSchema = (HCatSchema) HCatUtil.deserialize(
+      taskContext.getConfiguration().get(HCatConstants.HCAT_KEY_OUTPUT_SCHEMA));
+
+    if (outputSchema == null) {
+      outputSchema = hcatSplit.getTableSchema();
     }
 
-    /* (non-Javadoc)
-     * @see org.apache.hadoop.mapreduce.RecordReader#initialize(
-     * org.apache.hadoop.mapreduce.InputSplit,
-     * org.apache.hadoop.mapreduce.TaskAttemptContext)
-     */
-    @Override
-    public void initialize(org.apache.hadoop.mapreduce.InputSplit split,
-                           TaskAttemptContext taskContext) throws IOException, InterruptedException {
+    // Pull the table schema out of the Split info
+    // TODO This should be passed in the TaskAttemptContext instead
+    dataSchema = hcatSplit.getDataSchema();
 
-        HCatSplit hcatSplit = InternalUtil.castToHCatSplit(split);
+    errorTracker = new InputErrorTracker(taskContext.getConfiguration());
+  }
 
-        baseRecordReader = createBaseRecordReader(hcatSplit, storageHandler, taskContext);
-        createDeserializer(hcatSplit, storageHandler, taskContext);
+  private org.apache.hadoop.mapred.RecordReader createBaseRecordReader(HCatSplit hcatSplit,
+                                     HCatStorageHandler storageHandler, TaskAttemptContext taskContext) throws IOException {
 
-        // Pull the output schema out of the TaskAttemptContext
-        outputSchema = (HCatSchema) HCatUtil.deserialize(
-            taskContext.getConfiguration().get(HCatConstants.HCAT_KEY_OUTPUT_SCHEMA));
+    JobConf jobConf = HCatUtil.getJobConfFromContext(taskContext);
+    HCatUtil.copyJobPropertiesToJobConf(hcatSplit.getPartitionInfo().getJobProperties(), jobConf);
+    org.apache.hadoop.mapred.InputFormat inputFormat =
+      HCatInputFormat.getMapRedInputFormat(jobConf, storageHandler.getInputFormatClass());
+    return inputFormat.getRecordReader(hcatSplit.getBaseSplit(), jobConf,
+      InternalUtil.createReporter(taskContext));
+  }
 
-        if (outputSchema == null) {
-            outputSchema = hcatSplit.getTableSchema();
+  private void createDeserializer(HCatSplit hcatSplit, HCatStorageHandler storageHandler,
+                  TaskAttemptContext taskContext) throws IOException {
+
+    deserializer = ReflectionUtils.newInstance(storageHandler.getSerDeClass(),
+      taskContext.getConfiguration());
+
+    try {
+      InternalUtil.initializeDeserializer(deserializer, storageHandler.getConf(),
+        hcatSplit.getPartitionInfo().getTableInfo(),
+        hcatSplit.getPartitionInfo().getPartitionSchema());
+    } catch (SerDeException e) {
+      throw new IOException("Failed initializing deserializer "
+        + storageHandler.getSerDeClass().getName(), e);
+    }
+  }
+
+  /* (non-Javadoc)
+  * @see org.apache.hadoop.mapreduce.RecordReader#getCurrentKey()
+  */
+  @Override
+  public WritableComparable getCurrentKey()
+    throws IOException, InterruptedException {
+    return currentKey;
+  }
+
+  /* (non-Javadoc)
+   * @see org.apache.hadoop.mapreduce.RecordReader#getCurrentValue()
+   */
+  @Override
+  public HCatRecord getCurrentValue() throws IOException, InterruptedException {
+    return currentHCatRecord;
+  }
+
+  /* (non-Javadoc)
+   * @see org.apache.hadoop.mapreduce.RecordReader#getProgress()
+   */
+  @Override
+  public float getProgress() {
+    try {
+      return baseRecordReader.getProgress();
+    } catch (IOException e) {
+      LOG.warn("Exception in HCatRecord reader", e);
+    }
+    return 0.0f; // errored
+  }
+
+  /**
+   * Check if the wrapped RecordReader has another record, and if so convert it into an
+   * HCatRecord. We both check for records and convert here so a configurable percent of
+   * bad records can be tolerated.
+   *
+   * @return if there is a next record
+   * @throws IOException on error
+   * @throws InterruptedException on error
+   */
+  @Override
+  public boolean nextKeyValue() throws IOException, InterruptedException {
+    if (currentKey == null) {
+      currentKey = baseRecordReader.createKey();
+      currentValue = baseRecordReader.createValue();
+    }
+
+    while (baseRecordReader.next(currentKey, currentValue)) {
+      HCatRecord r = null;
+      Throwable t = null;
+
+      errorTracker.incRecords();
+
+      try {
+        Object o = deserializer.deserialize(currentValue);
+        r = new LazyHCatRecord(o, deserializer.getObjectInspector());
+      } catch (Throwable throwable) {
+        t = throwable;
+      }
+
+      if (r == null) {
+        errorTracker.incErrors(t);
+        continue;
+      }
+
+      DefaultHCatRecord dr = new DefaultHCatRecord(outputSchema.size());
+      int i = 0;
+      for (String fieldName : outputSchema.getFieldNames()) {
+        if (dataSchema.getPosition(fieldName) != null) {
+          dr.set(i, r.get(fieldName, dataSchema));
+        } else {
+          dr.set(i, valuesNotInDataCols.get(fieldName));
         }
+        i++;
+      }
 
-        // Pull the table schema out of the Split info
-        // TODO This should be passed in the TaskAttemptContext instead
-        dataSchema = hcatSplit.getDataSchema();
-
-        errorTracker = new InputErrorTracker(taskContext.getConfiguration());
+      currentHCatRecord = dr;
+      return true;
     }
 
-    private org.apache.hadoop.mapred.RecordReader createBaseRecordReader(HCatSplit hcatSplit,
-                                                                         HCatStorageHandler storageHandler, TaskAttemptContext taskContext) throws IOException {
+    return false;
+  }
 
-        JobConf jobConf = HCatUtil.getJobConfFromContext(taskContext);
-        HCatUtil.copyJobPropertiesToJobConf(hcatSplit.getPartitionInfo().getJobProperties(), jobConf);
-        org.apache.hadoop.mapred.InputFormat inputFormat =
-            HCatInputFormat.getMapRedInputFormat(jobConf, storageHandler.getInputFormatClass());
-        return inputFormat.getRecordReader(hcatSplit.getBaseSplit(), jobConf,
-            InternalUtil.createReporter(taskContext));
+  /* (non-Javadoc)
+  * @see org.apache.hadoop.mapreduce.RecordReader#close()
+  */
+  @Override
+  public void close() throws IOException {
+    baseRecordReader.close();
+  }
+
+  /**
+   * Tracks number of of errors in input and throws a Runtime exception
+   * if the rate of errors crosses a limit.
+   * <br/>
+   * The intention is to skip over very rare file corruption or incorrect
+   * input, but catch programmer errors (incorrect format, or incorrect
+   * deserializers etc).
+   *
+   * This class was largely copied from Elephant-Bird (thanks @rangadi!)
+   * https://github.com/kevinweil/elephant-bird/blob/master/core/src/main/java/com/twitter/elephantbird/mapreduce/input/LzoRecordReader.java
+   */
+  static class InputErrorTracker {
+    long numRecords;
+    long numErrors;
+
+    double errorThreshold; // max fraction of errors allowed
+    long minErrors; // throw error only after this many errors
+
+    InputErrorTracker(Configuration conf) {
+      errorThreshold = conf.getFloat(HCatConstants.HCAT_INPUT_BAD_RECORD_THRESHOLD_KEY,
+        HCatConstants.HCAT_INPUT_BAD_RECORD_THRESHOLD_DEFAULT);
+      minErrors = conf.getLong(HCatConstants.HCAT_INPUT_BAD_RECORD_MIN_KEY,
+        HCatConstants.HCAT_INPUT_BAD_RECORD_MIN_DEFAULT);
+      numRecords = 0;
+      numErrors = 0;
     }
 
-    private void createDeserializer(HCatSplit hcatSplit, HCatStorageHandler storageHandler,
-                                    TaskAttemptContext taskContext) throws IOException {
-
-        deserializer = ReflectionUtils.newInstance(storageHandler.getSerDeClass(),
-            taskContext.getConfiguration());
-
-        try {
-            InternalUtil.initializeDeserializer(deserializer, storageHandler.getConf(),
-                hcatSplit.getPartitionInfo().getTableInfo(),
-                hcatSplit.getPartitionInfo().getPartitionSchema());
-        } catch (SerDeException e) {
-            throw new IOException("Failed initializing deserializer "
-                + storageHandler.getSerDeClass().getName(), e);
-        }
+    void incRecords() {
+      numRecords++;
     }
 
-    /* (non-Javadoc)
-    * @see org.apache.hadoop.mapreduce.RecordReader#getCurrentKey()
-    */
-    @Override
-    public WritableComparable getCurrentKey()
-        throws IOException, InterruptedException {
-        return currentKey;
+    void incErrors(Throwable cause) {
+      numErrors++;
+      if (numErrors > numRecords) {
+        // incorrect use of this class
+        throw new RuntimeException("Forgot to invoke incRecords()?");
+      }
+
+      if (cause == null) {
+        cause = new Exception("Unknown error");
+      }
+
+      if (errorThreshold <= 0) { // no errors are tolerated
+        throw new RuntimeException("error while reading input records", cause);
+      }
+
+      LOG.warn("Error while reading an input record ("
+        + numErrors + " out of " + numRecords + " so far ): ", cause);
+
+      double errRate = numErrors / (double) numRecords;
+
+      // will always excuse the first error. We can decide if single
+      // error crosses threshold inside close() if we want to.
+      if (numErrors >= minErrors && errRate > errorThreshold) {
+        LOG.error(numErrors + " out of " + numRecords
+          + " crosses configured threshold (" + errorThreshold + ")");
+        throw new RuntimeException("error rate while reading input records crossed threshold", cause);
+      }
     }
-
-    /* (non-Javadoc)
-     * @see org.apache.hadoop.mapreduce.RecordReader#getCurrentValue()
-     */
-    @Override
-    public HCatRecord getCurrentValue() throws IOException, InterruptedException {
-        return currentHCatRecord;
-    }
-
-    /* (non-Javadoc)
-     * @see org.apache.hadoop.mapreduce.RecordReader#getProgress()
-     */
-    @Override
-    public float getProgress() {
-        try {
-            return baseRecordReader.getProgress();
-        } catch (IOException e) {
-            LOG.warn("Exception in HCatRecord reader", e);
-        }
-        return 0.0f; // errored
-    }
-
-    /**
-     * Check if the wrapped RecordReader has another record, and if so convert it into an
-     * HCatRecord. We both check for records and convert here so a configurable percent of
-     * bad records can be tolerated.
-     *
-     * @return if there is a next record
-     * @throws IOException on error
-     * @throws InterruptedException on error
-     */
-    @Override
-    public boolean nextKeyValue() throws IOException, InterruptedException {
-        if (currentKey == null) {
-            currentKey = baseRecordReader.createKey();
-            currentValue = baseRecordReader.createValue();
-        }
-
-        while (baseRecordReader.next(currentKey, currentValue)) {
-            HCatRecord r = null;
-            Throwable t = null;
-
-            errorTracker.incRecords();
-
-            try {
-                Object o = deserializer.deserialize(currentValue);
-                r = new LazyHCatRecord(o, deserializer.getObjectInspector());
-            } catch (Throwable throwable) {
-                t = throwable;
-            }
-
-            if (r == null) {
-                errorTracker.incErrors(t);
-                continue;
-            }
-
-            DefaultHCatRecord dr = new DefaultHCatRecord(outputSchema.size());
-            int i = 0;
-            for (String fieldName : outputSchema.getFieldNames()) {
-                if (dataSchema.getPosition(fieldName) != null) {
-                    dr.set(i, r.get(fieldName, dataSchema));
-                } else {
-                    dr.set(i, valuesNotInDataCols.get(fieldName));
-                }
-                i++;
-            }
-
-            currentHCatRecord = dr;
-            return true;
-        }
-
-        return false;
-    }
-
-    /* (non-Javadoc)
-    * @see org.apache.hadoop.mapreduce.RecordReader#close()
-    */
-    @Override
-    public void close() throws IOException {
-        baseRecordReader.close();
-    }
-
-    /**
-     * Tracks number of of errors in input and throws a Runtime exception
-     * if the rate of errors crosses a limit.
-     * <br/>
-     * The intention is to skip over very rare file corruption or incorrect
-     * input, but catch programmer errors (incorrect format, or incorrect
-     * deserializers etc).
-     *
-     * This class was largely copied from Elephant-Bird (thanks @rangadi!)
-     * https://github.com/kevinweil/elephant-bird/blob/master/core/src/main/java/com/twitter/elephantbird/mapreduce/input/LzoRecordReader.java
-     */
-    static class InputErrorTracker {
-        long numRecords;
-        long numErrors;
-
-        double errorThreshold; // max fraction of errors allowed
-        long minErrors; // throw error only after this many errors
-
-        InputErrorTracker(Configuration conf) {
-            errorThreshold = conf.getFloat(HCatConstants.HCAT_INPUT_BAD_RECORD_THRESHOLD_KEY,
-                HCatConstants.HCAT_INPUT_BAD_RECORD_THRESHOLD_DEFAULT);
-            minErrors = conf.getLong(HCatConstants.HCAT_INPUT_BAD_RECORD_MIN_KEY,
-                HCatConstants.HCAT_INPUT_BAD_RECORD_MIN_DEFAULT);
-            numRecords = 0;
-            numErrors = 0;
-        }
-
-        void incRecords() {
-            numRecords++;
-        }
-
-        void incErrors(Throwable cause) {
-            numErrors++;
-            if (numErrors > numRecords) {
-                // incorrect use of this class
-                throw new RuntimeException("Forgot to invoke incRecords()?");
-            }
-
-            if (cause == null) {
-                cause = new Exception("Unknown error");
-            }
-
-            if (errorThreshold <= 0) { // no errors are tolerated
-                throw new RuntimeException("error while reading input records", cause);
-            }
-
-            LOG.warn("Error while reading an input record ("
-                + numErrors + " out of " + numRecords + " so far ): ", cause);
-
-            double errRate = numErrors / (double) numRecords;
-
-            // will always excuse the first error. We can decide if single
-            // error crosses threshold inside close() if we want to.
-            if (numErrors >= minErrors && errRate > errorThreshold) {
-                LOG.error(numErrors + " out of " + numRecords
-                    + " crosses configured threshold (" + errorThreshold + ")");
-                throw new RuntimeException("error rate while reading input records crossed threshold", cause);
-            }
-        }
-    }
+  }
 }

@@ -17,6 +17,13 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.rmi.server.UID;
+
 import org.apache.avro.Schema;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumReader;
@@ -28,12 +35,6 @@ import org.apache.avro.io.DecoderFactory;
 import org.apache.avro.io.EncoderFactory;
 import org.apache.hadoop.io.Writable;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
 /**
  * Wrapper around an Avro GenericRecord.  Necessary because Hive's deserializer
  * will happily deserialize any object - as long as it's a writable.
@@ -41,6 +42,10 @@ import java.io.InputStream;
 public class AvroGenericRecordWritable implements Writable{
   GenericRecord record;
   private BinaryDecoder binaryDecoder;
+  /**
+   * Unique Id determine which record reader created this record
+   */
+  private UID recordReaderID;
 
   // There are two areas of exploration for optimization here.
   // 1.  We're serializing the schema with every object.  If we assume the schema
@@ -68,6 +73,7 @@ public class AvroGenericRecordWritable implements Writable{
     // Write schema since we need it to pull the data out. (see point #1 above)
     String schemaString = record.getSchema().toString(false);
     out.writeUTF(schemaString);
+    recordReaderID.write(out);
 
     // Write record to byte buffer
     GenericDatumWriter<GenericRecord> gdw = new GenericDatumWriter<GenericRecord>();
@@ -80,9 +86,18 @@ public class AvroGenericRecordWritable implements Writable{
   @Override
   public void readFields(DataInput in) throws IOException {
     Schema schema = Schema.parse(in.readUTF());
+    recordReaderID = UID.read(in);
     record = new GenericData.Record(schema);
     binaryDecoder = DecoderFactory.defaultFactory().createBinaryDecoder((InputStream) in, binaryDecoder);
     GenericDatumReader<GenericRecord> gdr = new GenericDatumReader<GenericRecord>(schema);
     record = gdr.read(record, binaryDecoder);
+  }
+
+  public UID getRecordReaderID() {
+    return recordReaderID;
+  }
+
+  public void setRecordReaderID(UID recordReaderID) {
+    this.recordReaderID = recordReaderID;
   }
 }

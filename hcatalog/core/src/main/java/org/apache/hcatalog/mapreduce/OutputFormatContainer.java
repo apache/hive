@@ -32,22 +32,23 @@ import org.apache.hcatalog.data.HCatRecord;
  *  HCatStorageHandler.getOutputFormatContainer(OutputFormat outputFormat) to return the implementation.
  *  By default DefaultOutputFormatContainer is used, which only implements the bare minimum features HCatalog features
  *  such as partitioning isn't supported.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.OutputFormatContainer} instead
  */
 abstract class OutputFormatContainer extends OutputFormat<WritableComparable<?>, HCatRecord> {
-    private org.apache.hadoop.mapred.OutputFormat<? super WritableComparable<?>, ? super Writable> of;
+  private org.apache.hadoop.mapred.OutputFormat<? super WritableComparable<?>, ? super Writable> of;
 
-    /**
-     * @param of OutputFormat this instance will contain
-     */
-    public OutputFormatContainer(org.apache.hadoop.mapred.OutputFormat<? super WritableComparable<?>, ? super Writable> of) {
-        this.of = of;
-    }
+  /**
+   * @param of OutputFormat this instance will contain
+   */
+  public OutputFormatContainer(org.apache.hadoop.mapred.OutputFormat<? super WritableComparable<?>, ? super Writable> of) {
+    this.of = of;
+  }
 
-    /**
-     * @return underlying OutputFormat
-     */
-    public org.apache.hadoop.mapred.OutputFormat getBaseOutputFormat() {
-        return of;
-    }
+  /**
+   * @return underlying OutputFormat
+   */
+  public org.apache.hadoop.mapred.OutputFormat getBaseOutputFormat() {
+    return of;
+  }
 
 }

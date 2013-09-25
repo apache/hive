@@ -31,6 +31,9 @@ public class WritableConstantFloatObjectInspector extends
 
   private FloatWritable value;
 
+  protected WritableConstantFloatObjectInspector() {
+    super();
+  }
   WritableConstantFloatObjectInspector(FloatWritable value) {
     super();
     this.value = value;

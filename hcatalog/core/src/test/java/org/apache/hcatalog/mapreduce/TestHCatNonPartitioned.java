@@ -39,99 +39,102 @@ import org.junit.Test;
 import static junit.framework.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.mapreduce.TestHCatNonPartitioned} instead
+ */
 public class TestHCatNonPartitioned extends HCatMapReduceTest {
 
-    private static List<HCatRecord> writeRecords;
-    static List<HCatFieldSchema> partitionColumns;
+  private static List<HCatRecord> writeRecords;
+  static List<HCatFieldSchema> partitionColumns;
 
-    @BeforeClass
-    public static void oneTimeSetUp() throws Exception {
+  @BeforeClass
+  public static void oneTimeSetUp() throws Exception {
 
-        dbName = null; //test if null dbName works ("default" is used)
-        tableName = "testHCatNonPartitionedTable";
+    dbName = null; //test if null dbName works ("default" is used)
+    tableName = "testHCatNonPartitionedTable";
 
-        writeRecords = new ArrayList<HCatRecord>();
+    writeRecords = new ArrayList<HCatRecord>();
 
-        for (int i = 0; i < 20; i++) {
-            List<Object> objList = new ArrayList<Object>();
+    for (int i = 0; i < 20; i++) {
+      List<Object> objList = new ArrayList<Object>();
 
-            objList.add(i);
-            objList.add("strvalue" + i);
-            writeRecords.add(new DefaultHCatRecord(objList));
-        }
-
-        partitionColumns = new ArrayList<HCatFieldSchema>();
-        partitionColumns.add(HCatSchemaUtils.getHCatFieldSchema(new FieldSchema("c1", serdeConstants.INT_TYPE_NAME, "")));
-        partitionColumns.add(HCatSchemaUtils.getHCatFieldSchema(new FieldSchema("c2", serdeConstants.STRING_TYPE_NAME, "")));
+      objList.add(i);
+      objList.add("strvalue" + i);
+      writeRecords.add(new DefaultHCatRecord(objList));
     }
 
-    @Override
-    protected List<FieldSchema> getPartitionKeys() {
-        List<FieldSchema> fields = new ArrayList<FieldSchema>();
-        //empty list, non partitioned
-        return fields;
+    partitionColumns = new ArrayList<HCatFieldSchema>();
+    partitionColumns.add(HCatSchemaUtils.getHCatFieldSchema(new FieldSchema("c1", serdeConstants.INT_TYPE_NAME, "")));
+    partitionColumns.add(HCatSchemaUtils.getHCatFieldSchema(new FieldSchema("c2", serdeConstants.STRING_TYPE_NAME, "")));
+  }
+
+  @Override
+  protected List<FieldSchema> getPartitionKeys() {
+    List<FieldSchema> fields = new ArrayList<FieldSchema>();
+    //empty list, non partitioned
+    return fields;
+  }
+
+  @Override
+  protected List<FieldSchema> getTableColumns() {
+    List<FieldSchema> fields = new ArrayList<FieldSchema>();
+    fields.add(new FieldSchema("c1", serdeConstants.INT_TYPE_NAME, ""));
+    fields.add(new FieldSchema("c2", serdeConstants.STRING_TYPE_NAME, ""));
+    return fields;
+  }
+
+
+  @Test
+  public void testHCatNonPartitionedTable() throws Exception {
+
+    Map<String, String> partitionMap = new HashMap<String, String>();
+    runMRCreate(null, partitionColumns, writeRecords, 10, true);
+
+    //Test for duplicate publish
+    IOException exc = null;
+    try {
+      runMRCreate(null, partitionColumns, writeRecords, 20, true);
+    } catch (IOException e) {
+      exc = e;
     }
 
-    @Override
-    protected List<FieldSchema> getTableColumns() {
-        List<FieldSchema> fields = new ArrayList<FieldSchema>();
-        fields.add(new FieldSchema("c1", serdeConstants.INT_TYPE_NAME, ""));
-        fields.add(new FieldSchema("c2", serdeConstants.STRING_TYPE_NAME, ""));
-        return fields;
+    assertTrue(exc != null);
+    assertTrue(exc instanceof HCatException);
+    assertEquals(ErrorType.ERROR_NON_EMPTY_TABLE, ((HCatException) exc).getErrorType());
+
+    //Test for publish with invalid partition key name
+    exc = null;
+    partitionMap.clear();
+    partitionMap.put("px", "p1value2");
+
+    try {
+      runMRCreate(partitionMap, partitionColumns, writeRecords, 20, true);
+    } catch (IOException e) {
+      exc = e;
     }
 
+    assertTrue(exc != null);
+    assertTrue(exc instanceof HCatException);
+    assertEquals(ErrorType.ERROR_INVALID_PARTITION_VALUES, ((HCatException) exc).getErrorType());
 
-    @Test
-    public void testHCatNonPartitionedTable() throws Exception {
+    //Read should get 10 rows
+    runMRRead(10);
 
-        Map<String, String> partitionMap = new HashMap<String, String>();
-        runMRCreate(null, partitionColumns, writeRecords, 10, true);
+    hiveReadTest();
+  }
 
-        //Test for duplicate publish
-        IOException exc = null;
-        try {
-            runMRCreate(null, partitionColumns, writeRecords, 20, true);
-        } catch (IOException e) {
-            exc = e;
-        }
+  //Test that data inserted through hcatoutputformat is readable from hive
+  private void hiveReadTest() throws Exception {
 
-        assertTrue(exc != null);
-        assertTrue(exc instanceof HCatException);
-        assertEquals(ErrorType.ERROR_NON_EMPTY_TABLE, ((HCatException) exc).getErrorType());
+    String query = "select * from " + tableName;
+    int retCode = driver.run(query).getResponseCode();
 
-        //Test for publish with invalid partition key name
-        exc = null;
-        partitionMap.clear();
-        partitionMap.put("px", "p1value2");
-
-        try {
-            runMRCreate(partitionMap, partitionColumns, writeRecords, 20, true);
-        } catch (IOException e) {
-            exc = e;
-        }
-
-        assertTrue(exc != null);
-        assertTrue(exc instanceof HCatException);
-        assertEquals(ErrorType.ERROR_INVALID_PARTITION_VALUES, ((HCatException) exc).getErrorType());
-
-        //Read should get 10 rows
-        runMRRead(10);
-
-        hiveReadTest();
+    if (retCode != 0) {
+      throw new Exception("Error " + retCode + " running query " + query);
     }
 
-    //Test that data inserted through hcatoutputformat is readable from hive
-    private void hiveReadTest() throws Exception {
-
-        String query = "select * from " + tableName;
-        int retCode = driver.run(query).getResponseCode();
-
-        if (retCode != 0) {
-            throw new Exception("Error " + retCode + " running query " + query);
-        }
-
-        ArrayList<String> res = new ArrayList<String>();
-        driver.getResults(res);
-        assertEquals(10, res.size());
-    }
+    ArrayList<String> res = new ArrayList<String>();
+    driver.getResults(res);
+    assertEquals(10, res.size());
+  }
 }

@@ -75,7 +75,7 @@ public class FetchOperator implements Serializable {
 
   private boolean isNativeTable;
   private FetchWork work;
-  private Operator<?> operator;    // operator tree for processing row further (option)
+  protected Operator<?> operator;    // operator tree for processing row further (option)
   private int splitNum;
   private PartitionDesc currPart;
   private TableDesc currTbl;
@@ -130,7 +130,7 @@ public class FetchOperator implements Serializable {
       List<ObjectInspector> inspectors = new ArrayList<ObjectInspector>(vcCols.size());
       for (VirtualColumn vc : vcCols) {
         inspectors.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-                vc.getTypeInfo().getPrimitiveCategory()));
+                vc.getTypeInfo()));
         names.add(vc.getName());
       }
       vcsOI = ObjectInspectorFactory.getStandardStructObjectInspector(names, inspectors);
@@ -353,6 +353,11 @@ public class FetchOperator implements Serializable {
     }
   }
 
+  /**
+   * A cache of Object Inspector Settable Properties.
+   */
+  private static Map<ObjectInspector, Boolean> oiSettableProperties = new HashMap<ObjectInspector, Boolean>();
+
   private RecordReader<WritableComparable, Writable> getRecordReader() throws Exception {
     if (currPath == null) {
       getNextPath();
@@ -389,8 +394,8 @@ public class FetchOperator implements Serializable {
       this.inputSplits = inputSplits;
 
       splitNum = 0;
-      serde = partDesc.getDeserializerClass().newInstance();
-      serde.initialize(job, partDesc.getProperties());
+      serde = partDesc.getDeserializer();
+      serde.initialize(job, partDesc.getOverlayedProperties());
 
       if (currTbl != null) {
         tblSerde = serde;
@@ -402,7 +407,8 @@ public class FetchOperator implements Serializable {
 
       ObjectInspector outputOI = ObjectInspectorConverters.getConvertedOI(
           serde.getObjectInspector(),
-          partitionedTableOI == null ? tblSerde.getObjectInspector() : partitionedTableOI);
+          partitionedTableOI == null ? tblSerde.getObjectInspector() : partitionedTableOI,
+          oiSettableProperties);
 
       partTblObjectInspectorConverter = ObjectInspectorConverters.getConverter(
           serde.getObjectInspector(), outputOI);
@@ -410,7 +416,7 @@ public class FetchOperator implements Serializable {
       if (LOG.isDebugEnabled()) {
         LOG.debug("Creating fetchTask with deserializer typeinfo: "
             + serde.getObjectInspector().getTypeName());
-        LOG.debug("deserializer properties: " + partDesc.getProperties());
+        LOG.debug("deserializer properties: " + partDesc.getOverlayedProperties());
       }
 
       if (currPart != null) {
@@ -489,6 +495,8 @@ public class FetchOperator implements Serializable {
     InspectableObject row = getNextRow();
     if (row != null) {
       pushRow(row);
+    } else {
+      operator.flush();
     }
     return row != null;
   }
@@ -622,11 +630,11 @@ public class FetchOperator implements Serializable {
       // Get the OI corresponding to all the partitions
       for (PartitionDesc listPart : listParts) {
         partition = listPart;
-        Deserializer partSerde = listPart.getDeserializerClass().newInstance();
-        partSerde.initialize(job, listPart.getProperties());
+        Deserializer partSerde = listPart.getDeserializer();
+        partSerde.initialize(job, listPart.getOverlayedProperties());
 
         partitionedTableOI = ObjectInspectorConverters.getConvertedOI(
-            partSerde.getObjectInspector(), tableOI);
+            partSerde.getObjectInspector(), tableOI, oiSettableProperties);
         if (!partitionedTableOI.equals(tableOI)) {
           break;
         }

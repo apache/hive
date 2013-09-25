@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
+import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
@@ -32,7 +33,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * GenericUDFBridge encapsulates UDF to provide the same interface as
@@ -55,29 +55,23 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
   boolean isOperator;
 
   /**
-   * The underlying UDF class.
-   */
-  Class<? extends UDF> udfClass;
-
-  /**
    * The underlying UDF class Name.
    */
   String udfClassName;
 
   /**
-   * Greate a new GenericUDFBridge object.
+   * Create a new GenericUDFBridge object.
    *
    * @param udfName
    *          The name of the corresponding udf.
    * @param isOperator
-   * @param udfClass
+   * @param udfClassName java class name of UDF
    */
   public GenericUDFBridge(String udfName, boolean isOperator,
-      Class<? extends UDF> udfClass) {
+      String udfClassName) {
     this.udfName = udfName;
     this.isOperator = isOperator;
-    this.udfClass = udfClass;
-    this.udfClassName = udfClass != null ? udfClass.getName() : null;
+    this.udfClassName = udfClassName;
   }
 
   // For Java serialization only
@@ -108,12 +102,12 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
     this.isOperator = isOperator;
   }
 
-  public void setUdfClass(Class<? extends UDF> udfClass) {
-    this.udfClass = udfClass;
-  }
-
   public Class<? extends UDF> getUdfClass() {
-    return udfClass;
+    try {
+      return (Class<? extends UDF>) Class.forName(udfClassName, true, JavaUtils.getClassLoader());
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
@@ -137,12 +131,13 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
 
-    if (udfClass == null) {
+    try {
+      udf = (UDF) Class.forName(udfClassName, true, JavaUtils.getClassLoader()).newInstance();
+    } catch (Exception e) {
       throw new UDFArgumentException(
           "The UDF implementation class '" + udfClassName
               + "' is not present in the class path");
     }
-    udf = (UDF) ReflectionUtils.newInstance(udfClass, null);
 
     // Resolve for the method based on argument types
     ArrayList<TypeInfo> argumentTypeInfos = new ArrayList<TypeInfo>(

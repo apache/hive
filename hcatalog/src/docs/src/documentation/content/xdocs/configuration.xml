@@ -228,7 +228,7 @@ Using localhost in metastore uri does not work with kerberos security.
 
   <tr>
     <td><strong>templeton.storage.class</strong></td>
-    <td><code>org.apache.hcatalog.templeton.tool.ZooKeeperStorage</code></td>
+    <td><code>org.apache.hive.hcatalog.templeton.tool.ZooKeeperStorage</code></td>
     <td>The class to use as storage</td>
   </tr>
 

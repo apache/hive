@@ -21,55 +21,58 @@ package org.apache.hcatalog.data.transfer;
 
 import java.util.Map;
 
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.transfer.WriteEntity} instead
+ */
 public class WriteEntity extends EntityBase.Entity {
 
-    /**
-     * Don't instantiate {@link WriteEntity} directly. Use, {@link Builder} to
-     * build {@link WriteEntity}.
-     */
+  /**
+   * Don't instantiate {@link WriteEntity} directly. Use, {@link Builder} to
+   * build {@link WriteEntity}.
+   */
 
-    private WriteEntity() {
-        // Not allowed.
+  private WriteEntity() {
+    // Not allowed.
+  }
+
+  private WriteEntity(Builder builder) {
+    this.region = builder.region;
+    this.dbName = builder.dbName;
+    this.tableName = builder.tableName;
+    this.partitionKVs = builder.partitionKVs;
+  }
+
+  /**
+   * This class should be used to build {@link WriteEntity}. It follows builder
+   * pattern, letting you build your {@link WriteEntity} with whatever level of
+   * detail you want.
+   *
+   */
+  public static class Builder extends EntityBase {
+
+    public Builder withRegion(final String region) {
+      this.region = region;
+      return this;
     }
 
-    private WriteEntity(Builder builder) {
-        this.region = builder.region;
-        this.dbName = builder.dbName;
-        this.tableName = builder.tableName;
-        this.partitionKVs = builder.partitionKVs;
+    public Builder withDatabase(final String dbName) {
+      this.dbName = dbName;
+      return this;
     }
 
-    /**
-     * This class should be used to build {@link WriteEntity}. It follows builder
-     * pattern, letting you build your {@link WriteEntity} with whatever level of
-     * detail you want.
-     *
-     */
-    public static class Builder extends EntityBase {
-
-        public Builder withRegion(final String region) {
-            this.region = region;
-            return this;
-        }
-
-        public Builder withDatabase(final String dbName) {
-            this.dbName = dbName;
-            return this;
-        }
-
-        public Builder withTable(final String tblName) {
-            this.tableName = tblName;
-            return this;
-        }
-
-        public Builder withPartition(final Map<String, String> partKVs) {
-            this.partitionKVs = partKVs;
-            return this;
-        }
-
-        public WriteEntity build() {
-            return new WriteEntity(this);
-        }
-
+    public Builder withTable(final String tblName) {
+      this.tableName = tblName;
+      return this;
     }
+
+    public Builder withPartition(final Map<String, String> partKVs) {
+      this.partitionKVs = partKVs;
+      return this;
+    }
+
+    public WriteEntity build() {
+      return new WriteEntity(this);
+    }
+
+  }
 }

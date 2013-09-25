@@ -191,7 +191,7 @@
 
   <property>
     <name>templeton.storage.class</name>
-    <value>org.apache.hcatalog.templeton.tool.HDFSStorage</value>
+    <value>org.apache.hive.hcatalog.templeton.tool.HDFSStorage</value>
     <description>The class to use as storage</description>
   </property>
 

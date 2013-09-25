@@ -44,7 +44,7 @@ required for these interfaces.</p>
 
 <p>HCatLoader is accessed via a Pig load statement.</p>
 <source>
-A = LOAD 'tablename' USING org.apache.hcatalog.pig.HCatLoader(); 
+A = LOAD 'tablename' USING org.apache.hive.hcatalog.pig.HCatLoader(); 
 </source>
 
 <p><strong>Assumptions</strong></p>
@@ -285,7 +285,7 @@ and to be able to authenticate to the HCatalog server.</p></td>
 <p>This load statement will load all partitions of the specified table.</p>
 <source>
 /* myscript.pig */
-A = LOAD 'tablename' USING org.apache.hcatalog.pig.HCatLoader(); 
+A = LOAD 'tablename' USING org.apache.hive.hcatalog.pig.HCatLoader(); 
 ...
 ...
 </source>
@@ -296,7 +296,7 @@ might not immediately follow its load statement.) The filter statement can
 include conditions on partition as well as non-partition columns.</p>
 <source>
 /* myscript.pig */
-A = LOAD 'tablename' USING  org.apache.hcatalog.pig.HCatLoader();
+A = LOAD 'tablename' USING  org.apache.hive.hcatalog.pig.HCatLoader();
 
 -- date is a partition column; age is not
 B = filter A by date == '20100819' and age &lt; 30; 
@@ -310,7 +310,7 @@ C = filter A by date == '20100819' and country == 'US';
 <p>To scan a whole table, for example:</p>
 
 <source>
-a = load 'student_data' using org.apache.hcatalog.pig.HCatLoader();
+a = load 'student_data' using org.apache.hive.hcatalog.pig.HCatLoader();
 b = foreach a generate name, age;
 </source>
 
@@ -321,7 +321,7 @@ declare name and age as fields, as if you were loading from a file.</p>
 datestamp, for example:</p>
 
 <source>
-a = load 'web_logs' using org.apache.hcatalog.pig.HCatLoader();
+a = load 'web_logs' using org.apache.hive.hcatalog.pig.HCatLoader();
 b = filter a by datestamp == '20110924';
 </source>
 
@@ -329,7 +329,7 @@ b = filter a by datestamp == '20110924';
 datestamp = '20110924'. You can combine this filter with others via 'and':</p>
 
 <source>
-a = load 'web_logs' using org.apache.hcatalog.pig.HCatLoader();
+a = load 'web_logs' using org.apache.hive.hcatalog.pig.HCatLoader();
 b = filter a by datestamp == '20110924' and user is not null;
 </source>
 
@@ -345,26 +345,26 @@ and '&gt;='.</p>
 <p>For example:</p>
 
 <source>
-a = load 'web_logs' using org.apache.hcatalog.pig.HCatLoader();
+a = load 'web_logs' using org.apache.hive.hcatalog.pig.HCatLoader();
 b = filter a by datestamp &gt; '20110924';
 </source>
 
 <p>A complex filter can have various combinations of operators, such as:</p>
 
 <source>
-a = load 'web_logs' using org.apache.hcatalog.pig.HCatLoader();
+a = load 'web_logs' using org.apache.hive.hcatalog.pig.HCatLoader();
 b = filter a by datestamp == '20110924' or datestamp == '20110925';
 </source>
 
 <p>These two examples have the same effect:</p>
 
 <source>
-a = load 'web_logs' using org.apache.hcatalog.pig.HCatLoader();
+a = load 'web_logs' using org.apache.hive.hcatalog.pig.HCatLoader();
 b = filter a by datestamp &gt;= '20110924' and datestamp &lt;= '20110925';
 </source>
 
 <source>
-a = load 'web_logs' using org.apache.hcatalog.pig.HCatLoader();
+a = load 'web_logs' using org.apache.hive.hcatalog.pig.HCatLoader();
 b = filter a by datestamp &lt;= '20110925' and datestamp &gt;= '20110924';
 </source>
 
@@ -391,7 +391,7 @@ B = FOREACH A ...
 my_processed_data = ...
 
 STORE my_processed_data INTO 'tablename'
-   USING org.apache.hcatalog.pig.HCatStorer();
+   USING org.apache.hive.hcatalog.pig.HCatStorer();
 </source>
 
 <p><strong>Assumptions</strong></p>
@@ -414,17 +414,17 @@ should <em>NOT</em> be quoted.</p>
 
 <p>You can write to a non-partitioned table simply by using HCatStorer.  The contents of the table will be overwritten:</p>
 
-<source>store z into 'web_data' using org.apache.hcatalog.pig.HCatStorer();</source>
+<source>store z into 'web_data' using org.apache.hive.hcatalog.pig.HCatStorer();</source>
 
 <p>To add one new partition to a partitioned table, specify the partition value in the store function. Pay careful
 attention to the quoting, as the whole string must be single quoted and separated with an equals sign:</p>
 
-<source>store z into 'web_data' using org.apache.hcatalog.pig.HCatStorer('datestamp=20110924');</source>
+<source>store z into 'web_data' using org.apache.hive.hcatalog.pig.HCatStorer('datestamp=20110924');</source>
 
 <p>To write into multiple partitions at once, make sure that the partition column is present in your data, then call
 HCatStorer with no argument:</p>
 
-<source>store z into 'web_data' using org.apache.hcatalog.pig.HCatStorer(); 
+<source>store z into 'web_data' using org.apache.hive.hcatalog.pig.HCatStorer(); 
   -- datestamp must be a field in the relation z</source>
 
 </section>

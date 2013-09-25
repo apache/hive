@@ -133,36 +133,21 @@ public abstract class GenericUDFBaseCompare extends GenericUDF {
       TypeInfo oiTypeInfo0 = TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[0]);
       TypeInfo oiTypeInfo1 = TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[1]);
 
-      if (oiTypeInfo0 != oiTypeInfo1) {
+      if (oiTypeInfo0 == oiTypeInfo1
+          || TypeInfoUtils.doPrimitiveCategoriesMatch(oiTypeInfo0, oiTypeInfo1)) {
+        compareType = CompareType.SAME_TYPE;
+      } else {
         compareType = CompareType.NEED_CONVERT;
+        TypeInfo compareType = FunctionRegistry.getCommonClassForComparison(
+            oiTypeInfo0, oiTypeInfo1);
 
-        if ((oiTypeInfo0.equals(TypeInfoFactory.stringTypeInfo)
-                && oiTypeInfo1.equals(TypeInfoFactory.dateTypeInfo))
-            || (oiTypeInfo0.equals(TypeInfoFactory.dateTypeInfo)
-                && oiTypeInfo1.equals(TypeInfoFactory.stringTypeInfo))) {
-          // Date should be comparable with string
-          compareOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
-              TypeInfoFactory.stringTypeInfo);
-
-        } else if (oiTypeInfo0.equals(TypeInfoFactory.stringTypeInfo)
-            || oiTypeInfo1.equals(TypeInfoFactory.stringTypeInfo)) {
-          // If either argument is a string, we convert to a double because a number
-          // in string form should always be convertible into a double
-          compareOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
-              TypeInfoFactory.doubleTypeInfo);
-        } else {
-          TypeInfo compareType = FunctionRegistry.getCommonClass(oiTypeInfo0, oiTypeInfo1);
-
-          // For now, we always convert to double if we can't find a common type
-          compareOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
-              (compareType == null) ?
-              TypeInfoFactory.doubleTypeInfo : compareType);
-        }
+        // For now, we always convert to double if we can't find a common type
+        compareOI = TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(
+            (compareType == null) ?
+            TypeInfoFactory.doubleTypeInfo : compareType);
 
         converter0 = ObjectInspectorConverters.getConverter(arguments[0], compareOI);
         converter1 = ObjectInspectorConverters.getConverter(arguments[1], compareOI);
-      } else {
-        compareType = CompareType.SAME_TYPE;
       }
     }
     return PrimitiveObjectInspectorFactory.writableBooleanObjectInspector;

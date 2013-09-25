@@ -38,109 +38,110 @@ import org.slf4j.LoggerFactory;
 /**
  * An implementation of HCatRecord that wraps an Object returned by a SerDe
  * and an ObjectInspector.  This delays deserialization of unused columns.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.data.LazyHCatRecord} instead
  */
 public class LazyHCatRecord extends HCatRecord {
 
-    public static final Logger LOG = LoggerFactory.getLogger(LazyHCatRecord.class.getName());
+  public static final Logger LOG = LoggerFactory.getLogger(LazyHCatRecord.class.getName());
 
-    private Object wrappedObject;
-    private StructObjectInspector soi;
+  private Object wrappedObject;
+  private StructObjectInspector soi;
 
-    @Override
-    public Object get(int fieldNum) {
-        try {
-            StructField fref = soi.getAllStructFieldRefs().get(fieldNum);
-            return HCatRecordSerDe.serializeField(
-                soi.getStructFieldData(wrappedObject, fref),
-                    fref.getFieldObjectInspector());
-        } catch (SerDeException e) {
-            throw new IllegalStateException("SerDe Exception deserializing",e);
-        }
+  @Override
+  public Object get(int fieldNum) {
+    try {
+      StructField fref = soi.getAllStructFieldRefs().get(fieldNum);
+      return HCatRecordSerDe.serializeField(
+        soi.getStructFieldData(wrappedObject, fref),
+          fref.getFieldObjectInspector());
+    } catch (SerDeException e) {
+      throw new IllegalStateException("SerDe Exception deserializing",e);
+    }
+  }
+
+  @Override
+  public List<Object> getAll() {
+    List<Object> r = new ArrayList<Object>(this.size());
+    for (int i = 0; i < this.size(); i++){
+      r.add(i, get(i));
+    }
+    return r;
+  }
+
+  @Override
+  public void set(int fieldNum, Object value) {
+    throw new UnsupportedOperationException("not allowed to run set() on LazyHCatRecord");
+  }
+
+  @Override
+  public int size() {
+    return soi.getAllStructFieldRefs().size();
+  }
+
+  @Override
+  public void readFields(DataInput in) throws IOException {
+    throw new UnsupportedOperationException("LazyHCatRecord is intended to wrap"
+      + " an object/object inspector as a HCatRecord "
+      + "- it does not need to be read from DataInput.");
+  }
+
+  @Override
+  public void write(DataOutput out) throws IOException {
+    throw new UnsupportedOperationException("LazyHCatRecord is intended to wrap"
+      + " an object/object inspector as a HCatRecord "
+      + "- it does not need to be written to a DataOutput.");
+  }
+
+  @Override
+  public Object get(String fieldName, HCatSchema recordSchema) throws HCatException {
+    int idx = recordSchema.getPosition(fieldName);
+    return get(idx);
+  }
+
+  @Override
+  public void set(String fieldName, HCatSchema recordSchema, Object value) throws HCatException {
+    throw new UnsupportedOperationException("not allowed to run set() on LazyHCatRecord");
+  }
+
+  @Override
+  public void remove(int idx) throws HCatException {
+    throw new UnsupportedOperationException("not allowed to run remove() on LazyHCatRecord");
+  }
+
+  @Override
+  public void copy(HCatRecord r) throws HCatException {
+    throw new UnsupportedOperationException("not allowed to run copy() on LazyHCatRecord");
+  }
+
+  public LazyHCatRecord(Object wrappedObject, ObjectInspector oi) throws Exception {
+    if (oi.getCategory() != Category.STRUCT) {
+      throw new SerDeException(getClass().toString() +
+        " can only make a lazy hcat record from " +
+        "objects of struct types, but we got: " + oi.getTypeName());
     }
 
-    @Override
-    public List<Object> getAll() {
-        List<Object> r = new ArrayList<Object>(this.size());
-        for (int i = 0; i < this.size(); i++){
-            r.add(i, get(i));
-        }
-        return r;
-    }
+    this.soi = (StructObjectInspector)oi;
+    this.wrappedObject = wrappedObject;
+  }
 
-    @Override
-    public void set(int fieldNum, Object value) {
-        throw new UnsupportedOperationException("not allowed to run set() on LazyHCatRecord");
+  @Override
+  public String toString(){
+    StringBuilder sb = new StringBuilder();
+    for(int i = 0; i< size() ; i++) {
+      sb.append(get(i)+"\t");
     }
+    return sb.toString();
+  }
 
-    @Override
-    public int size() {
-        return soi.getAllStructFieldRefs().size();
-    }
-
-    @Override
-    public void readFields(DataInput in) throws IOException {
-        throw new UnsupportedOperationException("LazyHCatRecord is intended to wrap"
-            + " an object/object inspector as a HCatRecord "
-            + "- it does not need to be read from DataInput.");
-    }
-
-    @Override
-    public void write(DataOutput out) throws IOException {
-        throw new UnsupportedOperationException("LazyHCatRecord is intended to wrap"
-            + " an object/object inspector as a HCatRecord "
-            + "- it does not need to be written to a DataOutput.");
-    }
-
-    @Override
-    public Object get(String fieldName, HCatSchema recordSchema) throws HCatException {
-        int idx = recordSchema.getPosition(fieldName);
-        return get(idx);
-    }
-
-    @Override
-    public void set(String fieldName, HCatSchema recordSchema, Object value) throws HCatException {
-        throw new UnsupportedOperationException("not allowed to run set() on LazyHCatRecord");
-    }
-
-    @Override
-    public void remove(int idx) throws HCatException {
-        throw new UnsupportedOperationException("not allowed to run remove() on LazyHCatRecord");
-    }
-
-    @Override
-    public void copy(HCatRecord r) throws HCatException {
-        throw new UnsupportedOperationException("not allowed to run copy() on LazyHCatRecord");
-    }
-
-    public LazyHCatRecord(Object wrappedObject, ObjectInspector oi) throws Exception {
-        if (oi.getCategory() != Category.STRUCT) {
-            throw new SerDeException(getClass().toString() +
-                " can only make a lazy hcat record from " +
-                "objects of struct types, but we got: " + oi.getTypeName());
-        }
-
-        this.soi = (StructObjectInspector)oi;
-        this.wrappedObject = wrappedObject;
-    }
-
-    @Override
-    public String toString(){
-        StringBuilder sb = new StringBuilder();
-        for(int i = 0; i< size() ; i++) {
-            sb.append(get(i)+"\t");
-        }
-        return sb.toString();
-    }
-
-    /**
-     * Convert this LazyHCatRecord to a DefaultHCatRecord.  This is required
-     * before you can write out a record via write.
-     * @return an HCatRecord that can be serialized
-     * @throws HCatException
-     */
-    public HCatRecord getWritable() throws HCatException {
-        DefaultHCatRecord d = new DefaultHCatRecord();
-        d.copy(this);
-        return d;
-    }
+  /**
+   * Convert this LazyHCatRecord to a DefaultHCatRecord.  This is required
+   * before you can write out a record via write.
+   * @return an HCatRecord that can be serialized
+   * @throws HCatException
+   */
+  public HCatRecord getWritable() throws HCatException {
+    DefaultHCatRecord d = new DefaultHCatRecord();
+    d.copy(this);
+    return d;
+  }
 }

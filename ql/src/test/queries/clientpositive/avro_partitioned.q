@@ -64,3 +64,10 @@ SET hive.exec.dynamic.partition.mode=nonstrict;
 INSERT OVERWRITE TABLE episodes_partitioned PARTITION (doctor_pt) SELECT title, air_date, doctor, doctor as doctor_pt FROM episodes;
 
 SELECT * FROM episodes_partitioned WHERE doctor_pt > 6 ORDER BY air_date;
+
+-- Verify that Fetch works in addition to Map
+SELECT * FROM episodes_partitioned LIMIT 5;
+-- Fetch w/filter to specific partition
+SELECT * FROM episodes_partitioned WHERE doctor_pt = 6;
+-- Fetch w/non-existant partition
+SELECT * FROM episodes_partitioned WHERE doctor_pt = 7 LIMIT 5;

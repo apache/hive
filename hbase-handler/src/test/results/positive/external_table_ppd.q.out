@@ -60,7 +60,7 @@ Table Parameters:
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.hbase.HBaseSerDe	 
 InputFormat:        	org.apache.hadoop.hive.hbase.HiveHBaseTableInputFormat	 
-OutputFormat:       	org.apache.hadoop.hive.hbase.HiveHBaseTableOutputFormat	 
+OutputFormat:       	org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat	 
 Compressed:         	No                  	 
 Num Buckets:        	-1                  	 
 Bucket Columns:     	[]                  	 
@@ -160,6 +160,7 @@ STAGE PLANS:
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
   Stage: Stage-0
     Fetch Operator

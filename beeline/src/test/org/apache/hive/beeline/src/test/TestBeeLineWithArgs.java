@@ -23,6 +23,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.beeline.BeeLine;
@@ -38,12 +40,19 @@ import org.junit.Test;
  */
 //public class TestBeeLineWithArgs extends TestCase {
 public class TestBeeLineWithArgs {
-
   // Default location of HiveServer2
-  final static String JDBC_URL = BeeLine.BEELINE_DEFAULT_JDBC_URL + "localhost:10000";
+  final private static String JDBC_URL = BeeLine.BEELINE_DEFAULT_JDBC_URL + "localhost:10000";
 
   private static HiveServer2 hiveServer2;
 
+  private List<String> getBaseArgs(String jdbcUrl) {
+    List<String> argList = new ArrayList<String>(8);
+    argList.add("-d");
+    argList.add(BeeLine.BEELINE_DEFAULT_JDBC_DRIVER);
+    argList.add("-u");
+    argList.add(jdbcUrl);
+    return argList;
+  }
   /**
    * Start up a local Hive Server 2 for these tests
    */
@@ -81,13 +90,13 @@ public class TestBeeLineWithArgs {
    * @throws Any exception while executing
    * @return The stderr and stdout from running the script
    */
-  private String testCommandLineScript(String scriptFileName) throws Throwable {
-    String[] args = {"-d", BeeLine.BEELINE_DEFAULT_JDBC_DRIVER, "-u", JDBC_URL, "-f", scriptFileName};
+  private String testCommandLineScript(List<String> argList) throws Throwable {
     BeeLine beeLine = new BeeLine();
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     PrintStream beelineOutputStream = new PrintStream(os);
     beeLine.setOutputStream(beelineOutputStream);
     beeLine.setErrorStream(beelineOutputStream);
+    String[] args = argList.toArray(new String[argList.size()]);
     beeLine.begin(args, null);
     String output = os.toString("UTF8");
 
@@ -100,11 +109,12 @@ public class TestBeeLineWithArgs {
    * in the output (stdout or stderr), fail if not found
    * Print PASSED or FAILED
    * @paramm testName Name of test to print
-   * @param expecttedPattern Text to look for in command output
+   * @param expectedPattern Text to look for in command output/error
    * @param shouldMatch true if the pattern should be found, false if it should not
    * @throws Exception on command execution error
    */
-  private void testScriptFile(String testName, String scriptText, String expectedPattern, boolean shouldMatch) throws Throwable {
+  private void testScriptFile(String testName, String scriptText, String expectedPattern,
+      boolean shouldMatch, List<String> argList) throws Throwable {
 
     long startTime = System.currentTimeMillis();
     System.out.println(">>> STARTED " + testName);
@@ -116,9 +126,12 @@ public class TestBeeLineWithArgs {
     os.print(scriptText);
     os.close();
 
+    argList.add("-f");
+    argList.add(scriptFile.getAbsolutePath());
+
     if(shouldMatch) {
       try {
-        String output = testCommandLineScript(scriptFile.getAbsolutePath());
+        String output = testCommandLineScript(argList);
         long elapsedTime = (System.currentTimeMillis() - startTime)/1000;
         String time = "(" + elapsedTime + "s)";
         if (output.contains(expectedPattern)) {
@@ -134,7 +147,7 @@ public class TestBeeLineWithArgs {
       }
     } else {
       try {
-        String output = testCommandLineScript(scriptFile.getAbsolutePath());
+        String output = testCommandLineScript(argList);
         long elapsedTime = (System.currentTimeMillis() - startTime)/1000;
         String time = "(" + elapsedTime + "s)";
         if (output.contains(expectedPattern)) {
@@ -164,7 +177,25 @@ public class TestBeeLineWithArgs {
     final String TEST_NAME = "testPositiveScriptFile";
     final String SCRIPT_TEXT = "show databases;\n";
     final String EXPECTED_PATTERN = " default ";
-    testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, true);
+    List<String> argList = getBaseArgs(JDBC_URL);
+    testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
+  }
+
+  /**
+   * Test Beeline -hivevar option. User can specify --hivevar name=value on Beeline command line.
+   * In the script, user should be able to use it in the form of ${name}, which will be substituted with
+   * the value.
+   * @throws Throwable
+   */
+  @Test
+  public void testBeelineCommandLineHiveVariable() throws Throwable {
+    List<String> argList = getBaseArgs(JDBC_URL);
+    argList.add("--hivevar");
+    argList.add("DUMMY_TBL=dummy");
+    final String TEST_NAME = "testHiveCommandLineHiveVariable";
+    final String SCRIPT_TEXT = "create table ${DUMMY_TBL} (d int);\nshow tables;\n";
+    final String EXPECTED_PATTERN = "dummy";
+    testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
   }
 
   /**
@@ -174,10 +205,11 @@ public class TestBeeLineWithArgs {
    */
   @Test
   public void testBreakOnErrorScriptFile() throws Throwable {
+    List<String> argList = getBaseArgs(JDBC_URL);
     final String TEST_NAME = "testBreakOnErrorScriptFile";
     final String SCRIPT_TEXT = "select * from abcdefg01;\nshow databases;\n";
     final String EXPECTED_PATTERN = " default ";
-    testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, false);
+    testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, false, argList);
   }
 
   /**
@@ -196,8 +228,12 @@ public class TestBeeLineWithArgs {
     File scriptFile = File.createTempFile("beelinenegative", "temp");
     scriptFile.delete();
 
+    List<String> argList = getBaseArgs(JDBC_URL);
+    argList.add("-f");
+    argList.add(scriptFile.getAbsolutePath());
+
     try {
-        String output = testCommandLineScript(scriptFile.getAbsolutePath());
+        String output = testCommandLineScript(argList);
       long elapsedTime = (System.currentTimeMillis() - startTime)/1000;
       String time = "(" + elapsedTime + "s)";
       if (output.contains(EXPECTED_PATTERN)) {
@@ -237,6 +273,15 @@ public class TestBeeLineWithArgs {
     Assert.assertTrue( output.contains("No current connection") );
 
     System.out.println(">>> PASSED " + "testNPE" );
+  }
+
+  @Test
+  public void testHiveVarSubstitution() throws Throwable {
+    List<String> argList = getBaseArgs(JDBC_URL + "#D_TBL=dummy_t");
+    final String TEST_NAME = "testHiveVarSubstitution";
+    final String SCRIPT_TEXT = "create table ${D_TBL} (d int);\nshow tables;\n";
+    final String EXPECTED_PATTERN = "dummy_t";
+    testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
   }
 
 }

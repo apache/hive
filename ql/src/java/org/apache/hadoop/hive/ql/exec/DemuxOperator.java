@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -36,7 +35,6 @@ import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.Deserializer;
-import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -76,17 +74,15 @@ public class DemuxOperator extends Operator<DemuxDesc>
   // We need to know the mapping from the newTag to oldTag and revert
   // the newTag to oldTag to make operators in the operator tree
   // function correctly.
-  private Map<Integer, Integer> newTagToOldTag =
-      new HashMap<Integer, Integer>();
+  private int[] newTagToOldTag;
 
   // The mapping from a newTag to the index of the corresponding child
   // of this operator.
-  private Map<Integer, Integer> newTagToChildIndex =
-      new HashMap<Integer, Integer>();
+  private int[] newTagToChildIndex;
 
   // The mapping from the index of a child operator to its corresponding
   // inputObjectInspectors
-  private Map<Integer, ObjectInspector[]> childInputObjInspectors;
+  private ObjectInspector[][] childInputObjInspectors;
 
   private int childrenDone;
 
@@ -109,7 +105,7 @@ public class DemuxOperator extends Operator<DemuxDesc>
   // In this case, the parent list of MUX is [DEMUX, GBY, DEMUX],
   // so we need to have two childOperatorsTags (the index of this DemuxOperator in
   // its children's parents lists, also see childOperatorsTag in Operator) at here.
-  private List<List<Integer>> newChildOperatorsTag;
+  private int[][] newChildOperatorsTag;
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
@@ -119,28 +115,28 @@ public class DemuxOperator extends Operator<DemuxDesc>
           "Expected number of children is at least 1. Found : " + childOperatorsArray.length);
     }
 
-    newTagToOldTag = conf.getNewTagToOldTag();
-    newTagToChildIndex = conf.getNewTagToChildIndex();
-    childInputObjInspectors = new HashMap<Integer, ObjectInspector[]>();
-    cntrs = new long[newTagToOldTag.size()];
-    nextCntrs = new long[newTagToOldTag.size()];
+    newTagToOldTag = toArray(conf.getNewTagToOldTag());
+    newTagToChildIndex = toArray(conf.getNewTagToChildIndex());
+    childInputObjInspectors = new ObjectInspector[childOperators.size()][];
+    cntrs = new long[newTagToOldTag.length];
+    nextCntrs = new long[newTagToOldTag.length];
 
     try {
       // We populate inputInspectors for all children of this DemuxOperator.
       // Those inputObjectInspectors are stored in childInputObjInspectors.
-      for (Entry<Integer, Integer> e1: newTagToOldTag.entrySet()) {
-        int newTag = e1.getKey();
-        int oldTag = e1.getValue();
-        int childIndex = newTagToChildIndex.get(newTag);
+      for (int i = 0; i < newTagToOldTag.length; i++) {
+        int newTag = i;
+        int oldTag = newTagToOldTag[i];
+        int childIndex = newTagToChildIndex[newTag];
         cntrs[newTag] = 0;
         nextCntrs[newTag] = 0;
         TableDesc keyTableDesc = conf.getKeysSerializeInfos().get(newTag);
-        Deserializer inputKeyDeserializer = (SerDe) ReflectionUtils.newInstance(keyTableDesc
+        Deserializer inputKeyDeserializer = ReflectionUtils.newInstance(keyTableDesc
             .getDeserializerClass(), null);
         inputKeyDeserializer.initialize(null, keyTableDesc.getProperties());
 
         TableDesc valueTableDesc = conf.getValuesSerializeInfos().get(newTag);
-        Deserializer inputValueDeserializer = (SerDe) ReflectionUtils.newInstance(valueTableDesc
+        Deserializer inputValueDeserializer = ReflectionUtils.newInstance(valueTableDesc
             .getDeserializerClass(), null);
         inputValueDeserializer.initialize(null, valueTableDesc.getProperties());
 
@@ -150,19 +146,20 @@ public class DemuxOperator extends Operator<DemuxDesc>
         int childParentsCount = conf.getChildIndexToOriginalNumParents().get(childIndex);
         // Multiple newTags can point to the same child (e.g. when the child is a JoinOperator).
         // So, we first check if childInputObjInspectors contains the key of childIndex.
-        if (!childInputObjInspectors.containsKey(childIndex)) {
-          childInputObjInspectors.put(childIndex, new ObjectInspector[childParentsCount]);
+        if (childInputObjInspectors[childIndex] == null) {
+          childInputObjInspectors[childIndex] = new ObjectInspector[childParentsCount];
         }
-        ObjectInspector[] ois = childInputObjInspectors.get(childIndex);
+        ObjectInspector[] ois = childInputObjInspectors[childIndex];
         ois[oldTag] = ObjectInspectorFactory
             .getStandardStructObjectInspector(Utilities.reduceFieldNameList, oi);
       }
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-    this.childrenDone = 0;
-    newChildOperatorsTag = new ArrayList<List<Integer>>();
-    for (Operator<? extends OperatorDesc> child: childOperators) {
+    childrenDone = 0;
+    newChildOperatorsTag = new int[childOperators.size()][];
+    for (int i = 0; i < childOperators.size(); i++) {
+      Operator<? extends OperatorDesc> child = childOperators.get(i);
       List<Integer> childOperatorTags = new ArrayList<Integer>();
       if (child instanceof MuxOperator) {
         // This DemuxOperator can appear multiple times in MuxOperator's
@@ -177,10 +174,26 @@ public class DemuxOperator extends Operator<DemuxDesc>
       } else {
         childOperatorTags.add(child.getParentOperators().indexOf(this));
       }
-      newChildOperatorsTag.add(childOperatorTags);
+      newChildOperatorsTag[i] = toArray(childOperatorTags);
     }
     LOG.info("newChildOperatorsTag " + newChildOperatorsTag);
     initializeChildren(hconf);
+  }
+
+  private int[] toArray(List<Integer> list) {
+    int[] array = new int[list.size()];
+    for (int i = 0; i < list.size(); i++) {
+      array[i] = list.get(i);
+    }
+    return array;
+  }
+
+  private int[] toArray(Map<Integer, Integer> map) {
+    int[] array = new int[map.size()];
+    for (Entry<Integer, Integer> entry : map.entrySet()) {
+      array[entry.getKey()] = entry.getValue();
+    }
+    return array;
   }
 
   // Each child should has its own outputObjInspector
@@ -192,7 +205,7 @@ public class DemuxOperator extends Operator<DemuxDesc>
     for (int i = 0; i < childOperatorsArray.length; i++) {
       LOG.info("Initializing child " + i + " " + childOperatorsArray[i].getIdentifier() + " " +
           childOperatorsArray[i].getName() +
-          " " + childInputObjInspectors.get(i).length);
+          " " + childInputObjInspectors[i].length);
       // We need to initialize those MuxOperators first because if we first
       // initialize other operators, the states of all parents of those MuxOperators
       // are INIT (including this DemuxOperator),
@@ -202,7 +215,7 @@ public class DemuxOperator extends Operator<DemuxDesc>
         // that MuxOperator must be the parent of a JoinOperator.
         // In this case, that MuxOperator should be initialized
         // by multiple parents (of that MuxOperator).
-        ObjectInspector[] ois = childInputObjInspectors.get(i);
+        ObjectInspector[] ois = childInputObjInspectors[i];
         for (int j = 0; j < ois.length; j++) {
           if (ois[j] != null) {
             childOperatorsArray[i].initialize(hconf, ois[j], j);
@@ -218,9 +231,9 @@ public class DemuxOperator extends Operator<DemuxDesc>
     for (int i = 0; i < childOperatorsArray.length; i++) {
       LOG.info("Initializing child " + i + " " + childOperatorsArray[i].getIdentifier() + " " +
           childOperatorsArray[i].getName() +
-          " " + childInputObjInspectors.get(i).length);
+          " " + childInputObjInspectors[i].length);
       if (!(childOperatorsArray[i] instanceof MuxOperator)) {
-        childOperatorsArray[i].initialize(hconf, childInputObjInspectors.get(i));
+        childOperatorsArray[i].initialize(hconf, childInputObjInspectors[i]);
       } else {
         continue;
       }
@@ -232,7 +245,7 @@ public class DemuxOperator extends Operator<DemuxDesc>
 
   @Override
   public void processOp(Object row, int tag) throws HiveException {
-    int currentChildIndex = newTagToChildIndex.get(tag);
+    int currentChildIndex = newTagToChildIndex[tag];
 
     // Check if we start to forward rows to a new child.
     // If so, in the current key group, rows will not be forwarded
@@ -241,7 +254,7 @@ public class DemuxOperator extends Operator<DemuxDesc>
     // to currentChildIndex (exclusive) and propagate processGroup to those children.
     endGroupIfNecessary(currentChildIndex);
 
-    int oldTag = newTagToOldTag.get(tag);
+    int oldTag = newTagToOldTag[tag];
     if (isLogInfoEnabled) {
       cntrs[tag]++;
       if (cntrs[tag] == nextCntrs[tag]) {
@@ -274,10 +287,10 @@ public class DemuxOperator extends Operator<DemuxDesc>
 
   @Override
   protected void closeOp(boolean abort) throws HiveException {
-    for (Entry<Integer, Integer> entry: newTagToOldTag.entrySet()) {
-      int newTag = entry.getKey();
-      int oldTag = entry.getValue();
-      int childIndex = newTagToChildIndex.get(newTag);
+    for (int i = 0 ; i < newTagToOldTag.length; i++) {
+      int newTag = i;
+      int oldTag = newTagToOldTag[i];
+      int childIndex = newTagToChildIndex[newTag];
       LOG.info(id + " (newTag, childIndex, oldTag)=(" + newTag + ", " + childIndex + ", "
           + oldTag + "),  forwarded " + cntrs[newTag] + " rows");
     }
@@ -299,7 +312,7 @@ public class DemuxOperator extends Operator<DemuxDesc>
         Operator<? extends OperatorDesc> child = childOperatorsArray[i];
         child.flush();
         child.endGroup();
-        for (Integer childTag: newChildOperatorsTag.get(i)) {
+        for (int childTag: newChildOperatorsTag[i]) {
           child.processGroup(childTag);
         }
       }
@@ -340,7 +353,7 @@ public class DemuxOperator extends Operator<DemuxDesc>
       Operator<? extends OperatorDesc> child = childOperatorsArray[i];
       child.flush();
       child.endGroup();
-      for (Integer childTag: newChildOperatorsTag.get(i)) {
+      for (int childTag: newChildOperatorsTag[i]) {
         child.processGroup(childTag);
       }
     }

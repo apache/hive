@@ -18,9 +18,10 @@
 
 package org.apache.hadoop.hive.metastore;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -50,6 +51,7 @@ import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
 import org.apache.hadoop.hive.metastore.model.MRoleMap;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
+import org.apache.thrift.TException;
 
 /**
  * A wrapper around {@link org.apache.hadoop.hive.metastore.ObjectStore}
@@ -303,6 +305,13 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   }
 
   @Override
+  public boolean getPartitionsByExpr(String dbName, String tblName, byte[] expr,
+      String defaultPartitionName, short maxParts, Set<Partition> result) throws TException {
+    return objectStore.getPartitionsByExpr(
+        dbName, tblName, expr, defaultPartitionName, maxParts, result);
+  }
+
+  @Override
   public Table markPartitionForEvent(String dbName, String tblName,
       Map<String, String> partVals, PartitionEventType evtType)
       throws MetaException, UnknownTableException, InvalidPartitionException,
@@ -532,11 +541,11 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public boolean addToken(String tokenIdentifier, String delegationToken) {
     return false;
   }
- 
+
   public boolean removeToken(String tokenIdentifier) {
     return false;
   }
- 
+
   public String getToken(String tokenIdentifier) {
     return "";
   }
@@ -558,6 +567,21 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
 
   public String[] getMasterKeys() {
     return new String[0];
+  }
+
+  @Override
+  public void verifySchema() throws MetaException {
+  }
+
+  @Override
+  public String getMetaStoreSchemaVersion() throws MetaException {
+    return objectStore.getMetaStoreSchemaVersion();
+  }
+
+  @Override
+  public void setMetaStoreSchemaVersion(String schemaVersion, String comment) throws MetaException {
+    objectStore.setMetaStoreSchemaVersion(schemaVersion, comment);
+
   }
 
 }

@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.C
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
+import org.apache.hadoop.hive.serde2.typeinfo.ParameterizedPrimitiveTypeUtils;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -90,8 +91,8 @@ public class TypedBytesRecordReader implements RecordReader {
     for (String columnType : columnTypes) {
       PrimitiveTypeEntry dstTypeEntry = PrimitiveObjectInspectorUtils
           .getTypeEntryFromTypeName(columnType);
-      dstOIns.add(PrimitiveObjectInspectorFactory
-          .getPrimitiveWritableObjectInspector(dstTypeEntry.primitiveCategory));
+      dstOIns.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+          dstTypeEntry));
     }
   }
 
@@ -154,8 +155,8 @@ public class TypedBytesRecordReader implements RecordReader {
         PrimitiveTypeEntry srcTypeEntry = PrimitiveObjectInspectorUtils
             .getTypeEntryFromTypeName(typeName);
         srcOIns
-            .add(PrimitiveObjectInspectorFactory
-            .getPrimitiveWritableObjectInspector(srcTypeEntry.primitiveCategory));
+            .add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+                srcTypeEntry));
         converters.add(ObjectInspectorConverters.getConverter(srcOIns.get(pos),
             dstOIns.get(pos)));
       } else {

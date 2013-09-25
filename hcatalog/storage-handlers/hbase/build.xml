@@ -52,7 +52,6 @@
     <property name="javac.debug" value="on" />
     <property name="javac.optimize" value="on" />
     <property name="javac.deprecation" value="off" />
-    <property name="javac.version" value="1.6" />
     <property name="javac.args" value="" />
 
     <!-- test properties -->
@@ -91,8 +90,8 @@
     <target name="compile-src" depends="init">
         <javac encoding="${build.encoding}" srcdir="${src.dir}:${basedir}/src/gen-java:${basedir}/src/resources" excludes="${excludes}"
                includes="**/*.java" destdir="${build.classes}" debug="${javac.debug}"
-               optimize="${javac.optimize}" target="${javac.version}"
-               source="${javac.version}" deprecation="${javac.deprecation}"
+               optimize="${javac.optimize}"
+               deprecation="${javac.deprecation}"
                includeantruntime="false">
             <compilerarg line="${javac.args}"/>
             <classpath refid="compile.class.path"/>
@@ -118,8 +117,8 @@
     <target name="compile-test" depends="jar">
         <javac encoding="${build.encoding}" srcdir="${test.src.dir}" excludes="${excludes}"
                includes="**/*.java" destdir="${test.build.classes}" debug="${javac.debug}"
-               optimize="${javac.optimize}" target="${javac.version}"
-               source="${javac.version}" deprecation="${javac.deprecation}"
+               optimize="${javac.optimize}"
+               deprecation="${javac.deprecation}"
                includeantruntime="false">
             <compilerarg line="${javac.args}"/>
             <classpath refid="test.class.path" />

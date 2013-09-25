@@ -36,106 +36,106 @@ import org.slf4j.LoggerFactory;
  */
 public class RevisionManagerEndpoint extends BaseEndpointCoprocessor implements RevisionManagerProtocol {
 
-    private static final Logger LOGGER =
-        LoggerFactory.getLogger(RevisionManagerEndpoint.class.getName());
+  private static final Logger LOGGER =
+    LoggerFactory.getLogger(RevisionManagerEndpoint.class.getName());
 
-    private RevisionManager rmImpl = null;
+  private RevisionManager rmImpl = null;
 
-    @Override
-    public void start(CoprocessorEnvironment env) {
-        super.start(env);
-        try {
-            Configuration conf = RevisionManagerConfiguration.create(env.getConfiguration());
-            String className = conf.get(RMConstants.REVISION_MGR_ENDPOINT_IMPL_CLASS,
-                ZKBasedRevisionManager.class.getName());
-            LOGGER.debug("Using Revision Manager implementation: {}", className);
-            rmImpl = RevisionManagerFactory.getOpenedRevisionManager(className, conf);
-        } catch (IOException e) {
-            LOGGER.error("Failed to initialize revision manager", e);
-        }
+  @Override
+  public void start(CoprocessorEnvironment env) {
+    super.start(env);
+    try {
+      Configuration conf = RevisionManagerConfiguration.create(env.getConfiguration());
+      String className = conf.get(RMConstants.REVISION_MGR_ENDPOINT_IMPL_CLASS,
+        ZKBasedRevisionManager.class.getName());
+      LOGGER.debug("Using Revision Manager implementation: {}", className);
+      rmImpl = RevisionManagerFactory.getOpenedRevisionManager(className, conf);
+    } catch (IOException e) {
+      LOGGER.error("Failed to initialize revision manager", e);
     }
+  }
 
-    @Override
-    public void stop(CoprocessorEnvironment env) {
-        if (rmImpl != null) {
-            try {
-                rmImpl.close();
-            } catch (IOException e) {
-                LOGGER.warn("Error closing revision manager.", e);
-            }
-        }
-        super.stop(env);
+  @Override
+  public void stop(CoprocessorEnvironment env) {
+    if (rmImpl != null) {
+      try {
+        rmImpl.close();
+      } catch (IOException e) {
+        LOGGER.warn("Error closing revision manager.", e);
+      }
     }
+    super.stop(env);
+  }
 
-    @Override
-    public void initialize(Configuration conf) {
-        // do nothing, HBase controls life cycle
-    }
+  @Override
+  public void initialize(Configuration conf) {
+    // do nothing, HBase controls life cycle
+  }
 
-    @Override
-    public void open() throws IOException {
-        // do nothing, HBase controls life cycle
-    }
+  @Override
+  public void open() throws IOException {
+    // do nothing, HBase controls life cycle
+  }
 
-    @Override
-    public void close() throws IOException {
-        // do nothing, HBase controls life cycle
-    }
+  @Override
+  public void close() throws IOException {
+    // do nothing, HBase controls life cycle
+  }
 
-    @Override
-    public void createTable(String table, List<String> columnFamilies) throws IOException {
-        rmImpl.createTable(table, columnFamilies);
-    }
+  @Override
+  public void createTable(String table, List<String> columnFamilies) throws IOException {
+    rmImpl.createTable(table, columnFamilies);
+  }
 
-    @Override
-    public void dropTable(String table) throws IOException {
-        rmImpl.dropTable(table);
-    }
+  @Override
+  public void dropTable(String table) throws IOException {
+    rmImpl.dropTable(table);
+  }
 
-    @Override
-    public Transaction beginWriteTransaction(String table, List<String> families)
-        throws IOException {
-        return rmImpl.beginWriteTransaction(table, families);
-    }
+  @Override
+  public Transaction beginWriteTransaction(String table, List<String> families)
+    throws IOException {
+    return rmImpl.beginWriteTransaction(table, families);
+  }
 
-    @Override
-    public Transaction beginWriteTransaction(String table,
-                                             List<String> families, long keepAlive) throws IOException {
-        return rmImpl.beginWriteTransaction(table, families, keepAlive);
-    }
+  @Override
+  public Transaction beginWriteTransaction(String table,
+                       List<String> families, long keepAlive) throws IOException {
+    return rmImpl.beginWriteTransaction(table, families, keepAlive);
+  }
 
-    @Override
-    public void commitWriteTransaction(Transaction transaction)
-        throws IOException {
-        rmImpl.commitWriteTransaction(transaction);
-    }
+  @Override
+  public void commitWriteTransaction(Transaction transaction)
+    throws IOException {
+    rmImpl.commitWriteTransaction(transaction);
+  }
 
-    @Override
-    public void abortWriteTransaction(Transaction transaction)
-        throws IOException {
-        rmImpl.abortWriteTransaction(transaction);
-    }
+  @Override
+  public void abortWriteTransaction(Transaction transaction)
+    throws IOException {
+    rmImpl.abortWriteTransaction(transaction);
+  }
 
-    @Override
-    public TableSnapshot createSnapshot(String tableName) throws IOException {
-        return rmImpl.createSnapshot(tableName);
-    }
+  @Override
+  public TableSnapshot createSnapshot(String tableName) throws IOException {
+    return rmImpl.createSnapshot(tableName);
+  }
 
-    @Override
-    public TableSnapshot createSnapshot(String tableName, long revision)
-        throws IOException {
-        return rmImpl.createSnapshot(tableName, revision);
-    }
+  @Override
+  public TableSnapshot createSnapshot(String tableName, long revision)
+    throws IOException {
+    return rmImpl.createSnapshot(tableName, revision);
+  }
 
-    @Override
-    public void keepAlive(Transaction transaction) throws IOException {
-        rmImpl.keepAlive(transaction);
-    }
+  @Override
+  public void keepAlive(Transaction transaction) throws IOException {
+    rmImpl.keepAlive(transaction);
+  }
 
-    @Override
-    public List<FamilyRevision> getAbortedWriteTransactions(String table,
-                                                            String columnFamily) throws IOException {
-        return rmImpl.getAbortedWriteTransactions(table, columnFamily);
-    }
+  @Override
+  public List<FamilyRevision> getAbortedWriteTransactions(String table,
+                              String columnFamily) throws IOException {
+    return rmImpl.getAbortedWriteTransactions(table, columnFamily);
+  }
 
 }

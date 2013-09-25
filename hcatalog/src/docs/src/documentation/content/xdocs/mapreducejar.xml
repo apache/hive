@@ -86,6 +86,13 @@
         <td>None</td>
     </tr>
 
+    <tr><td><strong>enablelog</strong></td>
+        <td>Collecting hadoop job config and logs into $statusdir/logs folder.
+         statusdir must be set as well to use this feature.</td>
+        <td>Optional</td>
+        <td>None</td>
+    </tr>
+
     <tr><td><strong>callback</strong></td>
         <td>Define a URL to be called upon job completion. You may embed a specific
          job ID into this URL using <code>$jobId</code>.  This tag

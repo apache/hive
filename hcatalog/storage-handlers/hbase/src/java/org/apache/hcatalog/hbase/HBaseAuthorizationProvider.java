@@ -37,108 +37,108 @@ import org.apache.hadoop.hive.ql.security.authorization.Privilege;
  */
 class HBaseAuthorizationProvider implements HiveAuthorizationProvider {
 
-    @Override
-    public Configuration getConf() {
-        return null;
-    }
+  @Override
+  public Configuration getConf() {
+    return null;
+  }
 
-    @Override
-    public void setConf(Configuration conf) {
-    }
+  @Override
+  public void setConf(Configuration conf) {
+  }
 
-    /*
-    * (non-Javadoc)
-    *
-    * @see
-    * org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider
-    * #init(org.apache.hadoop.conf.Configuration)
-    */
-    @Override
-    public void init(Configuration conf) throws HiveException {
-    }
+  /*
+  * (non-Javadoc)
+  *
+  * @see
+  * org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider
+  * #init(org.apache.hadoop.conf.Configuration)
+  */
+  @Override
+  public void init(Configuration conf) throws HiveException {
+  }
 
-    @Override
-    public HiveAuthenticationProvider getAuthenticator() {
-        return null;
-    }
+  @Override
+  public HiveAuthenticationProvider getAuthenticator() {
+    return null;
+  }
 
-    @Override
-    public void setAuthenticator(HiveAuthenticationProvider authenticator) {
-    }
+  @Override
+  public void setAuthenticator(HiveAuthenticationProvider authenticator) {
+  }
 
-    /*
-    * (non-Javadoc)
-    *
-    * @see
-    * org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider
-    * #authorize(org.apache.hadoop.hive.ql.security.authorization.Privilege[],
-    * org.apache.hadoop.hive.ql.security.authorization.Privilege[])
-    */
-    @Override
-    public void authorize(Privilege[] readRequiredPriv,
-                          Privilege[] writeRequiredPriv) throws HiveException,
-        AuthorizationException {
-    }
+  /*
+  * (non-Javadoc)
+  *
+  * @see
+  * org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider
+  * #authorize(org.apache.hadoop.hive.ql.security.authorization.Privilege[],
+  * org.apache.hadoop.hive.ql.security.authorization.Privilege[])
+  */
+  @Override
+  public void authorize(Privilege[] readRequiredPriv,
+              Privilege[] writeRequiredPriv) throws HiveException,
+    AuthorizationException {
+  }
 
-    /*
-    * (non-Javadoc)
-    *
-    * @see
-    * org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider
-    * #authorize(org.apache.hadoop.hive.metastore.api.Database,
-    * org.apache.hadoop.hive.ql.security.authorization.Privilege[],
-    * org.apache.hadoop.hive.ql.security.authorization.Privilege[])
-    */
-    @Override
-    public void authorize(Database db, Privilege[] readRequiredPriv,
-                          Privilege[] writeRequiredPriv) throws HiveException,
-        AuthorizationException {
-    }
+  /*
+  * (non-Javadoc)
+  *
+  * @see
+  * org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider
+  * #authorize(org.apache.hadoop.hive.metastore.api.Database,
+  * org.apache.hadoop.hive.ql.security.authorization.Privilege[],
+  * org.apache.hadoop.hive.ql.security.authorization.Privilege[])
+  */
+  @Override
+  public void authorize(Database db, Privilege[] readRequiredPriv,
+              Privilege[] writeRequiredPriv) throws HiveException,
+    AuthorizationException {
+  }
 
-    /*
-    * (non-Javadoc)
-    *
-    * @see
-    * org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider
-    * #authorize(org.apache.hadoop.hive.ql.metadata.Table,
-    * org.apache.hadoop.hive.ql.security.authorization.Privilege[],
-    * org.apache.hadoop.hive.ql.security.authorization.Privilege[])
-    */
-    @Override
-    public void authorize(Table table, Privilege[] readRequiredPriv,
-                          Privilege[] writeRequiredPriv) throws HiveException,
-        AuthorizationException {
-    }
+  /*
+  * (non-Javadoc)
+  *
+  * @see
+  * org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider
+  * #authorize(org.apache.hadoop.hive.ql.metadata.Table,
+  * org.apache.hadoop.hive.ql.security.authorization.Privilege[],
+  * org.apache.hadoop.hive.ql.security.authorization.Privilege[])
+  */
+  @Override
+  public void authorize(Table table, Privilege[] readRequiredPriv,
+              Privilege[] writeRequiredPriv) throws HiveException,
+    AuthorizationException {
+  }
 
-    /*
-    * (non-Javadoc)
-    *
-    * @see
-    * org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider
-    * #authorize(org.apache.hadoop.hive.ql.metadata.Partition,
-    * org.apache.hadoop.hive.ql.security.authorization.Privilege[],
-    * org.apache.hadoop.hive.ql.security.authorization.Privilege[])
-    */
-    @Override
-    public void authorize(Partition part, Privilege[] readRequiredPriv,
-                          Privilege[] writeRequiredPriv) throws HiveException,
-        AuthorizationException {
-    }
+  /*
+  * (non-Javadoc)
+  *
+  * @see
+  * org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider
+  * #authorize(org.apache.hadoop.hive.ql.metadata.Partition,
+  * org.apache.hadoop.hive.ql.security.authorization.Privilege[],
+  * org.apache.hadoop.hive.ql.security.authorization.Privilege[])
+  */
+  @Override
+  public void authorize(Partition part, Privilege[] readRequiredPriv,
+              Privilege[] writeRequiredPriv) throws HiveException,
+    AuthorizationException {
+  }
 
-    /*
-    * (non-Javadoc)
-    *
-    * @see
-    * org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider
-    * #authorize(org.apache.hadoop.hive.ql.metadata.Table,
-    * org.apache.hadoop.hive.ql.metadata.Partition, java.util.List,
-    * org.apache.hadoop.hive.ql.security.authorization.Privilege[],
-    * org.apache.hadoop.hive.ql.security.authorization.Privilege[])
-    */
-    @Override
-    public void authorize(Table table, Partition part, List<String> columns,
-                          Privilege[] readRequiredPriv, Privilege[] writeRequiredPriv)
-        throws HiveException, AuthorizationException {
-    }
+  /*
+  * (non-Javadoc)
+  *
+  * @see
+  * org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider
+  * #authorize(org.apache.hadoop.hive.ql.metadata.Table,
+  * org.apache.hadoop.hive.ql.metadata.Partition, java.util.List,
+  * org.apache.hadoop.hive.ql.security.authorization.Privilege[],
+  * org.apache.hadoop.hive.ql.security.authorization.Privilege[])
+  */
+  @Override
+  public void authorize(Table table, Partition part, List<String> columns,
+              Privilege[] readRequiredPriv, Privilege[] writeRequiredPriv)
+    throws HiveException, AuthorizationException {
+  }
 
 }

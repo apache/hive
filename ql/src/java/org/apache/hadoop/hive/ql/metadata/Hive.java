@@ -18,7 +18,6 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 import static org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_STORAGE;
 import static org.apache.hadoop.hive.serde.serdeConstants.COLLECTION_DELIM;
 import static org.apache.hadoop.hive.serde.serdeConstants.ESCAPE_CHAR;
@@ -36,6 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -49,6 +49,7 @@ import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
 import org.apache.hadoop.hive.metastore.HiveMetaHook;
 import org.apache.hadoop.hive.metastore.HiveMetaHookLoader;
@@ -76,11 +77,11 @@ import org.apache.hadoop.hive.metastore.api.PrivilegeBag;
 import org.apache.hadoop.hive.metastore.api.Role;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
-import org.apache.hadoop.hive.metastore.api.SkewedValueList;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.session.CreateTableAutomaticGrant;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -90,11 +91,15 @@ import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.thrift.TException;
 
+import com.google.common.collect.Sets;
+
 /**
- * The Hive class contains information about this instance of Hive. An instance
- * of Hive represents a set of data in a file system (usually HDFS) organized
- * for easy query processing
+ * This class has functions that implement meta data/DDL operations using calls
+ * to the metastore.
+ * It has a metastore client instance it uses to communicate with the metastore.
  *
+ * It is a thread local variable, and the instances is accessed using static
+ * get methods in this class.
  */
 
 public class Hive {
@@ -103,7 +108,6 @@ public class Hive {
 
   private HiveConf conf = null;
   private IMetaStoreClient metaStoreClient;
-  private String currentDatabase;
 
   private static ThreadLocal<Hive> hiveDB = new ThreadLocal<Hive>() {
     @Override
@@ -164,9 +168,6 @@ public class Hive {
       closeCurrent();
       c.set("fs.scheme.class", "dfs");
       Hive newdb = new Hive(c);
-      if (db != null && db.getCurrentDatabase() != null){
-        newdb.setCurrentDatabase(db.getCurrentDatabase());
-      }
       hiveDB.set(newdb);
       return newdb;
     }
@@ -572,7 +573,7 @@ public class Hive {
   public void createTable(Table tbl, boolean ifNotExists) throws HiveException {
     try {
       if (tbl.getDbName() == null || "".equals(tbl.getDbName().trim())) {
-        tbl.setDbName(getCurrentDatabase());
+        tbl.setDbName(SessionState.get().getCurrentDatabase());
       }
       if (tbl.getCols().size() == 0) {
         tbl.setFields(MetaStoreUtils.getFieldsFromDeserializer(tbl.getTableName(),
@@ -648,7 +649,7 @@ public class Hive {
       throws HiveException {
 
     try {
-      String dbName = getCurrentDatabase();
+      String dbName = SessionState.get().getCurrentDatabase();
       Index old_index = null;
       try {
         old_index = getIndex(dbName, tableName, indexName);
@@ -792,7 +793,8 @@ public class Hive {
     case 3:
       return getIndex(names[0], names[1], names[2]);
     case 2:
-      return getIndex(getCurrentDatabase(), names[0], names[1]);
+      return getIndex(SessionState.get().getCurrentDatabase(),
+          names[0], names[1]);
     default:
       throw new HiveException("Invalid index name:" + qualifiedIndexName);
     }
@@ -998,7 +1000,7 @@ public class Hive {
    * @throws HiveException
    */
   public List<String> getAllTables() throws HiveException {
-    return getAllTables(getCurrentDatabase());
+    return getAllTables(SessionState.get().getCurrentDatabase());
   }
 
   /**
@@ -1021,7 +1023,8 @@ public class Hive {
    * @throws HiveException
    */
   public List<String> getTablesByPattern(String tablePattern) throws HiveException {
-    return getTablesByPattern(getCurrentDatabase(), tablePattern);
+    return getTablesByPattern(SessionState.get().getCurrentDatabase(),
+        tablePattern);
   }
 
   /**
@@ -1144,6 +1147,16 @@ public class Hive {
   }
 
   /**
+   * Get the Database object for current database
+   * @return a Database object if this database exists, null otherwise.
+   * @throws HiveException
+   */
+  public Database getDatabaseCurrent() throws HiveException {
+    String currentDb = SessionState.get().getCurrentDatabase();
+    return getDatabase(currentDb);
+  }
+
+  /**
    * Load a directory into a Hive Table Partition - Alters existing content of
    * the partition with the contents of loadPath. - If the partition does not
    * exist - one is created - files in loadPath are moved into Hive. But the
@@ -1222,8 +1235,8 @@ public class Hive {
           org.apache.hadoop.hive.metastore.api.Partition newCreatedTpart = newTPart.getTPartition();
           SkewedInfo skewedInfo = newCreatedTpart.getSd().getSkewedInfo();
           /* Construct list bucketing location mappings from sub-directory name. */
-          Map<SkewedValueList, String> skewedColValueLocationMaps =
-            constructListBucketingLocationMap(newPartPath, skewedInfo);
+          Map<List<String>, String> skewedColValueLocationMaps = constructListBucketingLocationMap(
+              newPartPath, skewedInfo);
           /* Add list bucketing location mappings. */
           skewedInfo.setSkewedColValueLocationMaps(skewedColValueLocationMaps);
           newCreatedTpart.getSd().setSkewedInfo(skewedInfo);
@@ -1256,8 +1269,7 @@ public class Hive {
  * @throws IOException
  */
 private void walkDirTree(FileStatus fSta, FileSystem fSys,
-    Map<SkewedValueList, String> skewedColValueLocationMaps,
-    Path newPartPath, SkewedInfo skewedInfo)
+    Map<List<String>, String> skewedColValueLocationMaps, Path newPartPath, SkewedInfo skewedInfo)
     throws IOException {
   /* Base Case. It's leaf. */
   if (!fSta.isDir()) {
@@ -1283,7 +1295,7 @@ private void walkDirTree(FileStatus fSta, FileSystem fSys,
  * @param skewedInfo
  */
 private void constructOneLBLocationMap(FileStatus fSta,
-    Map<SkewedValueList, String> skewedColValueLocationMaps,
+    Map<List<String>, String> skewedColValueLocationMaps,
     Path newPartPath, SkewedInfo skewedInfo) {
   Path lbdPath = fSta.getPath().getParent();
   List<String> skewedValue = new ArrayList<String>();
@@ -1306,7 +1318,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
   if ((skewedValue.size() > 0) && (skewedValue.size() == skewedInfo.getSkewedColNames().size())
       && !skewedColValueLocationMaps.containsKey(skewedValue)) {
-    skewedColValueLocationMaps.put(new SkewedValueList(skewedValue), lbdPath.toString());
+    skewedColValueLocationMaps.put(skewedValue, lbdPath.toString());
   }
 }
 
@@ -1319,10 +1331,9 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @throws IOException
    * @throws FileNotFoundException
    */
-  private Map<SkewedValueList, String> constructListBucketingLocationMap(Path newPartPath,
+  private Map<List<String>, String> constructListBucketingLocationMap(Path newPartPath,
       SkewedInfo skewedInfo) throws IOException, FileNotFoundException {
-    Map<SkewedValueList, String> skewedColValueLocationMaps =
-      new HashMap<SkewedValueList, String>();
+    Map<List<String>, String> skewedColValueLocationMaps = new HashMap<List<String>, String>();
     FileSystem fSys = newPartPath.getFileSystem(conf);
     walkDirTree(fSys.getFileStatus(newPartPath), fSys, skewedColValueLocationMaps, newPartPath,
         skewedInfo);
@@ -1715,6 +1726,30 @@ private void constructOneLBLocationMap(FileStatus fSta,
   }
 
   /**
+   * Get all the partitions; unlike {@link #getPartitions(Table)}, does not include auth.
+   * @param tbl table for which partitions are needed
+   * @return list of partition objects
+   */
+  public Set<Partition> getAllPartitionsForPruner(Table tbl) throws HiveException {
+    if (!tbl.isPartitioned()) {
+      return Sets.newHashSet(new Partition(tbl));
+    }
+
+    List<org.apache.hadoop.hive.metastore.api.Partition> tParts;
+    try {
+      tParts = getMSC().listPartitions(tbl.getDbName(), tbl.getTableName(), (short)-1);
+    } catch (Exception e) {
+      LOG.error(StringUtils.stringifyException(e));
+      throw new HiveException(e);
+    }
+    Set<Partition> parts = new LinkedHashSet<Partition>(tParts.size());
+    for (org.apache.hadoop.hive.metastore.api.Partition tpart : tParts) {
+      parts.add(new Partition(tbl, tpart));
+    }
+    return parts;
+  }
+
+  /**
    * get all the partitions of the table that matches the given partial
    * specification. partition columns whose value is can be anything should be
    * an empty string.
@@ -1866,13 +1901,43 @@ private void constructOneLBLocationMap(FileStatus fSta,
 
     List<org.apache.hadoop.hive.metastore.api.Partition> tParts = getMSC().listPartitionsByFilter(
         tbl.getDbName(), tbl.getTableName(), filter, (short)-1);
-    List<Partition> results = new ArrayList<Partition>(tParts.size());
+    return convertFromMetastore(tbl, tParts, null);
+  }
 
-    for (org.apache.hadoop.hive.metastore.api.Partition tPart: tParts) {
-      Partition part = new Partition(tbl, tPart);
-      results.add(part);
+  private static List<Partition> convertFromMetastore(Table tbl,
+      List<org.apache.hadoop.hive.metastore.api.Partition> src,
+      List<Partition> dest) throws HiveException {
+    if (src == null) {
+      return dest;
     }
-    return results;
+    if (dest == null) {
+      dest = new ArrayList<Partition>(src.size());
+    }
+    for (org.apache.hadoop.hive.metastore.api.Partition tPart : src) {
+      dest.add(new Partition(tbl, tPart));
+    }
+    return dest;
+  }
+
+  /**
+   * Get a list of Partitions by expr.
+   * @param tbl The table containing the partitions.
+   * @param expr A serialized expression for partition predicates.
+   * @param conf Hive config.
+   * @param result the resulting list of partitions
+   * @return whether the resulting list contains partitions which may or may not match the expr
+   */
+  public boolean getPartitionsByExpr(Table tbl, ExprNodeDesc expr, HiveConf conf,
+      List<Partition> result) throws HiveException, TException {
+    assert result != null;
+    byte[] exprBytes = Utilities.serializeExpressionToKryo(expr);
+    String defaultPartitionName = HiveConf.getVar(conf, ConfVars.DEFAULTPARTITIONNAME);
+    List<org.apache.hadoop.hive.metastore.api.Partition> msParts =
+        new ArrayList<org.apache.hadoop.hive.metastore.api.Partition>();
+    boolean hasUnknownParts = getMSC().listPartitionsByExpr(tbl.getDbName(),
+        tbl.getTableName(), exprBytes, defaultPartitionName, (short)-1, msParts);
+    convertFromMetastore(tbl, msParts, result);
+    return hasUnknownParts;
   }
 
   public void validatePartitionNameCharacters(List<String> partVals) throws HiveException {
@@ -1882,25 +1947,6 @@ private void constructOneLBLocationMap(FileStatus fSta,
       LOG.error(StringUtils.stringifyException(e));
       throw new HiveException(e);
     }
-  }
-
-  /**
-   * Get the name of the current database
-   * @return the current database name
-   */
-  public String getCurrentDatabase() {
-    if (null == currentDatabase) {
-      currentDatabase = DEFAULT_DATABASE_NAME;
-    }
-    return currentDatabase;
-  }
-
-  /**
-   * Set the name of the current database
-   * @param currentDatabase
-   */
-  public void setCurrentDatabase(String currentDatabase) {
-    this.currentDatabase = currentDatabase;
   }
 
   public void createRole(String roleName, String ownerName)
@@ -2476,7 +2522,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
     case 2:
       return new Table(names[0], names[1]);
     case 1:
-      return new Table(getCurrentDatabase(), names[0]);
+      return new Table(SessionState.get().getCurrentDatabase(), names[0]);
     default:
       try{
         throw new HiveException("Invalid table name: " + tableName);

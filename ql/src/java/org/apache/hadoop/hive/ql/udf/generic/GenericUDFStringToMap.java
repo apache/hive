@@ -24,9 +24,15 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
@@ -41,30 +47,30 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
     + " delimiters are used: ',' as delimiter1 and '=' as delimiter2.")
 public class GenericUDFStringToMap extends GenericUDF {
   private final HashMap<Object, Object> ret = new HashMap<Object, Object>();
-  private transient StringObjectInspector soi_text, soi_de1 = null, soi_de2 = null;
+  private transient Converter soi_text, soi_de1 = null, soi_de2 = null;
   final static String default_de1 = ",";
   final static String default_de2 = ":";
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
 
-    if (!TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[0]).equals(
-        TypeInfoFactory.stringTypeInfo)
-        || (arguments.length > 1 &&
-            !TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[1]).equals(
-            TypeInfoFactory.stringTypeInfo))
-        || (arguments.length > 2 &&
-            !TypeInfoUtils.getTypeInfoFromObjectInspector(arguments[2]).equals(
-            TypeInfoFactory.stringTypeInfo))) {
-      throw new UDFArgumentException("All argument should be string");
+    for (int idx = 0; idx < Math.min(arguments.length, 3); ++idx) {
+      if (arguments[idx].getCategory() != Category.PRIMITIVE
+          || PrimitiveObjectInspectorUtils.getPrimitiveGrouping(
+              ((PrimitiveObjectInspector) arguments[idx]).getPrimitiveCategory())
+              != PrimitiveGrouping.STRING_GROUP) {
+        throw new UDFArgumentException("All argument should be string/character type");
+      }
     }
-
-    soi_text = (StringObjectInspector) arguments[0];
+    soi_text = ObjectInspectorConverters.getConverter(arguments[0],
+        PrimitiveObjectInspectorFactory.javaStringObjectInspector);
     if (arguments.length > 1) {
-      soi_de1 = (StringObjectInspector) arguments[1];
+      soi_de1 = ObjectInspectorConverters.getConverter(arguments[1],
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector);
     }
     if (arguments.length > 2) {
-      soi_de2 = (StringObjectInspector) arguments[2];
+      soi_de2 = ObjectInspectorConverters.getConverter(arguments[2],
+          PrimitiveObjectInspectorFactory.javaStringObjectInspector);
     }
 
     return ObjectInspectorFactory.getStandardMapObjectInspector(
@@ -75,11 +81,11 @@ public class GenericUDFStringToMap extends GenericUDF {
   @Override
   public Object evaluate(DeferredObject[] arguments) throws HiveException {
     ret.clear();
-    String text = soi_text.getPrimitiveJavaObject(arguments[0].get());
+    String text = (String) soi_text.convert(arguments[0].get());
     String delimiter1 = (soi_de1 == null) ?
-      default_de1 : soi_de1.getPrimitiveJavaObject(arguments[1].get());
+      default_de1 : (String) soi_de1.convert(arguments[1].get());
     String delimiter2 = (soi_de2 == null) ?
-      default_de2 : soi_de2.getPrimitiveJavaObject(arguments[2].get());
+      default_de2 : (String) soi_de2.convert(arguments[2].get());
 
     String[] keyValuePairs = text.split(delimiter1);
 

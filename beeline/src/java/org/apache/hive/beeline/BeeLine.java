@@ -96,7 +96,7 @@ import jline.SimpleCompletor;
 public class BeeLine {
   private static final ResourceBundle resourceBundle =
       ResourceBundle.getBundle(BeeLine.class.getName());
-  private BeeLineSignalHandler signalHandler = null;
+  private final BeeLineSignalHandler signalHandler = null;
   private static final String separator = System.getProperty("line.separator");
   private boolean exit = false;
   private final DatabaseConnections connections = new DatabaseConnections();
@@ -124,6 +124,8 @@ public class BeeLine {
   private static final int ERRNO_OK = 0;
   private static final int ERRNO_ARGS = 1;
   private static final int ERRNO_OTHER = 2;
+
+  private static final String HIVE_VAR_PREFIX = "--hivevar";
 
   private final Map<Object, Object> formats = map(new Object[] {
       "vertical", new VerticalOutputFormat(this),
@@ -504,6 +506,16 @@ public class BeeLine {
         return false;
       }
 
+      // Parse hive variables
+      if (args[i].equals(HIVE_VAR_PREFIX)) {
+        String[] parts = split(args[++i], "=");
+        if (parts.length != 2) {
+          return false;
+        }
+        getOpts().getHiveVariables().put(parts[0], parts[1]);
+        continue;
+      }
+
       // -- arguments are treated as properties
       if (args[i].startsWith("--")) {
         String[] parts = split(args[i].substring(2), "=");
@@ -653,7 +665,7 @@ public class BeeLine {
   public ConsoleReader getConsoleReader(InputStream inputStream) throws IOException {
     if (inputStream != null) {
       // ### NOTE: fix for sf.net bug 879425.
-      consoleReader = new ConsoleReader(inputStream, new PrintWriter(System.out, true));
+      consoleReader = new ConsoleReader(inputStream, new PrintWriter(getOutputStream(), true));
     } else {
       consoleReader = new ConsoleReader();
     }
@@ -790,6 +802,11 @@ public class BeeLine {
     if (trimmed.length() == 0) {
       return false;
     }
+
+    if (!getOpts().isAllowMultiLineCommand()) {
+      return false;
+    }
+
     return !trimmed.endsWith(";");
   }
 
@@ -1614,7 +1631,7 @@ public class BeeLine {
     }
   }
 
-  BeeLineOpts getOpts() {
+  public BeeLineOpts getOpts() {
     return opts;
   }
 

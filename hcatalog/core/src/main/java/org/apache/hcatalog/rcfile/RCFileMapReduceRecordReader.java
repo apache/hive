@@ -30,92 +30,94 @@ import org.apache.hadoop.mapreduce.InputSplit;
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 import org.apache.hadoop.mapreduce.lib.input.FileSplit;
-
+/**
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.rcfile.RCFileMapReduceRecordReader} instead
+ */
 public class RCFileMapReduceRecordReader<K extends LongWritable, V extends BytesRefArrayWritable>
-    extends RecordReader<LongWritable, BytesRefArrayWritable> {
+  extends RecordReader<LongWritable, BytesRefArrayWritable> {
 
-    private Reader in;
-    private long start;
-    private long end;
-    private boolean more = true;
+  private Reader in;
+  private long start;
+  private long end;
+  private boolean more = true;
 
-    // key and value objects are created once in initialize() and then reused
-    // for every getCurrentKey() and getCurrentValue() call. This is important
-    // since RCFile makes an assumption of this fact.
+  // key and value objects are created once in initialize() and then reused
+  // for every getCurrentKey() and getCurrentValue() call. This is important
+  // since RCFile makes an assumption of this fact.
 
-    private LongWritable key;
-    private BytesRefArrayWritable value;
+  private LongWritable key;
+  private BytesRefArrayWritable value;
 
-    @Override
-    public void close() throws IOException {
-        in.close();
+  @Override
+  public void close() throws IOException {
+    in.close();
+  }
+
+  @Override
+  public LongWritable getCurrentKey() throws IOException, InterruptedException {
+    return key;
+  }
+
+  @Override
+  public BytesRefArrayWritable getCurrentValue() throws IOException, InterruptedException {
+    return value;
+  }
+
+  @Override
+  public float getProgress() throws IOException, InterruptedException {
+    if (end == start) {
+      return 0.0f;
+    } else {
+      return Math.min(1.0f, (in.getPosition() - start) / (float) (end - start));
+    }
+  }
+
+  @Override
+  public boolean nextKeyValue() throws IOException, InterruptedException {
+
+    more = next(key);
+    if (more) {
+      in.getCurrentRow(value);
     }
 
-    @Override
-    public LongWritable getCurrentKey() throws IOException, InterruptedException {
-        return key;
+    return more;
+  }
+
+  private boolean next(LongWritable key) throws IOException {
+    if (!more) {
+      return false;
     }
 
-    @Override
-    public BytesRefArrayWritable getCurrentValue() throws IOException, InterruptedException {
-        return value;
+    more = in.next(key);
+    if (!more) {
+      return false;
     }
 
-    @Override
-    public float getProgress() throws IOException, InterruptedException {
-        if (end == start) {
-            return 0.0f;
-        } else {
-            return Math.min(1.0f, (in.getPosition() - start) / (float) (end - start));
-        }
+    if (in.lastSeenSyncPos() >= end) {
+      more = false;
+      return more;
+    }
+    return more;
+  }
+
+  @Override
+  public void initialize(InputSplit split, TaskAttemptContext context) throws IOException,
+    InterruptedException {
+
+    FileSplit fSplit = (FileSplit) split;
+    Path path = fSplit.getPath();
+    Configuration conf = context.getConfiguration();
+    this.in = new RCFile.Reader(path.getFileSystem(conf), path, conf);
+    this.end = fSplit.getStart() + fSplit.getLength();
+
+    if (fSplit.getStart() > in.getPosition()) {
+      in.sync(fSplit.getStart());
     }
 
-    @Override
-    public boolean nextKeyValue() throws IOException, InterruptedException {
+    this.start = in.getPosition();
+    more = start < end;
 
-        more = next(key);
-        if (more) {
-            in.getCurrentRow(value);
-        }
-
-        return more;
-    }
-
-    private boolean next(LongWritable key) throws IOException {
-        if (!more) {
-            return false;
-        }
-
-        more = in.next(key);
-        if (!more) {
-            return false;
-        }
-
-        if (in.lastSeenSyncPos() >= end) {
-            more = false;
-            return more;
-        }
-        return more;
-    }
-
-    @Override
-    public void initialize(InputSplit split, TaskAttemptContext context) throws IOException,
-        InterruptedException {
-
-        FileSplit fSplit = (FileSplit) split;
-        Path path = fSplit.getPath();
-        Configuration conf = context.getConfiguration();
-        this.in = new RCFile.Reader(path.getFileSystem(conf), path, conf);
-        this.end = fSplit.getStart() + fSplit.getLength();
-
-        if (fSplit.getStart() > in.getPosition()) {
-            in.sync(fSplit.getStart());
-        }
-
-        this.start = in.getPosition();
-        more = start < end;
-
-        key = new LongWritable();
-        value = new BytesRefArrayWritable();
-    }
+    key = new LongWritable();
+    value = new BytesRefArrayWritable();
+  }
 }

@@ -110,6 +110,7 @@ TOK_DATELITERAL;
 TOK_DATETIME;
 TOK_TIMESTAMP;
 TOK_STRING;
+TOK_VARCHAR;
 TOK_BINARY;
 TOK_DECIMAL;
 TOK_LIST;
@@ -951,8 +952,12 @@ alterStatementChangeColPosition
 alterStatementSuffixAddPartitions
 @init { msgs.push("add partition statement"); }
 @after { msgs.pop(); }
-    : identifier KW_ADD ifNotExists? partitionSpec partitionLocation? (partitionSpec partitionLocation?)*
-    -> ^(TOK_ALTERTABLE_ADDPARTS identifier ifNotExists? (partitionSpec partitionLocation?)+)
+    : identifier KW_ADD ifNotExists? alterStatementSuffixAddPartitionsElement+
+    -> ^(TOK_ALTERTABLE_ADDPARTS identifier ifNotExists? alterStatementSuffixAddPartitionsElement+)
+    ;
+
+alterStatementSuffixAddPartitionsElement
+    : partitionSpec partitionLocation?
     ;
 
 alterStatementSuffixTouch
@@ -1771,6 +1776,7 @@ primitiveType
     | KW_STRING        ->    TOK_STRING
     | KW_BINARY        ->    TOK_BINARY
     | KW_DECIMAL       ->    TOK_DECIMAL
+    | KW_VARCHAR LPAREN length=Number RPAREN      ->    ^(TOK_VARCHAR $length)
     ;
 
 listType

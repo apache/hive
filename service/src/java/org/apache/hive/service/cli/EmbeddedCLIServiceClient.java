@@ -66,13 +66,25 @@ public class EmbeddedCLIServiceClient extends CLIServiceClient {
   }
 
   /* (non-Javadoc)
-   * @see org.apache.hive.service.cli.CLIServiceClient#executeStatement(org.apache.hive.service.cli.SessionHandle, java.lang.String, java.util.Map)
+   * @see org.apache.hive.service.cli.CLIServiceClient#executeStatement(org.apache.hive.service.cli.SessionHandle,
+   *  java.lang.String, java.util.Map)
    */
   @Override
   public OperationHandle executeStatement(SessionHandle sessionHandle, String statement,
       Map<String, String> confOverlay) throws HiveSQLException {
     return cliService.executeStatement(sessionHandle, statement, confOverlay);
   }
+
+  /* (non-Javadoc)
+   * @see org.apache.hive.service.cli.CLIServiceClient#executeStatementAsync(org.apache.hive.service.cli.SessionHandle,
+   *  java.lang.String, java.util.Map)
+   */
+  @Override
+  public OperationHandle executeStatementAsync(SessionHandle sessionHandle, String statement,
+      Map<String, String> confOverlay) throws HiveSQLException {
+    return cliService.executeStatementAsync(sessionHandle, statement, confOverlay);
+  }
+
 
   /* (non-Javadoc)
    * @see org.apache.hive.service.cli.CLIServiceClient#getTypeInfo(org.apache.hive.service.cli.SessionHandle)

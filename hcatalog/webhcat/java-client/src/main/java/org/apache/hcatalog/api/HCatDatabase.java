@@ -25,64 +25,65 @@ import org.apache.hadoop.hive.metastore.api.Database;
 
 /**
  * HCatDatabase is wrapper class around org.apache.hadoop.hive.metastore.api.Database.
+ * @deprecated Use/modify {@link org.apache.hive.hcatalog.api.HCatDatabase} instead
  */
 public class HCatDatabase {
 
-    private String dbName;
-    private String dbLocation;
-    private String comment;
-    private Map<String, String> props;
+  private String dbName;
+  private String dbLocation;
+  private String comment;
+  private Map<String, String> props;
 
-    HCatDatabase(Database db) {
-        this.dbName = db.getName();
-        this.props = db.getParameters();
-        this.dbLocation = db.getLocationUri();
-        this.comment = db.getDescription();
-    }
+  HCatDatabase(Database db) {
+    this.dbName = db.getName();
+    this.props = db.getParameters();
+    this.dbLocation = db.getLocationUri();
+    this.comment = db.getDescription();
+  }
 
-    /**
-     * Gets the database name.
-     *
-     * @return the database name
-     */
-    public String getName() {
-        return dbName;
-    }
+  /**
+   * Gets the database name.
+   *
+   * @return the database name
+   */
+  public String getName() {
+    return dbName;
+  }
 
-    /**
-     * Gets the dB location.
-     *
-     * @return the dB location
-     */
-    public String getLocation() {
-        return dbLocation;
-    }
+  /**
+   * Gets the dB location.
+   *
+   * @return the dB location
+   */
+  public String getLocation() {
+    return dbLocation;
+  }
 
-    /**
-     * Gets the comment.
-     *
-     * @return the comment
-     */
-    public String getComment() {
-        return comment;
-    }
+  /**
+   * Gets the comment.
+   *
+   * @return the comment
+   */
+  public String getComment() {
+    return comment;
+  }
 
-    /**
-     * Gets the dB properties.
-     *
-     * @return the dB properties
-     */
-    public Map<String, String> getProperties() {
-        return props;
-    }
+  /**
+   * Gets the dB properties.
+   *
+   * @return the dB properties
+   */
+  public Map<String, String> getProperties() {
+    return props;
+  }
 
-    @Override
-    public String toString() {
-        return "HCatDatabase ["
-            + (dbName != null ? "dbName=" + dbName + ", " : "dbName=null")
-            + (dbLocation != null ? "dbLocation=" + dbLocation + ", " : "dbLocation=null")
-            + (comment != null ? "comment=" + comment + ", " : "comment=null")
-            + (props != null ? "props=" + props : "props=null") + "]";
-    }
+  @Override
+  public String toString() {
+    return "HCatDatabase ["
+      + (dbName != null ? "dbName=" + dbName + ", " : "dbName=null")
+      + (dbLocation != null ? "dbLocation=" + dbLocation + ", " : "dbLocation=null")
+      + (comment != null ? "comment=" + comment + ", " : "comment=null")
+      + (props != null ? "props=" + props : "props=null") + "]";
+  }
 
 }

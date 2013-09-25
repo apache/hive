@@ -38,14 +38,6 @@ public class SecureCmdDoAs {
     tokenPath = ShimLoader.getHadoopShims().createDelegationTokenFile(conf);
   }
 
-  public String addArg(String cmdline) throws HiveException {
-    StringBuilder sb = new StringBuilder();
-    sb.append(cmdline);
-    sb.append(" -hadooptoken ");
-    sb.append(tokenPath.toUri().getPath());
-    return sb.toString();
-  }
-
   public void addEnv(Map<String, String> env){
     env.put(ShimLoader.getHadoopShims().getTokenFileLocEnvName(),
         tokenPath.toUri().getPath());
