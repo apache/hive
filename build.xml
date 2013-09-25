@@ -449,6 +449,7 @@
     <mkdir dir="${target.lib.dir}/php"/>
     <copy file="${hive.root}/bin/hive" todir="${target.bin.dir}"/>
     <copy file="${hive.root}/bin/metatool" todir="${target.bin.dir}"/>
+    <copy file="${hive.root}/bin/schematool" todir="${target.bin.dir}"/>
     <copy file="${hive.root}/bin/beeline" todir="${target.bin.dir}"/>
     <copy file="${hive.root}/bin/hiveserver2" todir="${target.bin.dir}"/>
     <copy file="${hive.root}/bin/hive-config.sh" todir="${target.bin.dir}"/>
