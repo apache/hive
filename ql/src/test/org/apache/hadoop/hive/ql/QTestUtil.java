@@ -29,9 +29,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,6 +48,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
@@ -91,6 +94,7 @@ import org.apache.zookeeper.ZooKeeper;
  */
 public class QTestUtil {
 
+  public static final String UTF_8 = "UTF-8";
   private static final Log LOG = LogFactory.getLog("QTestUtil");
 
   private String testWarehouse;
@@ -324,27 +328,26 @@ public class QTestUtil {
     }
   }
 
-  public void addFile(String qFile) throws Exception {
-
-    File qf = new File(qFile);
-    addFile(qf);
+  public String readEntireFileIntoString(File queryFile) throws IOException {
+    InputStreamReader isr = new InputStreamReader(
+        new BufferedInputStream(new FileInputStream(queryFile)), QTestUtil.UTF_8);
+    StringWriter sw = new StringWriter();
+    try {
+      IOUtils.copy(isr, sw);
+    } finally {
+      if (isr != null) {
+        isr.close();
+      }
+    }
+    return sw.toString();
   }
 
-  public void addFile(File qf) throws Exception {
+  public void addFile(String queryFile) throws IOException {
+    addFile(new File(queryFile));
+  }
 
-    FileInputStream fis = new FileInputStream(qf);
-    BufferedInputStream bis = new BufferedInputStream(fis);
-    BufferedReader br = new BufferedReader(new InputStreamReader(bis, "UTF8"));
-    StringBuilder qsb = new StringBuilder();
-
-    // Read the entire query
-    String line;
-    while ((line = br.readLine()) != null) {
-      qsb.append(line + "\n");
-    }
-    br.close();
-
-    String query = qsb.toString();
+  public void addFile(File qf) throws IOException  {
+    String query = readEntireFileIntoString(qf);
     qMap.put(qf.getName(), query);
 
     if(checkHadoopVersionExclude(qf.getName(), query)
