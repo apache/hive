@@ -21,6 +21,7 @@ package org.apache.hive.hcatalog.templeton;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.exec.ExecuteException;
 
@@ -35,7 +36,7 @@ public class StreamingDelegator extends LauncherDelegator {
     super(appConf);
   }
 
-  public EnqueueBean run(String user,
+  public EnqueueBean run(String user, Map<String, Object> userArgs,
                List<String> inputs, String output,
                String mapper, String reducer,
                List<String> files, List<String> defines,
@@ -52,7 +53,7 @@ public class StreamingDelegator extends LauncherDelegator {
       files, defines, cmdenvs, jarArgs);
 
     JarDelegator d = new JarDelegator(appConf);
-    return d.run(user,
+    return d.run(user, userArgs,
       appConf.streamingJar(), null,
       null, null, args, defines,
       statusdir, callback, completedUrl, enableLog, jobType);
