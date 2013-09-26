@@ -46,11 +46,17 @@ public class JavaDateObjectInspector
   }
 
   public Object set(Object o, Date value) {
+    if (value == null) {
+      return null;
+    }
     ((Date) o).setTime(value.getTime());
     return o;
   }
 
   public Object set(Object o, DateWritable d) {
+    if (d == null) {
+      return null;
+    }
     ((Date) o).setTime(d.get().getTime());
     return o;
   }
