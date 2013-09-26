@@ -502,7 +502,7 @@ public class BeeLine {
 
     for (int i = 0; i < args.length; i++) {
       if (args[i].equals("--help") || args[i].equals("-h")) {
-        usage();
+        // Return false here, so usage will be printed.
         return false;
       }
 
