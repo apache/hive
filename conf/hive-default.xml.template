@@ -1976,4 +1976,17 @@
  </description>
 </property>
 
+<property>
+  <name>hive.metastore.schema.verification</name>
+  <value>true</value>
+   <description>
+   Enforce metastore schema version consistency.
+   True: Verify that version information stored in metastore matches with one from Hive jars.  Also disable automatic
+         schema migration attempt. Users are required to manully migrate schema after Hive upgrade which ensures
+         proper metastore schema migration. (Default)
+   False: Warn if the version information stored in metastore doesn't match with one from in Hive jars.
+   </description>
+</property>
+
+
 </configuration>

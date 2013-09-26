@@ -475,6 +475,7 @@
       <sysproperty key="java.net.preferIPv4Stack" value="${java.net.preferIPv4Stack}"/>
       <sysproperty key="hadoop.bin.path" value="${test.hadoop.bin.path}${junit.script.extension}"/>
       <sysproperty key="test.concurrency.num.threads" value="${test.concurrency.num.threads}"/>
+      <sysproperty key="hive.home" value="${hive.root}/build/dist"/>
       <jvmarg line="${junit.jvm.args}"/>
 
       <classpath refid="test.local.classpath"/>

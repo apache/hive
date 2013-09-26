@@ -593,6 +593,19 @@ public class DummyRawStoreForJdoConnection implements RawStore {
     throws NoSuchObjectException, MetaException, InvalidObjectException {
     return false;
   }
+
+  @Override
+  public void verifySchema() throws MetaException {
+  }
+
+  @Override
+  public String getMetaStoreSchemaVersion() throws MetaException {
+    return null;
+  }
+
+  @Override
+  public void setMetaStoreSchemaVersion(String version, String comment) throws MetaException {
+  }
 }
 
 

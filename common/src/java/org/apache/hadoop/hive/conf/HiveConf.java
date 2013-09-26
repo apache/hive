@@ -323,6 +323,8 @@ public class HiveConf extends Configuration {
     METASTORE_VALIDATE_CONSTRAINTS("datanucleus.validateConstraints", false),
     METASTORE_STORE_MANAGER_TYPE("datanucleus.storeManagerType", "rdbms"),
     METASTORE_AUTO_CREATE_SCHEMA("datanucleus.autoCreateSchema", true),
+    METASTORE_FIXED_DATASTORE("datanucleus.fixedDatastore", false),
+    METASTORE_SCHEMA_VERIFICATION("hive.metastore.schema.verification", false),
     METASTORE_AUTO_START_MECHANISM_MODE("datanucleus.autoStartMechanismMode", "checked"),
     METASTORE_TRANSACTION_ISOLATION("datanucleus.transactionIsolation", "read-committed"),
     METASTORE_CACHE_LEVEL2("datanucleus.cache.level2", false),
@@ -1139,6 +1141,11 @@ public class HiveConf extends Configuration {
 
     if (auxJars == null) {
       auxJars = this.get(ConfVars.HIVEAUXJARS.varname);
+    }
+
+    if (getBoolVar(ConfVars.METASTORE_SCHEMA_VERIFICATION)) {
+      setBoolVar(ConfVars.METASTORE_AUTO_CREATE_SCHEMA, false);
+      setBoolVar(ConfVars.METASTORE_FIXED_DATASTORE, true);
     }
 
     // setup list of conf vars that are not allowed to change runtime
