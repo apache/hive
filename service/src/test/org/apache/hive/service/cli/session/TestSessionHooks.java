@@ -27,7 +27,7 @@ import junit.framework.TestCase;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.SessionHandle;
-import org.apache.hive.service.cli.thrift.EmbeddedThriftCLIService;
+import org.apache.hive.service.cli.thrift.EmbeddedThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIServiceClient;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +35,7 @@ import org.junit.Test;
 public class TestSessionHooks extends TestCase {
 
   public static final String SESSION_USER_NAME = "user1";
-  private EmbeddedThriftCLIService service;
+  private EmbeddedThriftBinaryCLIService service;
   private ThriftCLIServiceClient client;
 
   public static class SessionHookTest implements HiveSessionHook {
@@ -58,7 +58,7 @@ public class TestSessionHooks extends TestCase {
     super.setUp();
     System.setProperty(ConfVars.HIVE_SERVER2_SESSION_HOOK.varname,
         TestSessionHooks.SessionHookTest.class.getName());
-    service = new EmbeddedThriftCLIService();
+    service = new EmbeddedThriftBinaryCLIService();
     client = new ThriftCLIServiceClient(service);
   }
 

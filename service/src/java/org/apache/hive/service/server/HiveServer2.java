@@ -26,7 +26,9 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.common.util.HiveStringUtils;
 import org.apache.hive.service.CompositeService;
 import org.apache.hive.service.cli.CLIService;
+import org.apache.hive.service.cli.thrift.ThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
+import org.apache.hive.service.cli.thrift.ThriftHttpCLIService;
 
 /**
  * HiveServer2.
@@ -50,9 +52,19 @@ public class HiveServer2 extends CompositeService {
     cliService = new CLIService();
     addService(cliService);
 
-    thriftCLIService = new ThriftCLIService(cliService);
-    addService(thriftCLIService);
+    String transportMode = System.getenv("HIVE_SERVER2_TRANSPORT_MODE");
+    if(transportMode == null) {
+      transportMode = hiveConf.getVar(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE);
+    }
+    if(transportMode != null && (transportMode.equalsIgnoreCase("http") ||
+        transportMode.equalsIgnoreCase("https"))) {
+      thriftCLIService = new ThriftHttpCLIService(cliService);
+    }
+    else {
+      thriftCLIService = new ThriftBinaryCLIService(cliService);
+    }
 
+    addService(thriftCLIService);
     super.init(hiveConf);
   }
 
@@ -70,7 +82,6 @@ public class HiveServer2 extends CompositeService {
    * @param args
    */
   public static void main(String[] args) {
-
     //NOTE: It is critical to do this here so that log4j is reinitialized
     // before any of the other core hive classes are loaded
     try {
@@ -97,3 +108,4 @@ public class HiveServer2 extends CompositeService {
   }
 
 }
+

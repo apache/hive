@@ -74,6 +74,8 @@
   <classpathentry kind="lib" path="build/ivy/lib/default/commons-collections-@commons-collections.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/bonecp-@BoneCP.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/commons-pool-@commons-pool.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/httpcore-@httpcore.version@.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/default/httpclient-@httpclient.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/slf4j-api-@slf4j-api.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/slf4j-log4j12-@slf4j-log4j12.version@.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/default/JavaEWAH-@javaewah.version@.jar"/>

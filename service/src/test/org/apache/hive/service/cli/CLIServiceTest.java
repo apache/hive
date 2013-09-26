@@ -51,7 +51,7 @@ public abstract class CLIServiceTest {
   }
 
   @Test
-  public void createSessionTest() throws Exception {
+  public void openSessionTest() throws Exception {
     SessionHandle sessionHandle = client
         .openSession("tom", "password", Collections.<String, String>emptyMap());
     assertNotNull(sessionHandle);
