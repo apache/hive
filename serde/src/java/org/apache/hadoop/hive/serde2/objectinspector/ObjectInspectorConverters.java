@@ -179,7 +179,7 @@ public final class ObjectInspectorConverters {
     case PRIMITIVE:
       PrimitiveObjectInspector primInputOI = (PrimitiveObjectInspector) inputOI;
       return PrimitiveObjectInspectorFactory.
-          getPrimitiveWritableObjectInspector(primInputOI.getPrimitiveCategory());
+          getPrimitiveWritableObjectInspector(primInputOI);
     case STRUCT:
       StructObjectInspector structOutputOI = (StructObjectInspector) outputOI;
       // create a standard settable struct object inspector
