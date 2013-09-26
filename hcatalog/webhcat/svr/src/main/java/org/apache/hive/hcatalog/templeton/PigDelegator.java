@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.exec.ExecuteException;
 import org.apache.hive.hcatalog.templeton.tool.TempletonControllerJob;
@@ -39,7 +40,7 @@ public class PigDelegator extends LauncherDelegator {
     super(appConf);
   }
 
-  public EnqueueBean run(String user,
+  public EnqueueBean run(String user, Map<String, Object> userArgs,
                String execute, String srcFile,
                List<String> pigArgs, String otherFiles,
                String statusdir, String callback, String completedUrl, boolean enablelog)
@@ -50,7 +51,7 @@ public class PigDelegator extends LauncherDelegator {
       srcFile, pigArgs,
       otherFiles, statusdir, completedUrl, enablelog);
 
-    return enqueueController(user, callback, args);
+    return enqueueController(user, userArgs, callback, args);
   }
 
   private List<String> makeArgs(String execute, String srcFile,

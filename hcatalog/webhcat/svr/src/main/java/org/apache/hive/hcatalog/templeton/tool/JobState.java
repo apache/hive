@@ -21,10 +21,12 @@ package org.apache.hive.hcatalog.templeton.tool;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hive.hcatalog.templeton.JsonBuilder;
 
 /**
  * The persistent state of a job.  The state is stored in one of the
@@ -230,6 +232,20 @@ public class JobState {
   public void setUser(String user)
     throws IOException {
     setField("user", user);
+  }
+
+  @SuppressWarnings("unchecked")
+  public Map<String, Object> getUserArgs()
+    throws IOException
+  {
+    String jsonString = getField("userArgs");
+    return (Map<String, Object>)JsonBuilder.jsonToMap(jsonString);
+  }
+  public void setUserArgs(Map<String, Object> userArgs)
+    throws IOException
+  {
+    String jsonString = JsonBuilder.mapToJson(userArgs);
+    setField("userArgs", jsonString);
   }
 
   /**

@@ -143,7 +143,17 @@
  "exitValue": 0,
  "user": "ctdean",
  "callback": null,
- "completed": "done"
+ "completed": "done",
+ "userargs" => {
+   "callback"  => null,
+   "define"    => [],
+   "enablelog" => "false",
+   "execute"   => "select a,rand(b) from mynums",
+   "file"      => null,
+   "files"     => [],
+   "statusdir" => null,
+   "user.name" => "hadoopqa",
+ },
 }
 </source>
   </section>
