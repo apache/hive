@@ -19,6 +19,7 @@
 package org.apache.hive.hcatalog.templeton;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.JobProfile;
@@ -38,6 +39,7 @@ public class QueueStatusBean {
   public String user;
   public String callback;
   public String completed;
+  public Map<String, Object> userargs;
 
   public QueueStatusBean() {
   }
@@ -63,5 +65,6 @@ public class QueueStatusBean {
     user = state.getUser();
     callback = state.getCallback();
     completed = state.getCompleteStatus();
+    userargs = state.getUserArgs();
   }
 }
