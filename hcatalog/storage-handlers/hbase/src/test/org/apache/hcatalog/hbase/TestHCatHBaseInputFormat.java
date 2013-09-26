@@ -229,7 +229,7 @@ public class TestHCatHBaseInputFormat extends SkeletonHBaseTest {
     // Note: These asserts only works in case of LocalJobRunner as they run in same jvm.
     // If using MiniMRCluster, the tests will have to be modified.
     assertFalse(MapReadHTable.error);
-    assertEquals(MapReadHTable.count, 1);
+    assertEquals(1, MapReadHTable.count);
 
     String dropTableQuery = "DROP TABLE " + hbaseTableName;
     CommandProcessorResponse responseThree = hcatDriver.run(dropTableQuery);
@@ -291,7 +291,7 @@ public class TestHCatHBaseInputFormat extends SkeletonHBaseTest {
     job.setNumReduceTasks(0);
     assertTrue(job.waitForCompletion(true));
     assertFalse(MapReadProjHTable.error);
-    assertEquals(MapReadProjHTable.count, 1);
+    assertEquals(1, MapReadProjHTable.count);
 
     String dropTableQuery = "DROP TABLE " + tableName;
     CommandProcessorResponse responseThree = hcatDriver.run(dropTableQuery);
@@ -325,7 +325,7 @@ public class TestHCatHBaseInputFormat extends SkeletonHBaseTest {
         HCatUtil.serialize(getHiveConf().getAllProperties()));
 
     // output settings
-    Path outputDir = new Path(getTestDir(), "mapred/testHBaseTableProjectionReadMR");
+    Path outputDir = new Path(getTestDir(), "mapred/testHBaseInputFormatProjectionReadMR");
     FileSystem fs = getFileSystem();
     if (fs.exists(outputDir)) {
       fs.delete(outputDir, true);
@@ -361,8 +361,8 @@ public class TestHCatHBaseInputFormat extends SkeletonHBaseTest {
     RunningJob runJob = JobClient.runJob(job);
     runJob.waitForCompletion();
     assertTrue(runJob.isSuccessful());
-    assertFalse(MapReadProjHTable.error);
-    assertEquals(MapReadProjHTable.count, 1);
+    assertFalse(MapReadProjectionHTable.error);
+    assertEquals(1, MapReadProjectionHTable.count);
 
     String dropTableQuery = "DROP TABLE " + tableName;
     CommandProcessorResponse responseThree = hcatDriver.run(dropTableQuery);
