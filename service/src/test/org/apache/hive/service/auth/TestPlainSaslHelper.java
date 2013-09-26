@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
+import org.apache.hive.service.cli.thrift.ThriftBinaryCLIService;
 import org.apache.thrift.TProcessorFactory;
 
 public class TestPlainSaslHelper extends TestCase {
@@ -40,7 +41,7 @@ public class TestPlainSaslHelper extends TestCase {
 
     CLIService cliService = new CLIService();
     cliService.init(hconf);
-    ThriftCLIService tcliService = new ThriftCLIService(cliService);
+    ThriftCLIService tcliService = new ThriftBinaryCLIService(cliService);
     tcliService.init(hconf);
     TProcessorFactory procFactory = PlainSaslHelper.getPlainProcessorFactory(tcliService);
     assertEquals("doAs enabled processor for unsecure mode",

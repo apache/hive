@@ -30,6 +30,10 @@ import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
+
+import org.apache.hive.jdbc.Utils.JdbcConnectionParams;
+
+
 /**
  * HiveDriver.
  *
@@ -48,16 +52,6 @@ public class HiveDriver implements Driver {
    * Is this driver JDBC compliant?
    */
   private static final boolean JDBC_COMPLIANT = false;
-
-  /**
-   * The required prefix for the connection URL.
-   */
-  private static final String URL_PREFIX = "jdbc:hive2://";
-
-  /**
-   * If host is provided, without a port.
-   */
-  private static final String DEFAULT_PORT = "10000";
 
   /**
    * Property key for the database name.
@@ -99,7 +93,7 @@ public class HiveDriver implements Driver {
    */
 
   public boolean acceptsURL(String url) throws SQLException {
-    return Pattern.matches(URL_PREFIX + ".*", url);
+    return Pattern.matches(Utils.URL_PREFIX + ".*", url);
   }
 
   /*
@@ -183,8 +177,8 @@ public class HiveDriver implements Driver {
       info = new Properties();
     }
 
-    if ((url != null) && url.startsWith(URL_PREFIX)) {
-      info = parseURL(url, info);
+    if ((url != null) && url.startsWith(Utils.URL_PREFIX)) {
+      info = parseURLforPropertyInfo(url, info);
     }
 
     DriverPropertyInfo hostProp = new DriverPropertyInfo(HOST_PROPERTY_KEY,
@@ -214,7 +208,6 @@ public class HiveDriver implements Driver {
   /**
    * Returns whether the driver is JDBC compliant.
    */
-
   public boolean jdbcCompliant() {
     return JDBC_COMPLIANT;
   }
@@ -223,44 +216,36 @@ public class HiveDriver implements Driver {
    * Takes a url in the form of jdbc:hive://[hostname]:[port]/[db_name] and
    * parses it. Everything after jdbc:hive// is optional.
    *
+   * The output from Utils.parseUrl() is massaged for the needs of getPropertyInfo
    * @param url
    * @param defaults
    * @return
    * @throws java.sql.SQLException
    */
-  private Properties parseURL(String url, Properties defaults) throws SQLException {
+  private Properties parseURLforPropertyInfo(String url, Properties defaults) throws SQLException {
     Properties urlProps = (defaults != null) ? new Properties(defaults)
         : new Properties();
 
-    if (url == null || !url.startsWith(URL_PREFIX)) {
+    if (url == null || !url.startsWith(Utils.URL_PREFIX)) {
       throw new SQLException("Invalid connection url: " + url);
     }
 
-    if (url.length() <= URL_PREFIX.length()) {
-      return urlProps;
+    JdbcConnectionParams params = Utils.parseURL(url);
+    String host = params.getHost();
+    if (host == null){
+      host = "";
     }
-
-    // [hostname]:[port]/[db_name]
-    String connectionInfo = url.substring(URL_PREFIX.length());
-
-    // [hostname]:[port] [db_name]
-    String[] hostPortAndDatabase = connectionInfo.split("/", 2);
-
-    // [hostname]:[port]
-    if (hostPortAndDatabase[0].length() > 0) {
-      String[] hostAndPort = hostPortAndDatabase[0].split(":", 2);
-      urlProps.put(HOST_PROPERTY_KEY, hostAndPort[0]);
-      if (hostAndPort.length > 1) {
-        urlProps.put(PORT_PROPERTY_KEY, hostAndPort[1]);
-      } else {
-        urlProps.put(PORT_PROPERTY_KEY, DEFAULT_PORT);
-      }
+    String port = Integer.toString(params.getPort());
+    if(host.equals("")){
+      port = "";
     }
-
-    // [db_name]
-    if (hostPortAndDatabase.length > 1) {
-      urlProps.put(DBNAME_PROPERTY_KEY, hostPortAndDatabase[1]);
+    else if(port.equals("0")){
+      port = Utils.DEFAULT_PORT;
     }
+    String db = params.getDbName();
+    urlProps.put(HOST_PROPERTY_KEY, host);
+    urlProps.put(PORT_PROPERTY_KEY, port);
+    urlProps.put(DBNAME_PROPERTY_KEY, db);
 
     return urlProps;
   }
