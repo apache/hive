@@ -45,6 +45,7 @@ public class TestHiveLogging extends TestCase {
   }
 
   private void configLog(String hiveLog4jTest, String hiveExecLog4jTest) {
+    System.out.println("BLA "+ System.getProperty("test.build.resources") );
     System.setProperty(ConfVars.HIVE_LOG4J_FILE.varname,
       System.getProperty("test.build.resources") + "/" + hiveLog4jTest);
     System.setProperty(ConfVars.HIVE_EXEC_LOG4J_FILE.varname,

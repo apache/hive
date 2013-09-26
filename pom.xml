@@ -166,7 +166,8 @@
             <target>1.6</target>
           </configuration>
         </plugin>
-        <groupId>org.apache.maven.plugins</groupId>
+	<plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-install-plugin</artifactId>
           <version>2.4</version>
         </plugin>
@@ -182,6 +183,12 @@
           <configuration>
             <redirectTestOutputToFile>true</redirectTestOutputToFile>
             <reuseForks>false</reuseForks>
+	    <systemProperties>
+		<property>
+                  <name>test.build.resources</name>
+                  <value>${project.build.directory}/test-classes</value>
+		</property>
+              </systemProperties>
           </configuration>
         </plugin>
         <plugin>
