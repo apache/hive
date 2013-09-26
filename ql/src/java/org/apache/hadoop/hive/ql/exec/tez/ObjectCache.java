@@ -20,9 +20,9 @@ package org.apache.hadoop.hive.ql.exec.tez;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.tez.engine.common.objectregistry.ObjectLifeCycle;
-import org.apache.tez.engine.common.objectregistry.ObjectRegistry;
-import org.apache.tez.engine.common.objectregistry.ObjectRegistryFactory;
+import org.apache.tez.runtime.common.objectregistry.ObjectLifeCycle;
+import org.apache.tez.runtime.common.objectregistry.ObjectRegistry;
+import org.apache.tez.runtime.common.objectregistry.ObjectRegistryFactory;
 
 
 /**

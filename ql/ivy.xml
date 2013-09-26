@@ -49,11 +49,10 @@
     <dependency org="org.iq80.snappy" name="snappy" 
                 rev="${snappy.version}" transitive="false"/>
 
-    <dependency org="org.apache.tez" name="tez-dag-api" rev="${tez.version}" conf="compile->master" />
+    <dependency org="org.apache.tez" name="tez-api" rev="${tez.version}" conf="compile->master" />
     <dependency org="org.apache.tez" name="tez-dag" rev="${tez.version}" conf="compile->master" />
-    <dependency org="org.apache.tez" name="tez-engine-api" rev="${tez.version}" conf="compile->master" />
     <dependency org="org.apache.tez" name="tez-common" rev="${tez.version}" conf="compile->master" />
-    <dependency org="org.apache.tez" name="tez-engine" rev="${tez.version}" conf="compile->master" />
+    <dependency org="org.apache.tez" name="tez-runtime-library" rev="${tez.version}" conf="compile->master" />
     <dependency org="org.apache.tez" name="tez-mapreduce" rev="${tez.version}" conf="compile->master" />
     <dependency org="org.apache.hadoop" name="hadoop-yarn-api" rev="${hadoop-0.23.version}" 
                 conf="compile->master" transitive="false" />
