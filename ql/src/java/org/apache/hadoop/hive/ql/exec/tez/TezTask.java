@@ -159,10 +159,12 @@ public class TezTask extends Task<TezWork> {
     int i = ws.size();
     for (BaseWork w: ws) {
 
+      boolean isFinal = work.getLeaves().contains(w);
+
       // translate work to vertex
       JobConf wxConf = DagUtils.initializeVertexConf(conf, w);
       Vertex wx = DagUtils.createVertex(wxConf, w, tezDir,
-          i--, appJarLr, additionalLr, fs, ctx);
+          i--, appJarLr, additionalLr, fs, ctx, !isFinal);
       dag.addVertex(wx);
       workToVertex.put(w, wx);
       workToConf.put(w, wxConf);
