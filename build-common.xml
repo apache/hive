@@ -294,7 +294,6 @@
      encoding="${build.encoding}"
      srcdir="${test.src.dir}"
      includes="org/apache/**/hive/**/*.java"
-     excludes="**/TestSerDe.java"
      destdir="${test.build.classes}"
      debug="${javac.debug}"
      optimize="${javac.optimize}"
@@ -329,8 +328,13 @@
     </jar>
     <delete file="${test.build.dir}/test-serdes.jar"/>
     <jar jarfile="${test.build.dir}/test-serdes.jar">
-        <fileset dir="${test.build.classes}" includes="**/serde2/*.class"/>
+        <fileset dir="${test.build.classes}" includes="**/serde2/*.class" excludes="**/serde2/TestSerDe.class"/>
     </jar>  	
+    <delete file="${test.build.dir}/TestSerDe.jar"/>
+    <jar jarfile="${test.build.dir}/TestSerDe.jar">
+        <fileset dir="${test.build.classes}" includes="**/serde2/TestSerDe.class"/>
+    </jar>
+    <delete file="${test.build.classes}/org/apache/hadoop/hive/serde2/TestSerDe.class"/> 
   </target>
 
   <target name="test-conditions">
