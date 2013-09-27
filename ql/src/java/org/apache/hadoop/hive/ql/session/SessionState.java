@@ -203,7 +203,7 @@ public class SessionState {
   }
 
   private static final SimpleDateFormat DATE_FORMAT =
-    new SimpleDateFormat("yyyyMMddHHmm");
+      new SimpleDateFormat("yyyyMMddHHmm");
 
   public void setCmd(String cmdString) {
     conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, cmdString);
@@ -448,7 +448,7 @@ public class SessionState {
     } catch (IOException e) {
       console.printError("Unable to validate " + newFile + "\nException: "
           + e.getMessage(), "\n"
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+              + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return null;
     }
   }
@@ -465,7 +465,7 @@ public class SessionState {
     } catch (Exception e) {
       console.printError("Unable to register " + newJar + "\nException: "
           + e.getMessage(), "\n"
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+              + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return false;
     }
   }
@@ -479,7 +479,7 @@ public class SessionState {
     } catch (Exception e) {
       console.printError("Unable to unregister " + jarsToUnregister
           + "\nException: " + e.getMessage(), "\n"
-          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+              + org.apache.hadoop.util.StringUtils.stringifyException(e));
       return false;
     }
   }
@@ -565,7 +565,7 @@ public class SessionState {
   }
 
   private final HashMap<ResourceType, Set<String>> resource_map =
-    new HashMap<ResourceType, Set<String>>();
+      new HashMap<ResourceType, Set<String>>();
 
   public String add_resource(ResourceType t, String value) {
     // By default don't convert to unix
@@ -783,7 +783,7 @@ public class SessionState {
 
   public void close() throws IOException {
     File resourceDir =
-      new File(getConf().getVar(HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
+        new File(getConf().getVar(HiveConf.ConfVars.DOWNLOADED_RESOURCES_DIR));
     LOG.debug("Removing resource dir " + resourceDir);
     try {
       if (resourceDir.exists()) {

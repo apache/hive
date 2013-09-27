@@ -450,10 +450,10 @@ public class HCatUtil {
   public static Map<String, String>
   getInputJobProperties(HCatStorageHandler storageHandler,
               InputJobInfo inputJobInfo) {
-      Properties props = inputJobInfo.getTableInfo().getStorerInfo().getProperties();  
-      props.put(serdeConstants.SERIALIZATION_LIB,storageHandler.getSerDeClass().getName());
-      TableDesc tableDesc = new TableDesc(storageHandler.getInputFormatClass(),
-      storageHandler.getOutputFormatClass(),props);
+    Properties props = inputJobInfo.getTableInfo().getStorerInfo().getProperties();  
+    props.put(serdeConstants.SERIALIZATION_LIB,storageHandler.getSerDeClass().getName());
+    TableDesc tableDesc = new TableDesc(storageHandler.getInputFormatClass(),
+        storageHandler.getOutputFormatClass(),props);
     if (tableDesc.getJobProperties() == null) {
       tableDesc.setJobProperties(new HashMap<String, String>());
     }

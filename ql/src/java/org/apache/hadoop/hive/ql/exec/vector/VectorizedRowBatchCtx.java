@@ -134,7 +134,8 @@ public class VectorizedRowBatchCtx {
         (part.getPartSpec() == null || part.getPartSpec().isEmpty()) ?
             part.getTableDesc().getProperties() : part.getProperties();
 
-    Deserializer partDeserializer = part.getDeserializer();
+    Class serdeclass = hiveConf.getClassByName(part.getSerdeClassName());
+    Deserializer partDeserializer = (Deserializer) serdeclass.newInstance(); 
     partDeserializer.initialize(hiveConf, partProps);
     StructObjectInspector partRawRowObjectInspector = (StructObjectInspector) partDeserializer
         .getObjectInspector();

@@ -29,7 +29,6 @@ public abstract class AbstractPrimitiveObjectInspector implements
     PrimitiveObjectInspector {
 
   protected PrimitiveTypeEntry typeEntry;
-  protected BaseTypeParams typeParams;
 
   protected AbstractPrimitiveObjectInspector() {
     super();
@@ -85,14 +84,15 @@ public abstract class AbstractPrimitiveObjectInspector implements
   }
 
   public BaseTypeParams getTypeParams() {
-    return typeParams;
+    return typeEntry.typeParams;
   }
 
   public void setTypeParams(BaseTypeParams newParams) {
+    BaseTypeParams typeParams = typeEntry.typeParams;
     if (typeParams != null && !typeEntry.isParameterized()) {
       throw new UnsupportedOperationException(
           "Attempting to add type parameters " + typeParams + " to type " + getTypeName());
     }
-    this.typeParams = newParams;
+    typeEntry.typeParams = newParams;
   }
 }
