@@ -2614,6 +2614,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           currentLocation = null;
         }
         currentPart = getPartSpec(child);
+        validatePartSpec(tab, currentPart, (ASTNode)child, conf);
         break;
       case HiveParser.TOK_PARTITIONLOCATION:
         // if location specified, set in partition

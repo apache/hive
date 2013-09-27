@@ -811,6 +811,8 @@ public class HiveConf extends Configuration {
 
     // Whether to show the unquoted partition names in query results.
     HIVE_DECODE_PARTITION_NAME("hive.decode.partition.name", false),
+
+    HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true),
     ;
 
     public final String varname;

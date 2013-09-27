@@ -240,6 +240,17 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=10,ts=3.0).key SIMPLE [(src1)src1.
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=10,ts=3.0).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: alter table alter_coltype partition column (dt string)
+PREHOOK: type: null
+PREHOOK: Input: default@alter_coltype
+POSTHOOK: query: alter table alter_coltype partition column (dt string)
+POSTHOOK: type: null
+POSTHOOK: Input: default@alter_coltype
+POSTHOOK: Output: default@alter_coltype
+POSTHOOK: Lineage: alter_coltype PARTITION(dt=10,ts=3.0).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: alter_coltype PARTITION(dt=10,ts=3.0).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)src1.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- load a new partition using new data type.
 insert overwrite table alter_coltype partition(dt='100x', ts=3.0) select * from src1
 PREHOOK: type: QUERY
@@ -1229,13 +1240,13 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 key                 	string              	None                
 value               	string              	None                
-dt                  	int                 	None                
+dt                  	string              	None                
 ts                  	double              	None                
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-dt                  	int                 	None                
+dt                  	string              	None                
 ts                  	double              	None                
 PREHOOK: query: desc alter_coltype partition (dt='100x', ts='6:30pm')
 PREHOOK: type: DESCTABLE
@@ -1249,13 +1260,13 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 key                 	string              	None                
 value               	string              	None                
-dt                  	int                 	None                
+dt                  	string              	None                
 ts                  	double              	None                
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-dt                  	int                 	None                
+dt                  	string              	None                
 ts                  	double              	None                
 PREHOOK: query: desc alter_coltype partition (dt='100x', ts=3.0)
 PREHOOK: type: DESCTABLE
@@ -1269,13 +1280,13 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 key                 	string              	None                
 value               	string              	None                
-dt                  	int                 	None                
+dt                  	string              	None                
 ts                  	double              	None                
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-dt                  	int                 	None                
+dt                  	string              	None                
 ts                  	double              	None                
 PREHOOK: query: desc alter_coltype partition (dt=10, ts=3.0)
 PREHOOK: type: DESCTABLE
@@ -1289,13 +1300,13 @@ POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).key SIMPLE [(src1)
 POSTHOOK: Lineage: alter_coltype PARTITION(dt=100x,ts=6:30pm).value SIMPLE [(src1)src1.FieldSchema(name:value, type:string, comment:default), ]
 key                 	string              	None                
 value               	string              	None                
-dt                  	int                 	None                
+dt                  	string              	None                
 ts                  	double              	None                
 	 	 
 # Partition Information	 	 
 # col_name            	data_type           	comment             
 	 	 
-dt                  	int                 	None                
+dt                  	string              	None                
 ts                  	double              	None                
 PREHOOK: query: drop table alter_coltype
 PREHOOK: type: DROPTABLE
