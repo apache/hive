@@ -1,3 +1,4 @@
+############################################################################           
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -14,7 +15,7 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
-
+                                                                                       
 package TestDriverCurl;
 
 ###########################################################################
@@ -35,6 +36,7 @@ use strict;
 use English;
 use Storable qw(dclone);
 use File::Glob ':glob';
+use JSON::Path;
 
 my $passedStr = 'passed';
 my $failedStr = 'failed';
@@ -150,13 +152,16 @@ sub new
 sub globalSetup
   {
     my ($self, $globalHash, $log) = @_;
+    my $subName = (caller(0))[3];
+
 
     # Setup the output path
     my $me = `whoami`;
     chomp $me;
-    my $jobId = $globalHash->{'job-id'};
-    my $timeId = time;
-    $globalHash->{'runid'} = $me . "-" . $timeId . "-" . $jobId;
+    #usernames on windows can be "domain\username" change the "\"
+    # as runid is used in file names
+    $me =~ s/\\/_/;
+    $globalHash->{'runid'} = $me . "." . time;
 
     # if "-ignore false" was provided on the command line,
     # it means do run tests even when marked as 'ignore'
@@ -170,7 +175,6 @@ sub globalSetup
 
     $globalHash->{'outpath'} = $globalHash->{'outpathbase'} . "/" . $globalHash->{'runid'} . "/";
     $globalHash->{'localpath'} = $globalHash->{'localpathbase'} . "/" . $globalHash->{'runid'} . "/";
-    $globalHash->{'tmpPath'} = $globalHash->{'tmpPath'} . "/" . $globalHash->{'runid'} . "/";
     $globalHash->{'webhdfs_url'} = $ENV{'WEBHDFS_URL'};
     $globalHash->{'templeton_url'} = $ENV{'TEMPLETON_URL'};
     $globalHash->{'current_user'} = $ENV{'USER_NAME'};
@@ -186,11 +190,6 @@ sub globalSetup
     $globalHash->{'inpdir_hdfs'} = $ENV{'TH_INPDIR_HDFS'};
 
     $globalHash->{'is_secure_mode'} = $ENV{'SECURE_MODE'};
-  }
-
-sub globalSetupConditional
-  {
-    my ($self, $globalHash, $log) = @_;
 
     # add libexec location to the path
     if (defined($ENV{'PATH'})) {
@@ -224,12 +223,6 @@ sub globalSetupConditional
 # Returns:
 # None
 sub globalCleanup
-  {
-    # noop there because the removal of temp directories, which are created in #globalSetupConditional(), is to be
-    # performed in method #globalCleanupConditional().
-  }
-
-sub globalCleanupConditional
   {
     my ($self, $globalHash, $log) = @_;
 
@@ -292,6 +285,17 @@ sub replaceParameters
       my @new_options = ();
       foreach my $option (@options) {
         $option = $self->replaceParametersInArg($option, $testCmd, $log);
+        if (isWindows()) {
+          my $equal_pos = index($option, '=');
+          if ($equal_pos != -1) {
+            my $left = substr($option, 0, $equal_pos);
+            my $right = substr($option, $equal_pos+1);
+            if ($right =~ /=/) {
+              $right = '"'.$right.'"';
+              $option = $left . "=" . $right;
+            }
+          }
+        }
         push @new_options, ($option);
       }
       $testCmd->{$aPfix . 'post_options'} = \@new_options;
@@ -306,6 +310,15 @@ sub replaceParameters
       }
     }    
 
+    if (defined $testCmd->{$aPfix . 'json_path'}) {
+      my $json_path_matches = $testCmd->{$aPfix . 'json_path'};
+      my @keys = keys %{$json_path_matches};
+
+      foreach my $key (@keys) {
+        my $new_value = $self->replaceParametersInArg($json_path_matches->{$key}, $testCmd, $log);
+        $json_path_matches->{$key} = $new_value;
+      }
+    }
 
   }
 
@@ -498,7 +511,7 @@ sub execCurlCmd(){
     $testCmd->{'http_daemon'} = $d;
     $testCmd->{'callback_url'} = $d->url . 'templeton/$jobId';
     push @curl_cmd, ('-d', 'callback=' . $testCmd->{'callback_url'});
-    #	push ${testCmd->{'post_options'}}, ('callback=' . $testCmd->{'callback_url'});
+    push @{$testCmd->{$argPrefix . 'post_options'}}, ('callback=' . $testCmd->{'callback_url'});
     #	#my @options = @{$testCmd->{'post_options'}};
     #	print $log "post options  @options\n";
   }
@@ -510,7 +523,7 @@ sub execCurlCmd(){
   push @curl_cmd, ("-X", $method, "-o", $res_body, "-D", $res_header);  
   push @curl_cmd, ($url);
 
-  print $log "$0:$subName Going to run command : " .  join (' ', @curl_cmd);
+  print $log "$0:$subName Going to run command : " .  join (' , ', @curl_cmd);
   print $log "\n";
 
 
@@ -604,6 +617,37 @@ sub compare
 
     my $json_hash;
     my %json_info;
+    # for information on JSONPath, check http://goessner.net/articles/JsonPath/
+    if (defined $testCmd->{'json_path'}) {
+      my $json_matches = $testCmd->{'json_path'};
+      foreach my $key (keys %$json_matches) {
+        my $regex_expected_value = $json_matches->{$key};
+        my $path = JSON::Path->new($key);
+        my $value; 
+        # when filter_job_status is defined 
+        if (defined $testCmd->{'filter_job_status'}) {
+	        # decode $testResult->{'body'} to an array of hash
+	        my $body = decode_json $testResult->{'body'};
+	        # in the tests, we run this case with jobName = "PigLatin:loadstore.pig"
+	        # filter $body to leave only records with this jobName
+	        my @filtered_body = grep {($_->{detail}{profile}{jobName} eq "PigLatin:loadstore.pig")}  @$body;
+			my @sorted_filtered_body = sort { $a->{id} <=> $b->{id} } @filtered_body;
+        	$value = $path->value(\@sorted_filtered_body);
+        } else {
+        	$value = $path->value($testResult->{'body'});
+        }
+        
+        if ($value !~ /$regex_expected_value/s) {
+          print $log "$0::$subName INFO check failed:"
+            . " json pattern check failed. For field "
+              . "$key, regex <" . $regex_expected_value
+                . "> did not match the result <" . $value
+                  . ">\n";
+          $result = 0;
+          last;
+        }
+      }
+    } 
     if (defined $testCmd->{'json_field_substr_match'} || $testCmd->{'json_field_match_object'}) {
       my $json = new JSON;
       $json_hash = $json->utf8->decode($testResult->{'body'});
@@ -639,7 +683,7 @@ sub compare
         print $log "Comparing $key: $json_field_val with regex /$regex_expected_value/\n";
 
         if ($json_field_val !~ /$regex_expected_value/s) {
-          print $log "$0::$subName INFO check failed:" 
+          print $log "$0::$subName WARN check failed:" 
             . " json pattern check failed. For field "
               . "$key, regex <" . $regex_expected_value 
                 . "> did not match the result <" . $json_field_val
@@ -654,7 +698,7 @@ sub compare
         print $log "Comparing $key: " . dump($json_field_val) . ",expected value:  " . dump($regex_expected_obj);
 
         if (!Compare($json_field_val, $regex_expected_obj)) {
-          print $log "$0::$subName INFO check failed:" 
+          print $log "$0::$subName WARN check failed:" 
             . " json compare failed. For field "
               . "$key, regex <" . dump($regex_expected_obj)
                 . "> did not match the result <" . dump($json_field_val)
@@ -671,7 +715,7 @@ sub compare
       sleep $testCmd->{'kill_job_timeout'};
       my $jobid = $json_hash->{'id'};
       if (!defined $jobid) {
-        print $log "$0::$subName INFO check failed: " 
+        print $log "$0::$subName WARN check failed: " 
           . "no jobid (id field)found in result";
         $result = 0;
       } else {
@@ -682,13 +726,14 @@ sub compare
 
     #try to get the call back url request until timeout
     if ($result == 1 && defined $testCmd->{'check_call_back'}) {
+
+      my $timeout = 300; #wait for 5 mins for callback
+      if(defined $testCmd->{'timeout'}){
+        $timeout = $testCmd->{'timeout'};
+      }
+
       my $d = $testCmd->{'http_daemon'};
-      if (defined $testCmd->{'timeout_seconds'}) {
-        $d->timeout($testCmd->{'timeout_seconds'})
-      }
-      else {      
-        $d->timeout(300);         #wait for 5 mins by default
-      }
+      $d->timeout($timeout);
       my $url_requested;
       $testCmd->{'callback_url'} =~ s/\$jobId/$json_hash->{'id'}/g;
       print $log "Expanded callback url : <" . $testCmd->{'callback_url'} . ">\n";
@@ -717,13 +762,12 @@ sub compare
 
     }
 
-    
     if ( (defined $testCmd->{'check_job_created'})
          || (defined $testCmd->{'check_job_complete'})
-         || (defined $testCmd->{'check_job_exit_value'}) ) {
+         || (defined $testCmd->{'check_job_exit_value'}) ) {    
       my $jobid = $json_hash->{'id'};
       if (!defined $jobid) {
-        print $log "$0::$subName INFO check failed: " 
+        print $log "$0::$subName WARN check failed: " 
           . "no jobid (id field)found in result";
         $result = 0;
       } else {
@@ -731,7 +775,7 @@ sub compare
         my $json = new JSON;
         my $res_hash = $json->utf8->decode($jobResult->{'body'});
         if (! defined $res_hash->{'status'}) {
-          print $log "$0::$subName INFO check failed: " 
+          print $log "$0::$subName WARN check failed: " 
             . "jobresult not defined ";
           $result = 0;
         }
@@ -739,10 +783,6 @@ sub compare
           my $jobComplete;
           my $NUM_RETRIES = 60;
           my $SLEEP_BETWEEN_RETRIES = 5;
-          if (defined $testCmd->{'timeout_seconds'} && $testCmd->{'timeout_seconds'} > 0) {
-            $SLEEP_BETWEEN_RETRIES = ($testCmd->{'timeout_seconds'} / $NUM_RETRIES);
-            print $log "found timeout_seconds & set SLEEP_BETWEEN_RETRIES=$SLEEP_BETWEEN_RETRIES";
-          }
 
           #first wait for job completion
           while ($NUM_RETRIES-- > 0) {
@@ -756,7 +796,7 @@ sub compare
             $res_hash = $json->utf8->decode($jobResult->{'body'});
           }
           if ( (!defined $jobComplete) || lc($jobComplete) ne "true") {
-            print $log "$0::$subName INFO check failed: " 
+            print $log "$0::$subName WARN check failed: " 
               . " timeout on wait for job completion ";
             $result = 0;
           } else { 
@@ -772,9 +812,137 @@ sub compare
             if (defined($testCmd->{'check_job_exit_value'})) {
               my $exitValue = $res_hash->{'exitValue'};
               my $expectedExitValue = $testCmd->{'check_job_exit_value'};
-              if ( (!defined $exitValue) || $exitValue ne $expectedExitValue) {
+              if ( (!defined $exitValue) || $exitValue % 128 ne $expectedExitValue) {
                 print $log "check_job_exit_value failed. got exitValue $exitValue,  expected  $expectedExitValue";
                 $result = 0;
+              }
+            }
+          }
+
+	  #Check userargs
+	  print $log "$0::$subName INFO Checking userargs";
+          my @options = @{$testCmd->{'post_options'}};
+          if( !defined $res_hash->{'userargs'}){
+            print $log "$0::$subName INFO expected userargs" 
+                . " but userargs not defined\n";
+            $result = 0;
+          }
+
+	  #create exp_userargs hash from @options
+          my %exp_userargs = ();
+          foreach my $opt ( @options ){
+            print $log "opt $opt";
+            my ($key, $val) = split q:=:, $opt, 2;   
+            if(defined $exp_userargs{$key}){
+
+              #if we have already seen this value
+              #then make the value an array and push new value in
+              if(ref($exp_userargs{$key}) eq ""){
+                my @ar = ($exp_userargs{$key});
+                $exp_userargs{$key} = \@ar;
+              }
+              my $ar = $exp_userargs{$key}; 
+              push @$ar, ($val); 
+            }
+            else{
+              $exp_userargs{$key} = $val;	
+            }
+          }
+
+          my %r_userargs = %{$res_hash->{'userargs'}};
+          foreach my $key( keys %exp_userargs){
+            if( !defined $r_userargs{$key}){
+              print $log "$0::$subName INFO $key not found in userargs \n";
+              $result = 0;
+              next;
+            }
+              
+            print $log "$0::$subName DEBUG comparing expected " 
+                . " $key ->" . dump($exp_userargs{$key})
+                . " With result $key ->" . dump($r_userargs{$key}) . "\n";
+
+            if (!Compare($exp_userargs{$key}, $r_userargs{$key})) {
+              print $log "$0::$subName WARN check failed:" 
+                  . " json compare failed. For field "
+                  . "$key, regex <" . dump($r_userargs{$key})
+                  . "> did not match the result <" . dump($exp_userargs{$key})
+                  . ">\n";
+              $result = 0;
+            }
+          }
+		  if ($result != 0 && $testCmd->{'check_logs'}) {
+            my $testCmdBasics = $self->copyTestBasicConfig($testCmd);
+            $testCmdBasics->{'method'} = 'GET';
+            $testCmdBasics->{'url'} = ':WEBHDFS_URL:/webhdfs/v1:OUTDIR:' . '/status/logs?op=LISTSTATUS';
+            my $curl_result = $self->execCurlCmd($testCmdBasics, "", $log);
+            my $path = JSON::Path->new("FileStatuses.FileStatus[*].pathSuffix");
+            my @value = $path->values($curl_result->{'body'});
+            if ($testCmd->{'check_logs'}->{'job_num'} && $testCmd->{'check_logs'}->{'job_num'} ne (scalar @value)-1) {
+              print $log "$0::$subName INFO check failed: "
+                . " Expect " . $testCmd->{'check_logs'}->{'job_num'} . " jobs in logs, but get " . scalar @value;
+              $result = 0;
+              return $result;
+            }
+            foreach my $jobid (@value) {
+              if ($jobid eq 'list.txt') {
+                next;
+              }
+              my $testCmdBasics = $self->copyTestBasicConfig($testCmd);
+              $testCmdBasics->{'method'} = 'GET';
+              $testCmdBasics->{'url'} = ':WEBHDFS_URL:/webhdfs/v1:OUTDIR:' . '/status/logs/' . $jobid . '?op=LISTSTATUS';
+              my $curl_result = $self->execCurlCmd($testCmdBasics, "", $log);
+
+              my $path = JSON::Path->new("FileStatuses.FileStatus[*]");
+              my @value = $path->values($curl_result->{'body'});
+
+              my $foundjobconf = 0;
+              foreach my $elem (@value) {
+                if ($elem->{'pathSuffix'} eq "job.xml.html") {
+                  $foundjobconf = 1;
+                  if ($elem->{'length'} eq "0") {
+                    print $log "$0::$subName INFO check failed: "
+                      . " job.xml.html for " . $jobid . " is empty";
+					$result = 0;
+					return $result;
+                  }
+                  next;
+                }
+                my $attempt = $elem->{'pathSuffix'};
+                my $testCmdBasics = $self->copyTestBasicConfig($testCmd);
+                $testCmdBasics->{'method'} = 'GET';
+                $testCmdBasics->{'url'} = ':WEBHDFS_URL:/webhdfs/v1:OUTDIR:' . '/status/logs/' . $jobid . '/' . $attempt . '?op=LISTSTATUS';
+                my $curl_result = $self->execCurlCmd($testCmdBasics, "", $log);
+                my $path = JSON::Path->new("FileStatuses.FileStatus[*].pathSuffix");
+                my @value = $path->values($curl_result->{'body'});
+                my @files = ('stderr', 'stdout', 'syslog');
+                foreach my $file (@files) {
+                  if ( !grep( /$file/, @value ) ) {
+                    print $log "$0::$subName INFO check failed: "
+                      . " Cannot find " . $file . " in logs/" . $attempt;
+                    $result = 0;
+                    return $result;
+                  }
+                }
+                $path = JSON::Path->new("FileStatuses.FileStatus[*].length");
+                @value = $path->values($curl_result->{'body'});
+                my $foundnonzerofile = 0;
+                foreach my $length (@value) {
+                  if ($length ne "0") {
+                    $foundnonzerofile = 1;
+                  }
+                }
+                if (!$foundnonzerofile) {
+                  print $log "$0::$subName INFO check failed: "
+                    . " All files in logs/" . $attempt . " are empty";
+                  $result = 0;
+                  return $result;
+                }
+              }
+              if (!$foundjobconf) {
+                print $log "$0::$subName INFO check failed: "
+                  . " Cannot find job.xml.html for " . $jobid;
+				$result = 0;
+				return $result;
               }
             }
           }
@@ -1357,5 +1525,13 @@ sub tmpIPCRunJoinStdoe {
   return ( $? );
 }
 
-
+sub isWindows
+{
+    if($^O =~ /mswin/i) {
+        return 1;
+    }
+    else {
+        return 0;
+    }
+}
 1;

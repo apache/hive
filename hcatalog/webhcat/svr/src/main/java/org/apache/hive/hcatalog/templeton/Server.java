@@ -601,10 +601,23 @@ public class Server {
     verifyParam(mapper, "mapper");
     verifyParam(reducer, "reducer");
     
+    Map<String, Object> userArgs = new HashMap<String, Object>();
+    userArgs.put("user.name", getDoAsUser());
+    userArgs.put("input", inputs);
+    userArgs.put("output", output);
+    userArgs.put("mapper", mapper);
+    userArgs.put("reducer", reducer);
+    userArgs.put("files",  files);
+    userArgs.put("define",  defines);
+    userArgs.put("cmdenv",  cmdenvs);
+    userArgs.put("arg",  args);
+    userArgs.put("statusdir", statusdir);
+    userArgs.put("callback", callback);
+    userArgs.put("enablelog", Boolean.toString(enablelog));
     checkEnableLogPrerequisite(enablelog, statusdir);
 
     StreamingDelegator d = new StreamingDelegator(appConf);
-    return d.run(getDoAsUser(), inputs, output, mapper, reducer,
+    return d.run(getDoAsUser(), userArgs, inputs, output, mapper, reducer,
       files, defines, cmdenvs, args,
       statusdir, callback, getCompletedUrl(), enablelog, JobType.STREAMING);
   }
@@ -630,10 +643,22 @@ public class Server {
     verifyParam(jar, "jar");
     verifyParam(mainClass, "class");
     
+    Map<String, Object> userArgs = new HashMap<String, Object>();
+    userArgs.put("user.name", getDoAsUser());
+    userArgs.put("jar", jar);
+    userArgs.put("class", mainClass);
+    userArgs.put("libjars", libjars);
+    userArgs.put("files", files);
+    userArgs.put("arg", args);
+    userArgs.put("define", defines);
+    userArgs.put("statusdir", statusdir);
+    userArgs.put("callback", callback);
+    userArgs.put("enablelog", Boolean.toString(enablelog));
+
     checkEnableLogPrerequisite(enablelog, statusdir);
 
     JarDelegator d = new JarDelegator(appConf);
-    return d.run(getDoAsUser(),
+    return d.run(getDoAsUser(), userArgs,
       jar, mainClass,
       libjars, files, args, defines,
       statusdir, callback, getCompletedUrl(), enablelog, JobType.JAR);
@@ -658,10 +683,21 @@ public class Server {
     if (execute == null && srcFile == null)
       throw new BadParam("Either execute or file parameter required");
     
+    //add all function arguments to a map
+    Map<String, Object> userArgs = new HashMap<String, Object>();
+    userArgs.put("user.name", getDoAsUser());
+    userArgs.put("execute", execute);
+    userArgs.put("file", srcFile);
+    userArgs.put("arg", pigArgs);
+    userArgs.put("files", otherFiles);
+    userArgs.put("statusdir", statusdir);
+    userArgs.put("callback", callback);
+    userArgs.put("enablelog", Boolean.toString(enablelog));
+
     checkEnableLogPrerequisite(enablelog, statusdir);
 
     PigDelegator d = new PigDelegator(appConf);
-    return d.run(getDoAsUser(),
+    return d.run(getDoAsUser(), userArgs,
       execute, srcFile,
       pigArgs, otherFiles,
       statusdir, callback, getCompletedUrl(), enablelog);
@@ -699,10 +735,21 @@ public class Server {
     if (execute == null && srcFile == null)
       throw new BadParam("Either execute or file parameter required");
     
+    //add all function arguments to a map
+    Map<String, Object> userArgs = new HashMap<String, Object>();
+    userArgs.put("user.name", getDoAsUser());
+    userArgs.put("execute", execute);
+    userArgs.put("file", srcFile);
+    userArgs.put("define", defines);
+    userArgs.put("files", otherFiles);
+    userArgs.put("statusdir", statusdir);
+    userArgs.put("callback", callback);
+    userArgs.put("enablelog", Boolean.toString(enablelog));
+
     checkEnableLogPrerequisite(enablelog, statusdir);
 
     HiveDelegator d = new HiveDelegator(appConf);
-    return d.run(getDoAsUser(), execute, srcFile, defines, hiveArgs, otherFiles,
+    return d.run(getDoAsUser(), userArgs, execute, srcFile, defines, hiveArgs, otherFiles,
       statusdir, callback, getCompletedUrl(), enablelog);
   }
 

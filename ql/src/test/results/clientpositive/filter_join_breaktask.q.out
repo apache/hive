@@ -153,6 +153,8 @@ STAGE PLANS:
                   columns _col0,_col6
                   columns.types int,string
                   escape.delim \
+                  serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
             TotalFiles: 1
             GatherStats: false
             MultiFileSpray: false
@@ -208,6 +210,8 @@ STAGE PLANS:
               columns _col0,_col6
               columns.types int,string
               escape.delim \
+              serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
           
               input format: org.apache.hadoop.mapred.SequenceFileInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
@@ -215,6 +219,8 @@ STAGE PLANS:
                 columns _col0,_col6
                 columns.types int,string
                 escape.delim \
+                serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 #### A masked pattern was here ####
           Partition
             base file name: ds=2008-04-08
@@ -295,6 +301,8 @@ STAGE PLANS:
                     escape.delim \
                     hive.serialization.extend.nesting.levels true
                     serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               TotalFiles: 1
               GatherStats: false
               MultiFileSpray: false

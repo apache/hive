@@ -158,14 +158,13 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
-import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
+import org.apache.hadoop.util.ReflectionUtils;
 import org.apache.hadoop.util.ToolRunner;
 import org.stringtemplate.v4.ST;
 
@@ -3423,11 +3422,13 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
    */
   private void validateSerDe(String serdeName) throws HiveException {
     try {
-      Deserializer d = SerDeUtils.lookupDeserializer(serdeName);
+
+      Deserializer d = ReflectionUtils.newInstance(conf.getClassByName(serdeName).
+        asSubclass(Deserializer.class), conf);
       if (d != null) {
         LOG.debug("Found class for " + serdeName);
       }
-    } catch (SerDeException e) {
+    } catch (Exception e) {
       throw new HiveException("Cannot validate serde: " + serdeName, e);
     }
   }

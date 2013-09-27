@@ -23,12 +23,12 @@ import org.apache.hive.service.cli.CLIService;
 
 
 /**
- * EmbeddedThriftCLIService.
+ * EmbeddedThriftBinaryCLIService.
  *
  */
-public class EmbeddedThriftCLIService extends ThriftCLIService {
+public class EmbeddedThriftBinaryCLIService extends ThriftBinaryCLIService {
 
-  public EmbeddedThriftCLIService() {
+  public EmbeddedThriftBinaryCLIService() {
     super(new CLIService());
     isEmbedded = true;
     cliService.init(new HiveConf());

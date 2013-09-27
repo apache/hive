@@ -32,19 +32,21 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Maps;
 
 public class TestConfiguration {
+  public static final String REPOSITORY = "repository";
+  public static final String REPOSITORY_NAME = "repositoryName";
+  public static final String BRANCH = "branch";
+  public static final String JAVA_HOME = "javaHome";
+  public static final String JAVA_HOME_TEST = "javaHomeForTests";
+  public static final String ANT_ENV_OPTS = "antEnvOpts";
+  
   private static final String REPOSITORY_TYPE = "repositoryType";
   private static final String GIT = "git";
   private static final String SVN = "svn";
-  private static final String REPOSITORY = "repository";
-  private static final String REPOSITORY_NAME = "repositoryName";
-  private static final String BRANCH = "branch";
   private static final String ANT_ARGS = "antArgs";
-  private static final String ANT_ENV_OPTS = "antEnvOpts";
-  private static final String JAVA_HOME = "javaHome";
   private static final String JIRA_URL = "jiraUrl";
   private static final String JIRA_USER = "jiraUser";
   private static final String JIRA_PASSWORD = "jiraPassword";
-  public static final String JENKINS_URL = "jenkinsURL";
+  private static final String JENKINS_URL = "jenkinsURL";
 
   private final Context context;
   private String antArgs;
@@ -54,6 +56,7 @@ public class TestConfiguration {
   private String repositoryName;
   private String patch;
   private String javaHome;
+  private String javaHomeForTests;
   private String branch;
   private final String jenkinsURL;
   private final String jiraUrl;
@@ -79,6 +82,7 @@ public class TestConfiguration {
     antArgs =  Preconditions.checkNotNull(context.getString(ANT_ARGS), ANT_ARGS).trim();
     antEnvOpts =  context.getString(ANT_ENV_OPTS, "").trim();
     javaHome =  context.getString(JAVA_HOME, "").trim();
+    javaHomeForTests = context.getString(JAVA_HOME_TEST, "").trim();
     patch = Strings.nullToEmpty(null);
     jiraName = Strings.nullToEmpty(null);
     jiraUrl = context.getString(JIRA_URL, "").trim();
@@ -132,6 +136,9 @@ public class TestConfiguration {
   public String getJavaHome() {
     return javaHome;
   }
+  public String getJavaHomeForTests() {
+    return javaHomeForTests;
+  }
   public String getPatch() {
     return patch;
   }
@@ -150,6 +157,9 @@ public class TestConfiguration {
   public void setJavaHome(String javaHome) {
     this.javaHome = Strings.nullToEmpty(javaHome);
   }
+  public void setJavaHomeForTests(String javaHomeForTests) {
+      this.javaHomeForTests = javaHomeForTests;
+  }
   public void setAntArgs(String antArgs) {
     this.antArgs = Strings.nullToEmpty(antArgs);
   }
@@ -161,10 +171,14 @@ public class TestConfiguration {
   }
   @Override
   public String toString() {
-    return "Configuration [context=" + context + ", antArgs=" + antArgs
-        + ", antEnvOpts=" + antEnvOpts + ", repository=" + repository
-        + ", repositoryName=" + repositoryName + ", patch=" + patch
-        + ", javaHome=" + javaHome + ", branch=" + branch + "]";
+    return "TestConfiguration [antArgs=" + antArgs + ", antEnvOpts="
+        + antEnvOpts + ", repositoryType=" + repositoryType + ", repository="
+        + repository + ", repositoryName=" + repositoryName + ", patch="
+        + patch + ", javaHome=" + javaHome + ", javaHomeForTests="
+        + javaHomeForTests + ", branch=" + branch + ", jenkinsURL="
+        + jenkinsURL + ", jiraUrl=" + jiraUrl + ", jiraUser=" + jiraUser
+        + ", jiraName=" + jiraName + ", clearLibraryCache=" + clearLibraryCache
+        + "]";
   }
   public static TestConfiguration fromInputStream(InputStream inputStream, Logger logger)
       throws IOException {

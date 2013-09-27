@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.logging.Log;
@@ -49,13 +50,15 @@ public class LauncherDelegator extends TempletonDelegator {
     super(appConf);
   }
 
-  public void registerJob(String id, String user, String callback)
+  public void registerJob(String id, String user, String callback,
+      Map<String, Object> userArgs)
     throws IOException {
     JobState state = null;
     try {
       state = new JobState(id, Main.getAppConfigInstance());
       state.setUser(user);
       state.setCallback(callback);
+      state.setUserArgs(userArgs);
     } finally {
       if (state != null)
         state.close();
@@ -65,7 +68,7 @@ public class LauncherDelegator extends TempletonDelegator {
   /**
    * Enqueue the TempletonControllerJob directly calling doAs.
    */
-  public EnqueueBean enqueueController(String user, String callback,
+  public EnqueueBean enqueueController(String user, Map<String, Object> userArgs, String callback,
                      List<String> args)
     throws NotAuthorizedException, BusyException, ExecuteException,
     IOException, QueueException {
@@ -82,7 +85,7 @@ public class LauncherDelegator extends TempletonDelegator {
       if (id == null)
         throw new QueueException("Unable to get job id");
 
-      registerJob(id, user, callback);
+      registerJob(id, user, callback, userArgs);
 
       return new EnqueueBean(id);
     } catch (InterruptedException e) {

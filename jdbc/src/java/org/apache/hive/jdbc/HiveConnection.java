@@ -44,20 +44,23 @@ import java.util.concurrent.Executor;
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.service.auth.KerberosSaslHelper;
 import org.apache.hive.service.auth.PlainSaslHelper;
 import org.apache.hive.service.auth.SaslQOP;
-import org.apache.hive.service.cli.thrift.EmbeddedThriftCLIService;
+import org.apache.hive.service.cli.thrift.EmbeddedThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.TCLIService;
 import org.apache.hive.service.cli.thrift.TCloseSessionReq;
 import org.apache.hive.service.cli.thrift.TOpenSessionReq;
 import org.apache.hive.service.cli.thrift.TOpenSessionResp;
 import org.apache.hive.service.cli.thrift.TProtocolVersion;
 import org.apache.hive.service.cli.thrift.TSessionHandle;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
+import org.apache.thrift.transport.THttpClient;
 import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
@@ -75,30 +78,49 @@ public class HiveConnection implements java.sql.Connection {
   private static final String HIVE_AUTH_PASSWD = "password";
   private static final String HIVE_ANONYMOUS_USER = "anonymous";
   private static final String HIVE_ANONYMOUS_PASSWD = "anonymous";
-
+  private final String jdbcURI;
+  private final String host;
+  private final int port;
+  private final Map<String, String> sessConfMap;
+  private final Map<String, String> hiveConfMap;
+  private final Map<String, String> hiveVarMap;
+  private final boolean isEmbeddedMode;
   private TTransport transport;
   private TCLIService.Iface client;
   private boolean isClosed = true;
   private SQLWarning warningChain = null;
   private TSessionHandle sessHandle = null;
   private final List<TProtocolVersion> supportedProtocols = new LinkedList<TProtocolVersion>();
-  /**
-   * TODO: - parse uri (use java.net.URI?).
-   */
+
   public HiveConnection(String uri, Properties info) throws SQLException {
-    Utils.JdbcConnectionParams connParams = Utils.parseURL(uri);
-    if (connParams.isEmbeddedMode()) {
-      client = new EmbeddedThriftCLIService();
+    jdbcURI = uri;
+    // parse the connection uri
+    Utils.JdbcConnectionParams connParams = Utils.parseURL(jdbcURI);
+    // extract parsed connection parameters:
+    // JDBC URL: jdbc:hive2://<host>:<port>/dbName;sess_var_list?hive_conf_list#hive_var_list
+    // each list: <key1>=<val1>;<key2>=<val2> and so on
+    // sess_var_list -> sessConfMap
+    // hive_conf_list -> hiveConfMap
+    // hive_var_list -> hiveVarMap
+    host = connParams.getHost();
+    port = connParams.getPort();
+    sessConfMap = connParams.getSessionVars();
+    hiveConfMap = connParams.getHiveConfs();
+    hiveVarMap = connParams.getHiveVars();
+    isEmbeddedMode = connParams.isEmbeddedMode();
+
+    if (isEmbeddedMode) {
+      client = new EmbeddedThriftBinaryCLIService();
     } else {
       // extract user/password from JDBC connection properties if its not supplied in the connection URL
       if (info.containsKey(HIVE_AUTH_USER)) {
-        connParams.getSessionVars().put(HIVE_AUTH_USER, info.getProperty(HIVE_AUTH_USER));
+        sessConfMap.put(HIVE_AUTH_USER, info.getProperty(HIVE_AUTH_USER));
         if (info.containsKey(HIVE_AUTH_PASSWD)) {
-            connParams.getSessionVars().put(HIVE_AUTH_PASSWD, info.getProperty(HIVE_AUTH_PASSWD));
+          sessConfMap.put(HIVE_AUTH_PASSWD, info.getProperty(HIVE_AUTH_PASSWD));
         }
       }
-
-      openTransport(uri, connParams.getHost(), connParams.getPort(), connParams.getSessionVars());
+      // open the client transport
+      openTransport();
     }
 
     // add supported protocols
@@ -107,48 +129,66 @@ public class HiveConnection implements java.sql.Connection {
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V3);
 
     // open client session
-    openSession(uri);
+    openSession();
 
-    configureConnection(connParams);
+    configureConnection();
   }
 
-  private void configureConnection(Utils.JdbcConnectionParams connParams)
-      throws SQLException {
-    // set the hive variable in session state for local mode
-    if (connParams.isEmbeddedMode()) {
-      if (!connParams.getHiveVars().isEmpty()) {
-        SessionState.get().setHiveVariables(connParams.getHiveVars());
-      }
-    } else {
-      // for remote JDBC client, try to set the conf var using 'set foo=bar'
-      Statement stmt = createStatement();
-      for (Entry<String, String> hiveConf : connParams.getHiveConfs().entrySet()) {
-        stmt.execute("set " + hiveConf.getKey() + "=" + hiveConf.getValue());
-        stmt.close();
-      }
-
-      // For remote JDBC client, try to set the hive var using 'set hivevar:key=value'
-      for (Entry<String, String> hiveVar : connParams.getHiveVars().entrySet()) {
-        stmt.execute("set hivevar:" + hiveVar.getKey() + "=" + hiveVar.getValue());
-        stmt.close();
-      }
+  private void openTransport() throws SQLException {
+    transport = isHttpTransportMode() ?
+        createHttpTransport() :
+          createBinaryTransport();
+    TProtocol protocol = new TBinaryProtocol(transport);
+    client = new TCLIService.Client(protocol);
+    try {
+      transport.open();
+    } catch (TTransportException e) {
+      throw new SQLException("Could not open connection to "
+          + jdbcURI + ": " + e.getMessage(), " 08S01", e);
     }
   }
 
-  private void openTransport(String uri, String host, int port, Map<String, String> sessConf )
-      throws SQLException {
-    transport = new TSocket(host, port);
+  private TTransport createHttpTransport() throws SQLException {
+    // http path should begin with "/"
+    String httpPath;
+    httpPath = hiveConfMap.get(HiveConf.ConfVars.HIVE_SERVER2_THRIFT_HTTP_PATH.varname);
+    if(httpPath == null) {
+      httpPath = "/";
+    }
+    if(!httpPath.startsWith("/")) {
+      httpPath = "/" + httpPath;
+    }
 
+    DefaultHttpClient httpClient = new DefaultHttpClient();
+    String httpUrl = hiveConfMap.get(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname) +
+        "://" + host + ":" + port + httpPath;
+    httpClient.addRequestInterceptor(
+        new HttpBasicAuthInterceptor(getUserName(), getPasswd())
+        );
+    try {
+      transport = new THttpClient(httpUrl, httpClient);
+    }
+    catch (TTransportException e) {
+      String msg =  "Could not create http connection to " +
+          jdbcURI + ". " + e.getMessage();
+      throw new SQLException(msg, " 08S01", e);
+    }
+    return transport;
+  }
+
+  private TTransport createBinaryTransport() throws SQLException {
+    transport = new TSocket(host, port);
     // handle secure connection if specified
-    if (!sessConf.containsKey(HIVE_AUTH_TYPE)
-        || !sessConf.get(HIVE_AUTH_TYPE).equals(HIVE_AUTH_SIMPLE)){
+    if (!sessConfMap.containsKey(HIVE_AUTH_TYPE)
+        || !sessConfMap.get(HIVE_AUTH_TYPE).equals(HIVE_AUTH_SIMPLE)) {
       try {
-        if (sessConf.containsKey(HIVE_AUTH_PRINCIPAL)) {
+        // If Kerberos
+        if (sessConfMap.containsKey(HIVE_AUTH_PRINCIPAL)) {
           Map<String, String> saslProps = new HashMap<String, String>();
           SaslQOP saslQOP = SaslQOP.AUTH;
-          if(sessConf.containsKey(HIVE_AUTH_QOP)) {
+          if(sessConfMap.containsKey(HIVE_AUTH_QOP)) {
             try {
-              saslQOP = SaslQOP.fromString(sessConf.get(HIVE_AUTH_QOP));
+              saslQOP = SaslQOP.fromString(sessConfMap.get(HIVE_AUTH_QOP));
             } catch (IllegalArgumentException e) {
               throw new SQLException("Invalid " + HIVE_AUTH_QOP + " parameter. " + e.getMessage(), "42000", e);
             }
@@ -156,35 +196,38 @@ public class HiveConnection implements java.sql.Connection {
           saslProps.put(Sasl.QOP, saslQOP.toString());
           saslProps.put(Sasl.SERVER_AUTH, "true");
           transport = KerberosSaslHelper.getKerberosTransport(
-                  sessConf.get(HIVE_AUTH_PRINCIPAL), host, transport, saslProps);
+              sessConfMap.get(HIVE_AUTH_PRINCIPAL), host, transport, saslProps);
         } else {
-          String userName = sessConf.get(HIVE_AUTH_USER);
+          String userName = sessConfMap.get(HIVE_AUTH_USER);
           if ((userName == null) || userName.isEmpty()) {
             userName = HIVE_ANONYMOUS_USER;
           }
-          String passwd = sessConf.get(HIVE_AUTH_PASSWD);
+          String passwd = sessConfMap.get(HIVE_AUTH_PASSWD);
           if ((passwd == null) || passwd.isEmpty()) {
             passwd = HIVE_ANONYMOUS_PASSWD;
           }
           transport = PlainSaslHelper.getPlainTransport(userName, passwd, transport);
         }
       } catch (SaslException e) {
-        throw new SQLException("Could not establish secure connection to "
-                  + uri + ": " + e.getMessage(), " 08S01", e);
+        throw new SQLException("Could not create secure connection to "
+            + jdbcURI + ": " + e.getMessage(), " 08S01", e);
       }
     }
-
-    TProtocol protocol = new TBinaryProtocol(transport);
-    client = new TCLIService.Client(protocol);
-    try {
-      transport.open();
-    } catch (TTransportException e) {
-      throw new SQLException("Could not establish connection to "
-          + uri + ": " + e.getMessage(), " 08S01", e);
-    }
+    return transport;
   }
 
-  private void openSession(String uri) throws SQLException {
+
+  private boolean isHttpTransportMode() {
+    String transportMode =
+        hiveConfMap.get(HiveConf.ConfVars.HIVE_SERVER2_TRANSPORT_MODE.varname);
+    if(transportMode != null && (transportMode.equalsIgnoreCase("http") ||
+        transportMode.equalsIgnoreCase("https"))) {
+      return true;
+    }
+    return false;
+  }
+
+  private void openSession() throws SQLException {
     TOpenSessionReq openReq = new TOpenSessionReq();
 
     // set the session configuration
@@ -201,9 +244,59 @@ public class HiveConnection implements java.sql.Connection {
       sessHandle = openResp.getSessionHandle();
     } catch (TException e) {
       throw new SQLException("Could not establish connection to "
-          + uri + ": " + e.getMessage(), " 08S01", e);
+          + jdbcURI + ": " + e.getMessage(), " 08S01", e);
     }
     isClosed = false;
+  }
+
+  private void configureConnection() throws SQLException {
+    // set the hive variable in session state for local mode
+    if (isEmbeddedMode) {
+      if (!hiveVarMap.isEmpty()) {
+        SessionState.get().setHiveVariables(hiveVarMap);
+      }
+    } else {
+      // for remote JDBC client, try to set the conf var using 'set foo=bar'
+      Statement stmt = createStatement();
+      for (Entry<String, String> hiveConf : hiveConfMap.entrySet()) {
+        stmt.execute("set " + hiveConf.getKey() + "=" + hiveConf.getValue());
+      }
+
+      // For remote JDBC client, try to set the hive var using 'set hivevar:key=value'
+      for (Entry<String, String> hiveVar : hiveVarMap.entrySet()) {
+        stmt.execute("set hivevar:" + hiveVar.getKey() + "=" + hiveVar.getValue());
+      }
+      stmt.close();
+    }
+  }
+
+  /**
+   * @return username from sessConfMap
+   */
+  private String getUserName() {
+    return getSessionValue(HIVE_AUTH_USER, HIVE_ANONYMOUS_USER);
+  }
+
+  /**
+   * @return password from sessConfMap
+   */
+  private String getPasswd() {
+    return getSessionValue(HIVE_AUTH_PASSWD, HIVE_ANONYMOUS_PASSWD);
+  }
+
+  /**
+   * Lookup varName in sessConfMap, if its null or empty return the default
+   * value varDefault
+   * @param varName
+   * @param varDefault
+   * @return
+   */
+  private String getSessionValue(String varName, String varDefault) {
+    String varValue = sessConfMap.get(varName);
+    if ((varValue == null) || varValue.isEmpty()) {
+      varValue = varDefault;
+    }
+    return varValue;
   }
 
   public void abort(Executor executor) throws SQLException {

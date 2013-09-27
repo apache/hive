@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.exec.ExecuteException;
 import org.apache.hive.hcatalog.templeton.tool.TempletonControllerJob;
@@ -38,7 +39,7 @@ public class JarDelegator extends LauncherDelegator {
     super(appConf);
   }
 
-  public EnqueueBean run(String user, String jar, String mainClass,
+  public EnqueueBean run(String user, Map<String, Object> userArgs, String jar, String mainClass,
                String libjars, String files,
                List<String> jarArgs, List<String> defines,
                String statusdir, String callback, String completedUrl,
@@ -50,7 +51,7 @@ public class JarDelegator extends LauncherDelegator {
       libjars, files, jarArgs, defines,
       statusdir, completedUrl, enablelog, jobType);
 
-    return enqueueController(user, callback, args);
+    return enqueueController(user, userArgs, callback, args);
   }
 
   private List<String> makeArgs(String jar, String mainClass,

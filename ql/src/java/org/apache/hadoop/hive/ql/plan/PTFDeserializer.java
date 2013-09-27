@@ -29,7 +29,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.parse.PTFTranslator.LeadLagInfo;
+import org.apache.hadoop.hive.ql.parse.LeadLagInfo;
 import org.apache.hadoop.hive.ql.parse.WindowingExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.BoundaryDef;
 import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFExpressionDef;
@@ -47,8 +47,6 @@ import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionResolver;
 import org.apache.hadoop.hive.ql.udf.ptf.WindowingTableFunction.WindowingTableFunctionResolver;
 import org.apache.hadoop.hive.serde2.SerDe;
-import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -259,13 +257,13 @@ public class PTFDeserializer {
       serDeProps.setProperty(serdeName, serdePropsMap.get(serdeName));
     }
     try {
-      SerDe serDe = (SerDe) SerDeUtils.lookupDeserializer(serdeClassName);
+      SerDe serDe =  ReflectionUtils.newInstance(hConf.getClassByName(serdeClassName).
+          asSubclass(SerDe.class), hConf);
       serDe.initialize(hConf, serDeProps);
       shp.setSerde(serDe);
       StructObjectInspector outOI = PTFPartition.setupPartitionOutputOI(serDe, OI);
       shp.setOI(outOI);
-    } catch (SerDeException se)
-    {
+    } catch (Exception se) {
       throw new HiveException(se);
     }
   }

@@ -98,6 +98,7 @@ srcpart
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 
 PREHOOK: query: EXPLAIN LOGICAL 
@@ -158,6 +159,7 @@ subq1:src
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 
 PREHOOK: query: EXPLAIN LOGICAL 
@@ -195,6 +197,7 @@ null-subquery1:s1-subquery1:src
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 null-subquery2:s1-subquery2:srcpart 
   TableScan (TS_2)
     alias: srcpart
@@ -251,6 +254,7 @@ s1
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 s2 
   TableScan (TS_0)
     alias: s2
@@ -299,6 +303,7 @@ v1:src
         table:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 
 PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V2
@@ -324,6 +329,7 @@ v2:srcpart
         table:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+            serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 
 PREHOOK: query: EXPLAIN LOGICAL SELECT * FROM V3
@@ -372,6 +378,7 @@ v3:src1:srcpart
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 v3:src2 
   TableScan (TS_3)
     alias: src2
@@ -447,6 +454,7 @@ v4:src1:src
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 v4:src2:srcpart 
   TableScan (TS_0)
     alias: srcpart
@@ -544,6 +552,7 @@ v5:srcpart
           table:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
 
 PREHOOK: query: EXPLAIN LOGICAL SELECT s1.key, s1.cnt, s2.value FROM (SELECT key, count(value) as cnt FROM src GROUP BY key) s1 JOIN src s2 ON (s1.key = s2.key) ORDER BY s1.key
@@ -649,6 +658,7 @@ s1:src
                           table:
                               input format: org.apache.hadoop.mapred.TextInputFormat
                               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 s2 
   TableScan (TS_6)
     alias: s2

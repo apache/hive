@@ -18,27 +18,37 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.io.Externalizable;
+import java.io.Serializable;
+
+import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
+import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * AggregationDesc.
  *
  */
 public class AggregationDesc implements java.io.Serializable {
+
+  static {
+    PTFUtils.makeTransient(AggregationDesc.class, "genericUDAFEvaluator");
+  }
+
   private static final long serialVersionUID = 1L;
   private String genericUDAFName;
 
-  /**
-   * In case genericUDAFEvaluator is Serializable, we will serialize the object.
-   * 
-   * In case genericUDAFEvaluator does not implement Serializable, Java will
-   * remember the class of genericUDAFEvaluator and creates a new instance when
-   * deserialized. This is exactly what we want.
-   */
-  private GenericUDAFEvaluator genericUDAFEvaluator;
   private java.util.ArrayList<ExprNodeDesc> parameters;
   private boolean distinct;
   private GenericUDAFEvaluator.Mode mode;
+
+  // used for GenericUDAFEvaluator
+  private String genericUDAFEvaluatorClassName;
+  // used for GenericUDAFBridgeEvaluator
+  private GenericUDAFEvaluator genericUDAFWritableEvaluator;
+
+  private transient GenericUDAFEvaluator genericUDAFEvaluator;
 
   public AggregationDesc() {
   }
@@ -48,10 +58,10 @@ public class AggregationDesc implements java.io.Serializable {
       final java.util.ArrayList<ExprNodeDesc> parameters,
       final boolean distinct, final GenericUDAFEvaluator.Mode mode) {
     this.genericUDAFName = genericUDAFName;
-    this.genericUDAFEvaluator = genericUDAFEvaluator;
     this.parameters = parameters;
     this.distinct = distinct;
     this.mode = mode;
+    setGenericUDAFEvaluator(genericUDAFEvaluator);
   }
 
   public void setGenericUDAFName(final String genericUDAFName) {
@@ -65,10 +75,44 @@ public class AggregationDesc implements java.io.Serializable {
   public void setGenericUDAFEvaluator(
       final GenericUDAFEvaluator genericUDAFEvaluator) {
     this.genericUDAFEvaluator = genericUDAFEvaluator;
+    if (genericUDAFEvaluator instanceof Serializable ||
+        genericUDAFEvaluator instanceof Externalizable) {
+      this.genericUDAFWritableEvaluator = genericUDAFEvaluator;
+    } else {
+      this.genericUDAFEvaluatorClassName = genericUDAFEvaluator.getClass().getName();
+    }
   }
 
   public GenericUDAFEvaluator getGenericUDAFEvaluator() {
-    return genericUDAFEvaluator;
+    if (genericUDAFEvaluator != null) {
+      return genericUDAFEvaluator;
+    }
+    if (genericUDAFWritableEvaluator != null) {
+      return genericUDAFEvaluator = genericUDAFWritableEvaluator;
+    }
+    try {
+      return genericUDAFEvaluator =
+          ReflectionUtils.newInstance(Class.forName(genericUDAFEvaluatorClassName, true,
+          JavaUtils.getClassLoader()).asSubclass(GenericUDAFEvaluator.class), null);
+    } catch (ClassNotFoundException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public String getGenericUDAFEvaluatorClassName() {
+    return genericUDAFEvaluatorClassName;
+  }
+
+  public void setGenericUDAFEvaluatorClassName(String genericUDAFEvaluatorClassName) {
+    this.genericUDAFEvaluatorClassName = genericUDAFEvaluatorClassName;
+  }
+
+  public GenericUDAFEvaluator getGenericUDAFWritableEvaluator() {
+    return genericUDAFWritableEvaluator;
+  }
+
+  public void setGenericUDAFWritableEvaluator(GenericUDAFEvaluator genericUDAFWritableEvaluator) {
+    this.genericUDAFWritableEvaluator = genericUDAFWritableEvaluator;
   }
 
   public java.util.ArrayList<ExprNodeDesc> getParameters() {

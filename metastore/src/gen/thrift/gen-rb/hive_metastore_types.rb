@@ -726,6 +726,53 @@ class EnvironmentContext
   ::Thrift::Struct.generate_accessors self
 end
 
+class PartitionsByExprResult
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  PARTITIONS = 1
+  HASUNKNOWNPARTITIONS = 2
+
+  FIELDS = {
+    PARTITIONS => {:type => ::Thrift::Types::SET, :name => 'partitions', :element => {:type => ::Thrift::Types::STRUCT, :class => ::Partition}},
+    HASUNKNOWNPARTITIONS => {:type => ::Thrift::Types::BOOL, :name => 'hasUnknownPartitions'}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field partitions is unset!') unless @partitions
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field hasUnknownPartitions is unset!') if @hasUnknownPartitions.nil?
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
+class PartitionsByExprRequest
+  include ::Thrift::Struct, ::Thrift::Struct_Union
+  DBNAME = 1
+  TBLNAME = 2
+  EXPR = 3
+  DEFAULTPARTITIONNAME = 4
+  MAXPARTS = 5
+
+  FIELDS = {
+    DBNAME => {:type => ::Thrift::Types::STRING, :name => 'dbName'},
+    TBLNAME => {:type => ::Thrift::Types::STRING, :name => 'tblName'},
+    EXPR => {:type => ::Thrift::Types::STRING, :name => 'expr', :binary => true},
+    DEFAULTPARTITIONNAME => {:type => ::Thrift::Types::STRING, :name => 'defaultPartitionName', :optional => true},
+    MAXPARTS => {:type => ::Thrift::Types::I16, :name => 'maxParts', :default => -1, :optional => true}
+  }
+
+  def struct_fields; FIELDS; end
+
+  def validate
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field dbName is unset!') unless @dbName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field tblName is unset!') unless @tblName
+    raise ::Thrift::ProtocolException.new(::Thrift::ProtocolException::UNKNOWN, 'Required field expr is unset!') unless @expr
+  end
+
+  ::Thrift::Struct.generate_accessors self
+end
+
 class MetaException < ::Thrift::Exception
   include ::Thrift::Struct, ::Thrift::Struct_Union
   def initialize(message=nil)

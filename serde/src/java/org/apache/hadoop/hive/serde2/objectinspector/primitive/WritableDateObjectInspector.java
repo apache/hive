@@ -46,11 +46,17 @@ public class WritableDateObjectInspector extends
   }
 
   public Object set(Object o, Date d) {
+    if (d == null) {
+      return null;
+    }
     ((DateWritable) o).set(d);
     return o;
   }
 
   public Object set(Object o, DateWritable d) {
+    if (d == null) {
+      return null;
+    }
     ((DateWritable) o).set(d);
     return o;
   }

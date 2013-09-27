@@ -59,20 +59,20 @@ import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
-import org.apache.hive.hcatalog.cli.HCatDriver;
-import org.apache.hive.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
-import org.apache.hive.hcatalog.common.HCatConstants;
-import org.apache.hive.hcatalog.common.HCatException;
-import org.apache.hive.hcatalog.common.HCatUtil;
-import org.apache.hive.hcatalog.data.HCatRecord;
-import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
-import org.apache.hive.hcatalog.data.schema.HCatSchema;
+import org.apache.hcatalog.cli.HCatDriver;
+import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
+import org.apache.hcatalog.common.HCatConstants;
+import org.apache.hcatalog.common.HCatException;
+import org.apache.hcatalog.common.HCatUtil;
+import org.apache.hcatalog.data.HCatRecord;
+import org.apache.hcatalog.data.schema.HCatFieldSchema;
+import org.apache.hcatalog.data.schema.HCatSchema;
 import org.apache.hcatalog.hbase.snapshot.RevisionManager;
 import org.apache.hcatalog.hbase.snapshot.RevisionManagerConfiguration;
 import org.apache.hcatalog.hbase.snapshot.Transaction;
-import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
-import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
-import org.apache.hive.hcatalog.mapreduce.PartInfo;
+import org.apache.hcatalog.mapreduce.HCatInputFormat;
+import org.apache.hcatalog.mapreduce.InputJobInfo;
+import org.apache.hcatalog.mapreduce.PartInfo;
 import org.junit.Test;
 
 public class TestHCatHBaseInputFormat extends SkeletonHBaseTest {
@@ -229,7 +229,7 @@ public class TestHCatHBaseInputFormat extends SkeletonHBaseTest {
     // Note: These asserts only works in case of LocalJobRunner as they run in same jvm.
     // If using MiniMRCluster, the tests will have to be modified.
     assertFalse(MapReadHTable.error);
-    assertEquals(MapReadHTable.count, 1);
+    assertEquals(1, MapReadHTable.count);
 
     String dropTableQuery = "DROP TABLE " + hbaseTableName;
     CommandProcessorResponse responseThree = hcatDriver.run(dropTableQuery);
@@ -291,7 +291,7 @@ public class TestHCatHBaseInputFormat extends SkeletonHBaseTest {
     job.setNumReduceTasks(0);
     assertTrue(job.waitForCompletion(true));
     assertFalse(MapReadProjHTable.error);
-    assertEquals(MapReadProjHTable.count, 1);
+    assertEquals(1, MapReadProjHTable.count);
 
     String dropTableQuery = "DROP TABLE " + tableName;
     CommandProcessorResponse responseThree = hcatDriver.run(dropTableQuery);
@@ -325,7 +325,7 @@ public class TestHCatHBaseInputFormat extends SkeletonHBaseTest {
         HCatUtil.serialize(getHiveConf().getAllProperties()));
 
     // output settings
-    Path outputDir = new Path(getTestDir(), "mapred/testHBaseTableProjectionReadMR");
+    Path outputDir = new Path(getTestDir(), "mapred/testHBaseInputFormatProjectionReadMR");
     FileSystem fs = getFileSystem();
     if (fs.exists(outputDir)) {
       fs.delete(outputDir, true);
@@ -361,8 +361,8 @@ public class TestHCatHBaseInputFormat extends SkeletonHBaseTest {
     RunningJob runJob = JobClient.runJob(job);
     runJob.waitForCompletion();
     assertTrue(runJob.isSuccessful());
-    assertFalse(MapReadProjHTable.error);
-    assertEquals(MapReadProjHTable.count, 1);
+    assertFalse(MapReadProjectionHTable.error);
+    assertEquals(1, MapReadProjectionHTable.count);
 
     String dropTableQuery = "DROP TABLE " + tableName;
     CommandProcessorResponse responseThree = hcatDriver.run(dropTableQuery);

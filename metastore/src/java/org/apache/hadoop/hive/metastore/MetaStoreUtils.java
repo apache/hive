@@ -55,7 +55,6 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.SerDeUtils;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -66,6 +65,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
+import org.apache.hadoop.util.ReflectionUtils;
 
 public class MetaStoreUtils {
 
@@ -174,11 +174,10 @@ public class MetaStoreUtils {
    */
   static public Deserializer getDeserializer(Configuration conf,
       Properties schema) throws MetaException {
-    String lib = schema
-        .getProperty(org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_LIB);
     try {
-      Deserializer deserializer = SerDeUtils.lookupDeserializer(lib);
-      (deserializer).initialize(conf, schema);
+      Deserializer deserializer = ReflectionUtils.newInstance(conf.getClassByName(
+      schema.getProperty(serdeConstants.SERIALIZATION_LIB)).asSubclass(Deserializer.class), conf);
+      deserializer.initialize(conf, schema);
       return deserializer;
     } catch (Exception e) {
       LOG.error("error in initSerDe: " + e.getClass().getName() + " "
@@ -214,7 +213,8 @@ public class MetaStoreUtils {
       return null;
     }
     try {
-      Deserializer deserializer = SerDeUtils.lookupDeserializer(lib);
+      Deserializer deserializer = ReflectionUtils.newInstance(conf.getClassByName(lib).
+        asSubclass(Deserializer.class), conf);
       deserializer.initialize(conf, MetaStoreUtils.getTableMetadata(table));
       return deserializer;
     } catch (RuntimeException e) {
@@ -250,7 +250,8 @@ public class MetaStoreUtils {
       org.apache.hadoop.hive.metastore.api.Table table) throws MetaException {
     String lib = part.getSd().getSerdeInfo().getSerializationLib();
     try {
-      Deserializer deserializer = SerDeUtils.lookupDeserializer(lib);
+      Deserializer deserializer = ReflectionUtils.newInstance(conf.getClassByName(lib).
+        asSubclass(Deserializer.class), conf);
       deserializer.initialize(conf, MetaStoreUtils.getPartitionMetadata(part, table));
       return deserializer;
     } catch (RuntimeException e) {

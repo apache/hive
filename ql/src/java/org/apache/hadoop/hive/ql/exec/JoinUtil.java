@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -316,7 +317,7 @@ public class JoinUtil {
       // remove the last ','
       colNames.setLength(colNames.length() - 1);
       colTypes.setLength(colTypes.length() - 1);
-      TableDesc tblDesc = new TableDesc(LazyBinarySerDe.class,
+      TableDesc tblDesc = new TableDesc(
           SequenceFileInputFormat.class, HiveSequenceFileOutputFormat.class,
           Utilities.makeProperties(
           org.apache.hadoop.hive.serde.serdeConstants.SERIALIZATION_FORMAT, ""
@@ -324,7 +325,8 @@ public class JoinUtil {
           org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMNS, colNames
           .toString(),
           org.apache.hadoop.hive.serde.serdeConstants.LIST_COLUMN_TYPES,
-          colTypes.toString()));
+          colTypes.toString(),
+          serdeConstants.SERIALIZATION_LIB,LazyBinarySerDe.class.getName()));
       spillTableDesc[tag] = tblDesc;
     }
     return spillTableDesc;

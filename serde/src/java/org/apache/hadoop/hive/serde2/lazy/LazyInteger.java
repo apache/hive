@@ -136,11 +136,18 @@ public class LazyInteger extends
    */
   private static int parse(byte[] bytes, int start, int length, int offset,
       int radix, boolean negative) {
+    byte separator = '.';
     int max = Integer.MIN_VALUE / radix;
     int result = 0, end = start + length;
     while (offset < end) {
       int digit = LazyUtils.digit(bytes[offset++], radix);
       if (digit == -1) {
+        if (bytes[offset-1] == separator) {
+          // We allow decimals and will return a truncated integer in that case.
+          // Therefore we won't throw an exception here (checking the fractional
+          // part happens below.)
+          break;
+        }
         throw new NumberFormatException(LazyUtils.convertToString(bytes, start,
             length));
       }
@@ -155,6 +162,18 @@ public class LazyInteger extends
       }
       result = next;
     }
+
+    // This is the case when we've encountered a decimal separator. The fractional
+    // part will not change the number, but we will verify that the fractional part
+    // is well formed.
+    while (offset < end) {
+      int digit = LazyUtils.digit(bytes[offset++], radix);
+      if (digit == -1) {
+        throw new NumberFormatException(LazyUtils.convertToString(bytes, start,
+            length));
+      }
+    }
+
     if (!negative) {
       result = -result;
       if (result < 0) {

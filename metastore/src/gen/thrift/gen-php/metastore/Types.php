@@ -4885,6 +4885,286 @@ class EnvironmentContext {
 
 }
 
+class PartitionsByExprResult {
+  static $_TSPEC;
+
+  public $partitions = null;
+  public $hasUnknownPartitions = null;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'partitions',
+          'type' => TType::SET,
+          'etype' => TType::STRUCT,
+          'elem' => array(
+            'type' => TType::STRUCT,
+            'class' => '\metastore\Partition',
+            ),
+          ),
+        2 => array(
+          'var' => 'hasUnknownPartitions',
+          'type' => TType::BOOL,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['partitions'])) {
+        $this->partitions = $vals['partitions'];
+      }
+      if (isset($vals['hasUnknownPartitions'])) {
+        $this->hasUnknownPartitions = $vals['hasUnknownPartitions'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'PartitionsByExprResult';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::SET) {
+            $this->partitions = array();
+            $_size227 = 0;
+            $_etype230 = 0;
+            $xfer += $input->readSetBegin($_etype230, $_size227);
+            for ($_i231 = 0; $_i231 < $_size227; ++$_i231)
+            {
+              $elem232 = null;
+              $elem232 = new \metastore\Partition();
+              $xfer += $elem232->read($input);
+              if (is_scalar($elem232)) {
+                $this->partitions[$elem232] = true;
+              } else {
+                $this->partitions []= $elem232;
+              }
+            }
+            $xfer += $input->readSetEnd();
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::BOOL) {
+            $xfer += $input->readBool($this->hasUnknownPartitions);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('PartitionsByExprResult');
+    if ($this->partitions !== null) {
+      if (!is_array($this->partitions)) {
+        throw new TProtocolException('Bad type in structure.', TProtocolException::INVALID_DATA);
+      }
+      $xfer += $output->writeFieldBegin('partitions', TType::SET, 1);
+      {
+        $output->writeSetBegin(TType::STRUCT, count($this->partitions));
+        {
+          foreach ($this->partitions as $iter233 => $iter234)
+          {
+            if (is_scalar($iter234)) {
+            $xfer += $iter233->write($output);
+            } else {
+            $xfer += $iter234->write($output);
+            }
+          }
+        }
+        $output->writeSetEnd();
+      }
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->hasUnknownPartitions !== null) {
+      $xfer += $output->writeFieldBegin('hasUnknownPartitions', TType::BOOL, 2);
+      $xfer += $output->writeBool($this->hasUnknownPartitions);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
+class PartitionsByExprRequest {
+  static $_TSPEC;
+
+  public $dbName = null;
+  public $tblName = null;
+  public $expr = null;
+  public $defaultPartitionName = null;
+  public $maxParts = -1;
+
+  public function __construct($vals=null) {
+    if (!isset(self::$_TSPEC)) {
+      self::$_TSPEC = array(
+        1 => array(
+          'var' => 'dbName',
+          'type' => TType::STRING,
+          ),
+        2 => array(
+          'var' => 'tblName',
+          'type' => TType::STRING,
+          ),
+        3 => array(
+          'var' => 'expr',
+          'type' => TType::STRING,
+          ),
+        4 => array(
+          'var' => 'defaultPartitionName',
+          'type' => TType::STRING,
+          ),
+        5 => array(
+          'var' => 'maxParts',
+          'type' => TType::I16,
+          ),
+        );
+    }
+    if (is_array($vals)) {
+      if (isset($vals['dbName'])) {
+        $this->dbName = $vals['dbName'];
+      }
+      if (isset($vals['tblName'])) {
+        $this->tblName = $vals['tblName'];
+      }
+      if (isset($vals['expr'])) {
+        $this->expr = $vals['expr'];
+      }
+      if (isset($vals['defaultPartitionName'])) {
+        $this->defaultPartitionName = $vals['defaultPartitionName'];
+      }
+      if (isset($vals['maxParts'])) {
+        $this->maxParts = $vals['maxParts'];
+      }
+    }
+  }
+
+  public function getName() {
+    return 'PartitionsByExprRequest';
+  }
+
+  public function read($input)
+  {
+    $xfer = 0;
+    $fname = null;
+    $ftype = 0;
+    $fid = 0;
+    $xfer += $input->readStructBegin($fname);
+    while (true)
+    {
+      $xfer += $input->readFieldBegin($fname, $ftype, $fid);
+      if ($ftype == TType::STOP) {
+        break;
+      }
+      switch ($fid)
+      {
+        case 1:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->dbName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 2:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->tblName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 3:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->expr);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 4:
+          if ($ftype == TType::STRING) {
+            $xfer += $input->readString($this->defaultPartitionName);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        case 5:
+          if ($ftype == TType::I16) {
+            $xfer += $input->readI16($this->maxParts);
+          } else {
+            $xfer += $input->skip($ftype);
+          }
+          break;
+        default:
+          $xfer += $input->skip($ftype);
+          break;
+      }
+      $xfer += $input->readFieldEnd();
+    }
+    $xfer += $input->readStructEnd();
+    return $xfer;
+  }
+
+  public function write($output) {
+    $xfer = 0;
+    $xfer += $output->writeStructBegin('PartitionsByExprRequest');
+    if ($this->dbName !== null) {
+      $xfer += $output->writeFieldBegin('dbName', TType::STRING, 1);
+      $xfer += $output->writeString($this->dbName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->tblName !== null) {
+      $xfer += $output->writeFieldBegin('tblName', TType::STRING, 2);
+      $xfer += $output->writeString($this->tblName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->expr !== null) {
+      $xfer += $output->writeFieldBegin('expr', TType::STRING, 3);
+      $xfer += $output->writeString($this->expr);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->defaultPartitionName !== null) {
+      $xfer += $output->writeFieldBegin('defaultPartitionName', TType::STRING, 4);
+      $xfer += $output->writeString($this->defaultPartitionName);
+      $xfer += $output->writeFieldEnd();
+    }
+    if ($this->maxParts !== null) {
+      $xfer += $output->writeFieldBegin('maxParts', TType::I16, 5);
+      $xfer += $output->writeI16($this->maxParts);
+      $xfer += $output->writeFieldEnd();
+    }
+    $xfer += $output->writeFieldStop();
+    $xfer += $output->writeStructEnd();
+    return $xfer;
+  }
+
+}
+
 class MetaException extends TException {
   static $_TSPEC;
 

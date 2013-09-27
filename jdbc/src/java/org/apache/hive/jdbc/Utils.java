@@ -169,13 +169,16 @@ public class Utils {
 
   /**
    * Parse JDBC connection URL
-   * The new format of the URL is jdbc:hive://<host>:<port>/dbName;sess_var_list?hive_conf_list#hive_var_list
+   * The new format of the URL is jdbc:hive2://<host>:<port>/dbName;sess_var_list?hive_conf_list#hive_var_list
    * where the optional sess, conf and var lists are semicolon separated <key>=<val> pairs. As before, if the
    * host/port is not specified, it the driver runs an embedded hive.
    * examples -
-   *  jdbc:hive://ubuntu:11000/db2?hive.cli.conf.printheader=true;hive.exec.mode.local.auto.inputbytes.max=9999#stab=salesTable;icol=customerID
-   *  jdbc:hive://?hive.cli.conf.printheader=true;hive.exec.mode.local.auto.inputbytes.max=9999#stab=salesTable;icol=customerID
-   *  jdbc:hive://ubuntu:11000/db2;user=foo;password=bar
+   *  jdbc:hive2://ubuntu:11000/db2?hive.cli.conf.printheader=true;hive.exec.mode.local.auto.inputbytes.max=9999#stab=salesTable;icol=customerID
+   *  jdbc:hive2://?hive.cli.conf.printheader=true;hive.exec.mode.local.auto.inputbytes.max=9999#stab=salesTable;icol=customerID
+   *  jdbc:hive2://ubuntu:11000/db2;user=foo;password=bar
+   *
+   *  Connect to http://server:10001/hs2, with specified basicAuth credentials and initial database:
+   *     jdbc:hive2://server:10001/db;user=foo;password=bar?hive.server2.transport.mode=http;hive.server2.thrift.http.path=hs2
    *
    * Note that currently the session properties are not used.
    *
@@ -189,7 +192,8 @@ public class Utils {
       throw new IllegalArgumentException("Bad URL format");
     }
 
-    // Don't parse URL with no other configuration.
+    // For URLs with no other configuration
+    // Don't parse them, but set embedded mode as true
     if (uri.equalsIgnoreCase(URL_PREFIX)) {
       connParams.setEmbeddedMode(true);
       return connParams;
@@ -197,11 +201,11 @@ public class Utils {
 
     URI jdbcURI = URI.create(uri.substring(URI_JDBC_PREFIX.length()));
 
-    //Check to prevent unintentional use of embedded mode. A missing "/" can
+    // Check to prevent unintentional use of embedded mode. A missing "/"
     // to separate the 'path' portion of URI can result in this.
-    //The missing "/" common typo while using secure mode, eg of such url -
+    // The missing "/" common typo while using secure mode, eg of such url -
     // jdbc:hive2://localhost:10000;principal=hive/HiveServer2Host@YOUR-REALM.COM
-    if((jdbcURI.getAuthority() != null) && (jdbcURI.getHost()==null)){
+    if((jdbcURI.getAuthority() != null) && (jdbcURI.getHost()==null)) {
        throw new IllegalArgumentException("Bad URL format. Hostname not found "
            + " in authority part of the url: " + jdbcURI.getAuthority()
            + ". Are you missing a '/' after the hostname ?");
@@ -264,6 +268,4 @@ public class Utils {
 
     return connParams;
   }
-
-
 }

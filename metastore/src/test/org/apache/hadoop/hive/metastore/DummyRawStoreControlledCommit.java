@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.metastore;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configurable;
 import org.apache.hadoop.conf.Configuration;
@@ -50,6 +51,7 @@ import org.apache.hadoop.hive.metastore.model.MPartitionPrivilege;
 import org.apache.hadoop.hive.metastore.model.MRoleMap;
 import org.apache.hadoop.hive.metastore.model.MTableColumnPrivilege;
 import org.apache.hadoop.hive.metastore.model.MTablePrivilege;
+import org.apache.thrift.TException;
 
 /**
  * A wrapper around {@link org.apache.hadoop.hive.metastore.ObjectStore}
@@ -300,6 +302,13 @@ public class DummyRawStoreControlledCommit implements RawStore, Configurable {
   public List<Partition> getPartitionsByNames(String dbName, String tblName,
       List<String> partNames) throws MetaException, NoSuchObjectException {
     return objectStore.getPartitionsByNames(dbName, tblName, partNames);
+  }
+
+  @Override
+  public boolean getPartitionsByExpr(String dbName, String tblName, byte[] expr,
+      String defaultPartitionName, short maxParts, Set<Partition> result) throws TException {
+    return objectStore.getPartitionsByExpr(
+        dbName, tblName, expr, defaultPartitionName, maxParts, result);
   }
 
   @Override

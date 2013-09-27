@@ -18,7 +18,7 @@
 
 package org.apache.hive.service.cli;
 
-import org.apache.hive.service.cli.thrift.EmbeddedThriftCLIService;
+import org.apache.hive.service.cli.thrift.EmbeddedThriftBinaryCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.hive.service.cli.thrift.ThriftCLIServiceClient;
 import org.junit.After;
@@ -26,16 +26,16 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 
 /**
- * TestEmbeddedCLIService.
+ * TestEmbeddedThriftBinaryCLIService.
  *
  */
-public class TestEmbeddedThriftCLIService extends CLIServiceTest {
+public class TestEmbeddedThriftBinaryCLIService extends CLIServiceTest {
 
-  private static  ThriftCLIService service;
+  private static ThriftCLIService service;
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
-    service = new EmbeddedThriftCLIService();
+    service = new EmbeddedThriftBinaryCLIService();
     client = new ThriftCLIServiceClient(service);
   }
 
