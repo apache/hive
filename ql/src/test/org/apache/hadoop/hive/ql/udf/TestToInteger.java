@@ -25,6 +25,6 @@ public class TestToInteger extends TestCase{
 
     Text t4 = new Text("1.1");
     IntWritable i4 = ti.evaluate(t4);
-    assertNull(i4);
+    assertEquals(1, i4.get());
   }
 }
