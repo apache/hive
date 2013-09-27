@@ -94,6 +94,7 @@
 
         <exec executable="./test_harness.pl" dir="${test.location}" failonerror="true">
             <env key="HARNESS_ROOT" value="."/>
+            <env key="DRIVER_ROOT" value="${basedir}/drivers"/>
             <env key="TH_WORKING_DIR" value="${test.location}"/>
             <env key="TH_INPDIR_LOCAL" value="${inpdir.local}"/>
             <env key="TH_INPDIR_HDFS" value="${inpdir.hdfs}"/>
@@ -109,9 +110,10 @@
             <env key="SECURE_MODE" value="${secure.mode}"/>
             <arg line="${tests.to.run}"/>
             <arg value="${basedir}/tests/serverstatus.conf"/>
+            <arg value="${basedir}/tests/jobsubmission_streaming.conf"/>
             <arg value="${basedir}/tests/ddl.conf"/>
+            <arg value="${basedir}/tests/jobstatus.conf"/>
             <arg value="${basedir}/tests/jobsubmission.conf"/>
-            <arg value="${basedir}/tests/jobsubmission2.conf"/>
         </exec>
     </target>
 
@@ -124,6 +126,7 @@
         <property name="tests.to.run" value=""/>
         <exec executable="${harness.dir}/test_harness.pl" dir="${test.location}" failonerror="true">
             <env key="HARNESS_ROOT" value="${harness.dir}"/>
+            <env key="DRIVER_ROOT" value="${basedir}/drivers"/>
             <env key="TH_WORKING_DIR" value="${test.location}"/>
             <env key="TH_INPDIR_LOCAL" value="${inpdir.local}"/>
             <env key="TH_INPDIR_HDFS" value="${inpdir.hdfs}"/>
