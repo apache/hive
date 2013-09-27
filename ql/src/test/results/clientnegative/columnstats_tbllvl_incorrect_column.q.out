@@ -33,4 +33,4 @@ PREHOOK: Output: default@uservisits_web_text_none
 POSTHOOK: query: LOAD DATA LOCAL INPATH "../data/files/UserVisits.dat" INTO TABLE UserVisits_web_text_none
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@uservisits_web_text_none
-FAILED: SemanticException [Error 10004]: Line 1:21 Invalid table alias or column reference 'destIP': (possible column names are: sourceip, desturl, visitdate, adrevenue, useragent, ccode, lcode, skeyword, avgtimeonsite)
+FAILED: SemanticException [Error 10002]: Invalid column reference 'destIP' (possible columns are [sourceip, desturl, visitdate, adrevenue, useragent, ccode, lcode, skeyword, avgtimeonsite])
