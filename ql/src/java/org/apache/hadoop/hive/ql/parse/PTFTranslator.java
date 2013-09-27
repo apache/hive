@@ -1097,49 +1097,6 @@ public class PTFTranslator {
     return componentInvocations;
   }
 
-
-  /*
-   * Lead Lag functionality
-   */
-  public static class LeadLagInfo {
-    /*
-     * list of LL invocations in a Query.
-     */
-    List<ExprNodeGenericFuncDesc> leadLagExprs;
-    /*
-     * map from the Select Expr Node to the LL Function invocations in it.
-     */
-    Map<ExprNodeDesc, List<ExprNodeGenericFuncDesc>> mapTopExprToLLFunExprs;
-
-    private void addLeadLagExpr(ExprNodeGenericFuncDesc llFunc) {
-      leadLagExprs = leadLagExprs == null ? new ArrayList<ExprNodeGenericFuncDesc>() : leadLagExprs;
-      leadLagExprs.add(llFunc);
-    }
-
-    public List<ExprNodeGenericFuncDesc> getLeadLagExprs() {
-      return leadLagExprs;
-    }
-
-    public void addLLFuncExprForTopExpr(ExprNodeDesc topExpr, ExprNodeGenericFuncDesc llFuncExpr) {
-      addLeadLagExpr(llFuncExpr);
-      mapTopExprToLLFunExprs = mapTopExprToLLFunExprs == null ?
-          new HashMap<ExprNodeDesc, List<ExprNodeGenericFuncDesc>>() : mapTopExprToLLFunExprs;
-      List<ExprNodeGenericFuncDesc> funcList = mapTopExprToLLFunExprs.get(topExpr);
-      if (funcList == null) {
-        funcList = new ArrayList<ExprNodeGenericFuncDesc>();
-        mapTopExprToLLFunExprs.put(topExpr, funcList);
-      }
-      funcList.add(llFuncExpr);
-    }
-
-    public List<ExprNodeGenericFuncDesc> getLLFuncExprsInTopExpr(ExprNodeDesc topExpr) {
-      if (mapTopExprToLLFunExprs == null) {
-        return null;
-      }
-      return mapTopExprToLLFunExprs.get(topExpr);
-    }
-  }
-
   public static void validateNoLeadLagInValueBoundarySpec(ASTNode node)
       throws SemanticException {
     String errMsg = "Lead/Lag not allowed in ValueBoundary Spec";
