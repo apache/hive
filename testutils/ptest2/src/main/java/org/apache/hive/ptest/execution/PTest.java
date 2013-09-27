@@ -110,6 +110,7 @@ public class PTest {
     put("buildTag", buildTag).
     put("logDir", logDir.getAbsolutePath()).
     put("javaHome", configuration.getJavaHome()).
+    put("javaHomeForTests", configuration.getJavaHomeForTests()).
     put("antEnvOpts", configuration.getAntEnvOpts());
     final ImmutableMap<String, String> templateDefaults = templateDefaultsBuilder.build();
     TestParser testParser = new TestParser(configuration.getContext(),
@@ -221,12 +222,13 @@ public class PTest {
   }
 
   private static final String PROPERTIES = "properties";
-  private static final String REPOSITORY = "repository";
-  private static final String REPOSITORY_NAME = "repositoryName";
-  private static final String BRANCH = "branch";
+  private static final String REPOSITORY = TestConfiguration.REPOSITORY;
+  private static final String REPOSITORY_NAME = TestConfiguration.REPOSITORY_NAME;
+  private static final String BRANCH = TestConfiguration.BRANCH;
   private static final String PATCH = "patch";
-  private static final String JAVA_HOME = "javaHome";
-  private static final String ANT_ENV_OPTS = "antEnvOpts";
+  private static final String JAVA_HOME = TestConfiguration.JAVA_HOME;
+  private static final String JAVA_HOME_TEST = TestConfiguration.JAVA_HOME_TEST;
+  private static final String ANT_ENV_OPTS = TestConfiguration.ANT_ENV_OPTS;
   /**
    * All args override properties file settings except
    * for this one which is additive.
@@ -243,7 +245,8 @@ public class PTest {
     options.addOption(null, BRANCH, true, "Overrides git branch in properties file");
     options.addOption(null, PATCH, true, "URI to patch, either file:/// or http(s)://");
     options.addOption(ANT_ARG, null, true, "Supplemntal ant arguments");
-    options.addOption(null, JAVA_HOME, true, "Java Home for compiling and running tests");
+    options.addOption(null, JAVA_HOME, true, "Java Home for compiling and running tests (unless " + JAVA_HOME_TEST + " is specified)");
+    options.addOption(null, JAVA_HOME_TEST, true, "Java Home for running tests (optional)");
     options.addOption(null, ANT_ENV_OPTS, true, "ANT_OPTS environemnt variable setting");
     CommandLine commandLine = parser.parse(options, args);
     if(!commandLine.hasOption(PROPERTIES)) {
@@ -281,6 +284,10 @@ public class PTest {
         String javaHome = Strings.nullToEmpty(commandLine.getOptionValue(JAVA_HOME)).trim();
         if(!javaHome.isEmpty()) {
           conf.setJavaHome(javaHome);
+        }
+        String javaHomeForTests = Strings.nullToEmpty(commandLine.getOptionValue(JAVA_HOME_TEST)).trim();
+        if(!javaHomeForTests.isEmpty()) {
+          conf.setJavaHomeForTests(javaHomeForTests);
         }
         String antEnvOpts = Strings.nullToEmpty(commandLine.getOptionValue(ANT_ENV_OPTS)).trim();
         if(!antEnvOpts.isEmpty()) {

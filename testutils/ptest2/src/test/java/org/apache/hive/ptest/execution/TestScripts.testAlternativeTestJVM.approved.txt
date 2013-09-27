@@ -22,9 +22,9 @@ chmod -R u+w /some/log/dir
 rm -rf /some/log/dir
 # makes /some/log/dir and /some/log/dir/tmp
 mkdir -p /some/log/dir/tmp
-if [[ -n "${javaHomeForTests}" ]]
+if [[ -n "/usr/java/jdk1.7-other" ]]
 then
-  export JAVA_HOME=$javaHomeForTests
+  export JAVA_HOME=/usr/java/jdk1.7-other
   export PATH=$JAVA_HOME/bin/:$PATH
 elif [[ -n "/usr/java/jdk1.7" ]]
 then
