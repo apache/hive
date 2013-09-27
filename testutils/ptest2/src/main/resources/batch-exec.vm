@@ -23,7 +23,11 @@ chmod -R u+w $logDir
 rm -rf $logDir
 # makes $logDir and $logDir/tmp
 mkdir -p $logDir/tmp
-if [[ -n "${javaHome}" ]]
+if [[ -n "${javaHomeForTests}" ]]
+then
+  export JAVA_HOME=$javaHomeForTests
+  export PATH=$JAVA_HOME/bin/:$PATH
+elif [[ -n "${javaHome}" ]]
 then
   export JAVA_HOME=$javaHome
   export PATH=$JAVA_HOME/bin/:$PATH
