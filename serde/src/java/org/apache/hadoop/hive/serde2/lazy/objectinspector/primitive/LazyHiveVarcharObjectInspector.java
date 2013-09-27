@@ -22,11 +22,9 @@ import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyHiveVarchar;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
-import org.apache.hadoop.hive.serde2.typeinfo.BaseTypeParams;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 import org.apache.hadoop.hive.serde2.typeinfo.ParameterizedPrimitiveTypeUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 
 public class LazyHiveVarcharObjectInspector
     extends AbstractPrimitiveLazyObjectInspector<HiveVarcharWritable>
@@ -62,14 +60,16 @@ public class LazyHiveVarcharObjectInspector
     }
 
     HiveVarchar ret = ((LazyHiveVarchar) o).getWritableObject().getHiveVarchar();
+    VarcharTypeParams typeParams = (VarcharTypeParams)getTypeParams();
     if (!ParameterizedPrimitiveTypeUtils.doesPrimitiveMatchTypeParams(
-        ret, (VarcharTypeParams) typeParams)) {
-      HiveVarchar newValue = new HiveVarchar(ret, ((VarcharTypeParams) typeParams).length);
+        ret, typeParams)) {
+      HiveVarchar newValue = new HiveVarchar(ret, typeParams.length);
       return newValue;
     }
     return ret;
   }
 
+  @Override
   public String toString() {
     return getTypeName();
   }

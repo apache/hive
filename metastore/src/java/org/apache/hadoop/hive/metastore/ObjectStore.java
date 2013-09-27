@@ -2115,6 +2115,7 @@ public class ObjectStore implements RawStore, Configurable {
     // TODO: Drop table can be very slow on large tables, we might want to address this.
     return allowSql
       && HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL)
+      && directSql.isCompatibleDatastore()
       && !isActiveTransaction();
   }
 
