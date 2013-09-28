@@ -39,6 +39,19 @@ public interface Reader {
   long getNumberOfRows();
 
   /**
+   * Get the deserialized data size of the file
+   * @return raw data size
+   */
+  long getRawDataSize();
+
+  /**
+   * Get the deserialized data size of the specified columns
+   * @param colNames
+   * @return raw data size of columns
+   */
+  long getRawDataSizeOfColumns(List<String> colNames);
+
+  /**
    * Get the user metadata keys.
    * @return the set of metadata keys
    */

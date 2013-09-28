@@ -20,27 +20,34 @@ package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
 
+import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.WritableComparable;
 
+/**
+ * Record writer used by file sink operator.
+ *
+ * FSRecordWriter.
+ *
+ */
+public interface FSRecordWriter {
+  void write(Writable w) throws IOException;
 
-public class HivePassThroughRecordWriter <K extends WritableComparable<?>, V extends Writable>
-implements FSRecordWriter {
+  void close(boolean abort) throws IOException;
 
-  private final org.apache.hadoop.mapred.RecordWriter<K, V> mWriter;
-
-  public HivePassThroughRecordWriter(org.apache.hadoop.mapred.RecordWriter<K, V> writer) {
-    this.mWriter = writer;
+  /**
+   * If a file format internally gathers statistics (like ORC) while writing then
+   * it can expose the statistics through this record writer interface. Writer side
+   * statistics is useful for updating the metastore with table/partition level
+   * statistics.
+   * StatsProvidingRecordWriter.
+   *
+   */
+  public interface StatsProvidingRecordWriter extends FSRecordWriter{
+    /**
+     * Returns the statistics information
+     * @return SerDeStats
+     */
+    SerDeStats getStats();
   }
 
-  @SuppressWarnings("unchecked")
-  public void write(Writable r) throws IOException {
-    mWriter.write(null, (V) r);
-  }
-
-  public void close(boolean abort) throws IOException {
-    //close with null reporter
-    mWriter.close(null);
-  }
 }
-

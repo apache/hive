@@ -25,6 +25,7 @@ import java.util.Properties;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hive.ql.io.FSRecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
@@ -40,7 +41,7 @@ public class HBaseBaseOutputFormat implements OutputFormat<WritableComparable<?>
   HiveOutputFormat<WritableComparable<?>, Put> {
 
   @Override
-  public org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter getHiveRecordWriter(
+  public FSRecordWriter getHiveRecordWriter(
     JobConf jc, Path finalOutPath,
     Class<? extends Writable> valueClass, boolean isCompressed,
     Properties tableProperties, Progressable progress)
