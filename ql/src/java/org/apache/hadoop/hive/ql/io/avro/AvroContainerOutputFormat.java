@@ -17,6 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.io.avro;
 
+import static org.apache.avro.file.DataFileConstants.DEFLATE_CODEC;
+import static org.apache.avro.mapred.AvroJob.OUTPUT_CODEC;
+import static org.apache.avro.mapred.AvroOutputFormat.DEFAULT_DEFLATE_LEVEL;
+import static org.apache.avro.mapred.AvroOutputFormat.DEFLATE_LEVEL_KEY;
+
+import java.io.IOException;
+import java.util.Properties;
+
 import org.apache.avro.Schema;
 import org.apache.avro.file.CodecFactory;
 import org.apache.avro.file.DataFileWriter;
@@ -24,7 +32,7 @@ import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.io.FSRecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.serde2.avro.AvroGenericRecordWritable;
 import org.apache.hadoop.hive.serde2.avro.AvroSerdeException;
@@ -36,14 +44,6 @@ import org.apache.hadoop.mapred.RecordWriter;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Progressable;
 
-import java.io.IOException;
-import java.util.Properties;
-
-import static org.apache.avro.file.DataFileConstants.DEFLATE_CODEC;
-import static org.apache.avro.mapred.AvroJob.OUTPUT_CODEC;
-import static org.apache.avro.mapred.AvroOutputFormat.DEFAULT_DEFLATE_LEVEL;
-import static org.apache.avro.mapred.AvroOutputFormat.DEFLATE_LEVEL_KEY;
-
 /**
  * Write to an Avro file from a Hive process.
  */
@@ -51,7 +51,7 @@ public class AvroContainerOutputFormat
         implements HiveOutputFormat<LongWritable, AvroGenericRecordWritable> {
 
   @Override
-  public FileSinkOperator.RecordWriter getHiveRecordWriter(JobConf jobConf,
+  public FSRecordWriter getHiveRecordWriter(JobConf jobConf,
          Path path, Class<? extends Writable> valueClass, boolean isCompressed,
          Properties properties, Progressable progressable) throws IOException {
     Schema schema;
@@ -62,7 +62,7 @@ public class AvroContainerOutputFormat
     }
     GenericDatumWriter<GenericRecord> gdw = new GenericDatumWriter<GenericRecord>(schema);
     DataFileWriter<GenericRecord> dfw = new DataFileWriter<GenericRecord>(gdw);
-    
+
     if (isCompressed) {
       int level = jobConf.getInt(DEFLATE_LEVEL_KEY, DEFAULT_DEFLATE_LEVEL);
       String codecName = jobConf.get(OUTPUT_CODEC, DEFLATE_CODEC);

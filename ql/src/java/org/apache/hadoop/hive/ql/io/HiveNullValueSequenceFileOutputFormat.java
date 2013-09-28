@@ -23,7 +23,6 @@ import java.util.Properties;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.NullWritable;
@@ -48,7 +47,7 @@ public class HiveNullValueSequenceFileOutputFormat<K,V>
   private boolean keyIsText;
 
   @Override
-  public RecordWriter getHiveRecordWriter(JobConf jc, Path finalOutPath,
+  public FSRecordWriter getHiveRecordWriter(JobConf jc, Path finalOutPath,
       Class<? extends Writable> valueClass, boolean isCompressed,
       Properties tableProperties, Progressable progress) throws IOException {
 
@@ -58,7 +57,7 @@ public class HiveNullValueSequenceFileOutputFormat<K,V>
 
     keyWritable = new HiveKey();
     keyIsText = valueClass.equals(Text.class);
-    return new RecordWriter() {
+    return new FSRecordWriter() {
       public void write(Writable r) throws IOException {
         if (keyIsText) {
           Text text = (Text) r;

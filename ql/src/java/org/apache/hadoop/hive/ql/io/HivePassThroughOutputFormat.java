@@ -49,7 +49,7 @@ public class HivePassThroughOutputFormat<K, V> implements Configurable, HiveOutp
                                   "org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat";
 
   public static final String HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY =
-                                 "hive.passthrough.storagehandler.of"; 
+                                 "hive.passthrough.storagehandler.of";
 
   public HivePassThroughOutputFormat() {
     //construct this class through ReflectionUtils from FileSinkOperator
@@ -99,7 +99,7 @@ public class HivePassThroughOutputFormat<K, V> implements Configurable, HiveOutp
   }
 
   @Override
-  public org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter getHiveRecordWriter(
+  public FSRecordWriter getHiveRecordWriter(
       JobConf jc, Path finalOutPath, Class<? extends Writable> valueClass, boolean isCompressed,
       Properties tableProperties, Progressable progress) throws IOException {
     if (this.initialized == false) {

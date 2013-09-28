@@ -118,7 +118,7 @@ public class RCFileOutputFormat extends
    * @throws IOException
    */
   @Override
-  public org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter getHiveRecordWriter(
+  public FSRecordWriter getHiveRecordWriter(
       JobConf jc, Path finalOutPath, Class<? extends Writable> valueClass,
       boolean isCompressed, Properties tableProperties, Progressable progress) throws IOException {
 
@@ -135,7 +135,7 @@ public class RCFileOutputFormat extends
       (jc, finalOutPath.getFileSystem(jc),
        finalOutPath, isCompressed);
 
-    return new org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter() {
+    return new FSRecordWriter() {
       public void write(Writable r) throws IOException {
         outWriter.append(r);
       }
