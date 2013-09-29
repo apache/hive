@@ -260,6 +260,11 @@ public class QTestUtil {
 
     String orgScratchDir = conf.getVar(HiveConf.ConfVars.SCRATCHDIR);
     conf.setVar(HiveConf.ConfVars.SCRATCHDIR, getHdfsUriString(orgScratchDir));
+
+    if (miniMr) {
+      String orgAuxJarFolder = conf.getAuxJars();
+      conf.setAuxJars(getHdfsUriString("file://" + orgAuxJarFolder));
+    }
   }
 
   private String getHdfsUriString(String uriStr) {
@@ -1068,6 +1073,10 @@ public class QTestUtil {
     in = new BufferedReader(new FileReader(fname));
     out = new BufferedWriter(new FileWriter(fname + ".orig"));
     while (null != (line = in.readLine())) {
+      // Ignore the empty lines on windows
+      if(line.isEmpty() && Shell.WINDOWS) {
+        continue;
+      }
       out.write(line);
       out.write('\n');
     }
