@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -49,7 +51,8 @@ public class TezWork extends AbstractOperatorDesc {
   private final Set<BaseWork> leaves = new HashSet<BaseWork>();
   private final Map<BaseWork, List<BaseWork>> workGraph = new HashMap<BaseWork, List<BaseWork>>();
   private final Map<BaseWork, List<BaseWork>> invertedWorkGraph = new HashMap<BaseWork, List<BaseWork>>();
-  private final Map<BaseWork, List<BaseWork>> broadcastEdge = new HashMap<BaseWork, List<BaseWork>>();
+  private final Map<Pair<BaseWork, BaseWork>, EdgeType> edgeProperties =
+      new HashMap<Pair<BaseWork, BaseWork>, EdgeType>();
 
   /**
    * getAllWork returns a topologically sorted list of BaseWork
@@ -95,7 +98,6 @@ public class TezWork extends AbstractOperatorDesc {
     }
     workGraph.put(w, new LinkedList<BaseWork>());
     invertedWorkGraph.put(w, new LinkedList<BaseWork>());
-    broadcastEdge.put(w, new LinkedList<BaseWork>());
     roots.add(w);
     leaves.add(w);
   }
@@ -109,13 +111,8 @@ public class TezWork extends AbstractOperatorDesc {
     invertedWorkGraph.get(b).add(a);
     roots.remove(b);
     leaves.remove(a);
-    switch (edgeType) {
-    case BROADCAST_EDGE:
-      broadcastEdge.get(a).add(b);
-      break;
-    default:
-      break;
-    }
+    ImmutablePair workPair = new ImmutablePair(a, b);
+    edgeProperties.put(workPair, edgeType);
   }
 
   /**
@@ -201,11 +198,7 @@ public class TezWork extends AbstractOperatorDesc {
     invertedWorkGraph.remove(work);
   }
 
-  // checks if a and b need a broadcast edge between them
-  public boolean isBroadCastEdge(BaseWork a, BaseWork b) {
-    if ((broadcastEdge.get(a).contains(b)) || (broadcastEdge.get(b).contains(a))) {
-      return true;
-    }
-    return false;
+  public EdgeType getEdgeProperty(BaseWork a, BaseWork b) {
+    return edgeProperties.get(new ImmutablePair(a,b));
   }
 }

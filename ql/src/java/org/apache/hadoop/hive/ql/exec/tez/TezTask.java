@@ -174,10 +174,8 @@ public class TezTask extends Task<TezWork> {
       for (BaseWork v: work.getChildren(w)) {
         assert workToVertex.containsKey(v);
         Edge e = null;
-        EdgeType edgeType = EdgeType.SIMPLE_EDGE;
-        if (work.isBroadCastEdge(w, v)) {
-          edgeType = EdgeType.BROADCAST_EDGE;
-        }
+
+        EdgeType edgeType = work.getEdgeProperty(w, v);
 
         e = DagUtils.createEdge(wxConf, wx, workToConf.get(v), workToVertex.get(v), edgeType);
         dag.addEdge(e);

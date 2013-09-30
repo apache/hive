@@ -77,6 +77,8 @@ public class TestTezWork {
       Assert.assertEquals(work.getParents(w).size(), 0);
       Assert.assertEquals(work.getChildren(w).size(), 0);
     }
+
+    Assert.assertEquals(work.getEdgeProperty(parent, child), EdgeType.SIMPLE_EDGE);
   }
 
   @Test
@@ -99,6 +101,8 @@ public class TestTezWork {
       Assert.assertEquals(work.getParents(w).size(), 0);
       Assert.assertEquals(work.getChildren(w).size(), 0);
     }
+
+    Assert.assertEquals(work.getEdgeProperty(parent, child), EdgeType.BROADCAST_EDGE);
   }
 
   @Test
