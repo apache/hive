@@ -27,9 +27,11 @@ public class SerDeStats {
 
   // currently we support only raw data size stat
   private long rawDataSize;
+  private long rowCount;
 
   public SerDeStats() {
     rawDataSize = 0;
+    rowCount = 0;
   }
 
   /**
@@ -46,6 +48,22 @@ public class SerDeStats {
    */
   public void setRawDataSize(long uSize) {
     rawDataSize = uSize;
+  }
+
+  /**
+   * Return the row count
+   * @return row count
+   */
+  public long getRowCount() {
+    return rowCount;
+  }
+
+  /**
+   * Set the row count
+   * @param rowCount - count of rows
+   */
+  public void setRowCount(long rowCount) {
+    this.rowCount = rowCount;
   }
 
 }

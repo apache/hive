@@ -378,7 +378,8 @@ public final class CorrelationUtilities {
       // copies desc of cGBYm to cGBYr and remove cGBYm and cRS
       GroupByOperator cGBYm = (GroupByOperator) parent;
 
-      cGBYr.getConf().setKeys(cGBYm.getConf().getKeys());
+      cGBYr.getConf().setKeys(ExprNodeDescUtils.backtrack(ExprNodeDescUtils.backtrack(cGBYr
+              .getConf().getKeys(), cGBYr, cRS), cRS, cGBYm));
       cGBYr.getConf().setAggregators(cGBYm.getConf().getAggregators());
       for (AggregationDesc aggr : cGBYm.getConf().getAggregators()) {
         aggr.setMode(GenericUDAFEvaluator.Mode.COMPLETE);

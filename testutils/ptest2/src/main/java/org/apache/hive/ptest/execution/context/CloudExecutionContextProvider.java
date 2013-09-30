@@ -106,7 +106,7 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
             return size() > 100;
           }
         });
-    mTerminationExecutor = Executors.newCachedThreadPool();
+    mTerminationExecutor = Executors.newSingleThreadExecutor();
     mHostLog = new RandomAccessFile(new File(dataDir, "hosts"), "rw");
     initialize();
   }

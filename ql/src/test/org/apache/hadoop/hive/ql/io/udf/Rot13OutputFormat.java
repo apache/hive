@@ -1,7 +1,10 @@
 package org.apache.hadoop.hive.ql.io.udf;
 
+import java.io.IOException;
+import java.util.Properties;
+
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
+import org.apache.hadoop.hive.ql.io.FSRecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -11,27 +14,24 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.Progressable;
 
-import java.io.IOException;
-import java.util.Properties;
-
 public class Rot13OutputFormat
   extends HiveIgnoreKeyTextOutputFormat<LongWritable,Text> {
 
   @Override
-  public RecordWriter
+  public FSRecordWriter
     getHiveRecordWriter(JobConf jc,
                         Path outPath,
                         Class<? extends Writable> valueClass,
                         boolean isCompressed,
                         Properties tableProperties,
                         Progressable progress) throws IOException {
-    final RecordWriter result =
+    final FSRecordWriter result =
       super.getHiveRecordWriter(jc,outPath,valueClass,isCompressed,
         tableProperties,progress);
     final Reporter reporter = (Reporter) progress;
     reporter.setStatus("got here");
     System.out.println("Got a reporter " + reporter);
-    return new RecordWriter() {
+    return new FSRecordWriter() {
       @Override
       public void write(Writable w) throws IOException {
         if (w instanceof Text) {

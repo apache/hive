@@ -20,13 +20,12 @@ package org.apache.hadoop.hive.ql.io;
 
 import java.io.IOException;
 
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 
 
 public class HivePassThroughRecordWriter <K extends WritableComparable<?>, V extends Writable>
-implements RecordWriter {
+implements FSRecordWriter {
 
   private final org.apache.hadoop.mapred.RecordWriter<K, V> mWriter;
 
