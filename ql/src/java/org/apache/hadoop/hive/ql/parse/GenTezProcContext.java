@@ -82,6 +82,13 @@ public class GenTezProcContext implements NodeProcessorCtx{
   // that follows it. This is used for connecting them later.
   public final Map<Operator<?>, BaseWork> leafOperatorToFollowingWork;
 
+  // a map that keeps track of work that need to be linked while
+  // traversing an operator tree
+  public final Map<Operator<?>, List<BaseWork>> linkOpWithWorkMap;
+
+  // a map that maintains operator (file-sink or reduce-sink) to work mapping
+  public final Map<Operator<?>, BaseWork> operatorWorkMap;
+
 
   @SuppressWarnings("unchecked")
   public GenTezProcContext(HiveConf conf, ParseContext parseContext,
@@ -97,5 +104,7 @@ public class GenTezProcContext implements NodeProcessorCtx{
     this.currentTask = (TezTask) TaskFactory.get(new TezWork(), conf);
     this.leafOperatorToFollowingWork = new HashMap<Operator<?>, BaseWork>();
     this.rootOperators = rootOperators;
+    this.linkOpWithWorkMap = new HashMap<Operator<?>, List<BaseWork>>();
+    this.operatorWorkMap = new HashMap<Operator<?>, BaseWork>();
   }
 }

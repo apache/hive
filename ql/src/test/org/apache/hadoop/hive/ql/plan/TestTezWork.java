@@ -17,11 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.plan;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import junit.framework.Assert;
+
+import org.apache.hadoop.hive.ql.plan.TezWork.EdgeType;
 import org.junit.Before;
 import org.junit.Test;
-import java.util.List;
-import java.util.LinkedList;
 
 public class TestTezWork {
 
@@ -58,9 +61,9 @@ public class TestTezWork {
   public void testConnect() throws Exception {
     BaseWork parent = nodes.get(0);
     BaseWork child = nodes.get(1);
-    
-    work.connect(parent, child);
-    
+
+    work.connect(parent, child, EdgeType.SIMPLE_EDGE);
+
     Assert.assertEquals(work.getParents(child).size(), 1);
     Assert.assertEquals(work.getChildren(parent).size(), 1);
     Assert.assertEquals(work.getChildren(parent).get(0), child);
@@ -76,13 +79,35 @@ public class TestTezWork {
     }
   }
 
-  @Test 
+  @Test
+  public void testBroadcastConnect() throws Exception {
+    BaseWork parent = nodes.get(0);
+    BaseWork child = nodes.get(1);
+
+    work.connect(parent, child, EdgeType.BROADCAST_EDGE);
+
+    Assert.assertEquals(work.getParents(child).size(), 1);
+    Assert.assertEquals(work.getChildren(parent).size(), 1);
+    Assert.assertEquals(work.getChildren(parent).get(0), child);
+    Assert.assertEquals(work.getParents(child).get(0), parent);
+    Assert.assertTrue(work.getRoots().contains(parent) && !work.getRoots().contains(child));
+    Assert.assertTrue(!work.getLeaves().contains(parent) && work.getLeaves().contains(child));
+    for (BaseWork w: nodes) {
+      if (w == parent || w == child) {
+        continue;
+      }
+      Assert.assertEquals(work.getParents(w).size(), 0);
+      Assert.assertEquals(work.getChildren(w).size(), 0);
+    }
+  }
+
+  @Test
   public void testDisconnect() throws Exception {
     BaseWork parent = nodes.get(0);
     BaseWork children[] = {nodes.get(1), nodes.get(2)};
-    
-    work.connect(parent, children[0]);
-    work.connect(parent, children[1]);
+
+    work.connect(parent, children[0], EdgeType.SIMPLE_EDGE);
+    work.connect(parent, children[1], EdgeType.SIMPLE_EDGE);
 
     work.disconnect(parent, children[0]);
 
@@ -94,14 +119,14 @@ public class TestTezWork {
                       && work.getLeaves().contains(children[1]));
   }
 
-  @Test 
+  @Test
   public void testRemove() throws Exception {
     BaseWork parent = nodes.get(0);
     BaseWork children[] = {nodes.get(1), nodes.get(2)};
-    
-    work.connect(parent, children[0]);
-    work.connect(parent, children[1]);
-    
+
+    work.connect(parent, children[0], EdgeType.SIMPLE_EDGE);
+    work.connect(parent, children[1], EdgeType.SIMPLE_EDGE);
+
     work.remove(parent);
 
     Assert.assertEquals(work.getParents(children[0]).size(), 0);
@@ -114,7 +139,7 @@ public class TestTezWork {
   @Test
   public void testGetAllWork() throws Exception {
     for (int i = 4; i > 0; --i) {
-      work.connect(nodes.get(i), nodes.get(i-1));
+      work.connect(nodes.get(i), nodes.get(i-1), EdgeType.SIMPLE_EDGE);
     }
 
     List<BaseWork> sorted = work.getAllWork();
