@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.io.HiveOutputFormatImpl;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
+import org.apache.hadoop.hive.ql.plan.TezWork.EdgeType;
 import org.apache.hadoop.hive.shims.Hadoop20Shims.NullOutputCommitter;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BytesWritable;
@@ -147,7 +148,8 @@ public class DagUtils {
    * @param w The second vertex (sink)
    * @return
    */
-  public static Edge createEdge(JobConf vConf, Vertex v, JobConf wConf, Vertex w)
+  public static Edge createEdge(JobConf vConf, Vertex v, JobConf wConf, Vertex w,
+      EdgeType edgeType)
       throws IOException {
 
     // Tez needs to setup output subsequent input pairs correctly
@@ -157,9 +159,23 @@ public class DagUtils {
     v.getProcessorDescriptor().setUserPayload(MRHelpers.createUserPayloadFromConf(vConf));
     w.getProcessorDescriptor().setUserPayload(MRHelpers.createUserPayloadFromConf(wConf));
 
-    // all edges are of the same type right now
+    DataMovementType dataMovementType;
+    switch (edgeType) {
+    case BROADCAST_EDGE:
+      dataMovementType = DataMovementType.BROADCAST;
+      break;
+
+    case SIMPLE_EDGE:
+      dataMovementType = DataMovementType.SCATTER_GATHER;
+      break;
+
+    default:
+      dataMovementType = DataMovementType.SCATTER_GATHER;
+      break;
+    }
+
     EdgeProperty edgeProperty =
-        new EdgeProperty(DataMovementType.SCATTER_GATHER,
+        new EdgeProperty(dataMovementType,
             DataSourceType.PERSISTED,
             SchedulingType.SEQUENTIAL,
             new OutputDescriptor(OnFileSortedOutput.class.getName()),

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 import org.apache.commons.logging.Log;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.plan.TezWork.EdgeType;
 
 /**
  * GenTezWork separates the operator tree into tez tasks.
@@ -101,9 +103,9 @@ public class GenTezWork implements NodeProcessor {
       reduceWork.setReducer(root);
       reduceWork.setNeedsTagging(GenMapRedUtils.needsTagging(reduceWork));
 
-      // All parents should be reduce sinks. We pick the one we just walked 
-      // to choose the number of reducers. In the join/union case they will 
-      // all be -1. In sort/order case where it matters there will be only 
+      // All parents should be reduce sinks. We pick the one we just walked
+      // to choose the number of reducers. In the join/union case they will
+      // all be -1. In sort/order case where it matters there will be only
       // one parent.
       assert context.parentOfRoot instanceof ReduceSinkOperator;
       ReduceSinkOperator reduceSink = (ReduceSinkOperator) context.parentOfRoot;
@@ -121,7 +123,8 @@ public class GenTezWork implements NodeProcessor {
       tezWork.add(reduceWork);
       tezWork.connect(
           context.preceedingWork,
-          reduceWork);
+          reduceWork, EdgeType.SIMPLE_EDGE);
+
       work = reduceWork;
     }
 
@@ -142,21 +145,20 @@ public class GenTezWork implements NodeProcessor {
       BaseWork followingWork = context.leafOperatorToFollowingWork.get(operator);
 
       // need to add this branch to the key + value info
-      assert operator instanceof ReduceSinkOperator 
+      assert operator instanceof ReduceSinkOperator
         && followingWork instanceof ReduceWork;
       ReduceSinkOperator rs = (ReduceSinkOperator) operator;
       ReduceWork rWork = (ReduceWork) followingWork;
       GenMapRedUtils.setKeyAndValueDesc(rWork, rs);
 
       // add dependency between the two work items
-      tezWork.connect(work, context.leafOperatorToFollowingWork.get(operator));
+      tezWork.connect(work, context.leafOperatorToFollowingWork.get(operator), 
+         EdgeType.SIMPLE_EDGE);
     }
 
     // This is where we cut the tree as described above. We also remember that
     // we might have to connect parent work with this work later.
     for (Operator<?> parent: new ArrayList<Operator<?>>(root.getParentOperators())) {
-      assert !context.leafOperatorToFollowingWork.containsKey(parent);
-      assert !(work instanceof MapWork);
       context.leafOperatorToFollowingWork.put(parent, work);
       LOG.debug("Removing " + parent + " as parent from " + root);
       root.removeParent(parent);
@@ -173,6 +175,30 @@ public class GenTezWork implements NodeProcessor {
       context.parentOfRoot = null;
       context.currentRootOperator = null;
       context.preceedingWork = null;
+    }
+
+    /*
+     * this happens in case of map join operations.
+     * The tree looks like this:
+     *
+     *        RS <--- we are here perhaps
+     *        |
+     *      MapJoin
+     *    /     \
+     *  RS       TS
+     *  /
+     * TS
+     *
+     * If we are at the RS pointed above, and we may have already visited the
+     * RS following the TS, we have already generated work for the TS-RS.
+     * We need to hook the current work to this generated work.
+     */
+    context.operatorWorkMap.put(operator, work);
+    List<BaseWork> linkWorkList = context.linkOpWithWorkMap.get(operator);
+    if (linkWorkList != null) {
+      for (BaseWork parentWork : linkWorkList) {
+        tezWork.connect(parentWork, work, EdgeType.BROADCAST_EDGE);
+      }
     }
 
     return null;

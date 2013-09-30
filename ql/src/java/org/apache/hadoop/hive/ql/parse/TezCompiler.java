@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -47,6 +48,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
+import org.apache.hadoop.hive.ql.optimizer.ReduceSinkMapJoinProc;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
@@ -122,6 +124,9 @@ public class TezCompiler extends TaskCompiler {
     opRules.put(new RuleRegExp(new String("Split Work - ReduceSink"),
         ReduceSinkOperator.getOperatorName() + "%"),
         new GenTezWork());
+    opRules.put(new RuleRegExp(new String("No more walking on ReduceSink-MapJoin"),
+        ReduceSinkOperator.getOperatorName() + "%" +
+        MapJoinOperator.getOperatorName() + "%"), new ReduceSinkMapJoinProc());
     opRules.put(new RuleRegExp(new String("Split Work - FileSink"),
         FileSinkOperator.getOperatorName() + "%"),
         new GenTezWork());

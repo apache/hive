@@ -29,8 +29,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * TezWork. This class encapsulates all the work objects that can be executed 
- * in a single tez job. Currently it's basically a tree with MapWork at the 
+ * TezWork. This class encapsulates all the work objects that can be executed
+ * in a single tez job. Currently it's basically a tree with MapWork at the
  * leaves and and ReduceWork in all other nodes.
  *
  */
@@ -38,12 +38,18 @@ import org.apache.commons.logging.LogFactory;
 @Explain(displayName = "Tez")
 public class TezWork extends AbstractOperatorDesc {
 
+  public enum EdgeType {
+    SIMPLE_EDGE,
+    BROADCAST_EDGE
+  }
+
   private static transient final Log LOG = LogFactory.getLog(TezWork.class);
 
   private final Set<BaseWork> roots = new HashSet<BaseWork>();
   private final Set<BaseWork> leaves = new HashSet<BaseWork>();
   private final Map<BaseWork, List<BaseWork>> workGraph = new HashMap<BaseWork, List<BaseWork>>();
   private final Map<BaseWork, List<BaseWork>> invertedWorkGraph = new HashMap<BaseWork, List<BaseWork>>();
+  private final Map<BaseWork, List<BaseWork>> broadcastEdge = new HashMap<BaseWork, List<BaseWork>>();
 
   /**
    * getAllWork returns a topologically sorted list of BaseWork
@@ -53,12 +59,12 @@ public class TezWork extends AbstractOperatorDesc {
 
     List<BaseWork> result = new LinkedList<BaseWork>();
     Set<BaseWork> seen = new HashSet<BaseWork>();
-    
+
     for (BaseWork leaf: leaves) {
       // make sure all leaves are visited at least once
       visit(leaf, seen, result);
     }
-    
+
     return result;
   }
 
@@ -76,7 +82,7 @@ public class TezWork extends AbstractOperatorDesc {
         visit(parent, seen, result);
       }
     }
-    
+
     result.add(child);
   }
 
@@ -89,23 +95,31 @@ public class TezWork extends AbstractOperatorDesc {
     }
     workGraph.put(w, new LinkedList<BaseWork>());
     invertedWorkGraph.put(w, new LinkedList<BaseWork>());
+    broadcastEdge.put(w, new LinkedList<BaseWork>());
     roots.add(w);
     leaves.add(w);
   }
 
   /**
-   * connect adds an edge between a and b. Both nodes have 
+   * connect adds an edge between a and b. Both nodes have
    * to be added prior to calling connect.
    */
-  public void connect(BaseWork a, BaseWork b) {
+  public void connect(BaseWork a, BaseWork b, EdgeType edgeType) {
     workGraph.get(a).add(b);
     invertedWorkGraph.get(b).add(a);
     roots.remove(b);
     leaves.remove(a);
+    switch (edgeType) {
+    case BROADCAST_EDGE:
+      broadcastEdge.get(a).add(b);
+      break;
+    default:
+      break;
+    }
   }
 
   /**
-   * disconnect removes an edge between a and b. Both a and 
+   * disconnect removes an edge between a and b. Both a and
    * b have to be in the graph. If there is no matching edge
    * no change happens.
    */
@@ -138,7 +152,7 @@ public class TezWork extends AbstractOperatorDesc {
    * getParents returns all the nodes with edges leading into work
    */
   public List<BaseWork> getParents(BaseWork work) {
-    assert invertedWorkGraph.containsKey(work) 
+    assert invertedWorkGraph.containsKey(work)
       && invertedWorkGraph.get(work) != null;
     return new LinkedList<BaseWork>(invertedWorkGraph.get(work));
   }
@@ -147,7 +161,7 @@ public class TezWork extends AbstractOperatorDesc {
    * getChildren returns all the nodes with edges leading out of work
    */
   public List<BaseWork> getChildren(BaseWork work) {
-    assert workGraph.containsKey(work) 
+    assert workGraph.containsKey(work)
       && workGraph.get(work) != null;
     return new LinkedList<BaseWork>(workGraph.get(work));
   }
@@ -162,7 +176,7 @@ public class TezWork extends AbstractOperatorDesc {
     if (!workGraph.containsKey(work)) {
       return;
     }
-    
+
     List<BaseWork> children = getChildren(work);
     List<BaseWork> parents = getParents(work);
 
@@ -185,5 +199,13 @@ public class TezWork extends AbstractOperatorDesc {
 
     workGraph.remove(work);
     invertedWorkGraph.remove(work);
+  }
+
+  // checks if a and b need a broadcast edge between them
+  public boolean isBroadCastEdge(BaseWork a, BaseWork b) {
+    if ((broadcastEdge.get(a).contains(b)) || (broadcastEdge.get(b).contains(a))) {
+      return true;
+    }
+    return false;
   }
 }

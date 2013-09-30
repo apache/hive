@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.ql.plan.TezWork.EdgeType;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.JobConf;
@@ -172,7 +173,13 @@ public class TezTask extends Task<TezWork> {
       // add all dependencies (i.e.: edges) to the graph
       for (BaseWork v: work.getChildren(w)) {
         assert workToVertex.containsKey(v);
-        Edge e = DagUtils.createEdge(wxConf, wx, workToConf.get(v), workToVertex.get(v));
+        Edge e = null;
+        EdgeType edgeType = EdgeType.SIMPLE_EDGE;
+        if (work.isBroadCastEdge(w, v)) {
+          edgeType = EdgeType.BROADCAST_EDGE;
+        }
+
+        e = DagUtils.createEdge(wxConf, wx, workToConf.get(v), workToVertex.get(v), edgeType);
         dag.addEdge(e);
       }
     }
