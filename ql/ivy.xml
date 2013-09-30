@@ -66,7 +66,8 @@
     <dependency org="org.json" name="json" rev="${json.version}"/>
     <dependency org="commons-collections" name="commons-collections" rev="${commons-collections.version}"/>
     <dependency org="commons-configuration" name="commons-configuration" rev="${commons-configuration.version}"
-                transitive="false"/>
+      transitive="false"/>
+    <dependency org="org.apache.commons" name="commons-lang3" rev="${commons-lang3.version}"/>
     <dependency org="com.googlecode.javaewah" name="JavaEWAH" rev="${javaewah.version}"/>
     <dependency org="javolution" name="javolution" rev="${javolution.version}"/>
 
