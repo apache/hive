@@ -32,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -45,6 +46,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
+import org.apache.hadoop.hive.ql.optimizer.ConvertJoinMapJoin;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
@@ -79,6 +81,8 @@ public class TezCompiler extends TaskCompiler {
     opRules.put(new RuleRegExp(new String("Set parallelism - ReduceSink"),
         ReduceSinkOperator.getOperatorName() + "%"),
         new SetReducerParallelism());
+    opRules.put(new RuleRegExp(new String("Convert Join to Map-join"),
+        JoinOperator.getOperatorName() + "%"), new ConvertJoinMapJoin());
 
     // if this is an explain statement add rule to generate statistics for
     // the whole tree.
