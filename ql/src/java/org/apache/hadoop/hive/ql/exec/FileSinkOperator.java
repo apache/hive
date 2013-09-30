@@ -35,11 +35,13 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.io.FSRecordWriter;
+import org.apache.hadoop.hive.ql.io.FSRecordWriter.StatsProvidingRecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
-import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
 import org.apache.hadoop.hive.ql.io.HivePartitioner;
+import org.apache.hadoop.hive.ql.io.HivePassThroughOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -84,11 +86,13 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected transient int dpStartCol; // start column # for DP columns
   protected transient List<String> dpVals; // array of values corresponding to DP columns
   protected transient List<Object> dpWritables;
-  protected transient RecordWriter[] rowOutWriters; // row specific RecordWriters
+  protected transient FSRecordWriter[] rowOutWriters; // row specific RecordWriters
   protected transient int maxPartitions;
   protected transient ListBucketingCtx lbCtx;
   protected transient boolean isSkewedStoredAsSubDirectories;
   protected transient boolean statsCollectRawDataSize;
+  private transient boolean[] statsFromRecordWriter;
+  private transient boolean isCollectRWStats;
 
 
   private static final transient String[] FATAL_ERR_MSG = {
@@ -96,22 +100,12 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       "Number of dynamic partitions exceeded hive.exec.max.dynamic.partitions.pernode."
   };
 
-  /**
-   * RecordWriter.
-   *
-   */
-  public static interface RecordWriter {
-    void write(Writable w) throws IOException;
-
-    void close(boolean abort) throws IOException;
-  }
-
   public class FSPaths implements Cloneable {
     Path tmpPath;
     Path taskOutputTempPath;
     Path[] outPaths;
     Path[] finalPaths;
-    RecordWriter[] outWriters;
+    FSRecordWriter[] outWriters;
     Stat stat;
 
     public FSPaths() {
@@ -122,7 +116,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       taskOutputTempPath = Utilities.toTaskTempPath(specPath);
       outPaths = new Path[numFiles];
       finalPaths = new Path[numFiles];
-      outWriters = new RecordWriter[numFiles];
+      outWriters = new FSRecordWriter[numFiles];
       stat = new Stat();
     }
 
@@ -166,11 +160,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
     }
 
-    public void setOutWriters(RecordWriter[] out) {
+    public void setOutWriters(FSRecordWriter[] out) {
       outWriters = out;
     }
 
-    public RecordWriter[] getOutWriters() {
+    public FSRecordWriter[] getOutWriters() {
       return outWriters;
     }
 
@@ -328,6 +322,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       isCompressed = conf.getCompressed();
       parent = Utilities.toTempPath(conf.getDirName());
       statsCollectRawDataSize = conf.isStatsCollectRawDataSize();
+      statsFromRecordWriter = new boolean[numFiles];
 
       serializer = (Serializer) conf.getTableInfo().getDeserializerClass().newInstance();
       serializer.initialize(null, conf.getTableInfo().getProperties());
@@ -520,6 +515,8 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         fsp.outWriters[filesIdx] = HiveFileFormatUtils.getHiveRecordWriter(
             jc, conf.getTableInfo(), outputClass, conf, fsp.outPaths[filesIdx],
             reporter);
+        // If the record writer provides stats, get it from there instead of the serde
+        statsFromRecordWriter[filesIdx] = fsp.outWriters[filesIdx] instanceof StatsProvidingRecordWriter;
         // increment the CREATED_FILES counter
         if (reporter != null) {
           reporter.incrCounter(ProgressCounter.CREATED_FILES, 1);
@@ -623,7 +620,11 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
 
       rowOutWriters = fpaths.outWriters;
-      if (conf.isGatherStats()) {
+      // check if all record writers implement statistics. if atleast one RW
+      // doesn't implement stats interface we will fallback to conventional way
+      // of gathering stats
+      isCollectRWStats = areAllTrue(statsFromRecordWriter);
+      if (conf.isGatherStats() && !isCollectRWStats) {
         if (statsCollectRawDataSize) {
           SerDeStats stats = serializer.getSerDeStats();
           if (stats != null) {
@@ -634,12 +635,14 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
 
 
+      FSRecordWriter rowOutWriter = null;
+
       if (row_count != null) {
         row_count.set(row_count.get() + 1);
       }
 
       if (!multiFileSpray) {
-        rowOutWriters[0].write(recordValue);
+        rowOutWriter = rowOutWriters[0];
       } else {
         int keyHashCode = 0;
         for (int i = 0; i < partitionEval.length; i++) {
@@ -650,13 +653,23 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         key.setHashCode(keyHashCode);
         int bucketNum = prtner.getBucket(key, null, totalFiles);
         int idx = bucketMap.get(bucketNum);
-        rowOutWriters[idx].write(recordValue);
+        rowOutWriter = rowOutWriters[idx];
       }
+      rowOutWriter.write(recordValue);
     } catch (IOException e) {
       throw new HiveException(e);
     } catch (SerDeException e) {
       throw new HiveException(e);
     }
+  }
+
+  private boolean areAllTrue(boolean[] statsFromRW) {
+    for(boolean b : statsFromRW) {
+      if (!b) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -868,6 +881,27 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     if (!abort) {
       for (FSPaths fsp : valToPaths.values()) {
         fsp.closeWriters(abort);
+
+        // before closing the operator check if statistics gathering is requested
+        // and is provided by record writer. this is different from the statistics
+        // gathering done in processOp(). In processOp(), for each row added
+        // serde statistics about the row is gathered and accumulated in hashmap.
+        // this adds more overhead to the actual processing of row. But if the
+        // record writer already gathers the statistics, it can simply return the
+        // accumulated statistics which will be aggregated in case of spray writers
+        if (conf.isGatherStats() && isCollectRWStats) {
+          for (int idx = 0; idx < fsp.outWriters.length; idx++) {
+            FSRecordWriter outWriter = fsp.outWriters[idx];
+            if (outWriter != null) {
+              SerDeStats stats = ((StatsProvidingRecordWriter) outWriter).getStats();
+              if (stats != null) {
+                fsp.stat.addToStat(StatsSetupConst.RAW_DATA_SIZE, stats.getRawDataSize());
+                fsp.stat.addToStat(StatsSetupConst.ROW_COUNT, stats.getRowCount());
+              }
+            }
+          }
+        }
+
         if (isNativeTable) {
           fsp.commit(fs);
         }
@@ -938,7 +972,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
                  hiveOutputFormat = ReflectionUtils.newInstance(conf.getTableInfo().getOutputFileFormatClass(),job);
            }
           else {
-                 hiveOutputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance(); 
+                 hiveOutputFormat = conf.getTableInfo().getOutputFileFormatClass().newInstance();
           }
         }
         else {

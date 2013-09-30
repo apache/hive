@@ -522,6 +522,7 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       boolean isPartitionStats = isPartitionLevelStats(tree);
       PartitionList partList = null;
       checkForPartitionColumns(colNames, getPartitionKeys(tableName));
+      validateSpecifiedColumnNames(tableName, colNames);
 
       if (isPartitionStats) {
         isTableLevel = false;
@@ -542,6 +543,25 @@ public class ColumnStatsSemanticAnalyzer extends SemanticAnalyzer {
       originalTree = rewrittenTree = tree;
       rewrittenQuery = null;
       isRewritten = false;
+    }
+  }
+
+  // fail early if the columns specified for column statistics are not valid
+  private void validateSpecifiedColumnNames(String tableName, List<String> specifiedCols)
+      throws SemanticException {
+    List<FieldSchema> fields = null;
+    try {
+      fields = db.getTable(tableName).getAllCols();
+    } catch (HiveException e) {
+      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tableName));
+    }
+    List<String> tableCols = Utilities.getColumnNamesFromFieldSchema(fields);
+
+    for(String sc : specifiedCols) {
+      if (!tableCols.contains(sc.toLowerCase())) {
+        String msg = "'" + sc + "' (possible columns are " + tableCols.toString() + ")";
+        throw new SemanticException(ErrorMsg.INVALID_COLUMN.getMsg(msg));
+      }
     }
   }
 

@@ -18,18 +18,18 @@
 package org.apache.hadoop.hive.ql.io.avro;
 
 
+import java.io.IOException;
+
 import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericRecord;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.io.FSRecordWriter;
 import org.apache.hadoop.hive.serde2.avro.AvroGenericRecordWritable;
 import org.apache.hadoop.io.Writable;
-
-import java.io.IOException;
 
 /**
  * Write an Avro GenericRecord to an Avro data file.
  */
-public class AvroGenericRecordWriter implements FileSinkOperator.RecordWriter{
+public class AvroGenericRecordWriter implements FSRecordWriter{
   final private DataFileWriter<GenericRecord> dfw;
 
   public AvroGenericRecordWriter(DataFileWriter<GenericRecord> dfw) {

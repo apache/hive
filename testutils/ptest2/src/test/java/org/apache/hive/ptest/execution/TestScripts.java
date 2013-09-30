@@ -78,6 +78,30 @@ public class TestScripts  {
     Approvals.verify(actual);
   }
   @Test
+  public void testAlternativeTestJVM() throws Throwable {
+    Map<String, String> templateVariables = Maps.newHashMap();
+    templateVariables.put("repository", "git:///repo1");
+    templateVariables.put("repositoryName", "apache");
+    templateVariables.put("branch", "branch-1");
+    templateVariables.put("localDir", "/some/local/dir");
+    templateVariables.put("workingDir", "/some/working/dir");
+    templateVariables.put("antArgs", "-Dant=arg1");
+    templateVariables.put("buildTag", "build-1");
+    templateVariables.put("logDir", "/some/log/dir");
+    templateVariables.put("instanceName", "instance-1");
+    templateVariables.put("batchName","batch-1");
+    templateVariables.put("numOfFailedTests", "20");
+    templateVariables.put("maxSourceDirs", String.valueOf(5));
+    templateVariables.put("testArguments", "-Dtest=arg1");
+    templateVariables.put("clearLibraryCache", "true");
+    templateVariables.put("javaHome", "/usr/java/jdk1.7");
+    templateVariables.put("javaHomeForTests", "/usr/java/jdk1.7-other");
+    templateVariables.put("antEnvOpts", "-Dhttp.proxyHost=somehost -Dhttp.proxyPort=3128");
+    String template = readResource("batch-exec.vm");
+    String actual = getTemplateResult(template, templateVariables);
+    Approvals.verify(actual);
+  }
+  @Test
   public void testPrepNone() throws Throwable {
     Map<String, String> templateVariables = Maps.newHashMap();
     templateVariables.put("repository", "git:///repo1");

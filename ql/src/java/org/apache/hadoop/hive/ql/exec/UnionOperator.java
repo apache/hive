@@ -80,15 +80,20 @@ public class UnionOperator extends Operator<UnionDesc> implements Serializable {
     for (int p = 0; p < parents; p++) {
       assert (parentFields[p].size() == columns);
       for (int c = 0; c < columns; c++) {
-        columnTypeResolvers[c].update(parentFields[p].get(c)
-            .getFieldObjectInspector());
+        if (!columnTypeResolvers[c].update(parentFields[p].get(c)
+            .getFieldObjectInspector())) {
+          // checked in SemanticAnalyzer. Should not happen
+          throw new HiveException("Incompatible types for union operator");
+        }
       }
     }
 
     ArrayList<ObjectInspector> outputFieldOIs = new ArrayList<ObjectInspector>(
         columns);
     for (int c = 0; c < columns; c++) {
-      outputFieldOIs.add(columnTypeResolvers[c].get());
+      // can be null for void type
+      ObjectInspector oi = columnTypeResolvers[c].get();
+      outputFieldOIs.add(oi == null ? parentFields[0].get(c).getFieldObjectInspector() : oi);
     }
 
     // create output row ObjectInspector

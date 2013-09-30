@@ -24,6 +24,8 @@ select count(*) from alter_coltype where dt = 100;
 -- alter partition key column data type for ts column.
 alter table alter_coltype partition column (ts double);
 
+alter table alter_coltype partition column (dt string);
+
 -- load a new partition using new data type.
 insert overwrite table alter_coltype partition(dt='100x', ts=3.0) select * from src1;
 
