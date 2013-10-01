@@ -363,6 +363,7 @@
                 <include name="hcat"/>
                 <include name="hcat.py"/>
                 <include name="hcatcfg.py"/>
+                <include name="templeton.cmd"/>
             </fileset>
 
         </copy>
