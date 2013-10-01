@@ -77,6 +77,13 @@ public class PhysicalOptimizer {
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_INFER_BUCKET_SORT)) {
       resolvers.add(new BucketingSortingInferenceOptimizer());
     }
+
+    // Vectorization should be the last optimization, because it doesn't modify the plan
+    // or any operators. It makes a very low level transformation to the expressions to
+    // run in the vectorized mode.
+    if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
+      resolvers.add(new Vectorizer());
+    }
   }
 
   /**
