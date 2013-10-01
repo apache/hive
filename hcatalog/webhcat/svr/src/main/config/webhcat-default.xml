@@ -80,32 +80,38 @@
   </property>
 
   <property>
+    <name>templeton.python</name>
+    <value>${env.PYTHON_CMD}</value>
+    <description>The path to the python executable.</description>
+  </property>
+
+  <property>
     <name>templeton.pig.archive</name>
-    <value>hdfs:///apps/templeton/pig-0.10.1.tar.gz</value>
+    <value></value>
     <description>The path to the Pig archive.</description>
   </property>
 
   <property>
     <name>templeton.pig.path</name>
-    <value>pig-0.10.1.tar.gz/pig-0.10.1/bin/pig</value>
+    <value>pig-0.11.1.tar.gz/pig-0.11.1/bin/pig</value>
     <description>The path to the Pig executable.</description>
   </property>
 
   <property>
     <name>templeton.hcat</name>
-    <value>${env.HCAT_PREFIX}/bin/hcat</value>
+    <value>${env.HCAT_PREFIX}/bin/hcat.py</value>
     <description>The path to the hcatalog executable.</description>
   </property>
 
   <property>
     <name>templeton.hive.archive</name>
-    <value>hdfs:///apps/templeton/hive-0.10.0.tar.gz</value>
+    <value></value>
     <description>The path to the Hive archive.</description>
   </property>
 
   <property>
     <name>templeton.hive.path</name>
-    <value>hive-0.10.0.tar.gz/hive-0.10.0/bin/hive</value>
+    <value>hive-0.11.0.tar.gz/hive-0.11.0/bin/hive</value>
     <description>The path to the Hive executable.</description>
   </property>
 
