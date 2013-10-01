@@ -227,7 +227,7 @@ public class DagUtils {
     byte[] serializedConf = MRHelpers.createUserPayloadFromConf(conf);
     if (inputSplitInfo.getNumTasks() != 0) {
       map = new Vertex("Map "+seqNo,
-          new ProcessorDescriptor(MapProcessor.class.getName()).
+          new ProcessorDescriptor(TezProcessor.class.getName()).
                setUserPayload(serializedConf),
           inputSplitInfo.getNumTasks(), MRHelpers.getMapResource(conf));
       Map<String, String> environment = new HashMap<String, String>();
