@@ -237,6 +237,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     ShimLoader.getHadoopShims().prepareJobOutput(job);
     //See the javadoc on HiveOutputFormatImpl and HadoopShims.prepareJobOutput()
     job.setOutputFormat(HiveOutputFormatImpl.class);
+
     job.setMapperClass(ExecMapper.class);
 
     job.setMapOutputKeyClass(HiveKey.class);
@@ -828,3 +829,4 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     }
   }
 }
+

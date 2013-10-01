@@ -903,7 +903,7 @@ public final class TypeCheckProcFactory {
           }
         }
 
-        desc = ExprNodeGenericFuncDesc.newInstance(genericUDF, children);
+        desc = ExprNodeGenericFuncDesc.newInstance(genericUDF, funcText, children);
       }
       // UDFOPPositive is a no-op.
       // However, we still create it, and then remove it here, to make sure we

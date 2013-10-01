@@ -112,6 +112,9 @@ public class MapWork extends BaseWork {
 
   private boolean useBucketizedHiveInputFormat;
 
+  private Map<String, Map<Integer, String>> scratchColumnVectorTypes = null;
+  private boolean vectorMode = false;
+
   public MapWork() {
   }
 
@@ -478,5 +481,22 @@ public class MapWork extends BaseWork {
     for (FileSinkOperator fs : OperatorUtils.findOperators(mappers, FileSinkOperator.class)) {
       PlanUtils.configureJobConf(fs.getConf().getTableInfo(), job);
     }
+  }
+
+  public Map<String, Map<Integer, String>> getScratchColumnVectorTypes() {
+    return scratchColumnVectorTypes;
+  }
+
+  public void setScratchColumnVectorTypes(
+      Map<String, Map<Integer, String>> scratchColumnVectorTypes) {
+    this.scratchColumnVectorTypes = scratchColumnVectorTypes;
+  }
+
+  public boolean getVectorMode() {
+    return vectorMode;
+  }
+
+  public void setVectorMode(boolean vectorMode) {
+    this.vectorMode = vectorMode;
   }
 }

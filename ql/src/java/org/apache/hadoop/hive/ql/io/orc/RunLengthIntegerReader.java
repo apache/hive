@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.io.EOFException;
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+
 /**
  * A reader that reads a sequence of integers.
  * */
@@ -88,6 +90,30 @@ class RunLengthIntegerReader implements IntegerReader {
       result = literals[used++];
     }
     return result;
+  }
+
+  @Override
+  public void nextVector(LongColumnVector previous, long previousLen)
+      throws IOException {
+    previous.isRepeating = true;
+    for (int i = 0; i < previousLen; i++) {
+      if (!previous.isNull[i]) {
+        previous.vector[i] = next();
+      } else {
+        // The default value of null for int type in vectorized
+        // processing is 1, so set that if the value is null
+        previous.vector[i] = 1;
+      }
+
+      // The default value for nulls in Vectorization for int types is 1
+      // and given that non null value can also be 1, we need to check for isNull also
+      // when determining the isRepeating flag.
+      if (previous.isRepeating
+          && i > 0
+          && (previous.vector[i - 1] != previous.vector[i] || previous.isNull[i - 1] != previous.isNull[i])) {
+        previous.isRepeating = false;
+      }
+    }
   }
 
   @Override

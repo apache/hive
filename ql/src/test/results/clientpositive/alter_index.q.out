@@ -37,6 +37,7 @@ PREHOOK: query: show tables
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: show tables
 POSTHOOK: type: SHOWTABLES
+alltypesorc
 src
 src1
 src_json

@@ -90,7 +90,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected transient int maxPartitions;
   protected transient ListBucketingCtx lbCtx;
   protected transient boolean isSkewedStoredAsSubDirectories;
-  private transient boolean statsCollectRawDataSize;
+  protected transient boolean statsCollectRawDataSize;
   private transient boolean[] statsFromRecordWriter;
   private transient boolean isCollectRWStats;
 
@@ -215,6 +215,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         }
       }
     }
+
+    public Stat getStat() {
+      return stat;
+    }
   } // class FSPaths
 
   private static final long serialVersionUID = 1L;
@@ -222,7 +226,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   protected transient Serializer serializer;
   protected transient BytesWritable commonKey = new BytesWritable();
   protected transient TableIdEnum tabIdEnum = null;
-  private transient LongWritable row_count;
+  protected transient LongWritable row_count;
   private transient boolean isNativeTable = true;
 
   /**
@@ -231,17 +235,17 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
    * each reducer can write 10 files - this way we effectively get 1000 files.
    */
   private transient ExprNodeEvaluator[] partitionEval;
-  private transient int totalFiles;
+  protected transient int totalFiles;
   private transient int numFiles;
-  private transient boolean multiFileSpray;
-  private transient final Map<Integer, Integer> bucketMap = new HashMap<Integer, Integer>();
+  protected transient boolean multiFileSpray;
+  protected transient final Map<Integer, Integer> bucketMap = new HashMap<Integer, Integer>();
 
   private transient ObjectInspector[] partitionObjectInspectors;
-  private transient HivePartitioner<HiveKey, Object> prtner;
-  private transient final HiveKey key = new HiveKey();
+  protected transient HivePartitioner<HiveKey, Object> prtner;
+  protected transient final HiveKey key = new HiveKey();
   private transient Configuration hconf;
-  private transient FSPaths fsp;
-  private transient boolean bDynParts;
+  protected transient FSPaths fsp;
+  protected transient boolean bDynParts;
   private transient SubStructObjectInspector subSetOI;
   private transient int timeOut; // JT timeout in msec.
   private transient long lastProgressReport = System.currentTimeMillis();
@@ -273,7 +277,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   Class<? extends Writable> outputClass;
   String taskId;
 
-  private boolean filesCreated = false;
+  protected boolean filesCreated = false;
 
   private void initializeSpecPath() {
     // For a query of the type:
@@ -427,7 +431,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
   }
 
-  private void createBucketFiles(FSPaths fsp) throws HiveException {
+  protected void createBucketFiles(FSPaths fsp) throws HiveException {
     try {
       int filesIdx = 0;
       Set<Integer> seenBuckets = new HashSet<Integer>();
@@ -541,7 +545,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
    *
    * @return true if a new progress update is reported, false otherwise.
    */
-  private boolean updateProgress() {
+  protected boolean updateProgress() {
     if (reporter != null &&
         (System.currentTimeMillis() - lastProgressReport) > timeOut) {
       reporter.progress();
@@ -552,7 +556,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
   }
 
-  Writable recordValue;
+  protected Writable recordValue;
 
   @Override
   public void processOp(Object row, int tag) throws HiveException {
@@ -674,7 +678,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
    * @return
    * @throws HiveException
    */
-  private FSPaths lookupListBucketingPaths(String lbDirName) throws HiveException {
+  protected FSPaths lookupListBucketingPaths(String lbDirName) throws HiveException {
     FSPaths fsp2 = valToPaths.get(lbDirName);
     if (fsp2 == null) {
       fsp2 = createNewPaths(lbDirName);
@@ -712,7 +716,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
    * @param row row to process.
    * @return directory name.
    */
-  private String generateListBucketingDirName(Object row) {
+  protected String generateListBucketingDirName(Object row) {
     if (!this.isSkewedStoredAsSubDirectories) {
       return null;
     }
@@ -753,7 +757,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     return lbDirName;
   }
 
-  private FSPaths getDynOutPaths(List<String> row, String lbDirName) throws HiveException {
+  protected FSPaths getDynOutPaths(List<String> row, String lbDirName) throws HiveException {
 
     FSPaths fp;
 

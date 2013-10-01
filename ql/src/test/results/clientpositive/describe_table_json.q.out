@@ -7,7 +7,7 @@ PREHOOK: query: SHOW TABLES
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
-{"tables":["jsontable","src","src1","src_json","src_sequencefile","src_thrift","srcbucket","srcbucket2","srcpart"]}
+{"tables":["alltypesorc","jsontable","src","src1","src_json","src_sequencefile","src_thrift","srcbucket","srcbucket2","srcpart"]}
 PREHOOK: query: SHOW TABLES LIKE 'json*'
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES LIKE 'json*'

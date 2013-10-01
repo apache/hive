@@ -59,12 +59,15 @@ import org.apache.hadoop.hive.cli.CliDriver;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.common.io.CachingPrintStream;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
+import org.apache.hadoop.hive.ql.exec.vector.util.AllVectorTypesRecord;
+import org.apache.hadoop.hive.ql.exec.vector.util.OrcFileGenerator;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -108,7 +111,7 @@ public class QTestUtil {
   public static final HashSet<String> srcTables = new HashSet<String>
     (Arrays.asList(new String [] {
         "src", "src1", "srcbucket", "srcbucket2", "src_json", "src_thrift",
-        "src_sequencefile", "srcpart"
+        "src_sequencefile", "srcpart", "alltypesorc"
       }));
 
   private ParseDriver pd;
@@ -219,6 +222,11 @@ public class QTestUtil {
 
     if (Shell.WINDOWS) {
       convertPathsFromWindowsToHdfs();
+    }
+
+    String vectorizationEnabled = System.getProperty("test.vectorization.enabled");
+    if(vectorizationEnabled != null && vectorizationEnabled.equalsIgnoreCase("true")) {
+      conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, true);
     }
 
     // Plug verifying metastore in for testing.
@@ -521,7 +529,8 @@ public class QTestUtil {
     for (String s : new String[] {"src", "src1", "src_json", "src_thrift",
         "src_sequencefile", "srcpart", "srcbucket", "srcbucket2", "dest1",
         "dest2", "dest3", "dest4", "dest4_sequencefile", "dest_j1", "dest_j2",
-        "dest_g1", "dest_g2", "fetchtask_ioexception"}) {
+        "dest_g1", "dest_g2", "fetchtask_ioexception",
+        AllVectorTypesRecord.TABLE_NAME}) {
       db.dropTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, s);
     }
 
@@ -663,7 +672,17 @@ public class QTestUtil {
     fpath = new Path(testFiles, "json.txt");
     runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toUri().getPath()
         + "' INTO TABLE src_json");
+
+    FileSystem localFs = FileSystem.getLocal(conf);
+    // create and load data into orc table
+    fpath = new Path(testFiles, AllVectorTypesRecord.TABLE_NAME);
+
+    runCreateTableCmd(AllVectorTypesRecord.TABLE_CREATE_COMMAND);
+    runLoadCmd("LOAD DATA LOCAL INPATH '" + fpath.toUri().getPath()
+        + "' INTO  TABLE "+AllVectorTypesRecord.TABLE_NAME);
+
     conf.setBoolean("hive.test.init.phase", false);
+
   }
 
   public void init() throws Exception {
