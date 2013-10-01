@@ -64,6 +64,7 @@ public class HiveDelegator extends LauncherDelegator {
     try {
       args.addAll(makeBasicArgs(execute, srcFile, otherFiles, statusdir, completedUrl, enablelog));
       args.add("--");
+      TempletonUtils.addCmdForWindows(args);
       args.add(appConf.hivePath());
 
       args.add("--service");
@@ -122,8 +123,11 @@ public class HiveDelegator extends LauncherDelegator {
     args.addAll(makeLauncherArgs(appConf, statusdir, completedUrl, allFiles,
                 enablelog, JobType.HIVE));
 
-    args.add("-archives");
-    args.add(appConf.hiveArchive());
+    if (appConf.hiveArchive() != null && !appConf.hiveArchive().equals(""))
+    {
+      args.add("-archives");
+      args.add(appConf.hiveArchive());
+    }
 
     return args;
   }
