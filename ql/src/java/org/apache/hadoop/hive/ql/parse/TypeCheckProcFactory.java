@@ -110,8 +110,13 @@ public final class TypeCheckProcFactory {
     // build the exprNodeFuncDesc with recursively built children.
     ASTNode expr = (ASTNode) nd;
     TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
+
     RowResolver input = ctx.getInputRR();
     ExprNodeDesc desc = null;
+
+    if ((ctx == null) || (input == null)) {
+      return null;
+    }
 
     // If the current subExpression is pre-calculated, as in Group-By etc.
     ColumnInfo colInfo = input.getExpression(expr);
@@ -898,7 +903,7 @@ public final class TypeCheckProcFactory {
           }
         }
 
-        desc = ExprNodeGenericFuncDesc.newInstance(genericUDF, children);
+        desc = ExprNodeGenericFuncDesc.newInstance(genericUDF, funcText, children);
       }
       // UDFOPPositive is a no-op.
       // However, we still create it, and then remove it here, to make sure we

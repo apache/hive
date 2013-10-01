@@ -46,13 +46,14 @@ public class FilterOperator extends Operator<FilterDesc> implements
     FILTERED, PASSED
   }
 
-  private final transient LongWritable filtered_count, passed_count;
+  protected final transient LongWritable filtered_count;
+  protected final transient LongWritable passed_count;
   private transient ExprNodeEvaluator conditionEvaluator;
   private transient PrimitiveObjectInspector conditionInspector;
   private transient int consecutiveFails;
   private transient int consecutiveSearches;
   private transient IOContext ioContext;
-  transient int heartbeatInterval;
+  protected transient int heartbeatInterval;
 
   public FilterOperator() {
     super();

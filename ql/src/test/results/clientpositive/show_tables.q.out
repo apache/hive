@@ -112,6 +112,7 @@ PREHOOK: query: SHOW TABLES FROM default
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES FROM default
 POSTHOOK: type: SHOWTABLES
+alltypesorc
 shtb_test1
 shtb_test2
 src
@@ -133,6 +134,7 @@ PREHOOK: query: SHOW TABLES IN default
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES IN default
 POSTHOOK: type: SHOWTABLES
+alltypesorc
 shtb_test1
 shtb_test2
 src

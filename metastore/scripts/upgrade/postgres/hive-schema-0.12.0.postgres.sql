@@ -522,7 +522,6 @@ CREATE TABLE "VERSION" (
   "VER_ID" bigint,
   "SCHEMA_VERSION" character varying(127) NOT NULL,
   "VERSION_COMMENT" character varying(255) NOT NULL,
-  PRIMARY KEY ("VER_ID")
 );
 
 --
@@ -1400,7 +1399,7 @@ REVOKE ALL ON SCHEMA public FROM PUBLIC;
 GRANT ALL ON SCHEMA public TO PUBLIC;
 
 
-INSERT INTO VERSION (VER_ID, SCHEMA_VERSION, VERSION_COMMENT) VALUES (1, '0.12.0', 'Hive release version 0.12.0');
+INSERT INTO "VERSION" ("VER_ID", "SCHEMA_VERSION", "VERSION_COMMENT") VALUES (1, '0.12.0', 'Hive release version 0.12.0');
 --
 -- PostgreSQL database dump complete
 --

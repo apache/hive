@@ -18,11 +18,8 @@
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.common.type.HiveVarchar;
-import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
-import org.apache.hadoop.hive.serde2.typeinfo.BaseTypeParams;
 import org.apache.hadoop.hive.serde2.typeinfo.ParameterizedPrimitiveTypeUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 
@@ -42,13 +39,14 @@ public class JavaHiveVarcharObjectInspector
     }
   }
 
+  @Override
   public HiveVarchar getPrimitiveJavaObject(Object o) {
     if (o == null) {
       return null;
     }
     HiveVarchar value = (HiveVarchar)o;
     if (ParameterizedPrimitiveTypeUtils.doesPrimitiveMatchTypeParams(
-        value, (VarcharTypeParams) typeParams)) {
+        value, (VarcharTypeParams) getTypeParams())) {
       return value;
     }
     // value needs to be converted to match the type params (length, etc).
@@ -78,7 +76,7 @@ public class JavaHiveVarcharObjectInspector
   public Object set(Object o, HiveVarchar value) {
     HiveVarchar setValue = (HiveVarchar)o;
     if (ParameterizedPrimitiveTypeUtils.doesPrimitiveMatchTypeParams(
-        value, (VarcharTypeParams) typeParams)) {
+        value, (VarcharTypeParams) getTypeParams())) {
       setValue.setValue(value);
     } else {
       // Otherwise value may be too long, convert to appropriate value based on params
@@ -102,6 +100,7 @@ public class JavaHiveVarcharObjectInspector
   }
 
   public int getMaxLength() {
-    return typeParams != null ? ((VarcharTypeParams) typeParams).length : -1;
+    VarcharTypeParams typeParams = (VarcharTypeParams)getTypeParams();
+    return typeParams != null ? typeParams.length : -1;
   }
 }

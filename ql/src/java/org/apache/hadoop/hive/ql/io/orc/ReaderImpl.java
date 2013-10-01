@@ -343,4 +343,14 @@ final class ReaderImpl implements Reader {
         include, footer.getRowIndexStride(), sarg, columnNames);
   }
 
+  @Override
+  public long getRawDataSize() {
+    return 0;
+  }
+
+  @Override
+  public long getRawDataSizeOfColumns(List<String> colNames) {
+    return 0;
+  }
+
 }

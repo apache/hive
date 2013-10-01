@@ -29,5 +29,10 @@
   <dependencies>
     <dependency org="org.apache.hive" name="hive-cli" rev="${version}"
                 conf="compile->default" />
+    <dependency org="org.apache.httpcomponents" name="httpcore"
+                rev="${httpcore.version}"/>
+    <dependency org="org.apache.httpcomponents" name="httpclient"
+                rev="${httpclient.version}"/>
+
   </dependencies>
 </ivy-module>

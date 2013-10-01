@@ -30,8 +30,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.io.FSRecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -105,7 +105,7 @@ public class RowContainer<ROW extends List<Object>> extends AbstractRowContainer
   int acutalSplitNum = 0;
   int currentSplitPointer = 0;
   org.apache.hadoop.mapred.RecordReader rr = null; // record reader
-  RecordWriter rw = null;
+  FSRecordWriter rw = null;
   InputFormat<WritableComparable, Writable> inputFormat = null;
   InputSplit[] inputSplits = null;
   private ROW dummyRow = null;
@@ -531,7 +531,7 @@ public class RowContainer<ROW extends List<Object>> extends AbstractRowContainer
 
   }
 
-  protected RecordWriter getRecordWriter() {
+  protected FSRecordWriter getRecordWriter() {
     return rw;
   }
 

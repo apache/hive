@@ -18,6 +18,7 @@ explain select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key gr
 explain select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value;
 -- mGBY-RS-rGBY-mGBY-RS-rGBY
 explain from (select key, value from src group by key, value) s select s.key group by s.key;
+explain select key, count(distinct value) from (select key, value from src group by key, value) t group by key;
 
 select key, sum(key) from (select * from src distribute by key sort by key, value) Q1 group by key;
 select key, sum(key), lower(value) from (select * from src order by key) Q1 group by key, lower(value);
@@ -26,6 +27,7 @@ select key, sum(key) as value from src group by key order by key, value;
 select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key group by src.key, src.value;
 select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value;
 from (select key, value from src group by key, value) s select s.key group by s.key;
+select key, count(distinct value) from (select key, value from src group by key, value) t group by key;
 
 set hive.map.aggr=false;
 
@@ -41,6 +43,7 @@ explain select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key gr
 explain select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value;
 -- RS-GBY-RS-GBY
 explain from (select key, value from src group by key, value) s select s.key group by s.key;
+explain select key, count(distinct value) from (select key, value from src group by key, value) t group by key;
 
 select key, sum(key) from (select * from src distribute by key sort by key, value) Q1 group by key;
 select key, sum(key), lower(value) from (select * from src order by key) Q1 group by key, lower(value);
@@ -49,3 +52,4 @@ select key, sum(key) as value from src group by key order by key, value;
 select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key group by src.key, src.value;
 select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value;
 from (select key, value from src group by key, value) s select s.key group by s.key;
+select key, count(distinct value) from (select key, value from src group by key, value) t group by key;
