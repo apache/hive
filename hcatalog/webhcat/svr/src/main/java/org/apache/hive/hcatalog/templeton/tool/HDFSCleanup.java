@@ -98,7 +98,7 @@ public class HDFSCleanup extends Thread {
         // cycle fails, it'll try again on the next cycle.
         try {
           if (fs == null) {
-            fs = FileSystem.get(appConf);
+            fs = new Path(storage_root).getFileSystem(appConf);
           }
           checkFiles(fs);
         } catch (Exception e) {

@@ -48,12 +48,15 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobID;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Mapper.Context;
 import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
 import org.apache.hadoop.mapreduce.security.token.delegation.DelegationTokenIdentifier;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
+import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
+import org.apache.hive.hcatalog.templeton.BadParam;
 import org.apache.hive.hcatalog.templeton.LauncherDelegator;
 
 /**
@@ -104,6 +107,9 @@ public class TempletonControllerJob extends Configured implements Tool {
 
       ArrayList<String> removeEnv = new ArrayList<String>();
       removeEnv.add("HADOOP_ROOT_LOGGER");
+      removeEnv.add("hadoop-command");
+      removeEnv.add("CLASS");
+      removeEnv.add("mapredcommand");
       Map<String, String> env = TempletonUtils.hadoopUserEnv(user,
         overrideClasspath);
       List<String> jarArgsList = new LinkedList<String>(Arrays.asList(jarArgs));
@@ -112,7 +118,15 @@ public class TempletonControllerJob extends Configured implements Tool {
 
       if (tokenFile != null) {
         //Token is available, so replace the placeholder
+        tokenFile = tokenFile.replaceAll("\"", "");
         String tokenArg = "mapreduce.job.credentials.binary=" + tokenFile;
+        if (Shell.WINDOWS) {
+          try {
+            tokenArg = TempletonUtils.quoteForWindows(tokenArg);
+          } catch (BadParam e) {
+            throw new IOException("cannot pass " + tokenFile + " to mapreduce.job.credentials.binary", e);
+          }
+        }
         for(int i=0; i<jarArgsList.size(); i++){
           String newArg = 
             jarArgsList.get(i).replace(TOKEN_FILE_ARG_PLACEHOLDER, tokenArg);
@@ -211,9 +225,9 @@ public class TempletonControllerJob extends Configured implements Tool {
       pool.execute(w);
     }
 
-    private KeepAlive startCounterKeepAlive(ExecutorService pool, Context cnt)
+    private KeepAlive startCounterKeepAlive(ExecutorService pool, Context context)
       throws IOException {
-      KeepAlive k = new KeepAlive(cnt);
+      KeepAlive k = new KeepAlive(context);
       pool.execute(k);
       return k;
     }
@@ -297,20 +311,25 @@ public class TempletonControllerJob extends Configured implements Tool {
     }
   }
 
-  private static class KeepAlive implements Runnable {
-    private final Mapper.Context cnt;
-    private volatile boolean sendReport;
+  public static class KeepAlive implements Runnable {
+    private Context context;
+    public boolean sendReport;
 
-    public KeepAlive(Mapper.Context cnt) {
-      this.cnt = cnt;
+    public KeepAlive(Context context)
+    {
       this.sendReport = true;
+      this.context = context;
     }
 
     @Override
     public void run() {
       try {
         while (sendReport) {
-          cnt.progress();
+          // Periodically report progress on the Context object
+          // to prevent TaskTracker from killing the Templeton
+          // Controller task
+          context.progress();
+          System.err.println("KeepAlive Heart beat");
           Thread.sleep(KEEP_ALIVE_MSEC);
         }
       } catch (InterruptedException e) {

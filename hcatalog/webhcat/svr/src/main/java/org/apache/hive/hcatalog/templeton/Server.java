@@ -587,7 +587,9 @@ public class Server {
                       @FormParam("output") String output,
                       @FormParam("mapper") String mapper,
                       @FormParam("reducer") String reducer,
-                      @FormParam("file") List<String> files,
+                      @FormParam("combiner") String combiner,
+                      @FormParam("file") List<String> fileList,
+                      @FormParam("files") String files,
                       @FormParam("define") List<String> defines,
                       @FormParam("cmdenv") List<String> cmdenvs,
                       @FormParam("arg") List<String> args,
@@ -607,6 +609,8 @@ public class Server {
     userArgs.put("output", output);
     userArgs.put("mapper", mapper);
     userArgs.put("reducer", reducer);
+    userArgs.put("combiner", combiner);
+    userArgs.put("file",  fileList);
     userArgs.put("files",  files);
     userArgs.put("define",  defines);
     userArgs.put("cmdenv",  cmdenvs);
@@ -617,8 +621,8 @@ public class Server {
     checkEnableLogPrerequisite(enablelog, statusdir);
 
     StreamingDelegator d = new StreamingDelegator(appConf);
-    return d.run(getDoAsUser(), userArgs, inputs, output, mapper, reducer,
-      files, defines, cmdenvs, args,
+    return d.run(getDoAsUser(), userArgs, inputs, output, mapper, reducer, combiner,
+      fileList, files, defines, cmdenvs, args,
       statusdir, callback, getCompletedUrl(), enablelog, JobType.STREAMING);
   }
 

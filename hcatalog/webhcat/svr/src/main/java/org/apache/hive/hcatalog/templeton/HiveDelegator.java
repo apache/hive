@@ -64,6 +64,7 @@ public class HiveDelegator extends LauncherDelegator {
     try {
       args.addAll(makeBasicArgs(execute, srcFile, otherFiles, statusdir, completedUrl, enablelog));
       args.add("--");
+      TempletonUtils.addCmdForWindows(args);
       args.add(appConf.hivePath());
 
       args.add("--service");
@@ -75,16 +76,18 @@ public class HiveDelegator extends LauncherDelegator {
 
       for (String prop : appConf.getStrings(AppConfig.HIVE_PROPS_NAME)) {
         args.add("--hiveconf");
-        args.add(prop);
+        args.add(TempletonUtils.quoteForWindows(prop));
       }
       for (String prop : defines) {
         args.add("--hiveconf");
-        args.add(prop);
+        args.add(TempletonUtils.quoteForWindows(prop));
       }
-      args.addAll(hiveArgs);
+      for (String hiveArg : hiveArgs) {
+        args.add(TempletonUtils.quoteForWindows(hiveArg));
+      }
       if (TempletonUtils.isset(execute)) {
         args.add("-e");
-        args.add(execute);
+        args.add(TempletonUtils.quoteForWindows(execute));
       } else if (TempletonUtils.isset(srcFile)) {
         args.add("-f");
         args.add(TempletonUtils.hadoopFsPath(srcFile, appConf, runAs)
@@ -120,8 +123,11 @@ public class HiveDelegator extends LauncherDelegator {
     args.addAll(makeLauncherArgs(appConf, statusdir, completedUrl, allFiles,
                 enablelog, JobType.HIVE));
 
-    args.add("-archives");
-    args.add(appConf.hiveArchive());
+    if (appConf.hiveArchive() != null && !appConf.hiveArchive().equals(""))
+    {
+      args.add("-archives");
+      args.add(appConf.hiveArchive());
+    }
 
     return args;
   }
