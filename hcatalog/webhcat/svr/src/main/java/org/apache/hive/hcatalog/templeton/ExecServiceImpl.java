@@ -18,12 +18,18 @@
  */
 package org.apache.hive.hcatalog.templeton;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.Semaphore;
 
 import org.apache.commons.exec.CommandLine;
@@ -33,6 +39,38 @@ import org.apache.commons.exec.ExecuteWatchdog;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.util.Shell;
+
+class StreamOutputWriter extends Thread
+{
+  InputStream is;
+  String type;
+  PrintWriter out;
+
+  StreamOutputWriter(InputStream is, String type, OutputStream outStream)
+  {
+    this.is = is;
+    this.type = type;
+    this.out = new PrintWriter(outStream, true);
+  }
+
+  @Override
+  public void run()
+  {
+    try
+    {
+      BufferedReader br =
+        new BufferedReader(new InputStreamReader(is));
+      String line = null;
+      while ( (line = br.readLine()) != null){
+        out.println(line);
+      }
+    } catch (IOException ioe)
+    {
+      ioe.printStackTrace();  
+    }
+  }
+}
 
 /**
  * Execute a local program.  This is a singleton service that will
@@ -44,6 +82,9 @@ public class ExecServiceImpl implements ExecService {
   private static AppConfig appConf = Main.getAppConfigInstance();
 
   private static volatile ExecServiceImpl theSingleton;
+
+  /** Windows CreateProcess synchronization object */
+  private static final Object WindowsProcessLaunchLock = new Object();
 
   /**
    * Retrieve the singleton.
@@ -133,7 +174,54 @@ public class ExecServiceImpl implements ExecService {
 
     LOG.info("Running: " + cmd);
     ExecBean res = new ExecBean();
-    res.exitcode = executor.execute(cmd, execEnv(env));
+
+    if(Shell.WINDOWS){
+      //The default executor is sometimes causing failure on windows. hcat
+      // command sometimes returns non zero exit status with it. It seems
+      // to hit some race conditions on windows.
+      env = execEnv(env);
+      String[] envVals = new String[env.size()];
+      int i=0;
+      for( Entry<String, String> kv : env.entrySet()){
+        envVals[i++] = kv.getKey() + "=" + kv.getValue();
+        LOG.info("Setting " +  kv.getKey() + "=" + kv.getValue());
+      }
+
+      Process proc;
+      synchronized (WindowsProcessLaunchLock) {
+        // To workaround the race condition issue with child processes
+        // inheriting unintended handles during process launch that can
+        // lead to hangs on reading output and error streams, we
+        // serialize process creation. More info available at:
+        // http://support.microsoft.com/kb/315939
+        proc = Runtime.getRuntime().exec(cmd.toStrings(), envVals);
+      }
+
+      //consume stderr
+      StreamOutputWriter errorGobbler = new
+        StreamOutputWriter(proc.getErrorStream(), "ERROR", errStream);
+
+      //consume stdout
+      StreamOutputWriter outputGobbler = new
+        StreamOutputWriter(proc.getInputStream(), "OUTPUT", outStream);
+
+      //start collecting input streams
+      errorGobbler.start();
+      outputGobbler.start();
+      //execute
+      try{
+        res.exitcode = proc.waitFor();
+      } catch (InterruptedException e) {
+        throw new IOException(e);
+      }
+      //flush
+      errorGobbler.out.flush();
+      outputGobbler.out.flush();
+    }
+    else {
+      res.exitcode = executor.execute(cmd, execEnv(env));
+    }
+
     String enc = appConf.get(AppConfig.EXEC_ENCODING_NAME);
     res.stdout = outStream.toString(enc);
     res.stderr = errStream.toString(enc);

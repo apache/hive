@@ -67,7 +67,11 @@ public class HcatDelegator extends LauncherDelegator {
       Map<String, String> env = TempletonUtils.hadoopUserEnv(user, cp);
       proxy.addEnv(env);
       proxy.addArgs(args);
-      return execService.run(appConf.clusterHcat(), args, env);
+      if (appConf.clusterHcat().toLowerCase().endsWith(".py")) {
+        return execService.run(appConf.clusterPython(), args, env);
+      } else {
+        return execService.run(appConf.clusterHcat(), args, env);
+      }
     } catch (InterruptedException e) {
       throw new IOException(e);
     } finally {
@@ -79,8 +83,12 @@ public class HcatDelegator extends LauncherDelegator {
   private List<String> makeArgs(String exec, boolean format,
                   String group, String permissions) {
     ArrayList<String> args = new ArrayList<String>();
+    if (appConf.clusterHcat().toLowerCase().endsWith(".py")) {
+      // hcat.py will become the first argument pass to command "python"
+      args.add(appConf.clusterHcat());
+    }
     args.add("-e");
-    args.add(exec);
+    args.add('"' + exec + '"');
     if (TempletonUtils.isset(group)) {
       args.add("-g");
       args.add(group);
