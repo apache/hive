@@ -78,10 +78,12 @@ public class PigDelegator extends LauncherDelegator {
       //the token file location should be first argument of pig
       args.add("-D" + TempletonControllerJob.TOKEN_FILE_ARG_PLACEHOLDER);
 
-      args.addAll(pigArgs);
+      for (String pigArg : pigArgs) {
+        args.add(TempletonUtils.quoteForWindows(pigArg));
+      }
       if (TempletonUtils.isset(execute)) {
         args.add("-execute");
-        args.add(execute);
+        args.add(TempletonUtils.quoteForWindows(execute));
       } else if (TempletonUtils.isset(srcFile)) {
         args.add("-file");
         args.add(TempletonUtils.hadoopFsPath(srcFile, appConf, runAs)

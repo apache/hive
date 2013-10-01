@@ -74,22 +74,27 @@ public class JarDelegator extends LauncherDelegator {
       if (TempletonUtils.isset(mainClass))
         args.add(mainClass);
       if (TempletonUtils.isset(libjars)) {
+        String libjarsListAsString =
+            TempletonUtils.hadoopFsListAsString(libjars, appConf, runAs);
         args.add("-libjars");
-        args.add(TempletonUtils.hadoopFsListAsString(libjars, appConf,
-          runAs));
+        args.add(TempletonUtils.quoteForWindows(libjarsListAsString));
       }
       if (TempletonUtils.isset(files)) {
+        String filesListAsString =
+            TempletonUtils.hadoopFsListAsString(files, appConf, runAs);
         args.add("-files");
-        args.add(TempletonUtils.hadoopFsListAsString(files, appConf,
-          runAs));
+        args.add(TempletonUtils.quoteForWindows(filesListAsString));
       }
       //the token file location comes after mainClass, as a -Dprop=val
       args.add("-D" + TempletonControllerJob.TOKEN_FILE_ARG_PLACEHOLDER);
 
-      for (String d : defines)
-        args.add("-D" + d);
-
-      args.addAll(jarArgs);
+      for (String d : defines) {
+        args.add("-D");
+        TempletonUtils.quoteForWindows(d);
+      }
+      for (String arg : jarArgs) {
+        args.add(TempletonUtils.quoteForWindows(arg));
+      }
     } catch (FileNotFoundException e) {
       throw new BadParam(e.getMessage());
     } catch (URISyntaxException e) {
