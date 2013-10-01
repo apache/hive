@@ -306,6 +306,7 @@ POSTHOOK: Lineage: default___t_x2__._offsets EXPRESSION [(_t)_t.FieldSchema(name
 POSTHOOK: Lineage: default___t_x__._bucketname SIMPLE [(_t)_t.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: default___t_x__._j SIMPLE [(_t)_t.FieldSchema(name:_j, type:int, comment:null), ]
 POSTHOOK: Lineage: default___t_x__._offsets EXPRESSION [(_t)_t.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
+alltypesorc
 src
 src1
 src_json

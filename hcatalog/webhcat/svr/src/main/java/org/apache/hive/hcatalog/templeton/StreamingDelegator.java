@@ -21,8 +21,10 @@ package org.apache.hive.hcatalog.templeton;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.exec.ExecuteException;
+import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
 
 /**
  * Submit a streaming job to the MapReduce queue.  Really just a front
@@ -35,10 +37,11 @@ public class StreamingDelegator extends LauncherDelegator {
     super(appConf);
   }
 
-  public EnqueueBean run(String user,
+  public EnqueueBean run(String user, Map<String, Object> userArgs,
                List<String> inputs, String output,
-               String mapper, String reducer,
-               List<String> files, List<String> defines,
+               String mapper, String reducer, String combiner,
+               List<String> fileList,
+               String files, List<String> defines,
                List<String> cmdenvs,
                List<String> jarArgs,
                String statusdir,
@@ -48,13 +51,13 @@ public class StreamingDelegator extends LauncherDelegator {
                JobType jobType)
     throws NotAuthorizedException, BadParam, BusyException, QueueException,
     ExecuteException, IOException, InterruptedException {
-    List<String> args = makeArgs(inputs, output, mapper, reducer,
-      files, defines, cmdenvs, jarArgs);
+    List<String> args = makeArgs(inputs, output, mapper, reducer, combiner,
+      fileList, cmdenvs, jarArgs);
 
     JarDelegator d = new JarDelegator(appConf);
-    return d.run(user,
+    return d.run(user, userArgs,
       appConf.streamingJar(), null,
-      null, null, args, defines,
+      null, files, args, defines,
       statusdir, callback, completedUrl, enableLog, jobType);
   }
 
@@ -62,10 +65,12 @@ public class StreamingDelegator extends LauncherDelegator {
                   String output,
                   String mapper,
                   String reducer,
-                  List<String> files,
-                  List<String> defines,
+                  String combiner,
+                  List<String> fileList,
                   List<String> cmdenvs,
-                  List<String> jarArgs) {
+                  List<String> jarArgs)
+    throws BadParam
+  {
     ArrayList<String> args = new ArrayList<String>();
     for (String input : inputs) {
       args.add("-input");
@@ -78,13 +83,24 @@ public class StreamingDelegator extends LauncherDelegator {
     args.add("-reducer");
     args.add(reducer);
 
-    for (String f : files)
-      args.add("-file" + f);
-    for (String d : defines)
-      args.add("-D" + d);
-    for (String e : cmdenvs)
-      args.add("-cmdenv" + e);
-    args.addAll(jarArgs);
+    if (TempletonUtils.isset(combiner)) {
+      args.add("-combiner");
+      args.add(combiner);
+    }
+
+    for (String f : fileList) {
+      args.add("-file");
+      args.add(f);
+    }
+
+    for (String e : cmdenvs) {
+      args.add("-cmdenv");
+      args.add(TempletonUtils.quoteForWindows(e));
+    }
+
+    for (String arg : jarArgs) {
+      args.add(TempletonUtils.quoteForWindows(arg));
+    }
 
     return args;
   }

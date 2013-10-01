@@ -1871,4 +1871,14 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       rawWriter.close();
     }
   }
+
+  @Override
+  public long getRawDataSize() {
+    return 0;
+  }
+
+  @Override
+  public long getNumberOfRows() {
+    return 0;
+  }
 }

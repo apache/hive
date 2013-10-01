@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.io.orc;
 import java.io.EOFException;
 import java.io.IOException;
 
+import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+
 /**
  * A reader that reads a sequence of bytes. A control byte is read before
  * each run with positive values 0 to 127 meaning 3 to 130 repetitions. If the
@@ -80,6 +82,29 @@ class RunLengthByteReader {
       result = literals[used++];
     }
     return result;
+  }
+
+  void nextVector(LongColumnVector previous, long previousLen)
+      throws IOException {
+    previous.isRepeating = true;
+    for (int i = 0; i < previousLen; i++) {
+      if (!previous.isNull[i]) {
+        previous.vector[i] = next();
+      } else {
+        // The default value of null for int types in vectorized
+        // processing is 1, so set that if the value is null
+        previous.vector[i] = 1;
+      }
+
+      // The default value for nulls in Vectorization for int types is 1
+      // and given that non null value can also be 1, we need to check for isNull also
+      // when determining the isRepeating flag.
+      if (previous.isRepeating
+          && i > 0
+          && ((previous.vector[i - 1] != previous.vector[i]) || (previous.isNull[i - 1] != previous.isNull[i]))) {
+        previous.isRepeating = false;
+      }
+    }
   }
 
   void seek(PositionProvider index) throws IOException {

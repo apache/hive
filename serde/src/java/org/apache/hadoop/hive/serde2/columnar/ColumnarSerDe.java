@@ -71,7 +71,7 @@ public class ColumnarSerDe extends ColumnarSerDeBase {
   public ColumnarSerDe() throws SerDeException {
   }
 
-  SerDeParameters serdeParams = null;
+  protected SerDeParameters serdeParams = null;
 
   /**
    * Initialize the SerDe given the parameters.

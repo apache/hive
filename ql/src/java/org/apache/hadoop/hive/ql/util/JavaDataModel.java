@@ -27,84 +27,120 @@ import org.apache.hadoop.hive.ql.udf.generic.NumericHistogram;
 public enum JavaDataModel {
 
   JAVA32 {
+    @Override
     public int object() {
       return JAVA32_OBJECT;
     }
 
+    @Override
     public int array() {
       return JAVA32_ARRAY;
     }
 
+    @Override
     public int ref() {
       return JAVA32_REF;
     }
 
+    @Override
     public int hashMap(int entry) {
       // base  = JAVA32_OBJECT + PRIMITIVES1 * 4 + JAVA32_FIELDREF * 3 + JAVA32_ARRAY;
       // entry = JAVA32_OBJECT + JAVA32_FIELDREF + PRIMITIVES1
       return 64 + 24 * entry;
     }
 
+    @Override
+    public int hashMapEntry() {
+      return 24;
+    }
+
+    @Override
     public int hashSet(int entry) {
       // hashMap += JAVA32_OBJECT
       return 80 + 24 * entry;
     }
 
+    @Override
     public int linkedHashMap(int entry) {
       // hashMap += JAVA32_FIELDREF + PRIMITIVES1
       // hashMap.entry += JAVA32_FIELDREF * 2
       return 72 + 32 * entry;
     }
 
+    @Override
     public int linkedList(int entry) {
       // base  = JAVA32_OBJECT + PRIMITIVES1 * 2 + JAVA32_FIELDREF;
       // entry = JAVA32_OBJECT + JAVA32_FIELDREF * 2
       return 28 + 24 * entry;
     }
 
+    @Override
     public int arrayList() {
       // JAVA32_OBJECT + PRIMITIVES1 * 2 + JAVA32_ARRAY;
       return 44;
     }
+
+    @Override
+    public int memoryAlign() {
+      return 8;
+    }
   }, JAVA64 {
+    @Override
     public int object() {
       return JAVA64_OBJECT;
     }
 
+    @Override
     public int array() {
       return JAVA64_ARRAY;
     }
 
+    @Override
     public int ref() {
       return JAVA64_REF;
     }
 
+    @Override
     public int hashMap(int entry) {
       // base  = JAVA64_OBJECT + PRIMITIVES1 * 4 + JAVA64_FIELDREF * 3 + JAVA64_ARRAY;
       // entry = JAVA64_OBJECT + JAVA64_FIELDREF + PRIMITIVES1
       return 112 + 44 * entry;
     }
 
+    @Override
+    public int hashMapEntry() {
+      return 44;
+    }
+
+    @Override
     public int hashSet(int entry) {
       // hashMap += JAVA64_OBJECT
       return 144 + 44 * entry;
     }
 
+    @Override
     public int linkedHashMap(int entry) {
       // hashMap += JAVA64_FIELDREF + PRIMITIVES1
       // hashMap.entry += JAVA64_FIELDREF * 2
       return 128 + 60 * entry;
     }
 
+    @Override
     public int linkedList(int entry) {
       // base  = JAVA64_OBJECT + PRIMITIVES1 * 2 + JAVA64_FIELDREF;
       // entry = JAVA64_OBJECT + JAVA64_FIELDREF * 2
       return 48 + 48 * entry;
     }
 
+    @Override
     public int arrayList() {
       // JAVA64_OBJECT + PRIMITIVES1 * 2 + JAVA64_ARRAY;
       return 80;
+    }
+
+    @Override
+    public int memoryAlign() {
+      return 8;
     }
   };
 
@@ -112,10 +148,12 @@ public enum JavaDataModel {
   public abstract int array();
   public abstract int ref();
   public abstract int hashMap(int entry);
+  public abstract int hashMapEntry();
   public abstract int hashSet(int entry);
   public abstract int linkedHashMap(int entry);
   public abstract int linkedList(int entry);
   public abstract int arrayList();
+  public abstract int memoryAlign();
 
   // ascii string
   public int lengthFor(String string) {
@@ -161,6 +199,10 @@ public enum JavaDataModel {
     return PRIMITIVES2;
   }
 
+  public static int alignUp(int value, int align) {
+    return (value + align - 1) & ~(align - 1);
+  }
+
   public static final int JAVA32_META = 12;
   public static final int JAVA32_ARRAY_META = 16;
   public static final int JAVA32_REF = 4;
@@ -175,6 +217,8 @@ public enum JavaDataModel {
 
   public static final int PRIMITIVES1 = 4;      // void, boolean, byte, short, int, float
   public static final int PRIMITIVES2 = 8;      // long, double
+
+  public static final int PRIMITIVE_BYTE = 1;    // byte
 
   private static JavaDataModel current;
 
@@ -199,5 +243,28 @@ public enum JavaDataModel {
       return size;
     }
     return ((size + 8) >> 3) << 3;
+  }
+
+  private int lengthForPrimitiveArrayOfSize(int primitiveSize, int length) {
+    return alignUp(array() + primitiveSize*length, memoryAlign());
+  }
+
+  public int lengthForByteArrayOfSize(int length) {
+    return lengthForPrimitiveArrayOfSize(PRIMITIVE_BYTE, length);
+  }
+  public int lengthForObjectArrayOfSize(int length) {
+    return lengthForPrimitiveArrayOfSize(ref(), length);
+  }
+  public int lengthForLongArrayOfSize(int length) {
+    return lengthForPrimitiveArrayOfSize(primitive2(), length);
+  }
+  public int lengthForDoubleArrayOfSize(int length) {
+    return lengthForPrimitiveArrayOfSize(primitive2(), length);
+  }
+  public int lengthForIntArrayOfSize(int length) {
+    return lengthForPrimitiveArrayOfSize(primitive1(), length);
+  }
+  public int lengthForBooleanArrayOfSize(int length) {
+    return lengthForPrimitiveArrayOfSize(PRIMITIVE_BYTE, length);
   }
 }

@@ -22,9 +22,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 public abstract class KeyWrapper {
-  abstract void getNewKey(Object row, ObjectInspector rowInspector) throws HiveException;
-  abstract void setHashKey();
-  abstract KeyWrapper copyKey();
-  abstract void copyKey(KeyWrapper oldWrapper);
-  abstract Object[] getKeyArray();
+  public abstract void getNewKey(Object row, ObjectInspector rowInspector) throws HiveException;
+  public abstract void setHashKey();
+  public abstract KeyWrapper copyKey();
+  public abstract void copyKey(KeyWrapper oldWrapper);
+  public abstract Object[] getKeyArray();
 }

@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.exec.ExecuteException;
 import org.apache.hive.hcatalog.templeton.tool.TempletonControllerJob;
@@ -39,7 +40,7 @@ public class PigDelegator extends LauncherDelegator {
     super(appConf);
   }
 
-  public EnqueueBean run(String user,
+  public EnqueueBean run(String user, Map<String, Object> userArgs,
                String execute, String srcFile,
                List<String> pigArgs, String otherFiles,
                String statusdir, String callback, String completedUrl, boolean enablelog)
@@ -50,7 +51,7 @@ public class PigDelegator extends LauncherDelegator {
       srcFile, pigArgs,
       otherFiles, statusdir, completedUrl, enablelog);
 
-    return enqueueController(user, callback, args);
+    return enqueueController(user, userArgs, callback, args);
   }
 
   private List<String> makeArgs(String execute, String srcFile,
@@ -69,18 +70,24 @@ public class PigDelegator extends LauncherDelegator {
       }
 
       args.addAll(makeLauncherArgs(appConf, statusdir, completedUrl, allFiles, enablelog, JobType.PIG));
-      args.add("-archives");
-      args.add(appConf.pigArchive());
+      if (appConf.pigArchive() != null && !appConf.pigArchive().equals(""))
+      {
+        args.add("-archives");
+        args.add(appConf.pigArchive());
+      }
 
       args.add("--");
+      TempletonUtils.addCmdForWindows(args);
       args.add(appConf.pigPath());
       //the token file location should be first argument of pig
       args.add("-D" + TempletonControllerJob.TOKEN_FILE_ARG_PLACEHOLDER);
 
-      args.addAll(pigArgs);
+      for (String pigArg : pigArgs) {
+        args.add(TempletonUtils.quoteForWindows(pigArg));
+      }
       if (TempletonUtils.isset(execute)) {
         args.add("-execute");
-        args.add(execute);
+        args.add(TempletonUtils.quoteForWindows(execute));
       } else if (TempletonUtils.isset(srcFile)) {
         args.add("-file");
         args.add(TempletonUtils.hadoopFsPath(srcFile, appConf, runAs)

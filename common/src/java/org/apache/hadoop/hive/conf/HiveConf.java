@@ -739,6 +739,19 @@ public class HiveConf extends Configuration {
     HIVE_DDL_OUTPUT_FORMAT("hive.ddl.output.format", null),
     HIVE_ENTITY_SEPARATOR("hive.entity.separator", "@"),
 
+    // binary or http
+    HIVE_SERVER2_TRANSPORT_MODE("hive.server2.transport.mode", "binary"),
+
+    // http (over thrift) transport settings
+    HIVE_SERVER2_THRIFT_HTTP_PORT("hive.server2.thrift.http.port", 10001),
+    HIVE_SERVER2_THRIFT_HTTP_PATH("hive.server2.thrift.http.path", "cliservice"),
+    HIVE_SERVER2_THRIFT_HTTP_MIN_WORKER_THREADS("hive.server2.thrift.http.min.worker.threads", 5),
+    HIVE_SERVER2_THRIFT_HTTP_MAX_WORKER_THREADS("hive.server2.thrift.http.max.worker.threads", 500),
+
+    // binary transport settings
+    HIVE_SERVER2_THRIFT_PORT("hive.server2.thrift.port", 10000),
+    HIVE_SERVER2_THRIFT_BIND_HOST("hive.server2.thrift.bind.host", ""),
+    HIVE_SERVER2_THRIFT_SASL_QOP("hive.server2.thrift.sasl.qop", "auth"),
     HIVE_SERVER2_THRIFT_MIN_WORKER_THREADS("hive.server2.thrift.min.worker.threads", 5),
     HIVE_SERVER2_THRIFT_MAX_WORKER_THREADS("hive.server2.thrift.max.worker.threads", 500),
 
@@ -747,10 +760,6 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_ASYNC_EXEC_THREADS("hive.server2.async.exec.threads", 50),
     // Number of seconds HiveServer2 shutdown will wait for async threads to terminate
     HIVE_SERVER2_ASYNC_EXEC_SHUTDOWN_TIMEOUT("hive.server2.async.exec.shutdown.timeout", 10),
-
-    HIVE_SERVER2_THRIFT_PORT("hive.server2.thrift.port", 10000),
-    HIVE_SERVER2_THRIFT_BIND_HOST("hive.server2.thrift.bind.host", ""),
-    HIVE_SERVER2_THRIFT_SASL_QOP("hive.server2.thrift.sasl.qop", "auth"),
 
 
     // HiveServer2 auth configuration
@@ -808,6 +817,11 @@ public class HiveConf extends Configuration {
     HIVE_OPTIMIZE_TEZ("hive.optimize.tez", false),
     HIVE_JAR_DIRECTORY("hive.jar.directory", "hdfs:///user/hive/"),
     HIVE_USER_INSTALL_DIR("hive.user.install.directory", "hdfs:///user/"),
+
+    //Vectorization enabled
+    HIVE_VECTORIZATION_ENABLED("hive.vectorized.execution.enabled", false),
+
+    HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true),
     ;
 
     public final String varname;
@@ -1274,6 +1288,6 @@ public class HiveConf extends Configuration {
     } else {
       return Integer.parseInt(m.group(1));
     }
-
   }
+
 }

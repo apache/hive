@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.plan;
 public class AbstractOperatorDesc implements OperatorDesc {
   protected transient Statistics statistics;
 
+  private boolean vectorMode = false;
+
   @Override
   @Explain(displayName = "Statistics", normalExplain = false)
   public Statistics getStatistics() {
@@ -35,5 +37,14 @@ public class AbstractOperatorDesc implements OperatorDesc {
   @Override
   public Object clone() throws CloneNotSupportedException {
     throw new CloneNotSupportedException("clone not supported");
+  }
+
+  @Explain(displayName = "Vectorized execution", displayOnlyOnTrue = true)
+  public boolean getVectorModeOn() {
+    return vectorMode;
+  }
+
+  public void setVectorMode(boolean vm) {
+    this.vectorMode = vm;
   }
 }
