@@ -159,6 +159,12 @@ public class TestTempletonUtils {
   @Test
   public void testHadoopFsFilename() {
     try {
+      String tmpFileName1 = "/tmp/testHadoopFsListAsArray1";
+      String tmpFileName2 = "/tmp/testHadoopFsListAsArray2";
+      File tmpFile1 = new File(tmpFileName1);
+      File tmpFile2 = new File(tmpFileName2);
+      tmpFile1.createNewFile();
+      tmpFile2.createNewFile();
       Assert.assertEquals(null, TempletonUtils.hadoopFsFilename(null, null, null));
       Assert.assertEquals(null,
         TempletonUtils.hadoopFsFilename(tmpFile.toURI().toString(), null, null));
@@ -188,14 +194,22 @@ public class TestTempletonUtils {
   @Test
   public void testHadoopFsListAsArray() {
     try {
+      String tmpFileName1 = "/tmp/testHadoopFsListAsArray1";
+      String tmpFileName2 = "/tmp/testHadoopFsListAsArray2";
+      File tmpFile1 = new File(tmpFileName1);
+      File tmpFile2 = new File(tmpFileName2);
+      tmpFile1.createNewFile();
+      tmpFile2.createNewFile();
       Assert.assertTrue(TempletonUtils.hadoopFsListAsArray(null, null, null) == null);
-      Assert.assertTrue(TempletonUtils.hadoopFsListAsArray(
-        tmpFile.toURI().toString() + "," + usrFile.toString(), null, null) == null);
-      String[] tmp2 = TempletonUtils.hadoopFsListAsArray(
-        tmpFile.toURI().toString() + "," + usrFile.toURI().toString(),
-        new Configuration(), null);
-      Assert.assertEquals(tmpFile.toURI().toString(), tmp2[0]);
-      Assert.assertEquals(usrFile.toURI().toString(), tmp2[1]);
+      Assert.assertTrue(TempletonUtils.hadoopFsListAsArray(tmpFileName1 + "," + tmpFileName2,
+        null, null) == null);
+      String[] tmp2
+        = TempletonUtils.hadoopFsListAsArray(tmpFileName1 + "," + tmpFileName2,
+                                             new Configuration(), null);
+      Assert.assertEquals("file:" + tmpFileName1, tmp2[0]);
+      Assert.assertEquals("file:" + tmpFileName2, tmp2[1]);
+      tmpFile1.delete();
+      tmpFile2.delete();
     } catch (FileNotFoundException e) {
       Assert.fail("Couldn't find name for " + tmpFile.toURI().toString());
     } catch (Exception e) {
@@ -218,15 +232,18 @@ public class TestTempletonUtils {
   @Test
   public void testHadoopFsListAsString() {
     try {
+      String tmpFileName1 = "/tmp/testHadoopFsListAsString1";
+      String tmpFileName2 = "/tmp/testHadoopFsListAsString2";
+      File tmpFile1 = new File(tmpFileName1);
+      File tmpFile2 = new File(tmpFileName2);
+      tmpFile1.createNewFile();
+      tmpFile2.createNewFile();
       Assert.assertTrue(TempletonUtils.hadoopFsListAsString(null, null, null) == null);
-      Assert.assertTrue(TempletonUtils.hadoopFsListAsString(
-        tmpFile.toURI().toString() + "," + usrFile.toURI().toString(),
+      Assert.assertTrue(TempletonUtils.hadoopFsListAsString("/tmp,/usr",
         null, null) == null);
-      Assert.assertEquals(
-        tmpFile.toURI().toString() + "," + usrFile.toURI().toString(),
-        TempletonUtils.hadoopFsListAsString(
-          tmpFile.toURI().toString() + "," + usrFile.toURI().toString(),
-          new Configuration(), null));
+      Assert.assertEquals("file:" + tmpFileName1 + ",file:" + tmpFileName2,
+        TempletonUtils.hadoopFsListAsString
+        (tmpFileName1 + "," + tmpFileName2, new Configuration(), null));
     } catch (FileNotFoundException e) {
       Assert.fail("Couldn't find name for " + tmpFile.toURI().toString());
     } catch (Exception e) {
