@@ -18,24 +18,8 @@
 package org.apache.hadoop.hive.ql.io.orc;
 
 /**
- * Statistics for string columns.
+ * Statistics for binary columns.
  */
-public interface StringColumnStatistics extends ColumnStatistics {
-  /**
-   * Get the minimum string.
-   * @return the minimum
-   */
-  String getMinimum();
-
-  /**
-   * Get the maximum string.
-   * @return the maximum
-   */
-  String getMaximum();
-
-  /**
-   * Get the total length of all strings
-   * @return the sum (total length)
-   */
+public interface BinaryColumnStatistics extends ColumnStatistics {
   long getSum();
 }

@@ -157,7 +157,7 @@ public enum JavaDataModel {
 
   // ascii string
   public int lengthFor(String string) {
-    return object() + primitive1() * 3 + array() + string.length();
+    return lengthForStringOfLength(string.length());
   }
 
   public int lengthFor(NumericHistogram histogram) {
@@ -266,5 +266,34 @@ public enum JavaDataModel {
   }
   public int lengthForBooleanArrayOfSize(int length) {
     return lengthForPrimitiveArrayOfSize(PRIMITIVE_BYTE, length);
+  }
+
+  public int lengthOfDecimal() {
+    // object overhead + 8 bytes for intCompact + 4 bytes for precision
+    // + 4 bytes for scale + size of BigInteger
+    return object() + 2 * primitive2() + lengthOfBigInteger();
+  }
+
+  private int lengthOfBigInteger() {
+    // object overhead + 4 bytes for bitCount + 4 bytes for bitLength
+    // + 4 bytes for firstNonzeroByteNum + 4 bytes for firstNonzeroIntNum +
+    // + 4 bytes for lowestSetBit + 5 bytes for size of magnitude (since max precision
+    // is only 38 for HiveDecimal) + 7 bytes of padding (since java memory allocations
+    // are 8 byte aligned)
+    return object() + 4 * primitive2();
+  }
+
+  public int lengthOfTimestamp() {
+    // object overhead + 4 bytes for int (nanos) + 4 bytes of padding
+    return object() + primitive2();
+  }
+
+  public int lengthOfDate() {
+    // object overhead + 8 bytes for long (fastTime) + 16 bytes for cdate
+    return object() + 3 * primitive2();
+  }
+
+  public int lengthForStringOfLength(int strLen) {
+    return object() + primitive1() * 3 + array() + strLen;
   }
 }

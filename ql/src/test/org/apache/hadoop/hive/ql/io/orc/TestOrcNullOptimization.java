@@ -125,7 +125,7 @@ public class TestOrcNullOptimization {
     assertEquals("a", ((StringColumnStatistics) stats[2]).getMinimum());
     assertEquals(19998,
                  ((StringColumnStatistics) stats[2]).getNumberOfValues());
-    assertEquals("count: 19998 min: a max: a",
+    assertEquals("count: 19998 min: a max: a sum: 19998",
         stats[2].toString());
 
     // check the inspectors
@@ -229,7 +229,7 @@ public class TestOrcNullOptimization {
     assertEquals("a", ((StringColumnStatistics) stats[2]).getMinimum());
     assertEquals(20000,
                  ((StringColumnStatistics) stats[2]).getNumberOfValues());
-    assertEquals("count: 20000 min: a max: b",
+    assertEquals("count: 20000 min: a max: b sum: 20000",
         stats[2].toString());
 
     // check the inspectors
@@ -329,7 +329,7 @@ public class TestOrcNullOptimization {
     assertEquals("h", ((StringColumnStatistics) stats[2]).getMaximum());
     assertEquals("a", ((StringColumnStatistics) stats[2]).getMinimum());
     assertEquals(7, ((StringColumnStatistics) stats[2]).getNumberOfValues());
-    assertEquals("count: 7 min: a max: h",
+    assertEquals("count: 7 min: a max: h sum: 7",
         stats[2].toString());
 
     // check the inspectors
