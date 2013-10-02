@@ -116,8 +116,7 @@ elif [ "${HIVE_AUX_JARS_PATH}" != "" ]; then
       HIVE_AUX_JARS_PATH=`echo $HIVE_AUX_JARS_PATH | sed 's/;/,/g'`
   fi
   AUX_CLASSPATH=${HIVE_AUX_JARS_PATH}
-  AUX_PARAM=file://${HIVE_AUX_JARS_PATH}
-  AUX_PARAM=`echo $AUX_PARAM | sed 's/:/,file:\/\//g'`
+  AUX_PARAM="file://$(echo ${HIVE_AUX_JARS_PATH} | sed 's/:/,file:\/\//g')"
 fi
 
 # adding jars from auxlib directory
