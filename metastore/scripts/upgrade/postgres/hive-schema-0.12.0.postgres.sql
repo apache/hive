@@ -521,7 +521,7 @@ CREATE TABLE "TAB_COL_STATS" (
 CREATE TABLE "VERSION" (
   "VER_ID" bigint,
   "SCHEMA_VERSION" character varying(127) NOT NULL,
-  "VERSION_COMMENT" character varying(255) NOT NULL,
+  "VERSION_COMMENT" character varying(255) NOT NULL
 );
 
 --
