@@ -69,6 +69,7 @@ Setup
 2. Install perl and following perl modules  (cpan -i <MODULE_NAME>)
 * IPC::Run
 * JSON
+* JSON::Path
 * Data::Dump
 * Number::Compare
 * Text::Glob

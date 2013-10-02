@@ -53,7 +53,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * @deprecated Use/modify {@link org.apache.hive.hcatalog.security.TestHdfsAuthorizationProvider} instead
+ * @deprecated 
  */
 public class TestHdfsAuthorizationProvider {
 
@@ -78,7 +78,7 @@ public class TestHdfsAuthorizationProvider {
     conf.set(ConfVars.SEMANTIC_ANALYZER_HOOK.varname, HCatSemanticAnalyzer.class.getName());
     conf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED, true);
     conf.setVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_MANAGER,
-        StorageDelegationAuthorizationProvider.class.getCanonicalName());
+        StorageDelegationAuthorizationProvider.class.getName());
     conf.set("fs.pfile.impl", "org.apache.hadoop.fs.ProxyLocalFileSystem");
 
     whDir = System.getProperty("test.warehouse.dir", "/tmp/testhdfsauthorization_wh");

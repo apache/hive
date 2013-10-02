@@ -114,7 +114,7 @@
 
 <property>
   <name>hive.security.authorization.manager</name>
-  <value>org.apache.hive.hcatalog.security.StorageDelegationAuthorizationProvider</value>
+  <value>org.apache.hcatalog.security.StorageDelegationAuthorizationProvider</value>
   <description>the hive client authorization manager class name.
   The user defined authorization class should implement interface org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider.
   HCatalog uses a model, where authorization checks are delegated to the storage layer (hdfs, hbase, ...).
