@@ -184,13 +184,18 @@ public class HiveSessionImpl implements HiveSession {
       boolean runAsync)
       throws HiveSQLException {
     acquire();
-    try {
-      ExecuteStatementOperation operation = getOperationManager()
+
+    OperationManager operationManager = getOperationManager();
+    ExecuteStatementOperation operation = operationManager
           .newExecuteStatementOperation(getSession(), statement, confOverlay, runAsync);
+    OperationHandle opHandle = operation.getHandle();
+    try {
       operation.run();
-      OperationHandle opHandle = operation.getHandle();
       opHandleSet.add(opHandle);
       return opHandle;
+    } catch (HiveSQLException e) {
+      operationManager.closeOperation(opHandle);
+      throw e;
     } finally {
       release();
     }
@@ -199,12 +204,17 @@ public class HiveSessionImpl implements HiveSession {
   public OperationHandle getTypeInfo()
       throws HiveSQLException {
     acquire();
+
+    OperationManager operationManager = getOperationManager();
+    GetTypeInfoOperation operation = operationManager.newGetTypeInfoOperation(getSession());
+    OperationHandle opHandle = operation.getHandle();
     try {
-      GetTypeInfoOperation operation = getOperationManager().newGetTypeInfoOperation(getSession());
       operation.run();
-      OperationHandle opHandle = operation.getHandle();
       opHandleSet.add(opHandle);
       return opHandle;
+    } catch (HiveSQLException e) {
+      operationManager.closeOperation(opHandle);
+      throw e;
     } finally {
       release();
     }
@@ -213,12 +223,17 @@ public class HiveSessionImpl implements HiveSession {
   public OperationHandle getCatalogs()
       throws HiveSQLException {
     acquire();
+
+    OperationManager operationManager = getOperationManager();
+    GetCatalogsOperation operation = operationManager.newGetCatalogsOperation(getSession());
+    OperationHandle opHandle = operation.getHandle();
     try {
-      GetCatalogsOperation operation = getOperationManager().newGetCatalogsOperation(getSession());
       operation.run();
-      OperationHandle opHandle = operation.getHandle();
       opHandleSet.add(opHandle);
       return opHandle;
+    } catch (HiveSQLException e) {
+      operationManager.closeOperation(opHandle);
+      throw e;
     } finally {
       release();
     }
@@ -226,14 +241,19 @@ public class HiveSessionImpl implements HiveSession {
 
   public OperationHandle getSchemas(String catalogName, String schemaName)
       throws HiveSQLException {
-      acquire();
+    acquire();
+
+    OperationManager operationManager = getOperationManager();
+    GetSchemasOperation operation =
+        operationManager.newGetSchemasOperation(getSession(), catalogName, schemaName);
+    OperationHandle opHandle = operation.getHandle();
     try {
-      GetSchemasOperation operation =
-          getOperationManager().newGetSchemasOperation(getSession(), catalogName, schemaName);
       operation.run();
-      OperationHandle opHandle = operation.getHandle();
       opHandleSet.add(opHandle);
       return opHandle;
+    } catch (HiveSQLException e) {
+      operationManager.closeOperation(opHandle);
+      throw e;
     } finally {
       release();
     }
@@ -242,14 +262,19 @@ public class HiveSessionImpl implements HiveSession {
   public OperationHandle getTables(String catalogName, String schemaName, String tableName,
       List<String> tableTypes)
       throws HiveSQLException {
-      acquire();
+    acquire();
+
+    OperationManager operationManager = getOperationManager();
+    MetadataOperation operation =
+        operationManager.newGetTablesOperation(getSession(), catalogName, schemaName, tableName, tableTypes);
+    OperationHandle opHandle = operation.getHandle();
     try {
-      MetadataOperation operation =
-          getOperationManager().newGetTablesOperation(getSession(), catalogName, schemaName, tableName, tableTypes);
       operation.run();
-      OperationHandle opHandle = operation.getHandle();
       opHandleSet.add(opHandle);
       return opHandle;
+    } catch (HiveSQLException e) {
+      operationManager.closeOperation(opHandle);
+      throw e;
     } finally {
       release();
     }
@@ -257,13 +282,18 @@ public class HiveSessionImpl implements HiveSession {
 
   public OperationHandle getTableTypes()
       throws HiveSQLException {
-      acquire();
+    acquire();
+
+    OperationManager operationManager = getOperationManager();
+    GetTableTypesOperation operation = operationManager.newGetTableTypesOperation(getSession());
+    OperationHandle opHandle = operation.getHandle();
     try {
-      GetTableTypesOperation operation = getOperationManager().newGetTableTypesOperation(getSession());
       operation.run();
-      OperationHandle opHandle = operation.getHandle();
       opHandleSet.add(opHandle);
       return opHandle;
+    } catch (HiveSQLException e) {
+      operationManager.closeOperation(opHandle);
+      throw e;
     } finally {
       release();
     }
@@ -272,13 +302,18 @@ public class HiveSessionImpl implements HiveSession {
   public OperationHandle getColumns(String catalogName, String schemaName,
       String tableName, String columnName)  throws HiveSQLException {
     acquire();
-    try {
-    GetColumnsOperation operation = getOperationManager().newGetColumnsOperation(getSession(),
+
+    OperationManager operationManager = getOperationManager();
+    GetColumnsOperation operation = operationManager.newGetColumnsOperation(getSession(),
         catalogName, schemaName, tableName, columnName);
-    operation.run();
     OperationHandle opHandle = operation.getHandle();
+    try {
+    operation.run();
     opHandleSet.add(opHandle);
     return opHandle;
+    } catch (HiveSQLException e) {
+      operationManager.closeOperation(opHandle); 
+      throw e;
     } finally {
       release();
     }
@@ -287,13 +322,18 @@ public class HiveSessionImpl implements HiveSession {
   public OperationHandle getFunctions(String catalogName, String schemaName, String functionName)
       throws HiveSQLException {
     acquire();
+
+    OperationManager operationManager = getOperationManager();
+    GetFunctionsOperation operation = operationManager
+        .newGetFunctionsOperation(getSession(), catalogName, schemaName, functionName);
+    OperationHandle opHandle = operation.getHandle();
     try {
-      GetFunctionsOperation operation = getOperationManager()
-          .newGetFunctionsOperation(getSession(), catalogName, schemaName, functionName);
       operation.run();
-      OperationHandle opHandle = operation.getHandle();
       opHandleSet.add(opHandle);
       return opHandle;
+    } catch (HiveSQLException e) {
+      operationManager.closeOperation(opHandle);
+      throw e;
     } finally {
       release();
     }
