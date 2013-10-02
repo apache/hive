@@ -79,6 +79,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.antlr.runtime.CommonToken;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.logging.Log;
@@ -455,6 +456,18 @@ public final class Utilities {
     }
   }
 
+  /**
+   * Need to serialize org.antlr.runtime.CommonToken
+   */
+  public static class CommonTokenDelegate extends PersistenceDelegate {
+    @Override
+    protected Expression instantiate(Object oldInstance, Encoder out) {
+      CommonToken ct = (CommonToken)oldInstance;
+      Object[] args = {ct.getType(), ct.getText()};
+      return new Expression(ct, ct.getClass(), "new", args);
+    }
+  }
+
   public static void setMapRedWork(Configuration conf, MapredWork w, String hiveScratchDir) {
     setMapWork(conf, w.getMapWork(), hiveScratchDir, true);
     if (w.getReduceWork() != null) {
@@ -648,6 +661,7 @@ public final class Utilities {
 
     e.setPersistenceDelegate(org.datanucleus.store.types.backed.Map.class, new MapDelegate());
     e.setPersistenceDelegate(org.datanucleus.store.types.backed.List.class, new ListDelegate());
+    e.setPersistenceDelegate(org.antlr.runtime.CommonToken.class, new CommonTokenDelegate());
 
     e.writeObject(plan);
     e.close();
