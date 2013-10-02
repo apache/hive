@@ -22,6 +22,8 @@ package org.apache.hcatalog.hbase;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -34,8 +36,11 @@ import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 /**
  * This class is an implementation of HiveAuthorizationProvider to provide
  * authorization functionality for HBase tables.
+ * @deprecated 
  */
-class HBaseAuthorizationProvider implements HiveAuthorizationProvider {
+@InterfaceAudience.Private
+@InterfaceStability.Evolving
+public class HBaseAuthorizationProvider implements HiveAuthorizationProvider {
 
   @Override
   public Configuration getConf() {
