@@ -122,7 +122,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setConfiguration(new HashMap<String, String>());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.warn("Error opening session: ", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -174,7 +174,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       cliService.closeSession(sessionHandle);
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.warn("Error closing session: ", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -190,7 +190,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setInfoValue(getInfoValue.toTGetInfoValue());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.warn("Error getting info: ", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -210,8 +210,8 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
           resp.setOperationHandle(operationHandle.toTOperationHandle());
           resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      e.printStackTrace();
-      resp.setStatus(HiveSQLException.toTStatus(e));
+       LOG.warn("Error fetching results: ", e);
+       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
   }
@@ -224,7 +224,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(operationHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.warn("Error executing statement: ", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -238,7 +238,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(opHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.warn("Error getting type info: ", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -253,7 +253,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(opHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.warn("Error getting catalogs: ", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -269,7 +269,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(opHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.warn("Error getting schemas: ", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -283,7 +283,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(opHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.warn("Error getting tables: ", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -302,7 +302,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(opHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.warn("Error getting table types: ", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -318,7 +318,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationHandle(opHandle.toTOperationHandle());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.warn("Error getting columns: ", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -332,7 +332,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setOperationState(operationState.toTOperationState());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.warn("Error getting functions: ", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -345,7 +345,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       cliService.cancelOperation(new OperationHandle(req.getOperationHandle()));
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.warn("Error getting operation status: ", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -358,7 +358,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       cliService.closeOperation(new OperationHandle(req.getOperationHandle()));
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.warn("Error canceling operation: ", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -373,7 +373,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setSchema(schema.toTTableSchema());
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.warn("Error closing operation: ", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
@@ -391,7 +391,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
       resp.setHasMoreRows(false);
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-      e.printStackTrace();
+      LOG.warn("Error getting result set metadata: ", e);
       resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
