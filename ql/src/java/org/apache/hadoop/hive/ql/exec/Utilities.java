@@ -497,6 +497,18 @@ public final class Utilities {
     }
   }
 
+  /**
+   * Need to serialize org.antlr.runtime.CommonToken
+   */
+  public static class CommonTokenDelegate extends PersistenceDelegate {
+    @Override
+    protected Expression instantiate(Object oldInstance, Encoder out) {
+      CommonToken ct = (CommonToken)oldInstance;
+      Object[] args = {ct.getType(), ct.getText()};
+      return new Expression(ct, ct.getClass(), "new", args);
+    }
+  }
+
   public static void setMapRedWork(Configuration conf, MapredWork w, String hiveScratchDir) {
     setMapWork(conf, w.getMapWork(), hiveScratchDir, true);
     if (w.getReduceWork() != null) {
@@ -746,7 +758,7 @@ public final class Utilities {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.CLONE_PLAN);
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
-    Configuration conf = new Configuration();
+    Configuration conf = new HiveConf();
     serializePlan(plan, baos, conf, true);
     MapredWork newPlan = deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
         MapredWork.class, conf, true);
@@ -775,6 +787,7 @@ public final class Utilities {
 
     e.setPersistenceDelegate(org.datanucleus.store.types.backed.Map.class, new MapDelegate());
     e.setPersistenceDelegate(org.datanucleus.store.types.backed.List.class, new ListDelegate());
+    e.setPersistenceDelegate(CommonToken.class, new CommonTokenDelegate());
 
     e.writeObject(plan);
     e.close();
