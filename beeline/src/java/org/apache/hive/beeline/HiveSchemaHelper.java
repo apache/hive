@@ -22,7 +22,7 @@ import java.util.IllegalFormatException;
 public class HiveSchemaHelper {
   public static final String DB_DERBY = "derby";
   public static final String DB_MYSQL = "mysql";
-  public static final String DB_POSTGRACE = "postgrace";
+  public static final String DB_POSTGRACE = "postgres";
   public static final String DB_ORACLE = "oracle";
 
   public interface NestedScriptParser {
@@ -225,8 +225,8 @@ public class HiveSchemaHelper {
       if (!isNestedScript(dbCommand)) {
         throw new IllegalArgumentException("Not a nested script format " + dbCommand);
       }
-      // remove ending ';'
-      return dbCommand.replace(";", "");
+      // remove ending ';' and starting '@'
+      return dbCommand.replace(";", "").replace(ORACLE_NESTING_TOKEN, "");
     }
 
     @Override
