@@ -95,7 +95,7 @@
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>hive-shims-${project.version}-uberjar.jar</file>
+                  <file>target/hive-shims-${project.version}-uberjar.jar</file>
                   <type>jar</type>          
                 </artifact>
               </artifacts>

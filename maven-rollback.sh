@@ -11,6 +11,8 @@ move_source() {
 # Then reversing order of hcatalog pom moves
 move_source itests/src/test/java/org/apache/hadoop/hive/serde2/TestSerdeWithFieldComments.java serde/src/test/org/apache/hadoop/hive/serde2/TestSerdeWithFieldComments.java
 move_source itests/src/test/java/org/apache/hadoop/hive/serde2/dynamic_type/TestDynamicSerDe.java serde/src/test/org/apache/hadoop/hive/serde2/dynamic_type/TestDynamicSerDe.java
+move_source itests/src/test/java/org/apache/hive/service/cli/thrift/TestThriftHttpCLIService.java service/src/test/org/apache/hive/service/cli/thrift/TestThriftHttpCLIService.java
+move_source itests/src/test/java/org/apache/hive/service/auth/TestCustomAuthentication.java service/src/test/org/apache/hive/service/auth/TestCustomAuthentication.java
 move_source itests/src/test/java/org/apache/hadoop/hive/metastore/TestMetaStoreEventListenerOnlyOnCommit.java metastore/src/test/org/apache/hadoop/hive/metastore/TestMetaStoreEventListenerOnlyOnCommit.java
 move_source itests/src/test/java/org/apache/hadoop/hive/metastore/TestMetaStoreEndFunctionListener.java metastore/src/test/org/apache/hadoop/hive/metastore/TestMetaStoreEndFunctionListener.java
 move_source itests/src/test/java/org/apache/hadoop/hive/metastore/TestHiveMetaStore.java metastore/src/test/org/apache/hadoop/hive/metastore/TestHiveMetaStore.java
