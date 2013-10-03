@@ -670,28 +670,28 @@ public class TestVectorStringExpressions {
 
     // BEGIN pattern
     expr = new FilterStringColLikeStringScalar(0, new Text("abc%"));
-    Assert.assertEquals(FilterStringColLikeStringScalar.PatternType.BEGIN,
-        expr.getType());
+    Assert.assertEquals(FilterStringColLikeStringScalar.BeginChecker.class,
+        expr.checker.getClass());
 
     // END pattern
     expr = new FilterStringColLikeStringScalar(0, new Text("%abc"));
-    Assert.assertEquals(FilterStringColLikeStringScalar.PatternType.END,
-        expr.getType());
+    Assert.assertEquals(FilterStringColLikeStringScalar.EndChecker.class,
+        expr.checker.getClass());
 
     // MIDDLE pattern
     expr = new FilterStringColLikeStringScalar(0, new Text("%abc%"));
-    Assert.assertEquals(FilterStringColLikeStringScalar.PatternType.MIDDLE,
-        expr.getType());
+    Assert.assertEquals(FilterStringColLikeStringScalar.MiddleChecker.class,
+        expr.checker.getClass());
 
     // COMPLEX pattern
     expr = new FilterStringColLikeStringScalar(0, new Text("%abc%de"));
-    Assert.assertEquals(FilterStringColLikeStringScalar.PatternType.COMPLEX,
-        expr.getType());
+    Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
+        expr.checker.getClass());
 
     // NONE pattern
     expr = new FilterStringColLikeStringScalar(0, new Text("abc"));
-    Assert.assertEquals(FilterStringColLikeStringScalar.PatternType.NONE,
-        expr.getType());
+    Assert.assertEquals(FilterStringColLikeStringScalar.NoneChecker.class,
+        expr.checker.getClass());
   }
 
   public void testStringLikeMultiByte() {
