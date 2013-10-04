@@ -1706,13 +1706,18 @@ class RecordReaderImpl implements RecordReader {
     TruthValue[] leafValues = new TruthValue[sargLeaves.size()];
     for(int rowGroup=0; rowGroup < result.length; ++rowGroup) {
       for(int pred=0; pred < leafValues.length; ++pred) {
-        OrcProto.ColumnStatistics stats =
-            indexes[filterColumns[pred]].getEntry(rowGroup).getStatistics();
-        leafValues[pred] = evaluatePredicate(stats, sargLeaves.get(pred));
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Stats = " + stats);
-          LOG.debug("Setting " + sargLeaves.get(pred) + " to " +
-              leafValues[pred]);
+        if (filterColumns[pred] != -1) {
+          OrcProto.ColumnStatistics stats =
+              indexes[filterColumns[pred]].getEntry(rowGroup).getStatistics();
+          leafValues[pred] = evaluatePredicate(stats, sargLeaves.get(pred));
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Stats = " + stats);
+            LOG.debug("Setting " + sargLeaves.get(pred) + " to " +
+                leafValues[pred]);
+          }
+        } else {
+          // the column is a virtual column
+          leafValues[pred] = TruthValue.YES_NO_NULL;
         }
       }
       result[rowGroup] = sarg.evaluate(leafValues).isNotNeeded();

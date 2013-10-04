@@ -88,7 +88,7 @@ public class OrcInputFormat  extends FileInputFormat<NullWritable, OrcStruct>
         String[] neededColumnNames = columnNamesString.split(",");
         int i = 0;
         for(int columnId: types.get(0).getSubtypesList()) {
-          if (includeColumn[columnId]) {
+          if (includeColumn == null || includeColumn[columnId]) {
             columnNames[columnId] = neededColumnNames[i++];
           }
         }
