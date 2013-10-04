@@ -18,12 +18,13 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
@@ -31,16 +32,16 @@ import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.LeadLagInfo;
 import org.apache.hadoop.hive.ql.parse.WindowingExprNodeEvaluatorFactory;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.BoundaryDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFExpressionDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFInputDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFQueryInputDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionedTableFunctionDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.ShapeDetails;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.ValueBoundaryDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFrameDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFunctionDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowTableFunctionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFInputDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFQueryInputDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.ShapeDetails;
+import org.apache.hadoop.hive.ql.plan.ptf.ValueBoundaryDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLeadLag;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator;
@@ -76,7 +77,7 @@ public class PTFDeserializer {
   }
 
   public void initializePTFChain(PartitionedTableFunctionDef tblFnDef) throws HiveException {
-    Stack<PTFInputDef> ptfChain = new Stack<PTFInputDef>();
+    Deque<PTFInputDef> ptfChain = new ArrayDeque<PTFInputDef>();
     PTFInputDef currentDef = tblFnDef;
     while (currentDef != null) {
       ptfChain.push(currentDef);
@@ -188,8 +189,8 @@ public class PTFDeserializer {
   }
 
   static void setupWdwFnEvaluator(WindowFunctionDef def) throws HiveException {
-    ArrayList<PTFExpressionDef> args = def.getArgs();
-    ArrayList<ObjectInspector> argOIs = new ArrayList<ObjectInspector>();
+    List<PTFExpressionDef> args = def.getArgs();
+    List<ObjectInspector> argOIs = new ArrayList<ObjectInspector>();
     ObjectInspector[] funcArgOIs = null;
 
     if (args != null) {

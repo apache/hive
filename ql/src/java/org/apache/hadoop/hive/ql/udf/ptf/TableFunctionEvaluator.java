@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionedTableFunctionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
@@ -46,8 +46,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
  * </ol>
  *
  */
-public abstract class TableFunctionEvaluator
-{
+public abstract class TableFunctionEvaluator {
   /*
    * how is this different from the OutpuShape set on the TableDef.
    * This is the OI of the object coming out of the PTF.
@@ -59,52 +58,45 @@ public abstract class TableFunctionEvaluator
    * same comment as OI applies here.
    */
   transient protected StructObjectInspector rawInputOI;
-  protected PartitionedTableFunctionDef tDef;
+  protected PartitionedTableFunctionDef tableDef;
   protected PTFDesc ptfDesc;
   boolean transformsRawInput;
   transient protected PTFPartition outputPartition;
 
-  static{
+  static {
+    //TODO is this a bug? The field is not named outputOI it is named OI
     PTFUtils.makeTransient(TableFunctionEvaluator.class, "outputOI", "rawInputOI");
   }
 
-  public StructObjectInspector getOutputOI()
-  {
+  public StructObjectInspector getOutputOI() {
     return OI;
   }
 
-  protected void setOutputOI(StructObjectInspector outputOI)
-  {
+  protected void setOutputOI(StructObjectInspector outputOI) {
     OI = outputOI;
   }
 
-  public PartitionedTableFunctionDef getTableDef()
-  {
-    return tDef;
+  public PartitionedTableFunctionDef getTableDef() {
+    return tableDef;
   }
 
-  public void setTableDef(PartitionedTableFunctionDef tDef)
-  {
-    this.tDef = tDef;
+  public void setTableDef(PartitionedTableFunctionDef tDef) {
+    this.tableDef = tDef;
   }
 
-  protected PTFDesc getQueryDef()
-  {
+  protected PTFDesc getQueryDef() {
     return ptfDesc;
   }
 
-  protected void setQueryDef(PTFDesc ptfDesc)
-  {
+  protected void setQueryDef(PTFDesc ptfDesc) {
     this.ptfDesc = ptfDesc;
   }
 
-  public StructObjectInspector getRawInputOI()
-  {
+  public StructObjectInspector getRawInputOI() {
     return rawInputOI;
   }
 
-  protected void setRawInputOI(StructObjectInspector rawInputOI)
-  {
+  protected void setRawInputOI(StructObjectInspector rawInputOI) {
     this.rawInputOI = rawInputOI;
   }
 
@@ -117,17 +109,15 @@ public abstract class TableFunctionEvaluator
   }
 
   public PTFPartition execute(PTFPartition iPart)
-      throws HiveException
-  {
+      throws HiveException {
     PTFPartitionIterator<Object> pItr = iPart.iterator();
     PTFOperator.connectLeadLagFunctionsToPartition(ptfDesc, pItr);
 
     if ( outputPartition == null ) {
       outputPartition = PTFPartition.create(ptfDesc.getCfg(),
-          tDef.getOutputShape().getSerde(),
-          OI, tDef.getOutputShape().getOI());
-    }
-    else {
+          tableDef.getOutputShape().getSerde(),
+          OI, tableDef.getOutputShape().getOI());
+    } else {
       outputPartition.reset();
     }
 
@@ -137,17 +127,14 @@ public abstract class TableFunctionEvaluator
 
   protected abstract void execute(PTFPartitionIterator<Object> pItr, PTFPartition oPart) throws HiveException;
 
-  public PTFPartition transformRawInput(PTFPartition iPart) throws HiveException
-  {
-    if ( !isTransformsRawInput())
-    {
-      throw new HiveException(String.format("Internal Error: mapExecute called on function (%s)that has no Map Phase", tDef.getName()));
+  public PTFPartition transformRawInput(PTFPartition iPart) throws HiveException {
+    if (!isTransformsRawInput()) {
+      throw new HiveException(String.format("Internal Error: mapExecute called on function (%s)that has no Map Phase", tableDef.getName()));
     }
     return _transformRawInput(iPart);
   }
 
-  protected PTFPartition _transformRawInput(PTFPartition iPart) throws HiveException
-  {
+  protected PTFPartition _transformRawInput(PTFPartition iPart) throws HiveException {
     return null;
   }
 }

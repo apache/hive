@@ -40,9 +40,9 @@ import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowExpressionSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFExpressionDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFInputDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionedTableFunctionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFInputDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -101,7 +101,7 @@ public class NPath extends TableFunctionEvaluator
       {
         int sz = syFnRes.nextRow - (pItr.getIndex() - 1);
         Object selectListInput = NPath.getSelectListInput(iRow,
-            tDef.getInput().getOutputShape().getOI(), pItr, sz);
+            tableDef.getInput().getOutputShape().getOI(), pItr, sz);
         ArrayList<Object> oRow = new ArrayList<Object>();
         for(ExprNodeEvaluator resExprEval : resultExprInfo.resultExprEvals)
         {
@@ -161,7 +161,7 @@ public class NPath extends TableFunctionEvaluator
       NPath evaluator = (NPath) getEvaluator();
       PartitionedTableFunctionDef tDef = evaluator.getTableDef();
 
-      ArrayList<PTFExpressionDef> args = tDef.getArgs();
+      List<PTFExpressionDef> args = tDef.getArgs();
       int argsNum = args == null ? 0 : args.size();
 
       if ( argsNum < 4 )
@@ -199,7 +199,7 @@ public class NPath extends TableFunctionEvaluator
      * validate and setup patternStr
      */
     private void validateAndSetupPatternStr(NPath evaluator,
-        ArrayList<PTFExpressionDef> args) throws SemanticException {
+        List<PTFExpressionDef> args) throws SemanticException {
       PTFExpressionDef symboPatternArg = args.get(0);
       ObjectInspector symbolPatternArgOI = symboPatternArg.getOI();
 
@@ -219,7 +219,7 @@ public class NPath extends TableFunctionEvaluator
      * validate and setup SymbolInfo
      */
     private void validateAndSetupSymbolInfo(NPath evaluator,
-        ArrayList<PTFExpressionDef> args,
+        List<PTFExpressionDef> args,
         int argsNum) throws SemanticException {
       int symbolArgsSz = argsNum - 2;
       if ( symbolArgsSz % 2 != 0)
@@ -263,7 +263,7 @@ public class NPath extends TableFunctionEvaluator
      * validate and setup resultExprStr
      */
     private void validateAndSetupResultExprStr(NPath evaluator,
-        ArrayList<PTFExpressionDef> args,
+        List<PTFExpressionDef> args,
         int argsNum) throws SemanticException {
       PTFExpressionDef resultExprArg = args.get(argsNum - 1);
       ObjectInspector resultExprArgOI = resultExprArg.getOI();
@@ -303,7 +303,7 @@ public class NPath extends TableFunctionEvaluator
         NPath evaluator = (NPath) getEvaluator();
         PartitionedTableFunctionDef tDef = evaluator.getTableDef();
 
-        ArrayList<PTFExpressionDef> args = tDef.getArgs();
+        List<PTFExpressionDef> args = tDef.getArgs();
         int argsNum = args.size();
 
         validateAndSetupPatternStr(evaluator, args);
