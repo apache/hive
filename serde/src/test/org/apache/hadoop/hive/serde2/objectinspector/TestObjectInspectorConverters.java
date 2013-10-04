@@ -25,6 +25,9 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -170,5 +173,23 @@ public class TestObjectInspectorConverters extends TestCase {
       throw e;
     }
 
+  }
+
+  public void testGetConvertedOI() throws Throwable {
+    // Try with types that have type params
+    PrimitiveTypeInfo varchar5TI =
+        (PrimitiveTypeInfo) TypeInfoFactory.getPrimitiveTypeInfo("varchar(5)");
+    PrimitiveTypeInfo varchar10TI =
+        (PrimitiveTypeInfo) TypeInfoFactory.getPrimitiveTypeInfo("varchar(10)");
+    PrimitiveObjectInspector varchar5OI =
+        PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(varchar5TI);
+    PrimitiveObjectInspector varchar10OI =
+        PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(varchar10TI);
+
+    // output OI should have varchar type params
+    PrimitiveObjectInspector poi = (PrimitiveObjectInspector)
+        ObjectInspectorConverters.getConvertedOI(varchar10OI, varchar5OI, true);
+    VarcharTypeParams vcParams = (VarcharTypeParams) poi.getTypeParams();
+    assertEquals("varchar length doesn't match", 5, vcParams.length);
   }
 }

@@ -177,9 +177,9 @@ public final class ObjectInspectorConverters {
     // TODO: Add support for UNION once SettableUnionObjectInspector is implemented.
     switch (outputOI.getCategory()) {
     case PRIMITIVE:
-      PrimitiveObjectInspector primInputOI = (PrimitiveObjectInspector) inputOI;
+      PrimitiveObjectInspector primOutputOI = (PrimitiveObjectInspector) outputOI;
       return PrimitiveObjectInspectorFactory.
-          getPrimitiveWritableObjectInspector(primInputOI);
+          getPrimitiveWritableObjectInspector(primOutputOI);
     case STRUCT:
       StructObjectInspector structOutputOI = (StructObjectInspector) outputOI;
       // create a standard settable struct object inspector
