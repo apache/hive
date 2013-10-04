@@ -10,6 +10,14 @@ PREHOOK: query: DROP TABLE orc_create_staging
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE orc_create_staging
 POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE orc_create_people_staging
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE orc_create_people_staging
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE orc_create_people
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE orc_create_people
+POSTHOOK: type: DROPTABLE
 PREHOOK: query: CREATE TABLE orc_create_staging (
   str STRING,
   mp  MAP<STRING,STRING>,
@@ -398,6 +406,144 @@ POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_crea
 {"a":"one","b":"two"}
 {"a":"three","b":"four"}
 {"a":"five","b":"six"}
+PREHOOK: query: CREATE TABLE orc_create_people_staging (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  state string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE orc_create_people_staging (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  state string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@orc_create_people_staging
+POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/orc_create_people.txt'
+  OVERWRITE INTO TABLE orc_create_people_staging
+PREHOOK: type: LOAD
+PREHOOK: Output: default@orc_create_people_staging
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/orc_create_people.txt'
+  OVERWRITE INTO TABLE orc_create_people_staging
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@orc_create_people_staging
+POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+PREHOOK: query: CREATE TABLE orc_create_people (
+  id int,
+  first_name string,
+  last_name string,
+  address string)
+PARTITIONED BY (state string)
+STORED AS orc
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE orc_create_people (
+  id int,
+  first_name string,
+  last_name string,
+  address string)
+PARTITIONED BY (state string)
+STORED AS orc
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@orc_create_people
+POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+PREHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
+  SELECT * FROM orc_create_people_staging
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people_staging
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
+  SELECT * FROM orc_create_people_staging
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people_staging
+POSTHOOK: Output: default@orc_create_people@state=Ca
+POSTHOOK: Output: default@orc_create_people@state=Or
+POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+PREHOOK: query: -- test predicate push down with partition pruning
+SELECT COUNT(*) FROM orc_create_people where id < 10 and state = 'Ca'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Input: default@orc_create_people@state=Ca
+#### A masked pattern was here ####
+POSTHOOK: query: -- test predicate push down with partition pruning
+SELECT COUNT(*) FROM orc_create_people where id < 10 and state = 'Ca'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Input: default@orc_create_people@state=Ca
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+5
+PREHOOK: query: -- test predicate push down with no column projection
+SELECT id, first_name, last_name, address
+  FROM orc_create_people WHERE id > 90
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Input: default@orc_create_people@state=Ca
+PREHOOK: Input: default@orc_create_people@state=Or
+#### A masked pattern was here ####
+POSTHOOK: query: -- test predicate push down with no column projection
+SELECT id, first_name, last_name, address
+  FROM orc_create_people WHERE id > 90
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Input: default@orc_create_people@state=Ca
+POSTHOOK: Input: default@orc_create_people@state=Or
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+91	Genevieve	Wilkins	908 Turpis. Street
+93	Mariko	Cline	P.O. Box 329, 5375 Ac St.
+95	Winifred	Hopper	Ap #140-8982 Velit Avenue
+97	Dana	Carter	814-601 Purus. Av.
+99	Wynter	Vincent	626-8492 Mollis Avenue
+92	Thane	Oneil	6766 Lectus St.
+94	Lael	Mclean	500-7010 Sit St.
+96	Rafael	England	P.O. Box 405, 7857 Eget Av.
+98	Juliet	Battle	Ap #535-1965 Cursus St.
+100	Wang	Mitchell	4023 Lacinia. Ave
 PREHOOK: query: DROP TABLE orc_create
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create
@@ -410,6 +556,14 @@ POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create
 POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
 POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
 PREHOOK: query: DROP TABLE orc_create_complex
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_complex
@@ -422,6 +576,14 @@ POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create
 POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
 POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
 PREHOOK: query: DROP TABLE orc_create_staging
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@orc_create_staging
@@ -434,3 +596,51 @@ POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create
 POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
 POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+PREHOOK: query: DROP TABLE orc_create_people_staging
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_create_people_staging
+PREHOOK: Output: default@orc_create_people_staging
+POSTHOOK: query: DROP TABLE orc_create_people_staging
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_create_people_staging
+POSTHOOK: Output: default@orc_create_people_staging
+POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+PREHOOK: query: DROP TABLE orc_create_people
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@orc_create_people
+PREHOOK: Output: default@orc_create_people
+POSTHOOK: query: DROP TABLE orc_create_people
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@orc_create_people
+POSTHOOK: Output: default@orc_create_people
+POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:lst, type:array<string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Ca).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).address SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:address, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).first_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:first_name, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).id SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:id, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_create_people PARTITION(state=Or).last_name SIMPLE [(orc_create_people_staging)orc_create_people_staging.FieldSchema(name:last_name, type:string, comment:null), ]

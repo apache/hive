@@ -347,23 +347,38 @@
     <echo message="Project: ${ant.project.name}"/>
     <iterate target="compile-test" iterate="${iterate.hive.tests}"/>
   </target>
-  
+
   <target name="test" depends="clean-test,jar-test" description="Run tests">
+    <property name="test.target.name" value="test"/>
+    <antcall target="testonly" />
+  </target>
+
+
+
+  <!-- target to run the tests -->
+  <target name="testonly">
+    <if>
+      <not><isset property="test.target.name"/></not>
+      <then><property name="test.target.name" value="testonly"/></then>
+    </if>
     <echo message="Project: ${ant.project.name}"/>
     <if>
+      <or>
       <isset property="module"/>
+      <equals arg1="${test.target.name}" arg2="testonly"/>
+      </or>
       <else>
         <antcall target="test-shims">
           <param name="hadoop.version.ant-internal" value="${hadoop.security.version}" />
         </antcall>
       </else>
     </if>
-    <condition property="target.module" value="${module}" else="${iterate.hive.test}">
+    <condition property="target.module" value="${module}" else="${iterate.hive.tests}">
       <isset property="module"/>
     </condition>
     <for keepgoing="${test.continue.on.failure}" list="${target.module}" param="module">
       <sequential>
-        <ant antfile="@{module}/build.xml" target="test" inheritAll="false" inheritRefs="true">
+        <ant antfile="@{module}/build.xml" target="${test.target.name}" inheritAll="false" inheritRefs="true">
           <property name="build.dir.hive" location="${build.dir.hive}"/>
           <property name="is-offline" value="${is-offline}"/>
         </ant>
@@ -549,6 +564,7 @@
         <exclude name="**/*high-scale-lib-*"/>
         <exclude name="**/hamcrest-core-*jar"/>
         <exclude name="**/junit*.jar"/>
+        <exclude name="**/kryo*.jar"/>
         <exclude name="**/asm*.jar"/>
         <exclude name="**/mockito*.jar"/>
         <exclude name="**/velocity*.jar"/>

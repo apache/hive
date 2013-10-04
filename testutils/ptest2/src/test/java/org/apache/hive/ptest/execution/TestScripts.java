@@ -73,6 +73,7 @@ public class TestScripts  {
     templateVariables.put("clearLibraryCache", "true");
     templateVariables.put("javaHome", "/usr/java/jdk1.7");
     templateVariables.put("antEnvOpts", "-Dhttp.proxyHost=somehost -Dhttp.proxyPort=3128");
+    templateVariables.put("antTestArgs", "-DgrammarBuild.notRequired=true -Dskip.javadoc=true");
     String template = readResource("batch-exec.vm");
     String actual = getTemplateResult(template, templateVariables);
     Approvals.verify(actual);
@@ -97,6 +98,7 @@ public class TestScripts  {
     templateVariables.put("javaHome", "/usr/java/jdk1.7");
     templateVariables.put("javaHomeForTests", "/usr/java/jdk1.7-other");
     templateVariables.put("antEnvOpts", "-Dhttp.proxyHost=somehost -Dhttp.proxyPort=3128");
+    templateVariables.put("antTestArgs", "");
     String template = readResource("batch-exec.vm");
     String actual = getTemplateResult(template, templateVariables);
     Approvals.verify(actual);

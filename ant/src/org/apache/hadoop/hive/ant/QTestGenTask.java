@@ -367,7 +367,7 @@ public class QTestGenTask extends Task {
       
       Collections.sort(qFiles);
       for (File qFile : qFiles) {
-        qFilesMap.put(qFile.getName(), getEscapedCanonicalPath(qFile));
+        qFilesMap.put(qFile.getName(), relativePath(hiveRootDir, qFile));
       }
 
       // Make sure the output directory exists, if it doesn't
@@ -418,12 +418,12 @@ public class QTestGenTask extends Task {
       // For each of the qFiles generate the test
       VelocityContext ctx = new VelocityContext();
       ctx.put("className", className);
-      ctx.put("hiveRootDir", getEscapedCanonicalPath(hiveRootDir));
-      ctx.put("queryDir", getEscapedCanonicalPath(queryDir));
+      ctx.put("hiveRootDir", escapePath(hiveRootDir.getCanonicalPath()));
+      ctx.put("queryDir", relativePath(hiveRootDir, queryDir));
       ctx.put("qfiles", qFiles);
       ctx.put("qfilesMap", qFilesMap);
-      ctx.put("resultsDir", getEscapedCanonicalPath(resultsDir));
-      ctx.put("logDir", getEscapedCanonicalPath(logDir));
+      ctx.put("resultsDir", relativePath(hiveRootDir, resultsDir));
+      ctx.put("logDir", relativePath(hiveRootDir, logDir));
       ctx.put("clusterMode", clusterMode);
       ctx.put("hadoopVersion", hadoopVersion);
 
@@ -447,8 +447,10 @@ public class QTestGenTask extends Task {
       throw new BuildException("Generation failed", e);
     }
   }
-  
-  private static String getEscapedCanonicalPath(File file) throws IOException {
+  private String relativePath(File hiveRootDir, File file) {
+    return escapePath(hiveRootDir.toURI().relativize(file.toURI()).getPath());
+  }  
+  private static String escapePath(String path) {
     if (System.getProperty("os.name").toLowerCase().startsWith("win")) {
       // Escape the backward slash in CanonicalPath if the unit test runs on windows
       // e.g. dir.getCanonicalPath() gets the absolute path of local
@@ -456,8 +458,8 @@ public class QTestGenTask extends Task {
       // in compiler error in windows. Reason : the canonical path contains backward
       // slashes "C:\temp\etc\" and it is not a valid string in Java
       // unless we escape the backward slashes.
-      return file.getCanonicalPath().replace("\\", "\\\\");
+      return path.replace("\\", "\\\\");
     }
-    return file.getCanonicalPath();
+    return path;
   }
 }

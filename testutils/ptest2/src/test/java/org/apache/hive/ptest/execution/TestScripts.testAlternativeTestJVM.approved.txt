@@ -40,7 +40,7 @@ cd /some/local/dir/instance-1/apache-source && \
    -Divy.default.always.check.exact.revision=false \
    -Divy.cache.ttl.default=eternal -Divy.checkmodified=false \
    -Dmvn.local.repo=/some/local/dir/instance-1/maven \
-   -Dant=arg1 -Dtest=arg1 1>/some/log/dir/ant-test.txt 2>&1
+   -Dant=arg1  -Dtest=arg1 1>/some/log/dir/ant-test.txt 2>&1
 ret=$?
 if [[ $ret -ne 0 ]]
 then

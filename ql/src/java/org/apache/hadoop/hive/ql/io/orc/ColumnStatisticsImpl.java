@@ -21,6 +21,7 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.io.BytesWritable;
 
 class ColumnStatisticsImpl implements ColumnStatistics {
 
@@ -332,10 +333,11 @@ class ColumnStatisticsImpl implements ColumnStatistics {
     }
   }
 
-  private static final class StringStatisticsImpl extends ColumnStatisticsImpl
+  protected static final class StringStatisticsImpl extends ColumnStatisticsImpl
       implements StringColumnStatistics {
     private String minimum = null;
     private String maximum = null;
+    private long sum = 0;
 
     StringStatisticsImpl() {
     }
@@ -349,6 +351,9 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       if (str.hasMinimum()) {
         minimum = str.getMinimum();
       }
+      if(str.hasSum()) {
+        sum = str.getSum();
+      }
     }
 
     @Override
@@ -356,6 +361,7 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       super.reset();
       minimum = null;
       maximum = null;
+      sum = 0;
     }
 
     @Override
@@ -368,6 +374,7 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       } else if (maximum.compareTo(value) < 0) {
         maximum = value;
       }
+      sum += value.length();
     }
 
     @Override
@@ -384,6 +391,7 @@ class ColumnStatisticsImpl implements ColumnStatistics {
           maximum = str.maximum;
         }
       }
+      sum += str.sum;
     }
 
     @Override
@@ -394,6 +402,7 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       if (getNumberOfValues() != 0) {
         str.setMinimum(minimum);
         str.setMaximum(maximum);
+        str.setSum(sum);
       }
       result.setStringStatistics(str);
       return result;
@@ -410,6 +419,11 @@ class ColumnStatisticsImpl implements ColumnStatistics {
     }
 
     @Override
+    public long getSum() {
+      return sum;
+    }
+
+    @Override
     public String toString() {
       StringBuilder buf = new StringBuilder(super.toString());
       if (getNumberOfValues() != 0) {
@@ -417,6 +431,67 @@ class ColumnStatisticsImpl implements ColumnStatistics {
         buf.append(minimum);
         buf.append(" max: ");
         buf.append(maximum);
+        buf.append(" sum: ");
+        buf.append(sum);
+      }
+      return buf.toString();
+    }
+  }
+
+  protected static final class BinaryStatisticsImpl extends ColumnStatisticsImpl implements
+      BinaryColumnStatistics {
+
+    private long sum = 0;
+
+    BinaryStatisticsImpl() {
+    }
+
+    BinaryStatisticsImpl(OrcProto.ColumnStatistics stats) {
+      super(stats);
+      OrcProto.BinaryStatistics binStats = stats.getBinaryStatistics();
+      if (binStats.hasSum()) {
+        sum = binStats.getSum();
+      }
+    }
+
+    @Override
+    void reset() {
+      super.reset();
+      sum = 0;
+    }
+
+    @Override
+    void updateBinary(BytesWritable value) {
+      sum += value.getLength();
+    }
+
+    @Override
+    void merge(ColumnStatisticsImpl other) {
+      super.merge(other);
+      BinaryStatisticsImpl bin = (BinaryStatisticsImpl) other;
+      sum += bin.sum;
+    }
+
+    @Override
+    public long getSum() {
+      return sum;
+    }
+
+    @Override
+    OrcProto.ColumnStatistics.Builder serialize() {
+      OrcProto.ColumnStatistics.Builder result = super.serialize();
+      OrcProto.BinaryStatistics.Builder bin = OrcProto.BinaryStatistics.newBuilder();
+      bin.setSum(sum);
+      result.setBinaryStatistics(bin);
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder buf = new StringBuilder(super.toString());
+      if (getNumberOfValues() != 0) {
+        buf.append(" sum: ");
+        buf.append(sum);
       }
       return buf.toString();
     }
@@ -666,6 +741,10 @@ class ColumnStatisticsImpl implements ColumnStatistics {
     throw new UnsupportedOperationException("Can't update string");
   }
 
+  void updateBinary(BytesWritable value) {
+    throw new UnsupportedOperationException("Can't update binary");
+  }
+
   void updateDecimal(HiveDecimal value) {
     throw new UnsupportedOperationException("Can't update decimal");
   }
@@ -720,6 +799,8 @@ class ColumnStatisticsImpl implements ColumnStatistics {
             return new DecimalStatisticsImpl();
           case DATE:
             return new DateStatisticsImpl();
+          case BINARY:
+            return new BinaryStatisticsImpl();
           default:
             return new ColumnStatisticsImpl();
         }
@@ -741,6 +822,8 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       return new DecimalStatisticsImpl(stats);
     } else if (stats.hasDateStatistics()) {
       return new DateStatisticsImpl(stats);
+    } else if(stats.hasBinaryStatistics()) {
+      return new BinaryStatisticsImpl(stats);
     } else {
       return new ColumnStatisticsImpl(stats);
     }

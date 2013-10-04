@@ -32,4 +32,10 @@ public interface StringColumnStatistics extends ColumnStatistics {
    * @return the maximum
    */
   String getMaximum();
+
+  /**
+   * Get the total length of all strings
+   * @return the sum (total length)
+   */
+  long getSum();
 }

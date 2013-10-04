@@ -106,6 +106,22 @@ public class TestHiveVarchar extends TestCase {
         assertEquals(strLen, enforcedString.codePointCount(0, enforcedString.length()));
       }
     }
+
+    HiveVarchar vc1 = new HiveVarchar("0123456789", 10);
+    assertEquals(10, vc1.getCharacterLength());
+
+    // Changing string value; getCharacterLength() should update accordingly
+    vc1.setValue("012345678901234");
+    assertEquals(15, vc1.getCharacterLength());
+
+    vc1.setValue("01234", -1);
+    assertEquals(5, vc1.getCharacterLength());
+
+    vc1.setValue(new HiveVarchar("0123456789", -1));
+    assertEquals(10, vc1.getCharacterLength());
+
+    vc1.setValue(new HiveVarchar("01234", -1), -1);
+    assertEquals(5, vc1.getCharacterLength());
   }
 
   public void testComparison() throws Exception {

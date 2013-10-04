@@ -226,9 +226,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         List<Class<?>> interfaceList =
             Arrays.asList(pd.getInputFileFormatClass().getInterfaces());
         if (!interfaceList.contains(VectorizedInputFormatInterface.class)) {
-          LOG.debug("Input format: " + pd.getInputFileFormatClassName()
-              + ", doesn't provide vectorized input");
-          System.err.println("Input format: " + pd.getInputFileFormatClassName()
+          LOG.info("Input format: " + pd.getInputFileFormatClassName()
               + ", doesn't provide vectorized input");
           return false;
         }
@@ -257,7 +255,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
 
     private void vectorizeMapWork(MapWork mapWork) throws SemanticException {
-      System.err.println("Going down the vectorized path");
+      LOG.info("Vectorizing task...");
       mapWork.setVectorMode(true);
       Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
       VectorizationNodeProcessor vnp = new VectorizationNodeProcessor(mapWork);
@@ -290,7 +288,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         }
         boolean ret = validateOperator(op);
         if (!ret) {
-          System.err.println("Operator: "+op.getName()+", could not be vectorized");
+          LOG.info("Operator: "+op.getName()+" could not be vectorized.");
           return new Boolean(false);
         }
       }

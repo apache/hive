@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaStringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -188,20 +187,32 @@ public final class ObjectInspectorConverters {
     return getConvertedOI(inputOI, outputOI, null, true);
   }
 
-  /*
+  /**
    * Utility function to convert from one object inspector type to another.
+   * The output object inspector type should have all fields as settableOI type.
+   * The above condition can be violated only if equalsCheck is true and inputOI is
+   * equal to outputOI.
+   * @param inputOI : input object inspector
+   * @param outputOI : output object inspector
+   * @param oiSettableProperties : The object inspector to isSettable mapping used to cache
+   *                               intermediate results.
+   * @param equalsCheck : Do we need to check if the inputOI and outputOI are the same?
+   *                      true : If they are the same, we return the object inspector directly.
+   *                      false : Do not perform an equality check on inputOI and outputOI
+   * @return : The output object inspector containing all settable fields. The return value
+   *           can contain non-settable fields only if inputOI equals outputOI and equalsCheck is
+   *           true.
    */
   private static ObjectInspector getConvertedOI(
       ObjectInspector inputOI,
       ObjectInspector outputOI,
       Map<ObjectInspector, Boolean> oiSettableProperties,
       boolean equalsCheck) {
-    ObjectInspector retOI = outputOI.getCategory() == Category.PRIMITIVE ? inputOI : outputOI;
-    // If the inputOI is the same as the outputOI, just return it
-    // If the retOI has all fields settable, return it
+    // 1. If equalsCheck is true and the inputOI is the same as the outputOI OR
+    // 2. If the outputOI has all fields settable, return it
     if ((equalsCheck && inputOI.equals(outputOI)) ||
-        ObjectInspectorUtils.hasAllFieldsSettable(retOI, oiSettableProperties) == true) {
-      return retOI;
+        ObjectInspectorUtils.hasAllFieldsSettable(outputOI, oiSettableProperties) == true) {
+      return outputOI;
     }
     // Return the settable equivalent object inspector for primitive categories
     // For eg: for table T containing partitions p1 and p2 (possibly different
@@ -209,11 +220,12 @@ public final class ObjectInspectorConverters {
     // T is settable recursively i.e all the nested fields are also settable.
     switch (outputOI.getCategory()) {
     case PRIMITIVE:
-      PrimitiveObjectInspector primInputOI = (PrimitiveObjectInspector) inputOI;
-      return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(primInputOI);
+      // Create a writable object inspector for primitive type and return it.
+      PrimitiveObjectInspector primOutputOI = (PrimitiveObjectInspector) outputOI;
+      return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(primOutputOI);
     case STRUCT:
       StructObjectInspector structOutputOI = (StructObjectInspector) outputOI;
-      // create a standard settable struct object inspector
+      // create a standard settable struct object inspector.
       List<? extends StructField> listFields = structOutputOI.getAllStructFieldRefs();
       List<String> structFieldNames = new ArrayList<String>(listFields.size());
       List<ObjectInspector> structFieldObjectInspectors = new ArrayList<ObjectInspector>(
@@ -221,6 +233,10 @@ public final class ObjectInspectorConverters {
 
       for (StructField listField : listFields) {
         structFieldNames.add(listField.getFieldName());
+        // We need to make sure that the underlying fields are settable as well.
+        // Hence, the recursive call for each field.
+        // Note that equalsCheck is false while invoking getConvertedOI() because
+        // we need to bypass the initial inputOI.equals(outputOI) check.
         structFieldObjectInspectors.add(getConvertedOI(listField.getFieldObjectInspector(),
             listField.getFieldObjectInspector(), oiSettableProperties, false));
       }
@@ -229,11 +245,13 @@ public final class ObjectInspectorConverters {
           structFieldObjectInspectors);
     case LIST:
       ListObjectInspector listOutputOI = (ListObjectInspector) outputOI;
+      // We need to make sure that the list element type is settable.
       return ObjectInspectorFactory.getStandardListObjectInspector(
           getConvertedOI(listOutputOI.getListElementObjectInspector(),
               listOutputOI.getListElementObjectInspector(), oiSettableProperties, false));
     case MAP:
       MapObjectInspector mapOutputOI = (MapObjectInspector) outputOI;
+      // We need to make sure that the key type and the value types are settable.
       return ObjectInspectorFactory.getStandardMapObjectInspector(
           getConvertedOI(mapOutputOI.getMapKeyObjectInspector(),
               mapOutputOI.getMapKeyObjectInspector(), oiSettableProperties, false),
@@ -246,11 +264,13 @@ public final class ObjectInspectorConverters {
       List<ObjectInspector> unionFieldObjectInspectors = new ArrayList<ObjectInspector>(
           unionListFields.size());
       for (ObjectInspector listField : unionListFields) {
+        // We need to make sure that all the field associated with the union are settable.
         unionFieldObjectInspectors.add(getConvertedOI(listField, listField, oiSettableProperties,
             false));
       }
       return ObjectInspectorFactory.getStandardUnionObjectInspector(unionFieldObjectInspectors);
     default:
+      // Unsupported in-memory structure.
       throw new RuntimeException("Hive internal error: conversion of "
           + inputOI.getTypeName() + " to " + outputOI.getTypeName()
           + " not supported yet.");

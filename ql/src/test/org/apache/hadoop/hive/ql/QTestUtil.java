@@ -315,12 +315,7 @@ public class QTestUtil {
 
     testFiles = dataDir;
 
-    String ow = System.getProperty("test.output.overwrite");
-    if ((ow != null) && ow.equalsIgnoreCase("true")) {
-      overWrite = true;
-    } else {
-      overWrite = false;
-    }
+    overWrite = "true".equalsIgnoreCase(System.getProperty("test.output.overwrite"));
 
     setup = new QTestSetup();
     setup.preTest(conf);
@@ -1533,5 +1528,16 @@ public class QTestUtil {
     System.err.println("See build/ql/tmp/hive.log, "
         + "or try \"ant test ... -Dtest.silent=false\" to get more logs.");
     System.err.flush();
+  }
+
+  public static String ensurePathEndsInSlash(String path) {
+    if(path == null) {
+      throw new NullPointerException("Path cannot be null");
+    }
+    if(path.endsWith(File.separator)) {
+      return path;
+    } else {
+      return path + File.separator;
+    }
   }
 }

@@ -91,7 +91,7 @@ public class SQLOperation extends ExecuteStatementOperation {
     String SQLState = null;
 
     try {
-      driver = new Driver(getParentSession().getHiveConf());
+      driver = new Driver(getParentSession().getHiveConf(), getParentSession().getUserName());
       // In Hive server mode, we are not able to retry in the FetchTask
       // case, when calling fetch queries since execute() has returned.
       // For now, we disable the test attempts.

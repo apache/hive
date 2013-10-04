@@ -30,6 +30,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
+import org.apache.hadoop.hive.metastore.MetaStoreSchemaInfo;
 import org.apache.hive.beeline.HiveSchemaHelper;
 import org.apache.hive.beeline.HiveSchemaHelper.NestedScriptParser;
 import org.apache.hive.beeline.HiveSchemaTool;
@@ -100,7 +101,8 @@ public class TestSchemaTool extends TestCase {
    * @throws Exception
    */
   public void testSchemaInit() throws Exception {
-    schemaTool.doInit("0.12.0");
+    schemaTool.doInit(MetaStoreSchemaInfo.getHiveSchemaVersion());
+    schemaTool.verifySchemaVersion();
     }
 
   /**
@@ -319,6 +321,51 @@ public class TestSchemaTool extends TestCase {
         testScriptFile.getParentFile().getPath(), testScriptFile.getName());
 
     assertEquals(expectedSQL, flattenedSql);
+  }
+
+  /**
+   * Test nested script formatting
+   * @throws Exception
+   */
+  public void testNestedScriptsForOracle() throws Exception {
+    String childTab1 = "childTab1";
+    String childTab2 = "childTab2";
+    String parentTab = "fooTab";
+
+    String childTestScript1[] = {
+      "-- this is a comment ",
+      "DROP TABLE IF EXISTS " + childTab1 + ";",
+      "CREATE TABLE " + childTab1 + "(id INTEGER);",
+      "DROP TABLE " + childTab1 + ";"
+    };
+    String childTestScript2[] = {
+        "-- this is a comment",
+        "DROP TABLE IF EXISTS " + childTab2 + ";",
+        "CREATE TABLE " + childTab2 + "(id INTEGER);",
+        "-- this is also a comment",
+        "DROP TABLE " + childTab2 + ";"
+    };
+
+    String parentTestScript[] = {
+        " -- this is a comment",
+        "DROP TABLE IF EXISTS " + parentTab + ";",
+        " -- this is another comment ",
+        "CREATE TABLE " + parentTab + "(id INTEGER);",
+        "@" + generateTestScript(childTestScript1).getName() + ";",
+        "DROP TABLE " + parentTab + ";",
+        "@" + generateTestScript(childTestScript2).getName() + ";",
+        "--ending comment ",
+      };
+
+    File testScriptFile = generateTestScript(parentTestScript);
+    String flattenedSql = HiveSchemaTool.buildCommand(
+        HiveSchemaHelper.getDbCommandParser("oracle"),
+        testScriptFile.getParentFile().getPath(), testScriptFile.getName());
+    assertFalse(flattenedSql.contains("@"));
+    assertFalse(flattenedSql.contains("comment"));
+    assertTrue(flattenedSql.contains(childTab1));
+    assertTrue(flattenedSql.contains(childTab2));
+    assertTrue(flattenedSql.contains(parentTab));
   }
 
   private File generateTestScript(String [] stmts) throws IOException {

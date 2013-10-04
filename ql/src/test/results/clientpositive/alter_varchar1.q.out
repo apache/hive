@@ -8,32 +8,32 @@ POSTHOOK: query: create table alter_varchar_1 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@alter_varchar_1
 PREHOOK: query: insert overwrite table alter_varchar_1
-  select key, value from src limit 5
+  select key, value from src order by key limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@alter_varchar_1
 POSTHOOK: query: insert overwrite table alter_varchar_1
-  select key, value from src limit 5
+  select key, value from src order by key limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@alter_varchar_1
 POSTHOOK: Lineage: alter_varchar_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_varchar_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from alter_varchar_1
+PREHOOK: query: select * from alter_varchar_1 order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from alter_varchar_1
+POSTHOOK: query: select * from alter_varchar_1 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: alter_varchar_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_varchar_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-238	val_238
-86	val_86
-311	val_311
-27	val_27
-165	val_165
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100
 PREHOOK: query: -- change column to varchar
 alter table alter_varchar_1 change column value value varchar(20)
 PREHOOK: type: ALTERTABLE_RENAMECOL
@@ -47,22 +47,22 @@ POSTHOOK: Output: default@alter_varchar_1
 POSTHOOK: Lineage: alter_varchar_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_varchar_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- contents should still look the same
-select * from alter_varchar_1
+select * from alter_varchar_1 order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
 POSTHOOK: query: -- contents should still look the same
-select * from alter_varchar_1
+select * from alter_varchar_1 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: alter_varchar_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_varchar_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-238	val_238
-86	val_86
-311	val_311
-27	val_27
-165	val_165
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100
 PREHOOK: query: -- change column to smaller varchar
 alter table alter_varchar_1 change column value value varchar(3)
 PREHOOK: type: ALTERTABLE_RENAMECOL
@@ -76,22 +76,22 @@ POSTHOOK: Output: default@alter_varchar_1
 POSTHOOK: Lineage: alter_varchar_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_varchar_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- value column should be truncated now
-select * from alter_varchar_1
+select * from alter_varchar_1 order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
 POSTHOOK: query: -- value column should be truncated now
-select * from alter_varchar_1
+select * from alter_varchar_1 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: alter_varchar_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_varchar_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-238	val
-86	val
-311	val
-27	val
-165	val
+0	val
+0	val
+0	val
+10	val
+100	val
 PREHOOK: query: -- change back to bigger varchar
 alter table alter_varchar_1 change column value value varchar(20)
 PREHOOK: type: ALTERTABLE_RENAMECOL
@@ -105,22 +105,22 @@ POSTHOOK: Output: default@alter_varchar_1
 POSTHOOK: Lineage: alter_varchar_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_varchar_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: -- column values should be full size again
-select * from alter_varchar_1
+select * from alter_varchar_1 order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
 POSTHOOK: query: -- column values should be full size again
-select * from alter_varchar_1
+select * from alter_varchar_1 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: alter_varchar_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_varchar_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-238	val_238
-86	val_86
-311	val_311
-27	val_27
-165	val_165
+0	val_0
+0	val_0
+0	val_0
+10	val_10
+100	val_100
 PREHOOK: query: -- add varchar column
 alter table alter_varchar_1 add columns (key2 int, value2 varchar(10))
 PREHOOK: type: ALTERTABLE_ADDCOLS
@@ -133,28 +133,28 @@ POSTHOOK: Input: default@alter_varchar_1
 POSTHOOK: Output: default@alter_varchar_1
 POSTHOOK: Lineage: alter_varchar_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_varchar_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from alter_varchar_1
+PREHOOK: query: select * from alter_varchar_1 order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from alter_varchar_1
+POSTHOOK: query: select * from alter_varchar_1 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: alter_varchar_1.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_varchar_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-238	val_238	NULL	NULL
-86	val_86	NULL	NULL
-311	val_311	NULL	NULL
-27	val_27	NULL	NULL
-165	val_165	NULL	NULL
+0	val_0	NULL	NULL
+0	val_0	NULL	NULL
+0	val_0	NULL	NULL
+10	val_10	NULL	NULL
+100	val_100	NULL	NULL
 PREHOOK: query: insert overwrite table alter_varchar_1
-  select key, value, key, value from src limit 5
+  select key, value, key, value from src order by key limit 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@alter_varchar_1
 POSTHOOK: query: insert overwrite table alter_varchar_1
-  select key, value, key, value from src limit 5
+  select key, value, key, value from src order by key limit 5
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@alter_varchar_1
@@ -164,11 +164,11 @@ POSTHOOK: Lineage: alter_varchar_1.key2 EXPRESSION [(src)src.FieldSchema(name:ke
 POSTHOOK: Lineage: alter_varchar_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_varchar_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_varchar_1.value2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: select * from alter_varchar_1
+PREHOOK: query: select * from alter_varchar_1 order by key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
-POSTHOOK: query: select * from alter_varchar_1
+POSTHOOK: query: select * from alter_varchar_1 order by key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_varchar_1
 #### A masked pattern was here ####
@@ -178,11 +178,11 @@ POSTHOOK: Lineage: alter_varchar_1.key2 EXPRESSION [(src)src.FieldSchema(name:ke
 POSTHOOK: Lineage: alter_varchar_1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_varchar_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: alter_varchar_1.value2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-238	val_238	238	val_238
-86	val_86	86	val_86
-311	val_311	311	val_311
-27	val_27	27	val_27
-165	val_165	165	val_165
+0	val_0	0	val_0
+0	val_0	0	val_0
+0	val_0	0	val_0
+10	val_10	10	val_10
+100	val_100	100	val_100
 PREHOOK: query: drop table alter_varchar_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@alter_varchar_1

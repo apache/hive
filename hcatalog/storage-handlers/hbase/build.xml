@@ -127,14 +127,18 @@
 
     <!-- Run the unit tests -->
     <target name="test" depends="compile-test">
+      <antcall target="testonly" />
+    </target>
+     
+    <target name="testonly">
         <sequential>
             <delete dir="${test.log.dir}"/>
-	        <delete dir="${test.tmp.dir}" />
+            <delete dir="${test.tmp.dir}" />
             <delete dir="${test.data.dir}" />
-            <mkdir dir="${test.log.dir}"/>
-	        <mkdir dir="${test.tmp.dir}" />
+            <mkdir dir="${test.log.dir}"/> 
+            <mkdir dir="${test.tmp.dir}" />
             <mkdir dir="${test.data.dir}" />
-	        <junit showoutput="${test.output}" printsummary="yes" haltonfailure="no"
+            <junit showoutput="${test.output}" printsummary="yes" haltonfailure="no"
                    fork="yes" maxmemory="512m" dir="${basedir}" timeout="${test.timeout}"
                    errorProperty="tests.failed" failureProperty="tests.failed">
                 <classpath>

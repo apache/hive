@@ -29,23 +29,21 @@ import org.apache.hadoop.hive.ql.exec.Task;
 
 public class $className extends TestCase {
 
+  private static final String HIVE_ROOT = QTestUtil.ensurePathEndsInSlash(System.getProperty("hive.root"));
   private static QTestUtil qt;
 
   static {
     try {
-      boolean miniMR = false;
-      String hadoopVer;
-      if ("$clusterMode".equals("miniMR"))
-        miniMR = true;
-      hadoopVer = "$hadoopVersion";
-      qt = new QTestUtil("$resultsDir", "$logDir", miniMR, hadoopVer);
+      boolean miniMR = "$clusterMode".equals("miniMR");
+      String hadoopVer = "$hadoopVersion";
+      qt = new QTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR, hadoopVer);
       // do a one time initialization
       qt.cleanUp();
       qt.createSources();
     } catch (Exception e) {
-      System.out.println("Exception: " + e.getMessage());
+      System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
-      System.out.flush();
+      System.err.flush();
       fail("Unexpected exception in static initialization");
     }
   }
@@ -61,7 +59,7 @@ public class $className extends TestCase {
     }
     catch (Throwable e) {
       e.printStackTrace();
-      System.out.flush();
+      System.err.flush();
       fail("Unexpected exception in setup");
     }
   }
@@ -74,20 +72,32 @@ public class $className extends TestCase {
         qt.shutdown();
     }
     catch (Exception e) {
-      System.out.println("Exception: " + e.getMessage());
+      System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
-      System.out.flush();
+      System.err.flush();
       fail("Unexpected exception in tearDown");
     }
   }
 
   public static Test suite() {
+    Set<String> qFilesToExecute = new HashSet<String>();
+    String qFiles = System.getProperty("qfile", "").trim();
+    if(!qFiles.isEmpty()) {
+      for(String qFile : qFiles.split(",")) {
+        qFile = qFile.trim();
+        if(!qFile.isEmpty()) {
+          qFilesToExecute.add(qFile);
+        }
+      }
+    }
     TestSuite suite = new TestSuite();
 #foreach ($qf in $qfiles)
   #set ($fname = $qf.getName())
   #set ($eidx = $fname.indexOf('.'))
   #set ($tname = $fname.substring(0, $eidx))
-    suite.addTest(new $className("testNegativeCliDriver_$tname"));
+    if(qFilesToExecute.isEmpty() || qFilesToExecute.contains("$fname")) {
+      suite.addTest(new $className("testNegativeCliDriver_$tname"));
+    }
 #end
     suite.addTest(new $className("testNegativeCliDriver_shutdown"));
     return suite;
@@ -97,7 +107,7 @@ public class $className extends TestCase {
    * Dummy last test. This is only meant to shutdown qt
    */
   public void testNegativeCliDriver_shutdown() {
-    System.out.println ("Cleaning up " + "$className");
+    System.err.println ("Cleaning up " + "$className");
   }
 
   static String debugHint = "\nSee build/ql/tmp/hive.log, "
@@ -109,7 +119,7 @@ public class $className extends TestCase {
   #set ($tname = $fname.substring(0, $eidx))
   #set ($fpath = $qfilesMap.get($fname))
   public void testNegativeCliDriver_$tname() throws Exception {
-    runTest("$tname", "$fname", "$fpath");
+    runTest("$tname", "$fname", (HIVE_ROOT + "$fpath"));
   }
 
 #end
@@ -117,12 +127,12 @@ public class $className extends TestCase {
   private void runTest(String tname, String fname, String fpath) throws Exception {
     long startTime = System.currentTimeMillis();
     try {
-      System.out.println("Begin query: " + fname);
+      System.err.println("Begin query: " + fname);
 
       qt.addFile(fpath);
 
       if (qt.shouldBeSkipped(fname)) {
-        System.out.println("Test " + fname + " skipped");
+        System.err.println("Test " + fname + " skipped");
         return;
       }
 
@@ -140,15 +150,15 @@ public class $className extends TestCase {
       }
     }
     catch (Throwable e) {
-      System.out.println("Exception: " + e.getMessage());
+      System.err.println("Exception: " + e.getMessage());
       e.printStackTrace();
-      System.out.println("Failed query: " + fname);
-      System.out.flush();
+      System.err.println("Failed query: " + fname);
+      System.err.flush();
       fail("Unexpected exception" + debugHint);
     }
 
     long elapsedTime = System.currentTimeMillis() - startTime;
-    System.out.println("Done query: " + fname + " elapsedTime=" + elapsedTime/1000 + "s");
+    System.err.println("Done query: " + fname + " elapsedTime=" + elapsedTime/1000 + "s");
     assertTrue("Test passed", true);
   }
 }

@@ -92,39 +92,47 @@
     -->
 
     <target name="gen-test" description="Generate tests, a no-op for hcat"/>
-
     <target name="test" depends="jar" description="run unit tests">
+      <property name="test.target.name" value="test"/>
+      <antcall target="testonly" />
+      <!-- One checkstyle run for the whole repo. Runs after junit tests
+      to piggyback on resolved jars. -->
+      <path id="checkstyle.class.path">
+          <fileset dir="core/build/lib/test"/>
+      </path>
+      <antcall target="checkstyle" inheritRefs="true"/>
+    </target>
+
+    <target name="testonly">
+        <if>
+          <not><isset property="test.target.name"/></not>
+          <then><property name="test.target.name" value="testonly"/></then>
+        </if>
         <mkdir dir="${test.result.dir}"/>
         <!-- Placed in a parallel structure so that the tests keep going
              even if some fail.  Otherwise a failure in one of the earlier ant
              call terminates the target and the rest do not run.  -->
         <parallel threadCount="1">
-            <ant target="test" dir="core" inheritAll="false">
+            <ant target="${test.target.name}" dir="core" inheritAll="false">
                 <property name="test.result.dir" location="${test.result.dir}"/>
             </ant>
-            <ant target="test" dir="hcatalog-pig-adapter" inheritAll="false">
+            <ant target="${test.target.name}" dir="hcatalog-pig-adapter" inheritAll="false">
                 <property name="test.result.dir" location="${test.result.dir}"/>
             </ant>
-            <ant target="test" dir="server-extensions" inheritAll="false">
+            <ant target="${test.target.name}" dir="server-extensions" inheritAll="false">
                 <property name="test.result.dir" location="${test.result.dir}"/>
             </ant>
-            <ant target="test" dir="webhcat/svr" inheritAll="false">
+            <ant target="${test.target.name}" dir="webhcat/svr" inheritAll="false">
                 <property name="test.result.dir" location="${test.result.dir}"/>
                 <property name="env.HIVE_HOME" value="${hive.dist.dir}"/>
                 <property name="env.HCAT_PREFIX" value="${hive.dist.dir}/hcatalog"/>
             </ant>
-            <ant target="test" dir="webhcat/java-client" inheritAll="false">
+            <ant target="${test.target.name}" dir="webhcat/java-client" inheritAll="false">
                 <property name="test.result.dir" location="${test.result.dir}"/>
             </ant>
-            <ant target="test" dir="storage-handlers/hbase" inheritAll="false">
+            <ant target="${test.target.name}" dir="storage-handlers/hbase" inheritAll="false">
                 <property name="test.result.dir" location="${test.result.dir}"/>
             </ant>
-            <!-- One checkstyle run for the whole repo. Runs after junit tests
-            to piggyback on resolved jars. -->
-            <path id="checkstyle.class.path">
-                <fileset dir="core/build/lib/test"/>
-            </path>
-            <antcall target="checkstyle" inheritRefs="true"/>
         </parallel>
     </target>
 

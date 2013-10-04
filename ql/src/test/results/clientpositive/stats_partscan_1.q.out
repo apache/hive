@@ -1,11 +1,21 @@
-PREHOOK: query: -- test analyze table ... compute statistics partialscan
+PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20,0.20S)
+-- This test uses mapred.max.split.size/mapred.max.split.size for controlling
+-- number of input splits, which is not effective in hive 0.20.
+-- stats_partscan_1_23.q is the same test with this but has different result.
+
+-- test analyze table ... compute statistics partialscan
 
 -- 1. prepare data
 CREATE table analyze_srcpart_partial_scan (key STRING, value STRING)
 partitioned by (ds string, hr string)
 stored as rcfile
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- test analyze table ... compute statistics partialscan
+POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20,0.20S)
+-- This test uses mapred.max.split.size/mapred.max.split.size for controlling
+-- number of input splits, which is not effective in hive 0.20.
+-- stats_partscan_1_23.q is the same test with this but has different result.
+
+-- test analyze table ... compute statistics partialscan
 
 -- 1. prepare data
 CREATE table analyze_srcpart_partial_scan (key STRING, value STRING)
