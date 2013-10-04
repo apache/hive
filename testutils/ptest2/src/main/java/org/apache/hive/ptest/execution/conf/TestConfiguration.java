@@ -38,6 +38,7 @@ public class TestConfiguration {
   public static final String JAVA_HOME = "javaHome";
   public static final String JAVA_HOME_TEST = "javaHomeForTests";
   public static final String ANT_ENV_OPTS = "antEnvOpts";
+  public static final String ANT_TEST_ARGS = "antTestArgs";
   
   private static final String REPOSITORY_TYPE = "repositoryType";
   private static final String GIT = "git";
@@ -50,6 +51,7 @@ public class TestConfiguration {
 
   private final Context context;
   private String antArgs;
+  private String antTestArgs;
   private String antEnvOpts;
   private String repositoryType;
   private String repository;
@@ -80,6 +82,7 @@ public class TestConfiguration {
       throw new IllegalArgumentException("Unkown repository type '" + repositoryType + "'");
     }
     antArgs =  Preconditions.checkNotNull(context.getString(ANT_ARGS), ANT_ARGS).trim();
+    antTestArgs =  context.getString(ANT_TEST_ARGS, "").trim();
     antEnvOpts =  context.getString(ANT_ENV_OPTS, "").trim();
     javaHome =  context.getString(JAVA_HOME, "").trim();
     javaHomeForTests = context.getString(JAVA_HOME_TEST, "").trim();
@@ -133,6 +136,12 @@ public class TestConfiguration {
   public String getAntArgs() {
     return antArgs;
   }
+  public String getAntTestArgs() {
+    return antTestArgs;
+  }
+  public String getAntEnvOpts() {
+    return antEnvOpts;
+  }
   public String getJavaHome() {
     return javaHome;
   }
@@ -163,8 +172,8 @@ public class TestConfiguration {
   public void setAntArgs(String antArgs) {
     this.antArgs = Strings.nullToEmpty(antArgs);
   }
-  public String getAntEnvOpts() {
-    return antEnvOpts;
+  public void setAntTestArgs(String antTestArgs) {
+    this.antTestArgs = antTestArgs;
   }
   public void setAntEnvOpts(String antEnvOpts) {
     this.antEnvOpts = Strings.nullToEmpty(antEnvOpts);
