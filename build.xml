@@ -563,6 +563,7 @@
         <exclude name="**/*high-scale-lib-*"/>
         <exclude name="**/hamcrest-core-*jar"/>
         <exclude name="**/junit*.jar"/>
+        <exclude name="**/kryo*.jar"/>
         <exclude name="**/asm*.jar"/>
         <exclude name="**/mockito*.jar"/>
         <exclude name="**/velocity*.jar"/>
