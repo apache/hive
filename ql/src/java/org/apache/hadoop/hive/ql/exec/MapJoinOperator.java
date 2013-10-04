@@ -18,18 +18,13 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.filecache.DistributedCache;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.HashTableLoaderFactory;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinRowContainer;
@@ -41,7 +36,6 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.util.ReflectionUtils;
 
 /**
@@ -54,6 +48,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   private transient String tableKey;
   private transient String serdeKey;
   private transient ObjectCache cache;
+
+  private HashTableLoader loader;
 
   private static final transient String[] FATAL_ERR_MSG = {
       null, // counter value 0 means no error
@@ -82,6 +78,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     serdeKey = "__HASH_MAP_"+this.getOperatorId()+"_serde";
 
     cache = ObjectCacheFactory.getCache(hconf);
+    loader = HashTableLoaderFactory.getLoader(hconf);
 
     mapJoinTables = (MapJoinTableContainer[]) cache.retrieve(tableKey);
     mapJoinTableSerdes = (MapJoinTableContainerSerDe[]) cache.retrieve(serdeKey);
@@ -103,7 +100,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   public void generateMapMetaData() throws HiveException, SerDeException {
     // generate the meta data for key
     // index for key is -1
-    
+
     TableDesc keyTableDesc = conf.getKeyTblDesc();
     SerDe keySerializer = (SerDe) ReflectionUtils.newInstance(keyTableDesc.getDeserializerClass(),
         null);
@@ -128,6 +125,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   }
 
   private void loadHashTable() throws HiveException {
+
     if (!this.getExecContext().getLocalWork().getInputFileChangeSensitive()) {
       if (hashTblInitedOnce) {
         return;
@@ -136,50 +134,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       }
     }
 
-    String baseDir = null;
-    String currentInputFile = getExecContext().getCurrentInputFile();
-    LOG.info("******* Load from HashTable File: input : " + currentInputFile);
-    String fileName = getExecContext().getLocalWork().getBucketFileName(currentInputFile);
-    try {
-      if (ShimLoader.getHadoopShims().isLocalMode(hconf)) {
-        baseDir = this.getExecContext().getLocalWork().getTmpFileURI();
-      } else {
-        Path[] localArchives;
-        String stageID = this.getExecContext().getLocalWork().getStageID();
-        String suffix = Utilities.generateTarFileName(stageID);
-        FileSystem localFs = FileSystem.getLocal(hconf);
-        localArchives = DistributedCache.getLocalCacheArchives(this.hconf);
-        Path archive;
-        for (int j = 0; j < localArchives.length; j++) {
-          archive = localArchives[j];
-          if (!archive.getName().endsWith(suffix)) {
-            continue;
-          }
-          Path archiveLocalLink = archive.makeQualified(localFs);
-          baseDir = archiveLocalLink.toUri().getPath();
-        }
-      }
-      for (int pos = 0; pos < mapJoinTables.length; pos++) {
-        if (pos == posBigTable) {
-          continue;
-        }
-        if(baseDir == null) {
-          throw new IllegalStateException("baseDir cannot be null");
-        }
-        String filePath = Utilities.generatePath(baseDir, conf.getDumpFilePrefix(), (byte)pos, fileName);
-        Path path = new Path(filePath);
-        LOG.info("\tLoad back 1 hashtable file from tmp file uri:" + path);
-        ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(
-            new FileInputStream(path.toUri().getPath()), 4096));
-        try{ 
-          mapJoinTables[pos] = mapJoinTableSerdes[pos].load(in);
-        } finally {
-          in.close();
-        }
-      }
-    } catch (Exception e) {
-      throw new HiveException(e);
-    }
+    loader.load(this.getExecContext(), hconf, this.getConf(),
+        posBigTable, mapJoinTables, mapJoinTableSerdes);
     cache.cache(tableKey, mapJoinTables);
     cache.cache(serdeKey, mapJoinTableSerdes);
   }

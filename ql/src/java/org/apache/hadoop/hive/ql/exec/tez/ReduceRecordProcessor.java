@@ -128,6 +128,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     }
 
     MapredContext.init(false, new JobConf(jconf));
+    ((TezContext)MapredContext.get()).setInputs(inputs);
 
     // initialize reduce operator tree
     try {

@@ -86,6 +86,7 @@ public class MapRecordProcessor  extends RecordProcessor{
       l4j.info(mapOp.dump(0));
 
       MapredContext.init(true, new JobConf(jconf));
+      ((TezContext)MapredContext.get()).setInputs(inputs);
       mapOp.setExecContext(execContext);
       mapOp.initializeLocalWork(jconf);
       mapOp.initialize(jconf, null);

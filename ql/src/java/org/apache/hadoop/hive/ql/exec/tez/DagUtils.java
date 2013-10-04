@@ -68,10 +68,6 @@ import org.apache.tez.dag.api.InputDescriptor;
 import org.apache.tez.dag.api.OutputDescriptor;
 import org.apache.tez.dag.api.ProcessorDescriptor;
 import org.apache.tez.dag.api.Vertex;
-import org.apache.tez.runtime.library.input.ShuffledMergedInputLegacy;
-import org.apache.tez.runtime.library.input.ShuffledUnorderedKVInput;
-import org.apache.tez.runtime.library.output.OnFileSortedOutput;
-import org.apache.tez.runtime.library.output.OnFileUnorderedKVOutput;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
@@ -79,6 +75,10 @@ import org.apache.tez.mapreduce.hadoop.MultiStageMRConfToTezTranslator;
 import org.apache.tez.mapreduce.input.MRInput;
 import org.apache.tez.mapreduce.output.MROutput;
 import org.apache.tez.mapreduce.partition.MRPartitioner;
+import org.apache.tez.runtime.library.input.ShuffledMergedInputLegacy;
+import org.apache.tez.runtime.library.input.ShuffledUnorderedKVInput;
+import org.apache.tez.runtime.library.output.OnFileSortedOutput;
+import org.apache.tez.runtime.library.output.OnFileUnorderedKVOutput;
 
 /**
  * DagUtils. DagUtils is a collection of helper methods to convert
@@ -196,15 +196,6 @@ public class DagUtils {
 
     Path tezDir = getTezDir(mrScratchDir);
 
-    // map work can contain localwork, i.e: hashtables for map-side joins
-    Path hashTableArchive = createHashTables(mapWork, conf);
-    LocalResource localWorkLr = null;
-    if (hashTableArchive != null) {
-      localWorkLr = createLocalResource(fs,
-          hashTableArchive, LocalResourceType.ARCHIVE,
-          LocalResourceVisibility.APPLICATION);
-    }
-
     // write out the operator plan
     Path planPath = Utilities.setMapWork(conf, mapWork,
         mrScratchDir.toUri().toString(), false);
@@ -242,16 +233,13 @@ public class DagUtils {
       assert mapWork.getAliasToWork().keySet().size() == 1;
 
       String alias = mapWork.getAliasToWork().keySet().iterator().next();
-      map.addInput(alias, 
+      map.addInput(alias,
           new InputDescriptor(MRInput.class.getName()).
                setUserPayload(serializedConf));
 
       map.setTaskLocationsHint(inputSplitInfo.getTaskLocationHints());
 
       Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();
-      if (localWorkLr != null) {
-        localResources.put(hashTableArchive.getName(), localWorkLr);
-      }
       localResources.put(getBaseName(appJarLr), appJarLr);
       for (LocalResource lr: additionalLr) {
         localResources.put(getBaseName(lr), lr);
@@ -263,15 +251,6 @@ public class DagUtils {
       map.setTaskLocalResources(localResources);
     }
     return map;
-  }
-
-  /*
-   * If the given MapWork has local work embedded we need to generate the corresponding
-   * hash tables and localize them. These tables will be used by the map work to do
-   * map-side joins.
-   */
-  private static Path createHashTables(MapWork mapWork, Configuration conf) {
-    return null;
   }
 
   /*
@@ -610,7 +589,7 @@ public class DagUtils {
 
     // final vertices need to have at least one output
     if (!hasChildren) {
-      v.addOutput("out_"+work.getName(), 
+      v.addOutput("out_"+work.getName(),
           new OutputDescriptor(MROutput.class.getName())
                .setUserPayload(MRHelpers.createUserPayloadFromConf(conf)));
     }
