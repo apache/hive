@@ -113,6 +113,7 @@ public class TezCompiler extends TaskCompiler {
       throws SemanticException {
 
     ParseContext tempParseContext = getParseContext(pCtx, rootTasks);
+    GenTezWork genTezWork = new GenTezWork();
 
     // Sequence of TableScan operators to be walked
     Deque<Operator<?>> deque = new LinkedList<Operator<?>>();
@@ -127,13 +128,13 @@ public class TezCompiler extends TaskCompiler {
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
     opRules.put(new RuleRegExp(new String("Split Work - ReduceSink"),
         ReduceSinkOperator.getOperatorName() + "%"),
-        new GenTezWork());
+        genTezWork);
     opRules.put(new RuleRegExp(new String("No more walking on ReduceSink-MapJoin"),
         ReduceSinkOperator.getOperatorName() + "%" +
         MapJoinOperator.getOperatorName() + "%"), new ReduceSinkMapJoinProc());
     opRules.put(new RuleRegExp(new String("Split Work - FileSink"),
         FileSinkOperator.getOperatorName() + "%"),
-        new GenTezWork());
+        genTezWork);
 
 
     // The dispatcher fires the processor corresponding to the closest matching

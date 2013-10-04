@@ -32,7 +32,15 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 @SuppressWarnings({"serial", "deprecation"})
 public abstract class BaseWork extends AbstractOperatorDesc {
 
+  public BaseWork() {}
+
+  public BaseWork(String name) {
+    setName(name);
+  }
+
   private boolean gatheringStats;
+
+  private String name;
 
   public void setGatheringStats(boolean gatherStats) {
     this.gatheringStats = gatherStats;
@@ -40,6 +48,14 @@ public abstract class BaseWork extends AbstractOperatorDesc {
 
   public boolean isGatheringStats() {
     return this.gatheringStats;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(String name) {
+    this.name = name;
   }
 
   protected abstract List<Operator<?>> getAllRootOperators();
