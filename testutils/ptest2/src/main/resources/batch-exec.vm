@@ -41,7 +41,7 @@ cd $localDir/$instanceName/${repositoryName}-source && \
    -Divy.default.always.check.exact.revision=false \
    -Divy.cache.ttl.default=eternal -Divy.checkmodified=false \
    -Dmvn.local.repo=$localDir/$instanceName/maven \
-   $antArgs $testArguments 1>$logDir/ant-test.txt 2>&1
+   $antArgs $antTestArgs $testArguments 1>$logDir/ant-test.txt 2>&1
 ret=$?
 if [[ $ret -ne 0 ]]
 then
