@@ -82,17 +82,11 @@ public class TezProcessor implements LogicalIOProcessor {
 
     LOG.info("Running map: " + processorContext.getUniqueIdentifier());
 
-    //this will change when TezProcessor has support for shuffle joins and broadcast joins
-    if (inputs.size() != 1){
-      throw new IOException("Cannot handle multiple inputs "
-          + " inputCount=" + inputs.size());
-    }
-
     if(outputs.size() > 1) {
           throw new IOException("Cannot handle more than one output"
           + ", outputCount=" + outputs.size());
     }
-    LogicalInput in = inputs.values().iterator().next();
+
     LogicalOutput out = outputs.values().iterator().next();
 
 
