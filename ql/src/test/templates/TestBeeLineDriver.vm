@@ -115,7 +115,7 @@ public class $className {
     .setTestScriptDirectory(hiveRootDirectory + "/data/scripts");
 
     long startTime = System.currentTimeMillis();
-    System.out.println(">>> STARTED " + qFileName
+    System.err.println(">>> STARTED " + qFileName
         + " (Thread " + Thread.currentThread().getName() + ")");
     try {
       qClient.run();
@@ -128,7 +128,7 @@ public class $className {
     String time = "(" + elapsedTime + "s)";
     
     if (qClient.compareResults()) {
-      System.out.println(">>> PASSED " + qFileName + " " + time);
+      System.err.println(">>> PASSED " + qFileName + " " + time);
     } else {
       if (qClient.hasErrors()) {
         System.err.println(">>> FAILED " + qFileName + " (ERROR) " + time);

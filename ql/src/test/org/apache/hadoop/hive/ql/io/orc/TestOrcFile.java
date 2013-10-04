@@ -18,12 +18,28 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
-import org.apache.hadoop.hive.ql.io.sarg.TestSearchArgumentImpl;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -55,25 +71,24 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
-import java.io.File;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.nio.ByteBuffer;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
-
-import static junit.framework.Assert.*;
-import static junit.framework.Assert.assertEquals;
-
 /**
  * Tests for the top level reader/streamFactory of ORC files.
  */
 public class TestOrcFile {
+
+  public static class SimpleStruct {
+    BytesWritable bytes1;
+    Text string1;
+
+    SimpleStruct(BytesWritable b1, String s1) {
+      this.bytes1 = b1;
+      if(s1 == null) {
+        this.string1 = null;
+      } else {
+        this.string1 = new Text(s1);
+      }
+    }
+  }
 
   public static class InnerStruct {
     int int1;
@@ -129,48 +144,6 @@ public class TestOrcFile {
       this.middle = m1;
       this.list = l2;
       this.map = m2;
-    }
-  }
-
-  public static class AllTypesRow {
-    Boolean boolean1;
-    Byte byte1;
-    Short short1;
-    Integer int1;
-    Long long1;
-    Float float1;
-    Double double1;
-    BytesWritable bytes1;
-    Text string1;
-    MiddleStruct middle;
-    List<InnerStruct> list = new ArrayList<InnerStruct>();
-    Map<Text, InnerStruct> map = new HashMap<Text, InnerStruct>();
-    Timestamp ts;
-    HiveDecimal decimal1;
-
-    AllTypesRow(Boolean b1, Byte b2, Short s1, Integer i1, Long l1, Float f1,
-           Double d1,
-           BytesWritable b3, String s2, MiddleStruct m1,
-           List<InnerStruct> l2, Map<Text, InnerStruct> m2,
-           Timestamp ts1, HiveDecimal decimal) {
-      this.boolean1 = b1;
-      this.byte1 = b2;
-      this.short1 = s1;
-      this.int1 = i1;
-      this.long1 = l1;
-      this.float1 = f1;
-      this.double1 = d1;
-      this.bytes1 = b3;
-      if (s2 == null) {
-        this.string1 = null;
-      } else {
-        this.string1 = new Text(s2);
-      }
-      this.middle = m1;
-      this.list = l2;
-      this.map = m2;
-      this.ts = ts1;
-      this.decimal1 = decimal;
     }
   }
 
@@ -231,39 +204,6 @@ public class TestOrcFile {
   }
 
   @Test
-  public void testWriteFormat_0_11() throws Exception {
-    ObjectInspector inspector;
-    synchronized (TestOrcFile.class) {
-      inspector = ObjectInspectorFactory
-          .getReflectionObjectInspector(AllTypesRow.class,
-              ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
-    }
-    conf.set("hive.exec.orc.write.format", "0.11");
-    Writer writer = OrcFile.createWriter(fs, testFilePath, conf, inspector,
-        100000, CompressionKind.NONE, 10000, 10000);
-    for(int i = 0; i < 7500; i++) {
-      if (i % 2 == 0) {
-        writer.addRow(new AllTypesRow(false, (byte) 1, (short) 1024, 65536,
-            Long.MAX_VALUE, (float) 1.0, -15.0, bytes(0, 1, 2, 3, 4), "hi",
-            new MiddleStruct(inner(1, "bye"), inner(2, "sigh")), list(
-                inner(3, "good"), inner(4, "bad")), map(), Timestamp
-                .valueOf("2000-03-12 15:00:00"), new HiveDecimal(
-                "12345678.6547456")));
-      } else {
-        writer.addRow(new AllTypesRow(true, (byte) 100, (short) 2048, 65536,
-            Long.MAX_VALUE, (float) 2.0, -5.0, bytes(), "bye",
-            new MiddleStruct(inner(1, "bye"), inner(2, "sigh")), list(
-                inner(100000000, "cat"), inner(-100000, "in"),
-                inner(1234, "hat")),
-            map(inner(5, "chani"), inner(1, "mauddib")), Timestamp
-                .valueOf("2000-03-12 15:00:01"), new HiveDecimal(
-                "12345678.6547457")));
-      }
-    }
-    writer.close();
-  }
-
-  @Test
   public void testReadFormat_0_11() throws Exception {
     Path resourceDir = new Path(System.getProperty("test.build.resources", "ql"
         + File.separator + "src" + File.separator + "test" + File.separator
@@ -319,7 +259,7 @@ public class TestOrcFile {
     assertEquals("count: 7500 min: -15.0 max: -5.0 sum: -75000.0",
         stats[7].toString());
 
-    assertEquals("count: 7500 min: bye max: hi", stats[9].toString());
+    assertEquals("count: 7500 min: bye max: hi sum: 0", stats[9].toString());
 
     // check the inspectors
     StructObjectInspector readerInspector = (StructObjectInspector) reader
@@ -515,6 +455,93 @@ public class TestOrcFile {
   }
 
   @Test
+  public void testStringAndBinaryStatistics() throws Exception {
+
+    ObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = ObjectInspectorFactory.getReflectionObjectInspector
+          (SimpleStruct.class, ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+    Writer writer = OrcFile.createWriter(testFilePath,
+                                         OrcFile.writerOptions(conf)
+                                         .inspector(inspector)
+                                         .stripeSize(100000)
+                                         .bufferSize(10000));
+    writer.addRow(new SimpleStruct(bytes(0,1,2,3,4), "foo"));
+    writer.addRow(new SimpleStruct(bytes(0,1,2,3), "bar"));
+    writer.addRow(new SimpleStruct(bytes(0,1,2,3,4,5), null));
+    writer.addRow(new SimpleStruct(null, "hi"));
+    writer.close();
+    Reader reader = OrcFile.createReader(fs, testFilePath);
+
+    // check the stats
+    ColumnStatistics[] stats = reader.getStatistics();
+    assertEquals(4, stats[0].getNumberOfValues());
+    assertEquals("count: 4", stats[0].toString());
+
+    assertEquals(3, stats[1].getNumberOfValues());
+    assertEquals(15, ((BinaryColumnStatistics) stats[1]).getSum());
+    assertEquals("count: 3 sum: 15", stats[1].toString());
+
+    assertEquals(3, stats[2].getNumberOfValues());
+    assertEquals("bar", ((StringColumnStatistics) stats[2]).getMinimum());
+    assertEquals("hi", ((StringColumnStatistics) stats[2]).getMaximum());
+    assertEquals(8, ((StringColumnStatistics) stats[2]).getSum());
+    assertEquals("count: 3 min: bar max: hi sum: 8",
+        stats[2].toString());
+
+    // check the inspectors
+    StructObjectInspector readerInspector =
+        (StructObjectInspector) reader.getObjectInspector();
+    assertEquals(ObjectInspector.Category.STRUCT,
+        readerInspector.getCategory());
+    assertEquals("struct<bytes1:binary,string1:string>",
+        readerInspector.getTypeName());
+    List<? extends StructField> fields =
+        readerInspector.getAllStructFieldRefs();
+    BinaryObjectInspector bi = (BinaryObjectInspector) readerInspector.
+        getStructFieldRef("bytes1").getFieldObjectInspector();
+    StringObjectInspector st = (StringObjectInspector) readerInspector.
+        getStructFieldRef("string1").getFieldObjectInspector();
+    RecordReader rows = reader.rows(null);
+    Object row = rows.next(null);
+    assertNotNull(row);
+    // check the contents of the first row
+    assertEquals(bytes(0,1,2,3,4), bi.getPrimitiveWritableObject(
+        readerInspector.getStructFieldData(row, fields.get(0))));
+    assertEquals("foo", st.getPrimitiveJavaObject(readerInspector.
+        getStructFieldData(row, fields.get(1))));
+
+    // check the contents of second row
+    assertEquals(true, rows.hasNext());
+    row = rows.next(row);
+    assertEquals(bytes(0,1,2,3), bi.getPrimitiveWritableObject(
+        readerInspector.getStructFieldData(row, fields.get(0))));
+    assertEquals("bar", st.getPrimitiveJavaObject(readerInspector.
+        getStructFieldData(row, fields.get(1))));
+
+    // check the contents of second row
+    assertEquals(true, rows.hasNext());
+    row = rows.next(row);
+    assertEquals(bytes(0,1,2,3,4,5), bi.getPrimitiveWritableObject(
+        readerInspector.getStructFieldData(row, fields.get(0))));
+    assertNull(st.getPrimitiveJavaObject(readerInspector.
+        getStructFieldData(row, fields.get(1))));
+
+    // check the contents of second row
+    assertEquals(true, rows.hasNext());
+    row = rows.next(row);
+    assertNull(bi.getPrimitiveWritableObject(
+        readerInspector.getStructFieldData(row, fields.get(0))));
+    assertEquals("hi", st.getPrimitiveJavaObject(readerInspector.
+        getStructFieldData(row, fields.get(1))));
+
+    // handle the close up
+    assertEquals(false, rows.hasNext());
+    rows.close();
+  }
+
+  @Test
   public void test1() throws Exception {
     ObjectInspector inspector;
     synchronized (TestOrcFile.class) {
@@ -567,7 +594,7 @@ public class TestOrcFile {
     assertEquals("count: 2 min: -15.0 max: -5.0 sum: -20.0",
         stats[7].toString());
 
-    assertEquals("count: 2 min: bye max: hi", stats[9].toString());
+    assertEquals("count: 2 min: bye max: hi sum: 5", stats[9].toString());
 
     // check the inspectors
     StructObjectInspector readerInspector =

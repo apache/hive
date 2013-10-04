@@ -54,6 +54,14 @@ to call at top-level: ant deploy-contrib compile-core-test
   <!-- target to run the tests -->
   <target name="test"
   	depends="test-conditions,gen-test,compile-test,test-jar,test-init">
+    <antcall target="testonly" />
+  </target>
+
+
+
+  <!-- target to run the tests -->
+  <target name="testonly"
+    depends="test-conditions,test-init">
     <echo message="Project: ${ant.project.name}"/>
     <junit showoutput="${test.output}" printsummary="yes" haltonfailure="no"
            fork="yes" maxmemory="512m" dir="${basedir}" timeout="${test.junit.timeout}"

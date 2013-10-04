@@ -7,7 +7,7 @@ drop table varchar_nested_view;
 
 create table varchar_nested_1 (key int, value varchar(20));
 insert overwrite table varchar_nested_1
-  select key, value from src limit 5;
+  select key, value from src order by key limit 1;
 
 -- arrays
 create table varchar_nested_array (c1 array<varchar(20)>);

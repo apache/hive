@@ -1,6 +1,8 @@
 DROP TABLE orc_create;
 DROP TABLE orc_create_complex;
 DROP TABLE orc_create_staging;
+DROP TABLE orc_create_people_staging;
+DROP TABLE orc_create_people;
 
 CREATE TABLE orc_create_staging (
   str STRING,
@@ -38,6 +40,8 @@ set hive.default.fileformat=orc;
 CREATE TABLE orc_create (key INT, value STRING)
    PARTITIONED BY (ds string);
 
+set hive.default.fileformat=text;
+
 DESCRIBE FORMATTED orc_create;
 
 CREATE TABLE orc_create_complex (
@@ -61,6 +65,39 @@ SELECT mp from orc_create_complex;
 SELECT lst from orc_create_complex;
 SELECT strct from orc_create_complex;
 
+CREATE TABLE orc_create_people_staging (
+  id int,
+  first_name string,
+  last_name string,
+  address string,
+  state string);
+
+LOAD DATA LOCAL INPATH '../data/files/orc_create_people.txt'
+  OVERWRITE INTO TABLE orc_create_people_staging;
+
+CREATE TABLE orc_create_people (
+  id int,
+  first_name string,
+  last_name string,
+  address string)
+PARTITIONED BY (state string)
+STORED AS orc;
+
+set hive.exec.dynamic.partition.mode=nonstrict;
+
+INSERT OVERWRITE TABLE orc_create_people PARTITION (state)
+  SELECT * FROM orc_create_people_staging;
+
+SET hive.optimize.index.filter=true;
+-- test predicate push down with partition pruning
+SELECT COUNT(*) FROM orc_create_people where id < 10 and state = 'Ca';
+
+-- test predicate push down with no column projection
+SELECT id, first_name, last_name, address
+  FROM orc_create_people WHERE id > 90;
+
 DROP TABLE orc_create;
 DROP TABLE orc_create_complex;
 DROP TABLE orc_create_staging;
+DROP TABLE orc_create_people_staging;
+DROP TABLE orc_create_people;

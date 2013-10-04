@@ -19,9 +19,9 @@
 package org.apache.hadoop.hive.ql.exec;
 
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.List;
-import java.util.Stack;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -30,12 +30,12 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFExpressionDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFInputDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDeserializer;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFInputDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PartitionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLeadLag;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator;
 import org.apache.hadoop.hive.serde2.SerDe;
@@ -147,7 +147,7 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
 
 	protected void setupKeysWrapper(ObjectInspector inputOI) throws HiveException {
 		PartitionDef pDef = conf.getStartOfChain().getPartition();
-		ArrayList<PTFExpressionDef> exprs = pDef.getExpressions();
+		List<PTFExpressionDef> exprs = pDef.getExpressions();
 		int numExprs = exprs.size();
 		ExprNodeEvaluator[] keyFields = new ExprNodeEvaluator[numExprs];
 		ObjectInspector[] keyOIs = new ObjectInspector[numExprs];
@@ -220,7 +220,7 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
    */
   private PTFPartition executeChain(PTFPartition part)
       throws HiveException {
-    Stack<PartitionedTableFunctionDef> fnDefs = new Stack<PartitionedTableFunctionDef>();
+    Deque<PartitionedTableFunctionDef> fnDefs = new ArrayDeque<PartitionedTableFunctionDef>();
     PTFInputDef iDef = conf.getFuncDef();
 
     while (iDef instanceof PartitionedTableFunctionDef) {
@@ -288,7 +288,5 @@ public class PTFOperator extends Operator<PTFDesc> implements Serializable {
       llFn.setpItr(pItr);
     }
   }
-
-
 
 }

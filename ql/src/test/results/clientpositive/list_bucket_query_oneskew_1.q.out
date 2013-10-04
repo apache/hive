@@ -214,6 +214,8 @@ STAGE PLANS:
                         escape.delim \
                         hive.serialization.extend.nesting.levels true
                         serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
@@ -263,7 +265,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- List Bucketing Query
 SELECT x FROM fact_daily WHERE ds='1' and x=484
@@ -330,6 +331,8 @@ STAGE PLANS:
                         escape.delim \
                         hive.serialization.extend.nesting.levels true
                         serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
@@ -379,7 +382,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- List Bucketing Query
 SELECT x FROM fact_daily WHERE ds='1' and x=495
@@ -442,6 +444,8 @@ STAGE PLANS:
                         escape.delim \
                         hive.serialization.extend.nesting.levels true
                         serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                   TotalFiles: 1
                   GatherStats: false
                   MultiFileSpray: false
@@ -491,7 +495,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT x FROM fact_daily WHERE ds='1' and x=1
 PREHOOK: type: QUERY

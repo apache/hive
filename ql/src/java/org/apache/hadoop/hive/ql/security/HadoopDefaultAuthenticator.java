@@ -30,7 +30,7 @@ public class HadoopDefaultAuthenticator implements HiveAuthenticationProvider {
 
   private String userName;
   private List<String> groupNames;
-
+  
   private Configuration conf;
 
   @Override
@@ -58,7 +58,7 @@ public class HadoopDefaultAuthenticator implements HiveAuthenticationProvider {
           "Can not initialize HadoopDefaultAuthenticator.");
     }
 
-    this.userName = ugi.getUserName();
+    this.userName = ShimLoader.getHadoopShims().getShortUserName(ugi);
     if (ugi.getGroupNames() != null) {
       this.groupNames = Arrays.asList(ugi.getGroupNames());
     }

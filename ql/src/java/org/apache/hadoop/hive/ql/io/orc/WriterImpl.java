@@ -27,19 +27,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-
-import com.google.protobuf.ByteString;
-import com.google.protobuf.CodedOutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.RowIndexEntry;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
@@ -65,6 +63,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.ParameterizedPrimitiveTypeUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+
+import com.google.protobuf.ByteString;
+import com.google.protobuf.CodedOutputStream;
 
 /**
  * An ORC file writer. The file is divided into stripes, which is the natural
@@ -111,6 +112,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   private int columnCount;
   private long rowCount = 0;
   private long rowsInStripe = 0;
+  private long rawDataSize = 0;
   private int rowsInIndex = 0;
   private final List<OrcProto.StripeInformation> stripes =
     new ArrayList<OrcProto.StripeInformation>();
@@ -1085,6 +1087,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
             ((BinaryObjectInspector) inspector).getPrimitiveWritableObject(obj);
         stream.write(val.getBytes(), 0, val.getLength());
         length.write(val.getLength());
+        indexStatistics.updateBinary(val);
       }
     }
 
@@ -1760,6 +1763,74 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     }
   }
 
+  private long computeRawDataSize() {
+    long result = 0;
+    for (TreeWriter child : treeWriter.getChildrenWriters()) {
+      result += getRawDataSizeFromInspectors(child, child.inspector);
+    }
+    return result;
+  }
+
+  private long getRawDataSizeFromInspectors(TreeWriter child, ObjectInspector oi) {
+    long total = 0;
+    switch (oi.getCategory()) {
+    case PRIMITIVE:
+      total += getRawDataSizeFromPrimitives(child, oi);
+      break;
+    case LIST:
+    case MAP:
+    case UNION:
+    case STRUCT:
+      for (TreeWriter tw : child.childrenWriters) {
+        total += getRawDataSizeFromInspectors(tw, tw.inspector);
+      }
+      break;
+    default:
+      LOG.debug("Unknown object inspector category.");
+      break;
+    }
+    return total;
+  }
+
+  private long getRawDataSizeFromPrimitives(TreeWriter child, ObjectInspector oi) {
+    long result = 0;
+    long numVals = child.fileStatistics.getNumberOfValues();
+    switch (((PrimitiveObjectInspector) oi).getPrimitiveCategory()) {
+    case BOOLEAN:
+    case BYTE:
+    case SHORT:
+    case INT:
+    case FLOAT:
+      return numVals * JavaDataModel.get().primitive1();
+    case LONG:
+    case DOUBLE:
+      return numVals * JavaDataModel.get().primitive2();
+    case STRING:
+      // ORC strings are converted to java Strings. so use JavaDataModel to
+      // compute the overall size of strings
+      child = (StringTreeWriter) child;
+      StringColumnStatistics scs = (StringColumnStatistics) child.fileStatistics;
+      numVals = numVals == 0 ? 1 : numVals;
+      int avgStringLen = (int) (scs.getSum() / numVals);
+      return numVals * JavaDataModel.get().lengthForStringOfLength(avgStringLen);
+    case DECIMAL:
+      return numVals * JavaDataModel.get().lengthOfDecimal();
+    case DATE:
+      return numVals * JavaDataModel.get().lengthOfDate();
+    case BINARY:
+      // get total length of binary blob
+      BinaryColumnStatistics bcs = (BinaryColumnStatistics) child.fileStatistics;
+      return bcs.getSum();
+    case TIMESTAMP:
+      return numVals * JavaDataModel.get().lengthOfTimestamp();
+    default:
+      LOG.debug("Unknown primitive category.");
+      break;
+    }
+
+    return result;
+  }
+
   private OrcProto.CompressionKind writeCompressionKind(CompressionKind kind) {
     switch (kind) {
       case NONE: return OrcProto.CompressionKind.NONE;
@@ -1786,6 +1857,8 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     builder.setHeaderLength(headerLength);
     builder.setNumberOfRows(rowCount);
     builder.setRowIndexStride(rowIndexStride);
+    // populate raw data size
+    rawDataSize = computeRawDataSize();
     // serialize the types
     writeTypes(builder, treeWriter);
     // add the stripe information
@@ -1872,13 +1945,21 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     }
   }
 
+  /**
+   * Raw data size will be compute when writing the file footer. Hence raw data
+   * size value will be available only after closing the writer.
+   */
   @Override
   public long getRawDataSize() {
-    return 0;
+    return rawDataSize;
   }
 
+  /**
+   * Row count gets updated when flushing the stripes. To get accurate row
+   * count call this method after writer is closed.
+   */
   @Override
   public long getNumberOfRows() {
-    return 0;
+    return rowCount;
   }
 }

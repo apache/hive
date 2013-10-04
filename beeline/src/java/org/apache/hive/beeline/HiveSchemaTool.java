@@ -366,6 +366,7 @@ public class HiveSchemaTool {
       beeLine.getOpts().setSilent(true);
     }
     beeLine.getOpts().setAllowMultiLineCommand(false);
+    beeLine.getOpts().setIsolation("TRANSACTION_READ_COMMITTED");
     int status = beeLine.begin(argList.toArray(new String[0]), null);
     if (status != 0) {
       throw new IOException("Schema script failed, errorcode " + status);

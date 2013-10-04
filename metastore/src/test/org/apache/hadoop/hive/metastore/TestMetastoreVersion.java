@@ -17,8 +17,13 @@
  */
 package org.apache.hadoop.hive.metastore;
 
+import java.io.File;
+import java.lang.reflect.Field;
+import java.util.Random;
+
 import junit.framework.TestCase;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -31,16 +36,33 @@ public class TestMetastoreVersion extends TestCase {
   protected HiveConf hiveConf;
   private Driver driver;
   private String hiveHome;
+  private String testMetastoreDB;
+  Random randomNum = new Random();
 
   @Override
   protected void setUp() throws Exception {
     super.setUp();
+    Field defDb = HiveMetaStore.HMSHandler.class.getDeclaredField("createDefaultDB");
+    defDb.setAccessible(true);
+    defDb.setBoolean(null, false);
     hiveConf = new HiveConf(this.getClass());
     System.setProperty("hive.metastore.event.listeners",
         DummyListener.class.getName());
     System.setProperty("hive.metastore.pre.event.listeners",
         DummyPreListener.class.getName());
+    testMetastoreDB = System.getProperty("java.io.tmpdir") +
+    File.separator + "test_metastore-" + randomNum.nextInt();
+    System.setProperty(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname,
+        "jdbc:derby:" + testMetastoreDB + ";create=true");
     hiveHome = System.getProperty("hive.home");
+  }
+
+  @Override
+  protected void tearDown() throws Exception {
+    File metaStoreDir = new File(testMetastoreDB);
+    if (metaStoreDir.exists()) {
+      FileUtils.deleteDirectory(metaStoreDir);
+    }
   }
 
   /***

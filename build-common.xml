@@ -418,6 +418,10 @@
   <!-- target to run the tests -->
   <target name="test"
     depends="test-conditions,gen-test,compile-test,test-jar,test-init">
+    <antcall target="testonly" />
+  </target>
+
+  <target name="testonly" depends="test-conditions,test-init">
     <echo message="Project: ${ant.project.name}"/>
     <property name="hadoop.testcp" refid="test.classpath"/>
     <if>
@@ -488,6 +492,7 @@
       <sysproperty key="hadoop.bin.path" value="${test.hadoop.bin.path}${junit.script.extension}"/>
       <sysproperty key="test.concurrency.num.threads" value="${test.concurrency.num.threads}"/>
       <sysproperty key="hive.home" value="${hive.root}/build/dist"/>
+      <sysproperty key="qfile" value="${qfile}"/>
       <jvmarg line="${junit.jvm.args}"/>
 
       <classpath refid="test.local.classpath"/>

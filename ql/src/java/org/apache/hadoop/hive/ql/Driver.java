@@ -1,3 +1,4 @@
+
 /**
  * Licensed to the Apache Software Foundation (ASF) under one
  * or more contributor license agreements.  See the NOTICE file
@@ -136,6 +137,8 @@ public class Driver implements CommandProcessor {
   private int maxthreads;
   private static final int SLEEP_TIME = 2000;
   protected int tryCount = Integer.MAX_VALUE;
+
+  private String userName;
 
   private boolean checkLockManager() {
     boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
@@ -326,6 +329,11 @@ public class Driver implements CommandProcessor {
   public Driver(HiveConf conf) {
     this.conf = conf;
   }
+  
+  public Driver(HiveConf conf, String userName) {
+    this(conf);
+    this.userName = userName;
+  }
 
   public Driver() {
     if (SessionState.get() != null) {
@@ -436,6 +444,7 @@ public class Driver implements CommandProcessor {
       if (saHooks != null) {
         HiveSemanticAnalyzerHookContext hookCtx = new HiveSemanticAnalyzerHookContextImpl();
         hookCtx.setConf(conf);
+        hookCtx.setUserName(userName);
         for (HiveSemanticAnalyzerHook hook : saHooks) {
           tree = hook.preAnalyze(hookCtx, tree);
         }

@@ -93,6 +93,10 @@
   </target>
 
   <target name="test" depends="jar, compile-test">
+    <antcall target="testonly" />
+  </target>
+
+  <target name="testonly">
     <echo message="${ant.project.name}"/>
     <_junit srcDir="${basedir}/src/test/java"/>
   </target>
