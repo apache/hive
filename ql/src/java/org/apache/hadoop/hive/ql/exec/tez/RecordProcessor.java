@@ -21,7 +21,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.net.URLClassLoader;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -37,7 +37,7 @@ import org.apache.tez.runtime.api.LogicalInput;
 public abstract class RecordProcessor  {
 
   protected JobConf jconf;
-  protected Collection<LogicalInput> inputs;
+  protected Map<String, LogicalInput> inputs;
   protected OutputCollector out;
 
   public static final Log l4j = LogFactory.getLog(RecordProcessor.class);
@@ -59,7 +59,7 @@ public abstract class RecordProcessor  {
    * @param inputs
    * @param out
    */
-  void init(JobConf jconf, MRTaskReporter mrReporter, Collection<LogicalInput> inputs,
+  void init(JobConf jconf, MRTaskReporter mrReporter, Map<String, LogicalInput> inputs,
       OutputCollector out){
     this.jconf = jconf;
     this.reporter = mrReporter;

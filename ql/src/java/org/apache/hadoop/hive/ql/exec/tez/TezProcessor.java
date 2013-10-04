@@ -19,7 +19,6 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -27,7 +26,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.tez.common.TezUtils;
-import org.apache.tez.mapreduce.input.MRInput;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
 import org.apache.tez.runtime.api.Event;
 import org.apache.tez.runtime.api.LogicalIOProcessor;
@@ -42,16 +40,16 @@ import org.apache.tez.runtime.library.api.KeyValueWriter;
  */
 public class TezProcessor implements LogicalIOProcessor {
   private static final Log LOG = LogFactory.getLog(TezProcessor.class);
+  private boolean isMap = false;
 
-  boolean isMap;
   RecordProcessor rproc = null;
 
   private JobConf jobConf;
 
   private TezProcessorContext processorContext;
 
-  public TezProcessor() {
-    this.isMap = true;
+  public TezProcessor(boolean isMap) {
+    this.isMap = isMap;
   }
 
   @Override
@@ -97,15 +95,7 @@ public class TezProcessor implements LogicalIOProcessor {
     LogicalInput in = inputs.values().iterator().next();
     LogicalOutput out = outputs.values().iterator().next();
 
-    MRInput input = (MRInput)in;
 
-    //update config
-    Configuration updatedConf = input.getConfigUpdates();
-    if (updatedConf != null) {
-      for (Entry<String, String> entry : updatedConf) {
-        this.jobConf.set(entry.getKey(), entry.getValue());
-      }
-    }
 
     KeyValueWriter kvWriter = (KeyValueWriter)out.getWriter();
     OutputCollector collector = new KVOutputCollector(kvWriter);
@@ -114,11 +104,11 @@ public class TezProcessor implements LogicalIOProcessor {
       rproc = new MapRecordProcessor();
     }
     else{
-      throw new UnsupportedOperationException("Reduce is yet to be implemented");
+      rproc = new ReduceRecordProcessor();
     }
 
     MRTaskReporter mrReporter = new MRTaskReporter(processorContext);
-    rproc.init(jobConf, mrReporter, inputs.values(), collector);
+    rproc.init(jobConf, mrReporter, inputs, collector);
     rproc.run();
 
     //done - output does not need to be committed as hive does not use outputcommitter

@@ -78,8 +78,6 @@ import org.apache.tez.mapreduce.hadoop.MRJobConfig;
 import org.apache.tez.mapreduce.hadoop.MultiStageMRConfToTezTranslator;
 import org.apache.tez.mapreduce.input.MRInput;
 import org.apache.tez.mapreduce.output.MROutput;
-import org.apache.tez.mapreduce.processor.map.MapProcessor;
-import org.apache.tez.mapreduce.processor.reduce.ReduceProcessor;
 import org.apache.tez.mapreduce.partition.MRPartitioner;
 
 /**
@@ -233,7 +231,7 @@ public class DagUtils {
     byte[] serializedConf = MRHelpers.createUserPayloadFromConf(conf);
     if (inputSplitInfo.getNumTasks() != 0) {
       map = new Vertex(mapWork.getName(),
-          new ProcessorDescriptor(TezProcessor.class.getName()).
+          new ProcessorDescriptor(MapTezProcessor.class.getName()).
                setUserPayload(serializedConf),
           inputSplitInfo.getNumTasks(), MRHelpers.getMapResource(conf));
       Map<String, String> environment = new HashMap<String, String>();
@@ -313,7 +311,7 @@ public class DagUtils {
 
     // create the vertex
     Vertex reducer = new Vertex(reduceWork.getName(),
-        new ProcessorDescriptor(ReduceProcessor.class.getName()).
+        new ProcessorDescriptor(ReduceTezProcessor.class.getName()).
              setUserPayload(MRHelpers.createUserPayloadFromConf(conf)),
         reduceWork.getNumReduceTasks(), MRHelpers.getReduceResource(conf));
 
