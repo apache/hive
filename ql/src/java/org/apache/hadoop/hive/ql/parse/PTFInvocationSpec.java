@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.PTFUtils;
 
@@ -124,7 +125,7 @@ public class PTFInvocationSpec {
   public static class PartitionedTableFunctionSpec  extends PTFInputSpec {
     String name;
     String alias;
-    ArrayList<ASTNode> args;
+    List<ASTNode> args;
     PartitioningSpec partitioning;
     PTFInputSpec input;
     public String getName() {
@@ -139,10 +140,10 @@ public class PTFInvocationSpec {
     public void setAlias(String alias) {
       this.alias = alias;
     }
-    public ArrayList<ASTNode> getArgs() {
+    public List<ASTNode> getArgs() {
       return args;
     }
-    public void setArgs(ArrayList<ASTNode> args) {
+    public void setArgs(List<ASTNode> args) {
       this.args = args;
     }
     public PartitioningSpec getPartitioning() {

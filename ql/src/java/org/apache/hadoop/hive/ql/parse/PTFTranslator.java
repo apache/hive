@@ -18,7 +18,9 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -60,22 +62,22 @@ import org.apache.hadoop.hive.ql.parse.WindowingSpec.WindowSpec;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.BoundaryDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.CurrentRowDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.OrderDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.OrderExpressionDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFExpressionDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFInputDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFQueryInputDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionedTableFunctionDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.RangeBoundaryDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.ShapeDetails;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.ValueBoundaryDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFrameDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowFunctionDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.WindowTableFunctionDef;
 import org.apache.hadoop.hive.ql.plan.PTFDeserializer;
+import org.apache.hadoop.hive.ql.plan.ptf.BoundaryDef;
+import org.apache.hadoop.hive.ql.plan.ptf.CurrentRowDef;
+import org.apache.hadoop.hive.ql.plan.ptf.OrderDef;
+import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFInputDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFQueryInputDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PartitionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.RangeBoundaryDef;
+import org.apache.hadoop.hive.ql.plan.ptf.ShapeDetails;
+import org.apache.hadoop.hive.ql.plan.ptf.ValueBoundaryDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowFrameDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowFunctionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.WindowTableFunctionDef;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLeadLag;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionEvaluator;
@@ -224,7 +226,7 @@ public class PTFTranslator {
 
   private void translatePTFChain() throws SemanticException {
 
-    Stack<PTFInputSpec> ptfChain = new Stack<PTFInvocationSpec.PTFInputSpec>();
+    Deque<PTFInputSpec> ptfChain = new ArrayDeque<PTFInvocationSpec.PTFInputSpec>();
     PTFInputSpec currentSpec = ptfInvocation.getFunction();
     while (currentSpec != null) {
       ptfChain.push(currentSpec);
@@ -280,7 +282,7 @@ public class PTFTranslator {
     /*
      * translate args
      */
-    ArrayList<ASTNode> args = spec.getArgs();
+    List<ASTNode> args = spec.getArgs();
     if (args != null)
     {
       for (ASTNode expr : args)
@@ -303,7 +305,7 @@ public class PTFTranslator {
 
     if (tFn.transformsRawInput()) {
       StructObjectInspector rawInOutOI = tEval.getRawInputOI();
-      ArrayList<String> rawInOutColNames = tFn.getRawInputColumnNames();
+      List<String> rawInOutColNames = tFn.getRawInputColumnNames();
       RowResolver rawInRR = buildRowResolverForPTF(def.getName(),
           spec.getAlias(),
           rawInOutOI,
@@ -324,7 +326,7 @@ public class PTFTranslator {
     tFn.setupOutputOI();
 
     StructObjectInspector outputOI = tEval.getOutputOI();
-    ArrayList<String> outColNames = tFn.getOutputColumnNames();
+    List<String> outColNames = tFn.getOutputColumnNames();
     RowResolver outRR = buildRowResolverForPTF(def.getName(),
         spec.getAlias(),
         outputOI,
@@ -566,8 +568,8 @@ public class PTFTranslator {
   }
 
   static void setupWdwFnEvaluator(WindowFunctionDef def) throws HiveException {
-    ArrayList<PTFExpressionDef> args = def.getArgs();
-    ArrayList<ObjectInspector> argOIs = new ArrayList<ObjectInspector>();
+    List<PTFExpressionDef> args = def.getArgs();
+    List<ObjectInspector> argOIs = new ArrayList<ObjectInspector>();
     ObjectInspector[] funcArgOIs = null;
 
     if (args != null) {
@@ -619,7 +621,7 @@ public class PTFTranslator {
   }
 
   private ShapeDetails setupTableFnShape(String fnName, ShapeDetails inpShape,
-      StructObjectInspector OI, ArrayList<String> columnNames, RowResolver rr)
+      StructObjectInspector OI, List<String> columnNames, RowResolver rr)
       throws SemanticException {
     if (fnName.equals(FunctionRegistry.NOOP_TABLE_FUNCTION)
         || fnName.equals(
@@ -630,7 +632,7 @@ public class PTFTranslator {
   }
 
   private ShapeDetails setupShape(StructObjectInspector OI,
-      ArrayList<String> columnNames,
+      List<String> columnNames,
       RowResolver rr) throws SemanticException {
     Map<String, String> serdePropsMap = new LinkedHashMap<String, String>();
     SerDe serde = null;
@@ -672,7 +674,7 @@ public class PTFTranslator {
 
   private ShapeDetails setupShapeForNoop(ShapeDetails inpShape,
       StructObjectInspector OI,
-      ArrayList<String> columnNames,
+      List<String> columnNames,
       RowResolver rr) throws SemanticException {
     ShapeDetails shp = new ShapeDetails();
 
@@ -738,7 +740,7 @@ public class PTFTranslator {
       throw new SemanticException("Ranking Functions can take no arguments");
     }
     OrderDef oDef = wdwTFnDef.getOrder();
-    ArrayList<OrderExpressionDef> oExprs = oDef.getExpressions();
+    List<OrderExpressionDef> oExprs = oDef.getExpressions();
     for (OrderExpressionDef oExpr : oExprs) {
       wFnDef.addArg(oExpr);
     }
@@ -871,7 +873,7 @@ public class PTFTranslator {
 
   protected static RowResolver buildRowResolverForPTF(String tbFnName, String tabAlias,
       StructObjectInspector rowObjectInspector,
-      ArrayList<String> outputColNames, RowResolver inputRR) throws SemanticException {
+      List<String> outputColNames, RowResolver inputRR) throws SemanticException {
 
     if (tbFnName.equals(FunctionRegistry.NOOP_TABLE_FUNCTION) ||
         tbFnName.equals(FunctionRegistry.NOOP_MAP_TABLE_FUNCTION)) {

@@ -139,9 +139,6 @@ import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.OrderExpressionDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PTFExpressionDef;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ScriptDesc;
@@ -150,6 +147,9 @@ import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.UDTFDesc;
 import org.apache.hadoop.hive.ql.plan.UnionDesc;
+import org.apache.hadoop.hive.ql.plan.ptf.OrderExpressionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PTFExpressionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator;
@@ -9935,7 +9935,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       RowResolver rsOpRR,
       RowResolver extractRR) throws SemanticException {
 
-    ArrayList<PTFExpressionDef> partColList = tabDef.getPartition().getExpressions();
+    List<PTFExpressionDef> partColList = tabDef.getPartition().getExpressions();
 
     for (PTFExpressionDef colDef : partColList) {
       partCols.add(colDef.getExprNode());
@@ -9950,7 +9950,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
      * we need to set includeKeyCols = false while creating the
      * ReduceSinkDesc
      */
-    ArrayList<OrderExpressionDef> orderColList = tabDef.getOrder().getExpressions();
+    List<OrderExpressionDef> orderColList = tabDef.getOrder().getExpressions();
     for (int i = 0; i < orderColList.size(); i++) {
       OrderExpressionDef colDef = orderColList.get(i);
       org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.Order order = colDef.getOrder();

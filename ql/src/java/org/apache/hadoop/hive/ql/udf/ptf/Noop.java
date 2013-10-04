@@ -18,43 +18,37 @@
 
 package org.apache.hadoop.hive.ql.udf.ptf;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.hadoop.hive.ql.exec.PTFPartition;
 import org.apache.hadoop.hive.ql.exec.PTFPartition.PTFPartitionIterator;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.PTFDesc;
-import org.apache.hadoop.hive.ql.plan.PTFDesc.PartitionedTableFunctionDef;
+import org.apache.hadoop.hive.ql.plan.ptf.PartitionedTableFunctionDef;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
-public class Noop extends TableFunctionEvaluator
-{
+public class Noop extends TableFunctionEvaluator {
 
   @Override
-  public PTFPartition execute(PTFPartition iPart) throws HiveException
-  {
+  public PTFPartition execute(PTFPartition iPart) throws HiveException {
     return iPart;
   }
 
   @Override
-  protected void execute(PTFPartitionIterator<Object> pItr, PTFPartition oPart)
-  {
+  protected void execute(PTFPartitionIterator<Object> pItr, PTFPartition oPart) {
     throw new UnsupportedOperationException();
   }
 
-  public static class NoopResolver extends TableFunctionResolver
-  {
+  public static class NoopResolver extends TableFunctionResolver {
 
     @Override
-    protected TableFunctionEvaluator createEvaluator(PTFDesc ptfDesc, PartitionedTableFunctionDef tDef)
-    {
+    protected TableFunctionEvaluator createEvaluator(PTFDesc ptfDesc, PartitionedTableFunctionDef tDef) {
       return new Noop();
     }
 
     @Override
-    public void setupOutputOI() throws SemanticException
-    {
+    public void setupOutputOI() throws SemanticException {
       StructObjectInspector OI = getEvaluator().getTableDef().getInput().getOutputShape().getOI();
       setOutputOI(OI);
     }
@@ -75,7 +69,7 @@ public class Noop extends TableFunctionEvaluator
      * Set to null only because carryForwardNames is true.
      */
     @Override
-    public ArrayList<String> getOutputColumnNames() {
+    public List<String> getOutputColumnNames() {
       return null;
     }
 
