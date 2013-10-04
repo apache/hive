@@ -53,4 +53,8 @@ public interface HiveSemanticAnalyzerHookContext extends Configurable{
   public Set<ReadEntity> getInputs();
 
   public Set<WriteEntity> getOutputs();
+
+  public String getUserName();
+
+  public void setUserName(String userName);
 }
