@@ -17,9 +17,16 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Properties;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedSerde;
 import org.apache.hadoop.hive.serde2.SerDe;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -29,26 +36,22 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Writable;
 
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Properties;
-
 /**
  * A serde class for ORC.
  * It transparently passes the object to/from the ORC file reader/writer.
  */
-public class OrcSerde implements SerDe {
+public class OrcSerde implements SerDe, VectorizedSerde {
 
   private static final Log LOG = LogFactory.getLog(OrcSerde.class);
 
   private final OrcSerdeRow row = new OrcSerdeRow();
   private ObjectInspector inspector = null;
 
+  private VectorizedOrcSerde vos = null;
+
   final class OrcSerdeRow implements Writable {
-    private Object realRow;
-    private ObjectInspector inspector;
+    Object realRow;
+    ObjectInspector inspector;
 
     @Override
     public void write(DataOutput dataOutput) throws IOException {
@@ -79,7 +82,7 @@ public class OrcSerde implements SerDe {
     // Parse the configuration parameters
     ArrayList<String> columnNames = new ArrayList<String>();
     if (columnNameProperty != null && columnNameProperty.length() > 0) {
-      for(String name: columnNameProperty.split(",")) {
+      for (String name : columnNameProperty.split(",")) {
         columnNames.add(name);
       }
     }
@@ -96,7 +99,7 @@ public class OrcSerde implements SerDe {
     }
 
     ArrayList<TypeInfo> fieldTypes =
-      TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
+        TypeInfoUtils.getTypeInfosFromTypeString(columnTypeProperty);
     StructTypeInfo rootType = new StructTypeInfo();
     rootType.setAllStructFieldNames(columnNames);
     rootType.setAllStructFieldTypeInfos(fieldTypes);
@@ -128,6 +131,7 @@ public class OrcSerde implements SerDe {
   /**
    * Always returns null, since serialized size doesn't make sense in the
    * context of ORC files.
+   *
    * @return null
    */
   @Override
@@ -135,4 +139,18 @@ public class OrcSerde implements SerDe {
     return null;
   }
 
+  @Override
+  public Writable serializeVector(VectorizedRowBatch vrg, ObjectInspector objInspector)
+      throws SerDeException {
+    if (vos == null) {
+      vos = new VectorizedOrcSerde(objInspector);
+    }
+    return vos.serialize(vrg, objInspector);
+  }
+
+  @Override
+  public void deserializeVector(Object rowBlob, int rowsInBatch, VectorizedRowBatch reuseBatch)
+      throws SerDeException {
+    // nothing to do here
+  }
 }

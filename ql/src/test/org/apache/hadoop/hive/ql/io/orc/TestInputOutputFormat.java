@@ -41,7 +41,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.io.FSRecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
@@ -521,7 +521,7 @@ public class TestInputOutputFormat {
     }
     SerDe serde = new OrcSerde();
     HiveOutputFormat<?, ?> outFormat = new OrcOutputFormat();
-    FileSinkOperator.RecordWriter writer =
+    FSRecordWriter writer =
         outFormat.getHiveRecordWriter(conf, testFilePath, MyRow.class, true,
             properties, Reporter.NULL);
     writer.write(serde.serialize(new MyRow(1,2), inspector));
@@ -686,7 +686,7 @@ public class TestInputOutputFormat {
     JobConf job = new JobConf(conf);
     Properties properties = new Properties();
     HiveOutputFormat<?, ?> outFormat = new OrcOutputFormat();
-    FileSinkOperator.RecordWriter writer =
+    FSRecordWriter writer =
         outFormat.getHiveRecordWriter(conf, testFilePath, MyRow.class, true,
             properties, Reporter.NULL);
     writer.close(true);
@@ -731,7 +731,7 @@ public class TestInputOutputFormat {
     }
     SerDe serde = new OrcSerde();
     HiveOutputFormat<?, ?> outFormat = new OrcOutputFormat();
-    FileSinkOperator.RecordWriter writer =
+    FSRecordWriter writer =
         outFormat.getHiveRecordWriter(conf, testFilePath, StringRow.class,
             true, properties, Reporter.NULL);
     writer.write(serde.serialize(new StringRow("owen"), inspector));

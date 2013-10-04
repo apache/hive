@@ -184,6 +184,7 @@ POSTHOOK: query: SHOW TABLES
 POSTHOOK: type: SHOWTABLES
 POSTHOOK: Lineage: alter3 PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
 POSTHOOK: Lineage: alter3_like PARTITION(pcol1=test_part:,pcol2=test_part:).col1 SIMPLE [(alter3_src)alter3_src.FieldSchema(name:col1, type:string, comment:null), ]
+alltypesorc
 src
 src1
 src_json

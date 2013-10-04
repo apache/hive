@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -38,6 +37,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -54,12 +55,13 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RecordReader;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.util.StringUtils;
-
 /**
  * A MapReduce/Hive input format for ORC files.
  */
-public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
-                                       InputFormatChecker {
+public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
+  InputFormatChecker, VectorizedInputFormatInterface {
+
+  VectorizedOrcInputFormat voif = new VectorizedOrcInputFormat();
 
   private static final Log LOG = LogFactory.getLog(OrcInputFormat.class);
   static final String MIN_SPLIT_SIZE = "mapred.min.split.size";
@@ -84,6 +86,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
     private final long length;
     private final int numColumns;
     private float progress = 0.0f;
+
 
     OrcRecordReader(Reader file, Configuration conf,
                     long offset, long length) throws IOException {
@@ -111,7 +114,7 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
         String[] neededColumnNames = columnNamesString.split(",");
         int i = 0;
         for(int columnId: types.get(0).getSubtypesList()) {
-          if (includeColumn[columnId]) {
+          if (includeColumn == null || includeColumn[columnId]) {
             columnNames[columnId] = neededColumnNames[i++];
           }
         }
@@ -219,6 +222,12 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   public RecordReader<NullWritable, OrcStruct>
       getRecordReader(InputSplit inputSplit, JobConf conf,
                       Reporter reporter) throws IOException {
+    if (isVectorMode(conf)) {
+      RecordReader<NullWritable, VectorizedRowBatch> vorr = voif.getRecordReader(inputSplit, conf,
+          reporter);
+      return (RecordReader) vorr;
+    }
+
     FileSplit fileSplit = (FileSplit) inputSplit;
     Path path = fileSplit.getPath();
     FileSystem fs = path.getFileSystem(conf);
@@ -231,6 +240,11 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
   public boolean validateInput(FileSystem fs, HiveConf conf,
                                ArrayList<FileStatus> files
                               ) throws IOException {
+
+    if (isVectorMode(conf)) {
+      return voif.validateInput(fs, conf, files);
+    }
+
     if (files.size() <= 0) {
       return false;
     }
@@ -242,6 +256,14 @@ public class OrcInputFormat implements InputFormat<NullWritable, OrcStruct>,
       }
     }
     return true;
+  }
+
+  private boolean isVectorMode(Configuration conf) {
+    if (Utilities.getPlanPath(conf) != null && Utilities
+        .getMapRedWork(conf).getMapWork().getVectorMode()) {
+      return true;
+    }
+    return false;
   }
 
   /**

@@ -18,23 +18,29 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import com.google.protobuf.CodedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.util.StringUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.protobuf.CodedInputStream;
 
 final class ReaderImpl implements Reader {
 
@@ -49,6 +55,7 @@ final class ReaderImpl implements Reader {
   private final int bufferSize;
   private final OrcProto.Footer footer;
   private final ObjectInspector inspector;
+  private long deserializedSize = -1;
 
   private static class StripeInformationImpl
       implements StripeInformation {
@@ -341,6 +348,126 @@ final class ReaderImpl implements Reader {
     return new RecordReaderImpl(this.getStripes(), fileSystem,  path, offset,
         length, footer.getTypesList(), codec, bufferSize,
         include, footer.getRowIndexStride(), sarg, columnNames);
+  }
+
+  @Override
+  public long getRawDataSize() {
+    // if the deserializedSize is not computed, then compute it, else
+    // return the already computed size. since we are reading from the footer
+    // we don't have to compute deserialized size repeatedly
+    if (deserializedSize == -1) {
+      List<OrcProto.ColumnStatistics> stats = footer.getStatisticsList();
+      List<Integer> indices = Lists.newArrayList();
+      for (int i = 0; i < stats.size(); ++i) {
+        indices.add(i);
+      }
+      deserializedSize = getRawDataSizeFromColIndices(indices);
+    }
+    return deserializedSize;
+  }
+
+  private long getRawDataSizeFromColIndices(List<Integer> colIndices) {
+    long result = 0;
+    for (int colIdx : colIndices) {
+      result += getRawDataSizeOfColumn(colIdx);
+    }
+    return result;
+  }
+
+  private long getRawDataSizeOfColumn(int colIdx) {
+    OrcProto.ColumnStatistics colStat = footer.getStatistics(colIdx);
+    long numVals = colStat.getNumberOfValues();
+    Type type = footer.getTypes(colIdx);
+
+    switch (type.getKind()) {
+    case BINARY:
+      // old orc format doesn't support binary statistics. checking for binary
+      // statistics is not required as protocol buffers takes care of it.
+      return colStat.getBinaryStatistics().getSum();
+    case STRING:
+      // old orc format doesn't support sum for string statistics. checking for
+      // existence is not required as protocol buffers takes care of it.
+
+      // ORC strings are deserialized to java strings. so use java data model's
+      // string size
+      numVals = numVals == 0 ? 1 : numVals;
+      int avgStrLen = (int) (colStat.getStringStatistics().getSum() / numVals);
+      return numVals * JavaDataModel.get().lengthForStringOfLength(avgStrLen);
+    case TIMESTAMP:
+      return numVals * JavaDataModel.get().lengthOfTimestamp();
+    case DATE:
+      return numVals * JavaDataModel.get().lengthOfDate();
+    case DECIMAL:
+      return numVals * JavaDataModel.get().lengthOfDecimal();
+    case DOUBLE:
+    case LONG:
+      return numVals * JavaDataModel.get().primitive2();
+    case FLOAT:
+    case INT:
+    case SHORT:
+    case BOOLEAN:
+    case BYTE:
+      return numVals * JavaDataModel.get().primitive1();
+    default:
+      LOG.debug("Unknown primitive category.");
+      break;
+    }
+
+    return 0;
+  }
+
+  @Override
+  public long getRawDataSizeOfColumns(List<String> colNames) {
+    List<Integer> colIndices = getColumnIndicesFromNames(colNames);
+    return getRawDataSizeFromColIndices(colIndices);
+  }
+
+  private List<Integer> getColumnIndicesFromNames(List<String> colNames) {
+    // top level struct
+    Type type = footer.getTypesList().get(0);
+    List<Integer> colIndices = Lists.newArrayList();
+    List<String> fieldNames = type.getFieldNamesList();
+    int fieldIdx = 0;
+    for (String colName : colNames) {
+      if (fieldNames.contains(colName)) {
+        fieldIdx = fieldNames.indexOf(colName);
+      }
+
+      // a single field may span multiple columns. find start and end column
+      // index for the requested field
+      int idxStart = type.getSubtypes(fieldIdx);
+
+      int idxEnd = 0;
+
+      // if the specified is the last field and then end index will be last
+      // column index
+      if (fieldIdx + 1 > fieldNames.size() - 1) {
+        idxEnd = getLastIdx() + 1;
+      } else {
+        idxEnd = type.getSubtypes(fieldIdx + 1);
+      }
+
+      // if start index and end index are same then the field is a primitive
+      // field else complex field (like map, list, struct, union)
+      if (idxStart == idxEnd) {
+        // simple field
+        colIndices.add(idxStart);
+      } else {
+        // complex fields spans multiple columns
+        for (int i = idxStart; i < idxEnd; i++) {
+          colIndices.add(i);
+        }
+      }
+    }
+    return colIndices;
+  }
+
+  private int getLastIdx() {
+    Set<Integer> indices = Sets.newHashSet();
+    for (Type type : footer.getTypesList()) {
+      indices.addAll(type.getSubtypesList());
+    }
+    return Collections.max(indices);
   }
 
 }

@@ -107,6 +107,7 @@ public class PTest {
     put("clearLibraryCache", String.valueOf(configuration.isClearLibraryCache())).
     put("workingDir", mExecutionContext.getLocalWorkingDirectory()).
     put("antArgs", configuration.getAntArgs()).
+    put("antTestArgs", configuration.getAntTestArgs()).
     put("buildTag", buildTag).
     put("logDir", logDir.getAbsolutePath()).
     put("javaHome", configuration.getJavaHome()).
@@ -228,6 +229,7 @@ public class PTest {
   private static final String PATCH = "patch";
   private static final String JAVA_HOME = TestConfiguration.JAVA_HOME;
   private static final String JAVA_HOME_TEST = TestConfiguration.JAVA_HOME_TEST;
+  private static final String ANT_TEST_ARGS = TestConfiguration.ANT_TEST_ARGS;
   private static final String ANT_ENV_OPTS = TestConfiguration.ANT_ENV_OPTS;
   /**
    * All args override properties file settings except
@@ -246,7 +248,8 @@ public class PTest {
     options.addOption(null, PATCH, true, "URI to patch, either file:/// or http(s)://");
     options.addOption(ANT_ARG, null, true, "Supplemntal ant arguments");
     options.addOption(null, JAVA_HOME, true, "Java Home for compiling and running tests (unless " + JAVA_HOME_TEST + " is specified)");
-    options.addOption(null, JAVA_HOME_TEST, true, "Java Home for running tests (optional)");
+    options.addOption(null, JAVA_HOME_TEST, true, "Java Home for running tests (optional)");    
+    options.addOption(null, ANT_TEST_ARGS, true, "Arguments to ant test on slave nodes only");
     options.addOption(null, ANT_ENV_OPTS, true, "ANT_OPTS environemnt variable setting");
     CommandLine commandLine = parser.parse(options, args);
     if(!commandLine.hasOption(PROPERTIES)) {
@@ -288,6 +291,10 @@ public class PTest {
         String javaHomeForTests = Strings.nullToEmpty(commandLine.getOptionValue(JAVA_HOME_TEST)).trim();
         if(!javaHomeForTests.isEmpty()) {
           conf.setJavaHomeForTests(javaHomeForTests);
+        }
+        String antTestArgs = Strings.nullToEmpty(commandLine.getOptionValue(ANT_TEST_ARGS)).trim();
+        if(!antTestArgs.isEmpty()) {
+          conf.setAntTestArgs(antTestArgs);
         }
         String antEnvOpts = Strings.nullToEmpty(commandLine.getOptionValue(ANT_ENV_OPTS)).trim();
         if(!antEnvOpts.isEmpty()) {

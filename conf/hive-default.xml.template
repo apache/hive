@@ -2011,6 +2011,15 @@
 </property>
 
 <property>
+  <name>hive.vectorized.execution.enabled</name>
+  <value>false</value>
+  <description>
+  This flag should be set to true to enable vectorized mode of query execution.
+  The default value is false.
+  </description>
+</property>
+
+<property>
   <name>hive.metastore.schema.verification</name>
   <value>false</value>
    <description>
@@ -2021,6 +2030,5 @@
    False: Warn if the version information stored in metastore doesn't match with one from in Hive jars.
    </description>
 </property>
-
 
 </configuration>

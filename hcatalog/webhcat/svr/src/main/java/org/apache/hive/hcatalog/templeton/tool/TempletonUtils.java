@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -39,8 +40,10 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hive.hcatalog.templeton.UgiFactory;
+import org.apache.hive.hcatalog.templeton.BadParam;
 
 /**
  * General utility methods.
@@ -295,5 +298,47 @@ public class TempletonUtils {
     }
 
     return env;
+  }
+
+  // Add double quotes around the given input parameter if it is not already
+  // quoted. Quotes are not allowed in the middle of the parameter, and
+  // BadParam exception is thrown if this is the case.
+  //
+  // This method should be used to escape parameters before they get passed to
+  // Windows cmd scripts (specifically, special characters like a comma or an
+  // equal sign might be lost as part of the cmd script processing if not
+  // under quotes).
+  public static String quoteForWindows(String param) throws BadParam {
+    if (Shell.WINDOWS) {
+      if (param != null && param.length() > 0) {
+        String nonQuotedPart = param;
+        boolean addQuotes = true;
+        if (param.charAt(0) == '\"' && param.charAt(param.length() - 1) == '\"') {
+          if (param.length() < 2)
+            throw new BadParam("Passed in parameter is incorrectly quoted: " + param);
+
+          addQuotes = false;
+          nonQuotedPart = param.substring(1, param.length() - 1);
+        }
+
+        // If we have any quotes other then the outside quotes, throw
+        if (nonQuotedPart.contains("\"")) {
+          throw new BadParam("Passed in parameter is incorrectly quoted: " + param);
+        }
+
+        if (addQuotes) {
+          param = '\"' + param + '\"';
+        }
+      }
+    }
+    return param;
+  }
+
+  public static void addCmdForWindows(ArrayList<String> args) {
+    if(Shell.WINDOWS){
+      args.add("cmd");
+      args.add("/c");
+      args.add("call");
+    }
   }
 }

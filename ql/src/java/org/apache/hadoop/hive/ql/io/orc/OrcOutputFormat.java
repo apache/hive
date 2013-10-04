@@ -17,12 +17,12 @@
  */
 package org.apache.hadoop.hive.ql.io.orc;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.io.FSRecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.hive.ql.io.orc.OrcSerde.OrcSerdeRow;
+import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.io.NullWritable;
@@ -45,14 +45,17 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
 
   private static class OrcRecordWriter
       implements RecordWriter<NullWritable, OrcSerdeRow>,
-                 FileSinkOperator.RecordWriter {
+                 FSRecordWriter,
+                 FSRecordWriter.StatsProvidingRecordWriter {
     private Writer writer = null;
     private final Path path;
     private final OrcFile.WriterOptions options;
+    private final SerDeStats stats;
 
     OrcRecordWriter(Path path, OrcFile.WriterOptions options) {
       this.path = path;
       this.options = options;
+      this.stats = new SerDeStats();
     }
 
     @Override
@@ -94,6 +97,13 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
       }
       writer.close();
     }
+
+    @Override
+    public SerDeStats getStats() {
+      stats.setRawDataSize(writer.getRawDataSize());
+      stats.setRowCount(writer.getNumberOfRows());
+      return stats;
+    }
   }
 
   @Override
@@ -105,7 +115,7 @@ public class OrcOutputFormat extends FileOutputFormat<NullWritable, OrcSerdeRow>
   }
 
   @Override
-  public FileSinkOperator.RecordWriter
+  public FSRecordWriter
      getHiveRecordWriter(JobConf conf,
                          Path path,
                          Class<? extends Writable> valueClass,

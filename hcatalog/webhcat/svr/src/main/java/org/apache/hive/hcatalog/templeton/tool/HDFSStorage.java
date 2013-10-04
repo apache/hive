@@ -210,7 +210,7 @@ public class HDFSStorage implements TempletonStorage {
   public void openStorage(Configuration config) throws IOException {
     storage_root = config.get(TempletonStorage.STORAGE_ROOT);
     if (fs == null) {
-      fs = FileSystem.get(config);
+      fs = new Path(storage_root).getFileSystem(config);
     }
   }
 

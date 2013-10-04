@@ -294,7 +294,6 @@
      encoding="${build.encoding}"
      srcdir="${test.src.dir}"
      includes="org/apache/**/hive/**/*.java"
-     excludes="**/TestSerDe.java"
      destdir="${test.build.classes}"
      debug="${javac.debug}"
      optimize="${javac.optimize}"
@@ -329,8 +328,13 @@
     </jar>
     <delete file="${test.build.dir}/test-serdes.jar"/>
     <jar jarfile="${test.build.dir}/test-serdes.jar">
-        <fileset dir="${test.build.classes}" includes="**/serde2/*.class"/>
+        <fileset dir="${test.build.classes}" includes="**/serde2/*.class" excludes="**/serde2/TestSerDe.class"/>
     </jar>  	
+    <delete file="${test.build.dir}/TestSerDe.jar"/>
+    <jar jarfile="${test.build.dir}/TestSerDe.jar">
+        <fileset dir="${test.build.classes}" includes="**/serde2/TestSerDe.class"/>
+    </jar>
+    <delete file="${test.build.classes}/org/apache/hadoop/hive/serde2/TestSerDe.class"/> 
   </target>
 
   <target name="test-conditions">
@@ -404,6 +408,10 @@
   <!-- target to run the tests -->
   <target name="test"
     depends="test-conditions,gen-test,compile-test,test-jar,test-init">
+    <antcall target="testonly" />
+  </target>
+
+  <target name="testonly" depends="test-conditions,test-init">
     <echo message="Project: ${ant.project.name}"/>
     <property name="hadoop.testcp" refid="test.classpath"/>
     <if>
@@ -474,6 +482,7 @@
       <sysproperty key="hadoop.bin.path" value="${test.hadoop.bin.path}${junit.script.extension}"/>
       <sysproperty key="test.concurrency.num.threads" value="${test.concurrency.num.threads}"/>
       <sysproperty key="hive.home" value="${hive.root}/build/dist"/>
+      <sysproperty key="qfile" value="${qfile}"/>
       <jvmarg line="${junit.jvm.args}"/>
 
       <classpath refid="test.local.classpath"/>
@@ -481,7 +490,7 @@
       <batchtest todir="${test.build.dir}" unless="testcase">
         <fileset dir="${test.build.classes}"
                  includes="**/${test.include}.class"
-                 excludes="**/TestSerDe.class,**/TestHiveMetaStore.class,**/TestBeeLineDriver.class,**/TestHiveServer2Concurrency.class,**/*$*.class,${test.junit.exclude}" />
+		 excludes="**/ql/exec/vector/util/*.class,**/ql/exec/vector/udf/legacy/*.class,**/ql/exec/vector/udf/generic/*.class,**/TestSerDe.class,**/TestHiveMetaStore.class,**/TestBeeLineDriver.class,**/TestHiveServer2Concurrency.class,**/*$*.class,${test.junit.exclude}" />
       </batchtest>
       <batchtest todir="${test.build.dir}" if="testcase">
         <fileset dir="${test.build.classes}" includes="**/${testcase}.class"/>

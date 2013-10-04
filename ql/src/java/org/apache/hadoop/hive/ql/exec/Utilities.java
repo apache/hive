@@ -102,12 +102,12 @@ import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
-import org.apache.hadoop.hive.ql.exec.FileSinkOperator.RecordWriter;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper;
 import org.apache.hadoop.hive.ql.exec.mr.ExecReducer;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.io.ContentSummaryInputFormat;
+import org.apache.hadoop.hive.ql.io.FSRecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.io.HiveInputFormat;
@@ -497,6 +497,18 @@ public final class Utilities {
     }
   }
 
+  /**
+   * Need to serialize org.antlr.runtime.CommonToken
+   */
+  public static class CommonTokenDelegate extends PersistenceDelegate {
+    @Override
+    protected Expression instantiate(Object oldInstance, Encoder out) {
+      CommonToken ct = (CommonToken)oldInstance;
+      Object[] args = {ct.getType(), ct.getText()};
+      return new Expression(ct, ct.getClass(), "new", args);
+    }
+  }
+
   public static void setMapRedWork(Configuration conf, MapredWork w, String hiveScratchDir) {
     setMapWork(conf, w.getMapWork(), hiveScratchDir, true);
     if (w.getReduceWork() != null) {
@@ -569,7 +581,7 @@ public final class Utilities {
     }
   }
 
-  private static Path getPlanPath(Configuration conf) {
+  public static Path getPlanPath(Configuration conf) {
     String plan = HiveConf.getVar(conf, HiveConf.ConfVars.PLAN);
     if (plan != null && !plan.isEmpty()) {
       return new Path(plan);
@@ -746,7 +758,7 @@ public final class Utilities {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.CLONE_PLAN);
     ByteArrayOutputStream baos = new ByteArrayOutputStream(4096);
-    Configuration conf = new Configuration();
+    Configuration conf = new HiveConf();
     serializePlan(plan, baos, conf, true);
     MapredWork newPlan = deserializePlan(new ByteArrayInputStream(baos.toByteArray()),
         MapredWork.class, conf, true);
@@ -775,6 +787,7 @@ public final class Utilities {
 
     e.setPersistenceDelegate(org.datanucleus.store.types.backed.Map.class, new MapDelegate());
     e.setPersistenceDelegate(org.datanucleus.store.types.backed.List.class, new ListDelegate());
+    e.setPersistenceDelegate(CommonToken.class, new CommonTokenDelegate());
 
     e.writeObject(plan);
     e.close();
@@ -1694,7 +1707,7 @@ public final class Utilities {
 
     for (String p : paths) {
       Path path = new Path(p);
-      RecordWriter writer = HiveFileFormatUtils.getRecordWriter(
+      FSRecordWriter writer = HiveFileFormatUtils.getRecordWriter(
           jc, hiveOutputFormat, outputClass, isCompressed,
           tableInfo.getProperties(), path, reporter);
       writer.close(false);
@@ -2853,7 +2866,7 @@ public final class Utilities {
     Path newFilePath = new Path(newFile);
 
     String onefile = newPath.toString();
-    RecordWriter recWriter = outFileFormat.newInstance().getHiveRecordWriter(job, newFilePath,
+    FSRecordWriter recWriter = outFileFormat.newInstance().getHiveRecordWriter(job, newFilePath,
         Text.class, false, props, null);
     if (dummyRow) {
       // empty files are omitted at CombineHiveInputFormat.

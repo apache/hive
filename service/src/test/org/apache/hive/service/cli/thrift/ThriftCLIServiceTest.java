@@ -174,10 +174,16 @@ public abstract class ThriftCLIServiceTest {
         "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager";
     executeQuerySync(queryString, sessHandle);
 
-    queryString = "CREATE TABLE TEST_EXEC(ID STRING)";
+    // Drop the table if it exists
+    queryString = "DROP TABLE IF EXISTS TEST_EXEC_THRIFT";
     executeQuerySync(queryString, sessHandle);
 
-    queryString = "SELECT ID FROM TEST_EXEC";
+    // Create a test table
+    queryString = "CREATE TABLE TEST_EXEC_THRIFT(ID STRING)";
+    executeQuerySync(queryString, sessHandle);
+
+    // Execute another query to test
+    queryString = "SELECT ID FROM TEST_EXEC_THRIFT";
     TExecuteStatementResp execResp = executeQuerySync(queryString, sessHandle);
     TOperationHandle operationHandle = execResp.getOperationHandle();
     assertNotNull(operationHandle);
@@ -187,7 +193,7 @@ public abstract class ThriftCLIServiceTest {
     assertNotNull(opStatusReq);
     TGetOperationStatusResp opStatusResp = client.GetOperationStatus(opStatusReq);
 
-    // expect query to be completed now since it was an async call
+    // Expect query to be completed now
     assertEquals("Query should be finished",
         OperationState.FINISHED, OperationState.getOperationState(opStatusResp.getOperationState()));
 

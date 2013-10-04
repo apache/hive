@@ -42,7 +42,7 @@ import org.apache.hcatalog.mapreduce.HCatStorageHandler;
 /**
  * A HiveAuthorizationProvider which delegates the authorization requests to 
  * the underlying AuthorizationProviders obtained from the StorageHandler.
- * @deprecated Use/modify {@link org.apache.hive.hcatalog.security.StorageDelegationAuthorizationProvider} instead
+ * @deprecated 
  */
 public class StorageDelegationAuthorizationProvider extends HiveAuthorizationProviderBase {
 

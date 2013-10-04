@@ -813,6 +813,11 @@ public class HiveConf extends Configuration {
 
     // Whether to show the unquoted partition names in query results.
     HIVE_DECODE_PARTITION_NAME("hive.decode.partition.name", false),
+
+    //Vectorization enabled
+    HIVE_VECTORIZATION_ENABLED("hive.vectorized.execution.enabled", false),
+
+    HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true),
     ;
 
     public final String varname;

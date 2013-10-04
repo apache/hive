@@ -31,7 +31,7 @@ public class TestServer extends TestCase {
   MockServer server;
 
   public void setUp() {
-    new Main(null);         // Initialize the config
+    new Main(new String[]{});         // Initialize the config
     server = new MockServer();
   }
 
