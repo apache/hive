@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -19,6 +21,8 @@ import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.EdgeType;
 
 public class ReduceSinkMapJoinProc implements NodeProcessor {
+
+  protected transient Log LOG = LogFactory.getLog(this.getClass().getName());
 
   /* (non-Javadoc)
    * This processor addresses the RS-MJ case that occurs in tez on the small/hash
@@ -37,9 +41,16 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
     context.currentRootOperator = null;
 
     MapJoinOperator mapJoinOp = (MapJoinOperator)nd;
+    Operator<? extends OperatorDesc> childOp = mapJoinOp.getChildOperators().get(0);
 
-    Operator<? extends OperatorDesc>childOp = mapJoinOp.getChildOperators().get(0);
     ReduceSinkOperator parentRS = (ReduceSinkOperator)stack.get(stack.size() - 2);
+
+    // remember the original parent list before we start modifying it.
+    if (!context.mapJoinParentMap.containsKey(mapJoinOp)) {
+      List<Operator<?>> parents = new ArrayList(mapJoinOp.getParentOperators());
+      context.mapJoinParentMap.put(mapJoinOp, parents);
+    }
+
     while (childOp != null) {
       if ((childOp instanceof ReduceSinkOperator) || (childOp instanceof FileSinkOperator)) {
         /*
@@ -54,6 +65,15 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
 
         BaseWork myWork = context.operatorWorkMap.get(childOp);
         BaseWork parentWork = context.operatorWorkMap.get(parentRS);
+          
+        // set the link between mapjoin and parent vertex
+        int pos = context.mapJoinParentMap.get(mapJoinOp).indexOf(parentRS);
+        if (pos == -1) {
+          throw new SemanticException("Cannot find position of parent in mapjoin");
+        }
+        LOG.debug("Mapjoin "+mapJoinOp+", pos: "+pos+" --> "+parentWork.getName());
+        mapJoinOp.getConf().getParentToInput().put(pos, parentWork.getName());
+
         if (myWork != null) {
           // link the work with the work associated with the reduce sink that triggered this rule
           TezWork tezWork = context.currentTask.getWork();

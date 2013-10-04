@@ -69,6 +69,7 @@ import org.apache.tez.dag.api.OutputDescriptor;
 import org.apache.tez.dag.api.ProcessorDescriptor;
 import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.runtime.library.input.ShuffledMergedInputLegacy;
+import org.apache.tez.runtime.library.input.ShuffledUnorderedKVInput;
 import org.apache.tez.runtime.library.output.OnFileSortedOutput;
 import org.apache.tez.runtime.library.output.OnFileUnorderedKVOutput;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
@@ -168,7 +169,7 @@ public class DagUtils {
     case BROADCAST_EDGE:
       dataMovementType = DataMovementType.BROADCAST;
       logicalOutputClass = OnFileUnorderedKVOutput.class;
-      logicalInputClass = MRInput.class;
+      logicalInputClass = ShuffledUnorderedKVInput.class;
       break;
 
     case SIMPLE_EDGE:

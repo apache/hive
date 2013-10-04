@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -89,6 +90,9 @@ public class GenTezProcContext implements NodeProcessorCtx{
   // a map that maintains operator (file-sink or reduce-sink) to work mapping
   public final Map<Operator<?>, BaseWork> operatorWorkMap;
 
+  // we need to keep the original list of operators in the map join to know
+  // what position in the mapjoin the different parent work items will have.
+  public final Map<MapJoinOperator, List<Operator<?>>> mapJoinParentMap;
 
   @SuppressWarnings("unchecked")
   public GenTezProcContext(HiveConf conf, ParseContext parseContext,
@@ -106,5 +110,6 @@ public class GenTezProcContext implements NodeProcessorCtx{
     this.rootOperators = rootOperators;
     this.linkOpWithWorkMap = new HashMap<Operator<?>, List<BaseWork>>();
     this.operatorWorkMap = new HashMap<Operator<?>, BaseWork>();
+    this.mapJoinParentMap = new HashMap<MapJoinOperator, List<Operator<?>>>();
   }
 }
