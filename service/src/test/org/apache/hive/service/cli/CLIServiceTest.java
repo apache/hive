@@ -122,18 +122,23 @@ public abstract class CLIServiceTest {
     assertNotNull(sessionHandle);
 
     // Change lock manager, otherwise unit-test doesn't go through
-    String setLockMgr = "SET hive.lock.manager=" +
+    String queryString = "SET hive.lock.manager=" +
         "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager";
-    client.executeStatement(sessionHandle, setLockMgr, confOverlay);
+    client.executeStatement(sessionHandle, queryString, confOverlay);
 
-    String createTable = "CREATE TABLE TEST_EXEC(ID STRING)";
-    client.executeStatement(sessionHandle, createTable, confOverlay);
+    // Drop the table if it exists
+    queryString = "DROP TABLE IF EXISTS TEST_EXEC";
+    client.executeStatement(sessionHandle, queryString, confOverlay);
 
-    // blocking execute
-    String select = "SELECT ID FROM TEST_EXEC";
-    OperationHandle ophandle = client.executeStatement(sessionHandle, select, confOverlay);
+    // Create a test table
+    queryString = "CREATE TABLE TEST_EXEC(ID STRING)";
+    client.executeStatement(sessionHandle, queryString, confOverlay);
 
-    // expect query to be completed now
+    // Blocking execute
+    queryString = "SELECT ID FROM TEST_EXEC";
+    OperationHandle ophandle = client.executeStatement(sessionHandle, queryString, confOverlay);
+
+    // Expect query to be completed now
     assertEquals("Query should be finished",
         OperationState.FINISHED, client.getOperationStatus(ophandle));
   }
@@ -150,23 +155,28 @@ public abstract class CLIServiceTest {
     OperationHandle ophandle;
 
     // Change lock manager, otherwise unit-test doesn't go through
-    String setLockMgr = "SET hive.lock.manager=" +
+    String queryString = "SET hive.lock.manager=" +
         "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager";
-    client.executeStatement(sessionHandle, setLockMgr, confOverlay);
+    client.executeStatement(sessionHandle, queryString, confOverlay);
 
-    String createTable = "CREATE TABLE TEST_EXEC_ASYNC(ID STRING)";
-    client.executeStatementAsync(sessionHandle, createTable, confOverlay);
+    // Drop the table if it exists
+    queryString = "DROP TABLE IF EXISTS TEST_EXEC_ASYNC";
+    client.executeStatement(sessionHandle, queryString, confOverlay);
+
+    // Create a test table
+    queryString = "CREATE TABLE TEST_EXEC_ASYNC(ID STRING)";
+    client.executeStatement(sessionHandle, queryString, confOverlay);
 
     // Test async execution response when query is malformed
-    String wrongQuery = "SELECT NAME FROM TEST_EXEC";
-    ophandle = client.executeStatementAsync(sessionHandle, wrongQuery, confOverlay);
+    String wrongQueryString = "SELECT NAME FROM TEST_EXEC";
+    ophandle = client.executeStatementAsync(sessionHandle, wrongQueryString, confOverlay);
 
     int count = 0;
     while (true) {
       // Break if polling times out
       if (System.currentTimeMillis() > pollTimeout) {
-          System.out.println("Polling timed out");
-          break;
+        System.out.println("Polling timed out");
+        break;
       }
       state = client.getOperationStatus(ophandle);
       System.out.println("Polling: " + ophandle + " count=" + (++count)
@@ -182,16 +192,16 @@ public abstract class CLIServiceTest {
         OperationState.ERROR, client.getOperationStatus(ophandle));
 
     // Test async execution when query is well formed
-    String select = "SELECT ID FROM TEST_EXEC_ASYNC";
+    queryString = "SELECT ID FROM TEST_EXEC_ASYNC";
     ophandle =
-        client.executeStatementAsync(sessionHandle, select, confOverlay);
+        client.executeStatementAsync(sessionHandle, queryString, confOverlay);
 
     count = 0;
     while (true) {
       // Break if polling times out
       if (System.currentTimeMillis() > pollTimeout) {
-          System.out.println("Polling timed out");
-          break;
+        System.out.println("Polling timed out");
+        break;
       }
       state = client.getOperationStatus(ophandle);
       System.out.println("Polling: " + ophandle + " count=" + (++count)
@@ -207,7 +217,7 @@ public abstract class CLIServiceTest {
         OperationState.FINISHED, client.getOperationStatus(ophandle));
 
     // Cancellation test
-    ophandle = client.executeStatementAsync(sessionHandle, select, confOverlay);
+    ophandle = client.executeStatementAsync(sessionHandle, queryString, confOverlay);
     System.out.println("cancelling " + ophandle);
     client.cancelOperation(ophandle);
     state = client.getOperationStatus(ophandle);
