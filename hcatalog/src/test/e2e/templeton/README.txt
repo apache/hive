@@ -87,14 +87,14 @@ Tips:
 3. Copy contents of src/test/e2e/templeton/inpdir to hdfs
 (e.g. ./bin/hadoop fs -put ~/dev/hive/hcatalog/src/test/e2e/templeton/inpdir/ webhcate2e)
 
-4. You will need to two jars in the same HDFS directory as the contents of inpdir.  piggybank.jar, which can
-be obtained from Pig.  The second is the hadoop-examples.jar, which can be obtained from your Hadoop distribution.
-This should be called hexamples.jar when it is uploaded to HDFS.
+4. You will need to copy three jars in the same HDFS directory as the contents of inpdir.  piggybank.jar, which can
+be obtained from Pig and the other two are obtained from your Hadoop distribution.
+For Hadoop 1.x you would need to upload hadoop-examples.jar twice to HDFS one as hclient.jar and other as hexamples.jar.
+For Hadoop 2.x you would need to upload hadoop-mapreduce-client-jobclient.jar to HDFS as hclient.jar and hadoop-mapreduce-examples.jar to HDFS as hexamples.jar. 
 Also see http://hive.apache.org/docs/hcat_r0.5.0/rest_server_install.html#Hadoop+Distributed+Cache for notes on
 additional JAR files to copy to HDFS.
 
 5. Make sure TEMPLETON_HOME evnironment variable is set
-
 
 6. hadoop/conf/core-site.xml should have items described in
 http://hive.apache.org/docs/hcat_r0.5.0/rest_server_install.html#Permissions
