@@ -1,7 +1,7 @@
-PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20,0.20S)
+PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- This test uses mapred.max.split.size/mapred.max.split.size for controlling
--- number of input splits, which is not effective in hive 0.20.
--- stats_partscan_1_23.q is the same test with this but has different result.
+-- number of input splits.
+-- stats_partscan_1.q is the same test with this but has different result.
 
 -- test analyze table ... compute statistics partialscan
 
@@ -10,10 +10,10 @@ CREATE table analyze_srcpart_partial_scan (key STRING, value STRING)
 partitioned by (ds string, hr string)
 stored as rcfile
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20,0.20S)
+POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- This test uses mapred.max.split.size/mapred.max.split.size for controlling
--- number of input splits, which is not effective in hive 0.20.
--- stats_partscan_1_23.q is the same test with this but has different result.
+-- number of input splits.
+-- stats_partscan_1.q is the same test with this but has different result.
 
 -- test analyze table ... compute statistics partialscan
 
@@ -177,10 +177,10 @@ Table:              	analyze_srcpart_partial_scan
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
-	numFiles            	1                   
+	numFiles            	22                  
 	numRows             	500                 
 	rawDataSize         	4812                
-	totalSize           	5293                
+	totalSize           	6954                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

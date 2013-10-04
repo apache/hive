@@ -7,10 +7,10 @@ set mapred.min.split.size.per.node=256;
 set mapred.min.split.size.per.rack=256;
 set mapred.max.split.size=256;
 
--- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20,0.20S)
+-- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 -- This test uses mapred.max.split.size/mapred.max.split.size for controlling
--- number of input splits, which is not effective in hive 0.20.
--- stats_partscan_1_23.q is the same test with this but has different result.
+-- number of input splits.
+-- stats_partscan_1.q is the same test with this but has different result.
 
 -- test analyze table ... compute statistics partialscan
 
