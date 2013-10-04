@@ -33,6 +33,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
+import org.apache.hadoop.hive.ql.io.IOContext;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -321,8 +322,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
 
   public void setChildren(Configuration hconf) throws HiveException {
 
-    Path fpath = new Path(HiveConf.getVar(hconf,
-        HiveConf.ConfVars.HADOOPMAPFILENAME));
+    Path fpath = new Path(IOContext.get().getInputFile());
 
     boolean schemeless = fpath.toUri().getScheme() == null;
 
