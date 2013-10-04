@@ -28,12 +28,12 @@ POSTHOOK: query: create table varchar_nested_1 (key int, value varchar(20))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@varchar_nested_1
 PREHOOK: query: insert overwrite table varchar_nested_1
-  select key, value from src limit 5
+  select key, value from src order by key limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@varchar_nested_1
 POSTHOOK: query: insert overwrite table varchar_nested_1
-  select key, value from src limit 5
+  select key, value from src order by key limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@varchar_nested_1
@@ -80,11 +80,7 @@ POSTHOOK: Input: default@varchar_nested_array
 POSTHOOK: Lineage: varchar_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: varchar_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: varchar_nested_array.c1 EXPRESSION [(varchar_nested_1)varchar_nested_1.FieldSchema(name:value, type:varchar(20), comment:null), ]
-["val_238","val_238"]
-["val_86","val_86"]
-["val_311","val_311"]
-["val_27","val_27"]
-["val_165","val_165"]
+["val_0","val_0"]
 PREHOOK: query: -- maps
 create table varchar_nested_map (c1 map<int, varchar(20)>)
 PREHOOK: type: CREATETABLE
@@ -130,11 +126,7 @@ POSTHOOK: Lineage: varchar_nested_1.key EXPRESSION [(src)src.FieldSchema(name:ke
 POSTHOOK: Lineage: varchar_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: varchar_nested_array.c1 EXPRESSION [(varchar_nested_1)varchar_nested_1.FieldSchema(name:value, type:varchar(20), comment:null), ]
 POSTHOOK: Lineage: varchar_nested_map.c1 EXPRESSION [(varchar_nested_1)varchar_nested_1.FieldSchema(name:key, type:int, comment:null), (varchar_nested_1)varchar_nested_1.FieldSchema(name:value, type:varchar(20), comment:null), ]
-{238:"val_238"}
-{86:"val_86"}
-{311:"val_311"}
-{27:"val_27"}
-{165:"val_165"}
+{0:"val_0"}
 PREHOOK: query: -- structs
 create table varchar_nested_struct (c1 struct<a:int, b:varchar(20), c:string>)
 PREHOOK: type: CREATETABLE
@@ -190,11 +182,7 @@ POSTHOOK: Lineage: varchar_nested_1.value EXPRESSION [(src)src.FieldSchema(name:
 POSTHOOK: Lineage: varchar_nested_array.c1 EXPRESSION [(varchar_nested_1)varchar_nested_1.FieldSchema(name:value, type:varchar(20), comment:null), ]
 POSTHOOK: Lineage: varchar_nested_map.c1 EXPRESSION [(varchar_nested_1)varchar_nested_1.FieldSchema(name:key, type:int, comment:null), (varchar_nested_1)varchar_nested_1.FieldSchema(name:value, type:varchar(20), comment:null), ]
 POSTHOOK: Lineage: varchar_nested_struct.c1 EXPRESSION [(varchar_nested_1)varchar_nested_1.FieldSchema(name:key, type:int, comment:null), (varchar_nested_1)varchar_nested_1.FieldSchema(name:value, type:varchar(20), comment:null), ]
-{"a":238,"b":"val_238","c":"val_238"}
-{"a":86,"b":"val_86","c":"val_86"}
-{"a":311,"b":"val_311","c":"val_311"}
-{"a":27,"b":"val_27","c":"val_27"}
-{"a":165,"b":"val_165","c":"val_165"}
+{"a":0,"b":"val_0","c":"val_0"}
 PREHOOK: query: -- nested type with create table as
 create table varchar_nested_cta as 
   select * from varchar_nested_struct
@@ -234,11 +222,7 @@ POSTHOOK: Lineage: varchar_nested_1.value EXPRESSION [(src)src.FieldSchema(name:
 POSTHOOK: Lineage: varchar_nested_array.c1 EXPRESSION [(varchar_nested_1)varchar_nested_1.FieldSchema(name:value, type:varchar(20), comment:null), ]
 POSTHOOK: Lineage: varchar_nested_map.c1 EXPRESSION [(varchar_nested_1)varchar_nested_1.FieldSchema(name:key, type:int, comment:null), (varchar_nested_1)varchar_nested_1.FieldSchema(name:value, type:varchar(20), comment:null), ]
 POSTHOOK: Lineage: varchar_nested_struct.c1 EXPRESSION [(varchar_nested_1)varchar_nested_1.FieldSchema(name:key, type:int, comment:null), (varchar_nested_1)varchar_nested_1.FieldSchema(name:value, type:varchar(20), comment:null), ]
-{"a":238,"b":"val_238","c":"val_238"}
-{"a":86,"b":"val_86","c":"val_86"}
-{"a":311,"b":"val_311","c":"val_311"}
-{"a":27,"b":"val_27","c":"val_27"}
-{"a":165,"b":"val_165","c":"val_165"}
+{"a":0,"b":"val_0","c":"val_0"}
 PREHOOK: query: -- nested type with view
 create table varchar_nested_view as 
   select * from varchar_nested_struct
@@ -278,11 +262,7 @@ POSTHOOK: Lineage: varchar_nested_1.value EXPRESSION [(src)src.FieldSchema(name:
 POSTHOOK: Lineage: varchar_nested_array.c1 EXPRESSION [(varchar_nested_1)varchar_nested_1.FieldSchema(name:value, type:varchar(20), comment:null), ]
 POSTHOOK: Lineage: varchar_nested_map.c1 EXPRESSION [(varchar_nested_1)varchar_nested_1.FieldSchema(name:key, type:int, comment:null), (varchar_nested_1)varchar_nested_1.FieldSchema(name:value, type:varchar(20), comment:null), ]
 POSTHOOK: Lineage: varchar_nested_struct.c1 EXPRESSION [(varchar_nested_1)varchar_nested_1.FieldSchema(name:key, type:int, comment:null), (varchar_nested_1)varchar_nested_1.FieldSchema(name:value, type:varchar(20), comment:null), ]
-{"a":238,"b":"val_238","c":"val_238"}
-{"a":86,"b":"val_86","c":"val_86"}
-{"a":311,"b":"val_311","c":"val_311"}
-{"a":27,"b":"val_27","c":"val_27"}
-{"a":165,"b":"val_165","c":"val_165"}
+{"a":0,"b":"val_0","c":"val_0"}
 PREHOOK: query: drop table varchar_nested_1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@varchar_nested_1

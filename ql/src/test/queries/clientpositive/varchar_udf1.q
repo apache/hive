@@ -2,7 +2,7 @@ drop table varchar_udf_1;
 
 create table varchar_udf_1 (c1 string, c2 string, c3 varchar(10), c4 varchar(20));
 insert overwrite table varchar_udf_1
-  select key, value, key, value from src limit 5;
+  select key, value, key, value from src where key = '238' limit 1;
 
 -- UDFs with varchar support
 select 
