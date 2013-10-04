@@ -18,10 +18,12 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.ObjectCache;
@@ -45,26 +47,36 @@ import org.apache.tez.runtime.library.api.KeyValueReader;
  */
 public class MapRecordProcessor  extends RecordProcessor{
 
-  private static final String PLAN_KEY = "__MAP_PLAN__";
+
   private MapOperator mapOp;
   public static final Log l4j = LogFactory.getLog(MapRecordProcessor.class);
   private final ExecMapperContext execContext = new ExecMapperContext();
   private boolean abort = false;
+  protected static final String MAP_PLAN_KEY = "__MAP_PLAN__";
 
   @Override
-  void init(JobConf jconf, MRTaskReporter mrReporter, Collection<LogicalInput> inputs,
+  void init(JobConf jconf, MRTaskReporter mrReporter, Map<String, LogicalInput> inputs,
       OutputCollector out){
     super.init(jconf, mrReporter, inputs, out);
+
+    //Update JobConf using MRInput, info like filename comes via this
+    MRInput mrInput = getMRInput(inputs);
+    Configuration updatedConf = mrInput.getConfigUpdates();
+    if (updatedConf != null) {
+      for (Entry<String, String> entry : updatedConf) {
+        jconf.set(entry.getKey(), entry.getValue());
+      }
+    }
 
     ObjectCache cache = ObjectCacheFactory.getCache(jconf);
     try {
 
       execContext.setJc(jconf);
       // create map and fetch operators
-      MapWork mrwork = (MapWork) cache.retrieve(PLAN_KEY);
+      MapWork mrwork = (MapWork) cache.retrieve(MAP_PLAN_KEY);
       if (mrwork == null) {
         mrwork = Utilities.getMapWork(jconf);
-        cache.cache(PLAN_KEY, mrwork);
+        cache.cache(MAP_PLAN_KEY, mrwork);
       }
       mapOp = new MapOperator();
 
@@ -94,6 +106,21 @@ public class MapRecordProcessor  extends RecordProcessor{
     }
   }
 
+  private MRInput getMRInput(Map<String, LogicalInput> inputs) {
+    //there should be only one MRInput
+    MRInput theMRInput = null;
+    for(LogicalInput inp : inputs.values()){
+      if(inp instanceof MRInput){
+        if(theMRInput != null){
+          throw new IllegalArgumentException("Only one MRInput is expected");
+        }
+        //a better logic would be to find the alias
+        theMRInput = (MRInput)inp;
+      }
+    }
+    return theMRInput;
+  }
+
   @Override
   void run() throws IOException{
     if (inputs.size() != 1) {
@@ -101,7 +128,7 @@ public class MapRecordProcessor  extends RecordProcessor{
           + ", inputCount=" + inputs.size());
     }
 
-    MRInput in = (MRInput)inputs.iterator().next();
+    MRInput in = getMRInput(inputs);
     KeyValueReader reader = in.getReader();
 
     //process records until done
