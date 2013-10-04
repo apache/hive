@@ -68,6 +68,7 @@ public class HiveVarcharWritable implements WritableComparable<HiveVarcharWritab
   }
 
   public void set(String val, int maxLength) {
+    characterLength = -1;
     value.set(HiveBaseChar.enforceMaxLength(val, maxLength));
   }
 
@@ -88,6 +89,7 @@ public class HiveVarcharWritable implements WritableComparable<HiveVarcharWritab
   }
 
   public void readFields(DataInput in) throws IOException {
+    characterLength = -1;
     value.readFields(in);
   }
 
