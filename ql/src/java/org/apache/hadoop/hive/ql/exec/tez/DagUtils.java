@@ -70,11 +70,12 @@ import org.apache.tez.dag.api.ProcessorDescriptor;
 import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.runtime.library.input.ShuffledMergedInputLegacy;
 import org.apache.tez.runtime.library.output.OnFileSortedOutput;
+import org.apache.tez.runtime.library.output.OnFileUnorderedKVOutput;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
 import org.apache.tez.mapreduce.hadoop.MultiStageMRConfToTezTranslator;
-import org.apache.tez.mapreduce.input.MRInputLegacy;
+import org.apache.tez.mapreduce.input.MRInput;
 import org.apache.tez.mapreduce.output.MROutput;
 import org.apache.tez.mapreduce.processor.map.MapProcessor;
 import org.apache.tez.mapreduce.processor.reduce.ReduceProcessor;
@@ -160,17 +161,21 @@ public class DagUtils {
     w.getProcessorDescriptor().setUserPayload(MRHelpers.createUserPayloadFromConf(wConf));
 
     DataMovementType dataMovementType;
+    Class logicalInputClass;
+    Class logicalOutputClass;
+
     switch (edgeType) {
     case BROADCAST_EDGE:
       dataMovementType = DataMovementType.BROADCAST;
+      logicalOutputClass = OnFileUnorderedKVOutput.class;
+      logicalInputClass = MRInput.class;
       break;
 
     case SIMPLE_EDGE:
-      dataMovementType = DataMovementType.SCATTER_GATHER;
-      break;
-
     default:
       dataMovementType = DataMovementType.SCATTER_GATHER;
+      logicalOutputClass = OnFileSortedOutput.class;
+      logicalInputClass = ShuffledMergedInputLegacy.class;
       break;
     }
 
@@ -178,15 +183,15 @@ public class DagUtils {
         new EdgeProperty(dataMovementType,
             DataSourceType.PERSISTED,
             SchedulingType.SEQUENTIAL,
-            new OutputDescriptor(OnFileSortedOutput.class.getName()),
-            new InputDescriptor(ShuffledMergedInputLegacy.class.getName()));
+            new OutputDescriptor(logicalOutputClass.getName()),
+            new InputDescriptor(logicalInputClass.getName()));
     return new Edge(v, w, edgeProperty);
   }
 
   /*
    * Helper function to create Vertex from MapWork.
    */
-  private static Vertex createVertex(JobConf conf, MapWork mapWork, int seqNo,
+  private static Vertex createVertex(JobConf conf, MapWork mapWork,
       LocalResource appJarLr, List<LocalResource> additionalLr, FileSystem fs,
       Path mrScratchDir, Context ctx) throws Exception {
 
@@ -214,7 +219,7 @@ public class DagUtils {
     Utilities.setInputPaths(conf, inputPaths);
 
     InputSplitInfo inputSplitInfo = MRHelpers.generateInputSplits(conf,
-        new Path(tezDir, ""+seqNo));
+        new Path(tezDir, "split_"+mapWork.getName().replaceAll(" ", "_")));
 
     // create the directories FileSinkOperators need
     Utilities.createTmpDirs(conf, mapWork);
@@ -226,7 +231,7 @@ public class DagUtils {
     Vertex map = null;
     byte[] serializedConf = MRHelpers.createUserPayloadFromConf(conf);
     if (inputSplitInfo.getNumTasks() != 0) {
-      map = new Vertex("Map "+seqNo,
+      map = new Vertex(mapWork.getName(),
           new ProcessorDescriptor(TezProcessor.class.getName()).
                setUserPayload(serializedConf),
           inputSplitInfo.getNumTasks(), MRHelpers.getMapResource(conf));
@@ -234,8 +239,12 @@ public class DagUtils {
       MRHelpers.updateEnvironmentForMRTasks(conf, environment, true);
       map.setTaskEnvironment(environment);
       map.setJavaOpts(MRHelpers.getMapJavaOpts(conf));
-      map.addInput("in_"+seqNo, 
-          new InputDescriptor(MRInputLegacy.class.getName()).
+
+      assert mapWork.getAliasToWork().keySet().size() == 1;
+
+      String alias = mapWork.getAliasToWork().keySet().iterator().next();
+      map.addInput(alias, 
+          new InputDescriptor(MRInput.class.getName()).
                setUserPayload(serializedConf));
 
       map.setTaskLocationsHint(inputSplitInfo.getTaskLocationHints());
@@ -285,7 +294,7 @@ public class DagUtils {
   /*
    * Helper function to create Vertex for given ReduceWork.
    */
-  private static Vertex createVertex(JobConf conf, ReduceWork reduceWork, int seqNo,
+  private static Vertex createVertex(JobConf conf, ReduceWork reduceWork,
       LocalResource appJarLr, List<LocalResource> additionalLr, FileSystem fs,
       Path mrScratchDir, Context ctx) throws Exception {
 
@@ -302,7 +311,7 @@ public class DagUtils {
     MultiStageMRConfToTezTranslator.translateVertexConfToTez(conf, null);
 
     // create the vertex
-    Vertex reducer = new Vertex("Reducer "+seqNo,
+    Vertex reducer = new Vertex(reduceWork.getName(),
         new ProcessorDescriptor(ReduceProcessor.class.getName()).
              setUserPayload(MRHelpers.createUserPayloadFromConf(conf)),
         reduceWork.getNumReduceTasks(), MRHelpers.getReduceResource(conf));
@@ -576,7 +585,6 @@ public class DagUtils {
    * @param work The instance of BaseWork representing the actual work to be performed
    * by this vertex.
    * @param scratchDir HDFS scratch dir for this execution unit.
-   * @param seqNo Unique number for this DAG. Used to name the vertex.
    * @param appJarLr Local resource for hive-exec.
    * @param additionalLr
    * @param fileSystem FS corresponding to scratchDir and LocalResources
@@ -584,17 +592,17 @@ public class DagUtils {
    * @return Vertex
    */
   public static Vertex createVertex(JobConf conf, BaseWork work,
-      Path scratchDir, int seqNo, LocalResource appJarLr, List<LocalResource> additionalLr,
+      Path scratchDir, LocalResource appJarLr, List<LocalResource> additionalLr,
       FileSystem fileSystem, Context ctx, boolean hasChildren) throws Exception {
 
     Vertex v = null;
     // simply dispatch the call to the right method for the actual (sub-) type of
     // BaseWork.
     if (work instanceof MapWork) {
-      v = createVertex(conf, (MapWork) work, seqNo, appJarLr,
+      v = createVertex(conf, (MapWork) work, appJarLr,
           additionalLr, fileSystem, scratchDir, ctx);
     } else if (work instanceof ReduceWork) {
-      v = createVertex(conf, (ReduceWork) work, seqNo, appJarLr,
+      v = createVertex(conf, (ReduceWork) work, appJarLr,
           additionalLr, fileSystem, scratchDir, ctx);
     } else {
       assert false;
@@ -603,7 +611,7 @@ public class DagUtils {
 
     // final vertices need to have at least one output
     if (!hasChildren) {
-      v.addOutput("out_"+seqNo, 
+      v.addOutput("out_"+work.getName(), 
           new OutputDescriptor(MROutput.class.getName())
                .setUserPayload(MRHelpers.createUserPayloadFromConf(conf)));
     }

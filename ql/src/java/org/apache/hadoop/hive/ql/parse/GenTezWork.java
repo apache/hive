@@ -47,6 +47,8 @@ public class GenTezWork implements NodeProcessor {
 
   static final private Log LOG = LogFactory.getLog(GenTezWork.class.getName());
 
+  private int sequenceNumber = 0;
+
   @SuppressWarnings("unchecked")
   @Override
   public Object process(Node nd, Stack<Node> stack,
@@ -85,8 +87,8 @@ public class GenTezWork implements NodeProcessor {
     BaseWork work;
     if (context.preceedingWork == null) {
       assert root.getParentOperators().isEmpty();
-      LOG.debug("Adding map work for " + root);
-      MapWork mapWork = new MapWork();
+      MapWork mapWork = new MapWork("Map "+ (++sequenceNumber));
+      LOG.debug("Adding map work (" + mapWork.getName() + ") for " + root);
 
       // map work starts with table scan operators
       assert root instanceof TableScanOperator;
@@ -98,8 +100,8 @@ public class GenTezWork implements NodeProcessor {
       work = mapWork;
     } else {
       assert !root.getParentOperators().isEmpty();
-      LOG.debug("Adding reduce work for " + root);
-      ReduceWork reduceWork = new ReduceWork();
+      ReduceWork reduceWork = new ReduceWork("Reducer "+ (++sequenceNumber));
+      LOG.debug("Adding reduce work (" + reduceWork.getName() + ") for " + root);
       reduceWork.setReducer(root);
       reduceWork.setNeedsTagging(GenMapRedUtils.needsTagging(reduceWork));
 
@@ -115,10 +117,9 @@ public class GenTezWork implements NodeProcessor {
       // need to fill in information about the key and value in the reducer
       GenMapRedUtils.setKeyAndValueDesc(reduceWork, reduceSink);
 
-      // needs to be fixed in HIVE-5052. This should be driven off of stats
-      if (reduceWork.getNumReduceTasks() <= 0) {
-        reduceWork.setNumReduceTasks(1);
-      }
+      // remember which parent belongs to which tag
+      reduceWork.getTagToInput().put(reduceSink.getConf().getTag(), 
+           context.preceedingWork.getName());
 
       tezWork.add(reduceWork);
       tezWork.connect(
@@ -150,6 +151,9 @@ public class GenTezWork implements NodeProcessor {
       ReduceSinkOperator rs = (ReduceSinkOperator) operator;
       ReduceWork rWork = (ReduceWork) followingWork;
       GenMapRedUtils.setKeyAndValueDesc(rWork, rs);
+      
+      // remember which parent belongs to which tag
+      rWork.getTagToInput().put(rs.getConf().getTag(), work.getName());
 
       // add dependency between the two work items
       tezWork.connect(work, context.leafOperatorToFollowingWork.get(operator), 
