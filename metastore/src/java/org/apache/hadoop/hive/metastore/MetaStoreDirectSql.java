@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LogicalOperator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.Operator;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeNode;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.TreeVisitor;
+import org.apache.hadoop.hive.serde.serdeConstants;
 
 /**
  * This class contains the optimizations for MetaStore that rely on direct SQL access to
@@ -165,7 +166,7 @@ class MetaStoreDirectSql {
     }
     String list = repeat(",?", partNames.size()).substring(1);
     return getPartitionsViaSqlFilterInternal(dbName, tblName, null,
-        "and \"PARTITIONS\".\"PART_NAME\" in (" + list + ")",
+        "\"PARTITIONS\".\"PART_NAME\" in (" + list + ")",
         partNames, new ArrayList<String>(), max);
   }
 
@@ -179,7 +180,8 @@ class MetaStoreDirectSql {
   public List<Partition> getPartitionsViaSqlFilter(
       Table table, ExpressionTree tree, Integer max) throws MetaException {
     assert tree != null;
-    List<String> params = new ArrayList<String>(), joins = new ArrayList<String>();
+    List<Object> params = new ArrayList<Object>();
+    List<String> joins = new ArrayList<String>();
     String sqlFilter = PartitionFilterGenerator.generateSqlFilter(table, tree, params, joins);
     if (sqlFilter == null) {
       return null; // Cannot make SQL filter to push down.
@@ -232,7 +234,7 @@ class MetaStoreDirectSql {
    * @return List of partition objects.
    */
   private List<Partition> getPartitionsViaSqlFilterInternal(String dbName, String tblName,
-      Boolean isView, String sqlFilter, List<String> paramsForFilter,
+      Boolean isView, String sqlFilter, List<? extends Object> paramsForFilter,
       List<String> joinsForFilter, Integer max) throws MetaException {
     boolean doTrace = LOG.isDebugEnabled();
     dbName = dbName.toLowerCase();
@@ -255,9 +257,11 @@ class MetaStoreDirectSql {
     String queryText =
         "select \"PARTITIONS\".\"PART_ID\" from \"PARTITIONS\""
       + "  inner join \"TBLS\" on \"PARTITIONS\".\"TBL_ID\" = \"TBLS\".\"TBL_ID\" "
+      + "    and \"TBLS\".\"TBL_NAME\" = ? "
       + "  inner join \"DBS\" on \"TBLS\".\"DB_ID\" = \"DBS\".\"DB_ID\" "
-      + join(joinsForFilter, ' ') + " where \"TBLS\".\"TBL_NAME\" = ? and \"DBS\".\"NAME\" = ? "
-      + (sqlFilter == null ? "" : sqlFilter) + orderForFilter;
+      + "     and \"DBS\".\"NAME\" = ? "
+      + join(joinsForFilter, ' ')
+      + (sqlFilter == null ? "" : (" where " + sqlFilter)) + orderForFilter;
     Object[] params = new Object[paramsForFilter.size() + 2];
     params[0] = tblName;
     params[1] = dbName;
@@ -649,11 +653,11 @@ class MetaStoreDirectSql {
   private static class PartitionFilterGenerator extends TreeVisitor {
     private final Table table;
     private final FilterBuilder filterBuffer;
-    private final List<String> params;
+    private final List<Object> params;
     private final List<String> joins;
 
     private PartitionFilterGenerator(
-        Table table, List<String> params, List<String> joins) {
+        Table table, List<Object> params, List<String> joins) {
       this.table = table;
       this.params = params;
       this.joins = joins;
@@ -668,7 +672,7 @@ class MetaStoreDirectSql {
      * @return the string representation of the expression tree
      */
     public static String generateSqlFilter(Table table,
-        ExpressionTree tree, List<String> params, List<String> joins) throws MetaException {
+        ExpressionTree tree, List<Object> params, List<String> joins) throws MetaException {
       assert table != null;
       if (tree.getRoot() == null) {
         return "";
@@ -685,7 +689,7 @@ class MetaStoreDirectSql {
         if (joins.get(i) != null) continue;
         joins.remove(i--);
       }
-      return "and (" + visitor.filterBuffer.getFilter() + ")";
+      return "(" + visitor.filterBuffer.getFilter() + ")";
     }
 
     @Override
@@ -718,10 +722,28 @@ class MetaStoreDirectSql {
       int partColIndex = node.getPartColIndexForFilter(table, filterBuffer);
       if (filterBuffer.hasError()) return;
 
-      // Add parameters linearly; we are traversing leaf nodes LTR, so they would match correctly.
-      String valueAsString = node.getFilterPushdownParam(table, partColIndex, filterBuffer);
-      if (filterBuffer.hasError()) return;
-      params.add(valueAsString);
+      // We skipped 'like', other ops should all work as long as the types are right.
+      String colType = table.getPartitionKeys().get(partColIndex).getType();
+      boolean isStringCol = colType.equals(serdeConstants.STRING_TYPE_NAME);
+      if (!isStringCol && !serdeConstants.IntegralTypes.contains(colType)) {
+        filterBuffer.setError("Filter pushdown is only supported for string or integral columns");
+        return;
+      }
+
+      boolean isStringVal = node.value instanceof String;
+      if (!isStringVal && !(node.value instanceof Long)) {
+        filterBuffer.setError("Filter pushdown is only supported for string or integral values");
+        return;
+      } else if (isStringCol != isStringVal) {
+        // It's not clear how filtering for e.g. "stringCol > 5" should work (which side is
+        // to be coerced?). Let the expression evaluation sort this one out, not metastore.
+        filterBuffer.setError("Cannot push down filter for "
+            + (isStringCol ? "string" : "integral") + " column and value " + node.value);
+        return;
+      }
+
+      // Force string-based handling in some cases to be compatible with JDO pushdown.
+      boolean forceStringEq = !isStringCol && node.canJdoUseStringsWithIntegral();
 
       if (joins.isEmpty()) {
         // There's a fixed number of partition cols that we might have filters on. To avoid
@@ -738,8 +760,19 @@ class MetaStoreDirectSql {
             + " and \"FILTER" + partColIndex + "\".\"INTEGER_IDX\" = " + partColIndex);
       }
 
+      // Build the filter and add parameters linearly; we are traversing leaf nodes LTR.
       String tableValue = "\"FILTER" + partColIndex + "\".\"PART_KEY_VAL\"";
-      // TODO: need casts here if #doesOperatorSupportIntegral is amended to include lt/gt/etc.
+      if (!isStringCol && !forceStringEq) {
+        // The underlying database field is varchar, we need to compare numbers.
+        tableValue = "cast(" + tableValue + " as decimal(21,0))";
+        // This is a workaround for DERBY-6358; as such, it is pretty horrible.
+        tableValue = "(case when \"TBLS\".\"TBL_NAME\" = ? and \"DBS\".\"NAME\" = ? then "
+          + tableValue + " else null end)";
+        params.add(table.getTableName().toLowerCase());
+        params.add(table.getDbName().toLowerCase());
+      }
+      params.add(forceStringEq ? node.value.toString() : node.value);
+
       filterBuffer.append(node.isReverseOrder
           ? "(? " + node.operator.getSqlOp() + " " + tableValue + ")"
           : "(" + tableValue + " " + node.operator.getSqlOp() + " ?)");
