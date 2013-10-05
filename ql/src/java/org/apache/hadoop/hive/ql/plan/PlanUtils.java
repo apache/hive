@@ -771,15 +771,18 @@ public final class PlanUtils {
                     "using configureTableJobProperties",e);
                 storageHandler.configureTableJobProperties(tableDesc, jobProperties);
             }
+            if (tableDesc.getOutputFileFormatClass().getName()
+                     == HivePassThroughOutputFormat.HIVE_PASSTHROUGH_OF_CLASSNAME) {
+             // get the real output format when we register this for the table
+             jobProperties.put(
+                 HivePassThroughOutputFormat.HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY,
+                 HiveFileFormatUtils.getRealOutputFormatClassName());
+           }
         }
         // Job properties are only relevant for non-native tables, so
         // for native tables, leave it null to avoid cluttering up
         // plans.
         if (!jobProperties.isEmpty()) {
-          if (tableDesc.getOutputFileFormatClass().getName() == HivePassThroughOutputFormat.HIVE_PASSTHROUGH_OF_CLASSNAME) {
-            // get the real output format when we register this for the table
-            jobProperties.put(HivePassThroughOutputFormat.HIVE_PASSTHROUGH_STORAGEHANDLER_OF_JOBCONFKEY,HiveFileFormatUtils.getRealOutputFormatClassName());
-          }
           tableDesc.setJobProperties(jobProperties);
         }
       }
