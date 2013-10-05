@@ -45,20 +45,31 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 
 /**
- * TestDefaultHiveMetaStoreAuthorizationProvider. Test case for
- * DefaultHiveMetastoreAuthorizationProvider
+ * TestHiveMetastoreAuthorizationProvider. Test case for
+ * HiveMetastoreAuthorizationProvider, and by default,
+ * for DefaultHiveMetaStoreAuthorizationProvider
  * using {@link org.apache.hadoop.hive.metastore.AuthorizationPreEventListener}
+ * and {@link org.apache.hadoop.hive.}
  *
  * Note that while we do use the hive driver to test, that is mostly for test
  * writing ease, and it has the same effect as using a metastore client directly
  * because we disable hive client-side authorization for this test, and only
  * turn on server-side auth.
+ *
+ * This test is also intended to be extended to provide tests for other
+ * authorization providers like StorageBasedAuthorizationProvider
  */
-public class TestDefaultHiveMetastoreAuthorizationProvider extends TestCase {
-  private HiveConf clientHiveConf;
-  private HiveMetaStoreClient msc;
-  private Driver driver;
-  private UserGroupInformation ugi;
+public class TestMetastoreAuthorizationProvider extends TestCase {
+  protected HiveConf clientHiveConf;
+  protected HiveMetaStoreClient msc;
+  protected Driver driver;
+  protected UserGroupInformation ugi;
+
+
+  protected String getAuthorizationProvider(){
+    return DefaultHiveMetastoreAuthorizationProvider.class.getName();
+  }
+
 
   @Override
   protected void setUp() throws Exception {
@@ -67,10 +78,11 @@ public class TestDefaultHiveMetastoreAuthorizationProvider extends TestCase {
 
     int port = MetaStoreUtils.findFreePort();
 
+    // Turn on metastore-side authorization
     System.setProperty(HiveConf.ConfVars.METASTORE_PRE_EVENT_LISTENERS.varname,
         AuthorizationPreEventListener.class.getName());
     System.setProperty(HiveConf.ConfVars.HIVE_METASTORE_AUTHORIZATION_MANAGER.varname,
-        DefaultHiveMetastoreAuthorizationProvider.class.getName());
+        getAuthorizationProvider());
     System.setProperty(HiveConf.ConfVars.HIVE_METASTORE_AUTHENTICATOR_MANAGER.varname,
         InjectableDummyAuthenticator.class.getName());
     System.setProperty(HiveConf.ConfVars.HIVE_AUTHORIZATION_TABLE_OWNER_GRANTS.varname, "");
@@ -80,6 +92,7 @@ public class TestDefaultHiveMetastoreAuthorizationProvider extends TestCase {
 
     clientHiveConf = new HiveConf(this.getClass());
 
+    // Turn off client-side authorization
     clientHiveConf.setBoolVar(HiveConf.ConfVars.HIVE_AUTHORIZATION_ENABLED,false);
 
     clientHiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
@@ -120,8 +133,10 @@ public class TestDefaultHiveMetastoreAuthorizationProvider extends TestCase {
     CommandProcessorResponse ret = driver.run("create database " + dbName);
     assertEquals(0,ret.getResponseCode());
     Database db = msc.getDatabase(dbName);
+    String dbLocn = db.getLocationUri();
 
     validateCreateDb(db,dbName);
+    disallowCreateInDb(dbName, userName, dbLocn);
 
     driver.run("use " + dbName);
     ret = driver.run(
@@ -156,10 +171,9 @@ public class TestDefaultHiveMetastoreAuthorizationProvider extends TestCase {
     } catch (MetaException e){
       me = e;
     }
-    assertNotNull(me);
-    assertTrue(me.getMessage().indexOf("No privilege") != -1);
+    assertNoPrivileges(me);
 
-    driver.run("grant create on database "+dbName+" to user "+userName);
+    allowCreateInDb(dbName, userName, dbLocn);
 
     driver.run("use " + dbName);
     ret = driver.run(
@@ -190,9 +204,9 @@ public class TestDefaultHiveMetastoreAuthorizationProvider extends TestCase {
     } catch (MetaException e){
       me = e;
     }
-    assertNotNull(me);
-    assertTrue(me.getMessage().indexOf("No privilege") != -1);
+    assertNoPrivileges(me);
 
+    disallowCreateInTbl(tbl.getTableName(), userName, tbl.getSd().getLocation());
     ret = driver.run("alter table "+tblName+" add partition (b='2011')");
     assertEquals(1,ret.getResponseCode());
 
@@ -213,14 +227,40 @@ public class TestDefaultHiveMetastoreAuthorizationProvider extends TestCase {
     } catch (MetaException e){
       me = e;
     }
-    assertNotNull(me);
-    assertTrue(me.getMessage().indexOf("No privilege") != -1);
+    assertNoPrivileges(me);
 
     InjectableDummyAuthenticator.injectMode(false);
+    allowCreateInTbl(tbl.getTableName(), userName, tbl.getSd().getLocation());
 
     ret = driver.run("alter table "+tblName+" add partition (b='2011')");
     assertEquals(0,ret.getResponseCode());
 
+  }
+
+  protected void allowCreateInTbl(String tableName, String userName, String location)
+      throws Exception{
+    driver.run("grant create on table "+tableName+" to user "+userName);
+  }
+
+  protected void disallowCreateInTbl(String tableName, String userName, String location)
+      throws Exception {
+    driver.run("revoke create on table "+tableName+" from user "+userName);
+  }
+
+
+  protected void allowCreateInDb(String dbName, String userName, String location)
+      throws Exception {
+    driver.run("grant create on database "+dbName+" to user "+userName);
+  }
+
+  protected void disallowCreateInDb(String dbName, String userName, String location)
+      throws Exception {
+    driver.run("revoke create on database "+dbName+" from user "+userName);
+  }
+
+  protected void assertNoPrivileges(MetaException me){
+    assertNotNull(me);
+    assertTrue(me.getMessage().indexOf("No privilege") != -1);
   }
 
 }
