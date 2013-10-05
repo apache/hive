@@ -25,10 +25,10 @@ move_source metastore/src/test/org/apache/hadoop/hive/metastore/TestSetUGIOnBoth
 move_source metastore/src/test/org/apache/hadoop/hive/metastore/TestSetUGIOnOnlyServer.java itests/src/test/java/org/apache/hadoop/hive/metastore/TestSetUGIOnOnlyServer.java
 move_source metastore/src/test/org/apache/hadoop/hive/metastore/TestSetUGIOnOnlyClient.java itests/src/test/java/org/apache/hadoop/hive/metastore/TestSetUGIOnOnlyClient.java
 move_source metastore/src/test/org/apache/hadoop/hive/metastore/TestMetastoreVersion.java itests/src/test/java/org/apache/hadoop/hive/metastore/TestMetastoreVersion.java
-move_source ql/src/test/org/apache/hadoop/hive/ql/security/TestDefaultHiveMetastoreAuthorizationProvider.java itests/src/test/java/org/apache/hadoop/ql/security/TestDefaultHiveMetastoreAuthorizationProvider.java
-move_source ql/src/test/org/apache/hadoop/hive/ql/security/TestAuthorizationPreEventListener.java itests/src/test/java/org/apache/hadoop/ql/security/TestAuthorizationPreEventListener.java
-move_source ql/src/test/org/apache/hadoop/hive/ql/history/TestHiveHistory.java itests/src/test/java/org/apache/hadoop/ql/history/TestHiveHistory.java
-move_source ql/src/test/org/apache/hadoop/hive/ql/QTestUtil.java itests/src/test/java/org/apache/hadoop/ql/QTestUtil.java
+move_source ql/src/test/org/apache/hadoop/hive/ql/security/TestDefaultHiveMetastoreAuthorizationProvider.java itests/src/test/java/org/apache/hadoop/hive/ql/security/TestDefaultHiveMetastoreAuthorizationProvider.java
+move_source ql/src/test/org/apache/hadoop/hive/ql/security/TestAuthorizationPreEventListener.java itests/src/test/java/org/apache/hadoop/hive/ql/security/TestAuthorizationPreEventListener.java
+move_source ql/src/test/org/apache/hadoop/hive/ql/history/TestHiveHistory.java itests/src/test/java/org/apache/hadoop/hive/ql/history/TestHiveHistory.java
+move_source ql/src/test/org/apache/hadoop/hive/ql/QTestUtil.java itests/src/test/java/org/apache/hadoop/hive/ql/QTestUtil.java
 move_source service/src/test/org/apache/hive/service/server/TestHiveServer2Concurrency.java itests/src/test/java/org/apache/hive/service/server/TestHiveServer2Concurrency.java
 move_source ql/src/test/org/apache/hadoop/hive/ql/hooks/EnforceReadOnlyTables.java itests/src/test/java/org/apache/hadoop/hive/ql/hooks/EnforceReadOnlyTables.java
 move_source ql/src/test/org/apache/hadoop/hive/ql/TestMTQueries.java itests/src/test/java/org/apache/hadoop/hive/ql/TestMTQueries.java
@@ -51,3 +51,26 @@ move_source hcatalog/server-extensions/pom-new.xml hcatalog/server-extensions/po
 move_source hcatalog/core/pom-new.xml hcatalog/core/pom.xml
 move_source hcatalog/webhcat/java-client/pom-new.xml hcatalog/webhcat/java-client/pom.xml
 move_source hcatalog/webhcat/svr/pom-new.xml hcatalog/webhcat/svr/pom.xml
+
+move_source data/conf/hive-site.xml data/conf/hive-site-old.xml
+move_source data/conf/hive-site-new.xml data/conf/hive-site.xml
+move_source data/conf/hive-log4j.properties data/conf/hive-log4j-old.properties
+move_source data/conf/hive-log4j-new.properties data/conf/hive-log4j.properties
+
+# eclipse doesn't like .. references in it's path to src
+move_source shims/src/0.20/java shims/0.20/src/main/java
+move_source shims/src/0.20S/java shims/0.20S/src/main/java
+move_source shims/src/0.23/java shims/0.23/src/main/java
+move_source shims/src/common/java shims/common/src/main/java
+move_source shims/src/common-secure/java shims/common-secure/src/main/java
+# cyclic deps
+move_source shims/src/common-secure/test/org/apache/hadoop/hive/thrift/TestDBTokenStore.java itests/src/test/java/org/apache/hadoop/hive/thrift/TestDBTokenStore.java
+move_source shims/src/common-secure/test/org/apache/hadoop/hive/thrift/TestHadoop20SAuthBridge.java itests/src/test/java/org/apache/hadoop/hive/thrift/TestHadoop20SAuthBridge.java
+move_source shims/src/common-secure/test/org/apache/hadoop/hive/thrift/TestZooKeeperTokenStore.java itests/src/test/java/org/apache/hadoop/hive/thrift/TestZooKeeperTokenStore.java
+
+move_source jdbc/src/test/org/apache/hadoop/hive/jdbc/TestJdbcDriver.java itests/src/test/java/org/apache/hadoop/hive/jdbc/TestJdbcDriver.java
+move_source jdbc/src/test/org/apache/hive/jdbc/TestJdbcDriver2.java itests/src/test/java/org/apache/hive/jdbc/TestJdbcDriver2.java
+
+move_source service/src/test/org/apache/hive/service/cli/TestEmbeddedThriftBinaryCLIService.java itests/src/test/java/org/apache/hive/service/cli/TestEmbeddedThriftBinaryCLIService.java
+move_source service/src/test/org/apache/hive/service/cli/thrift/TestThriftBinaryCLIService.java itests/src/test/java/org/apache/hive/service/cli/thrift/TestThriftBinaryCLIService.java
+move_source service/src/test/org/apache/hadoop/hive/service/TestHiveServer.java itests/src/test/java/org/apache/hadoop/hive/service/TestHiveServer.java

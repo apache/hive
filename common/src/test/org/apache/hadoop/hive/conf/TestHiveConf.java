@@ -22,6 +22,7 @@ import junit.framework.TestCase;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hive.common.util.HiveTestUtils;
 
 
 /**
@@ -33,8 +34,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 public class TestHiveConf extends TestCase {
 
   public void testHiveSitePath() throws Exception {
-    String expectedPath =
-        new Path(System.getProperty("test.build.resources") + "/hive-site.xml").toUri().getPath();
+    String expectedPath = HiveTestUtils.getFileFromClasspath("hive-site.xml");
     assertEquals(expectedPath, new HiveConf().getHiveSiteLocation().getPath());
   }
 

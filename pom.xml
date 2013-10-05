@@ -17,7 +17,7 @@
 
   <groupId>org.apache.hive</groupId>
   <artifactId>hive</artifactId>
-  <version>0.13.0-SNAPSHOT</version>
+  <version>0.99.0-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Hive</name>
@@ -47,6 +47,8 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <hive.path.to.root>..</hive.path.to.root>
 
     <!-- the versions of libraries that we use -->
     <activemq.version>5.5.0</activemq.version>
@@ -210,6 +212,33 @@
               <version>20020829</version>
             </dependency>
           </dependencies>
+          <executions>
+            <execution>
+              <id>define-classpath</id>
+              <phase>process-resources</phase>
+              <goals>
+                <goal>run</goal>
+              </goals>
+              <configuration>
+                <exportAntProperties>true</exportAntProperties>
+                <target>
+                  <property name="maven.test.classpath" refid="maven.test.classpath"/>
+                </target>
+              </configuration>
+            </execution>
+            <execution>
+              <id>delete-test-tempdir</id>
+              <phase>process-test-resources</phase>
+              <goals>
+                <goal>run</goal>
+              </goals>
+              <configuration>
+                <target>
+                  <delete dir="${project.build.directory}/test-tmp" />
+                </target>
+              </configuration>
+            </execution>
+          </executions>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -229,16 +258,23 @@
             <redirectTestOutputToFile>true</redirectTestOutputToFile>
             <reuseForks>false</reuseForks>
             <failIfNoTests>false</failIfNoTests>
-            <systemProperties>
-              <property>
-                <name>test.build.resources</name>
-                <value>${project.build.directory}/test-classes</value>
-              </property>
-              <property>
-                <name>test.warehouse.dir</name>
-                <value>${project.build.directory}/test/data/warehouse/</value>
-              </property>
-            </systemProperties>
+            <additionalClasspathElements>
+              <additionalClasspathElement>${basedir}/${hive.path.to.root}/data/conf</additionalClasspathElement>
+              <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>
+            </additionalClasspathElements>
+            <environmentVariables>
+              <TZ>US/Pacific</TZ>
+              <LANG>en_US.UTF-8</LANG>
+              <HADOOP_CLASSPATH>${basedir}/${hive.path.to.root}/data/conf:${basedir}/${hive.path.to.root}/conf</HADOOP_CLASSPATH>
+              <HIVE_HADOOP_TEST_CLASSPATH>${maven.test.classpath}</HIVE_HADOOP_TEST_CLASSPATH>
+            </environmentVariables>
+            <systemPropertyVariables>
+              <build.dir>${project.build.directory}</build.dir>
+              <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
+              <hive.version>${project.version}</hive.version>
+              <test.data.dir>${basedir}/${hive.path.to.root}/data/files</test.data.dir>
+              <test.tmp.dir>${project.build.directory}/test-tmp</test.tmp.dir>
+            </systemPropertyVariables>
           </configuration>
         </plugin>
         <plugin>

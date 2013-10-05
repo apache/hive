@@ -170,9 +170,9 @@ public class TestCliDriverMethods extends TestCase {
 
     try {
       new FakeCliDriver().run(args);
-      assertTrue(dataOut.toString().contains("test message"));
-      assertTrue(dataErr.toString().contains("Hive history file="));
-      assertTrue(dataErr.toString().contains("File: fakeFile is not a file."));
+      assertTrue(dataOut.toString(), dataOut.toString().contains("test message"));
+      assertTrue(dataErr.toString(), dataErr.toString().contains("Hive history file="));
+      assertTrue(dataErr.toString(), dataErr.toString().contains("File: fakeFile is not a file."));
       dataOut.reset();
       dataErr.reset();
 

@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>0.13.0-SNAPSHOT</version>
+    <version>0.99.0-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
 
@@ -55,7 +55,4 @@
       <version>${jetty.version}</version>
     </dependency>
   </dependencies>
-  <build>
-    <sourceDirectory>${basedir}/../src/0.20S/java</sourceDirectory>
-  </build>
 </project>
