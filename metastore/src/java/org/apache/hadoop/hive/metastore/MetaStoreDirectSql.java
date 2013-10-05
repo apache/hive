@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
+import org.apache.hadoop.hive.metastore.model.MDatabase;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.FilterBuilder;
 import org.apache.hadoop.hive.metastore.parser.ExpressionTree.LeafNode;
@@ -102,7 +103,9 @@ class MetaStoreDirectSql {
       tx = pm.currentTransaction();
       tx.begin();
     }
-    // This should work. If it doesn't, we will self-disable. What a PITA...
+    // Force the underlying db to initialize.
+    pm.newQuery(MDatabase.class, "name == ''").execute();
+    // Self-test query. If it doesn't work, we will self-disable. What a PITA...
     boolean isCompatibleDatastore = false;
     String selfTestQuery = "select \"DB_ID\" from \"DBS\"";
     try {
