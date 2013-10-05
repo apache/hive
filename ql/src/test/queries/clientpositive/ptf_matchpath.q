@@ -12,9 +12,9 @@ FL_NUM string
 
 LOAD DATA LOCAL INPATH '../data/files/flights_tiny.txt' OVERWRITE INTO TABLE flights_tiny;
 
--- 1. basic Npath test
+-- 1. basic Matchpath test
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
-from npath(on 
+from matchpath(on 
         flights_tiny 
         distribute by fl_num 
         sort by year, month, day_of_month  
@@ -23,9 +23,9 @@ from npath(on
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
    );       
 
--- 2. Npath on 1 partition
+-- 2. Matchpath on 1 partition
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
-from npath(on 
+from matchpath(on 
         flights_tiny 
         sort by fl_num, year, month, day_of_month  
       arg1('LATE.LATE+'), 

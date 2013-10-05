@@ -12,12 +12,12 @@ FL_NUM string
 
 LOAD DATA LOCAL INPATH '../data/files/flights_tiny.txt' OVERWRITE INTO TABLE flights_tiny;
 
-create temporary function npathtest as 'org.apache.hadoop.hive.ql.udf.ptf.NPath$NPathResolver';
+create temporary function matchpathtest as 'org.apache.hadoop.hive.ql.udf.ptf.MatchPath$MatchPathResolver';
 
 
--- 1. basic Npath test
+-- 1. basic Matchpath test
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
-from npathtest(on 
+from matchpathtest(on 
         flights_tiny 
         distribute by fl_num 
         sort by year, month, day_of_month  
@@ -26,4 +26,4 @@ from npathtest(on
     arg4('origin_city_name, fl_num, year, month, day_of_month, size(tpath) as sz, tpath[0].day_of_month as tpath') 
    );
 
-drop temporary function npathtest;
+drop temporary function matchpathtest;
