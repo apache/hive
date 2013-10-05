@@ -2019,6 +2019,17 @@ public abstract class TestHiveMetaStore extends TestCase {
     checkFilter(client, dbName, tblName, "p1 like \"p1.*\"", 6);
     checkFilter(client, dbName, tblName, "p2 like \"p.*3\"", 1);
 
+    // Test gt/lt/lte/gte for numbers.
+    checkFilter(client, dbName, tblName, "p3 < 0", 1);
+    checkFilter(client, dbName, tblName, "p3 >= -33", 6);
+    checkFilter(client, dbName, tblName, "p3 > -33", 5);
+    checkFilter(client, dbName, tblName, "p3 > 31 and p3 < 32", 0);
+    checkFilter(client, dbName, tblName, "p3 > 31 or p3 < 31", 3);
+    checkFilter(client, dbName, tblName, "p3 > 30 or p3 < 30", 6);
+    checkFilter(client, dbName, tblName, "p3 >= 31 or p3 < -32", 6);
+    checkFilter(client, dbName, tblName, "p3 >= 32", 2);
+    checkFilter(client, dbName, tblName, "p3 > 32", 0);
+
     //Test for setting the maximum partition count
     List<Partition> partitions = client.listPartitionsByFilter(dbName,
         tblName, "p1 >= \"p12\"", (short) 2);
@@ -2036,17 +2047,6 @@ public abstract class TestHiveMetaStore extends TestCase {
     assertNotNull(me);
     assertTrue("Filter on int partition key", me.getMessage().contains(
           "Filtering is supported only on partition keys of type string"));
-
-    try {
-      client.listPartitionsByFilter(dbName,
-          tblName, "p3 >= 31", (short) -1);
-    } catch(MetaException e) {
-      me = e;
-    }
-    assertNotNull(me);
-    assertTrue("Filter on int partition key", me.getMessage().contains(
-          "Filtering is supported only on partition keys of type string"));
-
 
     me = null;
     try {
