@@ -20,8 +20,16 @@ package org.apache.hive.service.cli.operation;
 
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.sql.SQLException;
 
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.processors.CommandProcessorFactory;
+import org.apache.hadoop.hive.ql.processors.CommandProcessor;
+import org.apache.hadoop.hive.ql.processors.HiveCommand;
+import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationType;
 import org.apache.hive.service.cli.session.HiveSession;
 
@@ -40,20 +48,19 @@ public abstract class ExecuteStatementOperation extends Operation {
   }
 
   public static ExecuteStatementOperation newExecuteStatementOperation(
-      HiveSession parentSession, String statement, Map<String, String> confOverlay, boolean runAsync) {
+      HiveSession parentSession, String statement, Map<String, String> confOverlay, boolean runAsync)
+      throws HiveSQLException {
     String[] tokens = statement.trim().split("\\s+");
     String command = tokens[0].toLowerCase();
-
-    if ("set".equals(command)) {
-      return new SetOperation(parentSession, statement, confOverlay);
-    } else if ("dfs".equals(command)) {
-      return new DfsOperation(parentSession, statement, confOverlay);
-    } else if ("add".equals(command)) {
-      return new AddResourceOperation(parentSession, statement, confOverlay);
-    } else if ("delete".equals(command)) {
-      return new DeleteResourceOperation(parentSession, statement, confOverlay);
-    } else {
+    CommandProcessor processor = null;
+    try {
+      processor = CommandProcessorFactory.getForHiveCommand(tokens[0], parentSession.getHiveConf());
+    } catch (SQLException e) {
+      throw new HiveSQLException(e.getMessage(), e.getSQLState(), e);
+    }
+    if (processor == null) {
       return new SQLOperation(parentSession, statement, confOverlay, runAsync);
     }
+    return new HiveCommandOperation(parentSession, statement, processor, confOverlay);
   }
 }
