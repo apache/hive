@@ -77,7 +77,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  * "tpath" is available. Path is a collection of rows that represents the matching Path.
  * </ol>
  */
-public class NPath extends TableFunctionEvaluator
+public class MatchPath extends TableFunctionEvaluator
 {
   private transient String patternStr;
   private transient SymbolsInfo symInfo;
@@ -85,7 +85,7 @@ public class NPath extends TableFunctionEvaluator
   private transient SymbolFunction syFn;
   private ResultExprInfo resultExprInfo;
   /*
-   * the names of the Columns of the input to NPath. Used to setup the tpath Struct column.
+   * the names of the Columns of the input to MatchPath. Used to setup the tpath Struct column.
    */
   private HashMap<String,String> inputColumnNamesMap;
 
@@ -100,7 +100,7 @@ public class NPath extends TableFunctionEvaluator
       if (syFnRes.matches )
       {
         int sz = syFnRes.nextRow - (pItr.getIndex() - 1);
-        Object selectListInput = NPath.getSelectListInput(iRow,
+        Object selectListInput = MatchPath.getSelectListInput(iRow,
             tDef.getInput().getOutputShape().getOI(), pItr, sz);
         ArrayList<Object> oRow = new ArrayList<Object>();
         for(ExprNodeEvaluator resExprEval : resultExprInfo.resultExprEvals)
@@ -115,7 +115,7 @@ public class NPath extends TableFunctionEvaluator
   static void throwErrorWithSignature(String message) throws SemanticException
   {
     throw new SemanticException(String.format(
-        "NPath signature is: SymbolPattern, one or more SymbolName, " +
+        "MatchPath signature is: SymbolPattern, one or more SymbolName, " +
         "expression pairs, the result expression as a select list. Error %s",
         message));
   }
@@ -128,7 +128,7 @@ public class NPath extends TableFunctionEvaluator
     this.inputColumnNamesMap = inputColumnNamesMap;
   }
 
-  public static class NPathResolver extends TableFunctionResolver
+  public static class MatchPathResolver extends TableFunctionResolver
   {
 
     @Override
@@ -136,7 +136,7 @@ public class NPath extends TableFunctionEvaluator
         PartitionedTableFunctionDef tDef)
     {
 
-      return new NPath();
+      return new MatchPath();
     }
 
     /**
@@ -158,7 +158,7 @@ public class NPath extends TableFunctionEvaluator
     @Override
     public void setupOutputOI() throws SemanticException
     {
-      NPath evaluator = (NPath) getEvaluator();
+      MatchPath evaluator = (MatchPath) getEvaluator();
       PartitionedTableFunctionDef tDef = evaluator.getTableDef();
 
       ArrayList<PTFExpressionDef> args = tDef.getArgs();
@@ -177,7 +177,7 @@ public class NPath extends TableFunctionEvaluator
       /*
        * setup OI for input to resultExpr select list
        */
-      RowResolver selectListInputRR = NPath.createSelectListRR(evaluator, tDef.getInput());
+      RowResolver selectListInputRR = MatchPath.createSelectListRR(evaluator, tDef.getInput());
 
       /*
        * parse ResultExpr Str and setup OI.
@@ -198,7 +198,7 @@ public class NPath extends TableFunctionEvaluator
     /*
      * validate and setup patternStr
      */
-    private void validateAndSetupPatternStr(NPath evaluator,
+    private void validateAndSetupPatternStr(MatchPath evaluator,
         ArrayList<PTFExpressionDef> args) throws SemanticException {
       PTFExpressionDef symboPatternArg = args.get(0);
       ObjectInspector symbolPatternArgOI = symboPatternArg.getOI();
@@ -218,7 +218,7 @@ public class NPath extends TableFunctionEvaluator
     /*
      * validate and setup SymbolInfo
      */
-    private void validateAndSetupSymbolInfo(NPath evaluator,
+    private void validateAndSetupSymbolInfo(MatchPath evaluator,
         ArrayList<PTFExpressionDef> args,
         int argsNum) throws SemanticException {
       int symbolArgsSz = argsNum - 2;
@@ -262,7 +262,7 @@ public class NPath extends TableFunctionEvaluator
     /*
      * validate and setup resultExprStr
      */
-    private void validateAndSetupResultExprStr(NPath evaluator,
+    private void validateAndSetupResultExprStr(MatchPath evaluator,
         ArrayList<PTFExpressionDef> args,
         int argsNum) throws SemanticException {
       PTFExpressionDef resultExprArg = args.get(argsNum - 1);
@@ -283,7 +283,7 @@ public class NPath extends TableFunctionEvaluator
     /*
      * setup SymbolFunction chain.
      */
-    private void setupSymbolFunctionChain(NPath evaluator) throws SemanticException {
+    private void setupSymbolFunctionChain(MatchPath evaluator) throws SemanticException {
       SymbolParser syP = new SymbolParser(evaluator.patternStr,
           evaluator.symInfo.symbolExprsNames,
           evaluator.symInfo.symbolExprsEvaluators, evaluator.symInfo.symbolExprsOIs);
@@ -300,7 +300,7 @@ public class NPath extends TableFunctionEvaluator
     @Override
     public void initializeOutputOI() throws HiveException {
       try {
-        NPath evaluator = (NPath) getEvaluator();
+        MatchPath evaluator = (MatchPath) getEvaluator();
         PartitionedTableFunctionDef tDef = evaluator.getTableDef();
 
         ArrayList<PTFExpressionDef> args = tDef.getArgs();
@@ -314,7 +314,7 @@ public class NPath extends TableFunctionEvaluator
         /*
          * setup OI for input to resultExpr select list
          */
-        StructObjectInspector selectListInputOI = NPath.createSelectListOI( evaluator,
+        StructObjectInspector selectListInputOI = MatchPath.createSelectListOI( evaluator,
             tDef.getInput());
         ResultExprInfo resultExprInfo = evaluator.resultExprInfo;
         ArrayList<ObjectInspector> selectListExprOIs = new ArrayList<ObjectInspector>();
@@ -340,7 +340,7 @@ public class NPath extends TableFunctionEvaluator
 
     @Override
     public ArrayList<String> getOutputColumnNames() {
-      NPath evaluator = (NPath) getEvaluator();
+      MatchPath evaluator = (MatchPath) getEvaluator();
       return evaluator.resultExprInfo.getResultExprNames();
     }
 
@@ -788,7 +788,7 @@ public class NPath extends TableFunctionEvaluator
         ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) exprNode;
         return colDesc.getColumn();
       }
-      return "npath_col_" + colIdx;
+      return "matchpath_col_" + colIdx;
     }
 
     public static ExprNodeDesc buildExprNode(ASTNode expr,
@@ -815,7 +815,7 @@ public class NPath extends TableFunctionEvaluator
   /*
    * add array<struct> to the list of columns
    */
-  protected static RowResolver createSelectListRR(NPath evaluator,
+  protected static RowResolver createSelectListRR(MatchPath evaluator,
       PTFInputDef inpDef) throws SemanticException {
     RowResolver rr = new RowResolver();
     RowResolver inputRR = inpDef.getOutputShape().getRr();
@@ -863,7 +863,7 @@ public class NPath extends TableFunctionEvaluator
     return rr;
   }
 
-  protected static StructObjectInspector createSelectListOI(NPath evaluator, PTFInputDef inpDef) {
+  protected static StructObjectInspector createSelectListOI(MatchPath evaluator, PTFInputDef inpDef) {
     StructObjectInspector inOI = inpDef.getOutputShape().getOI();
     ArrayList<String> inputColumnNames = new ArrayList<String>();
     ArrayList<String> selectListNames = new ArrayList<String>();
@@ -885,7 +885,7 @@ public class NPath extends TableFunctionEvaluator
     ArrayList<ObjectInspector> selectFieldOIs = new ArrayList<ObjectInspector>();
     selectFieldOIs.addAll(fieldOIs);
     selectFieldOIs.add(pathAttrOI);
-    selectListNames.add(NPath.PATHATTR_NAME);
+    selectListNames.add(MatchPath.PATHATTR_NAME);
     return ObjectInspectorFactory.getStandardStructObjectInspector(
         selectListNames, selectFieldOIs);
   }

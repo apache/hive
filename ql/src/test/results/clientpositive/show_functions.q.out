@@ -106,6 +106,7 @@ ltrim
 map
 map_keys
 map_values
+matchpath
 max
 min
 minute
@@ -116,7 +117,6 @@ ngrams
 noop
 noopwithmap
 not
-npath
 ntile
 nvl
 or
