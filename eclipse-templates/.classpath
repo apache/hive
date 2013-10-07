@@ -95,6 +95,7 @@
   <classpathentry kind="lib" path="build/testutils/hive-testutils-@HIVE_VERSION@.jar"/>
   <classpathentry kind="src" path="build/ql/test/src"/>
   <classpathentry kind="src" path="build/ql/gen/antlr/gen-java"/>
+  <classpathentry kind="src" path="build/ql/gen/vector"/>
   <classpathentry kind="src" path="beeline/src/java"/>
   <classpathentry kind="src" path="beeline/src/test"/>
   <classpathentry kind="src" path="cli/src/java"/>
