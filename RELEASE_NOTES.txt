@@ -1,7 +1,6 @@
 Release Notes - Hive - Version 0.12.0
 
 ** Sub-task
-    * [HIVE-4871] - Apache builds fail with Target "make-pom" does not exist in the project "hcatalog".
     * [HIVE-2304] - Support PreparedStatement.setObject
     * [HIVE-4055] - add Date data type
     * [HIVE-4266] - Refactor HCatalog code to org.apache.hive.hcatalog
@@ -26,6 +25,7 @@ Release Notes - Hive - Version 0.12.0
     * [HIVE-4762] - HMS cannot handle concurrent requests
     * [HIVE-4763] - add support for thrift over http transport in HS2
     * [HIVE-4767] - ObjectStore.getPMF has concurrency problems
+    * [HIVE-4871] - Apache builds fail with Target "make-pom" does not exist in the project "hcatalog".
     * [HIVE-4894] - Update maven coordinates of HCatalog artifacts
     * [HIVE-4895] - Move all HCatalog classes to org.apache.hive.hcatalog
     * [HIVE-4896] - create binary backwards compatibility layer hcatalog 0.12 and 0.11
@@ -320,7 +320,7 @@ Release Notes - Hive - Version 0.12.0
     * [HIVE-5429] - HiveVarcharWritable length not reset when value is changed
     * [HIVE-5431] - PassthroughOutputFormat SH changes causes IllegalArgumentException
     * [HIVE-5433] - Fix varchar unit tests to work with hadoop-2.1.1
-
+    * [HIVE-5477] - maven-publish fails because it can't find hive-metastore-0.12.0.pom
 
 
 
