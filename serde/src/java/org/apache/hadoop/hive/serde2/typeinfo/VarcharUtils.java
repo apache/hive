@@ -18,20 +18,26 @@
 
 package org.apache.hadoop.hive.serde2.typeinfo;
 
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 
-/**
- * Interface to encapsulate retrieving of type information, for the object inspector factory.
- *
- */
-public interface PrimitiveTypeSpec {
-  /**
-   * @return  PrimitiveCategory referred to by the PrimitiveTypeSpec
-   */
-  PrimitiveCategory getPrimitiveCategory();
+public class VarcharUtils {
 
-  /**
-   * @return Type params referred to by the PrimitiveTypeSpec
-   */
-  BaseTypeParams getTypeParams();
+  public static void validateParameter(int length) {
+    if (length > HiveVarchar.MAX_VARCHAR_LENGTH || length < 1) {
+      throw new RuntimeException("Varchar length " + length + " out of allowed range [1, " +
+          HiveVarchar.MAX_VARCHAR_LENGTH + "]");
+    }
+  }
+
+  public static boolean doesWritableMatchTypeParams(HiveVarcharWritable writable,
+      VarcharTypeInfo typeInfo) {
+    return typeInfo.getLength() >= writable.getCharacterLength();
+  }
+
+  public static boolean doesPrimitiveMatchTypeParams(HiveVarchar value,
+      VarcharTypeInfo typeInfo) {
+    return typeInfo.getLength() == value.getCharacterLength();
+  }
+
 }

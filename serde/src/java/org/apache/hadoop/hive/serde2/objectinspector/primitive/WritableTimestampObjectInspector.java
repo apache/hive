@@ -20,13 +20,14 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 import java.sql.Timestamp;
 
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 public class WritableTimestampObjectInspector extends
     AbstractPrimitiveWritableObjectInspector implements
     SettableTimestampObjectInspector {
 
   public WritableTimestampObjectInspector() {
-    super(PrimitiveObjectInspectorUtils.timestampTypeEntry);
+    super(TypeInfoFactory.timestampTypeInfo);
   }
 
   @Override

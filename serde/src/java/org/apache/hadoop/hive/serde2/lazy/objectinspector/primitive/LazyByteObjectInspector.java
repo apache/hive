@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyByte;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
  * A WritableByteObjectInspector inspects a ByteWritable Object.
@@ -30,7 +30,7 @@ public class LazyByteObjectInspector extends
     ByteObjectInspector {
 
   LazyByteObjectInspector() {
-    super(PrimitiveObjectInspectorUtils.byteTypeEntry);
+    super(TypeInfoFactory.byteTypeInfo);
   }
 
   @Override

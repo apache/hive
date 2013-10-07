@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 
 /**
  * A WritableConstantHiveVarcharObjectInspector is a WritableHiveVarcharObjectInspector
@@ -35,29 +35,15 @@ public class WritableConstantHiveVarcharObjectInspector extends
   WritableConstantHiveVarcharObjectInspector() {
   }
 
-  WritableConstantHiveVarcharObjectInspector(HiveVarcharWritable value) {
-    this(value, null);
-  }
-
-  WritableConstantHiveVarcharObjectInspector(HiveVarcharWritable value,
-      VarcharTypeParams typeParams) {
-    super(PrimitiveObjectInspectorUtils.varcharTypeEntry);
+  WritableConstantHiveVarcharObjectInspector(VarcharTypeInfo typeInfo,
+      HiveVarcharWritable value) {
+    super(typeInfo);
     this.value = value;
-
-    // If we have been provided with type params, then use them.
-    // Otherwise determine character length and update type params/typeinfo accordingly.
-    if (typeParams == null) {
-      typeParams = new VarcharTypeParams();
-      typeParams.length = this.value.getCharacterLength();
-    }
-    setTypeParams(typeParams);
-    this.typeEntry = PrimitiveObjectInspectorUtils.getTypeEntryFromTypeSpecs(
-        PrimitiveCategory.VARCHAR,
-        typeParams);
   }
 
   @Override
   public HiveVarcharWritable getWritableConstantValue() {
+    // TODO: enforce max length
     return value;
   }
 }

@@ -15,36 +15,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.apache.hadoop.hive.serde2.typeinfo;
 
-import java.io.Serializable;
-
-import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.io.Writable;
-
-/**
- * Base type for type-specific params, such as char(10) or decimal(10, 2).
- */
-public abstract class BaseTypeParams implements Writable, Serializable {
-
+public abstract class BaseCharTypeInfo extends PrimitiveTypeInfo {
   private static final long serialVersionUID = 1L;
 
-  public abstract void validateParams() throws SerDeException;
+  private int length;
 
-  public abstract void populateParams(String[] params) throws SerDeException;
-
-  public abstract String toString();
-
-  public void set(String[] params) throws SerDeException {
-    populateParams(params);
-    validateParams();
+  // no-arg constructor to make kyro happy.
+  public BaseCharTypeInfo() {
   }
 
-  // Needed for conversion to/from TypeQualifiers. Override in subclasses.
-  public boolean hasCharacterMaximumLength() {
-    return false;
+  public BaseCharTypeInfo(String typeName, int length) {
+    super(typeName);
+    this.length = length;
   }
-  public int getCharacterMaximumLength() {
-    return -1;
+
+  public int getLength() {
+    return length;
   }
+
+  public void setLength(int length) {
+    this.length = length;
+  }
+
+  @Override
+  public String getQualifiedName() {
+    return getQualifiedName(typeName, length);
+  }
+
+  public static String getQualifiedName(String typeName, int length) {
+    StringBuilder sb = new StringBuilder(typeName);
+    sb.append("(");
+    sb.append(length);
+    sb.append(")");
+    return sb.toString();
+  }
+
 }

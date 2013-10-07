@@ -66,8 +66,7 @@ public class ExprNodeConstantDesc extends ExprNodeDesc implements Serializable {
         .getPrimitiveJavaObjectInspector(pc).getPrimitiveWritableObject(
           getValue());
     return PrimitiveObjectInspectorFactory
-        .getPrimitiveWritableConstantObjectInspector(
-            (PrimitiveTypeInfo) getTypeInfo(), writableValue);
+        .getPrimitiveWritableConstantObjectInspector((PrimitiveTypeInfo) getTypeInfo(), writableValue);
   }
 
 

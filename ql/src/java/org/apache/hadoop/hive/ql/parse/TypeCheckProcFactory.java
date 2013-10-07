@@ -62,13 +62,13 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 
 /**
  * The Factory for creating typecheck processors. The typecheck processors are
@@ -652,7 +652,7 @@ public final class TypeCheckProcFactory {
      *
      * @throws UDFArgumentException
      */
-    static ExprNodeDesc getFuncExprNodeDescWithUdfData(String udfName, Object udfData,
+    static ExprNodeDesc getFuncExprNodeDescWithUdfData(String udfName, TypeInfo typeInfo,
         ExprNodeDesc... children) throws UDFArgumentException {
 
       FunctionInfo fi = FunctionRegistry.getFunctionInfo(udfName);
@@ -667,9 +667,9 @@ public final class TypeCheckProcFactory {
       }
 
       // Add udfData to UDF if necessary
-      if (udfData != null) {
+      if (typeInfo != null) {
         if (genericUDF instanceof SettableUDF) {
-          ((SettableUDF)genericUDF).setParams(udfData);
+          ((SettableUDF)genericUDF).setTypeInfo(typeInfo);
         }
       }
 
@@ -793,10 +793,10 @@ public final class TypeCheckProcFactory {
           switch (funcNameNode.getType()) {
             case HiveParser.TOK_VARCHAR:
               // Add type params
-              VarcharTypeParams varcharTypeParams = new VarcharTypeParams();
-              varcharTypeParams.length = Integer.valueOf((funcNameNode.getChild(0).getText()));
+              VarcharTypeInfo varcharTypeInfo = TypeInfoFactory.getVarcharTypeInfo(
+                  Integer.valueOf((funcNameNode.getChild(0).getText())));
               if (genericUDF != null) {
-                ((SettableUDF)genericUDF).setParams(varcharTypeParams);
+                ((SettableUDF)genericUDF).setTypeInfo(varcharTypeInfo);
               }
               break;
             default:
