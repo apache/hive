@@ -1,3 +1,448 @@
+Release Notes - Hive - Version 0.12.0
+
+** Sub-task
+    * [HIVE-2304] - Support PreparedStatement.setObject
+    * [HIVE-4055] - add Date data type
+    * [HIVE-4266] - Refactor HCatalog code to org.apache.hive.hcatalog
+    * [HIVE-4324] - ORC Turn off dictionary encoding when number of distinct keys is greater than threshold
+    * [HIVE-4355] - HCatalog test TestPigHCatUtil might fail on JDK7
+    * [HIVE-4460] - Publish HCatalog artifacts for Hadoop 2.x
+    * [HIVE-4478] - In ORC, add boolean noNulls flag to column stripe metadata
+    * [HIVE-4626] - join_vc.q is not deterministic
+    * [HIVE-4646] - skewjoin.q is failing in hadoop2
+    * [HIVE-4690] - stats_partscan_1.q makes different result with different hadhoop.mr.rev 
+    * [HIVE-4708] - Fix TestCliDriver.combine2.q on 0.23
+    * [HIVE-4711] - Fix TestCliDriver.list_bucket_query_oneskew_{1,2,3}.q on 0.23
+    * [HIVE-4712] - Fix TestCliDriver.truncate_* on 0.23
+    * [HIVE-4713] - Fix TestCliDriver.skewjoin_union_remove_{1,2}.q on 0.23
+    * [HIVE-4715] - Fix TestCliDriver.{recursive_dir.q,sample_islocalmode_hook.q,input12.q,input39.q,auto_join14.q} on 0.23
+    * [HIVE-4717] - Fix non-deterministic TestCliDriver on 0.23
+    * [HIVE-4721] - Fix TestCliDriver.ptf_npath.q on 0.23
+    * [HIVE-4746] - Fix TestCliDriver.list_bucket_dml_{2,4,5,9,12,13}.q on 0.23
+    * [HIVE-4750] - Fix TestCliDriver.list_bucket_dml_{6,7,8}.q on 0.23
+    * [HIVE-4756] - Upgrade Hadoop 0.23 profile to 2.0.5-alpha
+    * [HIVE-4761] - ZooKeeperHiveLockManage.unlockPrimitive has race condition with threads
+    * [HIVE-4762] - HMS cannot handle concurrent requests
+    * [HIVE-4763] - add support for thrift over http transport in HS2
+    * [HIVE-4767] - ObjectStore.getPMF has concurrency problems
+    * [HIVE-4894] - Update maven coordinates of HCatalog artifacts
+    * [HIVE-4895] - Move all HCatalog classes to org.apache.hive.hcatalog
+    * [HIVE-4896] - create binary backwards compatibility layer hcatalog 0.12 and 0.11
+    * [HIVE-4908] - rename templeton to webhcat?
+    * [HIVE-4940] - udaf_percentile_approx.q is not deterministic
+    * [HIVE-4980] - Fix the compiling error in TestHadoop20SAuthBridge
+    * [HIVE-5013] - [HCatalog] Create hcat.py, hcat_server.py to make HCatalog work on Windows
+    * [HIVE-5014] - [HCatalog] Fix HCatalog build issue on Windows
+    * [HIVE-5015] - [HCatalog] Fix HCatalog unit tests on Windows
+    * [HIVE-5028] - Some tests with fail OutOfMemoryError PermGen Space on Hadoop2
+    * [HIVE-5035] - [WebHCat] Hardening parameters for Windows
+    * [HIVE-5036] - [WebHCat] Add cmd script for WebHCat
+    * [HIVE-5063] - Fix some non-deterministic or not-updated tests
+    * [HIVE-5066] - [WebHCat] Other code fixes for Windows
+    * [HIVE-5069] - Tests on list bucketing are failing again in hadoop2
+    * [HIVE-5078] - [WebHCat] Fix e2e tests on Windows plus test cases for new features
+    * [HIVE-5163] - refactor org.apache.hadoop.mapred.HCatMapRedUtil
+    * [HIVE-5213] - remove hcatalog/shims directory
+    * [HIVE-5233] - move hbase storage handler to org.apache.hcatalog package
+    * [HIVE-5236] - Change HCatalog spacing from 4 spaces to 2
+    * [HIVE-5260] - Introduce HivePassThroughOutputFormat that allows Hive to use general purpose OutputFormats instead of HiveOutputFormats in StorageHandlers
+    * [HIVE-5261] - Make the Hive HBase storage handler work from HCatalog, and use HiveStorageHandlers instead of HCatStorageHandlers
+
+
+
+** Bug
+    * [HIVE-2015] - Eliminate bogus Datanucleus.Plugin Bundle ERROR log messages
+    * [HIVE-2379] - Hive/HBase integration could be improved
+    * [HIVE-2473] - Hive throws an NPE when $HADOOP_HOME points to a tarball install directory that contains a build/ subdirectory.
+    * [HIVE-2702] - Enhance listPartitionsByFilter to add support for integral types both for equality and non-equality
+    * [HIVE-2905] - Desc table can't show non-ascii comments
+    * [HIVE-3189] - cast ( <string type> as bigint) returning null values
+    * [HIVE-3191] - timestamp - timestamp causes null pointer exception
+    * [HIVE-3253] - ArrayIndexOutOfBounds exception for deeply nested structs
+    * [HIVE-3256] - Update asm version in Hive
+    * [HIVE-3264] - Add support for binary dataype to AvroSerde
+    * [HIVE-3475] - INLINE UDTF doesn't convert types properly
+    * [HIVE-3562] - Some limit can be pushed down to map stage
+    * [HIVE-3588] - Get Hive to work with hbase 94
+    * [HIVE-3632] - Upgrade datanucleus to support JDK7
+    * [HIVE-3691] - TestDynamicSerDe failed with IBM JDK
+    * [HIVE-3756] - "LOAD DATA" does not honor permission inheritence
+    * [HIVE-3772] - Fix a concurrency bug in LazyBinaryUtils due to a static field
+    * [HIVE-3810] - HiveHistory.log need to replace '\r' with space before writing Entry.value to historyfile
+    * [HIVE-3846] - alter view rename NPEs with authorization on.
+    * [HIVE-3891] - physical optimizer changes for auto sort-merge join
+    * [HIVE-3926] - PPD on virtual column of partitioned table is not working
+    * [HIVE-3953] - Reading of partitioned Avro data fails because of missing properties
+    * [HIVE-3957] - Add pseudo-BNF grammar for RCFile to Javadoc
+    * [HIVE-3978] - HIVE_AUX_JARS_PATH should have : instead of , as separator since it gets appended to HADOOP_CLASSPATH
+    * [HIVE-4003] - NullPointerException in exec.Utilities
+    * [HIVE-4051] - Hive's metastore suffers from 1+N queries when querying partitions & is slow
+    * [HIVE-4057] - LazyHBaseRow may return cache data if the field is null and make the result wrong
+    * [HIVE-4089] - javax.jdo : jdo2-api dependency not in Maven Central
+    * [HIVE-4106] - SMB joins fail in multi-way joins
+    * [HIVE-4171] - Current database in metastore.Hive is not consistent with SessionState
+    * [HIVE-4181] - Star argument without table alias for UDTF is not working
+    * [HIVE-4194] - JDBC2: HiveDriver should not throw RuntimeException when passed an invalid URL
+    * [HIVE-4214] - OVER accepts general expression instead of just function
+    * [HIVE-4222] - Timestamp type constants cannot be deserialized in JDK 1.6 or less
+    * [HIVE-4233] - The TGT gotten from class 'CLIService'  should be renewed on time
+    * [HIVE-4251] - Indices can't be built on tables whose schema info comes from SerDe
+    * [HIVE-4290] - Build profiles: Partial builds for quicker dev
+    * [HIVE-4295] - Lateral view makes invalid result if CP is disabled
+    * [HIVE-4299] - exported metadata by HIVE-3068 cannot be imported because of wrong file name
+    * [HIVE-4300] - ant thriftif  generated code that is checkedin is not up-to-date
+    * [HIVE-4322] - SkewedInfo in Metastore Thrift API cannot be deserialized in Python
+    * [HIVE-4339] - build fails after branch (hcatalog version not updated)
+    * [HIVE-4343] - HS2 with kerberos- local task for map join fails
+    * [HIVE-4344] - CREATE VIEW fails when redundant casts are rewritten
+    * [HIVE-4347] - Hcatalog build fail on Windows because javadoc command exceed length limit
+    * [HIVE-4348] - Unit test compile fail at hbase-handler project on Windows becuase of illegal escape character
+    * [HIVE-4350] - support AS keyword for table alias
+    * [HIVE-4351] - Thrift code generation fails due to hcatalog
+    * [HIVE-4364] - beeline always exits with 0 status, should exit with non-zero status on error
+    * [HIVE-4369] - Many new failures on hadoop 2
+    * [HIVE-4375] - Single sourced multi insert consists of native and non-native table mixed throws NPE
+    * [HIVE-4377] - Add more comment to https://reviews.facebook.net/D1209 (HIVE-2340)
+    * [HIVE-4392] - Illogical InvalidObjectException throwed when use mulit aggregate functions with star columns 
+    * [HIVE-4403] - Running Hive queries on Yarn (MR2) gives warnings related to overriding final parameters
+    * [HIVE-4406] - Missing "/" or "/<dbname>" in hs2 jdbc uri switches mode to embedded mode
+    * [HIVE-4407] - TestHCatStorer.testStoreFuncAllSimpleTypes fails because of null case difference
+    * [HIVE-4418] - TestNegativeCliDriver failure message if cmd succeeds is misleading
+    * [HIVE-4421] - Improve memory usage by ORC dictionaries
+    * [HIVE-4422] - Test output need to be updated for Windows only unit test in TestCliDriver
+    * [HIVE-4424] - MetaStoreUtils.java.orig checked in mistakenly by HIVE-4409
+    * [HIVE-4428] - Misspelling in describe extended output
+    * [HIVE-4430] - Semantic analysis fails in presence of certain literals in on clause
+    * [HIVE-4433] - Fix C++ Thrift bindings broken in HIVE-4322
+    * [HIVE-4435] - Column stats: Distinct value estimator should use hash functions that are pairwise independent
+    * [HIVE-4436] - hive.exec.parallel=true doesn't work on hadoop-2
+    * [HIVE-4438] - Remove unused join configuration parameter: hive.mapjoin.size.key
+    * [HIVE-4439] - Remove unused join configuration parameter: hive.mapjoin.cache.numrows
+    * [HIVE-4440] - SMB Operator spills to disk like it's 1999
+    * [HIVE-4441] - [HCatalog] WebHCat does not honor user home directory
+    * [HIVE-4442] - [HCatalog] WebHCat should not override user.name parameter for Queue call
+    * [HIVE-4465] - webhcat e2e tests succeed regardless of exitvalue
+    * [HIVE-4466] - Fix continue.on.failure in unit tests to -well- continue on failure in unit tests
+    * [HIVE-4471] - Build fails with hcatalog checkstyle error
+    * [HIVE-4474] - Column access not tracked properly for partitioned tables
+    * [HIVE-4475] - Switch RCFile default to LazyBinaryColumnarSerDe
+    * [HIVE-4486] - FetchOperator slows down SMB map joins by 50% when there are many partitions
+    * [HIVE-4487] - Hive does not set explicit permissions on hive.exec.scratchdir
+    * [HIVE-4489] - beeline always return the same error message twice
+    * [HIVE-4492] - Revert HIVE-4322
+    * [HIVE-4496] - JDBC2 won't compile with JDK7
+    * [HIVE-4497] - beeline module tests don't get run by default
+    * [HIVE-4502] - NPE - subquery smb joins fails
+    * [HIVE-4510] - HS2 doesn't nest exceptions properly (fun debug times)
+    * [HIVE-4513] - disable hivehistory logs by default
+    * [HIVE-4516] - Fix concurrency bug in serde/src/java/org/apache/hadoop/hive/serde2/io/TimestampWritable.java
+    * [HIVE-4521] - Auto join conversion fails in certain cases (empty tables, empty partitions, no partitions)
+    * [HIVE-4525] - Support timestamps earlier than 1970 and later than 2038
+    * [HIVE-4535] - hive build fails with hadoop 0.20
+    * [HIVE-4540] - JOIN-GRP BY-DISTINCT fails with NPE when mapjoin.mapreduce=true
+    * [HIVE-4542] - TestJdbcDriver2.testMetaDataGetSchemas fails because of unexpected database
+    * [HIVE-4543] - Broken link in HCat 0.5 doc (Reader and Writer Interfaces)
+    * [HIVE-4546] - Hive CLI leaves behind the per session resource directory on non-interactive invocation
+    * [HIVE-4547] - A complex create view statement fails with new Antlr 3.4
+    * [HIVE-4550] - local_mapred_error_cache fails on some hadoop versions
+    * [HIVE-4554] - Failed to create a table from existing file if file path has spaces
+    * [HIVE-4559] - hcatalog/webhcat scripts in tar.gz don't have execute permissions set
+    * [HIVE-4562] - HIVE-3393 brought in Jackson library,and these four jars should be packed into hive-exec.jar
+    * [HIVE-4566] - NullPointerException if typeinfo and nativesql commands are executed at beeline before a DB connection is established
+    * [HIVE-4572] - ColumnPruner cannot preserve RS key columns corresponding to un-selected join keys in columnExprMap
+    * [HIVE-4573] - Support alternate table types for HiveServer2
+    * [HIVE-4578] - Changes to Pig's test harness broke HCat e2e tests
+    * [HIVE-4580] - Change DDLTask to report errors using canonical error messages rather than http status codes
+    * [HIVE-4581] - HCat e2e tests broken by changes to Hive's describe table formatting
+    * [HIVE-4585] - Remove unused MR Temp file localization from Tasks
+    * [HIVE-4586] - [HCatalog] WebHCat should return 404 error for undefined resource
+    * [HIVE-4589] - Hive Load command failed when inpath contains space or any restricted characters
+    * [HIVE-4591] - Making changes to webhcat-site.xml have no effect
+    * [HIVE-4593] - ErrorMsg has several messages that reuse the same error code
+    * [HIVE-4611] - SMB joins fail based on bigtable selection policy.
+    * [HIVE-4615] - Invalid column names allowed when created dynamically by a SerDe
+    * [HIVE-4618] - show create table creating unusable DDL when field delimiter is \001
+    * [HIVE-4619] - Hive 0.11.0 is not working with pre-cdh3u6 and hadoop-0.23
+    * [HIVE-4638] - Thread local PerfLog can get shared by multiple hiveserver2 sessions
+    * [HIVE-4650] - Getting Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.MapRedTask on auto convert to MapJoin after upgrade to Hive-0.11.0.x from hive-0.10.0.x
+    * [HIVE-4657] - HCatalog checkstyle violation after HIVE-2670 
+    * [HIVE-4677] - [HCatalog] WebHCat e2e tests fail on Hadoop 2
+    * [HIVE-4679] - WebHCat can deadlock Hadoop if the number of concurrently running tasks if higher or equal than the number of mappers
+    * [HIVE-4683] - fix coverage org.apache.hadoop.hive.cli
+    * [HIVE-4689] - For outerjoins, joinEmitInterval might make wrong result
+    * [HIVE-4691] - orc_createas1.q has minor inconsistency
+    * [HIVE-4692] - Constant agg parameters will be replaced by ExprNodeColumnDesc with single-sourced multi-gby cases
+    * [HIVE-4696] - WebHCat e2e test framework is missing files and instructions
+    * [HIVE-4707] - Support configurable domain name for HiveServer2 LDAP authentication using Active Directory
+    * [HIVE-4710] - ant maven-build -Dmvn.publish.repo=local fails
+    * [HIVE-4724] - ORC readers should have a better error detection for non-ORC files
+    * [HIVE-4730] - Join on more than 2^31 records on single reducer failed (wrong results)
+    * [HIVE-4733] - HiveLockObjectData is not compared properly
+    * [HIVE-4740] - HIVE-2379 is missing hbase.jar itself
+    * [HIVE-4742] - A useless CAST makes Hive fail to create a VIEW based on an UNION
+    * [HIVE-4748] - Fix TempletonUtilsTest failure on Windows
+    * [HIVE-4757] - LazyTimestamp goes into irretrievable NULL mode once inited with NULL once
+    * [HIVE-4781] - LEFT SEMI JOIN generates wrong results when the number of rows belonging to a single key of the right table exceed hive.join.emit.interval
+    * [HIVE-4784] - ant testreport doesn't include any HCatalog tests
+    * [HIVE-4785] - Implement isCaseSensitive for Hive JDBC driver
+    * [HIVE-4789] - FetchOperator fails on partitioned Avro data
+    * [HIVE-4798] - NPE when we call isSame from an instance of ExprNodeConstantDesc with null value
+    * [HIVE-4802] - Fix url check for missing "/" or "/<db> after hostname in jdb uri
+    * [HIVE-4804] - parallel order by fails for small datasets
+    * [HIVE-4807] - Hive metastore hangs
+    * [HIVE-4808] - WebHCat job submission is killed by TaskTracker since it's not sending a heartbeat properly
+    * [HIVE-4810] - Refactor exec package
+    * [HIVE-4811] - (Slightly) break up the SemanticAnalyzer monstrosity
+    * [HIVE-4812] - Logical explain plan
+    * [HIVE-4814] - Adjust WebHCat e2e tests until HIVE-4703 is addressed
+    * [HIVE-4818] - SequenceId in operator is not thread safe
+    * [HIVE-4820] - webhcat_config.sh should set default values for HIVE_HOME and HCAT_PREFIX that work with default build tree structure
+    * [HIVE-4829] - TestWebHCatE2e checkstyle violation causes all tests to fail
+    * [HIVE-4830] - Test clientnegative/nested_complex_neg.q got broken due to 4580
+    * [HIVE-4833] - Fix eclipse template classpath to include the correct jdo lib
+    * [HIVE-4836] - make checkstyle ignore IntelliJ files and templeton e2e files
+    * [HIVE-4838] - Refactor MapJoin HashMap code to improve testability and readability
+    * [HIVE-4839] - build-common.xml has <property name="hive.root" location="${basedir}"/..>
+    * [HIVE-4840] - Fix eclipse template classpath to include the BoneCP lib
+    * [HIVE-4843] - Refactoring MapRedTask and ExecDriver for better re-usability (for tez) and readability
+    * [HIVE-4845] - Correctness issue with MapJoins using the null safe operator
+    * [HIVE-4852] - -Dbuild.profile=core fails
+    * [HIVE-4853] - junit timeout needs to be updated
+    * [HIVE-4854] - testCliDriver_load_hdfs_file_with_space_in_the_name fails on hadoop 2
+    * [HIVE-4865] - HiveLockObjects: Unlocking retries/times out when query contains ":"
+    * [HIVE-4869] - Clean up HCatalog build post Hive integration 
+    * [HIVE-4870] - Explain Extended to show partition info for Fetch Task
+    * [HIVE-4875] - hive config template is not parse-able due to angle brackets in description
+    * [HIVE-4876] - Beeling help text do not contain -f and -e parameters
+    * [HIVE-4878] - With Dynamic partitioning, some queries would scan default partition even if query is not using it.
+    * [HIVE-4883] - TestHadoop20SAuthBridge tests fail sometimes because of race condition
+    * [HIVE-4891] - Distinct includes duplicate records
+    * [HIVE-4892] - PTest2 cleanup after merge
+    * [HIVE-4893] - [WebHCat] HTTP 500 errors should be mapped to 400 for bad request
+    * [HIVE-4899] - Hive returns non-meanful error message for ill-formed fs.default.name
+    * [HIVE-4900] - Fix the mismatched column names in package.jdo
+    * [HIVE-4915] - unit tests fail on windows because of difference in input file size
+    * [HIVE-4927] - When we merge two MapJoin MapRedTasks, the TableScanOperator of the second one should be removed
+    * [HIVE-4928] - Date literals do not work properly in partition spec clause
+    * [HIVE-4929] - the type of all numeric constants is changed to double in the plan
+    * [HIVE-4930] - Classes of metastore should not be included MR-task
+    * [HIVE-4932] - PTFOperator fails resetting PTFPersistence
+    * [HIVE-4935] - Potential NPE in MetadataOnlyOptimizer
+    * [HIVE-4942] - Fix eclipse template files to use correct datanucleus libs
+    * [HIVE-4951] - combine2_win.q.out needs update for HIVE-3253 (increasing nesting levels)
+    * [HIVE-4952] - When hive.join.emit.interval is small, queries optimized by Correlation Optimizer may generate wrong results
+    * [HIVE-4955] - serde_user_properties.q.out needs to be updated
+    * [HIVE-4962] - fix eclipse template broken by HIVE-3256
+    * [HIVE-4964] - Cleanup PTF code: remove code dealing with non standard sql behavior we had original introduced
+    * [HIVE-4968] - When deduplicating multiple SelectOperators, we should update RowResolver accordinly
+    * [HIVE-4970] - BinaryConverter does not respect nulls
+    * [HIVE-4972] - update code generated by thrift for DemuxOperator and MuxOperator
+    * [HIVE-4987] - Javadoc can generate argument list too long error
+    * [HIVE-4990] - ORC seeks fails with non-zero offset or column projection
+    * [HIVE-4991] - hive build with 0.20 is broken
+    * [HIVE-4995] - select * may incorrectly return empty fields with hbase-handler
+    * [HIVE-4998] - support jdbc documented table types in default configuration
+    * [HIVE-5010] - HCatalog maven integration doesn't override mvn.local.repo in two locations
+    * [HIVE-5012] - [HCatalog] Make HCatalog work on Windows
+    * [HIVE-5017] - DBTokenStore gives compiler warnings
+    * [HIVE-5023] - Hive get wrong result when partition has the same path but different schema or authority
+    * [HIVE-5026] - HIVE-3926 is committed in the state of not rebased to trunk
+    * [HIVE-5034] - [WebHCat] Make WebHCat work for Windows
+    * [HIVE-5046] - Hcatalog's bin/hcat script doesn't respect HIVE_HOME
+    * [HIVE-5047] - Hive client filters partitions incorrectly via pushdown in certain cases involving "or"
+    * [HIVE-5048] - StorageBasedAuthorization provider causes an NPE when asked to authorize from client side.
+    * [HIVE-5049] - Create an ORC test case that has a 0.11 ORC file
+    * [HIVE-5051] - StorageBasedAuthorizationProvider masks lower level exception with IllegalStateException
+    * [HIVE-5055] - SessionState temp file gets created in history file directory
+    * [HIVE-5056] - MapJoinProcessor ignores order of values in removing RS
+    * [HIVE-5060] - JDBC driver assumes executeStatement is synchronous
+    * [HIVE-5061] - Row sampling throws NPE when used in sub-query
+    * [HIVE-5075] - bug in ExprProcFactory.genPruner
+    * [HIVE-5079] - Make Hive compile under Windows
+    * [HIVE-5084] - Fix newline.q on Windows
+    * [HIVE-5085] - Hive Metatool errors out if HIVE_OPTS is set
+    * [HIVE-5087] - Rename npath UDF to matchpath
+    * [HIVE-5089] - Non query PreparedStatements are always failing on remote HiveServer2
+    * [HIVE-5091] - ORC files should have an option to pad stripes to the HDFS block boundaries
+    * [HIVE-5100] -  RCFile::sync(long)  missing 1 byte in System.arraycopy()
+    * [HIVE-5104] - HCatStorer fails to store boolean type
+    * [HIVE-5105] - HCatSchema.remove(HCatFieldSchema hcatFieldSchema) does not clean up fieldPositionMap
+    * [HIVE-5106] - HCatFieldSchema overrides equals() but not hashCode()
+    * [HIVE-5120] - document what hive.server2.thrift.sasl.qop values mean in hive-default.xml.template
+    * [HIVE-5122] - Add partition for multiple partition ignores locations for non-first partitions
+    * [HIVE-5123] - group by on a same key producing wrong result
+    * [HIVE-5127] - Upgrade xerces and xalan for WebHCat
+    * [HIVE-5128] - Direct SQL for view is failing 
+    * [HIVE-5129] - Multiple table insert fails on count(distinct)
+    * [HIVE-5131] - JDBC client's hive variables are not passed to HS2
+    * [HIVE-5137] - A Hive SQL query should not return a ResultSet when the underlying plan does not include a FetchTask
+    * [HIVE-5144] - HashTableSink allocates empty new Object[] arrays & OOMs - use a static emptyRow instead
+    * [HIVE-5145] - Fix TestCliDriver.list_bucket_query_multiskew_2.q on hadoop 0.23
+    * [HIVE-5149] - ReduceSinkDeDuplication can pick the wrong partitioning columns
+    * [HIVE-5156] - HiveServer2 jdbc ResultSet.close should free up resources on server side
+    * [HIVE-5161] - Additional SerDe support for varchar type
+    * [HIVE-5167] - webhcat_config.sh checks for env variables being set before sourcing webhcat-env.sh
+    * [HIVE-5196] - ThriftCLIService.java uses stderr to print the stack trace, it should use the logger instead.
+    * [HIVE-5198] - WebHCat returns exitcode 143 (w/o an explanation)
+    * [HIVE-5199] - Custom SerDe containing a nonSettable complex data type row object inspector throws cast exception with HIVE 0.11
+    * [HIVE-5203] - FunctionRegistry.getMethodInternal() should prefer method arguments with closer affinity to the original argument types
+    * [HIVE-5210] - WebHCatJTShim implementations are missing Apache license headers
+    * [HIVE-5239] - LazyDate goes into irretrievable NULL mode once inited with NULL once
+    * [HIVE-5241] - Default log4j log level for WebHCat should be INFO not DEBUG
+    * [HIVE-5246] -  Local task for map join submitted via oozie job fails on a secure HDFS
+    * [HIVE-5255] - Missing metastore schema files for version 0.11
+    * [HIVE-5265] - Direct SQL fallback broken on Postgres
+    * [HIVE-5274] - HCatalog package renaming backward compatibility follow-up
+    * [HIVE-5285] - Custom SerDes throw cast exception when there are complex nested structures containing NonSettableObjectInspectors.
+    * [HIVE-5292] - Join on decimal columns fails to return rows
+    * [HIVE-5296] - Memory leak: OOM Error after multiple open/closed JDBC connections. 
+    * [HIVE-5297] - Hive does not honor type for partition columns
+    * [HIVE-5301] - Add a schema tool for offline metastore schema upgrade
+    * [HIVE-5322] - FsPermission is initialized incorrectly in HIVE 5513
+    * [HIVE-5329] - Date and timestamp type converts invalid strings to '1970-01-01'
+    * [HIVE-5337] - org.apache.hcatalog.common.HCatUtil is used by org.apache.hive.hcatalog.templeton.tool
+    * [HIVE-5352] - cast('1.0' as int) returns null
+    * [HIVE-5357] - ReduceSinkDeDuplication optimizer pick the wrong keys in pRS-cGBYm-cRS-cGBYr scenario when there are distinct keys in child GBY
+    * [HIVE-5362] - TestHCatHBaseInputFormat has a bug which will not allow it to run on JDK7 and RHEL 6
+    * [HIVE-5364] - NPE on some queries from partitioned orc table
+    * [HIVE-5374] - hive-schema-0.13.0.postgres.sql doesn't work
+    * [HIVE-5375] - Bug in Hive-0.12 branch with parameterized types due to merge conflict with HIVE-5199
+    * [HIVE-5394] - ObjectInspectorConverters.getConvertedOI() does not return the correct object inspector for primitive type.
+    * [HIVE-5401] - Array Out Of Bounds in OrcRecordReader
+    * [HIVE-5402] - StorageBasedAuthorizationProvider is not correctly able to determine that it is running from client-side
+    * [HIVE-5405] - Need to implement PersistenceDelegate for org.antlr.runtime.CommonToken
+    * [HIVE-5410] - Hive command line option --auxpath still does not work post HIVE-5363
+    * [HIVE-5413] - StorageDelegationAuthorizationProvider uses non-existent org.apache.hive.hcatalog.hbase.HBaseHCatStorageHandler
+    * [HIVE-5416] - templeton/tests/jobsubmission2.conf erroneously removed
+    * [HIVE-5419] - Fix schema tool issues with Oracle metastore 
+    * [HIVE-5426] - TestThriftBinaryCLIService tests fail on branch 0.12
+    * [HIVE-5429] - HiveVarcharWritable length not reset when value is changed
+    * [HIVE-5431] - PassthroughOutputFormat SH changes causes IllegalArgumentException
+    * [HIVE-5433] - Fix varchar unit tests to work with hadoop-2.1.1
+
+
+
+
+** Improvement
+    * [HIVE-2084] - Upgrade datanucleus from 2.0.3 to a more recent version (3.?)
+    * [HIVE-2608] - Do not require AS a,b,c part in LATERAL VIEW
+    * [HIVE-2906] - Support providing some table properties by user via SQL
+    * [HIVE-3603] - Enable client-side caching for scans on HBase
+    * [HIVE-3725] - Add support for pulling HBase columns with prefixes
+    * [HIVE-3764] - Support metastore version consistency check
+    * [HIVE-3807] - Hive authorization should use short username when Kerberos authentication
+    * [HIVE-4002] - Fetch task aggregation for simple group by query
+    * [HIVE-4068] - Size of aggregation buffer which uses non-primitive type is not estimated correctly
+    * [HIVE-4172] - JDBC2 does not support VOID type
+    * [HIVE-4209] - Cache evaluation result of deterministic expression and reuse it
+    * [HIVE-4228] - Bump up hadoop2 version in trunk
+    * [HIVE-4241] - optimize hive.enforce.sorting and hive.enforce bucketing join
+    * [HIVE-4268] - Beeline should support the -f option
+    * [HIVE-4294] - Single sourced multi query cannot handle lateral view
+    * [HIVE-4310] - optimize count(distinct) with hive.map.groupby.sorted
+    * [HIVE-4393] - Make the deleteData flag accessable from DropTable/Partition events
+    * [HIVE-4409] - Prevent incompatible column type changes
+    * [HIVE-4423] - Improve RCFile::sync(long) 10x
+    * [HIVE-4443] - [HCatalog] Have an option for GET queue to return all job information in single call 
+    * [HIVE-4444] - [HCatalog] WebHCat Hive should support equivalent parameters as Pig 
+    * [HIVE-4459] - Script hcat is overriding HIVE_CONF_DIR variable
+    * [HIVE-4530] - Enforce minmum ant version required in build script 
+    * [HIVE-4549] - JDBC compliance change TABLE_SCHEMA to TABLE_SCHEM
+    * [HIVE-4579] - Create a SARG interface for RecordReaders
+    * [HIVE-4588] - Support session level hooks for HiveServer2
+    * [HIVE-4601] - WebHCat needs to support proxy users
+    * [HIVE-4609] - Allow hive tests to specify an alternative to /tmp
+    * [HIVE-4610] - HCatalog checkstyle violation after HIVE-4578
+    * [HIVE-4617] - Asynchronous execution in HiveServer2 to run a query in non-blocking mode
+    * [HIVE-4620] - MR temp directory conflicts in case of parallel execution mode
+    * [HIVE-4647] - RetryingHMSHandler logs too many error messages
+    * [HIVE-4658] - Make KW_OUTER optional in outer joins
+    * [HIVE-4675] - Create new parallel unit test environment
+    * [HIVE-4682] - Temporary files are not closed in PTFPersistence on jvm reuse.
+    * [HIVE-4772] - Enable parallel execution of various E2E tests
+    * [HIVE-4825] - Separate MapredWork into MapWork and ReduceWork
+    * [HIVE-4827] - Merge a Map-only task to its child task
+    * [HIVE-4858] - Sort "show grant" result to improve usability and testability
+    * [HIVE-4873] - Sort candidate functions in case of UDFArgumentException
+    * [HIVE-4874] - Identical methods PTFDeserializer.addOIPropertiestoSerDePropsMap(), PTFTranslator.addOIPropertiestoSerDePropsMap()
+    * [HIVE-4877] - In ExecReducer, remove tag from the row which will be passed to the first Operator at the Reduce-side
+    * [HIVE-4879] - Window functions that imply order can only be registered at compile time
+    * [HIVE-4885] - Alternative object serialization for execution plan in hive testing 
+    * [HIVE-4913] - Put deterministic ordering in the top-K ngrams output of UDF context_ngrams()
+    * [HIVE-4920] - PTest2 handle Spot Price increases gracefully and improve rsync paralllelsim
+    * [HIVE-4948] - WriteLockTest and ZNodeNameTest do not follow test naming pattern
+    * [HIVE-4954] - PTFTranslator hardcodes ranking functions
+    * [HIVE-4960] - lastAlias in CommonJoinOperator is not used
+    * [HIVE-4967] - Don't serialize unnecessary fields in query plan
+    * [HIVE-4985] - refactor/clean up partition name pruning to be usable inside metastore server 
+    * [HIVE-4992] - add ability to skip javadoc during build
+    * [HIVE-5006] - Re-factor HiveServer2 JDBC PreparedStatement to avoid duplicate code
+    * [HIVE-5027] - Upgrade Ivy to 2.3
+    * [HIVE-5031] - [WebHCat] GET job/:jobid to return userargs for a job in addtion to status information
+    * [HIVE-5062] - Insert + orderby + limit does not need additional RS for limiting rows
+    * [HIVE-5111] - ExprNodeColumnDesc doesn't distinguish partition and virtual columns, causing partition pruner to receive the latter
+    * [HIVE-5121] - Remove obsolete code on SemanticAnalyzer#genJoinTree
+    * [HIVE-5158] - allow getting all partitions for table to also use direct SQL path
+    * [HIVE-5182] - log more stuff via PerfLogger
+    * [HIVE-5206] - Support parameterized primitive types
+    * [HIVE-5209] - JDBC support for varchar
+    * [HIVE-5267] - Use array instead of Collections if possible in DemuxOperator
+    * [HIVE-5278] - Move some string UDFs to GenericUDFs, for better varchar support
+    * [HIVE-5363] - HIVE-3978 broke the command line option --auxpath
+
+** New Feature
+    * [HIVE-305] - Port Hadoop streaming's counters/status reporters to Hive Transforms
+    * [HIVE-1402] - Add parallel ORDER BY to Hive
+    * [HIVE-2206] - add a new optimizer for query correlation discovery and optimization
+    * [HIVE-2482] - Convenience UDFs for binary data type
+    * [HIVE-2517] - Support group by on struct type
+    * [HIVE-2655] - Ability to define functions in HQL
+    * [HIVE-2670] - A cluster test utility for Hive
+    * [HIVE-3255] - Add DBTokenStore to store Delegation Tokens in DB
+    * [HIVE-4005] - Column truncation
+    * [HIVE-4095] - Add exchange partition in Hive
+    * [HIVE-4123] - The RLE encoding for ORC can be improved
+    * [HIVE-4246] - Implement predicate pushdown for ORC
+    * [HIVE-4531] - [WebHCat] Collecting task logs to hdfs
+    * [HIVE-4614] - Support outer lateral view
+    * [HIVE-4844] - Add varchar data type
+    * [HIVE-4911] - Enable QOP configuration for Hive Server 2 thrift transport
+    * [HIVE-4963] - Support in memory PTF partitions
+
+
+
+
+
+
+** Task
+    * [HIVE-4331] - Integrated StorageHandler for Hive and HCat using the HiveStorageHandler
+    * [HIVE-4819] - Comments in CommonJoinOperator for aliasTag is not valid
+    * [HIVE-4886] - beeline code should have apache license headers
+    * [HIVE-4999] - Shim class HiveHarFileSystem does not have a hadoop2 counterpart
+    * [HIVE-5059] - Meaningless warning message from TypeCheckProcFactory
+    * [HIVE-5116] - HIVE-2608 didn't removed udtf_not_supported2.q test
+    * [HIVE-5219] - Move VerifyingObjectStore into ql package
+    * [HIVE-5313] - HIVE-4487 breaks build because 0.20.2 is missing FSPermission(string)
+
+
+
+** Test
+    * [HIVE-4526] - auto_sortmerge_join_9.q throws NPE but test is succeeded
+    * [HIVE-4636] - Failing on TestSemanticAnalysis.testAddReplaceCols in trunk
+    * [HIVE-4645] - Stat information like numFiles and totalSize is not correct when sub-directory is exists
+    * [HIVE-4743] - Improve test coverage of package org.apache.hadoop.hive.ql.io
+    * [HIVE-4779] - Enhance coverage of package org.apache.hadoop.hive.ql.udf
+    * [HIVE-4791] - improve test coverage of package org.apache.hadoop.hive.ql.udf.xml
+    * [HIVE-4796] - Increase coverage of package org.apache.hadoop.hive.common.metrics
+    * [HIVE-4805] - Enhance coverage of package org.apache.hadoop.hive.ql.exec.errors
+    * [HIVE-4813] - Improve test coverage of package org.apache.hadoop.hive.ql.optimizer.pcr
+    * [HIVE-5029] - direct SQL perf optimization cannot be tested well
+    * [HIVE-5096] - Add q file tests for ORC predicate pushdown
+    * [HIVE-5117] - orc_dictionary_threshold is not deterministic
+    * [HIVE-5147] - Newly added test TestSessionHooks is failing on trunk
+    * [HIVE-5197] - TestE2EScenerios.createTaskAttempt should use MapRedUtil
+
+
 Release Notes - Hive - Version 0.11.0
 
 ** Sub-task
