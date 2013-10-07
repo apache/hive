@@ -29,8 +29,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.StringConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 
 /**
@@ -123,10 +123,8 @@ public class GenericUDFConcat extends GenericUDF {
         case STRING:
           return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
         case VARCHAR:
-          VarcharTypeParams varcharParams = new VarcharTypeParams();
-          varcharParams.setLength(returnLength);
-          return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-              PrimitiveObjectInspectorUtils.getTypeEntryFromTypeSpecs(returnType, varcharParams));
+          VarcharTypeInfo typeInfo = TypeInfoFactory.getVarcharTypeInfo(returnLength);
+          return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(typeInfo);
         default:
           throw new UDFArgumentException("Unexpected CONCAT return type of " + returnType);
       }

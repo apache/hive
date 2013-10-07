@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.LongWritable;
 
 /**
@@ -30,7 +30,7 @@ public class LazyLongObjectInspector extends
     LongObjectInspector {
 
   LazyLongObjectInspector() {
-    super(PrimitiveObjectInspectorUtils.longTypeEntry);
+    super(TypeInfoFactory.longTypeInfo);
   }
 
   @Override

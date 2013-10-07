@@ -21,15 +21,15 @@ import java.sql.Timestamp;
 
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyTimestamp;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 public class LazyTimestampObjectInspector
     extends AbstractPrimitiveLazyObjectInspector<TimestampWritable>
     implements TimestampObjectInspector {
 
   protected LazyTimestampObjectInspector() {
-    super(PrimitiveObjectInspectorUtils.timestampTypeEntry);
+    super(TypeInfoFactory.timestampTypeInfo);
   }
 
   public Object copyObject(Object o) {

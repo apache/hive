@@ -20,14 +20,13 @@ package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
-import org.apache.hadoop.hive.serde2.SerDeException;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
-import org.apache.hadoop.hive.serde2.typeinfo.BaseTypeParams;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeSpec;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 
 /**
  * LazyPrimitiveObjectInspectorFactory is the primary way to create new
@@ -67,14 +66,78 @@ public final class LazyPrimitiveObjectInspectorFactory {
       new LazyBinaryObjectInspector();
   public static final LazyHiveDecimalObjectInspector LAZY_BIG_DECIMAL_OBJECT_INSPECTOR =
       new LazyHiveDecimalObjectInspector();
-  public static final LazyHiveVarcharObjectInspector LAZY_VARCHAR_OBJECT_INSPECTOR =
-      new LazyHiveVarcharObjectInspector(PrimitiveObjectInspectorUtils.varcharTypeEntry);
 
-  static HashMap<ArrayList<Object>, LazyStringObjectInspector> cachedLazyStringObjectInspector =
+  private LazyPrimitiveObjectInspectorFactory() {
+    // prevent instantiation
+  }
+
+  private static HashMap<ArrayList<Object>, LazyStringObjectInspector> cachedLazyStringObjectInspector =
       new HashMap<ArrayList<Object>, LazyStringObjectInspector>();
 
-  public static LazyStringObjectInspector getLazyStringObjectInspector(
-      boolean escaped, byte escapeChar) {
+  private static Map<PrimitiveTypeInfo, AbstractPrimitiveLazyObjectInspector<?>>
+     cachedPrimitiveLazyObjectInspectors =
+    new HashMap<PrimitiveTypeInfo, AbstractPrimitiveLazyObjectInspector<?>>();
+  static {
+    cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BOOLEAN_TYPE_NAME),
+        LAZY_BOOLEAN_OBJECT_INSPECTOR);
+    cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.TINYINT_TYPE_NAME),
+        LAZY_BYTE_OBJECT_INSPECTOR);
+    cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.SMALLINT_TYPE_NAME),
+        LAZY_SHORT_OBJECT_INSPECTOR);
+    cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.INT_TYPE_NAME),
+        LAZY_INT_OBJECT_INSPECTOR);
+    cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.FLOAT_TYPE_NAME),
+        LAZY_FLOAT_OBJECT_INSPECTOR);
+    cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.DOUBLE_TYPE_NAME),
+        LAZY_DOUBLE_OBJECT_INSPECTOR);
+    cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BIGINT_TYPE_NAME),
+        LAZY_LONG_OBJECT_INSPECTOR);
+    cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.VOID_TYPE_NAME),
+        LAZY_VOID_OBJECT_INSPECTOR);
+    cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.DATE_TYPE_NAME),
+        LAZY_DATE_OBJECT_INSPECTOR);
+    cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.TIMESTAMP_TYPE_NAME),
+        LAZY_TIMESTAMP_OBJECT_INSPECTOR);
+    cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.DECIMAL_TYPE_NAME),
+        LAZY_BIG_DECIMAL_OBJECT_INSPECTOR);
+    cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME),
+        LAZY_BINARY_OBJECT_INSPECTOR);
+  }
+
+  public static AbstractPrimitiveLazyObjectInspector<?> getLazyObjectInspector(
+      PrimitiveTypeInfo typeInfo, boolean escaped, byte escapeChar) {
+    PrimitiveCategory primitiveCategory = typeInfo.getPrimitiveCategory();
+
+    switch(primitiveCategory) {
+    case STRING:
+      return getLazyStringObjectInspector(escaped, escapeChar);
+    default:
+     return getLazyObjectInspector(typeInfo);
+    }
+  }
+
+  public static AbstractPrimitiveLazyObjectInspector<?> getLazyObjectInspector(
+      PrimitiveTypeInfo typeInfo) {
+    AbstractPrimitiveLazyObjectInspector<?> poi = cachedPrimitiveLazyObjectInspectors.get(typeInfo);
+    if (poi != null) {
+      return poi;
+    }
+
+    // Object inspector hasn't been cached for this type/params yet, create now
+    switch (typeInfo.getPrimitiveCategory()) {
+    case VARCHAR:
+      poi = new LazyHiveVarcharObjectInspector((VarcharTypeInfo)typeInfo);
+      break;
+    default:
+      throw new RuntimeException(
+          "Primitve type " + typeInfo.getPrimitiveCategory() + " should not take parameters");
+    }
+
+    cachedPrimitiveLazyObjectInspectors.put(typeInfo, poi);
+    return poi;
+  }
+
+  public static LazyStringObjectInspector getLazyStringObjectInspector(boolean escaped, byte escapeChar) {
     ArrayList<Object> signature = new ArrayList<Object>();
     signature.add(Boolean.valueOf(escaped));
     signature.add(Byte.valueOf(escapeChar));
@@ -85,97 +148,6 @@ public final class LazyPrimitiveObjectInspectorFactory {
       cachedLazyStringObjectInspector.put(signature, result);
     }
     return result;
-  }
-
-  static PrimitiveObjectInspectorUtils.ParameterizedObjectInspectorMap
-    cachedParameterizedLazyObjectInspectors =
-      new PrimitiveObjectInspectorUtils.ParameterizedObjectInspectorMap();
-
-  public static PrimitiveObjectInspector getParameterizedObjectInspector(
-      PrimitiveTypeSpec typeSpec) {
-    PrimitiveCategory primitiveCategory = typeSpec.getPrimitiveCategory();
-    BaseTypeParams typeParams = typeSpec.getTypeParams();
-    PrimitiveObjectInspector poi =
-        cachedParameterizedLazyObjectInspectors.getObjectInspector(typeSpec);
-    if (poi == null) {
-      // Object inspector hasn't been cached for this type/params yet, create now
-      switch (primitiveCategory) {
-        case VARCHAR:
-          PrimitiveTypeEntry typeEntry = PrimitiveObjectInspectorUtils.getTypeEntryFromTypeSpecs(
-              primitiveCategory,
-              typeParams);
-          poi = new LazyHiveVarcharObjectInspector(typeEntry);
-          poi.setTypeParams(typeParams);
-          cachedParameterizedLazyObjectInspectors.setObjectInspector(poi);
-          break;
-
-        default:
-          throw new RuntimeException(
-              "Primitve type " + primitiveCategory + " should not take parameters");
-      }
-    }
-
-    return poi;
-  }
-  public static AbstractPrimitiveLazyObjectInspector<?> getLazyObjectInspector(
-      PrimitiveCategory primitiveCategory, boolean escaped, byte escapeChar) {
-    switch (primitiveCategory) {
-    case BOOLEAN:
-      return LAZY_BOOLEAN_OBJECT_INSPECTOR;
-    case BYTE:
-      return LAZY_BYTE_OBJECT_INSPECTOR;
-    case SHORT:
-      return LAZY_SHORT_OBJECT_INSPECTOR;
-    case INT:
-      return LAZY_INT_OBJECT_INSPECTOR;
-    case LONG:
-      return LAZY_LONG_OBJECT_INSPECTOR;
-    case FLOAT:
-      return LAZY_FLOAT_OBJECT_INSPECTOR;
-    case DOUBLE:
-      return LAZY_DOUBLE_OBJECT_INSPECTOR;
-    case STRING:
-      return getLazyStringObjectInspector(escaped, escapeChar);
-    case VARCHAR:
-      return LAZY_VARCHAR_OBJECT_INSPECTOR;
-    case BINARY:
-      return LAZY_BINARY_OBJECT_INSPECTOR;
-    case VOID:
-      return LAZY_VOID_OBJECT_INSPECTOR;
-    case DATE:
-      return LAZY_DATE_OBJECT_INSPECTOR;
-    case TIMESTAMP:
-      return LAZY_TIMESTAMP_OBJECT_INSPECTOR;
-    case DECIMAL:
-      return LAZY_BIG_DECIMAL_OBJECT_INSPECTOR;
-    default:
-      throw new RuntimeException("Internal error: Cannot find ObjectInspector "
-          + " for " + primitiveCategory);
-    }
-  }
-
-  public static AbstractPrimitiveLazyObjectInspector<?> getLazyObjectInspector(
-      PrimitiveTypeSpec typeSpec, boolean escaped, byte escapeChar) {
-    PrimitiveCategory primitiveCategory = typeSpec.getPrimitiveCategory();
-    BaseTypeParams typeParams = typeSpec.getTypeParams();
-
-    if (typeParams == null) {
-      return getLazyObjectInspector(primitiveCategory, escaped, escapeChar);
-    } else {
-      switch(primitiveCategory) {
-        case VARCHAR:
-          LazyHiveVarcharObjectInspector oi = (LazyHiveVarcharObjectInspector)
-            getParameterizedObjectInspector(typeSpec);
-          return oi;
-
-        default:
-          throw new RuntimeException("Type " + primitiveCategory + " does not take parameters");
-      }
-    }
-  }
-
-  private LazyPrimitiveObjectInspectorFactory() {
-    // prevent instantiation
   }
 
 }

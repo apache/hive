@@ -2,4 +2,4 @@ PREHOOK: query: drop table if exists invalid_varchar_length_3
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table if exists invalid_varchar_length_3
 POSTHOOK: type: DROPTABLE
-FAILED: SemanticException org.apache.hadoop.hive.serde2.SerDeException: VARCHAR length must be positive
+FAILED: RuntimeException Varchar length 0 out of allowed range [1, 65535]
