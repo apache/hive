@@ -239,7 +239,7 @@
   -->
   <target name="ivy-init-antlib" depends="ivy-download,ivy-init-dirs,ivy-probe-antlib" unless="ivy.found">
     <echo message="Project: ${ant.project.name}"/>
-    <typedef uri="antlib:org.apache.ivy.ant" onerror="fail" loaderRef="ivyLoader">
+    <typedef uri="antlib:org.apache.ivy.ant" onerror="fail" loaderRef="ivyLoader" resource="org/apache/ivy/ant/antlib.xml">
       <classpath>
         <pathelement location="${ivy.jar}"/>
       </classpath>
@@ -1136,8 +1136,6 @@
           todir="${mvn.jar.dir}" />
     <copy file="${build.dir.hive}/metastore/hive-metastore-${version}.jar"
           todir="${mvn.jar.dir}" />
-    <copy file="${build.dir.hive}/hcatalog/hive-hcatalog-${hcatalog.version}.jar"
-          todir="${mvn.jar.dir}" />
     <copy file="${build.dir.hive}/ql/hive-exec-${version}.jar"
           todir="${mvn.jar.dir}" />
     <copy file="${build.dir.hive}/serde/hive-serde-${version}.jar"
@@ -1166,9 +1164,7 @@
           tofile="${mvn.pom.dir}/hive-jdbc-${version}.pom" />
     <copy file="${build.dir.hive}/metastore/pom.xml"
           tofile="${mvn.pom.dir}/hive-metastore-${version}.pom" />
-    <copy file="${build.dir.hive}/hcatalog/pom.xml"
-          tofile="${mvn.pom.dir}/hive-hcatalog-${hcatalog.version}.pom" />
-        <copy file="${build.dir.hive}/ql/pom.xml"
+    <copy file="${build.dir.hive}/ql/pom.xml"
           tofile="${mvn.pom.dir}/hive-exec-${version}.pom" />
     <copy file="${build.dir.hive}/serde/pom.xml"
           tofile="${mvn.pom.dir}/hive-serde-${version}.pom" />
@@ -1218,8 +1214,7 @@
             file="${mvn.jar.dir}/hive-${hive.project}-${version}.jar">
           <pom refid="hive.project.pom" />
           <remoteRepository
-              id="apache.staging.https"
-              url="https://repository.apache.org/service/local/staging/deploy/maven2" />
+              id="${mvn.staging.repo.id}" url="${mvn.staging.repo.url}"/>
           <attach file="${mvn.jar.dir}/hive-${hive.project}-${version}.jar.asc"
                   type="jar.asc"/>
           <attach file="${mvn.pom.dir}/hive-${hive.project}-${version}.pom.asc"
@@ -1280,9 +1275,6 @@
       <param name="hive.project" value="metastore" />
     </antcall>
     <antcall target="maven-publish-artifact">
-      <param name="hive.project" value="hcatalog" />
-    </antcall>
-    <antcall target="maven-publish-artifact">
       <param name="hive.project" value="serde" />
     </antcall>
     <antcall target="maven-publish-artifact">
@@ -1291,6 +1283,28 @@
     <antcall target="maven-publish-artifact">
       <param name="hive.project" value="shims" />
     </antcall>
+    <!-- Handle HCat separately; matches maven-publish-artifact-->
+    <if>
+      <equals arg1="${mvn.publish.repo}" arg2="staging" />
+      <then>
+        <ant dir="hcatalog" target="mvn-deploy-signed">
+          <property name="mvn.deploy.repo.id" value="${mvn.staging.repo.id}"/>
+          <property name="mvn.deploy.repo.url" value="${mvn.staging.repo.url}"/>
+        </ant>
+      </then>
+      <elseif>
+        <equals arg1="${mvn.publish.repo}" arg2="local"/>
+          <then>
+            <!-- NOP, HCat always publishes to the local repo in jar target-->
+          </then>
+      </elseif>
+      <else>
+        <ant dir="hcatalog" target="mvn-deploy">
+          <property name="mvn.deploy.repo.id" value="${mvn.deploy.id}"/>
+          <property name="mvn.deploy.repo.url" value="${mvn.deploy.url}"/>
+        </ant>
+      </else>
+    </if>
   </target>
 
   <target name="maven-sign" if="staging">
@@ -1414,16 +1428,6 @@
     <sign-artifact
         input.file="${mvn.jar.dir}/hive-metastore-${version}.pom"
         output.file="${mvn.jar.dir}/hive-metastore-${version}.pom.asc"
-        gpg.passphrase="${gpg.passphrase}"/>
-
-    <!-- hive-hcatalog -->
-    <sign-artifact
-        input.file="${mvn.pom.dir}/hive-hcatalog-${hcatalog.version}.jar"
-        output.file="${mvn.pom.dir}/hive-hcatalog-${hcatalog.version}.jar.asc"
-        gpg.passphrase="${gpg.passphrase}"/>
-    <sign-artifact
-        input.file="${mvn.pom.dir}/hive-hcatalog-${hcatalog.version}.pom"
-        output.file="${mvn.pom.dir}/hive-hcatalog-${hcatalog.version}.pom.asc"
         gpg.passphrase="${gpg.passphrase}"/>
 
     <!-- hive-serde -->

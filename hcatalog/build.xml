@@ -516,5 +516,6 @@
     <import file="build-support/ant/deploy.xml"/>
     <import file="build-support/ant/findbugs.xml"/>
     <import file="build-support/ant/test.xml"/>
-
+    
+    <target name="make-pom" description="no-op in hcatalog, here to make hive's build work"/>
 </project>
