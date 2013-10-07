@@ -31,8 +31,8 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatchCtx;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapred.FileInputFormat;
 import org.apache.hadoop.mapred.FileSplit;
@@ -58,12 +58,14 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
 
     VectorizedOrcRecordReader(Reader file, Configuration conf,
         FileSplit fileSplit) throws IOException {
+      List<OrcProto.Type> types = file.getTypes();
+      boolean[] includedColumns = OrcInputFormat.findIncludedColumns(types, conf);
+      String[] columnNames = OrcInputFormat.getIncludedColumnNames(types, includedColumns, conf);
+      SearchArgument sarg = OrcInputFormat.createSarg(types, conf);
 
       this.offset = fileSplit.getStart();
       this.length = fileSplit.getLength();
-      this.reader = file.rows(offset, length,
-          findIncludedColumns(file.getTypes(), conf));
-
+      this.reader = file.rows(offset, length, includedColumns, sarg, columnNames);
       try {
         rbCtx = new VectorizedRowBatchCtx();
         rbCtx.init(conf, fileSplit);
@@ -132,63 +134,6 @@ public class VectorizedOrcInputFormat extends FileInputFormat<NullWritable, Vect
   public VectorizedOrcInputFormat() {
     // just set a really small lower bound
     setMinSplitSize(16 * 1024);
-  }
-
-  /**
-   * Recurse down into a type subtree turning on all of the sub-columns.
-   *
-   * @param types
-   *          the types of the file
-   * @param result
-   *          the global view of columns that should be included
-   * @param typeId
-   *          the root of tree to enable
-   */
-  private static void includeColumnRecursive(List<OrcProto.Type> types,
-      boolean[] result,
-      int typeId) {
-    result[typeId] = true;
-    OrcProto.Type type = types.get(typeId);
-    int children = type.getSubtypesCount();
-    for (int i = 0; i < children; ++i) {
-      includeColumnRecursive(types, result, type.getSubtypes(i));
-    }
-  }
-
-  /**
-   * Take the configuration and figure out which columns we need to include.
-   *
-   * @param types
-   *          the types of the file
-   * @param conf
-   *          the configuration
-   * @return true for each column that should be included
-   */
-  private static boolean[] findIncludedColumns(List<OrcProto.Type> types,
-      Configuration conf) {
-    String includedStr =
-        conf.get(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR);
-    if (includedStr == null || includedStr.trim().length() == 0) {
-      return null;
-    } else {
-      int numColumns = types.size();
-      boolean[] result = new boolean[numColumns];
-      result[0] = true;
-      OrcProto.Type root = types.get(0);
-      List<Integer> included = ColumnProjectionUtils.getReadColumnIDs(conf);
-      for (int i = 0; i < root.getSubtypesCount(); ++i) {
-        if (included.contains(i)) {
-          includeColumnRecursive(types, result, root.getSubtypes(i));
-        }
-      }
-      // if we are filtering at least one column, return the boolean array
-      for (boolean include : result) {
-        if (!include) {
-          return result;
-        }
-      }
-      return null;
-    }
   }
 
   @Override
