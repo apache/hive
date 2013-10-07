@@ -1426,8 +1426,8 @@
         output.file="${mvn.jar.dir}/hive-metastore-${version}.jar.asc"
         gpg.passphrase="${gpg.passphrase}"/>
     <sign-artifact
-        input.file="${mvn.jar.dir}/hive-metastore-${version}.pom"
-        output.file="${mvn.jar.dir}/hive-metastore-${version}.pom.asc"
+        input.file="${mvn.pom.dir}/hive-metastore-${version}.pom"
+        output.file="${mvn.pom.dir}/hive-metastore-${version}.pom.asc"
         gpg.passphrase="${gpg.passphrase}"/>
 
     <!-- hive-serde -->
