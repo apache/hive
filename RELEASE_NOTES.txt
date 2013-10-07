@@ -1,6 +1,7 @@
 Release Notes - Hive - Version 0.12.0
 
 ** Sub-task
+    * [HIVE-4871] - Apache builds fail with Target "make-pom" does not exist in the project "hcatalog".
     * [HIVE-2304] - Support PreparedStatement.setObject
     * [HIVE-4055] - add Date data type
     * [HIVE-4266] - Refactor HCatalog code to org.apache.hive.hcatalog
