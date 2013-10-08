@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterConstantBooleanVe
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprOrExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterStringColLikeStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterStringColRegExpStringScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNotNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNull;
@@ -95,6 +96,7 @@ import org.apache.hadoop.hive.ql.udf.UDFOPMultiply;
 import org.apache.hadoop.hive.ql.udf.UDFOPNegative;
 import org.apache.hadoop.hive.ql.udf.UDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
+import org.apache.hadoop.hive.ql.udf.UDFRegExp;
 import org.apache.hadoop.hive.ql.udf.UDFRTrim;
 import org.apache.hadoop.hive.ql.udf.UDFSecond;
 import org.apache.hadoop.hive.ql.udf.UDFSubstr;
@@ -513,7 +515,9 @@ public class VectorizationContext {
         cl.equals(UDFSecond.class)) {
       return getTimestampFieldExpression(cl.getSimpleName(), childExpr);
     } else if (cl.equals(UDFLike.class)) {
-      return getLikeExpression(childExpr);
+      return getLikeExpression(childExpr, true);
+    } else if (cl.equals(UDFRegExp.class)) {
+      return getLikeExpression(childExpr, false);
     } else if (cl.equals(UDFLength.class)) {
       return getUnaryStringExpression("StringLength", "Long", childExpr);
     } else if (cl.equals(UDFSubstr.class)) {
@@ -813,7 +817,16 @@ public class VectorizationContext {
     return expr;
   }
 
-  private VectorExpression getLikeExpression(List<ExprNodeDesc> childExpr) throws HiveException {
+  /**
+   * Returns a vector expression for a LIKE or REGEXP expression
+   * @param childExpr A list of child expressions
+   * @param isLike {@code true}: the expression is LIKE.
+   *               {@code false}: the expression is REGEXP.
+   * @return A {@link FilterStringColLikeStringScalar} or
+   *         a {@link FilterStringColRegExpStringScalar}
+   * @throws HiveException
+   */
+  private VectorExpression getLikeExpression(List<ExprNodeDesc> childExpr, boolean isLike) throws HiveException {
     ExprNodeDesc leftExpr = childExpr.get(0);
     ExprNodeDesc rightExpr = childExpr.get(1);
 
@@ -827,15 +840,25 @@ public class VectorizationContext {
       ExprNodeColumnDesc leftColDesc = (ExprNodeColumnDesc) leftExpr;
       constDesc = (ExprNodeConstantDesc) rightExpr;
       inputCol = getInputColumnIndex(leftColDesc.getColumn());
-      expr = (VectorExpression) new FilterStringColLikeStringScalar(inputCol,
-          new Text((byte[]) getScalarValue(constDesc)));
+      if (isLike) {
+        expr = (VectorExpression) new FilterStringColLikeStringScalar(inputCol,
+            new Text((byte[]) getScalarValue(constDesc)));
+      } else {
+        expr = (VectorExpression) new FilterStringColRegExpStringScalar(inputCol,
+            new Text((byte[]) getScalarValue(constDesc)));
+      }
     } else if ((leftExpr instanceof ExprNodeGenericFuncDesc) &&
                (rightExpr instanceof ExprNodeConstantDesc)) {
       v1 = getVectorExpression(leftExpr);
       inputCol = v1.getOutputColumn();
       constDesc = (ExprNodeConstantDesc) rightExpr;
-      expr = (VectorExpression) new FilterStringColLikeStringScalar(inputCol,
-          new Text((byte[]) getScalarValue(constDesc)));
+      if (isLike) {
+        expr = (VectorExpression) new FilterStringColLikeStringScalar(inputCol,
+            new Text((byte[]) getScalarValue(constDesc)));
+      } else {
+        expr = (VectorExpression) new FilterStringColRegExpStringScalar(inputCol,
+            new Text((byte[]) getScalarValue(constDesc)));
+      }
     }
     // TODO add logic to handle cases where left input is an expression.
     if (expr == null) {
