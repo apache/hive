@@ -23,10 +23,10 @@ PREHOOK: Input: default@tmp_showcrt1
 POSTHOOK: query: SHOW CREATE TABLE tmp_showcrt1
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@tmp_showcrt1
-CREATE  TABLE tmp_showcrt1(
-  key int, 
-  value string, 
-  newvalue bigint)
+CREATE  TABLE `tmp_showcrt1`(
+  `key` int, 
+  `value` string, 
+  `newvalue` bigint)
 COMMENT 'temporary table'
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe' 
@@ -65,9 +65,9 @@ PREHOOK: Input: default@tmp_showcrt1
 POSTHOOK: query: SHOW CREATE TABLE tmp_showcrt1
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@tmp_showcrt1
-CREATE EXTERNAL TABLE tmp_showcrt1(
-  key string, 
-  value boolean)
+CREATE EXTERNAL TABLE `tmp_showcrt1`(
+  `key` string, 
+  `value` boolean)
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe' 
 STORED BY 
