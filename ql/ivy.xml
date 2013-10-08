@@ -49,6 +49,9 @@
     <dependency org="com.esotericsoftware.kryo" name="kryo" 
                 rev="${kryo.version}" />
 
+    <dependency org="org.codehaus.groovy" name="groovy-all"
+                rev="${groovy.version}" />
+
     <dependency org="org.json" name="json" rev="${json.version}"/>
     <dependency org="commons-collections" name="commons-collections" rev="${commons-collections.version}"/>
     <dependency org="commons-configuration" name="commons-configuration" rev="${commons-configuration.version}"
