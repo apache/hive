@@ -81,7 +81,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
 import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
 import org.apache.hadoop.hive.ql.udf.UDFHour;
 import org.apache.hadoop.hive.ql.udf.UDFLTrim;
@@ -105,6 +104,7 @@ import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLower;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
@@ -149,24 +149,8 @@ public class VectorizationContext {
   }
 
   private int getInputColumnIndex(String name) {
-    if (columnMap == null) {
-      //Null is treated as test call, is used for validation test.
-      return 0;
-    } else {
       return columnMap.get(name);
-    }
   }
-
-  /* Return true if we are running in the planner, and false if we
-   * are running in a task.
-   */
-  /*
-  private boolean isPlanner() {
-
-    // This relies on the behavior that columnMap is null in the planner.
-    return columnMap == null;
-  }
-  */
 
   private class OutputColumnManager {
     private final int initialOutputCol;
@@ -1160,6 +1144,12 @@ public class VectorizationContext {
          return bytes;
       } catch (Exception ex) {
         throw new HiveException(ex);
+      }
+    } else if (constDesc.getTypeString().equalsIgnoreCase("boolean")) {
+      if (constDesc.getValue().equals(Boolean.valueOf(true))) {
+        return 1;
+      } else {
+        return 0;
       }
     } else {
       return constDesc.getValue();
