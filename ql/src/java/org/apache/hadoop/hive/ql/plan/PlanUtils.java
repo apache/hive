@@ -29,7 +29,9 @@ import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -376,14 +378,34 @@ public final class PlanUtils {
   /**
    * Generate the table descriptor for Map-side join key.
    */
-  public static TableDesc getMapJoinKeyTableDesc(List<FieldSchema> fieldSchemas) {
-    return new TableDesc(SequenceFileInputFormat.class,
-        SequenceFileOutputFormat.class, Utilities.makeProperties("columns",
-        MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),
-        "columns.types", MetaStoreUtils
-        .getColumnTypesFromFieldSchema(fieldSchemas),
-        serdeConstants.ESCAPE_CHAR, "\\",
-        serdeConstants.SERIALIZATION_LIB,LazyBinarySerDe.class.getName()));
+  public static TableDesc getMapJoinKeyTableDesc(Configuration conf,
+      List<FieldSchema> fieldSchemas) {
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_OPTIMIZE_TEZ)) {
+      // In tez we use a different way of transmitting the hash table.
+      // We basically use ReduceSinkOperators and set the transfer to
+      // be broadcast (instead of partitioned). As a consequence we use
+      // a different SerDe than in the MR mapjoin case.
+      StringBuffer order = new StringBuffer();
+      for (FieldSchema f: fieldSchemas) {
+        order.append("+");
+      }
+      return new TableDesc(
+          SequenceFileInputFormat.class, SequenceFileOutputFormat.class,
+          Utilities.makeProperties(serdeConstants.LIST_COLUMNS, MetaStoreUtils
+              .getColumnNamesFromFieldSchema(fieldSchemas),
+              serdeConstants.LIST_COLUMN_TYPES, MetaStoreUtils
+              .getColumnTypesFromFieldSchema(fieldSchemas),
+              serdeConstants.SERIALIZATION_SORT_ORDER, order.toString(),
+              serdeConstants.SERIALIZATION_LIB, BinarySortableSerDe.class.getName()));
+    } else {
+      return new TableDesc(SequenceFileInputFormat.class,
+          SequenceFileOutputFormat.class, Utilities.makeProperties("columns",
+              MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),
+              "columns.types", MetaStoreUtils
+              .getColumnTypesFromFieldSchema(fieldSchemas),
+              serdeConstants.ESCAPE_CHAR, "\\",
+              serdeConstants.SERIALIZATION_LIB,LazyBinarySerDe.class.getName()));
+    }
   }
 
   /**
@@ -391,13 +413,14 @@ public final class PlanUtils {
    */
   public static TableDesc getMapJoinValueTableDesc(
       List<FieldSchema> fieldSchemas) {
-    return new TableDesc(SequenceFileInputFormat.class,
-        SequenceFileOutputFormat.class, Utilities.makeProperties("columns",
-        MetaStoreUtils.getColumnNamesFromFieldSchema(fieldSchemas),
-        "columns.types", MetaStoreUtils
-        .getColumnTypesFromFieldSchema(fieldSchemas),
-        serdeConstants.ESCAPE_CHAR, "\\",
-        serdeConstants.SERIALIZATION_LIB,LazyBinarySerDe.class.getName()));
+      return new TableDesc(SequenceFileInputFormat.class,
+          SequenceFileOutputFormat.class, Utilities.makeProperties(
+              serdeConstants.LIST_COLUMNS, MetaStoreUtils
+              .getColumnNamesFromFieldSchema(fieldSchemas),
+              serdeConstants.LIST_COLUMN_TYPES, MetaStoreUtils
+              .getColumnTypesFromFieldSchema(fieldSchemas),
+              serdeConstants.ESCAPE_CHAR, "\\",
+              serdeConstants.SERIALIZATION_LIB,LazyBinarySerDe.class.getName()));
   }
 
   /**

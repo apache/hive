@@ -68,6 +68,20 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     super(mjop);
   }
 
+  /*
+   * We need the base (operator.java) implementation of start/endGroup.
+   * The parent class has functionality in those that map join can't use.
+   */
+  @Override
+  public void endGroup() throws HiveException {
+    defaultEndGroup();
+  }
+
+  @Override
+  public void startGroup() throws HiveException {
+    defaultStartGroup();
+  }
+
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
@@ -126,7 +140,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
   private void loadHashTable() throws HiveException {
 
-    if (!this.getExecContext().getLocalWork().getInputFileChangeSensitive()) {
+    if (this.getExecContext().getLocalWork() == null
+        || !this.getExecContext().getLocalWork().getInputFileChangeSensitive()) {
       if (hashTblInitedOnce) {
         return;
       } else {
@@ -159,8 +174,8 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   public void processOp(Object row, int tag) throws HiveException {
     try {
       if (firstRow) {
-        // generate the map metadata
         generateMapMetaData();
+        loadHashTable();
         firstRow = false;
       }
       alias = (byte)tag;

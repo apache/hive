@@ -94,6 +94,9 @@ public class GenTezProcContext implements NodeProcessorCtx{
   // what position in the mapjoin the different parent work items will have.
   public final Map<MapJoinOperator, List<Operator<?>>> mapJoinParentMap;
 
+  // remember the dummy ops we created
+  public final Map<Operator<?>, List<Operator<?>>> linkChildOpWithDummyOp;
+
   @SuppressWarnings("unchecked")
   public GenTezProcContext(HiveConf conf, ParseContext parseContext,
       List<Task<MoveWork>> moveTask, List<Task<? extends Serializable>> rootTasks,
@@ -111,5 +114,6 @@ public class GenTezProcContext implements NodeProcessorCtx{
     this.linkOpWithWorkMap = new HashMap<Operator<?>, List<BaseWork>>();
     this.operatorWorkMap = new HashMap<Operator<?>, BaseWork>();
     this.mapJoinParentMap = new HashMap<MapJoinOperator, List<Operator<?>>>();
+    this.linkChildOpWithDummyOp = new HashMap<Operator<?>, List<Operator<?>>>();
   }
 }
