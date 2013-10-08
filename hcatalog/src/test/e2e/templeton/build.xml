@@ -125,8 +125,8 @@
         <property name="fork.factor.conf.file" value="1"/>
         <property name="e2e.debug" value="false"/>
         <property name="tests.to.run" value=""/>
-        <exec executable="${harness.dir}/test_harness.pl" dir="${test.location}" failonerror="true">
-            <env key="HARNESS_ROOT" value="${harness.dir}"/>
+        <exec executable="./test_harness.pl" dir="${test.location}" failonerror="true">
+            <env key="HARNESS_ROOT" value="."/>
             <env key="DRIVER_ROOT" value="${basedir}/drivers"/>
             <env key="TH_WORKING_DIR" value="${test.location}"/>
             <env key="TH_INPDIR_LOCAL" value="${inpdir.local}"/>
