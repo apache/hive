@@ -33,6 +33,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColLess
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringScalarEqualStringColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringScalarGreaterStringColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringScalarLessEqualStringColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringColEqualStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringColLessStringColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringScalarEqualStringColumn;
 import org.apache.hadoop.io.Text;
 import org.junit.Test;
 
@@ -179,6 +182,29 @@ public class TestVectorStringExpressions {
   }
 
   @Test
+  public void testStringColCompareStringScalarProjection() {
+    VectorizedRowBatch batch = makeStringBatch();
+    VectorExpression expr;
+
+    expr = new StringColEqualStringScalar(0, red2, 2);
+    expr.evaluate(batch);
+    Assert.assertEquals(3, batch.size);
+    LongColumnVector outVector = (LongColumnVector) batch.cols[2];
+    Assert.assertEquals(1, outVector.vector[0]);
+    Assert.assertEquals(0, outVector.vector[1]);
+    Assert.assertEquals(0, outVector.vector[2]);
+
+    batch = makeStringBatch();
+    expr = new StringColEqualStringScalar(0, green, 2);
+    expr.evaluate(batch);
+    Assert.assertEquals(3, batch.size);
+    outVector = (LongColumnVector) batch.cols[2];
+    Assert.assertEquals(0, outVector.vector[0]);
+    Assert.assertEquals(1, outVector.vector[1]);
+    Assert.assertEquals(0, outVector.vector[2]);
+  }
+
+  @Test
   // Test string literal to string column comparison
   public void testStringScalarCompareStringCol() {
     VectorizedRowBatch batch = makeStringBatch();
@@ -207,7 +233,30 @@ public class TestVectorStringExpressions {
     Assert.assertTrue(batch.selected[0] == 0);
     Assert.assertTrue(batch.selected[1] == 1);
   }
-  
+
+  @Test
+  public void testStringScalarCompareStringColProjection() {
+    VectorizedRowBatch batch = makeStringBatch();
+    VectorExpression expr;
+
+    expr = new StringScalarEqualStringColumn(0, red2, 2);
+    expr.evaluate(batch);
+    Assert.assertEquals(3, batch.size);
+    LongColumnVector outVector = (LongColumnVector) batch.cols[2];
+    Assert.assertEquals(1, outVector.vector[0]);
+    Assert.assertEquals(0, outVector.vector[1]);
+    Assert.assertEquals(0, outVector.vector[2]);
+
+    batch = makeStringBatch();
+    expr = new StringScalarEqualStringColumn(0, green, 2);
+    expr.evaluate(batch);
+    Assert.assertEquals(3, batch.size);
+    outVector = (LongColumnVector) batch.cols[2];
+    Assert.assertEquals(0, outVector.vector[0]);
+    Assert.assertEquals(1, outVector.vector[1]);
+    Assert.assertEquals(0, outVector.vector[2]);
+  }
+
   @Test
   public void testStringColCompareStringColFilter() {
     VectorizedRowBatch batch;
@@ -301,7 +350,8 @@ public class TestVectorStringExpressions {
     batch.cols[1].isRepeating = true;
     batch.cols[1].noNulls = true;
     expr.evaluate(batch);
-    Assert.assertEquals(3, batch.size);
+    Assert.assertEquals(2, batch.size);
+    Assert.assertEquals(0, batch.selected[0]);
     Assert.assertEquals(1, batch.selected[1]);
 
     // left and right repeat
@@ -359,12 +409,269 @@ public class TestVectorStringExpressions {
     Assert.assertEquals(0, batch.size);
   }
 
+  @Test
+  public void testStringColCompareStringColProjection() {
+    VectorizedRowBatch batch;
+    VectorExpression expr;
+    long [] outVector;
+
+    /* input data
+     *
+     * col0       col1
+     * ===============
+     * blue       red
+     * green      green
+     * red        blue
+     * NULL       red            col0 data is empty string if we un-set NULL property
+     */
+
+    // nulls possible on left, right
+    batch = makeStringBatchForColColCompare();
+    expr = new StringColLessStringColumn(0, 1, 3);
+    expr.evaluate(batch);
+    Assert.assertEquals(4, batch.size);
+    outVector = ((LongColumnVector) batch.cols[3]).vector;
+    Assert.assertFalse(batch.cols[3].isNull[0]);
+    Assert.assertEquals(1, outVector[0]);
+    Assert.assertFalse(batch.cols[3].isNull[1]);
+    Assert.assertEquals(0, outVector[1]);
+    Assert.assertFalse(batch.cols[3].isNull[2]);
+    Assert.assertEquals(0, outVector[2]);
+    Assert.assertTrue(batch.cols[3].isNull[3]);
+
+    // no nulls possible
+    batch = makeStringBatchForColColCompare();
+    batch.cols[0].noNulls = true;
+    batch.cols[1].noNulls = true;
+    expr.evaluate(batch);
+    Assert.assertEquals(4, batch.size);
+    outVector = ((LongColumnVector) batch.cols[3]).vector;
+    Assert.assertTrue(batch.cols[3].noNulls);
+    Assert.assertFalse(batch.cols[3].isNull[0]);
+    Assert.assertEquals(1, outVector[0]);
+    Assert.assertFalse(batch.cols[3].isNull[1]);
+    Assert.assertEquals(0, outVector[1]);
+    Assert.assertFalse(batch.cols[3].isNull[2]);
+    Assert.assertEquals(0, outVector[2]);
+    Assert.assertFalse(batch.cols[3].isNull[3]);
+    Assert.assertEquals(1, outVector[3]);
+
+    // nulls on left, no nulls on right
+    batch = makeStringBatchForColColCompare();
+    batch.cols[1].noNulls = true;
+    expr.evaluate(batch);
+    Assert.assertEquals(4, batch.size);
+    outVector = ((LongColumnVector) batch.cols[3]).vector;
+    Assert.assertFalse(batch.cols[3].isNull[0]);
+    Assert.assertEquals(1, outVector[0]);
+    Assert.assertFalse(batch.cols[3].isNull[1]);
+    Assert.assertEquals(0, outVector[1]);
+    Assert.assertFalse(batch.cols[3].isNull[2]);
+    Assert.assertEquals(0, outVector[2]);
+    Assert.assertTrue(batch.cols[3].isNull[3]);
+
+    // nulls on right, no nulls on left
+    batch = makeStringBatchForColColCompare();
+    batch.cols[0].noNulls = true;
+    batch.cols[1].isNull[3] = true;
+    expr.evaluate(batch);
+    Assert.assertEquals(4, batch.size);
+    outVector = ((LongColumnVector) batch.cols[3]).vector;
+    Assert.assertFalse(batch.cols[3].noNulls);
+    Assert.assertFalse(batch.cols[3].isNull[0]);
+    Assert.assertEquals(1, outVector[0]);
+    Assert.assertFalse(batch.cols[3].isNull[1]);
+    Assert.assertEquals(0, outVector[1]);
+    Assert.assertFalse(batch.cols[3].isNull[2]);
+    Assert.assertEquals(0, outVector[2]);
+    Assert.assertTrue(batch.cols[3].isNull[3]);
+
+    // Now vary isRepeating
+    // nulls possible on left, right
+
+    // left repeats
+    batch = makeStringBatchForColColCompare();
+    batch.cols[0].isRepeating = true;
+    expr.evaluate(batch);
+    Assert.assertEquals(4, batch.size);
+    outVector = ((LongColumnVector) batch.cols[3]).vector;
+    Assert.assertFalse(batch.cols[3].isNull[0]);
+    Assert.assertEquals(1, outVector[0]);
+    Assert.assertFalse(batch.cols[3].isNull[1]);
+    Assert.assertEquals(1, outVector[1]);
+    Assert.assertFalse(batch.cols[3].isNull[2]);
+    Assert.assertEquals(0, outVector[2]);
+    Assert.assertFalse(batch.cols[3].isNull[3]);
+    Assert.assertEquals(1, outVector[3]);
+
+
+    // right repeats
+    batch = makeStringBatchForColColCompare();
+    batch.cols[1].isRepeating = true;
+    expr.evaluate(batch);
+    Assert.assertEquals(4, batch.size);
+    outVector = ((LongColumnVector) batch.cols[3]).vector;
+    Assert.assertFalse(batch.cols[3].noNulls);
+    Assert.assertFalse(batch.cols[3].isNull[0]);
+    Assert.assertEquals(1, outVector[0]);
+    Assert.assertFalse(batch.cols[3].isNull[1]);
+    Assert.assertEquals(1, outVector[1]);
+    Assert.assertFalse(batch.cols[3].isNull[2]);
+    Assert.assertEquals(0, outVector[2]);
+    Assert.assertTrue(batch.cols[3].isNull[3]);
+
+    // left and right repeat
+    batch = makeStringBatchForColColCompare();
+    batch.cols[0].isRepeating = true;
+    batch.cols[1].isRepeating = true;
+    expr.evaluate(batch);
+    Assert.assertEquals(4, batch.size);
+    outVector = ((LongColumnVector) batch.cols[3]).vector;
+    Assert.assertTrue(batch.cols[3].isRepeating);
+    Assert.assertFalse(batch.cols[3].isNull[0]);
+    Assert.assertEquals(1, outVector[0]);
+
+    // Now vary isRepeating
+    // nulls possible only on left
+
+    // left repeats
+    batch = makeStringBatchForColColCompare();
+    batch.cols[0].isRepeating = true;
+    batch.cols[1].noNulls = true;
+    expr.evaluate(batch);
+    outVector = ((LongColumnVector) batch.cols[3]).vector;
+    Assert.assertEquals(4, batch.size);
+    Assert.assertFalse(batch.cols[3].noNulls);
+    Assert.assertFalse(batch.cols[3].isNull[0]);
+    Assert.assertEquals(1, outVector[0]);
+    Assert.assertFalse(batch.cols[3].isNull[1]);
+    Assert.assertEquals(1, outVector[1]);
+    Assert.assertFalse(batch.cols[3].isNull[2]);
+    Assert.assertEquals(0, outVector[2]);
+    Assert.assertFalse(batch.cols[3].isNull[3]);
+    Assert.assertEquals(1, outVector[3]);
+
+    // left repeats and is null
+    batch = makeStringBatchForColColCompare();
+    batch.cols[0].isRepeating = true;
+    batch.cols[1].noNulls = true;
+    batch.cols[0].isNull[0] = true;
+    expr.evaluate(batch);
+    Assert.assertEquals(4, batch.size);
+    Assert.assertFalse(batch.cols[3].noNulls);
+    Assert.assertTrue(batch.cols[3].isRepeating);
+    Assert.assertTrue(batch.cols[3].isNull[0]);
+
+    // right repeats
+    batch = makeStringBatchForColColCompare();
+    batch.cols[1].isRepeating = true;
+    batch.cols[1].noNulls = true;
+    expr.evaluate(batch);
+    outVector = ((LongColumnVector) batch.cols[3]).vector;
+    Assert.assertEquals(4, batch.size);
+    Assert.assertFalse(batch.cols[3].noNulls);
+    Assert.assertFalse(batch.cols[3].isNull[0]);
+    Assert.assertEquals(1, outVector[0]);
+    Assert.assertFalse(batch.cols[3].isNull[1]);
+    Assert.assertEquals(1, outVector[1]);
+    Assert.assertFalse(batch.cols[3].isNull[2]);
+    Assert.assertEquals(0, outVector[2]);
+    Assert.assertTrue(batch.cols[3].isNull[3]);
+
+    // left and right repeat
+    batch = makeStringBatchForColColCompare();
+    batch.cols[0].isRepeating = true;
+    batch.cols[1].isRepeating = true;
+    batch.cols[1].noNulls = true;
+    expr.evaluate(batch);
+    Assert.assertEquals(4, batch.size);
+    outVector = ((LongColumnVector) batch.cols[3]).vector;
+    Assert.assertTrue(batch.cols[3].isRepeating);
+    Assert.assertFalse(batch.cols[3].isNull[0]);
+    Assert.assertEquals(1, outVector[0]);
+
+
+
+    // Now vary isRepeating
+    // nulls possible only on right
+
+    // left repeats
+    batch = makeStringBatchForColColCompare();
+    batch.cols[0].isRepeating = true;
+    batch.cols[0].noNulls = true;
+    batch.cols[1].isNull[0] = true;
+    expr.evaluate(batch);
+    outVector = ((LongColumnVector) batch.cols[3]).vector;
+    Assert.assertEquals(4, batch.size);
+    Assert.assertFalse(batch.cols[3].noNulls);
+    Assert.assertTrue(batch.cols[3].isNull[0]);
+    Assert.assertFalse(batch.cols[3].isNull[1]);
+    Assert.assertEquals(1, outVector[1]);
+    Assert.assertFalse(batch.cols[3].isNull[2]);
+    Assert.assertEquals(0, outVector[2]);
+    Assert.assertFalse(batch.cols[3].isNull[3]);
+    Assert.assertEquals(1, outVector[3]);
+
+    // right repeats
+    batch = makeStringBatchForColColCompare();
+    batch.cols[1].isRepeating = true;
+    batch.cols[0].noNulls = true;
+    expr.evaluate(batch);
+    outVector = ((LongColumnVector) batch.cols[3]).vector;
+    Assert.assertEquals(4, batch.size);
+    Assert.assertFalse(batch.cols[3].noNulls);
+    Assert.assertFalse(batch.cols[3].isNull[0]);
+    Assert.assertEquals(1, outVector[0]);
+    Assert.assertFalse(batch.cols[3].isNull[1]);
+    Assert.assertEquals(1, outVector[1]);
+    Assert.assertFalse(batch.cols[3].isNull[2]);
+    Assert.assertEquals(0, outVector[2]);
+    Assert.assertFalse(batch.cols[3].isNull[3]);
+    Assert.assertEquals(1, outVector[3]);
+
+    // right repeats and is null
+    batch = makeStringBatchForColColCompare();
+    batch.cols[1].isRepeating = true;
+    batch.cols[0].noNulls = true;
+    batch.cols[1].isNull[0] = true;
+    expr.evaluate(batch);
+    Assert.assertEquals(4, batch.size);
+    Assert.assertFalse(batch.cols[3].noNulls);
+    Assert.assertTrue(batch.cols[3].isRepeating);
+    Assert.assertTrue(batch.cols[3].isNull[0]);
+
+    // left and right repeat
+    batch = makeStringBatchForColColCompare();
+    batch.cols[0].isRepeating = true;
+    batch.cols[1].isRepeating = true;
+    batch.cols[0].noNulls = true;
+    expr.evaluate(batch);
+    Assert.assertEquals(4, batch.size);
+    outVector = ((LongColumnVector) batch.cols[3]).vector;
+    Assert.assertTrue(batch.cols[3].isRepeating);
+    Assert.assertFalse(batch.cols[3].isNull[0]);
+    Assert.assertEquals(1, outVector[0]);
+
+    // left and right repeat and right is null
+    batch = makeStringBatchForColColCompare();
+    batch.cols[0].isRepeating = true;
+    batch.cols[1].isRepeating = true;
+    batch.cols[0].noNulls = true;
+    batch.cols[1].isNull[0] = true;
+    expr.evaluate(batch);
+    Assert.assertEquals(4, batch.size);
+    Assert.assertFalse(batch.cols[3].noNulls);
+    Assert.assertTrue(batch.cols[3].isRepeating);
+    Assert.assertTrue(batch.cols[3].isNull[0]);
+  }
+
   VectorizedRowBatch makeStringBatch() {
     // create a batch with one string ("Bytes") column
-    VectorizedRowBatch batch = new VectorizedRowBatch(2);
+    VectorizedRowBatch batch = new VectorizedRowBatch(3);
     BytesColumnVector v = new BytesColumnVector();
     batch.cols[0] = v;
     batch.cols[1] = new BytesColumnVector();          // to hold output if needed
+    batch.cols[2] = new LongColumnVector(batch.size); // to hold boolean output
     /*
      * Add these 3 values:
      *
@@ -580,12 +887,13 @@ public class TestVectorStringExpressions {
   }
 
   private VectorizedRowBatch makeStringBatchForColColCompare() {
-    VectorizedRowBatch batch = new VectorizedRowBatch(3);
+    VectorizedRowBatch batch = new VectorizedRowBatch(4);
     BytesColumnVector v = new BytesColumnVector();
     batch.cols[0] = v;
     BytesColumnVector v2 = new BytesColumnVector();
     batch.cols[1] = v2;
     batch.cols[2] = new BytesColumnVector();
+    batch.cols[3] = new LongColumnVector();
 
     v.setRef(0, blue, 0, blue.length);
     v.isNull[0] = false;
@@ -1163,7 +1471,7 @@ public class TestVectorStringExpressions {
     v = new BytesColumnVector();
     v.isRepeating = false;
     v.noNulls = true;
-    
+
     // string is 2 chars long (a 3 byte and a 4 byte char)
     v.setRef(0, multiByte, 3, 7);
     batch.cols[0] = v;
@@ -1414,7 +1722,7 @@ public class TestVectorStringExpressions {
         )
     );
   }
-  
+
   @Test
   public void testVectorLTrim() {
     VectorizedRowBatch b = makeTrimBatch();
@@ -1425,7 +1733,7 @@ public class TestVectorStringExpressions {
         StringExpr.compare(emptyString, 0, 0, outV.vector[0], 0, 0));
     Assert.assertEquals(0,
         StringExpr.compare(blanksLeft, 2, 3, outV.vector[1], outV.start[1], outV.length[1]));
-    Assert.assertEquals(0, 
+    Assert.assertEquals(0,
         StringExpr.compare(blanksRight, 0, 5, outV.vector[2], outV.start[2], outV.length[2]));
     Assert.assertEquals(0,
         StringExpr.compare(blanksBoth, 2, 5, outV.vector[3], outV.start[3], outV.length[3]));
@@ -1445,7 +1753,7 @@ public class TestVectorStringExpressions {
         StringExpr.compare(emptyString, 0, 0, outV.vector[0], 0, 0));
     Assert.assertEquals(0,
         StringExpr.compare(blanksLeft, 0, 5, outV.vector[1], outV.start[1], outV.length[1]));
-    Assert.assertEquals(0, 
+    Assert.assertEquals(0,
         StringExpr.compare(blanksRight, 0, 3, outV.vector[2], outV.start[2], outV.length[2]));
     Assert.assertEquals(0,
         StringExpr.compare(blanksBoth, 0, 5, outV.vector[3], outV.start[3], outV.length[3]));
@@ -1454,7 +1762,7 @@ public class TestVectorStringExpressions {
     Assert.assertEquals(0,
         StringExpr.compare(blankString, 0, 0, outV.vector[5], outV.start[5], outV.length[5]));
   }
-  
+
   @Test
   public void testVectorTrim() {
     VectorizedRowBatch b = makeTrimBatch();
@@ -1465,7 +1773,7 @@ public class TestVectorStringExpressions {
         StringExpr.compare(emptyString, 0, 0, outV.vector[0], 0, 0));
     Assert.assertEquals(0,
         StringExpr.compare(blanksLeft, 2, 3, outV.vector[1], outV.start[1], outV.length[1]));
-    Assert.assertEquals(0, 
+    Assert.assertEquals(0,
         StringExpr.compare(blanksRight, 0, 3, outV.vector[2], outV.start[2], outV.length[2]));
     Assert.assertEquals(0,
         StringExpr.compare(blanksBoth, 2, 3, outV.vector[3], outV.start[3], outV.length[3]));
@@ -1474,7 +1782,7 @@ public class TestVectorStringExpressions {
     Assert.assertEquals(0,
         StringExpr.compare(blankString, 0, 0, outV.vector[5], outV.start[5], outV.length[5]));
   }
-  
+
   // Make a batch to test the trim functions.
   private VectorizedRowBatch makeTrimBatch() {
     VectorizedRowBatch b = new VectorizedRowBatch(2);

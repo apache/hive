@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprOrExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColUnaryMinus;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColLessDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColEqualLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongScalarGreaterLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColGreaterStringColumn;
@@ -55,6 +56,7 @@ import org.apache.hadoop.hive.ql.udf.UDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
@@ -397,5 +399,30 @@ public class TestVectorizationContext {
     vc.setOperatorType(OperatorType.FILTER);
     VectorExpression ve = vc.getVectorExpression(scalarGreaterColExpr);
     assertEquals(FilterLongScalarGreaterLongColumn.class, ve.getClass());
+  }
+
+  @Test
+  public void testFilterBooleanColumnCompareBooleanScalar() throws HiveException {
+    ExprNodeGenericFuncDesc colEqualScalar = new ExprNodeGenericFuncDesc();
+    GenericUDFOPEqual gudf = new GenericUDFOPEqual();
+    colEqualScalar.setGenericUDF(gudf);
+    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(2);
+    ExprNodeConstantDesc constDesc =
+        new ExprNodeConstantDesc(TypeInfoFactory.booleanTypeInfo, 20);
+    ExprNodeColumnDesc colDesc =
+        new ExprNodeColumnDesc(Boolean.class, "a", "table", false);
+
+    children.add(colDesc);
+    children.add(constDesc);
+
+    colEqualScalar.setChildExprs(children);
+
+    Map<String, Integer> columnMap = new HashMap<String, Integer>();
+    columnMap.put("a", 0);
+
+    VectorizationContext vc = new VectorizationContext(columnMap, 2);
+    vc.setOperatorType(OperatorType.FILTER);
+    VectorExpression ve = vc.getVectorExpression(colEqualScalar);
+    assertEquals(FilterLongColEqualLongScalar.class, ve.getClass());
   }
 }
