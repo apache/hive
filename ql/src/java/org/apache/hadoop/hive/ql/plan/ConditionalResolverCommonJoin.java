@@ -135,7 +135,7 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
     return resTsks;
   }
 
-  class AliasFileSizePair implements Comparable<AliasFileSizePair> {
+  static class AliasFileSizePair implements Comparable<AliasFileSizePair> {
     String alias;
     long size;
     AliasFileSizePair(String alias, long size) {
@@ -148,7 +148,7 @@ public class ConditionalResolverCommonJoin implements ConditionalResolver, Seria
       if (o == null) {
         return 1;
       }
-      return (int)(size - o.size);
+      return (size < o.size) ? -1 : ((size > o.size) ? 1 : 0);
     }
   }
 
