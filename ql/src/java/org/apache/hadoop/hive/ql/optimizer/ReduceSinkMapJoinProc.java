@@ -2,21 +2,29 @@ package org.apache.hadoop.hive.ql.optimizer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.RowSchema;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.parse.GenTezProcContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.HashTableDummyDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.PlanUtils;
+import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.EdgeType;
 
@@ -51,6 +59,8 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
       context.mapJoinParentMap.put(mapJoinOp, parents);
     }
 
+    BaseWork myWork = null;
+
     while (childOp != null) {
       if ((childOp instanceof ReduceSinkOperator) || (childOp instanceof FileSinkOperator)) {
         /*
@@ -63,9 +73,9 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
          *
          */
 
-        BaseWork myWork = context.operatorWorkMap.get(childOp);
+        myWork = context.operatorWorkMap.get(childOp);
         BaseWork parentWork = context.operatorWorkMap.get(parentRS);
-          
+
         // set the link between mapjoin and parent vertex
         int pos = context.mapJoinParentMap.get(mapJoinOp).indexOf(parentRS);
         if (pos == -1) {
@@ -97,8 +107,56 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
       }
     }
 
+    // create the dummy operators
+    List<Operator<? extends OperatorDesc>> dummyOperators =
+        new ArrayList<Operator<? extends OperatorDesc>>();
+
+    // create an new operator: HashTableDummyOperator, which share the table desc
+    HashTableDummyDesc desc = new HashTableDummyDesc();
+    @SuppressWarnings("unchecked")
+    HashTableDummyOperator dummyOp = (HashTableDummyOperator) OperatorFactory.get(desc);
+    TableDesc tbl;
+
+    // need to create the correct table descriptor for key/value
+    RowSchema rowSchema = parentRS.getParentOperators().get(0).getSchema();
+    tbl = PlanUtils.getReduceValueTableDesc(PlanUtils.getFieldSchemasFromRowSchema(rowSchema, ""));
+    dummyOp.getConf().setTbl(tbl);
+
+    Map<Byte, List<ExprNodeDesc>> keyExprMap = mapJoinOp.getConf().getKeys();
+    List<ExprNodeDesc> keyCols = keyExprMap.get(Byte.valueOf((byte) 0));
+    StringBuffer keyOrder = new StringBuffer();
+    for (ExprNodeDesc k: keyCols) {
+      keyOrder.append("+");
+    }
+    TableDesc keyTableDesc = PlanUtils.getReduceKeyTableDesc(PlanUtils
+        .getFieldSchemasFromColumnList(keyCols, "mapjoinkey"), keyOrder.toString());
+    mapJoinOp.getConf().setKeyTableDesc(keyTableDesc);
+
+    // let the dummy op be the parent of mapjoin op
+    mapJoinOp.replaceParent(parentRS, dummyOp);
+    List<Operator<? extends OperatorDesc>> dummyChildren =
+      new ArrayList<Operator<? extends OperatorDesc>>();
+    dummyChildren.add(mapJoinOp);
+    dummyOp.setChildOperators(dummyChildren);
+    dummyOperators.add(dummyOp);
+
     // cut the operator tree so as to not retain connections from the parent RS downstream
-    parentRS.removeChild(mapJoinOp);
+    List<Operator<? extends OperatorDesc>> childOperators = parentRS.getChildOperators();
+    int childIndex = childOperators.indexOf(mapJoinOp);
+    childOperators.remove(childIndex);
+
+    // the "work" needs to know about the dummy operators. They have to be separately initialized
+    // at task startup
+    if (myWork != null) {
+      myWork.addDummyOp(dummyOp);
+    } else {
+      List<Operator<?>> dummyList = dummyOperators;
+      if (context.linkChildOpWithDummyOp.containsKey(childOp)) {
+        dummyList = context.linkChildOpWithDummyOp.get(childOp);
+      }
+      dummyList.add(dummyOp);
+      context.linkChildOpWithDummyOp.put(childOp, dummyList);
+    }
     return true;
   }
 

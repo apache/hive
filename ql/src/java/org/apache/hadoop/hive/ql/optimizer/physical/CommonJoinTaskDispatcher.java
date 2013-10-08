@@ -189,7 +189,8 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
 
     // optimize this newWork given the big table position
     String bigTableAlias =
-        MapJoinProcessor.genMapJoinOpAndLocalWork(newWork, newJoinOp, bigTablePosition);
+        MapJoinProcessor.genMapJoinOpAndLocalWork(physicalContext.getParseContext().getConf(),
+            newWork, newJoinOp, bigTablePosition);
     return new ObjectPair<MapRedTask, String>(newTask, bigTableAlias);
   }
 

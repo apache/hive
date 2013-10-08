@@ -237,13 +237,14 @@ public class MapJoinProcessor implements Transform {
    * @return the alias to the big table
    * @throws SemanticException
    */
-  public static String genMapJoinOpAndLocalWork(MapredWork newWork, JoinOperator op, int mapJoinPos)
+  public static String genMapJoinOpAndLocalWork(HiveConf conf, MapredWork newWork, 
+    JoinOperator op, int mapJoinPos)
       throws SemanticException {
     LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap =
         newWork.getMapWork().getOpParseCtxMap();
     QBJoinTree newJoinTree = newWork.getMapWork().getJoinTree();
     // generate the map join operator; already checked the map join
-    MapJoinOperator newMapJoinOp = MapJoinProcessor.convertMapJoin(opParseCtxMap, op,
+    MapJoinOperator newMapJoinOp = MapJoinProcessor.convertMapJoin(conf, opParseCtxMap, op,
         newJoinTree, mapJoinPos, true, false);
     return genLocalWorkForMapJoin(newWork, newMapJoinOp, mapJoinPos);
   }
@@ -316,7 +317,7 @@ public class MapJoinProcessor implements Transform {
    *          are cached in memory
    * @param noCheckOuterJoin
    */
-  public static MapJoinOperator convertMapJoin(
+  public static MapJoinOperator convertMapJoin(HiveConf conf,
     LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
     JoinOperator op, QBJoinTree joinTree, int mapJoinPos, boolean noCheckOuterJoin,
     boolean validateMapJoinTree)
@@ -374,7 +375,7 @@ public class MapJoinProcessor implements Transform {
     }
 
     // create the map-join operator
-    MapJoinOperator mapJoinOp = convertJoinOpMapJoinOp(opParseCtxMap,
+    MapJoinOperator mapJoinOp = convertJoinOpMapJoinOp(conf, opParseCtxMap,
         op, joinTree, mapJoinPos, noCheckOuterJoin, validateMapJoinTree);
 
 
@@ -395,7 +396,7 @@ public class MapJoinProcessor implements Transform {
     return mapJoinOp;
   }
 
-  public static MapJoinOperator convertJoinOpMapJoinOp(
+  public static MapJoinOperator convertJoinOpMapJoinOp(HiveConf hconf,
       LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
       JoinOperator op, QBJoinTree joinTree, int mapJoinPos, boolean noCheckOuterJoin,
       boolean validateMapJoinTree)
@@ -433,9 +434,6 @@ public class MapJoinProcessor implements Transform {
       if (src != null) {
         Operator<? extends OperatorDesc> parentOp = op.getParentOperators().get(pos);
         assert parentOp.getParentOperators().size() == 1;
-        Operator<? extends OperatorDesc> grandParentOp =
-          parentOp.getParentOperators().get(0);
-
         oldReduceSinkParentOps.add(parentOp);
       }
       pos++;
@@ -536,8 +534,8 @@ public class MapJoinProcessor implements Transform {
     }
 
     List<String> outputColumnNames = op.getConf().getOutputColumnNames();
-    TableDesc keyTableDesc = PlanUtils.getMapJoinKeyTableDesc(PlanUtils
-        .getFieldSchemasFromColumnList(keyCols, MAPJOINKEY_FIELDPREFIX));
+    TableDesc keyTableDesc = PlanUtils.getMapJoinKeyTableDesc(hconf,
+        PlanUtils.getFieldSchemasFromColumnList(keyCols, MAPJOINKEY_FIELDPREFIX));
     JoinCondDesc[] joinCondns = op.getConf().getConds();
     MapJoinDesc mapJoinDescriptor = new MapJoinDesc(keyExprMap, keyTableDesc, newValueExprs,
         valueTableDescs, valueFiltedTableDescs, outputColumnNames, mapJoinPos, joinCondns,
@@ -589,14 +587,14 @@ public class MapJoinProcessor implements Transform {
    *          are cached in memory
    * @param noCheckOuterJoin
    */
-  public static MapJoinOperator convertSMBJoinToMapJoin(
+  public static MapJoinOperator convertSMBJoinToMapJoin(HiveConf hconf,
     Map<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
     SMBMapJoinOperator smbJoinOp, QBJoinTree joinTree, int bigTablePos, boolean noCheckOuterJoin)
     throws SemanticException {
     // Create a new map join operator
     SMBJoinDesc smbJoinDesc = smbJoinOp.getConf();
     List<ExprNodeDesc> keyCols = smbJoinDesc.getKeys().get(Byte.valueOf((byte) 0));
-    TableDesc keyTableDesc = PlanUtils.getMapJoinKeyTableDesc(PlanUtils
+    TableDesc keyTableDesc = PlanUtils.getMapJoinKeyTableDesc(hconf, PlanUtils
         .getFieldSchemasFromColumnList(keyCols, MAPJOINKEY_FIELDPREFIX));
     MapJoinDesc mapJoinDesc = new MapJoinDesc(smbJoinDesc.getKeys(),
         keyTableDesc, smbJoinDesc.getExprs(),
@@ -644,8 +642,8 @@ public class MapJoinProcessor implements Transform {
 
     LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap = pctx
         .getOpParseCtx();
-    MapJoinOperator mapJoinOp = convertMapJoin(opParseCtxMap, op, joinTree, mapJoinPos,
-        noCheckOuterJoin, true);
+    MapJoinOperator mapJoinOp = convertMapJoin(pctx.getConf(), opParseCtxMap, op,
+        joinTree, mapJoinPos, noCheckOuterJoin, true);
     // create a dummy select to select all columns
     genSelectPlan(pctx, mapJoinOp);
     return mapJoinOp;

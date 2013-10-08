@@ -79,21 +79,27 @@ public class MapJoinKey {
       return false;
     return true;
   }
-  @SuppressWarnings("unchecked")
-  public void read(MapJoinObjectSerDeContext context, ObjectInputStream in, Writable container) 
+
+  public void read(MapJoinObjectSerDeContext context, ObjectInputStream in, Writable container)
   throws IOException, SerDeException {
-    SerDe serde = context.getSerDe();
     container.readFields(in);
+    read(context, container);
+  }
+
+  @SuppressWarnings("unchecked")
+  public void read(MapJoinObjectSerDeContext context, Writable container) throws SerDeException {
+    SerDe serde = context.getSerDe();
     List<Object> value = (List<Object>)ObjectInspectorUtils.copyToStandardObject(serde.deserialize(container),
         serde.getObjectInspector(), ObjectInspectorCopyOption.WRITABLE);
+
     if(value == null) {
       key = EMPTY_OBJECT_ARRAY;
     } else {
       key = value.toArray();
     }
   }
-  
-  public void write(MapJoinObjectSerDeContext context, ObjectOutputStream out) 
+
+  public void write(MapJoinObjectSerDeContext context, ObjectOutputStream out)
   throws IOException, SerDeException {
     SerDe serde = context.getSerDe();
     ObjectInspector objectInspector = context.getStandardOI();

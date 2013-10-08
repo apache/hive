@@ -18,20 +18,24 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.ObjectCache;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.reportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -53,6 +57,7 @@ public class MapRecordProcessor  extends RecordProcessor{
   private final ExecMapperContext execContext = new ExecMapperContext();
   private boolean abort = false;
   protected static final String MAP_PLAN_KEY = "__MAP_PLAN__";
+  private MapWork mapWork;
 
   @Override
   void init(JobConf jconf, MRTaskReporter mrReporter, Map<String, LogicalInput> inputs,
@@ -73,15 +78,15 @@ public class MapRecordProcessor  extends RecordProcessor{
 
       execContext.setJc(jconf);
       // create map and fetch operators
-      MapWork mrwork = (MapWork) cache.retrieve(MAP_PLAN_KEY);
-      if (mrwork == null) {
-        mrwork = Utilities.getMapWork(jconf);
-        cache.cache(MAP_PLAN_KEY, mrwork);
+      mapWork = (MapWork) cache.retrieve(MAP_PLAN_KEY);
+      if (mapWork == null) {
+        mapWork = Utilities.getMapWork(jconf);
+        cache.cache(MAP_PLAN_KEY, mapWork);
       }
       mapOp = new MapOperator();
 
       // initialize map operator
-      mapOp.setConf(mrwork);
+      mapOp.setConf(mapWork);
       mapOp.setChildren(jconf);
       l4j.info(mapOp.dump(0));
 
@@ -90,6 +95,17 @@ public class MapRecordProcessor  extends RecordProcessor{
       mapOp.setExecContext(execContext);
       mapOp.initializeLocalWork(jconf);
       mapOp.initialize(jconf, null);
+
+      // Initialization isn't finished until all parents of all operators
+      // are initialized. For broadcast joins that means initializing the
+      // dummy parent operators as well.
+      List<HashTableDummyOperator> dummyOps = mapWork.getDummyOps();
+      if (dummyOps != null) {
+        for (Operator<? extends OperatorDesc> dummyOp : dummyOps){
+          dummyOp.setExecContext(execContext);
+          dummyOp.initialize(jconf, null);
+        }
+      }
 
       mapOp.setOutputCollector(out);
       mapOp.setReporter(reporter);
@@ -124,10 +140,6 @@ public class MapRecordProcessor  extends RecordProcessor{
 
   @Override
   void run() throws IOException{
-    if (inputs.size() != 1) {
-      throw new IllegalArgumentException("MapRecordProcessor expects single input"
-          + ", inputCount=" + inputs.size());
-    }
 
     MRInput in = getMRInput(inputs);
     KeyValueReader reader = in.getReader();
@@ -186,6 +198,17 @@ public class MapRecordProcessor  extends RecordProcessor{
     // detecting failed executions by exceptions thrown by the operator tree
     try {
       mapOp.close(abort);
+
+      // Need to close the dummyOps as well. The operator pipeline
+      // is not considered "closed/done" unless all operators are
+      // done. For broadcast joins that includes the dummy parents.
+      List<HashTableDummyOperator> dummyOps = mapWork.getDummyOps();
+      if (dummyOps != null) {
+        for (Operator<? extends OperatorDesc> dummyOp : dummyOps){
+          dummyOp.close(abort);
+        }
+      }
+
       if (isLogInfoEnabled) {
         logCloseInfo();
       }

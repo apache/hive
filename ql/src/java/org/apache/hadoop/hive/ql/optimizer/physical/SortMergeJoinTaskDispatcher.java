@@ -432,7 +432,8 @@ public class SortMergeJoinTaskDispatcher extends AbstractJoinTaskDispatcher impl
     opParseContextMap.put(newSMBJoinOp, opParseContextMap.get(oldSMBJoinOp));
 
     // generate the map join operator
-    return MapJoinProcessor.convertSMBJoinToMapJoin(opParseContextMap, newSMBJoinOp,
+    return MapJoinProcessor.convertSMBJoinToMapJoin(physicalContext.getConf(),
+        opParseContextMap, newSMBJoinOp,
         joinTree, mapJoinPos, true);
   }
 }

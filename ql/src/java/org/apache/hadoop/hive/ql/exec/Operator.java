@@ -515,8 +515,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     }
   }
 
-  // If a operator wants to do some work at the beginning of a group
-  public void startGroup() throws HiveException {
+  protected final void defaultStartGroup() throws HiveException {
     LOG.debug("Starting group");
 
     if (childOperators == null) {
@@ -535,8 +534,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     LOG.debug("Start group Done");
   }
 
-  // If an operator wants to do some work at the end of a group
-  public void endGroup() throws HiveException {
+  protected final void defaultEndGroup() throws HiveException {
     LOG.debug("Ending group");
 
     if (childOperators == null) {
@@ -553,6 +551,16 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     }
 
     LOG.debug("End group Done");
+  }
+
+  // If a operator wants to do some work at the beginning of a group
+  public void startGroup() throws HiveException {
+    defaultStartGroup();
+  }
+
+  // If an operator wants to do some work at the end of a group
+  public void endGroup() throws HiveException {
+    defaultEndGroup();
   }
 
   // an blocking operator (e.g. GroupByOperator and JoinOperator) can

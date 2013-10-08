@@ -95,7 +95,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
       long inputSize = currInputStat.getNumberOfBytes();
       if ((bigInputStat == null) ||
-          ((bigInputStat != null) && 
+          ((bigInputStat != null) &&
            (inputSize > bigInputStat.getNumberOfBytes()))) {
 
         if (bigTableFound) {
@@ -141,7 +141,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     }
 
     if (bigTablePosition == -1) {
-      // all tables have size 0. We let the suffle join handle this case.
+      // all tables have size 0. We let the shuffle join handle this case.
       return null;
     }
 
@@ -161,7 +161,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
     // convert to a map join operator with this information
     ParseContext parseContext = context.parseContext;
     MapJoinOperator mapJoinOp = MapJoinProcessor.
-      convertJoinOpMapJoinOp(parseContext.getOpParseCtx(),
+      convertJoinOpMapJoinOp(context.conf, parseContext.getOpParseCtx(),
       joinOp, parseContext.getJoinContext().get(joinOp), bigTablePosition, true, false);
 
     Operator<? extends OperatorDesc> parentBigTableOp

@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.ObjectCache;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
@@ -33,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.reportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -77,6 +79,8 @@ public class ReduceRecordProcessor  extends RecordProcessor{
   private Object keyObject = null;
   private BytesWritable groupKey;
 
+  private ReduceWork redWork;
+
   List<Object> row = new ArrayList<Object>(Utilities.reduceFieldNameList.size());
 
   @Override
@@ -90,7 +94,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     ObjectInspector[] valueObjectInspector = new ObjectInspector[Byte.MAX_VALUE];
     ObjectInspector keyObjectInspector;
 
-    ReduceWork redWork = (ReduceWork) cache.retrieve(REDUCE_PLAN_KEY);
+    redWork = (ReduceWork) cache.retrieve(REDUCE_PLAN_KEY);
     if (redWork == null) {
       redWork = Utilities.getReduceWork(jconf);
       cache.cache(REDUCE_PLAN_KEY, redWork);
@@ -134,6 +138,18 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     try {
       l4j.info(reducer.dump(0));
       reducer.initialize(jconf, rowObjectInspector);
+
+      // Initialization isn't finished until all parents of all operators
+      // are initialized. For broadcast joins that means initializing the
+      // dummy parent operators as well.
+      List<HashTableDummyOperator> dummyOps = redWork.getDummyOps();
+      if (dummyOps != null) {
+        for (Operator<? extends OperatorDesc> dummyOp : dummyOps){
+          dummyOp.setExecContext(execContext);
+          dummyOp.initialize(jconf, null);
+        }
+      }
+
     } catch (Throwable e) {
       abort = true;
       if (e instanceof OutOfMemoryError) {
@@ -153,10 +169,6 @@ public class ReduceRecordProcessor  extends RecordProcessor{
 
   @Override
   void run() throws IOException{
-    if (inputs.size() != 1) {
-      throw new IllegalArgumentException("ReduceRecordProcessor expects single input"
-          + ", inputCount=" + inputs.size());
-    }
 
     //TODO - changes this for joins
     ShuffledMergedInput in = (ShuffledMergedInput)inputs.values().iterator().next();
@@ -299,6 +311,16 @@ public class ReduceRecordProcessor  extends RecordProcessor{
       }
 
       reducer.close(abort);
+
+      // Need to close the dummyOps as well. The operator pipeline
+      // is not considered "closed/done" unless all operators are
+      // done. For broadcast joins that includes the dummy parents.
+      List<HashTableDummyOperator> dummyOps = redWork.getDummyOps();
+      if (dummyOps != null) {
+        for (Operator<? extends OperatorDesc> dummyOp : dummyOps){
+          dummyOp.close(abort);
+        }
+      }
       reportStats rps = new reportStats(reporter);
       reducer.preorderMap(rps);
 

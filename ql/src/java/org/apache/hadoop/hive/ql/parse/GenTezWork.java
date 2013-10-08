@@ -24,6 +24,7 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.exec.HashTableDummyOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
@@ -118,7 +119,7 @@ public class GenTezWork implements NodeProcessor {
       GenMapRedUtils.setKeyAndValueDesc(reduceWork, reduceSink);
 
       // remember which parent belongs to which tag
-      reduceWork.getTagToInput().put(reduceSink.getConf().getTag(), 
+      reduceWork.getTagToInput().put(reduceSink.getConf().getTag(),
            context.preceedingWork.getName());
 
       tezWork.add(reduceWork);
@@ -151,12 +152,12 @@ public class GenTezWork implements NodeProcessor {
       ReduceSinkOperator rs = (ReduceSinkOperator) operator;
       ReduceWork rWork = (ReduceWork) followingWork;
       GenMapRedUtils.setKeyAndValueDesc(rWork, rs);
-      
+
       // remember which parent belongs to which tag
       rWork.getTagToInput().put(rs.getConf().getTag(), work.getName());
 
       // add dependency between the two work items
-      tezWork.connect(work, context.leafOperatorToFollowingWork.get(operator), 
+      tezWork.connect(work, context.leafOperatorToFollowingWork.get(operator),
          EdgeType.SIMPLE_EDGE);
     }
 
@@ -200,6 +201,11 @@ public class GenTezWork implements NodeProcessor {
     context.operatorWorkMap.put(operator, work);
     List<BaseWork> linkWorkList = context.linkOpWithWorkMap.get(operator);
     if (linkWorkList != null) {
+      if (context.linkChildOpWithDummyOp.containsKey(operator)) {
+        for (Operator<?> dummy: context.linkChildOpWithDummyOp.get(operator)) {
+          work.addDummyOp((HashTableDummyOperator) dummy);
+        }
+      }
       for (BaseWork parentWork : linkWorkList) {
         tezWork.connect(parentWork, work, EdgeType.BROADCAST_EDGE);
       }
