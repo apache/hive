@@ -24,7 +24,6 @@ import org.apache.hadoop.hive.ql.exec.PTFUtils;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.udf.UDFType;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -34,84 +33,73 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.Object
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.io.IntWritable;
 
-public abstract class GenericUDFLeadLag extends GenericUDF
-{
-	transient ExprNodeEvaluator exprEvaluator;
-	transient PTFPartitionIterator<Object> pItr;
-	transient ObjectInspector firstArgOI;
-	transient ObjectInspector defaultArgOI;
-	transient Converter defaultValueConverter;
-	int amt;
+public abstract class GenericUDFLeadLag extends GenericUDF {
+  transient ExprNodeEvaluator exprEvaluator;
+  transient PTFPartitionIterator<Object> pItr;
+  transient ObjectInspector firstArgOI;
+  transient ObjectInspector defaultArgOI;
+  transient Converter defaultValueConverter;
+  int amt;
 
-	static{
-		PTFUtils.makeTransient(GenericUDFLeadLag.class, "exprEvaluator", "pItr",
-        "firstArgOI", "defaultArgOI", "defaultValueConverter");
-	}
+  static {
+    PTFUtils.makeTransient(GenericUDFLeadLag.class, "exprEvaluator", "pItr", "firstArgOI",
+            "defaultArgOI", "defaultValueConverter");
+  }
 
-	@Override
-	public Object evaluate(DeferredObject[] arguments) throws HiveException
-	{
+  @Override
+  public Object evaluate(DeferredObject[] arguments) throws HiveException {
     Object defaultVal = null;
-    if(arguments.length == 3){
-      defaultVal =  ObjectInspectorUtils.copyToStandardObject(
-          defaultValueConverter.convert(arguments[2].get()),
-          defaultArgOI);
+    if (arguments.length == 3) {
+      defaultVal = ObjectInspectorUtils.copyToStandardObject(
+              defaultValueConverter.convert(arguments[2].get()), defaultArgOI);
     }
 
-		int idx = pItr.getIndex() - 1;
-		int start = 0;
-		int end = pItr.getPartition().size();
-		try
-		{
-		  Object ret = null;
-		  int newIdx = getIndex(amt);
+    int idx = pItr.getIndex() - 1;
+    int start = 0;
+    int end = pItr.getPartition().size();
+    try {
+      Object ret = null;
+      int newIdx = getIndex(amt);
 
-		  if(newIdx >= end || newIdx < start) {
+      if (newIdx >= end || newIdx < start) {
         ret = defaultVal;
-		  }
-		  else {
+      } else {
         Object row = getRow(amt);
         ret = exprEvaluator.evaluate(row);
-        ret = ObjectInspectorUtils.copyToStandardObject(ret,
-            firstArgOI, ObjectInspectorCopyOption.WRITABLE);
-		  }
-			return ret;
-		}
-		finally
-		{
-			Object currRow = pItr.resetToIndex(idx);
-			// reevaluate expression on current Row, to trigger the Lazy object
-			// caches to be reset to the current row.
-			exprEvaluator.evaluate(currRow);
-		}
+        ret = ObjectInspectorUtils.copyToStandardObject(ret, firstArgOI,
+                ObjectInspectorCopyOption.WRITABLE);
+      }
+      return ret;
+    } finally {
+      Object currRow = pItr.resetToIndex(idx);
+      // reevaluate expression on current Row, to trigger the Lazy object
+      // caches to be reset to the current row.
+      exprEvaluator.evaluate(currRow);
+    }
 
-	}
+  }
 
-	@Override
-	public ObjectInspector initialize(ObjectInspector[] arguments)
-			throws UDFArgumentException
-	{
+  @Override
+  public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
     if (!(arguments.length >= 1 && arguments.length <= 3)) {
-      throw new UDFArgumentTypeException(arguments.length - 1,
-          "Incorrect invocation of " + _getFnName() + ": _FUNC_(expr, amt, default)");
+      throw new UDFArgumentTypeException(arguments.length - 1, "Incorrect invocation of "
+              + _getFnName() + ": _FUNC_(expr, amt, default)");
     }
 
     amt = 1;
-
     if (arguments.length > 1) {
       ObjectInspector amtOI = arguments[1];
-      if ( !ObjectInspectorUtils.isConstantObjectInspector(amtOI) ||
-          (amtOI.getCategory() != ObjectInspector.Category.PRIMITIVE) ||
-          ((PrimitiveObjectInspector)amtOI).getPrimitiveCategory() !=
-          PrimitiveObjectInspector.PrimitiveCategory.INT )
-      {
-        throw new UDFArgumentTypeException(0,
-            _getFnName() + " amount must be a integer value "
-            + amtOI.getTypeName() + " was passed as parameter 1.");
+      if (!ObjectInspectorUtils.isConstantObjectInspector(amtOI)
+              || (amtOI.getCategory() != ObjectInspector.Category.PRIMITIVE)
+              || ((PrimitiveObjectInspector) amtOI).getPrimitiveCategory() != PrimitiveObjectInspector.PrimitiveCategory.INT) {
+        throw new UDFArgumentTypeException(1, _getFnName() + " amount must be a integer value "
+                + amtOI.getTypeName() + " was passed as parameter 1.");
       }
-      Object o = ((ConstantObjectInspector)amtOI).
-          getWritableConstantValue();
-      amt = ((IntWritable)o).get();
+      Object o = ((ConstantObjectInspector) amtOI).getWritableConstantValue();
+      amt = ((IntWritable) o).get();
+      if (amt < 0) {
+        throw new UDFArgumentTypeException(1,  " amount can not be nagative. Specified: " + amt);
+      }
     }
 
     if (arguments.length == 3) {
@@ -123,30 +111,26 @@ public abstract class GenericUDFLeadLag extends GenericUDF
 
     firstArgOI = arguments[0];
     return ObjectInspectorUtils.getStandardObjectInspector(firstArgOI,
-        ObjectInspectorCopyOption.WRITABLE);
-	}
+            ObjectInspectorCopyOption.WRITABLE);
+  }
 
-	public ExprNodeEvaluator getExprEvaluator()
-	{
-		return exprEvaluator;
-	}
+  public ExprNodeEvaluator getExprEvaluator() {
+    return exprEvaluator;
+  }
 
-	public void setExprEvaluator(ExprNodeEvaluator exprEvaluator)
-	{
-		this.exprEvaluator = exprEvaluator;
-	}
+  public void setExprEvaluator(ExprNodeEvaluator exprEvaluator) {
+    this.exprEvaluator = exprEvaluator;
+  }
 
-	public PTFPartitionIterator<Object> getpItr()
-	{
-		return pItr;
-	}
+  public PTFPartitionIterator<Object> getpItr() {
+    return pItr;
+  }
 
-	public void setpItr(PTFPartitionIterator<Object> pItr)
-	{
-		this.pItr = pItr;
-	}
+  public void setpItr(PTFPartitionIterator<Object> pItr) {
+    this.pItr = pItr;
+  }
 
-	public ObjectInspector getFirstArgOI() {
+  public ObjectInspector getFirstArgOI() {
     return firstArgOI;
   }
 
@@ -179,69 +163,22 @@ public abstract class GenericUDFLeadLag extends GenericUDF
   }
 
   @Override
-	public String getDisplayString(String[] children)
-	{
-		assert (children.length == 2);
-		StringBuilder sb = new StringBuilder();
-		sb.append(_getFnName());
-		sb.append("(");
-		sb.append(children[0]);
-		sb.append(", ");
-		sb.append(children[1]);
-		sb.append(")");
-		return sb.toString();
-	}
+  public String getDisplayString(String[] children) {
+    assert (children.length == 2);
+    StringBuilder sb = new StringBuilder();
+    sb.append(_getFnName());
+    sb.append("(");
+    sb.append(children[0]);
+    sb.append(", ");
+    sb.append(children[1]);
+    sb.append(")");
+    return sb.toString();
+  }
 
-	protected abstract String _getFnName();
+  protected abstract String _getFnName();
 
-	protected abstract Object getRow(int amt) throws HiveException;
+  protected abstract Object getRow(int amt) throws HiveException;
 
-	protected abstract int getIndex(int amt);
-
-	@UDFType(impliesOrder = true)
-	public static class GenericUDFLead extends GenericUDFLeadLag
-	{
-
-		@Override
-		protected String _getFnName()
-		{
-			return "lead";
-		}
-
-		@Override
-		protected int getIndex(int amt) {
-		  return pItr.getIndex() - 1 + amt;
-		}
-
-		@Override
-		protected Object getRow(int amt) throws HiveException
-		{
-			return pItr.lead(amt - 1);
-		}
-
-	}
-
-	@UDFType(impliesOrder = true)
-	public static class GenericUDFLag extends GenericUDFLeadLag
-	{
-		@Override
-		protected String _getFnName()
-		{
-			return "lag";
-		}
-
-		@Override
-    protected int getIndex(int amt) {
-      return pItr.getIndex() - 1 - amt;
-    }
-
-		@Override
-		protected Object getRow(int amt) throws HiveException
-		{
-			return pItr.lag(amt + 1);
-		}
-
-	}
+  protected abstract int getIndex(int amt);
 
 }
-
