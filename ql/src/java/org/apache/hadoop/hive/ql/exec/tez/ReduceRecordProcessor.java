@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.reportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
+import org.apache.hadoop.hive.ql.exec.tez.tools.InputMerger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
@@ -58,6 +59,7 @@ import org.apache.tez.runtime.library.input.ShuffledMergedInput;
  * Just pump the records through the query plan.
  */
 public class ReduceRecordProcessor  extends RecordProcessor{
+
   private static final String REDUCE_PLAN_KEY = "__REDUCE_PLAN__";
 
   public static final Log l4j = LogFactory.getLog(ReduceRecordProcessor.class);
@@ -169,20 +171,41 @@ public class ReduceRecordProcessor  extends RecordProcessor{
 
   @Override
   void run() throws IOException{
+    List<ShuffledMergedInput> shuffleInputs = getShuffleInputs(inputs);
+    KeyValuesReader kvsReader;
 
-    //TODO - changes this for joins
-    ShuffledMergedInput in = (ShuffledMergedInput)inputs.values().iterator().next();
-    KeyValuesReader reader = in.getReader();
+    if(shuffleInputs.size() == 1){
+      //no merging of inputs required
+      kvsReader = shuffleInputs.get(0).getReader();
+    }else {
+      //get a sort merged input
+      kvsReader = new InputMerger(shuffleInputs);
+    }
 
-    //process records until done
-    while(reader.next()){
-      Object key = reader.getCurrentKey();
-      Iterable<Object> values = reader.getCurrentValues();
+    while(kvsReader.next()){
+      Object key = kvsReader.getCurrentKey();
+      Iterable<Object> values = kvsReader.getCurrentValues();
       boolean needMore = processKeyValues(key, values);
       if(!needMore){
         break;
       }
     }
+
+  }
+
+  /**
+   * Get the inputs that should be streamed through reduce plan.
+   * @param inputs
+   * @return
+   */
+  private List<ShuffledMergedInput> getShuffleInputs(Map<String, LogicalInput> inputs) {
+    //the reduce plan inputs have tags, add all inputs that have tags
+    Map<Integer, String> tag2input = redWork.getTagToInput();
+    ArrayList<ShuffledMergedInput> shuffleInputs = new ArrayList<ShuffledMergedInput>();
+    for(String inpStr : tag2input.values()){
+      shuffleInputs.add((ShuffledMergedInput)inputs.get(inpStr));
+    }
+    return shuffleInputs;
   }
 
   /**
