@@ -39,9 +39,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
-import org.apache.hadoop.hive.serde2.typeinfo.ParameterizedPrimitiveTypeUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -59,16 +58,16 @@ public class TypedBytesRecordReader implements RecordReader {
   private DataInputStream din;
   private TypedBytesWritableInput tbIn;
 
-  private NonSyncDataOutputBuffer barrStr = new NonSyncDataOutputBuffer();
+  private final NonSyncDataOutputBuffer barrStr = new NonSyncDataOutputBuffer();
   private TypedBytesWritableOutput tbOut;
 
-  private ArrayList<Writable> row = new ArrayList<Writable>(0);
-  private ArrayList<String> rowTypeName = new ArrayList<String>(0);
+  private final ArrayList<Writable> row = new ArrayList<Writable>(0);
+  private final ArrayList<String> rowTypeName = new ArrayList<String>(0);
   private List<String> columnTypes;
 
-  private ArrayList<ObjectInspector> srcOIns = new ArrayList<ObjectInspector>();
-  private ArrayList<ObjectInspector> dstOIns = new ArrayList<ObjectInspector>();
-  private ArrayList<Converter> converters = new ArrayList<Converter>();
+  private final ArrayList<ObjectInspector> srcOIns = new ArrayList<ObjectInspector>();
+  private final ArrayList<ObjectInspector> dstOIns = new ArrayList<ObjectInspector>();
+  private final ArrayList<Converter> converters = new ArrayList<Converter>();
 
   private static Map<Type, String> typedBytesToTypeName = new HashMap<Type, String>();
   static {
@@ -89,10 +88,9 @@ public class TypedBytesRecordReader implements RecordReader {
     String columnTypeProperty = tbl.getProperty(serdeConstants.LIST_COLUMN_TYPES);
     columnTypes = Arrays.asList(columnTypeProperty.split(","));
     for (String columnType : columnTypes) {
-      PrimitiveTypeEntry dstTypeEntry = PrimitiveObjectInspectorUtils
-          .getTypeEntryFromTypeName(columnType);
+      PrimitiveTypeInfo dstTypeInfo = TypeInfoFactory.getPrimitiveTypeInfo(columnType);
       dstOIns.add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-          dstTypeEntry));
+          dstTypeInfo));
     }
   }
 
@@ -152,11 +150,10 @@ public class TypedBytesRecordReader implements RecordReader {
         row.add(wrt);
         rowTypeName.add(type.name());
         String typeName = typedBytesToTypeName.get(type);
-        PrimitiveTypeEntry srcTypeEntry = PrimitiveObjectInspectorUtils
-            .getTypeEntryFromTypeName(typeName);
+        PrimitiveTypeInfo srcTypeInfo = TypeInfoFactory.getPrimitiveTypeInfo(typeName);
         srcOIns
             .add(PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-                srcTypeEntry));
+                srcTypeInfo));
         converters.add(ObjectInspectorConverters.getConverter(srcOIns.get(pos),
             dstOIns.get(pos)));
       } else {

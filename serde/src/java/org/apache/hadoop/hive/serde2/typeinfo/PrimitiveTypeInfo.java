@@ -32,12 +32,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  * Always use the TypeInfoFactory to create new TypeInfo objects, instead of
  * directly creating an instance of this class.
  */
-public class PrimitiveTypeInfo extends TypeInfo implements Serializable, PrimitiveTypeSpec {
-
+public class PrimitiveTypeInfo extends TypeInfo implements Serializable {
   private static final long serialVersionUID = 1L;
 
+  // Base name (varchar vs fully qualified name such as varchar(200)).
   protected String typeName;
-  protected BaseTypeParams typeParams;
 
   /**
    * For java serialization use only.
@@ -65,11 +64,11 @@ public class PrimitiveTypeInfo extends TypeInfo implements Serializable, Primiti
   }
 
   public Class<?> getPrimitiveWritableClass() {
-    return PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(typeName).primitiveWritableClass;
+    return getPrimitiveTypeEntry().primitiveWritableClass;
   }
 
   public Class<?> getPrimitiveJavaClass() {
-    return PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(typeName).primitiveJavaClass;
+    return getPrimitiveTypeEntry().primitiveJavaClass;
   }
 
   // The following 2 methods are for java serialization use only.
@@ -82,43 +81,19 @@ public class PrimitiveTypeInfo extends TypeInfo implements Serializable, Primiti
     return typeName;
   }
 
-  /**
-   * If the type has type parameters (such as varchar length, or decimal precision/scale),
-   * then return the parameters for the type.
-   * @return A BaseTypeParams object representing the parameters for the type, or null
-   */
-  public BaseTypeParams getTypeParams() {
-    return typeParams;
-  }
-
-  /**
-   * Set the type parameters for the type.
-   * @param typeParams type parameters for the type
-   */
-  public void setTypeParams(BaseTypeParams typeParams) {
-    // Ideally could check here to make sure the type really supports parameters,
-    // however during deserialization some of the required fields are not set at the
-    // time that the type params are set. We would have to customize the way this class
-    // is serialized/deserialized for the check to work.
-    //if (typeParams != null && !getPrimitiveTypeEntry().isParameterized()) {
-    //  throw new UnsupportedOperationException(
-    //      "Attempting to add type parameters " + typeParams + " to type " + getTypeName());
-    //}
-    this.typeParams = typeParams;
-  }
-
   public PrimitiveTypeEntry getPrimitiveTypeEntry() {
-    return PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(
-        TypeInfoUtils.getBaseName(typeName));
+    return PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(typeName);
   }
 
-  /**
-   * Compare if 2 TypeInfos are the same. We use TypeInfoFactory to cache
-   * TypeInfos, so we only need to compare the Object pointer.
-   */
   @Override
   public boolean equals(Object other) {
-    return this == other;
+    if (other == null || !(other instanceof PrimitiveTypeInfo)) {
+      return false;
+    }
+
+    PrimitiveTypeInfo pti = (PrimitiveTypeInfo) other;
+
+    return this.typeName.equals(pti.typeName);
   }
 
   /**

@@ -22,7 +22,7 @@ import java.sql.Date;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyDate;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
  * A WritableDateObjectInspector inspects a DateWritable Object.
@@ -32,7 +32,7 @@ public class LazyDateObjectInspector
     implements DateObjectInspector {
 
   protected LazyDateObjectInspector() {
-    super(PrimitiveObjectInspectorUtils.dateTypeEntry);
+    super(TypeInfoFactory.dateTypeInfo);
   }
 
   @Override

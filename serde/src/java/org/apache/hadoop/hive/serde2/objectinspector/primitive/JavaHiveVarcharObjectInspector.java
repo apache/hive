@@ -19,24 +19,18 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
-import org.apache.hadoop.hive.serde2.typeinfo.ParameterizedPrimitiveTypeUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharUtils;
 
-public class JavaHiveVarcharObjectInspector
-    extends AbstractPrimitiveJavaObjectInspector
-    implements SettableHiveVarcharObjectInspector {
+public class JavaHiveVarcharObjectInspector extends AbstractPrimitiveJavaObjectInspector
+implements SettableHiveVarcharObjectInspector {
 
   // no-arg ctor required for Kyro serialization
   public JavaHiveVarcharObjectInspector() {
   }
 
-  public JavaHiveVarcharObjectInspector(PrimitiveTypeEntry typeEntry) {
-    super(typeEntry);
-    if (typeEntry.primitiveCategory != PrimitiveCategory.VARCHAR) {
-      throw new RuntimeException(
-          "TypeEntry of type varchar expected, got " + typeEntry.primitiveCategory);
-    }
+  public JavaHiveVarcharObjectInspector(VarcharTypeInfo typeInfo) {
+    super(typeInfo);
   }
 
   @Override
@@ -45,8 +39,8 @@ public class JavaHiveVarcharObjectInspector
       return null;
     }
     HiveVarchar value = (HiveVarchar)o;
-    if (ParameterizedPrimitiveTypeUtils.doesPrimitiveMatchTypeParams(
-        value, (VarcharTypeParams) getTypeParams())) {
+    if (VarcharUtils.doesPrimitiveMatchTypeParams(
+        value, (VarcharTypeInfo)typeInfo)) {
       return value;
     }
     // value needs to be converted to match the type params (length, etc).
@@ -75,8 +69,8 @@ public class JavaHiveVarcharObjectInspector
   @Override
   public Object set(Object o, HiveVarchar value) {
     HiveVarchar setValue = (HiveVarchar)o;
-    if (ParameterizedPrimitiveTypeUtils.doesPrimitiveMatchTypeParams(
-        value, (VarcharTypeParams) getTypeParams())) {
+    if (VarcharUtils.doesPrimitiveMatchTypeParams(
+        value, (VarcharTypeInfo)typeInfo)) {
       setValue.setValue(value);
     } else {
       // Otherwise value may be too long, convert to appropriate value based on params
@@ -100,7 +94,8 @@ public class JavaHiveVarcharObjectInspector
   }
 
   public int getMaxLength() {
-    VarcharTypeParams typeParams = (VarcharTypeParams)getTypeParams();
-    return typeParams != null ? typeParams.length : -1;
+    VarcharTypeInfo ti = (VarcharTypeInfo) typeInfo;
+    return ti.getLength();
   }
+
 }

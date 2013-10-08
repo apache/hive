@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableShortObje
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableTimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 /**
  * ObjectInspectorConverters.
@@ -222,7 +223,8 @@ public final class ObjectInspectorConverters {
     case PRIMITIVE:
       // Create a writable object inspector for primitive type and return it.
       PrimitiveObjectInspector primOutputOI = (PrimitiveObjectInspector) outputOI;
-      return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(primOutputOI);
+      return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+          (PrimitiveTypeInfo)primOutputOI.getTypeInfo());
     case STRUCT:
       StructObjectInspector structOutputOI = (StructObjectInspector) outputOI;
       // create a standard settable struct object inspector.

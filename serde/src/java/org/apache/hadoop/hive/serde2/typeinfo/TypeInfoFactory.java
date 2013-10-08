@@ -25,7 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
 
@@ -38,71 +37,106 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectIn
  */
 public final class TypeInfoFactory {
   private static Log LOG = LogFactory.getLog(TypeInfoFactory.class);
-  static ConcurrentHashMap<String, TypeInfo> cachedPrimitiveTypeInfo = new ConcurrentHashMap<String, TypeInfo>();
 
   private TypeInfoFactory() {
     // prevent instantiation
   }
 
-  public static TypeInfo getPrimitiveTypeInfo(String typeName) {
-    PrimitiveTypeEntry typeEntry = PrimitiveObjectInspectorUtils
-        .getTypeEntryFromTypeName(TypeInfoUtils.getBaseName(typeName));
-    if (null == typeEntry) {
-      throw new RuntimeException("Cannot getPrimitiveTypeInfo for " + typeName);
+  public static final PrimitiveTypeInfo voidTypeInfo = new PrimitiveTypeInfo(serdeConstants.VOID_TYPE_NAME);
+  public static final PrimitiveTypeInfo booleanTypeInfo = new PrimitiveTypeInfo(serdeConstants.BOOLEAN_TYPE_NAME);
+  public static final PrimitiveTypeInfo intTypeInfo = new PrimitiveTypeInfo(serdeConstants.INT_TYPE_NAME);
+  public static final PrimitiveTypeInfo longTypeInfo = new PrimitiveTypeInfo(serdeConstants.BIGINT_TYPE_NAME);
+  public static final PrimitiveTypeInfo stringTypeInfo = new PrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME);
+  public static final PrimitiveTypeInfo floatTypeInfo = new PrimitiveTypeInfo(serdeConstants.FLOAT_TYPE_NAME);
+  public static final PrimitiveTypeInfo doubleTypeInfo = new PrimitiveTypeInfo(serdeConstants.DOUBLE_TYPE_NAME);
+  public static final PrimitiveTypeInfo byteTypeInfo = new PrimitiveTypeInfo(serdeConstants.TINYINT_TYPE_NAME);
+  public static final PrimitiveTypeInfo shortTypeInfo = new PrimitiveTypeInfo(serdeConstants.SMALLINT_TYPE_NAME);
+  public static final PrimitiveTypeInfo dateTypeInfo = new PrimitiveTypeInfo(serdeConstants.DATE_TYPE_NAME);
+  public static final PrimitiveTypeInfo timestampTypeInfo = new PrimitiveTypeInfo(serdeConstants.TIMESTAMP_TYPE_NAME);
+  public static final PrimitiveTypeInfo binaryTypeInfo = new PrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME);
+  public static final PrimitiveTypeInfo decimalTypeInfo = new PrimitiveTypeInfo(serdeConstants.DECIMAL_TYPE_NAME);
+
+  public static final PrimitiveTypeInfo unknownTypeInfo = new PrimitiveTypeInfo("unknown");
+
+  // Map from type name (such as int or varchar(40) to the corresponding PrimitiveTypeInfo
+  // instance.
+  private static ConcurrentHashMap<String, PrimitiveTypeInfo> cachedPrimitiveTypeInfo =
+      new ConcurrentHashMap<String, PrimitiveTypeInfo>();
+  static {
+    cachedPrimitiveTypeInfo.put(serdeConstants.VOID_TYPE_NAME, voidTypeInfo);
+    cachedPrimitiveTypeInfo.put(serdeConstants.BOOLEAN_TYPE_NAME, booleanTypeInfo);
+    cachedPrimitiveTypeInfo.put(serdeConstants.INT_TYPE_NAME, intTypeInfo);
+    cachedPrimitiveTypeInfo.put(serdeConstants.BIGINT_TYPE_NAME, longTypeInfo);
+    cachedPrimitiveTypeInfo.put(serdeConstants.STRING_TYPE_NAME, stringTypeInfo);
+    cachedPrimitiveTypeInfo.put(serdeConstants.FLOAT_TYPE_NAME, floatTypeInfo);
+    cachedPrimitiveTypeInfo.put(serdeConstants.DOUBLE_TYPE_NAME, doubleTypeInfo);
+    cachedPrimitiveTypeInfo.put(serdeConstants.TINYINT_TYPE_NAME, byteTypeInfo);
+    cachedPrimitiveTypeInfo.put(serdeConstants.SMALLINT_TYPE_NAME, shortTypeInfo);
+    cachedPrimitiveTypeInfo.put(serdeConstants.DATE_TYPE_NAME, dateTypeInfo);
+    cachedPrimitiveTypeInfo.put(serdeConstants.TIMESTAMP_TYPE_NAME, timestampTypeInfo);
+    cachedPrimitiveTypeInfo.put(serdeConstants.BINARY_TYPE_NAME, binaryTypeInfo);
+    cachedPrimitiveTypeInfo.put(serdeConstants.DECIMAL_TYPE_NAME, decimalTypeInfo);
+    cachedPrimitiveTypeInfo.put("unknown", unknownTypeInfo);
+  }
+
+  /**
+   * Get PrimitiveTypeInfo instance for the given type name of a type
+   * including types with parameters, such as varchar(20).
+   *
+   * @param typeName type name possibly with parameters.
+   * @return aPrimitiveTypeInfo instance
+   */
+  public static PrimitiveTypeInfo getPrimitiveTypeInfo(String typeName) {
+    PrimitiveTypeInfo result = cachedPrimitiveTypeInfo.get(typeName);
+    if (result != null) {
+      return result;
     }
-    TypeInfo result = cachedPrimitiveTypeInfo.get(typeName);
+
+    // Not found in the cache. Must be parameterized types. Create it.
+    result = createPrimitiveTypeInfo(typeName);
     if (result == null) {
-      TypeInfoUtils.PrimitiveParts parts = TypeInfoUtils.parsePrimitiveParts(typeName);
-      // Create params if there are any
-      if (parts.typeParams != null && parts.typeParams.length > 0) {
-        // The type string came with parameters.  Parse and add to TypeInfo
-        try {
-          BaseTypeParams typeParams = PrimitiveTypeEntry.createTypeParams(
-              parts.typeName, parts.typeParams);
-          result = new PrimitiveTypeInfo(typeName);
-          ((PrimitiveTypeInfo) result).setTypeParams(typeParams);
-        } catch (Exception err) {
-          LOG.error(err);
-          throw new RuntimeException("Error creating type parameters for " + typeName
-              + ": " + err, err);
-        }
-      } else {
-        // No type params
-
-        // Prevent creation of varchar TypeInfo with no length specification.
-        // This can happen if an old-style UDF uses a varchar type either as an
-        // argument or return type in an evaluate() function, or other instances
-        // of using reflection-based methods for retrieving a TypeInfo.
-        if (typeEntry.primitiveCategory == PrimitiveCategory.VARCHAR) {
-          LOG.error("varchar type used with no type params");
-          throw new RuntimeException("varchar type used with no type params");
-        }
-
-        result = new PrimitiveTypeInfo(parts.typeName);
-      }
-
-      cachedPrimitiveTypeInfo.put(typeName, result);
+      throw new RuntimeException("Error creating PrimitiveTypeInfo instance for " + typeName);
     }
+
+    cachedPrimitiveTypeInfo.put(typeName, result);
     return result;
   }
 
-  public static final TypeInfo voidTypeInfo = getPrimitiveTypeInfo(serdeConstants.VOID_TYPE_NAME);
-  public static final TypeInfo booleanTypeInfo = getPrimitiveTypeInfo(serdeConstants.BOOLEAN_TYPE_NAME);
-  public static final TypeInfo intTypeInfo = getPrimitiveTypeInfo(serdeConstants.INT_TYPE_NAME);
-  public static final TypeInfo longTypeInfo = getPrimitiveTypeInfo(serdeConstants.BIGINT_TYPE_NAME);
-  public static final TypeInfo stringTypeInfo = getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME);
-  public static final TypeInfo floatTypeInfo = getPrimitiveTypeInfo(serdeConstants.FLOAT_TYPE_NAME);
-  public static final TypeInfo doubleTypeInfo = getPrimitiveTypeInfo(serdeConstants.DOUBLE_TYPE_NAME);
-  public static final TypeInfo byteTypeInfo = getPrimitiveTypeInfo(serdeConstants.TINYINT_TYPE_NAME);
-  public static final TypeInfo shortTypeInfo = getPrimitiveTypeInfo(serdeConstants.SMALLINT_TYPE_NAME);
-  public static final TypeInfo dateTypeInfo = getPrimitiveTypeInfo(serdeConstants.DATE_TYPE_NAME);
-  public static final TypeInfo timestampTypeInfo = getPrimitiveTypeInfo(serdeConstants.TIMESTAMP_TYPE_NAME);
-  public static final TypeInfo binaryTypeInfo = getPrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME);
-  public static final TypeInfo decimalTypeInfo = getPrimitiveTypeInfo(serdeConstants.DECIMAL_TYPE_NAME);
-  // Disallow usage of varchar without length specifier.
-  //public static final TypeInfo varcharTypeInfo = getPrimitiveTypeInfo(serdeConstants.VARCHAR_TYPE_NAME);
+  /**
+   * Create PrimitiveTypeInfo instance for the given full name of the type. The returned
+   * type is one of the parameterized type info such as VarcharTypeInfo.
+   *
+   * @param fullName Fully qualified name of the type
+   * @return PrimitiveTypeInfo instance
+   */
+  private static PrimitiveTypeInfo createPrimitiveTypeInfo(String fullName) {
+    String baseName = TypeInfoUtils.getBaseName(fullName);
+    PrimitiveTypeEntry typeEntry =
+        PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(baseName);
+    if (null == typeEntry) {
+      throw new RuntimeException("Unknown type " + fullName);
+    }
 
-  public static final TypeInfo unknownTypeInfo = getPrimitiveTypeInfo("unknown");
+    TypeInfoUtils.PrimitiveParts parts = TypeInfoUtils.parsePrimitiveParts(fullName);
+    if (parts.typeParams == null || parts.typeParams.length < 1) {
+      return null;
+    }
+
+    switch (typeEntry.primitiveCategory) {
+      case VARCHAR:
+        if (parts.typeParams.length != 1) {
+          return null;
+        }
+        return new VarcharTypeInfo(Integer.valueOf(parts.typeParams[0]));
+      default:
+        return null;
+    }
+  }
+
+  public static VarcharTypeInfo getVarcharTypeInfo(int length) {
+    String fullName = BaseCharTypeInfo.getQualifiedName(serdeConstants.VARCHAR_TYPE_NAME, length);
+    return (VarcharTypeInfo) getPrimitiveTypeInfo(fullName);
+  }
 
   public static TypeInfo getPrimitiveTypeInfoFromPrimitiveWritable(
       Class<?> clazz) {

@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.serde2.avro;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.avro.Schema;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -25,14 +28,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.ParameterizedPrimitiveTypeUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * An AvroObjectInspectorGenerator takes an Avro schema and creates the three
@@ -56,9 +55,10 @@ class AvroObjectInspectorGenerator {
   }
 
   private void verifySchemaIsARecord(Schema schema) throws SerDeException {
-    if(!schema.getType().equals(Schema.Type.RECORD))
+    if(!schema.getType().equals(Schema.Type.RECORD)) {
       throw new AvroSerdeException("Schema for table must be of type RECORD. " +
           "Received type: " + schema.getType());
+    }
   }
 
   public List<String> getColumnNames() {
@@ -86,8 +86,9 @@ class AvroObjectInspectorGenerator {
   private ObjectInspector createObjectInspectorWorker(TypeInfo ti) throws SerDeException {
     // We don't need to do the check for U[T,Null] here because we'll give the real type
     // at deserialization and the object inspector will never see the actual union.
-    if(!supportedCategories(ti))
+    if(!supportedCategories(ti)) {
       throw new AvroSerdeException("Don't yet support this type: " + ti);
+    }
     ObjectInspector result;
     switch(ti.getCategory()) {
       case PRIMITIVE:

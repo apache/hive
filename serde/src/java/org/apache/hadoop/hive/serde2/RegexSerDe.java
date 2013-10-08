@@ -35,14 +35,12 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveJavaObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.ParameterizedPrimitiveTypeUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
@@ -126,41 +124,16 @@ public class RegexSerDe extends AbstractSerDe {
     List<ObjectInspector> columnOIs = new ArrayList<ObjectInspector>(columnNames.size());
     for (int c = 0; c < numColumns; c++) {
       TypeInfo typeInfo = columnTypes.get(c);
-      String typeName = typeInfo.getTypeName();
-      if (typeName.equals(serdeConstants.STRING_TYPE_NAME)) {
-        columnOIs.add(PrimitiveObjectInspectorFactory.javaStringObjectInspector);
-      } else if (typeName.equals(serdeConstants.TINYINT_TYPE_NAME)) {
-        columnOIs.add(PrimitiveObjectInspectorFactory.javaByteObjectInspector);
-      } else if (typeName.equals(serdeConstants.SMALLINT_TYPE_NAME)) {
-       columnOIs.add(PrimitiveObjectInspectorFactory.javaShortObjectInspector);
-      } else if (typeName.equals(serdeConstants.INT_TYPE_NAME)) {
-        columnOIs.add(PrimitiveObjectInspectorFactory.javaIntObjectInspector);
-      } else if (typeName.equals(serdeConstants.BIGINT_TYPE_NAME)) {
-       columnOIs.add(PrimitiveObjectInspectorFactory.javaLongObjectInspector);
-      } else if (typeName.equals(serdeConstants.FLOAT_TYPE_NAME)) {
-        columnOIs.add(PrimitiveObjectInspectorFactory.javaFloatObjectInspector);
-      } else if (typeName.equals(serdeConstants.DOUBLE_TYPE_NAME)) {
-       columnOIs.add(PrimitiveObjectInspectorFactory.javaDoubleObjectInspector);
-      } else if (typeName.equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
-        columnOIs.add(PrimitiveObjectInspectorFactory.javaBooleanObjectInspector);
-      } else if (typeName.equals(serdeConstants.TIMESTAMP_TYPE_NAME)) {
-        columnOIs.add(PrimitiveObjectInspectorFactory.javaTimestampObjectInspector);
-      } else if (typeName.equals(serdeConstants.DATE_TYPE_NAME)) {
-        columnOIs.add(PrimitiveObjectInspectorFactory.javaDateObjectInspector);
-      } else if (typeName.equals(serdeConstants.DECIMAL_TYPE_NAME)) {
-        columnOIs.add(PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector);
-      }  else if (typeInfo instanceof PrimitiveTypeInfo
-          &&
-          ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory() == PrimitiveCategory.VARCHAR) {
-        VarcharTypeParams varcharParams = (VarcharTypeParams)
-            ParameterizedPrimitiveTypeUtils.getTypeParamsFromTypeInfo(typeInfo);
-        columnOIs.add(PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
-            (PrimitiveTypeInfo) typeInfo));
+      if (typeInfo instanceof PrimitiveTypeInfo) {
+        PrimitiveTypeInfo pti = (PrimitiveTypeInfo) columnTypes.get(c);
+        AbstractPrimitiveJavaObjectInspector oi = 
+            PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(pti);
+        columnOIs.add(oi);
       } else {
-         throw new SerDeException(getClass().getName()
-         + " doesn't allow column [" + c + "] named "
-         + columnNames.get(c) + " with type " + columnTypes.get(c));
-       }
+        throw new SerDeException(getClass().getName()
+            + " doesn't allow column [" + c + "] named "
+            + columnNames.get(c) + " with type " + columnTypes.get(c));
+      }
      }
 
     // StandardStruct uses ArrayList to store the row.
@@ -262,12 +235,8 @@ public class RegexSerDe extends AbstractSerDe {
           HiveDecimal bd;
           bd = new HiveDecimal(t);
           row.set(c, bd);
-        } else if (typeInfo instanceof PrimitiveTypeInfo
-            &&
-            ((PrimitiveTypeInfo) typeInfo).getPrimitiveCategory() == PrimitiveCategory.VARCHAR) {
-          VarcharTypeParams varcharParams = (VarcharTypeParams)
-              ParameterizedPrimitiveTypeUtils.getTypeParamsFromTypeInfo(typeInfo);
-          HiveVarchar hv = new HiveVarchar(t, varcharParams != null ? varcharParams.length : -1);
+        } else if (typeInfo instanceof VarcharTypeInfo) {
+          HiveVarchar hv = new HiveVarchar(t, ((VarcharTypeInfo)typeInfo).getLength());
           row.set(c, hv);
         }
       } catch (RuntimeException e) {

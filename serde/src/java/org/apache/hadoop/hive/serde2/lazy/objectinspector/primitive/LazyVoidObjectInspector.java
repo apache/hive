@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.NullWritable;
 
 /**
@@ -29,7 +29,7 @@ public class LazyVoidObjectInspector extends
     VoidObjectInspector {
 
   LazyVoidObjectInspector() {
-    super(PrimitiveObjectInspectorUtils.voidTypeEntry);
+    super(TypeInfoFactory.voidTypeInfo);
   }
 
   @Override

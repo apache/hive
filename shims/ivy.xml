@@ -130,6 +130,15 @@
       <include type="jar"/>
       <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
       <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+      <exclude org="commons-codec" module="commons-codec" /><!--ignore commons-codec 1.3 to use 1.4-->
+      <exclude org="org.apache.commons" module="commons-codec" /><!--ignore commons-codec 1.3 to use 1.4-->
+    </dependency>
+
+    <dependency org="commons-codec" name="commons-codec" 
+                rev="${commons-codec.version}" conf="hadoop0.20.shim->default">
+      <include type="jar"/>
+      <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
+      <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
     </dependency>
 
     <dependency org="org.apache.hadoop" name="hadoop-core"
@@ -138,6 +147,8 @@
       <include type="jar"/>
       <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
       <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+      <exclude org="commons-codec" module="commons-codec" /><!--ignore commons-codec 1.3 to use 1.4-->
+      <exclude org="org.apache.commons" module="commons-codec" /><!--ignore commons-codec 1.3 to use 1.4-->
     </dependency>
     <dependency org="org.apache.hadoop" name="hadoop-tools"
                 rev="${hadoop-0.20.version}"
@@ -145,6 +156,8 @@
       <include type="jar"/>
       <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
       <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+      <exclude org="commons-codec" module="commons-codec" /><!--ignore commons-codec 1.3 to use 1.4-->
+      <exclude org="org.apache.commons" module="commons-codec" /><!--ignore commons-codec 1.3 to use 1.4-->
     </dependency>
     <dependency org="org.apache.hadoop" name="hadoop-test"
                 rev="${hadoop-0.20.version}"
@@ -152,6 +165,8 @@
       <include type="jar"/>
       <exclude org="commons-daemon" module="commons-daemon"/><!--bad POM-->
       <exclude org="org.apache.commons" module="commons-daemon"/><!--bad POM-->
+      <exclude org="commons-codec" module="commons-codec" /><!--ignore commons-codec 1.3 to use 1.4-->
+      <exclude org="org.apache.commons" module="commons-codec" /><!--ignore commons-codec 1.3 to use 1.4-->
     </dependency>
 
     <!-- Hadoop 0.20S (or 1.0.0) shim dependencies. Used for building 0.20S shims. -->

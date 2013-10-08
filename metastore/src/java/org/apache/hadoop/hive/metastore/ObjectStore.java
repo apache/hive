@@ -1424,7 +1424,7 @@ public class ObjectStore implements RawStore, Configurable {
       int maxParts, boolean allowSql, boolean allowJdo) throws MetaException {
     assert allowSql || allowJdo;
     boolean doTrace = LOG.isDebugEnabled();
-    boolean doUseDirectSql = canUseDirectSql(allowSql);
+    boolean doUseDirectSql = canUseDirectSql(allowSql, allowJdo);
 
     boolean success = false;
     List<Partition> parts = null;
@@ -1754,7 +1754,7 @@ public class ObjectStore implements RawStore, Configurable {
     dbName = dbName.toLowerCase();
     tblName = tblName.toLowerCase();
     boolean doTrace = LOG.isDebugEnabled();
-    boolean doUseDirectSql = canUseDirectSql(allowSql);
+    boolean doUseDirectSql = canUseDirectSql(allowSql, allowJdo);
 
     boolean success = false;
     List<Partition> results = null;
@@ -1819,7 +1819,7 @@ public class ObjectStore implements RawStore, Configurable {
     //       Filter.g stuff. That way this method and ...ByFilter would just be merged.
     ExpressionTree exprTree = makeExpressionTree(filter);
 
-    boolean doUseDirectSql = allowSql && isDirectSqlEnabled(maxParts);
+    boolean doUseDirectSql = canUseDirectSql(allowSql, allowJdo);
     boolean doTrace = LOG.isDebugEnabled();
     List<Partition> partitions = null;
     boolean hasUnknownPartitions = false;
@@ -1875,12 +1875,6 @@ public class ObjectStore implements RawStore, Configurable {
     }
     result.addAll(partitions);
     return hasUnknownPartitions;
-  }
-
-  private boolean isDirectSqlEnabled(short maxParts) {
-    // There's no portable SQL limit. It doesn't make a lot of sense w/o offset anyway.
-    return (maxParts < 0)
-        && HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL);
   }
 
   private class LikeChecker extends ExpressionTree.TreeVisitor {
@@ -2062,7 +2056,7 @@ public class ObjectStore implements RawStore, Configurable {
       throws MetaException, NoSuchObjectException {
     assert allowSql || allowJdo;
     boolean doTrace = LOG.isDebugEnabled();
-    boolean doUseDirectSql = canUseDirectSql(allowSql);
+    boolean doUseDirectSql = canUseDirectSql(allowSql, allowJdo);
 
     dbName = dbName.toLowerCase();
     tblName = tblName.toLowerCase();
@@ -2108,15 +2102,22 @@ public class ObjectStore implements RawStore, Configurable {
     }
   }
 
-  private boolean canUseDirectSql(boolean allowSql) {
+  /**
+   * @param allowSql Whether SQL usage is allowed (always true outside test).
+   * @param allowJdo Whether JDO usage is allowed (always true outside test).
+   * @return Whether we can use direct SQL.
+   */
+  private boolean canUseDirectSql(boolean allowSql, boolean allowJdo) throws MetaException {
     // We don't allow direct SQL usage if we are inside a larger transaction (e.g. droptable).
     // That is because some databases (e.g. Postgres) abort the entire transaction when
     // any query fails, so the fallback from failed SQL to JDO is not possible.
     // TODO: Drop table can be very slow on large tables, we might want to address this.
-    return allowSql
-      && HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL)
-      && directSql.isCompatibleDatastore()
-      && !isActiveTransaction();
+    boolean isEnabled = !isActiveTransaction()
+        && HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL);
+    if (!allowJdo && isEnabled && !directSql.isCompatibleDatastore()) {
+      throw new MetaException("SQL is not operational"); // test path; SQL is enabled and broken.
+    }
+    return allowSql && isEnabled && directSql.isCompatibleDatastore();
   }
 
   /**

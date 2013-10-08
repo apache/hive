@@ -103,3 +103,10 @@ CollectionTypes = Set.new([
   %q"map",
 ])
 
+IntegralTypes = Set.new([
+  %q"tinyint",
+  %q"smallint",
+  %q"int",
+  %q"bigint",
+])
+

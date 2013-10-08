@@ -103,6 +103,11 @@ serdeConstants::serdeConstants() {
   CollectionTypes.insert("array");
   CollectionTypes.insert("map");
 
+  IntegralTypes.insert("tinyint");
+  IntegralTypes.insert("smallint");
+  IntegralTypes.insert("int");
+  IntegralTypes.insert("bigint");
+
 }
 
 } // namespace

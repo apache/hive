@@ -27,12 +27,11 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.HiveVarcharConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveVarcharObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 
 @Description(name = "varchar",
 value = "CAST(<value> as VARCHAR(length)) - Converts the argument to a varchar value.",
@@ -41,15 +40,15 @@ extended = "Values will be truncated if the input value is too long to fit"
 + "Example:\n "
 + "  > SELECT CAST(1234 AS varchar(10)) FROM src LIMIT 1;\n"
 + "  '1234'")
-public class GenericUDFToVarchar extends GenericUDF
-    implements SettableUDF, Serializable {
+public class GenericUDFToVarchar extends GenericUDF implements SettableUDF, Serializable {
   private static final Log LOG = LogFactory.getLog(GenericUDFToVarchar.class.getName());
+
   private transient PrimitiveObjectInspector argumentOI;
   private transient HiveVarcharConverter converter;
 
-  // The varchar type parameters need to be set prior to initialization,
+  // The varchar type info need to be set prior to initialization,
   // and must be preserved when the plan serialized to other processes.
-  private VarcharTypeParams typeParams;
+  private VarcharTypeInfo typeInfo;
 
   public GenericUDFToVarchar() {
   }
@@ -68,14 +67,8 @@ public class GenericUDFToVarchar extends GenericUDF
 
     // Check if this UDF has been provided with type params for the output varchar type
     SettableHiveVarcharObjectInspector outputOI;
-    if (typeParams != null) {
-      outputOI = (SettableHiveVarcharObjectInspector)
-          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-              PrimitiveObjectInspectorUtils.getTypeEntryFromTypeSpecs(
-                  PrimitiveCategory.VARCHAR, typeParams));
-    } else {
-      outputOI = PrimitiveObjectInspectorFactory.writableHiveVarcharObjectInspector;
-    }
+    outputOI = (SettableHiveVarcharObjectInspector)
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(typeInfo);
 
     converter = new HiveVarcharConverter(argumentOI, outputOI);
     return outputOI;
@@ -98,11 +91,7 @@ public class GenericUDFToVarchar extends GenericUDF
     sb.append("CAST( ");
     sb.append(children[0]);
     sb.append(" AS VARCHAR(");
-    String paramsStr = "";
-    if (typeParams != null) {
-      paramsStr = typeParams.toString();
-    }
-    sb.append(paramsStr);
+    sb.append("" + typeInfo.getLength());
     sb.append(")");
     return sb.toString();
   }
@@ -112,21 +101,13 @@ public class GenericUDFToVarchar extends GenericUDF
   * This should be done before the UDF is initialized.
  */
   @Override
-  public void setParams(Object typeParams) throws UDFArgumentException {
-    if (converter != null) {
-      LOG.warn("Type converter already initialized, setting type params now will not be useful");
-    }
-    if (typeParams instanceof VarcharTypeParams) {
-      this.typeParams = (VarcharTypeParams)typeParams;
-    } else {
-      throw new UDFArgumentException(
-          "Was expecting VarcharTypeParams, instead got " + typeParams.getClass().getName());
-    }
+  public void setTypeInfo(TypeInfo typeInfo) throws UDFArgumentException {
+    this.typeInfo = (VarcharTypeInfo) typeInfo;
   }
 
   @Override
-  public Object getParams() {
-    return typeParams;
+  public TypeInfo getTypeInfo() {
+    return typeInfo;
   }
 
 }

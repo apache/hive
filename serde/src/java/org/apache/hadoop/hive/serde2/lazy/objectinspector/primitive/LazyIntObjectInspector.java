@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.IntWritable;
 
 /**
@@ -30,7 +30,7 @@ public class LazyIntObjectInspector extends
     IntObjectInspector {
 
   LazyIntObjectInspector() {
-    super(PrimitiveObjectInspectorUtils.intTypeEntry);
+    super(TypeInfoFactory.intTypeInfo);
   }
 
   @Override

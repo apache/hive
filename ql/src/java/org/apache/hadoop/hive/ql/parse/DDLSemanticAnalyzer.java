@@ -129,7 +129,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 
@@ -172,9 +172,8 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     case HiveParser.TOK_VARCHAR:
       PrimitiveCategory primitiveCategory = PrimitiveCategory.VARCHAR;
       typeName = TokenToTypeName.get(token);
-      VarcharTypeParams varcharParams = ParseUtils.getVarcharParams(typeName, node);
-      typeName = PrimitiveObjectInspectorUtils.getTypeEntryFromTypeSpecs(
-          primitiveCategory, varcharParams).toString();
+      VarcharTypeInfo varcharTypeInfo = ParseUtils.getVarcharTypeInfo(typeName, node);
+      typeName = varcharTypeInfo.getQualifiedName();
       break;
     default:
       typeName = TokenToTypeName.get(token);

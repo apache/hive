@@ -1,0 +1,81 @@
+WARNING: Comparing a bigint and a double may result in a loss of precision.
+PREHOOK: query: explain SELECT AVG(cbigint) FROM alltypesorc WHERE cbigint < cdouble
+PREHOOK: type: QUERY
+POSTHOOK: query: explain SELECT AVG(cbigint) FROM alltypesorc WHERE cbigint < cdouble
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypesorc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION AVG (TOK_TABLE_OR_COL cbigint)))) (TOK_WHERE (< (TOK_TABLE_OR_COL cbigint) (TOK_TABLE_OR_COL cdouble)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        alltypesorc 
+          TableScan
+            alias: alltypesorc
+            filterExpr:
+                expr: (cbigint < cdouble)
+                type: boolean
+            Filter Operator
+              predicate:
+                  expr: (cbigint < cdouble)
+                  type: boolean
+              Vectorized execution: true
+              Select Operator
+                expressions:
+                      expr: cbigint
+                      type: bigint
+                outputColumnNames: cbigint
+                Vectorized execution: true
+                Group By Operator
+                  aggregations:
+                        expr: avg(cbigint)
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  Vectorized execution: true
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: struct<count:bigint,sum:double>
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: avg(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: double
+            outputColumnNames: _col0
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+WARNING: Comparing a bigint and a double may result in a loss of precision.
+PREHOOK: query: SELECT AVG(cbigint) FROM alltypesorc WHERE cbigint < cdouble
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT AVG(cbigint) FROM alltypesorc WHERE cbigint < cdouble
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+-1.4670720493864927E9

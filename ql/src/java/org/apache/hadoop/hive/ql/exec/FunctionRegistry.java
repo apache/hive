@@ -39,7 +39,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -131,7 +130,7 @@ import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.*;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLeadLag.GenericUDFLag;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLeadLag.GenericUDFLead;
-import org.apache.hadoop.hive.ql.udf.ptf.NPath.NPathResolver;
+import org.apache.hadoop.hive.ql.udf.ptf.MatchPath.MatchPathResolver;
 import org.apache.hadoop.hive.ql.udf.ptf.Noop.NoopResolver;
 import org.apache.hadoop.hive.ql.udf.ptf.NoopWithMap.NoopWithMapResolver;
 import org.apache.hadoop.hive.ql.udf.ptf.TableFunctionResolver;
@@ -156,7 +155,6 @@ import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.util.ReflectionUtils;
 import org.w3c.dom.Document;
@@ -457,7 +455,7 @@ public final class FunctionRegistry {
     registerTableFunction(NOOP_TABLE_FUNCTION, NoopResolver.class);
     registerTableFunction(NOOP_MAP_TABLE_FUNCTION, NoopWithMapResolver.class);
     registerTableFunction(WINDOWING_TABLE_FUNCTION,  WindowingTableFunctionResolver.class);
-    registerTableFunction("npath", NPathResolver.class);
+    registerTableFunction("matchpath", MatchPathResolver.class);
   }
 
   public static void registerTemporaryUDF(String functionName,
@@ -663,12 +661,7 @@ public final class FunctionRegistry {
         int maxLength = getCommonLength(
             TypeInfoUtils.getCharacterLengthForType(a),
             TypeInfoUtils.getCharacterLengthForType(b));
-        VarcharTypeParams varcharParams = new VarcharTypeParams();
-        varcharParams.setLength(maxLength);
-        // Generate type name so that we can retrieve the TypeInfo for that type.
-        String typeName = PrimitiveObjectInspectorUtils
-            .getTypeEntryFromTypeSpecs(typeCategory, varcharParams).toString();
-        return TypeInfoFactory.getPrimitiveTypeInfo(typeName);
+        return TypeInfoFactory.getVarcharTypeInfo(maxLength);
 
       default:
         // Type doesn't require any qualifiers.
@@ -1329,9 +1322,9 @@ public final class FunctionRegistry {
       // The original may have settable info that needs to be added to the new copy.
       if (genericUDF instanceof SettableUDF) {
         try {
-          Object settableData = ((SettableUDF)genericUDF).getParams();
-          if (settableData != null) {
-            ((SettableUDF)clonedUDF).setParams(settableData);
+          TypeInfo typeInfo = ((SettableUDF)genericUDF).getTypeInfo();
+          if (typeInfo != null) {
+            ((SettableUDF)clonedUDF).setTypeInfo(typeInfo);
           }
         } catch (UDFArgumentException err) {
           // In theory this should not happen - if the original copy of the UDF had this
@@ -1761,7 +1754,9 @@ public final class FunctionRegistry {
   }
 
   private static void registerNativeStatus(FunctionInfo fi) {
-    if (!fi.isNative()) return;
+    if (!fi.isNative()) {
+      return;
+    }
     nativeUdfs.add(fi.getFunctionClass());
   }
 }

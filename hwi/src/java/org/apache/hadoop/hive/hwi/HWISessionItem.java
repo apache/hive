@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.sql.SQLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -332,8 +333,12 @@ public class HWISessionItem implements Runnable, Comparable<HWISessionItem> {
       String cmd_trimmed = cmd.trim();
       String[] tokens = cmd_trimmed.split("\\s+");
       String cmd_1 = cmd_trimmed.substring(tokens[0].length()).trim();
-
-      CommandProcessor proc = CommandProcessorFactory.get(tokens[0]);
+      CommandProcessor proc = null;
+      try {
+        proc = CommandProcessorFactory.get(tokens[0]);
+      } catch (SQLException e) {
+        l4j.error(getSessionName() + " error processing " + cmd, e);
+      }
       if (proc != null) {
         if (proc instanceof Driver) {
           Driver qp = (Driver) proc;

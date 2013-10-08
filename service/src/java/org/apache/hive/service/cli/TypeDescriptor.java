@@ -20,10 +20,7 @@ package org.apache.hive.service.cli;
 
 import java.util.List;
 
-import org.apache.hadoop.hive.metastore.api.FieldSchema;
-import org.apache.hadoop.hive.serde2.typeinfo.BaseTypeParams;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hive.service.cli.thrift.TPrimitiveTypeEntry;
 import org.apache.hive.service.cli.thrift.TTypeDesc;
@@ -57,11 +54,8 @@ public class TypeDescriptor {
     if (this.type.isComplexType()) {
       this.typeName = typeName;
     } else if (this.type.isQualifiedType()) {
-      TypeInfo pti = TypeInfoFactory.getPrimitiveTypeInfo(typeName);
-      BaseTypeParams typeParams = ((PrimitiveTypeInfo) pti).getTypeParams();
-      if (typeParams != null) {
-        setTypeQualifiers(TypeQualifiers.fromBaseTypeParams(typeParams));
-      }
+      PrimitiveTypeInfo pti = TypeInfoFactory.getPrimitiveTypeInfo(typeName);
+      setTypeQualifiers(TypeQualifiers.fromTypeInfo(pti));
     }
   }
 

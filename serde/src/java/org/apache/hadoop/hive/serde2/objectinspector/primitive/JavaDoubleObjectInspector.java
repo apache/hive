@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
  * A JavaDoubleObjectInspector inspects a Java Double Object.
@@ -27,7 +28,7 @@ public class JavaDoubleObjectInspector extends
     SettableDoubleObjectInspector {
 
   JavaDoubleObjectInspector() {
-    super(PrimitiveObjectInspectorUtils.doubleTypeEntry);
+    super(TypeInfoFactory.doubleTypeInfo);
   }
 
   @Override

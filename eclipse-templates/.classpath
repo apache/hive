@@ -20,7 +20,7 @@
   <classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
   <classpathentry kind="lib" path="build/ivy/lib/hadoop0.20.shim/ant-1.6.5.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/hadoop0.20.shim/commons-cli-1.2.jar"/>
-  <classpathentry kind="lib" path="build/ivy/lib/hadoop0.20.shim/commons-codec-1.3.jar"/>
+  <classpathentry kind="lib" path="build/ivy/lib/hadoop0.20.shim/commons-codec-1.4.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/hadoop0.20.shim/commons-el-1.0.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/hadoop0.20.shim/commons-httpclient-3.0.1.jar"/>
   <classpathentry kind="lib" path="build/ivy/lib/hadoop0.20.shim/commons-logging-1.1.1.jar"/>

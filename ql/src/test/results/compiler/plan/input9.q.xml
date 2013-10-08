@@ -843,7 +843,7 @@
                        <string>_col0</string> 
                       </void> 
                       <void property="type"> 
-                       <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                       <object class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                         <void property="typeName"> 
                          <string>void</string> 
                         </void> 
@@ -885,18 +885,10 @@
                 <void property="childExprs"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc"> 
-                    <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
-                    </void> 
-                   </object> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc"/> 
                   </void> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc"> 
-                    <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
-                    </void> 
-                   </object> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc"/> 
                   </void> 
                  </object> 
                 </void> 
