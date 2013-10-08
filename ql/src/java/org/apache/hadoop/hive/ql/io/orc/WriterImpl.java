@@ -59,8 +59,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.ParameterizedPrimitiveTypeUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 
@@ -1609,14 +1608,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
           case VARCHAR:
             // The varchar length needs to be written to file and should be available
             // from the object inspector
-            VarcharTypeParams varcharParams = (VarcharTypeParams)
-                ParameterizedPrimitiveTypeUtils.getTypeParamsFromPrimitiveObjectInspector(
-                    (PrimitiveObjectInspector) treeWriter.inspector);
-            if (varcharParams == null) {
-              throw new IllegalArgumentException("No varchar length specified in ORC type");
-            }
+            VarcharTypeInfo typeInfo = (VarcharTypeInfo) ((PrimitiveObjectInspector) treeWriter.inspector).getTypeInfo();
             type.setKind(Type.Kind.VARCHAR);
-            type.setMaximumLength(varcharParams.getLength());
+            type.setMaximumLength(typeInfo.getLength());
             break;
           case BINARY:
             type.setKind(OrcProto.Type.Kind.BINARY);

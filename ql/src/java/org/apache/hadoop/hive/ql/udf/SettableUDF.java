@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 /**
  * THIS INTERFACE IS UNSTABLE AND SHOULD NOT BE USED BY 3RD PARTY UDFS.
@@ -31,8 +32,8 @@ public interface SettableUDF {
    * An exception may be thrown if the UDF doesn't know what to do with this data.
    * @param params UDF-specific data to add to the UDF
    */
-  void setParams(Object params) throws UDFArgumentException;
+  void setTypeInfo(TypeInfo typeInfo) throws UDFArgumentException;
 
-  Object getParams();
+  TypeInfo getTypeInfo();
 
 }

@@ -67,3 +67,9 @@ CollectionTypes = set([
   "array",
   "map",
 ])
+IntegralTypes = set([
+  "tinyint",
+  "smallint",
+  "int",
+  "bigint",
+])

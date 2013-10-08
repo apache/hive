@@ -62,10 +62,10 @@ public class TestGenericUDFMacro {
     inspectors = new ObjectInspector[] {
         PrimitiveObjectInspectorFactory.
           getPrimitiveWritableConstantObjectInspector(
-            PrimitiveObjectInspector.PrimitiveCategory.INT, x),
+              TypeInfoFactory.intTypeInfo, x),
         PrimitiveObjectInspectorFactory.
           getPrimitiveWritableConstantObjectInspector(
-            PrimitiveObjectInspector.PrimitiveCategory.INT, y),
+              TypeInfoFactory.intTypeInfo, y),
     };
     arguments = new DeferredObject[] {
         new DeferredJavaObject(x),

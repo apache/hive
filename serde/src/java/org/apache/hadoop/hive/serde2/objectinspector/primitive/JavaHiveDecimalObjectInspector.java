@@ -21,13 +21,14 @@ import java.math.BigInteger;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 public class JavaHiveDecimalObjectInspector
     extends AbstractPrimitiveJavaObjectInspector
     implements SettableHiveDecimalObjectInspector {
 
   protected JavaHiveDecimalObjectInspector() {
-    super(PrimitiveObjectInspectorUtils.decimalTypeEntry);
+    super(TypeInfoFactory.decimalTypeInfo);
   }
 
   @Override

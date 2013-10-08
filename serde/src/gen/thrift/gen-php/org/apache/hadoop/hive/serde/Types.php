@@ -112,4 +112,11 @@ $GLOBALS['serde_CONSTANTS']['CollectionTypes'] = array(
   "map" => true,
 );
 
+$GLOBALS['serde_CONSTANTS']['IntegralTypes'] = array(
+  "tinyint" => true,
+  "smallint" => true,
+  "int" => true,
+  "bigint" => true,
+);
+
 

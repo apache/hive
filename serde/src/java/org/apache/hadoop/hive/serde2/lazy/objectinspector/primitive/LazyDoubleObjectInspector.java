@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyDouble;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
  * A WritableDoubleObjectInspector inspects a DoubleWritable Object.
@@ -30,7 +30,7 @@ public class LazyDoubleObjectInspector extends
     DoubleObjectInspector {
 
   LazyDoubleObjectInspector() {
-    super(PrimitiveObjectInspectorUtils.doubleTypeEntry);
+    super(TypeInfoFactory.doubleTypeInfo);
   }
 
   @Override

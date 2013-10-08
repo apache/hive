@@ -18,8 +18,7 @@
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
-import org.apache.hadoop.hive.serde2.typeinfo.BaseTypeParams;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 /**
  * An AbstractPrimitiveObjectInspector is based on
@@ -28,7 +27,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.BaseTypeParams;
 public abstract class AbstractPrimitiveObjectInspector implements
     PrimitiveObjectInspector {
 
-  protected PrimitiveTypeEntry typeEntry;
+  protected PrimitiveTypeInfo typeInfo;
 
   protected AbstractPrimitiveObjectInspector() {
     super();
@@ -36,8 +35,8 @@ public abstract class AbstractPrimitiveObjectInspector implements
   /**
    * Construct a AbstractPrimitiveObjectInspector.
    */
-  protected AbstractPrimitiveObjectInspector(PrimitiveTypeEntry typeEntry) {
-    this.typeEntry = typeEntry;
+  protected AbstractPrimitiveObjectInspector(PrimitiveTypeInfo typeInfo) {
+    this.typeInfo = typeInfo;
   }
 
   /**
@@ -46,7 +45,7 @@ public abstract class AbstractPrimitiveObjectInspector implements
    */
   @Override
   public Class<?> getJavaPrimitiveClass() {
-    return typeEntry.primitiveJavaClass;
+    return typeInfo.getPrimitiveJavaClass();
   }
 
   /**
@@ -55,7 +54,7 @@ public abstract class AbstractPrimitiveObjectInspector implements
    */
   @Override
   public PrimitiveCategory getPrimitiveCategory() {
-    return typeEntry.primitiveCategory;
+    return typeInfo.getPrimitiveCategory();
   }
 
   /**
@@ -64,7 +63,7 @@ public abstract class AbstractPrimitiveObjectInspector implements
    */
   @Override
   public Class<?> getPrimitiveWritableClass() {
-    return typeEntry.primitiveWritableClass;
+    return typeInfo.getPrimitiveWritableClass();
   }
 
   /**
@@ -80,19 +79,11 @@ public abstract class AbstractPrimitiveObjectInspector implements
    */
   @Override
   public String getTypeName() {
-    return typeEntry.toString();
+    return typeInfo.getTypeName();
   }
 
-  public BaseTypeParams getTypeParams() {
-    return typeEntry.typeParams;
+  public PrimitiveTypeInfo getTypeInfo() {
+    return this.typeInfo;
   }
 
-  public void setTypeParams(BaseTypeParams newParams) {
-    BaseTypeParams typeParams = typeEntry.typeParams;
-    if (typeParams != null && !typeEntry.isParameterized()) {
-      throw new UnsupportedOperationException(
-          "Attempting to add type parameters " + typeParams + " to type " + getTypeName());
-    }
-    typeEntry.typeParams = newParams;
-  }
 }

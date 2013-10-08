@@ -116,7 +116,12 @@ public class HiveSchemaTool {
   // read schema version from metastore
   private String getMetaStoreSchemaVersion(Connection metastoreConn)
         throws HiveMetaException {
-    String versionQuery = "select t.SCHEMA_VERSION from VERSION t";
+    String versionQuery;
+    if (HiveSchemaHelper.getDbCommandParser(dbType).needsQuotedIdentifier()) {
+      versionQuery = "select t.\"SCHEMA_VERSION\" from \"VERSION\" t";
+    } else {
+      versionQuery = "select t.SCHEMA_VERSION from VERSION t";
+    }
     try {
       Statement stmt = metastoreConn.createStatement();
       ResultSet res = stmt.executeQuery(versionQuery);

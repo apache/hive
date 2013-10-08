@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.LongWritable;
 
 /**
@@ -27,7 +28,7 @@ public class WritableLongObjectInspector extends
     SettableLongObjectInspector {
 
   WritableLongObjectInspector() {
-    super(PrimitiveObjectInspectorUtils.longTypeEntry);
+    super(TypeInfoFactory.longTypeInfo);
   }
 
   @Override

@@ -94,12 +94,10 @@ public class GenericUDFReflect2 extends AbstractGenericUDFReflect {
 
     try {
       method = findMethod(targetClass, methodName.toString(), null, true);
-      // While getTypeFor() returns a TypeEntry, we won't actually be able to get any
-      // type parameter information from this since the TypeEntry is derived from a return type.
+      // Note: type param is not available here.
       PrimitiveTypeEntry typeEntry = getTypeFor(method.getReturnType());
       returnOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-          PrimitiveObjectInspectorUtils.getTypeEntryFromTypeSpecs(
-              typeEntry.primitiveCategory, typeEntry.typeParams));
+          typeEntry.primitiveCategory);
       returnObj = (Writable) returnOI.getPrimitiveWritableClass().newInstance();
     } catch (Exception e) {
       throw new UDFArgumentException(e);

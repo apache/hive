@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
  * A JavaByteObjectInspector inspects a Java Byte Object.
@@ -26,7 +27,7 @@ public class JavaByteObjectInspector extends
     AbstractPrimitiveJavaObjectInspector implements SettableByteObjectInspector {
 
   JavaByteObjectInspector() {
-    super(PrimitiveObjectInspectorUtils.byteTypeEntry);
+    super(TypeInfoFactory.byteTypeInfo);
   }
 
   @Override

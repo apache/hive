@@ -21,26 +21,19 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
-import org.apache.hadoop.hive.serde2.typeinfo.ParameterizedPrimitiveTypeUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharUtils;
 
-public class WritableHiveVarcharObjectInspector
-    extends AbstractPrimitiveWritableObjectInspector
-    implements SettableHiveVarcharObjectInspector {
-
+public class WritableHiveVarcharObjectInspector extends AbstractPrimitiveWritableObjectInspector
+implements SettableHiveVarcharObjectInspector {
   private static final Log LOG = LogFactory.getLog(WritableHiveVarcharObjectInspector.class);
 
   // no-arg ctor required for Kyro serialization
   public WritableHiveVarcharObjectInspector() {
   }
 
-  public WritableHiveVarcharObjectInspector(PrimitiveTypeEntry typeEntry) {
-    super(typeEntry);
-    if (typeEntry.primitiveCategory != PrimitiveCategory.VARCHAR) {
-      throw new RuntimeException(
-          "TypeEntry of type varchar expected, got " + typeEntry.primitiveCategory);
-    }
+  public WritableHiveVarcharObjectInspector(VarcharTypeInfo typeInfo) {
+    super(typeInfo);
   }
 
   @Override
@@ -85,8 +78,8 @@ public class WritableHiveVarcharObjectInspector
   }
 
   private boolean doesWritableMatchTypeParams(HiveVarcharWritable writable) {
-    return ParameterizedPrimitiveTypeUtils.doesWritableMatchTypeParams(
-        writable, (VarcharTypeParams)getTypeParams());
+    return VarcharUtils.doesWritableMatchTypeParams(
+        writable, (VarcharTypeInfo)typeInfo);
   }
 
   @Override
@@ -124,8 +117,7 @@ public class WritableHiveVarcharObjectInspector
   }
 
   public int getMaxLength() {
-    VarcharTypeParams typeParams = (VarcharTypeParams)getTypeParams();
-    return typeParams != null ? typeParams.length : -1;
+    return ((VarcharTypeInfo)typeInfo).getLength();
   }
 
 }

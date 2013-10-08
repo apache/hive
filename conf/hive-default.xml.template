@@ -1514,6 +1514,18 @@
 </property>
 
 <property>
+  <name>hive.security.command.whitelist</name>
+  <value>set,reset,dfs,add,delete</value>
+  <description>Comma seperated list of non-SQL Hive commands users are authorized to execute</description>
+</property>
+
+<property>
+  <name>hive.conf.restricted.list</name>
+  <value></value>
+  <description>Comma seperated list of configuration options which are immutable at runtime</description>
+</property>
+
+<property>
   <name>hive.metastore.authorization.storage.checks</name>
   <value>false</value>
   <description>Should the metastore do authorization checks against the underlying storage

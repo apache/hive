@@ -29,13 +29,13 @@ PREHOOK: Output: default@flights_tiny
 POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/flights_tiny.txt' OVERWRITE INTO TABLE flights_tiny
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@flights_tiny
-PREHOOK: query: create temporary function npathtest as 'org.apache.hadoop.hive.ql.udf.ptf.NPath$NPathResolver'
+PREHOOK: query: create temporary function matchpathtest as 'org.apache.hadoop.hive.ql.udf.ptf.MatchPath$MatchPathResolver'
 PREHOOK: type: CREATEFUNCTION
-POSTHOOK: query: create temporary function npathtest as 'org.apache.hadoop.hive.ql.udf.ptf.NPath$NPathResolver'
+POSTHOOK: query: create temporary function matchpathtest as 'org.apache.hadoop.hive.ql.udf.ptf.MatchPath$MatchPathResolver'
 POSTHOOK: type: CREATEFUNCTION
-PREHOOK: query: -- 1. basic Npath test
+PREHOOK: query: -- 1. basic Matchpath test
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
-from npathtest(on 
+from matchpathtest(on 
         flights_tiny 
         distribute by fl_num 
         sort by year, month, day_of_month  
@@ -46,9 +46,9 @@ from npathtest(on
 PREHOOK: type: QUERY
 PREHOOK: Input: default@flights_tiny
 #### A masked pattern was here ####
-POSTHOOK: query: -- 1. basic Npath test
+POSTHOOK: query: -- 1. basic Matchpath test
 select origin_city_name, fl_num, year, month, day_of_month, sz, tpath 
-from npathtest(on 
+from matchpathtest(on 
         flights_tiny 
         distribute by fl_num 
         sort by year, month, day_of_month  
@@ -75,7 +75,7 @@ Washington	7291	2010	10	27	2	27
 Chicago	897	2010	10	20	4	20
 Chicago	897	2010	10	21	3	21
 Chicago	897	2010	10	22	2	22
-PREHOOK: query: drop temporary function npathtest
+PREHOOK: query: drop temporary function matchpathtest
 PREHOOK: type: DROPFUNCTION
-POSTHOOK: query: drop temporary function npathtest
+POSTHOOK: query: drop temporary function matchpathtest
 POSTHOOK: type: DROPFUNCTION

@@ -18,8 +18,12 @@
 
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
+import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.HiveVarchar;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -30,11 +34,10 @@ import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.ParameterizedObjectInspectorMap;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
-import org.apache.hadoop.hive.serde2.typeinfo.BaseTypeParams;
-import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeSpec;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -54,35 +57,6 @@ import org.apache.hadoop.io.Writable;
  */
 public final class PrimitiveObjectInspectorFactory {
 
-  public static final JavaBooleanObjectInspector javaBooleanObjectInspector =
-      new JavaBooleanObjectInspector();
-  public static final JavaByteObjectInspector javaByteObjectInspector =
-      new JavaByteObjectInspector();
-  public static final JavaShortObjectInspector javaShortObjectInspector =
-      new JavaShortObjectInspector();
-  public static final JavaIntObjectInspector javaIntObjectInspector =
-      new JavaIntObjectInspector();
-  public static final JavaLongObjectInspector javaLongObjectInspector =
-      new JavaLongObjectInspector();
-  public static final JavaFloatObjectInspector javaFloatObjectInspector =
-      new JavaFloatObjectInspector();
-  public static final JavaDoubleObjectInspector javaDoubleObjectInspector =
-      new JavaDoubleObjectInspector();
-  public static final JavaStringObjectInspector javaStringObjectInspector =
-      new JavaStringObjectInspector();
-  public static final JavaHiveVarcharObjectInspector javaHiveVarcharObjectInspector =
-      new JavaHiveVarcharObjectInspector(PrimitiveObjectInspectorUtils.varcharTypeEntry);
-  public static final JavaVoidObjectInspector javaVoidObjectInspector =
-      new JavaVoidObjectInspector();
-  public static final JavaDateObjectInspector javaDateObjectInspector =
-      new JavaDateObjectInspector();
-  public static final JavaTimestampObjectInspector javaTimestampObjectInspector =
-      new JavaTimestampObjectInspector();
-  public static final JavaBinaryObjectInspector javaByteArrayObjectInspector =
-      new JavaBinaryObjectInspector();
-  public static final JavaHiveDecimalObjectInspector javaHiveDecimalObjectInspector =
-      new JavaHiveDecimalObjectInspector();
-
   public static final WritableBooleanObjectInspector writableBooleanObjectInspector =
       new WritableBooleanObjectInspector();
   public static final WritableByteObjectInspector writableByteObjectInspector =
@@ -99,8 +73,6 @@ public final class PrimitiveObjectInspectorFactory {
       new WritableDoubleObjectInspector();
   public static final WritableStringObjectInspector writableStringObjectInspector =
       new WritableStringObjectInspector();
-  public static final WritableHiveVarcharObjectInspector writableHiveVarcharObjectInspector =
-      new WritableHiveVarcharObjectInspector(PrimitiveObjectInspectorUtils.varcharTypeEntry);
   public static final WritableVoidObjectInspector writableVoidObjectInspector =
       new WritableVoidObjectInspector();
   public static final WritableDateObjectInspector writableDateObjectInspector =
@@ -112,85 +84,132 @@ public final class PrimitiveObjectInspectorFactory {
   public static final WritableHiveDecimalObjectInspector writableHiveDecimalObjectInspector =
       new WritableHiveDecimalObjectInspector();
 
-  private static HashMap<PrimitiveCategory, AbstractPrimitiveWritableObjectInspector> cachedPrimitiveWritableInspectorCache =
-      new HashMap<PrimitiveCategory, AbstractPrimitiveWritableObjectInspector>();
+  // Map from PrimitiveTypeInfo to AbstractPrimitiveWritableObjectInspector.
+  private static HashMap<PrimitiveTypeInfo, AbstractPrimitiveWritableObjectInspector> cachedPrimitiveWritableInspectorCache =
+      new HashMap<PrimitiveTypeInfo, AbstractPrimitiveWritableObjectInspector>();
   static {
-    cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.BOOLEAN,
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BOOLEAN_TYPE_NAME),
         writableBooleanObjectInspector);
-    cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.BYTE,
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.TINYINT_TYPE_NAME),
         writableByteObjectInspector);
-    cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.SHORT,
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.SMALLINT_TYPE_NAME),
         writableShortObjectInspector);
-    cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.INT,
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.INT_TYPE_NAME),
         writableIntObjectInspector);
-    cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.LONG,
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BIGINT_TYPE_NAME),
         writableLongObjectInspector);
-    cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.FLOAT,
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.FLOAT_TYPE_NAME),
         writableFloatObjectInspector);
-    cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.DOUBLE,
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.DOUBLE_TYPE_NAME),
         writableDoubleObjectInspector);
-    cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.STRING,
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME),
         writableStringObjectInspector);
-    cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.VARCHAR,
-        writableHiveVarcharObjectInspector);
-    cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.VOID,
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.VOID_TYPE_NAME),
         writableVoidObjectInspector);
-    cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.DATE,
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.DATE_TYPE_NAME),
         writableDateObjectInspector);
-    cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.TIMESTAMP,
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.TIMESTAMP_TYPE_NAME),
         writableTimestampObjectInspector);
-    cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.BINARY,
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME),
         writableBinaryObjectInspector);
-    cachedPrimitiveWritableInspectorCache.put(PrimitiveCategory.DECIMAL,
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.DECIMAL_TYPE_NAME),
         writableHiveDecimalObjectInspector);
   }
 
-  private static HashMap<PrimitiveCategory, AbstractPrimitiveJavaObjectInspector> cachedPrimitiveJavaInspectorCache =
-      new HashMap<PrimitiveCategory, AbstractPrimitiveJavaObjectInspector>();
+  private static Map<PrimitiveCategory, AbstractPrimitiveWritableObjectInspector> primitiveCategoryToWritableOI =
+      new EnumMap<PrimitiveCategory, AbstractPrimitiveWritableObjectInspector>(PrimitiveCategory.class);
   static {
-    cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.BOOLEAN,
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.BOOLEAN, writableBooleanObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.BYTE, writableByteObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.SHORT, writableShortObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.INT, writableIntObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.LONG, writableLongObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.FLOAT, writableFloatObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.DOUBLE, writableDoubleObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.STRING, writableStringObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.VOID, writableVoidObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.DATE, writableDateObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.TIMESTAMP, writableTimestampObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.BINARY, writableBinaryObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.DECIMAL, writableHiveDecimalObjectInspector);
+  }
+
+  public static final JavaBooleanObjectInspector javaBooleanObjectInspector =
+      new JavaBooleanObjectInspector();
+  public static final JavaByteObjectInspector javaByteObjectInspector =
+      new JavaByteObjectInspector();
+  public static final JavaShortObjectInspector javaShortObjectInspector =
+      new JavaShortObjectInspector();
+  public static final JavaIntObjectInspector javaIntObjectInspector =
+      new JavaIntObjectInspector();
+  public static final JavaLongObjectInspector javaLongObjectInspector =
+      new JavaLongObjectInspector();
+  public static final JavaFloatObjectInspector javaFloatObjectInspector =
+      new JavaFloatObjectInspector();
+  public static final JavaDoubleObjectInspector javaDoubleObjectInspector =
+      new JavaDoubleObjectInspector();
+  public static final JavaStringObjectInspector javaStringObjectInspector =
+      new JavaStringObjectInspector();
+  public static final JavaVoidObjectInspector javaVoidObjectInspector =
+      new JavaVoidObjectInspector();
+  public static final JavaDateObjectInspector javaDateObjectInspector =
+      new JavaDateObjectInspector();
+  public static final JavaTimestampObjectInspector javaTimestampObjectInspector =
+      new JavaTimestampObjectInspector();
+  public static final JavaBinaryObjectInspector javaByteArrayObjectInspector =
+      new JavaBinaryObjectInspector();
+  public static final JavaHiveDecimalObjectInspector javaHiveDecimalObjectInspector =
+      new JavaHiveDecimalObjectInspector();
+
+  // Map from PrimitiveTypeInfo to AbstractPrimitiveJavaObjectInspector.
+  private static HashMap<PrimitiveTypeInfo, AbstractPrimitiveJavaObjectInspector> cachedPrimitiveJavaInspectorCache =
+      new HashMap<PrimitiveTypeInfo, AbstractPrimitiveJavaObjectInspector>();
+  static {
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BOOLEAN_TYPE_NAME),
         javaBooleanObjectInspector);
-    cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.BYTE,
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.TINYINT_TYPE_NAME),
         javaByteObjectInspector);
-    cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.SHORT,
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.SMALLINT_TYPE_NAME),
         javaShortObjectInspector);
-    cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.INT,
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.INT_TYPE_NAME),
         javaIntObjectInspector);
-    cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.LONG,
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BIGINT_TYPE_NAME),
         javaLongObjectInspector);
-    cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.FLOAT,
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.FLOAT_TYPE_NAME),
         javaFloatObjectInspector);
-    cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.DOUBLE,
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.DOUBLE_TYPE_NAME),
         javaDoubleObjectInspector);
-    cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.STRING,
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME),
         javaStringObjectInspector);
-    cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.VARCHAR,
-        javaHiveVarcharObjectInspector);
-    cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.VOID,
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.VOID_TYPE_NAME),
         javaVoidObjectInspector);
-    cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.DATE,
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.DATE_TYPE_NAME),
         javaDateObjectInspector);
-    cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.TIMESTAMP,
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.TIMESTAMP_TYPE_NAME),
         javaTimestampObjectInspector);
-    cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.BINARY,
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME),
         javaByteArrayObjectInspector);
-    cachedPrimitiveJavaInspectorCache.put(PrimitiveCategory.DECIMAL,
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.DECIMAL_TYPE_NAME),
         javaHiveDecimalObjectInspector);
   }
 
-  /**
-   * Cached Writable object inspectors for parameterized primitive types.
-   */
-  private static ParameterizedObjectInspectorMap
-      cachedParameterizedPrimitiveWritableObjectInspectorCache =
-          new ParameterizedObjectInspectorMap();
-
-  /**
-   * Cached Java object inspectors for parameterized primitive types.
-   */
-  private static ParameterizedObjectInspectorMap
-  cachedParameterizedPrimitiveJavaObjectInspectorCache =
-      new ParameterizedObjectInspectorMap();
+  private static Map<PrimitiveCategory, AbstractPrimitiveJavaObjectInspector> primitiveCategoryToJavaOI =
+      new EnumMap<PrimitiveCategory, AbstractPrimitiveJavaObjectInspector>(PrimitiveCategory.class);
+  static {
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.BOOLEAN, javaBooleanObjectInspector);
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.BYTE, javaByteObjectInspector);
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.SHORT, javaShortObjectInspector);
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.INT, javaIntObjectInspector);
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.LONG, javaLongObjectInspector);
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.FLOAT, javaFloatObjectInspector);
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.DOUBLE, javaDoubleObjectInspector);
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.STRING, javaStringObjectInspector);
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.VOID, javaVoidObjectInspector);
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.DATE, javaDateObjectInspector);
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.TIMESTAMP, javaTimestampObjectInspector);
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.BINARY, javaByteArrayObjectInspector);
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.DECIMAL, javaHiveDecimalObjectInspector);
+  }
 
   /**
    * Returns the PrimitiveWritableObjectInspector for the PrimitiveCategory.
@@ -199,61 +218,38 @@ public final class PrimitiveObjectInspectorFactory {
    */
   public static AbstractPrimitiveWritableObjectInspector getPrimitiveWritableObjectInspector(
       PrimitiveCategory primitiveCategory) {
-    AbstractPrimitiveWritableObjectInspector result =
-        cachedPrimitiveWritableInspectorCache.get(primitiveCategory);
+    AbstractPrimitiveWritableObjectInspector result = primitiveCategoryToWritableOI.get(primitiveCategory);
+
     if (result == null) {
       throw new RuntimeException("Internal error: Cannot find ObjectInspector "
           + " for " + primitiveCategory);
     }
+
     return result;
   }
 
   /**
-   * Returns the PrimitiveWritableObjectInspector for the PrimitiveCategory, with option to
-   * pass in parameters for the primitive type (such as char(10)).
-   * Ideally this method should be used over the method without type parameters,
-   * and the type parameters (or lack of parameters) can be determined from
-   * the input ObjectInspector, TypeInfo, or TypeEntry.
-   * However there are situations where it is not possible to get any information about
-   * type parameters, such as when getting an object inspector based on reflection from
-   * the java or primitive class.
-   * @param primitiveCategory    Primitve type category
-   * @param primitiveTypeParams  Type parameters for the primitve type.
-   *        Set to null if there are no type parameters
-   * @return
+   * Returns the PrimitiveWritableObjectInspector for the given type info
+   * @param PrimitiveTypeInfo    PrimitiveTypeInfo instance
+   * @return AbstractPrimitiveWritableObjectInspector instance
    */
   public static AbstractPrimitiveWritableObjectInspector getPrimitiveWritableObjectInspector(
-      PrimitiveTypeSpec typeSpec) {
-    PrimitiveCategory primitiveCategory = typeSpec.getPrimitiveCategory();
-    BaseTypeParams primitiveTypeParams = typeSpec.getTypeParams();
-
-    if (primitiveTypeParams == null) {
-      // No type params, just search the unparameterized types
-      return getPrimitiveWritableObjectInspector(primitiveCategory);
-    } else {
-      // Check our cached set of parameterized object inspectors for the primitive category,
-      // or create a new object inspector if one doesn't exist yet.
-      PrimitiveObjectInspector oi =
-          cachedParameterizedPrimitiveWritableObjectInspectorCache.getObjectInspector(
-              typeSpec);
-      if (oi == null) {
-        // Do a bit of validation - not all primitive types use parameters.
-        switch (primitiveCategory) {
-          case VARCHAR:
-            PrimitiveTypeEntry typeEntry = PrimitiveObjectInspectorUtils.getTypeEntryFromTypeSpecs(
-                primitiveCategory,
-                primitiveTypeParams);
-            oi = new WritableHiveVarcharObjectInspector(typeEntry);
-            oi.setTypeParams(primitiveTypeParams);
-            cachedParameterizedPrimitiveWritableObjectInspectorCache.setObjectInspector(oi);
-            break;
-          default:
-            throw new RuntimeException(
-                "Primitve type " + primitiveCategory + " should not take parameters");
-        }
-      }
-      return (AbstractPrimitiveWritableObjectInspector)oi;
+      PrimitiveTypeInfo typeInfo) {
+    AbstractPrimitiveWritableObjectInspector result = cachedPrimitiveWritableInspectorCache.get(typeInfo);
+    if (result != null) {
+      return result;
     }
+
+    switch (typeInfo.getPrimitiveCategory()) {
+    case VARCHAR:
+      result = new WritableHiveVarcharObjectInspector((VarcharTypeInfo)typeInfo);
+      break;
+      default:
+        throw new RuntimeException("Failed to create WritableHiveVarcharObjectInspector for " + typeInfo );
+    }
+
+    cachedPrimitiveWritableInspectorCache.put(typeInfo, result);
+    return result;
   }
 
   /**
@@ -264,26 +260,8 @@ public final class PrimitiveObjectInspectorFactory {
    * @param value
    */
   public static ConstantObjectInspector getPrimitiveWritableConstantObjectInspector(
-      PrimitiveCategory primitiveCategory, Object value) {
-    return getPrimitiveWritableConstantObjectInspector(
-        PrimitiveObjectInspectorUtils.getTypeEntryFromTypeSpecs(primitiveCategory, null),
-        value);
-  }
-
-  /**
-   * Returns a PrimitiveWritableObjectInspector which implements ConstantObjectInspector
-   * for the PrimitiveCategory.
-   *
-   * @param primitiveCategory
-   * @param typeParams  Type qualifiers for the type (if applicable)
-   * @param value
-   */
-  public static ConstantObjectInspector getPrimitiveWritableConstantObjectInspector(
-      PrimitiveTypeSpec typeSpecs, Object value) {
-    PrimitiveCategory primitiveCategory = typeSpecs.getPrimitiveCategory();
-    BaseTypeParams typeParams = typeSpecs.getTypeParams();
-
-    switch (primitiveCategory) {
+      PrimitiveTypeInfo typeInfo, Object value) {
+    switch (typeInfo.getPrimitiveCategory()) {
     case BOOLEAN:
       return new WritableConstantBooleanObjectInspector((BooleanWritable)value);
     case BYTE:
@@ -301,8 +279,8 @@ public final class PrimitiveObjectInspectorFactory {
     case STRING:
       return new WritableConstantStringObjectInspector((Text)value);
     case VARCHAR:
-      return new WritableConstantHiveVarcharObjectInspector((HiveVarcharWritable)value,
-          (VarcharTypeParams) typeParams);
+      return new WritableConstantHiveVarcharObjectInspector((VarcharTypeInfo)typeInfo,
+          (HiveVarcharWritable)value);
     case DATE:
       return new WritableConstantDateObjectInspector((DateWritable)value);
     case TIMESTAMP:
@@ -315,7 +293,7 @@ public final class PrimitiveObjectInspectorFactory {
       return new WritableVoidObjectInspector();
     default:
       throw new RuntimeException("Internal error: Cannot find "
-        + "ConstantObjectInspector for " + primitiveCategory);
+        + "ConstantObjectInspector for " + typeInfo);
     }
   }
 
@@ -326,62 +304,40 @@ public final class PrimitiveObjectInspectorFactory {
    */
   public static AbstractPrimitiveJavaObjectInspector getPrimitiveJavaObjectInspector(
       PrimitiveCategory primitiveCategory) {
-    AbstractPrimitiveJavaObjectInspector result =
-        cachedPrimitiveJavaInspectorCache.get(primitiveCategory);
+    AbstractPrimitiveJavaObjectInspector result = primitiveCategoryToJavaOI.get(primitiveCategory);
+
     if (result == null) {
       throw new RuntimeException("Internal error: Cannot find ObjectInspector "
           + " for " + primitiveCategory);
     }
+
     return result;
   }
 
   /**
-   * Returns the PrimitiveJavaObjectInspector for the PrimitiveCategory, with option to
-   * pass in parameters for the primitive type (such as char(10)).
-   * Ideally this method should be used over the method without type parameters,
-   * and the type parameters (or lack of parameters) can be determined from
-   * the input ObjectInspector, TypeInfo, or TypeEntry.
-   * However there are situations where it is not possible to get any information about
-   * type parameters, such as when getting an object inspector based on reflection from
-   * the java or primitive class.
-   * @param primitiveCategory    Primitve type category
-   * @param primitiveTypeParams  Type parameters for the primitve type.
-   *        Set to null if there are no type parameters
-   * @return
+   * Returns the PrimitiveJavaObjectInspector for the given PrimitiveTypeInfo instance,
+   * @param PrimitiveTypeInfo    PrimitiveTypeInfo instance
+   * @return AbstractPrimitiveJavaObjectInspector instance
    */
   public static AbstractPrimitiveJavaObjectInspector getPrimitiveJavaObjectInspector(
-        PrimitiveTypeSpec typeSpec) {
-    PrimitiveCategory primitiveCategory = typeSpec.getPrimitiveCategory();
-    BaseTypeParams primitiveTypeParams = typeSpec.getTypeParams();
-
-    if (primitiveTypeParams == null) {
-      // No type params, just search the unparameterized types
-      return getPrimitiveJavaObjectInspector(primitiveCategory);
-    } else {
-      // Check our cached set of parameterized object inspectors for the primitive category,
-      // or create a new object inspector if one doesn't exist yet.
-      PrimitiveObjectInspector oi =
-          cachedParameterizedPrimitiveJavaObjectInspectorCache.getObjectInspector(
-              typeSpec);
-      if (oi == null) {
-        // Do a bit of validation - not all primitive types use parameters.
-        switch (primitiveCategory) {
-          case VARCHAR:
-            PrimitiveTypeEntry typeEntry = PrimitiveObjectInspectorUtils.getTypeEntryFromTypeSpecs(
-                primitiveCategory,
-                primitiveTypeParams);
-            oi = new JavaHiveVarcharObjectInspector(typeEntry);
-            oi.setTypeParams(primitiveTypeParams);
-            cachedParameterizedPrimitiveJavaObjectInspectorCache.setObjectInspector(oi);
-            break;
-          default:
-            throw new RuntimeException(
-                "Primitve type " + primitiveCategory + " should not take parameters");
-        }
-      }
-      return (AbstractPrimitiveJavaObjectInspector)oi;
+        PrimitiveTypeInfo typeInfo) {
+    AbstractPrimitiveJavaObjectInspector result = cachedPrimitiveJavaInspectorCache.get(typeInfo);
+    if (result != null) {
+      return result;
     }
+
+    switch (typeInfo.getPrimitiveCategory()) {
+    case VARCHAR:
+      result = new JavaHiveVarcharObjectInspector((VarcharTypeInfo)typeInfo);
+      break;
+      default:
+        throw new RuntimeException("Failed to create JavaHiveVarcharObjectInspector for " + typeInfo );
+    }
+
+    cachedPrimitiveJavaInspectorCache.put(typeInfo, result);
+    return result;
   }
+
   /**
    * Returns an ObjectInspector for a primitive Class. The Class can be a Hive
    * Writable class, or a Java Primitive Class.
