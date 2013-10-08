@@ -73,6 +73,12 @@ public class HiveSchemaHelper {
      * @return
      */
     public String cleanseCommand(String dbCommand);
+
+    /***
+     * Does the DB required table/column names quoted
+     * @return
+     */
+    public boolean needsQuotedIdentifier();
   }
 
 
@@ -114,6 +120,11 @@ public class HiveSchemaHelper {
             dbCommand.length() - getDelimiter().length());
       }
       return dbCommand;
+    }
+
+    @Override
+    public boolean needsQuotedIdentifier() {
+      return false;
     }
   }
 
@@ -214,6 +225,11 @@ public class HiveSchemaHelper {
     @Override
     public boolean isNestedScript(String dbCommand) {
       return dbCommand.startsWith(POSTGRES_NESTING_TOKEN);
+    }
+
+    @Override
+    public boolean needsQuotedIdentifier() {
+      return true;
     }
   }
 
