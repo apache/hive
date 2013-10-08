@@ -17,12 +17,12 @@ PREHOOK: Input: default@tmp_showcrt1
 POSTHOOK: query: SHOW CREATE TABLE tmp_showcrt1
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@tmp_showcrt1
-CREATE EXTERNAL TABLE tmp_showcrt1(
-  key string, 
-  newvalue boolean COMMENT 'a new value')
+CREATE EXTERNAL TABLE `tmp_showcrt1`(
+  `key` string, 
+  `newvalue` boolean COMMENT 'a new value')
 COMMENT 'temporary table'
 PARTITIONED BY ( 
-  value bigint COMMENT 'some value')
+  `value` bigint COMMENT 'some value')
 ROW FORMAT SERDE 
   'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe' 
 STORED AS INPUTFORMAT 
