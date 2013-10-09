@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.reportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.io.Writable;
@@ -62,6 +63,7 @@ public class MapRecordProcessor  extends RecordProcessor{
   @Override
   void init(JobConf jconf, MRTaskReporter mrReporter, Map<String, LogicalInput> inputs,
       OutputCollector out){
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
     super.init(jconf, mrReporter, inputs, out);
 
     //Update JobConf using MRInput, info like filename comes via this
@@ -121,6 +123,7 @@ public class MapRecordProcessor  extends RecordProcessor{
         throw new RuntimeException("Map operator initialization failed", e);
       }
     }
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
   }
 
   private MRInput getMRInput(Map<String, LogicalInput> inputs) {

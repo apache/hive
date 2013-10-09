@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
@@ -50,6 +51,8 @@ public abstract class RecordProcessor  {
 
   private long numRows = 0;
   private long nextUpdateCntr = 1;
+  protected PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  protected String CLASS_NAME = RecordProcessor.class.getName();
 
 
   /**
@@ -84,7 +87,6 @@ public abstract class RecordProcessor  {
     } catch (Exception e) {
       l4j.info("cannot get classpath: " + e.getMessage());
     }
-
   }
 
   /**

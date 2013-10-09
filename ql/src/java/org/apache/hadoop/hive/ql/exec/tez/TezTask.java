@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.exec.JobCloseFeedBack;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.EdgeType;
@@ -56,6 +57,9 @@ import org.apache.tez.dag.api.client.DAGClient;
  */
 @SuppressWarnings({"serial", "deprecation"})
 public class TezTask extends Task<TezWork> {
+
+  private static final String CLASS_NAME = TezTask.class.getName();
+  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
 
   public TezTask() {
     super();
@@ -85,6 +89,7 @@ public class TezTask extends Task<TezWork> {
       if (!session.isOpen()) {
         // can happen if the user sets the tez flag after the session was
         // established
+        LOG.info("Tez session hasn't been created yet. Opening session");
         session.open(ss.getSessionId(), conf);
       }
 
@@ -138,6 +143,7 @@ public class TezTask extends Task<TezWork> {
       LocalResource appJarLr, Context ctx)
       throws Exception {
 
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_BUILD_DAG);
     Map<BaseWork, Vertex> workToVertex = new HashMap<BaseWork, Vertex>();
     Map<BaseWork, JobConf> workToConf = new HashMap<BaseWork, JobConf>();
 
@@ -162,10 +168,12 @@ public class TezTask extends Task<TezWork> {
       boolean isFinal = work.getLeaves().contains(w);
 
       // translate work to vertex
+      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_CREATE_VERTEX + w.getName());
       JobConf wxConf = DagUtils.initializeVertexConf(conf, w);
       Vertex wx = DagUtils.createVertex(wxConf, w, tezDir,
          appJarLr, additionalLr, fs, ctx, !isFinal);
       dag.addVertex(wx);
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_CREATE_VERTEX + w.getName());
       workToVertex.put(w, wx);
       workToConf.put(w, wxConf);
 
@@ -180,7 +188,7 @@ public class TezTask extends Task<TezWork> {
         dag.addEdge(e);
       }
     }
-
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_BUILD_DAG);
     return dag;
   }
 
@@ -188,9 +196,12 @@ public class TezTask extends Task<TezWork> {
       LocalResource appJarLr, TezSession session)
       throws IOException, TezException, InterruptedException {
 
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
+
     // ready to start execution on the cluster
     DAGClient dagClient = session.submitDAG(dag);
 
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
     return dagClient;
   }
 

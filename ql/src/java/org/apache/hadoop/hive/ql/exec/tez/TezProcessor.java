@@ -23,6 +23,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.tez.common.TezUtils;
@@ -46,6 +47,9 @@ public class TezProcessor implements LogicalIOProcessor {
 
   private JobConf jobConf;
 
+  private static final String CLASS_NAME = TezProcessor.class.getName();
+  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+
   private TezProcessorContext processorContext;
 
   public TezProcessor(boolean isMap) {
@@ -67,16 +71,19 @@ public class TezProcessor implements LogicalIOProcessor {
   @Override
   public void initialize(TezProcessorContext processorContext)
       throws IOException {
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INITIALIZE_PROCESSOR);
     this.processorContext = processorContext;
     //get the jobconf
     byte[] userPayload = processorContext.getUserPayload();
     Configuration conf = TezUtils.createConfFromUserPayload(userPayload);
     this.jobConf = new JobConf(conf);
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_INITIALIZE_PROCESSOR);
   }
 
   @Override
   public void run(Map<String, LogicalInput> inputs, Map<String, LogicalOutput> outputs)
       throws Exception {
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
     // in case of broadcast-join read the broadcast edge inputs
     // (possibly asynchronously)
 
@@ -106,6 +113,7 @@ public class TezProcessor implements LogicalIOProcessor {
     rproc.run();
 
     //done - output does not need to be committed as hive does not use outputcommitter
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_PROCESSOR);
   }
 
   /**
