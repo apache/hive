@@ -130,9 +130,9 @@ public class MetaStoreSchemaInfo {
     return UPGRADE_FILE_PREFIX +  fileVersion + "." + dbType + SQL_FILE_EXTENSION;
   }
 
-  // Current hive version, remove the 'SNAPSHOT' part if needed
+  // Current hive version, in majorVersion.minorVersion.changeVersion format
   public static String getHiveSchemaVersion() {
-    return HiveVersionInfo.getVersion().replace("-SNAPSHOT", "");
+    return HiveVersionInfo.getShortVersion();
   }
 
 }

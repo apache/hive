@@ -58,6 +58,14 @@ public class HiveVersionInfo {
   }
 
   /**
+   * Get the Hive short version, with major/minor/change version numbers.
+   * @return short version string, eg. "0.6.3"
+   */
+  public static String getShortVersion() {
+    return version != null ? version.shortVersion() : "Unknown";
+  }
+
+  /**
    * Get the subversion revision number for the root directory
    * @return the revision number, eg. "451451"
    */
