@@ -18,38 +18,37 @@
 
 package org.apache.hadoop.hive.ql.exec.tez;
 
-import static org.apache.tez.dag.api.client.DAGStatus.State.*;
+import static org.apache.tez.dag.api.client.DAGStatus.State.RUNNING;
 
 import java.io.IOException;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.tez.client.TezClient;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.client.DAGClient;
 import org.apache.tez.dag.api.client.DAGStatus;
 import org.apache.tez.dag.api.client.Progress;
 
 /**
- * TezJobMonitor keeps track of a tez job while it's being executed. It will 
- * print status to the console and retrieve final status of the job after 
+ * TezJobMonitor keeps track of a tez job while it's being executed. It will
+ * print status to the console and retrieve final status of the job after
  * completion.
  */
 public class TezJobMonitor {
-  
-  static final private Log LOG = LogFactory.getLog(TezJobMonitor.class.getName());
+
+  private static final Log LOG = LogFactory.getLog(TezJobMonitor.class.getName());
+  private static final String CLASS_NAME = TezJobMonitor.class.getName();
 
   private transient LogHelper console;
+  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private Set<String> completed;
 
   public TezJobMonitor() {
     console = new LogHelper(LOG);
@@ -64,6 +63,7 @@ public class TezJobMonitor {
    */
   public int monitorExecution(DAGClient dagClient) throws InterruptedException {
     DAGStatus status = null;
+    completed = new HashSet<String>();
 
     boolean running = false;
     boolean done = false;
@@ -75,14 +75,16 @@ public class TezJobMonitor {
     int rc = 0;
     DAGStatus.State lastState = null;
     String lastReport = null;
-    
+
     console.printInfo("\n");
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_DAG);
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_TO_RUNNING);
 
     while(true) {
       ++counter;
 
       try {
-        status = dagClient.getDAGStatus();      
+        status = dagClient.getDAGStatus();
         Map<String, Progress> progressMap = status.getVertexProgress();
         failedCounter = 0;
         DAGStatus.State state = status.getState();
@@ -99,11 +101,12 @@ public class TezJobMonitor {
             break;
           case RUNNING:
             if (!running) {
+              perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_TO_RUNNING);
               console.printInfo("Status: Running\n");
               printTaskNumbers(progressMap, console);
               running = true;
             }
-            
+
             if (counter % printInterval/checkInterval == 0) {
               lastReport = printStatus(progressMap, lastReport, console);
             }
@@ -155,6 +158,7 @@ public class TezJobMonitor {
       }
       Thread.sleep(500);
     }
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_DAG);
     return rc;
   }
 
@@ -165,6 +169,10 @@ public class TezJobMonitor {
     for (String s: keys) {
       Progress progress = progressMap.get(s);
       int percentComplete = (int) (100 * progress.getSucceededTaskCount() / (float) progress.getTotalTaskCount());
+      if (percentComplete == 100 && !completed.contains(s)) {
+        completed.add(s);
+        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
+      }
       reportBuffer.append(String.format("%s: %3d%% complete\t", s, percentComplete));
     }
 
@@ -178,9 +186,10 @@ public class TezJobMonitor {
 
   private void printTaskNumbers(Map<String, Progress> progressMap, LogHelper console) {
     StringBuffer reportBuffer = new StringBuffer();
-    
+
     SortedSet<String> keys = new TreeSet<String>(progressMap.keySet());
     for (String s: keys) {
+      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
       Progress progress = progressMap.get(s);
       int numTasks = progress.getTotalTaskCount();
       if (numTasks == 1) {
@@ -189,7 +198,7 @@ public class TezJobMonitor {
         reportBuffer.append(String.format("%s: %7d tasks\t", s, numTasks));
       }
     }
-    
+
     String report = reportBuffer.toString();
     console.printInfo(report);
     console.printInfo("");

@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.persistence.MapJoinObjectSerDeContext;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinRowContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainer;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinTableContainerSerDe;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
@@ -44,6 +45,8 @@ import org.apache.hadoop.util.ReflectionUtils;
 public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implements Serializable {
   private static final long serialVersionUID = 1L;
   private static final Log LOG = LogFactory.getLog(MapJoinOperator.class.getName());
+  private static final String CLASS_NAME = MapJoinOperator.class.getName();
+  private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
 
   private transient String tableKey;
   private transient String serdeKey;
@@ -148,11 +151,12 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         hashTblInitedOnce = true;
       }
     }
-
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
     loader.load(this.getExecContext(), hconf, this.getConf(),
         posBigTable, mapJoinTables, mapJoinTableSerdes);
     cache.cache(tableKey, mapJoinTables);
     cache.cache(serdeKey, mapJoinTableSerdes);
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.LOAD_HASHTABLE);
   }
 
   // Load the hash table

@@ -53,6 +53,17 @@ public class PerfLogger {
   public static final String FAILURE_HOOK = "FailureHook.";
   public static final String DRIVER_RUN = "Driver.run";
   public static final String TIME_TO_SUBMIT = "TimeToSubmit";
+  public static final String TEZ_SUBMIT_TO_RUNNING = "TezSubmitToRunningDag";
+  public static final String TEZ_BUILD_DAG = "TezBuildDag";
+  public static final String TEZ_SUBMIT_DAG = "TezSubmitDag";
+  public static final String TEZ_RUN_DAG = "TezRunDag";
+  public static final String TEZ_CREATE_VERTEX = "TezCreateVertex.";
+  public static final String TEZ_RUN_VERTEX = "TezRunVertex.";
+  public static final String TEZ_INITIALIZE_PROCESSOR = "TezInitializeProcessor";
+  public static final String TEZ_RUN_PROCESSOR = "TezRunProcessor";
+  public static final String TEZ_INIT_OPERATORS = "TezInitializeOperators";
+  public static final String LOAD_HASHTABLE = "LoadHashtable";
+
 
   protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<PerfLogger>();
 
