@@ -64,6 +64,18 @@ public class TestStorageBasedClientSideAuthorizationProvider extends
     setPermissions(location,"-r--r--r--");
   }
 
+  @Override
+  protected void allowDropOnTable(String tblName, String userName, String location)
+      throws Exception {
+    setPermissions(location,"-rwxr--r--");
+  }
+
+  @Override
+  protected void allowDropOnDb(String dbName, String userName, String location)
+      throws Exception {
+    setPermissions(location,"-rwxr--r--");
+  }
+
   private void setPermissions(String locn, String permissions) throws Exception {
     FileSystem fs = FileSystem.get(new URI(locn), clientHiveConf);
     fs.setPermission(new Path(locn), FsPermission.valueOf(permissions));
@@ -74,6 +86,17 @@ public class TestStorageBasedClientSideAuthorizationProvider extends
     assertNotNull(ret);
     assertFalse(0 == ret.getResponseCode());
     assertTrue(ret.getErrorMessage().indexOf("not permitted") != -1);
+  }
+
+
+  @Override
+  protected String getTestDbName(){
+    return super.getTestDbName() + "_SBAP";
+  }
+
+  @Override
+  protected String getTestTableName(){
+    return super.getTestTableName() + "_SBAP";
   }
 
 }
