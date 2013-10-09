@@ -18,22 +18,23 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-public class FuncLogWithBaseDoubleToDouble extends MathFuncDoubleToDouble {
+
+public class FuncLogWithBaseDoubleToDouble extends MathFuncDoubleToDouble
+    implements ISetDoubleArg {
   private static final long serialVersionUID = 1L;
 
   private double base;
 
-  FuncLogWithBaseDoubleToDouble(int colNum, double base, int outputColumn) {
+  public FuncLogWithBaseDoubleToDouble(int colNum, int outputColumn) {
     super(colNum, outputColumn);
-    this.base = base;
   }
 
-  FuncLogWithBaseDoubleToDouble() {
+  public FuncLogWithBaseDoubleToDouble() {
     super();
   }
 
   @Override
-  double func(double d) {
+  protected double func(double d) {
     return Math.log(d) / Math.log(base);
   }
 
@@ -43,5 +44,11 @@ public class FuncLogWithBaseDoubleToDouble extends MathFuncDoubleToDouble {
 
   public void setBase(double base) {
     this.base = base;
+  }
+
+  // used to set the second argument to function (a constant base)
+  @Override
+  public void setArg(double d) {
+    this.base = d;
   }
 }

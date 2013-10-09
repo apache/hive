@@ -18,32 +18,37 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 
-/**
- * Vectorized implementation of Bin(long) function that returns string.
- */
-public class FuncBin extends FuncLongToString {
+public class FuncLogWithBaseLongToDouble extends MathFuncLongToDouble
+    implements ISetDoubleArg {
   private static final long serialVersionUID = 1L;
 
-  public FuncBin(int inputCol, int outputCol) {
-    super(inputCol, outputCol);
+  private double base;
+
+  public FuncLogWithBaseLongToDouble(int colNum, int outputColumn) {
+    super(colNum, outputColumn);
   }
 
-  public FuncBin() {
+  public FuncLogWithBaseLongToDouble() {
     super();
   }
 
   @Override
-  void prepareResult(int i, long[] vector, BytesColumnVector outV) {
-    long num = vector[i];
-    // Extract the bits of num into bytes[] from right to left
-    int len = 0;
-    do {
-      len++;
-      bytes[bytes.length - len] = (byte) ('0' + (num & 1));
-      num >>>= 1;
-    } while (num != 0);
-    outV.setVal(i, bytes, bytes.length - len, len);
+  protected double func(long l) {
+    return Math.log((double) l) / Math.log(base);
+  }
+
+  public double getBase() {
+    return base;
+  }
+
+  public void setBase(double base) {
+    this.base = base;
+  }
+
+  // used to set the second argument to function (a constant base)
+  @Override
+  public void setArg(double d) {
+    this.base = d;
   }
 }

@@ -18,32 +18,47 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 
 /**
- * Vectorized implementation of Bin(long) function that returns string.
+ * Vectorized implementation for Pow(a, power) and Power(a, power)
  */
-public class FuncBin extends FuncLongToString {
+public class FuncPowerLongToDouble extends MathFuncLongToDouble
+    implements ISetDoubleArg {
   private static final long serialVersionUID = 1L;
 
-  public FuncBin(int inputCol, int outputCol) {
-    super(inputCol, outputCol);
+  private double power;
+
+  public FuncPowerLongToDouble(int colNum, int outputColumn) {
+    super(colNum, outputColumn);
   }
 
-  public FuncBin() {
+  public FuncPowerLongToDouble() {
     super();
   }
 
   @Override
-  void prepareResult(int i, long[] vector, BytesColumnVector outV) {
-    long num = vector[i];
-    // Extract the bits of num into bytes[] from right to left
-    int len = 0;
-    do {
-      len++;
-      bytes[bytes.length - len] = (byte) ('0' + (num & 1));
-      num >>>= 1;
-    } while (num != 0);
-    outV.setVal(i, bytes, bytes.length - len, len);
+  public double func(long l) {
+    return Math.pow((double) l, power);
+  }
+
+  public double getPower() {
+    return power;
+  }
+
+  public void setPower(double power) {
+    this.power = power;
+  }
+
+  // set the second argument (the power)
+  @Override
+  public void setArg(double d) {
+    this.power = d;
+  }
+
+  @Override
+  protected void cleanup(DoubleColumnVector outputColVector, int[] sel,
+      boolean selectedInUse, int n) {
+    // do nothing
   }
 }

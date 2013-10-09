@@ -303,44 +303,63 @@ public class GenVectorCode extends Task {
       {"ColumnCompareColumn", "GreaterEqual", "double", "long", ">="},
 
       // template, <ClassNamePrefix>, <ReturnType>, <OperandType>, <FuncName>, <OperandCast>,
-      //   <ResultCast>
-      {"ColumnUnaryFunc", "FuncRound", "double", "double", "MathExpr.round", "", ""},
+      //   <ResultCast>, <Cleanup>
+      {"ColumnUnaryFunc", "FuncRound", "double", "double", "MathExpr.round", "", "", ""},
       // round(longCol) returns a long and is a no-op. So it will not be implemented here.
       // round(Col, N) is a special case and will be implemented separately from this template
-      {"ColumnUnaryFunc", "FuncFloor", "long", "double", "Math.floor", "", "(long)"},
-      // Note: floor(long) is a no-op so code generation should remove it or use
-      // an IdentityExpression
-      {"ColumnUnaryFunc", "FuncCeil", "long", "double", "Math.ceil", "", "(long)"},
-      // Similarly, ceil(long) is a no-op, so not generating code for it here
-      {"ColumnUnaryFunc", "FuncExp", "double", "double", "Math.exp", "", ""},
-      {"ColumnUnaryFunc", "FuncLn", "double", "double", "Math.log", "", ""},
-      {"ColumnUnaryFunc", "FuncLn", "double", "long", "Math.log", "(double)", ""},
-      {"ColumnUnaryFunc", "FuncLog10", "double", "double", "Math.log10", "", ""},
-      {"ColumnUnaryFunc", "FuncLog10", "double", "long", "Math.log10", "(double)", ""},
+      {"ColumnUnaryFunc", "FuncFloor", "long", "double", "Math.floor", "", "(long)", ""},
+      // Floor on an integer argument is a noop, but it is less code to handle it this way.
+      {"ColumnUnaryFunc", "FuncFloor", "long", "long", "Math.floor", "", "(long)", ""},
+      {"ColumnUnaryFunc", "FuncCeil", "long", "double", "Math.ceil", "", "(long)", ""},
+      // Ceil on an integer argument is a noop, but it is less code to handle it this way.
+      {"ColumnUnaryFunc", "FuncCeil", "long", "long", "Math.ceil", "", "(long)", ""},
+      {"ColumnUnaryFunc", "FuncExp", "double", "double", "Math.exp", "", "", ""},
+      {"ColumnUnaryFunc", "FuncExp", "double", "long", "Math.exp", "(double)", "", ""},
+      {"ColumnUnaryFunc", "FuncLn", "double", "double", "Math.log", "", "",
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
+      {"ColumnUnaryFunc", "FuncLn", "double", "long", "Math.log", "(double)", "",
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
+      {"ColumnUnaryFunc", "FuncLog10", "double", "double", "Math.log10", "", "",
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
+      {"ColumnUnaryFunc", "FuncLog10", "double", "long", "Math.log10", "(double)", "",
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
       // The MathExpr class contains helper functions for cases when existing library
       // routines can't be used directly.
-      {"ColumnUnaryFunc", "FuncLog2", "double", "double", "MathExpr.log2", "", ""},
-      {"ColumnUnaryFunc", "FuncLog2", "double", "long", "MathExpr.log2", "(double)", ""},
+      {"ColumnUnaryFunc", "FuncLog2", "double", "double", "MathExpr.log2", "", "",
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
+      {"ColumnUnaryFunc", "FuncLog2", "double", "long", "MathExpr.log2", "(double)", "",
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
       // Log(base, Col) is a special case and will be implemented separately from this template
       // Pow(col, P) and Power(col, P) are special cases implemented separately from this template
-      {"ColumnUnaryFunc", "FuncSqrt", "double", "double", "Math.sqrt", "", ""},
-      {"ColumnUnaryFunc", "FuncSqrt", "double", "long", "Math.sqrt", "(double)", ""},
-      {"ColumnUnaryFunc", "FuncAbs", "double", "double", "Math.abs", "", ""},
-      {"ColumnUnaryFunc", "FuncAbs", "long", "long", "MathExpr.abs", "", ""},
-      {"ColumnUnaryFunc", "FuncSin", "double", "double", "Math.sin", "", ""},
-      {"ColumnUnaryFunc", "FuncASin", "double", "double", "Math.asin", "", ""},
-      {"ColumnUnaryFunc", "FuncCos", "double", "double", "Math.cos", "", ""},
-      {"ColumnUnaryFunc", "FuncACos", "double", "double", "Math.acos", "", ""},
-      {"ColumnUnaryFunc", "FuncTan", "double", "double", "Math.tan", "", ""},
-      {"ColumnUnaryFunc", "FuncATan", "double", "double", "Math.atan", "", ""},
-      {"ColumnUnaryFunc", "FuncDegrees", "double", "double", "Math.toDegrees", "", ""},
-      {"ColumnUnaryFunc", "FuncRadians", "double", "double", "Math.toRadians", "", ""},
-      {"ColumnUnaryFunc", "FuncSign", "double", "double", "MathExpr.sign", "", ""},
-      {"ColumnUnaryFunc", "FuncSign", "double", "long", "MathExpr.sign", "", ""},
+      {"ColumnUnaryFunc", "FuncSqrt", "double", "double", "Math.sqrt", "", "",
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
+      {"ColumnUnaryFunc", "FuncSqrt", "double", "long", "Math.sqrt", "(double)", "",
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
+      {"ColumnUnaryFunc", "FuncAbs", "double", "double", "Math.abs", "", "", ""},
+      {"ColumnUnaryFunc", "FuncAbs", "long", "long", "MathExpr.abs", "", "", ""},
+      {"ColumnUnaryFunc", "FuncSin", "double", "double", "Math.sin", "", "", ""},
+      {"ColumnUnaryFunc", "FuncSin", "double", "long", "Math.sin", "(double)", "", ""},
+      {"ColumnUnaryFunc", "FuncASin", "double", "double", "Math.asin", "", "", ""},
+      {"ColumnUnaryFunc", "FuncASin", "double", "long", "Math.asin", "(double)", "", ""},
+      {"ColumnUnaryFunc", "FuncCos", "double", "double", "Math.cos", "", "", ""},
+      {"ColumnUnaryFunc", "FuncCos", "double", "long", "Math.cos", "(double)", "", ""},
+      {"ColumnUnaryFunc", "FuncACos", "double", "double", "Math.acos", "", "", ""},
+      {"ColumnUnaryFunc", "FuncACos", "double", "long", "Math.acos", "(double)", "", ""},
+      {"ColumnUnaryFunc", "FuncTan", "double", "double", "Math.tan", "", "", ""},
+      {"ColumnUnaryFunc", "FuncTan", "double", "long", "Math.tan", "(double)", "", ""},
+      {"ColumnUnaryFunc", "FuncATan", "double", "double", "Math.atan", "", "", ""},
+      {"ColumnUnaryFunc", "FuncATan", "double", "long", "Math.atan", "(double)", "", ""},
+      {"ColumnUnaryFunc", "FuncDegrees", "double", "double", "Math.toDegrees", "", "", ""},
+      {"ColumnUnaryFunc", "FuncDegrees", "double", "long", "Math.toDegrees", "(double)", "", ""},
+      {"ColumnUnaryFunc", "FuncRadians", "double", "double", "Math.toRadians", "", "", ""},
+      {"ColumnUnaryFunc", "FuncRadians", "double", "long", "Math.toRadians", "(double)", "", ""},
+      {"ColumnUnaryFunc", "FuncSign", "double", "double", "MathExpr.sign", "", "", ""},
+      {"ColumnUnaryFunc", "FuncSign", "double", "long", "MathExpr.sign", "(double)", "", ""},
 
 
         {"ColumnUnaryMinus", "long"},
         {"ColumnUnaryMinus", "double"},
+
 
       // template, <ClassName>, <ValueType>, <OperatorSymbol>, <DescriptionName>, <DescriptionValue>
       {"VectorUDAFMinMax", "VectorUDAFMinLong", "long", "<", "min",
@@ -722,6 +741,7 @@ public class GenVectorCode extends Task {
     String funcName = tdesc[4];
     String operandCast = tdesc[5];
     String resultCast = tdesc[6];
+    String cleanup = tdesc[7];
     // Expand, and write result
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
@@ -731,6 +751,7 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<FuncName>", funcName);
     templateString = templateString.replaceAll("<OperandCast>", operandCast);
     templateString = templateString.replaceAll("<ResultCast>", resultCast);
+    templateString = templateString.replaceAll("<Cleanup>", cleanup);
     writeFile(outputFile, templateString);
   }
 
