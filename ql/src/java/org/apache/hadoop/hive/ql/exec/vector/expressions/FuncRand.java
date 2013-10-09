@@ -31,17 +31,17 @@ public class FuncRand extends VectorExpression {
   private int outputCol;
   private Random random;
 
-  FuncRand(int outputCol) {
+  public FuncRand(int outputCol) {
     this.outputCol = outputCol;
     random = null;
   }
 
-  FuncRand(long seed, int outputCol) {
+  public FuncRand(long seed, int outputCol) {
     this.outputCol = outputCol;
-    random = new Random(seed);
+    this.random = new Random(seed);
   }
 
-  FuncRand() {
+  public FuncRand() {
   }
 
   @Override

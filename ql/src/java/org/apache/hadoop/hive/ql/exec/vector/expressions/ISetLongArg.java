@@ -18,32 +18,9 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
-
-/**
- * Vectorized implementation of Bin(long) function that returns string.
+/* Used to set the long constant argument to function
+ * (e.g. a constant number of digits to round to)
  */
-public class FuncBin extends FuncLongToString {
-  private static final long serialVersionUID = 1L;
-
-  public FuncBin(int inputCol, int outputCol) {
-    super(inputCol, outputCol);
-  }
-
-  public FuncBin() {
-    super();
-  }
-
-  @Override
-  void prepareResult(int i, long[] vector, BytesColumnVector outV) {
-    long num = vector[i];
-    // Extract the bits of num into bytes[] from right to left
-    int len = 0;
-    do {
-      len++;
-      bytes[bytes.length - len] = (byte) ('0' + (num & 1));
-      num >>>= 1;
-    } while (num != 0);
-    outV.setVal(i, bytes, bytes.length - len, len);
-  }
+public interface ISetLongArg {
+  void setArg(long l);
 }

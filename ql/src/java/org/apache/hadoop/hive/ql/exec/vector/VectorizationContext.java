@@ -41,6 +41,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprOrExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterStringColLikeStringScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterStringColRegExpStringScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncRand;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.ISetDoubleArg;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.ISetLongArg;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNotNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsTrue;
@@ -102,6 +105,21 @@ import org.apache.hadoop.hive.ql.udf.UDFSubstr;
 import org.apache.hadoop.hive.ql.udf.UDFTrim;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
+import org.apache.hadoop.hive.ql.udf.UDFAcos;
+import org.apache.hadoop.hive.ql.udf.UDFAsin;
+import org.apache.hadoop.hive.ql.udf.UDFAtan;
+import org.apache.hadoop.hive.ql.udf.UDFBin;
+import org.apache.hadoop.hive.ql.udf.UDFCeil;
+import org.apache.hadoop.hive.ql.udf.UDFConv;
+import org.apache.hadoop.hive.ql.udf.UDFCos;
+import org.apache.hadoop.hive.ql.udf.UDFDegrees;
+import org.apache.hadoop.hive.ql.udf.UDFExp;
+import org.apache.hadoop.hive.ql.udf.UDFFloor;
+import org.apache.hadoop.hive.ql.udf.UDFHex;
+import org.apache.hadoop.hive.ql.udf.UDFLn;
+import org.apache.hadoop.hive.ql.udf.UDFLog;
+import org.apache.hadoop.hive.ql.udf.UDFLog10;
+import org.apache.hadoop.hive.ql.udf.UDFLog2;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
@@ -119,8 +137,21 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper;
+import org.apache.hadoop.hive.ql.udf.UDFPower;
+import org.apache.hadoop.hive.ql.udf.UDFRadians;
+import org.apache.hadoop.hive.ql.udf.UDFRand;
+import org.apache.hadoop.hive.ql.udf.UDFRound;
+import org.apache.hadoop.hive.ql.udf.UDFSign;
+import org.apache.hadoop.hive.ql.udf.UDFSin;
+import org.apache.hadoop.hive.ql.udf.UDFSqrt;
+import org.apache.hadoop.hive.ql.udf.UDFTan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFAbs;
+
+import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -140,6 +171,14 @@ public class VectorizationContext {
   private OperatorType opType;
   //Map column number to type
   private final OutputColumnManager ocm;
+
+  // Package where custom (hand-built) vector expression classes are located.
+  private static final String CUSTOM_EXPR_PACKAGE =
+      "org.apache.hadoop.hive.ql.exec.vector.expressions";
+
+  // Package where vector expression packages generated from templates are located.
+  private static final String GENERATED_EXPR_PACKAGE =
+      "org.apache.hadoop.hive.ql.exec.vector.expressions.gen";
 
   public VectorizationContext(Map<String, Integer> columnMap,
       int initialOutputCol) {
@@ -254,7 +293,7 @@ public class VectorizationContext {
       ve = getVectorExpression((ExprNodeColumnDesc) exprDesc);
     } else if (exprDesc instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc expr = (ExprNodeGenericFuncDesc) exprDesc;
-      if (isCustomUDF(expr)) {
+      if (isCustomUDF(expr) || isLegacyPathUDF(expr)) {
         ve = getCustomUDFExpression(expr);
       } else {
         ve = getVectorExpression(expr.getGenericUDF(),
@@ -267,6 +306,26 @@ public class VectorizationContext {
       throw new HiveException("Could not vectorize expression: "+exprDesc.getName());
     }
     return ve;
+  }
+
+  /* Return true if this is one of a small set of functions for which
+   * it is significantly easier to use the old code path in vectorized
+   * mode instead of implementing a new, optimized VectorExpression.
+   *
+   * Depending on performance requirements and frequency of use, these
+   * may be implemented in the future with an optimized VectorExpression.
+   */
+  public static boolean isLegacyPathUDF(ExprNodeGenericFuncDesc expr) {
+    GenericUDF gudf = expr.getGenericUDF();
+    if (gudf instanceof GenericUDFBridge) {
+      GenericUDFBridge bridge = (GenericUDFBridge) gudf;
+      Class<? extends UDF> udfClass = bridge.getUdfClass();
+      if (udfClass.equals(UDFHex.class)
+          || udfClass.equals(UDFConv.class)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   // Return true if this is a custom UDF or custom GenericUDF.
@@ -388,6 +447,49 @@ public class VectorizationContext {
     return expr;
   }
 
+  /* For functions that take one argument, and can be translated using a vector
+   * expression class of the form
+   *   <packagePrefix>.<classPrefix><argumentType>To<resultType>
+   * The argumentType is inferred from the input expression.
+   */
+  private VectorExpression getUnaryFunctionExpression(
+      String classPrefix,
+      String resultType,
+      List<ExprNodeDesc> childExprList,
+      String packagePrefix)
+      throws HiveException {
+    ExprNodeDesc childExpr = childExprList.get(0);
+    int inputCol;
+    String colType;
+    VectorExpression v1 = null;
+    if (childExpr instanceof ExprNodeGenericFuncDesc) {
+      v1 = getVectorExpression(childExpr);
+      inputCol = v1.getOutputColumn();
+      colType = v1.getOutputType();
+    } else if (childExpr instanceof ExprNodeColumnDesc) {
+      ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) childExpr;
+      inputCol = getInputColumnIndex(colDesc.getColumn());
+      colType = colDesc.getTypeString();
+    } else {
+      throw new HiveException("Expression not supported: "+childExpr);
+    }
+    String funcInputColType = getNormalizedTypeName(colType);
+    int outputCol = ocm.allocateOutputColumn(resultType);
+    String className = packagePrefix + "."
+        + classPrefix + funcInputColType + "To" + resultType;
+    VectorExpression expr;
+    try {
+      expr = (VectorExpression) getConstructor(className).newInstance(inputCol, outputCol);
+    } catch (Exception ex) {
+      throw new HiveException(ex);
+    }
+    if (v1 != null) {
+      expr.setChildExpressions(new VectorExpression [] {v1});
+      ocm.freeOutputColumn(v1.getOutputColumn());
+    }
+    return expr;
+  }
+
   private VectorExpression getUnaryPlusExpression(List<ExprNodeDesc> childExprList)
       throws HiveException {
     ExprNodeDesc childExpr = childExprList.get(0);
@@ -446,9 +548,25 @@ public class VectorizationContext {
       return getUnaryStringExpression("StringUpper", "String", childExpr);
     } else if (udf instanceof GenericUDFConcat) {
       return getConcatExpression(childExpr);
+    } else if (udf instanceof GenericUDFAbs) {
+      return getUnaryAbsExpression(childExpr);
     }
 
     throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
+  }
+
+  private VectorExpression getUnaryAbsExpression(List<ExprNodeDesc> childExpr)
+      throws HiveException {
+    String argType = childExpr.get(0).getTypeString();
+    if (isIntFamily(argType)) {
+      return getUnaryFunctionExpression("FuncAbs", "Long", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (isFloatFamily(argType)) {
+      return getUnaryFunctionExpression("FuncAbs", "Double", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    }
+
+    throw new HiveException("Udf: Abs() not supported for argument type " + argType);
   }
 
   private VectorExpression getVectorExpression(GenericUDFToUnixTimeStamp udf,
@@ -512,9 +630,192 @@ public class VectorizationContext {
       return getUnaryStringExpression("StringRTrim", "String", childExpr);
     } else if (cl.equals(UDFTrim.class)) {
       return getUnaryStringExpression("StringTrim", "String", childExpr);
+    } else if (cl.equals(UDFSin.class)) {
+      return getUnaryFunctionExpression("FuncSin", "Double", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (cl.equals(UDFCos.class)) {
+      return getUnaryFunctionExpression("FuncCos", "Double", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (cl.equals(UDFTan.class)) {
+      return getUnaryFunctionExpression("FuncTan", "Double", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (cl.equals(UDFAsin.class)) {
+      return getUnaryFunctionExpression("FuncASin", "Double", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (cl.equals(UDFAcos.class)) {
+      return getUnaryFunctionExpression("FuncACos", "Double", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (cl.equals(UDFAtan.class)) {
+      return getUnaryFunctionExpression("FuncATan", "Double", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (cl.equals(UDFFloor.class)) {
+      return getUnaryFunctionExpression("FuncFloor", "Long", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (cl.equals(UDFCeil.class)) {
+      return getUnaryFunctionExpression("FuncCeil", "Long", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (cl.equals(UDFDegrees.class)) {
+      return getUnaryFunctionExpression("FuncDegrees", "Double", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (cl.equals(UDFRadians.class)) {
+      return getUnaryFunctionExpression("FuncRadians", "Double", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (cl.equals(UDFLn.class)) {
+      return getUnaryFunctionExpression("FuncLn", "Double", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (cl.equals(UDFLog2.class)) {
+      return getUnaryFunctionExpression("FuncLog2", "Double", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (cl.equals(UDFLog10.class)) {
+      return getUnaryFunctionExpression("FuncLog10", "Double", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (cl.equals(UDFSign.class)) {
+      return getUnaryFunctionExpression("FuncSign", "Double", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (cl.equals(UDFSqrt.class)) {
+      return getUnaryFunctionExpression("FuncSqrt", "Double", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (cl.equals(UDFExp.class)) {
+      return getUnaryFunctionExpression("FuncExp", "Double", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (cl.equals(UDFLog.class)) {
+      return getLogWithBaseExpression(childExpr);
+    } else if (cl.equals(UDFPower.class)) {
+      return getPowerExpression(childExpr);
+    } else if (cl.equals(UDFRound.class)) {
+      return getRoundExpression(childExpr);
+    } else if (cl.equals(UDFRand.class)) {
+      return getRandExpression(childExpr);
+    } else if (cl.equals(UDFBin.class)) {
+      return getUnaryStringExpression("FuncBin", "String", childExpr);
     }
 
     throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
+  }
+
+  private VectorExpression getRandExpression(List<ExprNodeDesc> childExpr)
+    throws HiveException {
+
+    // prepare one output column
+    int outputCol = ocm.allocateOutputColumn("Double");
+    if (childExpr == null || childExpr.size() == 0) {
+
+      // make no-argument vectorized Rand expression
+      return new FuncRand(outputCol);
+    } else if (childExpr.size() == 1) {
+
+      // Make vectorized Rand expression with seed
+      long seed = getLongScalar(childExpr.get(0));
+      return new FuncRand(seed, outputCol);
+    }
+
+    throw new HiveException("Vectorization error. Rand has more than 1 argument.");
+  }
+
+  private VectorExpression getRoundExpression(List<ExprNodeDesc> childExpr)
+    throws HiveException {
+
+    // Handle one-argument case
+    if (childExpr.size() == 1) {
+      return getUnaryFunctionExpression("FuncRound", "Double", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    }
+
+    // Handle two-argument case
+
+    // Try to get the second argument (the number of digits)
+    long numDigits = getLongScalar(childExpr.get(1));
+
+    // Use the standard logic for a unary function to handle the first argument.
+    VectorExpression e = getUnaryFunctionExpression("RoundWithNumDigits", "Double", childExpr,
+        CUSTOM_EXPR_PACKAGE);
+
+    // Set second argument for this special case
+    ((ISetLongArg) e).setArg(numDigits);
+    return e;
+  }
+
+  private VectorExpression getPowerExpression(List<ExprNodeDesc> childExpr)
+      throws HiveException {
+    String argType = childExpr.get(0).getTypeString();
+
+    // Try to get the second argument, typically a constant value (the power).
+    double power = getDoubleScalar(childExpr.get(1));
+
+    // Use the standard logic for a unary function to handle the first argument.
+    VectorExpression e = getUnaryFunctionExpression("FuncPower", "Double", childExpr,
+        CUSTOM_EXPR_PACKAGE);
+
+    // Set the second argument for this special case
+    ((ISetDoubleArg) e).setArg(power);
+    return e;
+  }
+
+  private VectorExpression getLogWithBaseExpression(List<ExprNodeDesc> childExpr)
+      throws HiveException {
+    if (childExpr.size() == 1) {
+
+      // No base provided, so this is equivalent to Ln
+      return getUnaryFunctionExpression("FuncLn", "Double", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (childExpr.size() == 2) {
+      String argType = childExpr.get(0).getTypeString();
+
+      // Try to get the second argument, typically a constant value (the base)
+      double base = getDoubleScalar(childExpr.get(1));
+
+      // Use the standard logic for a unary function to handle the first argument.
+      VectorExpression e = getUnaryFunctionExpression("FuncLogWithBase", "Double", childExpr,
+          CUSTOM_EXPR_PACKAGE);
+
+      // set the second argument for this special case
+      ((ISetDoubleArg) e).setArg(base);
+      return e;
+    }
+
+    throw new HiveException("Udf: Log could not be vectorized");
+  }
+
+  private double getDoubleScalar(ExprNodeDesc expr) throws HiveException {
+    if (!(expr instanceof ExprNodeConstantDesc)) {
+      throw new HiveException("Constant value expected for UDF argument. " +
+          "Non-constant argument not supported for vectorization.");
+    }
+    ExprNodeConstantDesc constExpr = (ExprNodeConstantDesc) expr;
+    Object obj = getScalarValue(constExpr);
+    if (obj instanceof Double) {
+      return ((Double) obj).doubleValue();
+    } else if (obj instanceof DoubleWritable) {
+      return ((DoubleWritable) obj).get();
+    } else if (obj instanceof Integer) {
+      return (double) ((Integer) obj).longValue();
+    } else if (obj instanceof IntWritable) {
+      return (double) ((IntWritable) obj).get();
+    }
+
+    throw new HiveException("Udf: unhandled constant type for scalar argument."
+        + "Expecting double or integer");
+  }
+
+  private long getLongScalar(ExprNodeDesc expr) throws HiveException {
+    if (!(expr instanceof ExprNodeConstantDesc)) {
+      throw new HiveException("Constant value expected for UDF argument. " +
+          "Non-constant argument not supported for vectorization.");
+    }
+    ExprNodeConstantDesc constExpr = (ExprNodeConstantDesc) expr;
+    Object obj = getScalarValue(constExpr);
+    if (obj instanceof Integer) {
+      return (long) ((Integer) obj).longValue();
+    } else if (obj instanceof IntWritable) {
+      return (long) ((IntWritable) obj).get();
+    } else if (obj instanceof Long) {
+      return ((Long) obj).longValue();
+    } else if (obj instanceof LongWritable) {
+      return ((LongWritable) obj).get();
+    }
+
+    throw new HiveException("Udf: unhandled constant type for scalar argument."
+        + "Expecting integer or bigint");
   }
 
   /* Return a vector expression for string concatenation, including the column-scalar,
@@ -708,6 +1009,16 @@ public class VectorizationContext {
       String resultType, // result type name
       List<ExprNodeDesc> childExprList) throws HiveException {
 
+      return getUnaryExpression(vectorExprClassName, resultType, childExprList,
+          CUSTOM_EXPR_PACKAGE);
+  }
+
+  private VectorExpression getUnaryExpression(String vectorExprClassName,
+      String resultType,           // result type name
+      List<ExprNodeDesc> childExprList,
+      String packagePathPrefix     // prefix of package path name
+      ) throws HiveException {
+
     /* Create an instance of the class vectorExprClassName for the input column or expression result
      * and return it.
      */
@@ -722,13 +1033,12 @@ public class VectorizationContext {
       ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) childExpr;
       inputCol = getInputColumnIndex(colDesc.getColumn());
     } else {
-      // TODO? add code to handle constant argument case
+      // constant argument case not supported
       throw new HiveException("Expression not supported: "+childExpr);
     }
     String outputColumnType = getNormalizedTypeName(resultType);
     int outputCol = ocm.allocateOutputColumn(outputColumnType);
-    String className = "org.apache.hadoop.hive.ql.exec.vector.expressions."
-       + vectorExprClassName;
+    String className = packagePathPrefix + "." + vectorExprClassName;
     VectorExpression expr;
     try {
       expr = (VectorExpression) getConstructor(className).newInstance(inputCol, outputCol);
@@ -741,6 +1051,7 @@ public class VectorizationContext {
     }
     return expr;
   }
+
 
   private VectorExpression getSubstrExpression(
       List<ExprNodeDesc> childExprList) throws HiveException {
