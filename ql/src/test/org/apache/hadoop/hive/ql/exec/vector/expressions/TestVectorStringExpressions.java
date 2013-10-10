@@ -1570,6 +1570,36 @@ public class TestVectorStringExpressions {
         )
     );
 
+    //Testing substring index starting with 1 and zero length
+
+    outV.isRepeating = true;
+    outV.noNulls = false;
+
+    expr = new StringSubstrColStartLen(0, 1, 0, 1);
+    outCol = (BytesColumnVector) batch.cols[1];
+    expr.evaluate(batch);
+    Assert.assertEquals(3, batch.size);
+    Assert.assertTrue(outCol.noNulls);
+    Assert.assertFalse(outCol.isRepeating);
+    Assert.assertEquals(0,
+        StringExpr.compare(
+            data1, 1, 0, outCol.vector[0], outCol.start[0], outCol.length[0]
+        )
+    );
+
+    Assert.assertEquals(0,
+        StringExpr.compare(
+            data2, 1, 0, outCol.vector[1], outCol.start[1], outCol.length[1]
+        )
+    );
+
+    Assert.assertEquals(0,
+        StringExpr.compare(
+            data3, 1, 0, outCol.vector[2], outCol.start[2], outCol.length[2]
+        )
+    );
+
+
     //Testing substring index starting with 0 and length equal to array length
 
     outV.isRepeating = true;
