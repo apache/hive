@@ -320,7 +320,13 @@ Release Notes - Hive - Version 0.12.0
     * [HIVE-5429] - HiveVarcharWritable length not reset when value is changed
     * [HIVE-5431] - PassthroughOutputFormat SH changes causes IllegalArgumentException
     * [HIVE-5433] - Fix varchar unit tests to work with hadoop-2.1.1
+    * [HIVE-5476] - Authorization-provider tests fail in sequential run
     * [HIVE-5477] - maven-publish fails because it can't find hive-metastore-0.12.0.pom
+    * [HIVE-5488] - some files are missing apache license headers
+    * [HIVE-5489] - NOTICE copyright dates are out of date, README needs update
+    * [HIVE-5493] - duplicate jars with different versions for guava, commons-logging
+    * [HIVE-5497] - Hive trunk broken against hadoop 0.20.2
+
 
 
 
