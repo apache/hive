@@ -17,8 +17,8 @@
 ##### Remember, this is a velocity template 
 set -x
 umask 0022
-find $localDir/$instanceName/${repositoryName}-source/build -name 'TEST-*.xml' -delete
-find $localDir/$instanceName/${repositoryName}-source/build -name 'hive.log' -delete
+echo $$
+ps fauxww
 chmod -R u+w $logDir
 rm -rf $logDir
 # makes $logDir and $logDir/tmp
@@ -35,8 +35,21 @@ fi
 export ANT_OPTS="-Xmx1g -XX:MaxPermSize=256m -Djava.io.tmpdir=$logDir/tmp ${antEnvOpts}"
 export HADOOP_ROOT_LOGGER=INFO,console
 export HADOOP_OPTS="-Dhive.log.dir=$logDir -Dhive.query.id=hadoop -Djava.io.tmpdir=$logDir/tmp"
-cd $localDir/$instanceName/${repositoryName}-source && \
-  timeout 2h ant test -Dtest.junit.output.format=xml $antArgs \
+cd $localDir/$instanceName/${repositoryName}-source || exit 1
+find ./build -name 'TEST-*.xml' -delete
+find ./build -name 'hive.log' -delete
+find ./ -name junit_metastore_db | xargs -r rm -rf 
+if [[ -s batch.pid ]]
+then
+  pid="`<batch.pid`"
+  if kill -9 -$pid 2>/dev/null
+  then
+    echo "Killed process group $pid"
+    sleep 1
+  fi
+fi
+echo "$$" > batch.pid
+timeout 2h ant ${antTestTarget} -Dtest.junit.output.format=xml \
    -Divy.default.ivy.user.dir=$localDir/$instanceName/ivy \
    -Divy.default.always.check.exact.revision=false \
    -Divy.cache.ttl.default=eternal -Divy.checkmodified=false \

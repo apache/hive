@@ -74,6 +74,7 @@ public class TestScripts  {
     templateVariables.put("javaHome", "/usr/java/jdk1.7");
     templateVariables.put("antEnvOpts", "-Dhttp.proxyHost=somehost -Dhttp.proxyPort=3128");
     templateVariables.put("antTestArgs", "-DgrammarBuild.notRequired=true -Dskip.javadoc=true");
+    templateVariables.put("antTestTarget", "testonly");
     String template = readResource("batch-exec.vm");
     String actual = getTemplateResult(template, templateVariables);
     Approvals.verify(actual);
