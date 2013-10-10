@@ -649,10 +649,12 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       conf.set("tmpfiles", files);
     }
 
-    String hadoopAuthToken =
-        System.getenv(ShimLoader.getHadoopShims().getTokenFileLocEnvName());
-    if(hadoopAuthToken != null){
-      conf.set("mapreduce.job.credentials.binary", hadoopAuthToken);
+    if(ShimLoader.getHadoopShims().isSecurityEnabled()){
+      String hadoopAuthToken =
+          System.getenv(ShimLoader.getHadoopShims().getTokenFileLocEnvName());
+      if(hadoopAuthToken != null){
+        conf.set("mapreduce.job.credentials.binary", hadoopAuthToken);
+      }
     }
 
     boolean isSilent = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESESSIONSILENT);
