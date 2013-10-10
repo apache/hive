@@ -452,6 +452,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         break;
       case FILESINK:
       case TABLESCAN:
+      case LIMIT:
         ret = true;
         break;
       default:
@@ -578,6 +579,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       case SELECT:
       case FILESINK:
       case REDUCESINK:
+      case LIMIT:
         vectorOp = OperatorFactory.getVectorOperator(op.getConf(), vContext);
         break;
       default:
