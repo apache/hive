@@ -39,6 +39,7 @@ public class TestConfiguration {
   public static final String JAVA_HOME_TEST = "javaHomeForTests";
   public static final String ANT_ENV_OPTS = "antEnvOpts";
   public static final String ANT_TEST_ARGS = "antTestArgs";
+  public static final String ANT_TEST_TARGET = "antTestTarget";
   
   private static final String REPOSITORY_TYPE = "repositoryType";
   private static final String GIT = "git";
@@ -53,6 +54,7 @@ public class TestConfiguration {
   private String antArgs;
   private String antTestArgs;
   private String antEnvOpts;
+  private String antTestTarget;
   private String repositoryType;
   private String repository;
   private String repositoryName;
@@ -84,6 +86,7 @@ public class TestConfiguration {
     antArgs =  Preconditions.checkNotNull(context.getString(ANT_ARGS), ANT_ARGS).trim();
     antTestArgs =  context.getString(ANT_TEST_ARGS, "").trim();
     antEnvOpts =  context.getString(ANT_ENV_OPTS, "").trim();
+    antTestTarget = context.getString(ANT_TEST_TARGET, "test").trim();
     javaHome =  context.getString(JAVA_HOME, "").trim();
     javaHomeForTests = context.getString(JAVA_HOME_TEST, "").trim();
     patch = Strings.nullToEmpty(null);
@@ -142,6 +145,9 @@ public class TestConfiguration {
   public String getAntEnvOpts() {
     return antEnvOpts;
   }
+  public String getAntTestTarget() {
+    return antTestTarget;
+  }
   public String getJavaHome() {
     return javaHome;
   }
@@ -178,16 +184,20 @@ public class TestConfiguration {
   public void setAntEnvOpts(String antEnvOpts) {
     this.antEnvOpts = Strings.nullToEmpty(antEnvOpts);
   }
+  public void setAntTestTarget(String antTestTarget) {
+    this.antTestTarget = Strings.nullToEmpty(antTestTarget);
+  }
   @Override
   public String toString() {
-    return "TestConfiguration [antArgs=" + antArgs + ", antEnvOpts="
-        + antEnvOpts + ", repositoryType=" + repositoryType + ", repository="
-        + repository + ", repositoryName=" + repositoryName + ", patch="
-        + patch + ", javaHome=" + javaHome + ", javaHomeForTests="
+    return "TestConfiguration [antArgs=" + antArgs + ", antTestArgs="
+        + antTestArgs + ", antEnvOpts=" + antEnvOpts + ", antTestTarget="
+        + antTestTarget + ", repositoryType=" + repositoryType
+        + ", repository=" + repository + ", repositoryName=" + repositoryName
+        + ", patch=" + patch + ", javaHome=" + javaHome + ", javaHomeForTests="
         + javaHomeForTests + ", branch=" + branch + ", jenkinsURL="
         + jenkinsURL + ", jiraUrl=" + jiraUrl + ", jiraUser=" + jiraUser
-        + ", jiraName=" + jiraName + ", clearLibraryCache=" + clearLibraryCache
-        + "]";
+        + ", jiraPassword=" + jiraPassword + ", jiraName=" + jiraName
+        + ", clearLibraryCache=" + clearLibraryCache + "]";
   }
   public static TestConfiguration fromInputStream(InputStream inputStream, Logger logger)
       throws IOException {

@@ -112,7 +112,8 @@ public class PTest {
     put("logDir", logDir.getAbsolutePath()).
     put("javaHome", configuration.getJavaHome()).
     put("javaHomeForTests", configuration.getJavaHomeForTests()).
-    put("antEnvOpts", configuration.getAntEnvOpts());
+    put("antEnvOpts", configuration.getAntEnvOpts()).
+    put("antTestTarget", configuration.getAntTestTarget());
     final ImmutableMap<String, String> templateDefaults = templateDefaultsBuilder.build();
     TestParser testParser = new TestParser(configuration.getContext(),
         new File(mExecutionContext.getLocalWorkingDirectory(), configuration.getRepositoryName() + "-source"),
@@ -231,6 +232,7 @@ public class PTest {
   private static final String JAVA_HOME_TEST = TestConfiguration.JAVA_HOME_TEST;
   private static final String ANT_TEST_ARGS = TestConfiguration.ANT_TEST_ARGS;
   private static final String ANT_ENV_OPTS = TestConfiguration.ANT_ENV_OPTS;
+  private static final String ANT_TEST_TARGET = TestConfiguration.ANT_TEST_TARGET;
   /**
    * All args override properties file settings except
    * for this one which is additive.
@@ -299,6 +301,10 @@ public class PTest {
         String antEnvOpts = Strings.nullToEmpty(commandLine.getOptionValue(ANT_ENV_OPTS)).trim();
         if(!antEnvOpts.isEmpty()) {
           conf.setAntEnvOpts(antEnvOpts);
+        }
+        String antTestTarget = Strings.nullToEmpty(commandLine.getOptionValue(ANT_TEST_TARGET)).trim();
+        if(!antTestTarget.isEmpty()) {
+          conf.setAntTestTarget(antTestTarget);
         }
         String[] supplementalAntArgs = commandLine.getOptionValues(ANT_ARG);
         if(supplementalAntArgs != null && supplementalAntArgs.length > 0) {
