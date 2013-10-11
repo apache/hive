@@ -435,7 +435,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return pctx;
   }
 
-  private boolean validateOperator(Operator<? extends OperatorDesc> op) {
+  boolean validateOperator(Operator<? extends OperatorDesc> op) {
     boolean ret = false;
     switch (op.getType()) {
       case GROUPBY:
@@ -548,7 +548,13 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private boolean validateAggregationDesc(AggregationDesc aggDesc) {
-    return supportedAggregationUdfs.contains(aggDesc.getGenericUDAFName().toLowerCase());
+    if (!supportedAggregationUdfs.contains(aggDesc.getGenericUDAFName().toLowerCase())) {
+      return false;
+    }
+    if (aggDesc.getParameters() != null) {
+      return validateExprNodeDesc(aggDesc.getParameters());
+    }
+    return true;
   }
 
   private boolean validateDataType(String type) {
@@ -569,7 +575,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return new VectorizationContext(cmap, columnCount);
   }
 
-  private Operator<? extends OperatorDesc> vectorizeOperator(Operator<? extends OperatorDesc> op,
+  Operator<? extends OperatorDesc> vectorizeOperator(Operator<? extends OperatorDesc> op,
       VectorizationContext vContext) throws HiveException {
     Operator<? extends OperatorDesc> vectorOp = null;
 
