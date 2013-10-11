@@ -68,6 +68,7 @@ import org.apache.tez.dag.api.InputDescriptor;
 import org.apache.tez.dag.api.OutputDescriptor;
 import org.apache.tez.dag.api.ProcessorDescriptor;
 import org.apache.tez.dag.api.Vertex;
+import org.apache.tez.mapreduce.common.MRInputSplitDistributor;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
@@ -233,9 +234,10 @@ public class DagUtils {
       assert mapWork.getAliasToWork().keySet().size() == 1;
 
       String alias = mapWork.getAliasToWork().keySet().iterator().next();
+      byte[] mrInput = MRHelpers.createMRInputPayload(serializedConf, null);
       map.addInput(alias,
           new InputDescriptor(MRInput.class.getName()).
-               setUserPayload(serializedConf));
+               setUserPayload(mrInput), null);
 
       map.setTaskLocationsHint(inputSplitInfo.getTaskLocationHints());
 
