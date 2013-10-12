@@ -30,11 +30,6 @@ to call at top-level: ant deploy-contrib compile-core-test
 
   <target name="compile" depends="init, setup, ivy-retrieve">
     <echo message="Project: ${ant.project.name}"/>
-    <!-- Restrict short version to just major.minor.change numbers -->
-    <propertyregex property="shortversion"
-      input="${version}" regexp="^([0-9]+\.[0-9]+\.[0-9]+)"
-      select="\1" defaultValue="${version}"
-    />
     <exec executable="bash" failonerror="true">
       <arg value="${basedir}/src/scripts/saveVersion.sh"/>
       <arg value="${version}"/>
