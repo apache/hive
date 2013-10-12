@@ -30,7 +30,8 @@ public enum HiveCommand {
   RESET(),
   DFS(),
   ADD(),
-  DELETE();
+  DELETE(),
+  COMPILE();
   private static final Set<String> COMMANDS = new HashSet<String>();
   static {
     for (HiveCommand command : HiveCommand.values()) {

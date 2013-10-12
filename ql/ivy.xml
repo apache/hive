@@ -51,6 +51,7 @@
 
     <dependency org="org.codehaus.groovy" name="groovy-all"
                 rev="${groovy.version}" />
+    <dependency org="org.apache.ant" name="ant" rev="${apacheant.version}" />
 
     <dependency org="org.json" name="json" rev="${json.version}"/>
     <dependency org="commons-collections" name="commons-collections" rev="${commons-collections.version}"/>
