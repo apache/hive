@@ -19,16 +19,17 @@
 package org.apache.hadoop.hive.ql.processors;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
+
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.sql.SQLException;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
  * CommandProcessorFactory.
@@ -75,6 +76,8 @@ public final class CommandProcessorFactory {
         return new AddResourceProcessor();
       case DELETE:
         return new DeleteResourceProcessor();
+      case COMPILE:
+        return new CompileProcessor();
       default:
         throw new AssertionError("Unknown HiveCommand " + hiveCommand);
     }

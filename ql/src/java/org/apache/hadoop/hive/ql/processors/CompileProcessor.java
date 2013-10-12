@@ -19,6 +19,7 @@ import org.apache.hadoop.hive.ql.parse.VariableSubstitution;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.ql.session.SessionState.ResourceType;
+import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.Path;
 import org.codehaus.groovy.ant.Groovyc;
@@ -202,8 +203,11 @@ public class CompileProcessor implements CommandProcessor {
       throw new CompileProcessorException("writing file", e1);
     }
     destination.mkdir();
-    g.execute();
-
+    try {
+      g.execute();
+    } catch (BuildException ex){
+      throw new CompileProcessorException("Problem compiling", ex);
+    }
     File testArchive = new File(ioTempFile, jarId + ".jar");
     JarArchiveOutputStream out = null;
     try {
