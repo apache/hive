@@ -138,10 +138,10 @@ public class TestMetastoreExpr extends TestCase {
     checkExpr(3, dbName, tblName, e.val("p11").strCol("p1").pred(">", 2).build());
     checkExpr(1, dbName, tblName, e.val("p11").strCol("p1").pred(">", 2)
         .intCol("p2").val(31).pred("<", 2).pred("and", 2).build());
-
-    // Apply between, isnull and instr (not supported by pushdown) via name filtering.
     checkExpr(3, dbName, tblName,
         e.val(32).val(31).intCol("p2").val(false).pred("between", 4).build());
+
+    // Apply isnull and instr (not supported by pushdown) via name filtering.
     checkExpr(4, dbName, tblName, e.val("p").strCol("p1")
         .fn("instr", TypeInfoFactory.intTypeInfo, 2).val(0).pred("<=", 2).build());
     checkExpr(0, dbName, tblName, e.intCol("p2").pred("isnull", 1).build());
@@ -204,9 +204,6 @@ public class TestMetastoreExpr extends TestCase {
     }
     public ExprBuilder intCol(String col) {
       return colInternal(TypeInfoFactory.intTypeInfo, col, true);
-    }
-    public ExprBuilder npCol(String col) {
-      return colInternal(TypeInfoFactory.stringTypeInfo, col, false);
     }
     private ExprBuilder colInternal(TypeInfo ti, String col, boolean part) {
       stack.push(new ExprNodeColumnDesc(ti, col, tblName, part));

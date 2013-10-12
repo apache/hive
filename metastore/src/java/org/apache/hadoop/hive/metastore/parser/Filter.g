@@ -86,7 +86,14 @@ expression
     operatorExpression
     ;
 
-operatorExpression 
+operatorExpression
+    :
+    betweenExpression
+    |
+    binOpExpression
+    ;
+
+binOpExpression
 @init { 
     boolean isReverseOrder = false;
     Object val = null;
@@ -122,7 +129,39 @@ operator returns [Operator op]
       $op = Operator.fromString(t.getText().toUpperCase());
    };
 
+betweenExpression
+@init {
+    Object leftV = null;
+    Object rightV = null;
+    boolean isPositive = true;
+}
+    :
+    (
+       key = Identifier (KW_NOT { isPositive = false; } )? BETWEEN
+       (
+         (left = StringLiteral KW_AND right = StringLiteral) { leftV = TrimQuotes(left.getText());
+            rightV = TrimQuotes(right.getText());
+         }
+         |
+         (left = IntegralLiteral KW_AND right = IntegralLiteral) { leftV = Long.parseLong(left.getText());
+            rightV = Long.parseLong(right.getText());
+         }
+       )
+    )
+    {
+        LeafNode leftNode = new LeafNode(), rightNode = new LeafNode();
+        leftNode.keyName = rightNode.keyName = key.getText();
+        leftNode.value = leftV;
+        rightNode.value = rightV;
+        leftNode.operator = isPositive ? Operator.GREATERTHANOREQUALTO : Operator.LESSTHAN;
+        rightNode.operator = isPositive ? Operator.LESSTHANOREQUALTO : Operator.GREATERTHAN;
+        tree.addLeafNode(leftNode);
+        tree.addLeafNode(rightNode);
+        tree.addIntermediateNode(isPositive ? LogicalOperator.AND : LogicalOperator.OR);
+    };
+
 // Keywords
+KW_NOT : 'NOT';
 KW_AND : 'AND';
 KW_OR : 'OR';
 KW_LIKE : 'LIKE';
@@ -136,6 +175,7 @@ LESSTHANOREQUALTO : '<=';
 LESSTHAN : '<';
 GREATERTHANOREQUALTO : '>=';
 GREATERTHAN : '>';
+BETWEEN : 'BETWEEN';
 
 // LITERALS
 fragment
