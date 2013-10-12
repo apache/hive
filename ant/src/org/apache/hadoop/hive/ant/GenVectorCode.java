@@ -327,7 +327,7 @@ public class GenVectorCode extends Task {
   public void init(String templateBaseDir, String buildDir) {
     File generationDirectory = new File(templateBaseDir);
 
-    String buildPath = joinPath(buildDir, "ql", "gen", "vector");
+    String buildPath = joinPath(buildDir, "generated-sources", "java");
 
     File exprOutput = new File(joinPath(buildPath, "org", "apache", "hadoop",
         "hive", "ql", "exec", "vector", "expressions", "gen"));
@@ -345,7 +345,7 @@ public class GenVectorCode extends Task {
 
     File testCodeOutput =
         new File(
-            joinPath(buildDir, "ql", "test", "src", "org",
+            joinPath(buildDir, "generated-test-sources", "java", "org",
                 "apache", "hadoop", "hive", "ql", "exec", "vector",
                 "expressions", "gen"));
     testCodeGen = new GenVectorTestCode(testCodeOutput.getAbsolutePath(),

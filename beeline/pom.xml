@@ -27,6 +27,10 @@
   <packaging>jar</packaging>
   <name>Hive Beeline</name>
 
+  <properties>
+    <hive.path.to.root>..</hive.path.to.root>
+  </properties>
+
   <dependencies>
     <!-- intra-project -->
     <dependency>
@@ -77,6 +81,13 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-jdbc</artifactId>
       <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-ql</artifactId>
+      <version>${project.version}</version>
+      <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -60,7 +60,7 @@ public class TestFlatFileInputFormat extends TestCase {
       conf = new Configuration();
       job = new JobConf(conf);
       fs = FileSystem.getLocal(conf);
-      dir = new Path(System.getProperty("test.data.dir", ".") + "/mapred");
+      dir = new Path(System.getProperty("test.tmp.dir", ".") + "/mapred");
       file = new Path(dir, "test.txt");
       reporter = Reporter.NULL;
       fs.delete(dir, true);
@@ -142,7 +142,7 @@ public class TestFlatFileInputFormat extends TestCase {
       conf = new Configuration();
       job = new JobConf(conf);
       fs = FileSystem.getLocal(conf);
-      dir = new Path(System.getProperty("test.data.dir", ".") + "/mapred");
+      dir = new Path(System.getProperty("test.tmp.dir", ".") + "/mapred");
       file = new Path(dir, "test.txt");
       reporter = Reporter.NULL;
       fs.delete(dir, true);
@@ -215,7 +215,7 @@ public class TestFlatFileInputFormat extends TestCase {
    * 
    * try { // // create job and filesystem and reporter and such. // conf = new
    * Configuration(); job = new JobConf(conf); fs = FileSystem.getLocal(conf);
-   * dir = new Path(System.getProperty("test.data.dir",".") + "/mapred"); file =
+   * dir = new Path(System.getProperty("test.tmp.dir",".") + "/mapred"); file =
    * new Path(dir, "test.txt"); reporter = Reporter.NULL; fs.delete(dir, true);
    * 
    * job.setClass(FlatFileInputFormat.SerializationContextFromConf.

@@ -11,10 +11,10 @@ POSTHOOK: query: --
 create table alter5_src ( col1 string ) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@alter5_src
-PREHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table alter5_src
+PREHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table alter5_src
 PREHOOK: type: LOAD
 PREHOOK: Output: default@alter5_src
-POSTHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table alter5_src
+POSTHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table alter5_src
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@alter5_src
 PREHOOK: query: create table alter5 ( col1 string ) partitioned by (dt string)
@@ -149,10 +149,10 @@ POSTHOOK: query: create table alter5_src ( col1 string ) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: alter5_db@alter5_src
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]
-PREHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table alter5_src
+PREHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table alter5_src
 PREHOOK: type: LOAD
 PREHOOK: Output: alter5_db@alter5_src
-POSTHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table alter5_src
+POSTHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table alter5_src
 POSTHOOK: type: LOAD
 POSTHOOK: Output: alter5_db@alter5_src
 POSTHOOK: Lineage: alter5 PARTITION(dt=a).col1 SIMPLE [(alter5_src)alter5_src.FieldSchema(name:col1, type:string, comment:null), ]

@@ -43,10 +43,10 @@ POSTHOOK: Input: default@load_overwrite
 POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 500
-PREHOOK: query: load data local inpath '../data/files/kv1.txt' into table load_overwrite
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table load_overwrite
 PREHOOK: type: LOAD
 PREHOOK: Output: default@load_overwrite
-POSTHOOK: query: load data local inpath '../data/files/kv1.txt' into table load_overwrite
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table load_overwrite
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@load_overwrite
 POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
@@ -81,10 +81,10 @@ POSTHOOK: Input: default@load_overwrite
 POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: load_overwrite.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 1000
-PREHOOK: query: load data local inpath '../data/files/kv1.txt' overwrite into table load_overwrite
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table load_overwrite
 PREHOOK: type: LOAD
 PREHOOK: Output: default@load_overwrite
-POSTHOOK: query: load data local inpath '../data/files/kv1.txt' overwrite into table load_overwrite
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table load_overwrite
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@load_overwrite
 POSTHOOK: Lineage: load_overwrite.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]

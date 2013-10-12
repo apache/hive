@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.common;
 
 import java.net.URL;
+import java.util.UUID;
 import java.io.File;
 import java.io.IOException;
 import java.io.FileNotFoundException;
@@ -89,8 +90,11 @@ public class LogUtils {
         // property speficied file found in local file system
         // use the specified file
         if (confVarName == HiveConf.ConfVars.HIVE_EXEC_LOG4J_FILE) {
-          System.setProperty(HiveConf.ConfVars.HIVEQUERYID.toString(),
-            HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID));
+          String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID);
+          if(queryId == null || (queryId = queryId.trim()).isEmpty()) {
+            queryId = "unknown-" + System.currentTimeMillis();
+          }
+          System.setProperty(HiveConf.ConfVars.HIVEQUERYID.toString(), queryId);
         }
         LogManager.resetConfiguration();
         PropertyConfigurator.configure(log4jFileName);

@@ -26,8 +26,11 @@
   <groupId>org.apache.hive.shims</groupId>
   <artifactId>common</artifactId>
   <packaging>jar</packaging>
-
   <name>Hive Shims Common</name>
+
+  <properties>
+    <hive.path.to.root>../..</hive.path.to.root>
+  </properties>
 
   <dependencies>
     <!-- inter-project -->

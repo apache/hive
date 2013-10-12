@@ -6,36 +6,42 @@ move_source() {
   mkdir -p $(dirname $target)
   mv $source $target
 }
-move_source itests/src/test/java/org/apache/hadoop/hive/serde2/TestSerdeWithFieldComments.java serde/src/test/org/apache/hadoop/hive/serde2/TestSerdeWithFieldComments.java
-move_source itests/src/test/java/org/apache/hadoop/hive/serde2/dynamic_type/TestDynamicSerDe.java serde/src/test/org/apache/hadoop/hive/serde2/dynamic_type/TestDynamicSerDe.java
-move_source itests/src/test/java/org/apache/hive/service/cli/thrift/TestThriftHttpCLIService.java service/src/test/org/apache/hive/service/cli/thrift/TestThriftHttpCLIService.java
-move_source itests/src/test/java/org/apache/hive/service/auth/TestCustomAuthentication.java service/src/test/org/apache/hive/service/auth/TestCustomAuthentication.java
-move_source itests/src/test/java/org/apache/hadoop/hive/metastore/TestMetaStoreEventListenerOnlyOnCommit.java metastore/src/test/org/apache/hadoop/hive/metastore/TestMetaStoreEventListenerOnlyOnCommit.java
-move_source itests/src/test/java/org/apache/hadoop/hive/metastore/TestMetaStoreEndFunctionListener.java metastore/src/test/org/apache/hadoop/hive/metastore/TestMetaStoreEndFunctionListener.java
-move_source itests/src/test/java/org/apache/hadoop/hive/metastore/TestHiveMetaStore.java metastore/src/test/org/apache/hadoop/hive/metastore/TestHiveMetaStore.java
-move_source itests/src/test/java/org/apache/hadoop/hive/metastore/TestHiveMetaStoreWithEnvironmentContext.java metastore/src/test/org/apache/hadoop/hive/metastore/TestHiveMetaStoreWithEnvironmentContext.java
-move_source itests/src/test/java/org/apache/hadoop/hive/metastore/TestMetaStoreConnectionUrlHook.java metastore/src/test/org/apache/hadoop/hive/metastore/TestMetaStoreConnectionUrlHook.java
-move_source itests/src/test/java/org/apache/hadoop/hive/metastore/TestPartitionNameWhitelistValidation.java metastore/src/test/org/apache/hadoop/hive/metastore/TestPartitionNameWhitelistValidation.java
-move_source itests/src/test/java/org/apache/hadoop/hive/metastore/TestMetaStoreInitListener.java metastore/src/test/org/apache/hadoop/hive/metastore/TestMetaStoreInitListener.java
-move_source itests/src/test/java/org/apache/hadoop/hive/metastore/TestMarkPartition.java metastore/src/test/org/apache/hadoop/hive/metastore/TestMarkPartition.java
-move_source itests/src/test/java/org/apache/hadoop/hive/metastore/TestMarkPartitionRemote.java metastore/src/test/org/apache/hadoop/hive/metastore/TestMarkPartitionRemote.java
-move_source itests/src/test/java/org/apache/hadoop/hive/metastore/TestMetaStoreEventListener.java metastore/src/test/org/apache/hadoop/hive/metastore/TestMetaStoreEventListener.java
-move_source itests/src/test/java/org/apache/hadoop/hive/metastore/TestRemoteHiveMetaStore.java metastore/src/test/org/apache/hadoop/hive/metastore/TestRemoteHiveMetaStore.java
-move_source itests/src/test/java/org/apache/hadoop/hive/metastore/TestEmbeddedHiveMetaStore.java metastore/src/test/org/apache/hadoop/hive/metastore/TestEmbeddedHiveMetaStore.java
-move_source itests/src/test/java/org/apache/hadoop/hive/metastore/TestSetUGIOnBothClientServer.java metastore/src/test/org/apache/hadoop/hive/metastore/TestSetUGIOnBothClientServer.java
-move_source itests/src/test/java/org/apache/hadoop/hive/metastore/TestSetUGIOnOnlyServer.java metastore/src/test/org/apache/hadoop/hive/metastore/TestSetUGIOnOnlyServer.java
-move_source itests/src/test/java/org/apache/hadoop/hive/metastore/TestSetUGIOnOnlyClient.java metastore/src/test/org/apache/hadoop/hive/metastore/TestSetUGIOnOnlyClient.java
-move_source itests/src/test/java/org/apache/hadoop/hive/metastore/TestMetastoreVersion.java metastore/src/test/org/apache/hadoop/hive/metastore/TestMetastoreVersion.java
-move_source itests/src/test/java/org/apache/hadoop/hive/ql/security/TestDefaultHiveMetastoreAuthorizationProvider.java ql/src/test/org/apache/hadoop/hive/ql/security/TestDefaultHiveMetastoreAuthorizationProvider.java
-move_source itests/src/test/java/org/apache/hadoop/hive/ql/security/TestAuthorizationPreEventListener.java ql/src/test/org/apache/hadoop/hive/ql/security/TestAuthorizationPreEventListener.java
-move_source itests/src/test/java/org/apache/hadoop/hive/ql/history/TestHiveHistory.java ql/src/test/org/apache/hadoop/hive/ql/history/TestHiveHistory.java
-move_source itests/src/test/java/org/apache/hadoop/hive/ql/QTestUtil.java ql/src/test/org/apache/hadoop/hive/ql/QTestUtil.java
-move_source itests/src/test/java/org/apache/hive/service/server/TestHiveServer2Concurrency.java service/src/test/org/apache/hive/service/server/TestHiveServer2Concurrency.java
-move_source itests/src/test/java/org/apache/hadoop/hive/ql/hooks/EnforceReadOnlyTables.java ql/src/test/org/apache/hadoop/hive/ql/hooks/EnforceReadOnlyTables.java
-move_source itests/src/test/java/org/apache/hadoop/hive/ql/TestMTQueries.java ql/src/test/org/apache/hadoop/hive/ql/TestMTQueries.java
-move_source itests/src/test/java/org/apache/hadoop/hive/ql/TestLocationQueries.java ql/src/test/org/apache/hadoop/hive/ql/TestLocationQueries.java
-move_source itests/src/test/java/org/apache/hadoop/hive/hbase/HBaseQTestUtil.java hbase-handler/src/test/org/apache/hadoop/hive/hbase/HBaseQTestUtil.java
-move_source itests/src/test/java/org/apache/hadoop/hive/hbase/HBaseTestSetup.java hbase-handler/src/test/org/apache/hadoop/hive/hbase/HBaseTestSetup.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/serde2/TestSerdeWithFieldComments.java serde/src/test/org/apache/hadoop/hive/serde2/TestSerdeWithFieldComments.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/serde2/dynamic_type/TestDynamicSerDe.java serde/src/test/org/apache/hadoop/hive/serde2/dynamic_type/TestDynamicSerDe.java
+move_source itests/unit/src/test/java/org/apache/hive/service/cli/thrift/TestThriftHttpCLIService.java service/src/test/org/apache/hive/service/cli/thrift/TestThriftHttpCLIService.java
+move_source itests/unit/src/test/java/org/apache/hive/service/auth/TestCustomAuthentication.java service/src/test/org/apache/hive/service/auth/TestCustomAuthentication.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestMetaStoreEventListenerOnlyOnCommit.java metastore/src/test/org/apache/hadoop/hive/metastore/TestMetaStoreEventListenerOnlyOnCommit.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestMetaStoreEndFunctionListener.java metastore/src/test/org/apache/hadoop/hive/metastore/TestMetaStoreEndFunctionListener.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestHiveMetaStore.java metastore/src/test/org/apache/hadoop/hive/metastore/TestHiveMetaStore.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestHiveMetaStoreWithEnvironmentContext.java metastore/src/test/org/apache/hadoop/hive/metastore/TestHiveMetaStoreWithEnvironmentContext.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestMetaStoreConnectionUrlHook.java metastore/src/test/org/apache/hadoop/hive/metastore/TestMetaStoreConnectionUrlHook.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestPartitionNameWhitelistValidation.java metastore/src/test/org/apache/hadoop/hive/metastore/TestPartitionNameWhitelistValidation.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestMetaStoreInitListener.java metastore/src/test/org/apache/hadoop/hive/metastore/TestMetaStoreInitListener.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestMarkPartition.java metastore/src/test/org/apache/hadoop/hive/metastore/TestMarkPartition.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestMarkPartitionRemote.java metastore/src/test/org/apache/hadoop/hive/metastore/TestMarkPartitionRemote.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestMetaStoreEventListener.java metastore/src/test/org/apache/hadoop/hive/metastore/TestMetaStoreEventListener.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestRemoteHiveMetaStore.java metastore/src/test/org/apache/hadoop/hive/metastore/TestRemoteHiveMetaStore.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestEmbeddedHiveMetaStore.java metastore/src/test/org/apache/hadoop/hive/metastore/TestEmbeddedHiveMetaStore.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestSetUGIOnBothClientServer.java metastore/src/test/org/apache/hadoop/hive/metastore/TestSetUGIOnBothClientServer.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestSetUGIOnOnlyServer.java metastore/src/test/org/apache/hadoop/hive/metastore/TestSetUGIOnOnlyServer.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestSetUGIOnOnlyClient.java metastore/src/test/org/apache/hadoop/hive/metastore/TestSetUGIOnOnlyClient.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestMetastoreVersion.java metastore/src/test/org/apache/hadoop/hive/metastore/TestMetastoreVersion.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestHiveMetaTool.java metastore/src/test/org/apache/hadoop/hive/metastore/TestHiveMetaTool.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestRawStoreTxn.java metastore/src/test/org/apache/hadoop/hive/metastore/TestRawStoreTxn.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestMetaStoreListenersError.java metastore/src/test/org/apache/hadoop/hive/metastore/TestMetaStoreListenersError.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestRetryingHMSHandler.java metastore/src/test/org/apache/hadoop/hive/metastore/TestRetryingHMSHandler.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestRemoteUGIHiveMetaStoreIpAddress.java metastore/src/test/org/apache/hadoop/hive/metastore/TestRemoteUGIHiveMetaStoreIpAddress.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestMetaStoreAuthorization.java metastore/src/test/org/apache/hadoop/hive/metastore/TestMetaStoreAuthorization.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/metastore/TestRemoteHiveMetaStoreIpAddress.java metastore/src/test/org/apache/hadoop/hive/metastore/TestRemoteHiveMetaStoreIpAddress.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/ql/security/TestDefaultHiveMetastoreAuthorizationProvider.java ql/src/test/org/apache/hadoop/hive/ql/security/TestDefaultHiveMetastoreAuthorizationProvider.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/ql/security/TestAuthorizationPreEventListener.java ql/src/test/org/apache/hadoop/hive/ql/security/TestAuthorizationPreEventListener.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/ql/history/TestHiveHistory.java ql/src/test/org/apache/hadoop/hive/ql/history/TestHiveHistory.java
+move_source itests/util/src/main/java/org/apache/hadoop/hive/ql/QTestUtil.java ql/src/test/org/apache/hadoop/hive/ql/QTestUtil.java
+move_source itests/unit/src/test/java/org/apache/hive/service/server/TestHiveServer2Concurrency.java service/src/test/org/apache/hive/service/server/TestHiveServer2Concurrency.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/ql/TestMTQueries.java ql/src/test/org/apache/hadoop/hive/ql/TestMTQueries.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/ql/TestLocationQueries.java ql/src/test/org/apache/hadoop/hive/ql/TestLocationQueries.java
+move_source itests/util/src/main/java/org/apache/hadoop/hive/hbase/HBaseQTestUtil.java hbase-handler/src/test/org/apache/hadoop/hive/hbase/HBaseQTestUtil.java
+move_source itests/util/src/main/java/org/apache/hadoop/hive/hbase/HBaseTestSetup.java hbase-handler/src/test/org/apache/hadoop/hive/hbase/HBaseTestSetup.java
 
 move_source hcatalog/hcatalog-pig-adapter/pom.xml hcatalog/hcatalog-pig-adapter/pom-new.xml
 move_source hcatalog/pom.xml hcatalog/pom-new.xml
@@ -64,13 +70,23 @@ move_source shims/0.23/src/main/java shims/src/0.23/java
 move_source shims/common/src/main/java shims/src/common/java
 move_source shims/common-secure/src/main/java shims/src/common-secure/java
 
-move_source itests/src/test/java/org/apache/hadoop/hive/thrift/TestDBTokenStore.java shims/src/common-secure/test/org/apache/hadoop/hive/thrift/TestDBTokenStore.java
-move_source itests/src/test/java/org/apache/hadoop/hive/thrift/TestHadoop20SAuthBridge.java shims/src/common-secure/test/org/apache/hadoop/hive/thrift/TestHadoop20SAuthBridge.java
-move_source itests/src/test/java/org/apache/hadoop/hive/thrift/TestZooKeeperTokenStore.java shims/src/common-secure/test/org/apache/hadoop/hive/thrift/TestZooKeeperTokenStore.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/thrift/TestDBTokenStore.java shims/src/common-secure/test/org/apache/hadoop/hive/thrift/TestDBTokenStore.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/thrift/TestHadoop20SAuthBridge.java shims/src/common-secure/test/org/apache/hadoop/hive/thrift/TestHadoop20SAuthBridge.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/thrift/TestZooKeeperTokenStore.java shims/src/common-secure/test/org/apache/hadoop/hive/thrift/TestZooKeeperTokenStore.java
 
-move_source itests/src/test/java/org/apache/hadoop/hive/jdbc/TestJdbcDriver.java jdbc/src/test/org/apache/hadoop/hive/jdbc/TestJdbcDriver.java
-move_source itests/src/test/java/org/apache/hive/jdbc/TestJdbcDriver2.java jdbc/src/test/org/apache/hive/jdbc/TestJdbcDriver2.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/jdbc/TestJdbcDriver.java jdbc/src/test/org/apache/hadoop/hive/jdbc/TestJdbcDriver.java
+move_source itests/unit/src/test/java/org/apache/hive/jdbc/TestJdbcDriver2.java jdbc/src/test/org/apache/hive/jdbc/TestJdbcDriver2.java
 
-move_source itests/src/test/java/org/apache/hive/service/cli/TestEmbeddedThriftBinaryCLIService.java service/src/test/org/apache/hive/service/cli/TestEmbeddedThriftBinaryCLIService.java
-move_source itests/src/test/java/org/apache/hive/service/cli/thrift/TestThriftBinaryCLIService.java service/src/test/org/apache/hive/service/cli/thrift/TestThriftBinaryCLIService.java
-move_source itests/src/test/java/org/apache/hadoop/hive/service/TestHiveServer.java service/src/test/org/apache/hadoop/hive/service/TestHiveServer.java
+move_source itests/unit/src/test/java/org/apache/hive/service/cli/TestEmbeddedThriftBinaryCLIService.java service/src/test/org/apache/hive/service/cli/TestEmbeddedThriftBinaryCLIService.java
+move_source itests/unit/src/test/java/org/apache/hive/service/cli/thrift/TestThriftBinaryCLIService.java service/src/test/org/apache/hive/service/cli/thrift/TestThriftBinaryCLIService.java
+move_source itests/unit/src/test/java/org/apache/hadoop/hive/service/TestHiveServer.java service/src/test/org/apache/hadoop/hive/service/TestHiveServer.java
+
+move_source itests/util/src/main/java/org/apache/hadoop/hive/scripts/extracturl.java ql/src/test/org/apache/hadoop/hive/scripts/extracturl.java
+
+move_source itests/unit/src/test/java/org/apache/hive/beeline/TestSchemaTool.java beeline/src/test/org/apache/hive/beeline/src/test/TestSchemaTool.java
+
+move_source beeline/src/main/resources/sql-keywords.properties beeline/src/java/org/apache/hive/beeline/sql-keywords.properties
+move_source beeline/src/main/resources/BeeLine.properties beeline/src/java/org/apache/hive/beeline/BeeLine.properties
+
+move_source ql/src/main/resources/hive-exec-log4j.properties ql/src/java/conf/hive-exec-log4j.properties
+move_source common/src/main/resources/hive-log4j.properties common/src/java/conf/hive-log4j.properties

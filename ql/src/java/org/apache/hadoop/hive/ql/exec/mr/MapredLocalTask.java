@@ -87,7 +87,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
   public static transient final Log l4j = LogFactory.getLog(MapredLocalTask.class);
   static final String HADOOP_MEM_KEY = "HADOOP_HEAPSIZE";
   static final String HADOOP_OPTS_KEY = "HADOOP_OPTS";
-  static final String[] HIVE_SYS_PROP = {"build.dir", "build.dir.hive"};
+  static final String[] HIVE_SYS_PROP = {"build.dir", "build.dir.hive", "hive.query.id"};
   public static MemoryMXBean memoryMXBean;
   private static final Log LOG = LogFactory.getLog(MapredLocalTask.class);
 

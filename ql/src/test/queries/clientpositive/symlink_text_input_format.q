@@ -5,8 +5,8 @@ CREATE TABLE symlink_text_input_format (key STRING, value STRING) STORED AS INPU
 
 CREATE TABLE symlink_text_input_format (key STRING, value STRING) STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.SymlinkTextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat';
 
-dfs -cp ../data/files/symlink1.txt ../build/ql/test/data/warehouse/symlink_text_input_format/symlink1.txt;
-dfs -cp ../data/files/symlink2.txt ../build/ql/test/data/warehouse/symlink_text_input_format/symlink2.txt;
+dfs -cp ../../data/files/symlink1.txt ${system:test.tmp.dir}/warehouse/symlink_text_input_format/symlink1.txt;
+dfs -cp ../../data/files/symlink2.txt ${system:test.tmp.dir}/warehouse/symlink_text_input_format/symlink2.txt;
 
 EXPLAIN SELECT * FROM symlink_text_input_format order by key, value;
 

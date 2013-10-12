@@ -11,17 +11,17 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE db1.sourceTable (one string,two string) PARTITIONED BY (ds string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: db1@sourceTable
-PREHOOK: query: load data local inpath '../data/files/kv1.txt' INTO TABLE db1.sourceTable partition(ds='2011-11-11')
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' INTO TABLE db1.sourceTable partition(ds='2011-11-11')
 PREHOOK: type: LOAD
 PREHOOK: Output: db1@sourcetable
-POSTHOOK: query: load data local inpath '../data/files/kv1.txt' INTO TABLE db1.sourceTable partition(ds='2011-11-11')
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' INTO TABLE db1.sourceTable partition(ds='2011-11-11')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: db1@sourcetable
 POSTHOOK: Output: db1@sourcetable@ds=2011-11-11
-PREHOOK: query: load data local inpath '../data/files/kv3.txt' INTO TABLE db1.sourceTable partition(ds='2011-11-11')
+PREHOOK: query: load data local inpath '../../data/files/kv3.txt' INTO TABLE db1.sourceTable partition(ds='2011-11-11')
 PREHOOK: type: LOAD
 PREHOOK: Output: db1@sourcetable@ds=2011-11-11
-POSTHOOK: query: load data local inpath '../data/files/kv3.txt' INTO TABLE db1.sourceTable partition(ds='2011-11-11')
+POSTHOOK: query: load data local inpath '../../data/files/kv3.txt' INTO TABLE db1.sourceTable partition(ds='2011-11-11')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: db1@sourcetable@ds=2011-11-11
 PREHOOK: query: CREATE TABLE db2.destinTable (one string,two string) PARTITIONED BY (ds string)

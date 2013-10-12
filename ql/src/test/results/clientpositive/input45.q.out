@@ -1,11 +1,11 @@
-PREHOOK: query: INSERT OVERWRITE DIRECTORY '../build/ql/test/data/x/y/z/' SELECT src.* FROM src
+PREHOOK: query: INSERT OVERWRITE DIRECTORY 'target/data/x/y/z/' SELECT src.* FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: ../build/ql/test/data/x/y/z
-POSTHOOK: query: INSERT OVERWRITE DIRECTORY '../build/ql/test/data/x/y/z/' SELECT src.* FROM src
+PREHOOK: Output: target/data/x/y/z
+POSTHOOK: query: INSERT OVERWRITE DIRECTORY 'target/data/x/y/z/' SELECT src.* FROM src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: ../build/ql/test/data/x/y/z
+POSTHOOK: Output: target/data/x/y/z
 238val_238
 86val_86
 311val_311

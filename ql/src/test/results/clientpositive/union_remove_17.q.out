@@ -28,10 +28,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table outputTbl1(key string, values bigint) partitioned by (ds string) stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@outputTbl1
-PREHOOK: query: load data local inpath '../data/files/T1.txt' into table inputTbl1
+PREHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@inputtbl1
-POSTHOOK: query: load data local inpath '../data/files/T1.txt' into table inputTbl1
+POSTHOOK: query: load data local inpath '../../data/files/T1.txt' into table inputTbl1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@inputtbl1
 PREHOOK: query: explain

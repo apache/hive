@@ -1,0 +1,26 @@
+<assembly>
+  <id>custom-serde</id>
+  <formats>
+    <format>jar</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <dependencySets>
+    <dependencySet>
+      <unpack>true</unpack>
+      <scope>compile</scope>
+      <useProjectArtifact>false</useProjectArtifact>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
+      <includes>
+        <include>org.apache.hive:hive-ql:*:tests</include>
+      </includes>
+      <unpackOptions>
+        <includes>
+          <include>**/serde2/**</include>
+        </includes>
+        <excludes>
+          <exclude>**/serde2/TestSerDe.class</exclude>
+        </excludes>
+      </unpackOptions>
+    </dependencySet>
+  </dependencySets>
+</assembly>

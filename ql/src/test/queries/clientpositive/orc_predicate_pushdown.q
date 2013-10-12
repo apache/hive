@@ -27,7 +27,7 @@ CREATE TABLE staging(t tinyint,
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH '../data/files/over1k' OVERWRITE INTO TABLE staging;
+LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging;
 
 INSERT INTO TABLE orc_pred select * from staging;
 

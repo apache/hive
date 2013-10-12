@@ -1,0 +1,24 @@
+<assembly>
+  <id>test-udf</id>
+  <formats>
+    <format>jar</format>
+  </formats>
+  <includeBaseDirectory>false</includeBaseDirectory>
+  <dependencySets>
+    <dependencySet>
+      <unpack>true</unpack>
+      <scope>compile</scope>
+      <useProjectArtifact>false</useProjectArtifact>
+      <useTransitiveDependencies>false</useTransitiveDependencies>
+      <includes>
+        <include>org.apache.hive:hive-ql:*:tests</include>
+      </includes>
+      <unpackOptions>
+        <includes>
+          <include>**/udf/*.class</include>
+          <include>**/udf/generic/*.class</include>
+        </includes>
+      </unpackOptions>
+    </dependencySet>
+  </dependencySets>
+</assembly>

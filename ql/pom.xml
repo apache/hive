@@ -27,11 +27,20 @@
   <packaging>jar</packaging>
   <name>Hive Query Language</name>
 
+  <properties>
+    <hive.path.to.root>..</hive.path.to.root>
+  </properties>
+
   <dependencies>
     <!-- intra-project -->
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-metastore</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-ant</artifactId>
       <version>${project.version}</version>
     </dependency>
     <!-- inter-project -->
@@ -226,41 +235,26 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>add-source</id>
-            <phase>generate-sources</phase>
-            <goals>
-              <goal>add-source</goal>
-            </goals>
-            <configuration>
-              <sources>
-                <source>src/gen/protobuf/gen-java</source>
-                <source>src/gen/thrift/gen-javabean</source>
-              </sources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-install-plugin</artifactId>
+        <artifactId>maven-antrun-plugin</artifactId>
         <executions>
           <execution>
-            <id>install-exec-jar</id>
-            <phase>install</phase>
-            <goals>
-              <goal>install-file</goal>
-            </goals>
+            <id>generate-sources</id>
+            <phase>generate-sources</phase>
             <configuration>
-              <file>${basedir}/target/hive-ql-${project.version}-jar-with-dependencies.jar</file>
-              <groupId>org.apache.hive</groupId>
-              <artifactId>hive-exec</artifactId>
-              <version>${project.version}</version>
-              <packaging>jar</packaging>
+              <target>
+                <property name="compile.classpath" refid="maven.compile.classpath"/>
+                <taskdef name="vectorcodegen" classname="org.apache.hadoop.hive.ant.GenVectorCode"
+                    classpath="${compile.classpath}"/>
+                <mkdir dir="${project.build.directory}/generated-sources/java/org/apache/hadoop/hive/ql/exec/vector/expressions/gen/"/>
+                <mkdir dir="${project.build.directory}/generated-sources/java/org/apache/hadoop/hive/ql/exec/vector/expressions/aggregates/gen/"/>
+                <mkdir dir="${project.build.directory}/generated-test-sources/java/org/apache/hadoop/hive/ql/exec/vector/expressions/gen/"/>
+                <vectorcodegen templateBaseDir="${basedir}/src/gen/vectorization/" buildDir="${project.build.directory}" />
+              </target>
             </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
           </execution>
         </executions>
       </plugin>
@@ -280,13 +274,14 @@
         <artifactId>maven-shade-plugin</artifactId>
         <executions>
           <execution>
+            <id>build-exec-bundle</id>
             <phase>package</phase>
             <goals>
               <goal>shade</goal>
             </goals>
             <configuration>
               <shadedArtifactAttached>true</shadedArtifactAttached>
-              <shadedClassifierName>jar-with-dependencies</shadedClassifierName>
+              <shadedClassifierName>exec-bundle</shadedClassifierName>
               <artifactSet>
                 <includes>
                   <!-- order is meant to be the same as the ant build -->
@@ -308,6 +303,38 @@
                   <include>com.google.guava:guava</include>
                 </includes>
               </artifactSet>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>src/gen/protobuf/gen-java</source>
+                <source>src/gen/thrift/gen-javabean</source>
+                <source>${project.build.directory}/generated-sources/java</source>
+              </sources>
+            </configuration>
+          </execution>
+          <execution>
+            <id>add-test-sources</id>
+            <phase>generate-test-sources</phase>
+            <goals>
+              <goal>add-test-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>${project.build.directory}/generated-test-sources/java</source>
+              </sources>
             </configuration>
           </execution>
         </executions>

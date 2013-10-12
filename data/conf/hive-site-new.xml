@@ -54,9 +54,14 @@
 
 <property>
   <name>javax.jdo.option.ConnectionURL</name>
-  <!-- note: variable substituion not working here because it's loaded by jdo, not Hive -->
   <value>jdbc:derby:;databaseName=${test.tmp.dir}/junit_metastore_db;create=true</value>
 </property>
+
+<property>
+  <name>hive.stats.dbconnectionstring</name>
+  <value>jdbc:derby:;databaseName=${test.tmp.dir}/TempStatsStore;create=true</value>
+</property>
+
 
 <property>
   <name>javax.jdo.option.ConnectionDriverName</name>
@@ -76,7 +81,7 @@
 <property>
   <!--  this should eventually be deprecated since the metastore should supply this -->
   <name>hive.metastore.warehouse.dir</name>
-  <value>${test.tmp.dir}/warehouse</value>
+  <value>${test.warehouse.dir}</value>
   <description></description>
 </property>
 
@@ -96,13 +101,13 @@
 
 <property>
   <name>test.data.files</name>
-  <value>${user.dir}/../data/files</value>
+  <value>${hive.root}/data/files</value>
   <description></description>
 </property>
 
 <property>
   <name>hive.jar.path</name>
-  <value>${user.home}/.m2/repository/org/apache/hive/hive-exec/${project.version}/hive-exec-${project.version}.jar</value>
+  <value>${user.home}/.m2/repository/org/apache/hive/hive-ql/${hive.version}/hive-ql-${hive.version}-exec-bundle.jar</value>
   <description></description>
 </property>
 

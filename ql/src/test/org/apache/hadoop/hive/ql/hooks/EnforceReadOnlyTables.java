@@ -20,9 +20,9 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import static org.apache.hadoop.hive.metastore.MetaStoreUtils.DEFAULT_DATABASE_NAME;
 
+import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.hadoop.hive.ql.QTestUtil;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -32,6 +32,20 @@ import org.apache.hadoop.security.UserGroupInformation;
  * of read-only tables used by the test framework
  */
 public class EnforceReadOnlyTables implements ExecuteWithHookContext {
+
+  private static final Set<String> READ_ONLY_TABLES = new HashSet<String>();
+
+  static {
+    for (String srcTable : System.getProperty("test.src.tables", "").trim().split(",")) {
+      srcTable = srcTable.trim();
+      if (!srcTable.isEmpty()) {
+        READ_ONLY_TABLES.add(srcTable);
+      }
+    }
+    if (READ_ONLY_TABLES.isEmpty()) {
+      throw new AssertionError("Source tables cannot be empty");
+    }
+  }
 
   @Override
   public void run(HookContext hookContext) throws Exception {
@@ -53,7 +67,7 @@ public class EnforceReadOnlyTables implements ExecuteWithHookContext {
           (w.getTyp() == WriteEntity.Type.PARTITION)) {
         Table t = w.getTable();
         if (DEFAULT_DATABASE_NAME.equalsIgnoreCase(t.getDbName())
-            && QTestUtil.srcTables.contains(t.getTableName())) {
+            && READ_ONLY_TABLES.contains(t.getTableName())) {
           throw new RuntimeException ("Cannot overwrite read-only table: " + t.getTableName());
         }
       }

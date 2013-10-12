@@ -15,7 +15,7 @@ create table over10k(
        row format delimited
        fields terminated by '|';
 
-load data local inpath '../data/files/over10k' into table over10k;
+load data local inpath '../../data/files/over10k' into table over10k;
 
 select s, rank() over (partition by s order by si), sum(b) over (partition by s order by si) from over10k limit 100;
 

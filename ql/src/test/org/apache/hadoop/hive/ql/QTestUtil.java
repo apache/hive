@@ -108,12 +108,7 @@ public class QTestUtil {
   private final Set<String> qSkipSet;
   private final Set<String> qSortSet;
   private static final String SORT_SUFFIX = ".sorted";
-  public static final HashSet<String> srcTables = new HashSet<String>
-    (Arrays.asList(new String [] {
-        "src", "src1", "srcbucket", "srcbucket2", "src_json", "src_thrift",
-        "src_sequencefile", "srcpart", "alltypesorc"
-      }));
-
+  public static final HashSet<String> srcTables = new HashSet<String>();
   private ParseDriver pd;
   private Hive db;
   protected HiveConf conf;
@@ -127,6 +122,18 @@ public class QTestUtil {
   private boolean miniMr = false;
   private String hadoopVer = null;
   private QTestSetup setup = null;
+
+  static {
+    for (String srcTable : System.getProperty("test.src.tables", "").trim().split(",")) {
+      srcTable = srcTable.trim();
+      if (!srcTable.isEmpty()) {
+        srcTables.add(srcTable);
+      }
+    }
+    if (srcTables.isEmpty()) {
+      throw new AssertionError("Source tables cannot be empty");
+    }
+  }
 
   public boolean deleteDirectory(File path) {
     if (path.exists()) {
@@ -1156,7 +1163,6 @@ public class QTestUtil {
   });
 
   public int checkCliDriverResults(String tname) throws Exception {
-    String[] cmdArray;
     assert(qMap.containsKey(tname));
 
     String outFileName = outPath(outDir, tname + ".out");
@@ -1178,7 +1184,7 @@ public class QTestUtil {
   private static int overwriteResults(String inFileName, String outFileName) throws Exception {
     // This method can be replaced with Files.copy(source, target, REPLACE_EXISTING)
     // once Hive uses JAVA 7.
-    System.out.println("Overwriting results");
+    System.out.println("Overwriting results " + inFileName + " to " + outFileName);
     return executeCmd(new String[] {
         "cp",
         getQuotedString(inFileName),
@@ -1352,7 +1358,7 @@ public class QTestUtil {
     public void preTest(HiveConf conf) throws Exception {
 
       if (zooKeeperCluster == null) {
-        String tmpdir =  System.getProperty("user.dir")+"/../build/ql/tmp";
+        String tmpdir =  System.getProperty("test.tmp.dir");
         zooKeeperCluster = new MiniZooKeeperCluster();
         zkPort = zooKeeperCluster.startup(new File(tmpdir, "zookeeper"));
       }

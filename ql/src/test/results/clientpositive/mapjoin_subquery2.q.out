@@ -31,22 +31,22 @@ POSTHOOK: query: CREATE TABLE z (id INT, name STRING)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@z
-PREHOOK: query: load data local inpath '../data/files/x.txt' INTO TABLE x
+PREHOOK: query: load data local inpath '../../data/files/x.txt' INTO TABLE x
 PREHOOK: type: LOAD
 PREHOOK: Output: default@x
-POSTHOOK: query: load data local inpath '../data/files/x.txt' INTO TABLE x
+POSTHOOK: query: load data local inpath '../../data/files/x.txt' INTO TABLE x
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@x
-PREHOOK: query: load data local inpath '../data/files/y.txt' INTO TABLE y
+PREHOOK: query: load data local inpath '../../data/files/y.txt' INTO TABLE y
 PREHOOK: type: LOAD
 PREHOOK: Output: default@y
-POSTHOOK: query: load data local inpath '../data/files/y.txt' INTO TABLE y
+POSTHOOK: query: load data local inpath '../../data/files/y.txt' INTO TABLE y
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@y
-PREHOOK: query: load data local inpath '../data/files/z.txt' INTO TABLE z
+PREHOOK: query: load data local inpath '../../data/files/z.txt' INTO TABLE z
 PREHOOK: type: LOAD
 PREHOOK: Output: default@z
-POSTHOOK: query: load data local inpath '../data/files/z.txt' INTO TABLE z
+POSTHOOK: query: load data local inpath '../../data/files/z.txt' INTO TABLE z
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@z
 PREHOOK: query: -- Since the inputs are small, it should be automatically converted to mapjoin

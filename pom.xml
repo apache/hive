@@ -35,7 +35,6 @@
     <module>hbase-handler</module>
     <module>hcatalog</module>
     <module>hwi</module>
-    <module>itests</module>
     <module>jdbc</module>
     <module>metastore</module>
     <module>ql</module>
@@ -43,12 +42,16 @@
     <module>service</module>
     <module>shims</module>
     <module>testutils</module>
+    <module>packaging</module>
   </modules>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-
-    <hive.path.to.root>..</hive.path.to.root>
+    <maven.local.repository>${user.home}/.m2/repository</maven.local.repository>
+    <hive.path.to.root>.</hive.path.to.root>
+    <test.tmp.dir>${project.build.directory}/tmp</test.tmp.dir>
+    <test.warehouse.dir>${project.build.directory}/warehouse</test.warehouse.dir>
+    <test.warehouse.scheme>pfile://</test.warehouse.scheme>
 
     <!-- the versions of libraries that we use -->
     <activemq.version>5.5.0</activemq.version>
@@ -151,25 +154,6 @@
      </repository>
   </repositories>
 
-  <profiles>
-    <profile>
-      <id>hadoop-1</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <active.hadoop.version>${hadoop-20S.version}</active.hadoop.version>
-      </properties>
-    </profile>
-   <profile>
-      <id>hadoop-2</id>
-      <properties>
-        <active.hadoop.version>${hadoop-23.version}</active.hadoop.version>
-      </properties>
-    </profile>
-  </profiles>
-
-
   <dependencies>
     <!-- global dependencies -->
     <dependency>
@@ -212,33 +196,11 @@
               <version>20020829</version>
             </dependency>
           </dependencies>
-          <executions>
-            <execution>
-              <id>define-classpath</id>
-              <phase>process-resources</phase>
-              <goals>
-                <goal>run</goal>
-              </goals>
-              <configuration>
-                <exportAntProperties>true</exportAntProperties>
-                <target>
-                  <property name="maven.test.classpath" refid="maven.test.classpath"/>
-                </target>
-              </configuration>
-            </execution>
-            <execution>
-              <id>delete-test-tempdir</id>
-              <phase>process-test-resources</phase>
-              <goals>
-                <goal>run</goal>
-              </goals>
-              <configuration>
-                <target>
-                  <delete dir="${project.build.directory}/test-tmp" />
-                </target>
-              </configuration>
-            </execution>
-          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>2.4</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -254,28 +216,6 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <version>2.16</version>
-          <configuration>
-            <redirectTestOutputToFile>true</redirectTestOutputToFile>
-            <reuseForks>false</reuseForks>
-            <failIfNoTests>false</failIfNoTests>
-            <additionalClasspathElements>
-              <additionalClasspathElement>${basedir}/${hive.path.to.root}/data/conf</additionalClasspathElement>
-              <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>
-            </additionalClasspathElements>
-            <environmentVariables>
-              <TZ>US/Pacific</TZ>
-              <LANG>en_US.UTF-8</LANG>
-              <HADOOP_CLASSPATH>${basedir}/${hive.path.to.root}/data/conf:${basedir}/${hive.path.to.root}/conf</HADOOP_CLASSPATH>
-              <HIVE_HADOOP_TEST_CLASSPATH>${maven.test.classpath}</HIVE_HADOOP_TEST_CLASSPATH>
-            </environmentVariables>
-            <systemPropertyVariables>
-              <build.dir>${project.build.directory}</build.dir>
-              <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
-              <hive.version>${project.version}</hive.version>
-              <test.data.dir>${basedir}/${hive.path.to.root}/data/files</test.data.dir>
-              <test.tmp.dir>${project.build.directory}/test-tmp</test.tmp.dir>
-            </systemPropertyVariables>
-          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -306,6 +246,94 @@
         </plugin>
       </plugins>
     </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>define-classpath</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <exportAntProperties>true</exportAntProperties>
+              <target>
+                <property name="maven.test.classpath" refid="maven.test.classpath"/>
+              </target>
+            </configuration>
+          </execution>
+          <execution>
+            <id>setup-test-dirs</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <delete dir="${test.tmp.dir}" />
+                <delete dir="${test.warehouse.dir}" />
+                <mkdir dir="${test.tmp.dir}" />
+                <mkdir dir="${test.warehouse.dir}" />
+                <mkdir dir="${test.tmp.dir}/conf" />
+                <!-- copies hive-site.xml so it can be modified -->
+                <copy todir="${test.tmp.dir}/conf/">
+                  <fileset dir="${basedir}/${hive.path.to.root}/data/conf/"/>
+                </copy>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/TestSerDe.java</exclude>
+            <exclude>**/TestHiveMetaStore.java</exclude>
+            <exclude>**/ql/exec/vector/util/*.java</exclude>
+            <exclude>**/ql/exec/vector/udf/legacy/*.java</exclude>
+            <exclude>**/ql/exec/vector/udf/generic/*.java</exclude>
+            <exclude>**/TestHiveServer2Concurrency.java</exclude>
+            <exclude>**/TestHiveMetaStore.java</exclude>
+          </excludes>
+          <redirectTestOutputToFile>true</redirectTestOutputToFile>
+          <reuseForks>false</reuseForks>
+          <failIfNoTests>false</failIfNoTests>
+          <additionalClasspathElements>
+            <additionalClasspathElement>${test.tmp.dir}/conf</additionalClasspathElement>
+            <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>
+          </additionalClasspathElements>
+          <environmentVariables>
+            <TZ>US/Pacific</TZ>
+            <LANG>en_US.UTF-8</LANG>
+            <HADOOP_CLASSPATH>${test.tmp.dir}/conf:${basedir}/${hive.path.to.root}/conf</HADOOP_CLASSPATH>
+            <HIVE_HADOOP_TEST_CLASSPATH>${maven.test.classpath}</HIVE_HADOOP_TEST_CLASSPATH>
+          </environmentVariables>
+          <systemPropertyVariables>
+            <build.dir>${project.build.directory}</build.dir>
+            <derby.version>${derby.version}</derby.version>
+            <derby.stream.error.file>${test.tmp.dir}/derby.log</derby.stream.error.file>
+            <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
+            <hive.root>${basedir}/${hive.path.to.root}/</hive.root>
+            <hive.version>${project.version}</hive.version>
+            <maven.local.repository>${maven.local.repository}</maven.local.repository>
+            <log4j.configuration>file://${test.tmp.dir}/conf/hive-log4j.properties</log4j.configuration>
+            <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
+            <test.data.files>${basedir}/${hive.path.to.root}/data/files</test.data.files>
+            <test.data.dir>${basedir}/${hive.path.to.root}/data/files</test.data.dir>
+            <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
+            <test.dfs.mkdir>${test.dfs.mkdir}</test.dfs.mkdir>
+            <test.output.overwrite>${test.output.overwrite}</test.output.overwrite>
+            <test.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</test.warehouse.dir>
+            <test.src.tables>src,src1,srcbucket,srcbucket2,src_json,src_thrift,src_sequencefile,srcpart,alltypesorc</test.src.tables>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 
 </project>

@@ -27,6 +27,10 @@
   <packaging>jar</packaging>
   <name>Hive Service</name>
 
+  <properties>
+    <hive.path.to.root>..</hive.path.to.root>
+  </properties>
+
   <dependencies>
     <!-- intra-project -->
     <dependency>

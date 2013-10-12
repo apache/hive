@@ -30,10 +30,10 @@ POSTHOOK: query: -- nulls.txt is a file containing a non-null string row followe
 CREATE TABLE src_null(a STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@src_null
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/nulls.txt' INTO TABLE src_null
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nulls.txt' INTO TABLE src_null
 PREHOOK: type: LOAD
 PREHOOK: Output: default@src_null
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/nulls.txt' INTO TABLE src_null
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nulls.txt' INTO TABLE src_null
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@src_null
 PREHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT a FROM src_null

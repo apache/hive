@@ -71,7 +71,7 @@ public class TestSymlinkTextInputFormat extends TestCase {
     conf = new Configuration();
     job = new JobConf(conf);
     fileSystem = FileSystem.getLocal(conf);
-    testDir = new Path(System.getProperty("test.data.dir", System.getProperty(
+    testDir = new Path(System.getProperty("test.tmp.dir", System.getProperty(
         "user.dir", new File(".").getAbsolutePath()))
         + "/TestSymlinkTextInputFormat");
     reporter = Reporter.NULL;

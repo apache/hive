@@ -274,6 +274,8 @@ class TextMetaDataFormatter implements MetaDataFormatter {
       int numOfFiles = 0;
 
       boolean unknown = false;
+      System.err.println("XXX tblPath " + tblPath);
+      System.err.println("XXX locations " + locations);
       FileSystem fs = tblPath.getFileSystem(conf);
       // in case all files in locations do not exist
       try {

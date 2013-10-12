@@ -26,8 +26,11 @@
   <groupId>org.apache.hive.shims</groupId>
   <artifactId>common-secure</artifactId>
   <packaging>jar</packaging>
-
   <name>Hive Shims Secure Common</name>
+
+  <properties>
+    <hive.path.to.root>../..</hive.path.to.root>
+  </properties>
 
   <dependencies>
     <!-- intra-project -->

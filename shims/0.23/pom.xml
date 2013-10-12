@@ -28,6 +28,10 @@
   <packaging>jar</packaging>
   <name>Hive Shims 0.23</name>
 
+  <properties>
+    <hive.path.to.root>../..</hive.path.to.root>
+  </properties>
+
   <dependencies>
     <!-- intra-project -->
     <dependency>

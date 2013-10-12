@@ -3,10 +3,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE T1(key INT, val STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t1
 PREHOOK: query: CREATE TABLE T2(key INT, val STRING)
@@ -14,10 +14,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE T2(key INT, val STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@T2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T2.txt' INTO TABLE T2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
 PREHOOK: type: LOAD
 PREHOOK: Output: default@t2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T2.txt' INTO TABLE T2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t2
 PREHOOK: query: CREATE TABLE T3(key INT, val STRING)
@@ -25,10 +25,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE T3(key INT, val STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@T3
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T3
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T3
 PREHOOK: type: LOAD
 PREHOOK: Output: default@t3
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T3
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T3
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t3
 PREHOOK: query: -- When Correlation Optimizer is turned off, this query will be evaluated

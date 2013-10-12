@@ -81,10 +81,10 @@ number              	int                 	from deserializer
 first_name          	string              	from deserializer   
 last_name           	string              	from deserializer   
 extra_field         	string              	from deserializer   
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/doctors.avro' INTO TABLE doctors4
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors4
 PREHOOK: type: LOAD
 PREHOOK: Output: default@doctors4
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/doctors.avro' INTO TABLE doctors4
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/doctors.avro' INTO TABLE doctors4
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@doctors4
 PREHOOK: query: CREATE TABLE episodes
@@ -153,10 +153,10 @@ POSTHOOK: type: DESCTABLE
 title               	string              	from deserializer   
 air_date            	string              	from deserializer   
 doctor              	int                 	from deserializer   
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/episodes.avro' INTO TABLE episodes
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes
 PREHOOK: type: LOAD
 PREHOOK: Output: default@episodes
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/episodes.avro' INTO TABLE episodes
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@episodes
 PREHOOK: query: SELECT e.title, e.air_date, d.first_name, d.last_name, d.extra_field, e.air_date

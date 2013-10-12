@@ -77,7 +77,7 @@ public class TestHCatPartitionPublish {
 
   @BeforeClass
   public static void setup() throws Exception {
-    String testDir = System.getProperty("test.data.dir", "./");
+    String testDir = System.getProperty("test.tmp.dir", "./");
     testDir = testDir + "/test_hcat_partitionpublish_" + Math.abs(new Random().nextLong()) + "/";
     File workDir = new File(new File(testDir).getCanonicalPath());
     FileUtil.fullyDelete(workDir);

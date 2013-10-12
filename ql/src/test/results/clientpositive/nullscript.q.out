@@ -3,16 +3,16 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE nullscript(KEY STRING, VALUE STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@nullscript
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE nullscript
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE nullscript
 PREHOOK: type: LOAD
 PREHOOK: Output: default@nullscript
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE nullscript
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE nullscript
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@nullscript
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE nullscript
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE nullscript
 PREHOOK: type: LOAD
 PREHOOK: Output: default@nullscript
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/nullfile.txt' INTO TABLE nullscript
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/nullfile.txt' INTO TABLE nullscript
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@nullscript
 PREHOOK: query: explain

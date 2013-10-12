@@ -1,4 +1,4 @@
-add jar ${system:build.dir}/hive-contrib-${system:hive.version}.jar;
+add jar ${system:maven.local.repository}/org/apache/hive/hive-contrib/${system:hive.version}/hive-contrib-${system:hive.version}.jar;
 set hive.metastore.force.reload.conf=true;
 SHOW TABLES 'src';
 set hive.metastore.ds.connection.url.hook=org.apache.hadoop.hive.contrib.metastore.hooks.TestURLHook;

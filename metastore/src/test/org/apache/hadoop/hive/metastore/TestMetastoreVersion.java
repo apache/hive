@@ -35,7 +35,7 @@ public class TestMetastoreVersion extends TestCase {
 
   protected HiveConf hiveConf;
   private Driver driver;
-  private String hiveHome;
+  private String metaStoreRoot;
   private String testMetastoreDB;
   Random randomNum = new Random();
 
@@ -54,7 +54,7 @@ public class TestMetastoreVersion extends TestCase {
     File.separator + "test_metastore-" + randomNum.nextInt();
     System.setProperty(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname,
         "jdbc:derby:" + testMetastoreDB + ";create=true");
-    hiveHome = System.getProperty("hive.home");
+    metaStoreRoot = System.getProperty("test.tmp.dir");
   }
 
   @Override
@@ -151,13 +151,13 @@ public class TestMetastoreVersion extends TestCase {
 
   //  write the given version to metastore
   private String getVersion(HiveConf conf) throws HiveMetaException {
-    MetaStoreSchemaInfo schemInfo = new MetaStoreSchemaInfo(hiveHome, conf, "derby");
+    MetaStoreSchemaInfo schemInfo = new MetaStoreSchemaInfo(metaStoreRoot, conf, "derby");
     return getMetaStoreVersion();
   }
 
   //  write the given version to metastore
   private void setVersion(HiveConf conf, String version) throws HiveMetaException {
-    MetaStoreSchemaInfo schemInfo = new MetaStoreSchemaInfo(hiveHome, conf, "derby");
+    MetaStoreSchemaInfo schemInfo = new MetaStoreSchemaInfo(metaStoreRoot, conf, "derby");
     setMetaStoreVersion(version, "setVersion test");
   }
 

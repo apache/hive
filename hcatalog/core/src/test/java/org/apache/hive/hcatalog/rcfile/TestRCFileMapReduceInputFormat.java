@@ -68,7 +68,7 @@ public class TestRCFileMapReduceInputFormat extends TestCase {
   static {
     try {
       fs = FileSystem.getLocal(conf);
-      Path dir = new Path(System.getProperty("test.data.dir", ".") + "/mapred");
+      Path dir = new Path(System.getProperty("test.tmp.dir", ".") + "/mapred");
       file = new Path(dir, "test_rcfile");
       fs.delete(dir, true);
       // the SerDe part is from TestLazySimpleSerDe
@@ -203,7 +203,7 @@ public class TestRCFileMapReduceInputFormat extends TestCase {
   private void writeThenReadByRecordReader(int intervalRecordCount,
                        int writeCount, int splitNumber, long maxSplitSize, CompressionCodec codec)
     throws IOException, InterruptedException {
-    Path testDir = new Path(System.getProperty("test.data.dir", ".")
+    Path testDir = new Path(System.getProperty("test.tmp.dir", ".")
       + "/mapred/testsmallfirstsplit");
     Path testFile = new Path(testDir, "test_rcfile");
     fs.delete(testFile, true);

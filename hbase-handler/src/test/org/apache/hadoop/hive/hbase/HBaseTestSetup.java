@@ -81,7 +81,7 @@ public class HBaseTestSetup extends TestSetup {
     	return;
     }
     zooKeeperPort = zkPort;
-    String tmpdir =  System.getProperty("user.dir")+"/../build/ql/tmp";
+    String tmpdir =  System.getProperty("test.tmp.dir");
     this.tearDown();
     conf.set("hbase.master", "local");
 

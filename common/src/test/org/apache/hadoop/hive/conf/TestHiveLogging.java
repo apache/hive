@@ -92,7 +92,7 @@ public class TestHiveLogging extends TestCase {
 
   public void testHiveLogging() throws Exception {
     // customized log4j config log file to be: /tmp/TestHiveLogging/hiveLog4jTest.log
-    String customLogPath = "/tmp/TestHiveLogging/";
+    String customLogPath = "/tmp/" + System.getProperty("user.name") + "-TestHiveLogging/";
     String customLogName = "hiveLog4jTest.log";
     String customLogFile = customLogPath + customLogName;
     String customCleanCmd = "rm -rf " + customLogFile;

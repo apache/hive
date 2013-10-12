@@ -66,6 +66,7 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hive.common.util.HiveTestUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -205,10 +206,7 @@ public class TestOrcFile {
 
   @Test
   public void testReadFormat_0_11() throws Exception {
-    Path resourceDir = new Path(System.getProperty("test.build.resources", "ql"
-        + File.separator + "src" + File.separator + "test" + File.separator
-        + "resources"));
-    Path oldFilePath = new Path(resourceDir, "orc-file-11-format.orc");
+    Path oldFilePath = new Path(HiveTestUtils.getFileFromClasspath("orc-file-11-format.orc"));
     Reader reader = OrcFile.createReader(fs, oldFilePath);
 
     int stripeCount = 0;

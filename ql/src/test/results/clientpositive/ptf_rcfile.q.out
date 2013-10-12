@@ -27,10 +27,10 @@ POSTHOOK: query: CREATE TABLE part_rc(
 )  STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@part_rc
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part.rc' overwrite into table part_rc
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.rc' overwrite into table part_rc
 PREHOOK: type: LOAD
 PREHOOK: Output: default@part_rc
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part.rc' overwrite into table part_rc
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.rc' overwrite into table part_rc
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@part_rc
 PREHOOK: query: -- testWindowingPTFWithPartRC

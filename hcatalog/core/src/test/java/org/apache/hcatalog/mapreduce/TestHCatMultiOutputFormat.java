@@ -163,7 +163,7 @@ public class TestHCatMultiOutputFormat {
 
   @BeforeClass
   public static void setup() throws Exception {
-    String testDir = System.getProperty("test.data.dir", "./");
+    String testDir = System.getProperty("test.tmp.dir", "./");
     testDir = testDir + "/test_multitable_" + Math.abs(new Random().nextLong()) + "/";
     workDir = new File(new File(testDir).getCanonicalPath());
     FileUtil.fullyDelete(workDir);

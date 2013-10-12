@@ -33,6 +33,10 @@
   <packaging>jar</packaging>
   <name>Hive HCatalog Webhcat Java Client</name>
 
+  <properties>
+    <hive.path.to.root>../../..</hive.path.to.root>
+  </properties>
+
   <dependencies>
     <!-- intra-project -->
     <dependency>

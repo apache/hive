@@ -2,16 +2,16 @@ PREHOOK: query: EXPLAIN
 FROM (
   FROM src select src.* WHERE src.key < 100
 ) unioninput
-INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/union.out' SELECT unioninput.*
+INSERT OVERWRITE DIRECTORY 'target/warehouse/union.out' SELECT unioninput.*
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM (
   FROM src select src.* WHERE src.key < 100
 ) unioninput
-INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/union.out' SELECT unioninput.*
+INSERT OVERWRITE DIRECTORY 'target/warehouse/union.out' SELECT unioninput.*
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME src)))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL src) key) 100)))) unioninput)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR '../build/ql/test/data/warehouse/union.out')) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME unioninput))))))
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME src)))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL src) key) 100)))) unioninput)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR 'target/warehouse/union.out')) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME unioninput))))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -61,7 +61,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: ../build/ql/test/data/warehouse/union.out
+          destination: target/warehouse/union.out
 
   Stage: Stage-2
     Map Reduce
@@ -99,17 +99,17 @@ STAGE PLANS:
 PREHOOK: query: FROM (
   FROM src select src.* WHERE src.key < 100
 ) unioninput
-INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/union.out' SELECT unioninput.*
+INSERT OVERWRITE DIRECTORY 'target/warehouse/union.out' SELECT unioninput.*
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: ../build/ql/test/data/warehouse/union.out
+PREHOOK: Output: target/warehouse/union.out
 POSTHOOK: query: FROM (
   FROM src select src.* WHERE src.key < 100
 ) unioninput
-INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/union.out' SELECT unioninput.*
+INSERT OVERWRITE DIRECTORY 'target/warehouse/union.out' SELECT unioninput.*
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: ../build/ql/test/data/warehouse/union.out
+POSTHOOK: Output: target/warehouse/union.out
 86val_86
 27val_27
 98val_98

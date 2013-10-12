@@ -46,7 +46,7 @@ public class TestZooKeeperTokenStore extends TestCase {
   
   @Override
   protected void setUp() throws Exception {
-    File zkDataDir = new File(System.getProperty("java.io.tmpdir"));
+    File zkDataDir = new File(System.getProperty("test.tmp.dir"));
     if (this.zkCluster != null) {
       throw new IOException("Cluster already running");
     }

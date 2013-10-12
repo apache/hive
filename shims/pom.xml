@@ -27,6 +27,10 @@
   <packaging>pom</packaging>
   <name>Hive Shims</name>
 
+  <properties>
+    <hive.path.to.root>..</hive.path.to.root>
+  </properties>
+
   <modules>
     <module>common</module>
     <module>0.20</module>

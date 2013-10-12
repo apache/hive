@@ -11,10 +11,10 @@ lines terminated by '\n'
 stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@impressions
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in7.txt' INTO TABLE impressions
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in7.txt' INTO TABLE impressions
 PREHOOK: type: LOAD
 PREHOOK: Output: default@impressions
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in7.txt' INTO TABLE impressions
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in7.txt' INTO TABLE impressions
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@impressions
 PREHOOK: query: select * from impressions

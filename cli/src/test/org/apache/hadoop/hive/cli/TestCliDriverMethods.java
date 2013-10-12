@@ -156,17 +156,16 @@ public class TestCliDriverMethods extends TestCase {
       historyFile.delete();
     }
     HiveConf configuration = new HiveConf();
-    CliSessionState ss = new CliSessionState(configuration);
-    CliSessionState.start(ss);
-    String[] args = {};
+    configuration.setBoolVar(ConfVars.HIVE_SESSION_HISTORY_ENABLED, true);
     PrintStream oldOut = System.out;
     ByteArrayOutputStream dataOut = new ByteArrayOutputStream();
     System.setOut(new PrintStream(dataOut));
-
     PrintStream oldErr = System.err;
     ByteArrayOutputStream dataErr = new ByteArrayOutputStream();
     System.setErr(new PrintStream(dataErr));
-
+    CliSessionState ss = new CliSessionState(configuration);
+    CliSessionState.start(ss);
+    String[] args = {};
 
     try {
       new FakeCliDriver().run(args);

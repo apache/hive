@@ -62,10 +62,10 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@staging
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/over1k' OVERWRITE INTO TABLE staging
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging
 PREHOOK: type: LOAD
 PREHOOK: Output: default@staging
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/over1k' OVERWRITE INTO TABLE staging
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/over1k' OVERWRITE INTO TABLE staging
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@staging
 PREHOOK: query: INSERT INTO TABLE orc_pred select * from staging
