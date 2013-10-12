@@ -32,6 +32,8 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
@@ -66,6 +68,7 @@ import org.apache.thrift.TException;
 import com.google.common.collect.Lists;
 
 public abstract class TestHiveMetaStore extends TestCase {
+  private static final Log LOG = LogFactory.getLog(TestHiveMetaStore.class);
   protected static HiveMetaStoreClient client;
   protected static HiveConf hiveConf;
   protected static Warehouse warehouse;
@@ -2030,6 +2033,17 @@ public abstract class TestHiveMetaStore extends TestCase {
     checkFilter(client, dbName, tblName, "p3 >= 32", 2);
     checkFilter(client, dbName, tblName, "p3 > 32", 0);
 
+    // Test between
+    checkFilter(client, dbName, tblName, "p1 between \"p11\" and \"p12\"", 4);
+    checkFilter(client, dbName, tblName, "p1 not between \"p11\" and \"p12\"", 2);
+    checkFilter(client, dbName, tblName, "p3 not between 0 and 2", 6);
+    checkFilter(client, dbName, tblName, "p3 between 31 and 32", 5);
+    checkFilter(client, dbName, tblName, "p3 between 32 and 31", 0);
+    checkFilter(client, dbName, tblName, "p3 between -32 and 34 and p3 not between 31 and 32", 0);
+    checkFilter(client, dbName, tblName, "p3 between 1 and 3 or p3 not between 1 and 3", 6);
+    checkFilter(client, dbName, tblName,
+        "p3 between 31 and 32 and p1 between \"p12\" and \"p14\"", 3);
+
     //Test for setting the maximum partition count
     List<Partition> partitions = client.listPartitionsByFilter(dbName,
         tblName, "p1 >= \"p12\"", (short) 2);
@@ -2222,6 +2236,7 @@ public abstract class TestHiveMetaStore extends TestCase {
   private void checkFilter(HiveMetaStoreClient client, String dbName,
         String tblName, String filter, int expectedCount)
         throws MetaException, NoSuchObjectException, TException {
+    LOG.debug("Testing filter: " + filter);
     List<Partition> partitions = client.listPartitionsByFilter(dbName,
             tblName, filter, (short) -1);
 
@@ -2238,7 +2253,7 @@ public abstract class TestHiveMetaStore extends TestCase {
     part.setTableName(table.getTableName());
     part.setValues(vals);
     part.setParameters(new HashMap<String, String>());
-    part.setSd(table.getSd());
+    part.setSd(table.getSd().deepCopy());
     part.getSd().setSerdeInfo(table.getSd().getSerdeInfo());
     part.getSd().setLocation(table.getSd().getLocation() + location);
 
