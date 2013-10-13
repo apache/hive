@@ -154,8 +154,10 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
       throws HiveException, AuthorizationException {
 
     // Partition path can be null in the case of a new create partition - in this case,
-    // we try to default to checking the permissions of the parent table
-    if (part.getLocation() == null) {
+    // we try to default to checking the permissions of the parent table.
+    // Partition itself can also be null, in cases where this gets called as a generic
+    // catch-all call in cases like those with CTAS onto an unpartitioned table (see HIVE-1887)
+    if ((part == null) || (part.getLocation() == null)) {
       authorize(table, readRequiredPriv, writeRequiredPriv);
     } else {
       authorize(part.getPartitionPath(), readRequiredPriv, writeRequiredPriv);
@@ -169,8 +171,11 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     // In a simple storage-based auth, we have no information about columns
     // living in different files, so we do simple partition-auth and ignore
     // the columns parameter.
-
-    authorize(part.getTable(), part, readRequiredPriv, writeRequiredPriv);
+    if ((part != null) && (part.getTable() != null)) {
+      authorize(part.getTable(), part, readRequiredPriv, writeRequiredPriv);
+    } else {
+      authorize(table, part, readRequiredPriv, writeRequiredPriv);
+    }
   }
 
   @Override
