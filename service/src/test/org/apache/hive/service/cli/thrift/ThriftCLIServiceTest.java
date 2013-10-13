@@ -197,6 +197,9 @@ public abstract class ThriftCLIServiceTest {
     assertEquals("Query should be finished",
         OperationState.FINISHED, OperationState.getOperationState(opStatusResp.getOperationState()));
 
+    queryString = "DROP TABLE TEST_EXEC_THRIFT";
+    executeQuerySync(queryString, sessHandle);
+
     // Close the session; ignore exception if any
     TCloseSessionReq closeReq = new TCloseSessionReq(sessHandle);
     client.CloseSession(closeReq);
