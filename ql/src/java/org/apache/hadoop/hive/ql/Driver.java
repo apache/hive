@@ -777,6 +777,28 @@ public class Driver implements CommandProcessor {
   }
 
   /**
+   * Dedup the list of lock objects so that there is only one lock per table/partition.
+   * If there is both a shared and exclusive lock for the same object, this will deduped
+   * to just a single exclusive lock.
+   * @param lockObjects
+   */
+  static void dedupLockObjects(List<HiveLockObj> lockObjects) {
+    Map<String, HiveLockObj> lockMap = new HashMap<String, HiveLockObj>();
+    for (HiveLockObj lockObj : lockObjects) {
+      String lockName = lockObj.getName();
+      HiveLockObj foundLock = lockMap.get(lockName);
+      if (foundLock == null || lockObj.getMode() == HiveLockMode.EXCLUSIVE) {
+        lockMap.put(lockName, lockObj);
+      }
+    }
+    // copy set of deduped locks back to original list
+    lockObjects.clear();
+    for (HiveLockObj lockObj : lockMap.values()) {
+      lockObjects.add(lockObj);
+    }
+  }
+
+  /**
    * Acquire read and write locks needed by the statement. The list of objects to be locked are
    * obtained from he inputs and outputs populated by the compiler. The lock acuisition scheme is
    * pretty simple. If all the locks cannot be obtained, error out. Deadlock is avoided by making
@@ -843,6 +865,7 @@ public class Driver implements CommandProcessor {
               )
           );
 
+      dedupLockObjects(lockObjects);
       List<HiveLock> hiveLocks = ctx.getHiveLockMgr().lock(lockObjects, false);
 
       if (hiveLocks == null) {
