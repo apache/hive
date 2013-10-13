@@ -110,8 +110,22 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     // that are user-level do not make sense from the context of storage-permission
     // based auth, denying seems to be more canonical here.
 
-    throw new AuthorizationException(StorageBasedAuthorizationProvider.class.getName() +
-        " does not allow user-level authorization");
+    // Update to previous comment: there does seem to be one place that uses this
+    // and that is to authorize "show databases" in hcat commandline, which is used
+    // by webhcat. And user-level auth seems to be a resonable default in this case.
+    // The now deprecated HdfsAuthorizationProvider in hcatalog approached this in
+    // another way, and that was to see if the user had said above appropriate requested
+    // privileges for the hive root warehouse directory. That seems to be the best
+    // mapping for user level privileges to storage. Using that strategy here.
+
+    Path root = null;
+    try {
+      initWh();
+      root = wh.getWhRoot();
+      authorize(root, readRequiredPriv, writeRequiredPriv);
+    } catch (MetaException ex) {
+      throw hiveException(ex);
+    }
   }
 
   @Override
