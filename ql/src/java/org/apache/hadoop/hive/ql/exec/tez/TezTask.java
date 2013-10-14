@@ -19,10 +19,13 @@
 package org.apache.hadoop.hive.ql.exec.tez;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.security.auth.login.LoginException;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -34,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.EdgeType;
@@ -45,6 +49,7 @@ import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.tez.client.TezSession;
 import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.Edge;
+import org.apache.tez.dag.api.SessionNotRunning;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.client.DAGClient;
@@ -194,12 +199,34 @@ public class TezTask extends Task<TezWork> {
 
   private DAGClient submit(JobConf conf, DAG dag, Path scratchDir,
       LocalResource appJarLr, TezSession session)
-      throws IOException, TezException, InterruptedException {
+      throws IOException, TezException, InterruptedException,
+      LoginException, URISyntaxException, HiveException {
 
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
+    DAGClient dagClient = null;
 
-    // ready to start execution on the cluster
-    DAGClient dagClient = session.submitDAG(dag);
+    try {
+      // ready to start execution on the cluster
+      dagClient = session.submitDAG(dag);
+    } catch (SessionNotRunning nr) {
+      console.printInfo("Tez session was closed. Reopening...");
+
+      // Need to remove this static hack. But this is the way currently to
+      // get a session.
+      SessionState ss = SessionState.get();
+      TezSessionState tezSession = ss.getTezSession();
+
+      // close the old one, but keep the tmp files around
+      tezSession.close(true);
+
+      // (re)open the session
+      tezSession.open(ss.getSessionId(), this.conf);
+      session = tezSession.getSession();
+
+      console.printInfo("Session re-established.");
+
+      dagClient = session.submitDAG(dag);
+    }
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
     return dagClient;
