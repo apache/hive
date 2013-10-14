@@ -432,6 +432,7 @@ public final class FunctionRegistry {
     registerGenericUDTF("inline", GenericUDTFInline.class);
     registerGenericUDTF("json_tuple", GenericUDTFJSONTuple.class);
     registerGenericUDTF("parse_url_tuple", GenericUDTFParseUrlTuple.class);
+    registerGenericUDTF("posexplode", GenericUDTFPosExplode.class);
     registerGenericUDTF("stack", GenericUDTFStack.class);
 
     //PTF declarations
