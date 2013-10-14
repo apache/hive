@@ -631,7 +631,7 @@ sub compare
 	        # in the tests, we run this case with jobName = "PigLatin:loadstore.pig"
 	        # filter $body to leave only records with this jobName
 	        my @filtered_body = grep {($_->{detail}{profile}{jobName} eq "PigLatin:loadstore.pig")}  @$body;
-			my @sorted_filtered_body = sort { $a->{id} <=> $b->{id} } @filtered_body;
+			my @sorted_filtered_body = sort { $a->{id} cmp $b->{id} } @filtered_body;
         	$value = $path->value(\@sorted_filtered_body);
         } else {
         	$value = $path->value($testResult->{'body'});
