@@ -510,13 +510,13 @@ class ColumnStatisticsImpl implements ColumnStatistics {
       super(stats);
       OrcProto.DecimalStatistics dec = stats.getDecimalStatistics();
       if (dec.hasMaximum()) {
-        maximum = new HiveDecimal(dec.getMaximum());
+        maximum = HiveDecimal.create(dec.getMaximum());
       }
       if (dec.hasMinimum()) {
-        minimum = new HiveDecimal(dec.getMinimum());
+        minimum = HiveDecimal.create(dec.getMinimum());
       }
       if (dec.hasSum()) {
-        sum = new HiveDecimal(dec.getSum());
+        sum = HiveDecimal.create(dec.getSum());
       } else {
         sum = null;
       }
@@ -541,11 +541,7 @@ class ColumnStatisticsImpl implements ColumnStatistics {
         maximum = value;
       }
       if (sum != null) {
-        try {
-          sum = sum.add(value);
-        } catch (NumberFormatException nfe) {
-          sum = null;
-        }
+        sum = sum.add(value);
       }
     }
 

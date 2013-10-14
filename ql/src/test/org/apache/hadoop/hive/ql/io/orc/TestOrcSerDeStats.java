@@ -397,7 +397,7 @@ public class TestOrcSerDeStats {
         Long.MAX_VALUE, (float) 1.0, -15.0, bytes(0, 1, 2, 3, 4), "hi",
         new MiddleStruct(inner(1, "bye"), inner(2, "sigh")),
         list(inner(3, "good"), inner(4, "bad")),
-        map(), Timestamp.valueOf("2000-03-12 15:00:00"), new HiveDecimal(
+        map(), Timestamp.valueOf("2000-03-12 15:00:00"), HiveDecimal.create(
             "12345678.6547456")));
     // 1 + 2 + 4 + 8 + 4 + 8 + 3 + 4 + 3 + 4 + 4 + 4 + 3 + 4 + 2 + 4 + 3 + 5 + 4 + 5 + 7 + 4 + 7 =
     // 97
@@ -406,7 +406,7 @@ public class TestOrcSerDeStats {
         new MiddleStruct(inner(1, "bye"), inner(2, "sigh")),
         list(inner(100000000, "cat"), inner(-100000, "in"), inner(1234, "hat")),
         map(inner(5, "chani"), inner(1, "mauddib")), Timestamp.valueOf("2000-03-11 15:00:00"),
-        new HiveDecimal("12345678.6547452")));
+        HiveDecimal.create("12345678.6547452")));
     writer.close();
     long rowCount = writer.getNumberOfRows();
     long rawDataSize = writer.getRawDataSize();
@@ -490,7 +490,7 @@ public class TestOrcSerDeStats {
         Long.MAX_VALUE, (float) 1.0, -15.0, bytes(0, 1, 2, 3, 4), "hi",
         new MiddleStruct(inner(1, "bye"), inner(2, "sigh")),
         list(inner(3, "good"), inner(4, "bad")),
-        map(), Timestamp.valueOf("2000-03-12 15:00:00"), new HiveDecimal(
+        map(), Timestamp.valueOf("2000-03-12 15:00:00"), HiveDecimal.create(
             "12345678.6547456")));
     // 1 + 2 + 4 + 8 + 4 + 8 + 3 + 4 + 3 + 4 + 4 + 4 + 3 + 4 + 2 + 4 + 3 + 5 + 4 + 5 + 7 + 4 + 7 =
     // 97
@@ -499,7 +499,7 @@ public class TestOrcSerDeStats {
         new MiddleStruct(inner(1, "bye"), inner(2, "sigh")),
         list(inner(100000000, "cat"), inner(-100000, "in"), inner(1234, "hat")),
         map(inner(5, "chani"), inner(1, "mauddib")), Timestamp.valueOf("2000-03-11 15:00:00"),
-        new HiveDecimal("12345678.6547452")));
+        HiveDecimal.create("12345678.6547452")));
     writer.close();
     long rowCount = writer.getNumberOfRows();
     long rawDataSize = writer.getRawDataSize();

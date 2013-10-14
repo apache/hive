@@ -363,7 +363,7 @@ public class TestOrcFile {
     assertEquals(Timestamp.valueOf("2000-03-12 15:00:00"),
         tso.getPrimitiveJavaObject(readerInspector.getStructFieldData(row,
             fields.get(12))));
-    assertEquals(new HiveDecimal("12345678.6547456"),
+    assertEquals(HiveDecimal.create("12345678.6547456"),
         dco.getPrimitiveJavaObject(readerInspector.getStructFieldData(row,
             fields.get(13))));
 
@@ -445,7 +445,7 @@ public class TestOrcFile {
     assertEquals(Timestamp.valueOf("2000-03-12 15:00:01"),
         tso.getPrimitiveJavaObject(readerInspector.getStructFieldData(row,
             fields.get(12))));
-    assertEquals(new HiveDecimal("12345678.6547457"),
+    assertEquals(HiveDecimal.create("12345678.6547457"),
         dco.getPrimitiveJavaObject(readerInspector.getStructFieldData(row,
             fields.get(13))));
 
@@ -965,7 +965,7 @@ public class TestOrcFile {
     synchronized (TestOrcFile.class) {
       inspector = OrcStruct.createObjectInspector(0, types);
     }
-    HiveDecimal maxValue = new HiveDecimal("100000000000000000000");
+    HiveDecimal maxValue = HiveDecimal.create("100000000000000000000");
     Writer writer = OrcFile.createWriter(testFilePath,
                                          OrcFile.writerOptions(conf)
                                          .inspector(inspector)
@@ -977,13 +977,13 @@ public class TestOrcFile {
     OrcUnion union = new OrcUnion();
     row.setFieldValue(1, union);
     row.setFieldValue(0, Timestamp.valueOf("2000-03-12 15:00:00"));
-    HiveDecimal value = new HiveDecimal("12345678.6547456");
+    HiveDecimal value = HiveDecimal.create("12345678.6547456");
     row.setFieldValue(2, value);
     union.set((byte) 0, new IntWritable(42));
     writer.addRow(row);
     row.setFieldValue(0, Timestamp.valueOf("2000-03-20 12:00:00.123456789"));
     union.set((byte) 1, new Text("hello"));
-    value = new HiveDecimal("-5643.234");
+    value = HiveDecimal.create("-5643.234");
     row.setFieldValue(2, value);
     writer.addRow(row);
     row.setFieldValue(0, null);
@@ -997,7 +997,7 @@ public class TestOrcFile {
     writer.addRow(row);
     union.set((byte) 0, new IntWritable(200000));
     row.setFieldValue(0, Timestamp.valueOf("1900-01-01 00:00:00"));
-    value = new HiveDecimal("100000000000000000000");
+    value = HiveDecimal.create("100000000000000000000");
     row.setFieldValue(2, value);
     writer.addRow(row);
     Random rand = new Random(42);
@@ -1008,7 +1008,7 @@ public class TestOrcFile {
       } else {
         union.set((byte) 1, new Text(new Integer(i*i).toString()));
       }
-      value = new HiveDecimal(new BigInteger(118, rand),
+      value = HiveDecimal.create(new BigInteger(118, rand),
           rand.nextInt(36));
       row.setFieldValue(2, value);
       if (maxValue.compareTo(value) < 0) {
@@ -1036,7 +1036,7 @@ public class TestOrcFile {
     DecimalColumnStatistics stats =
         (DecimalColumnStatistics) reader.getStatistics()[5];
     assertEquals(303, stats.getNumberOfValues());
-    assertEquals(new HiveDecimal("-5643.234"), stats.getMinimum());
+    assertEquals(HiveDecimal.create("-5643.234"), stats.getMinimum());
     assertEquals(maxValue, stats.getMaximum());
     assertEquals(null, stats.getSum());
     int stripeCount = 0;
@@ -1069,14 +1069,14 @@ public class TestOrcFile {
     union = (OrcUnion) row.getFieldValue(1);
     assertEquals(0, union.getTag());
     assertEquals(new IntWritable(42), union.getObject());
-    assertEquals(new HiveDecimal("12345678.6547456"), row.getFieldValue(2));
+    assertEquals(HiveDecimal.create("12345678.6547456"), row.getFieldValue(2));
     row = (OrcStruct) rows.next(row);
     assertEquals(2, rows.getRowNumber());
     assertEquals(Timestamp.valueOf("2000-03-20 12:00:00.123456789"),
         row.getFieldValue(0));
     assertEquals(1, union.getTag());
     assertEquals(new Text("hello"), union.getObject());
-    assertEquals(new HiveDecimal("-5643.234"), row.getFieldValue(2));
+    assertEquals(HiveDecimal.create("-5643.234"), row.getFieldValue(2));
     row = (OrcStruct) rows.next(row);
     assertEquals(null, row.getFieldValue(0));
     assertEquals(null, row.getFieldValue(1));
@@ -1096,7 +1096,7 @@ public class TestOrcFile {
     assertEquals(Timestamp.valueOf("1900-01-01 00:00:00"),
         row.getFieldValue(0));
     assertEquals(new IntWritable(200000), union.getObject());
-    assertEquals(new HiveDecimal("100000000000000000000"),
+    assertEquals(HiveDecimal.create("100000000000000000000"),
                  row.getFieldValue(2));
     rand = new Random(42);
     for(int i=1900; i < 2200; ++i) {
@@ -1110,7 +1110,7 @@ public class TestOrcFile {
         assertEquals(1, union.getTag());
         assertEquals(new Text(new Integer(i*i).toString()), union.getObject());
       }
-      assertEquals(new HiveDecimal(new BigInteger(118, rand),
+      assertEquals(HiveDecimal.create(new BigInteger(118, rand),
                                    rand.nextInt(36)), row.getFieldValue(2));
     }
     for(int i=0; i < 5000; ++i) {
@@ -1132,7 +1132,7 @@ public class TestOrcFile {
         row.getFieldValue(0));
     assertEquals(1, union.getTag());
     assertEquals(new Text("hello"), union.getObject());
-    assertEquals(new HiveDecimal("-5643.234"), row.getFieldValue(2));
+    assertEquals(HiveDecimal.create("-5643.234"), row.getFieldValue(2));
     rows.close();
   }
 

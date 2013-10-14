@@ -124,12 +124,12 @@ public class UDFPosMod extends UDFBaseNumericOp {
       return null;
     }
 
-    try {
-      decimalWritable.set(av.remainder(bv).add(bv).remainder(bv));
-    } catch (NumberFormatException e) {
+    HiveDecimal dec = av.remainder(bv).add(bv).remainder(bv);
+    if (dec == null) {
       return null;
     }
 
+    decimalWritable.set(dec);
     return decimalWritable;
   }
 }

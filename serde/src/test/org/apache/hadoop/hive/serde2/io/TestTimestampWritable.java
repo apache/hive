@@ -315,7 +315,7 @@ public class TestTimestampWritable extends TestCase {
         // decimalToTimestamp should be consistent with doubleToTimestamp for this level of
         // precision.
         assertEquals(ts, TimestampWritable.decimalToTimestamp(
-            new HiveDecimal(BigDecimal.valueOf(asDouble))));
+            HiveDecimal.create(BigDecimal.valueOf(asDouble))));
       }
     }
   }
@@ -323,7 +323,7 @@ public class TestTimestampWritable extends TestCase {
   private static HiveDecimal timestampToDecimal(Timestamp ts) {
     BigDecimal d = new BigDecimal(getSeconds(ts));
     d = d.add(new BigDecimal(ts.getNanos()).divide(new BigDecimal(BILLION)));
-    return new HiveDecimal(d);
+    return HiveDecimal.create(d);
   }
 
   public void testDecimalToTimestampRandomly() {

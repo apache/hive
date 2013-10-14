@@ -53,12 +53,20 @@ public class WritableHiveDecimalObjectInspector
 
   @Override
   public Object set(Object o, HiveDecimal t) {
+    if (t == null) {
+      return null;
+    }
+
     ((HiveDecimalWritable) o).set(t);
     return o;
   }
 
   @Override
   public Object set(Object o, HiveDecimalWritable t) {
+    if (t == null) {
+      return null;
+    }
+
     ((HiveDecimalWritable) o).set(t);
     return o;
   }
@@ -70,6 +78,10 @@ public class WritableHiveDecimalObjectInspector
 
   @Override
   public Object create(HiveDecimal t) {
+    if (t == null) {
+      return null;
+    }
+
     return new HiveDecimalWritable(t);
   }
 
