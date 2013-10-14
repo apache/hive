@@ -301,12 +301,7 @@ public class PrimitiveObjectInspectorConverter {
         return null;
       }
 
-      try {
-        return outputOI.set(r, PrimitiveObjectInspectorUtils.getHiveDecimal(input,
-            inputOI));
-      } catch (NumberFormatException e) {
-        return null;
-      }
+      return outputOI.set(r, PrimitiveObjectInspectorUtils.getHiveDecimal(input, inputOI));
     }
   }
 

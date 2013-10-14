@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -120,11 +121,12 @@ public class UDFOPPlus extends UDFBaseNumericOp {
       return null;
     }
 
-    try {
-      decimalWritable.set(a.getHiveDecimal().add(b.getHiveDecimal()));
-    } catch(NumberFormatException e) {
-      return null;
-    }
+      HiveDecimal dec = a.getHiveDecimal().add(b.getHiveDecimal());
+      if (dec == null) {
+        return null;
+      }
+
+      decimalWritable.set(dec);
     return decimalWritable;
   }
 

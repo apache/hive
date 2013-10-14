@@ -150,7 +150,7 @@ public class TestBinarySortableSerDe extends TestCase {
       sb.append(getRandString(r, DECIMAL_CHARS, l2));
     }
 
-    HiveDecimal bd = new HiveDecimal(sb.toString());
+    HiveDecimal bd = HiveDecimal.create(sb.toString());
     return bd;
   }
 

@@ -139,7 +139,7 @@ public class TestGenericUDFAbs extends TestCase {
     ObjectInspector[] arguments = {valueOI};
 
     udf.initialize(arguments);
-    DeferredObject valueObj = new DeferredJavaObject(new HiveDecimalWritable(new HiveDecimal(
+    DeferredObject valueObj = new DeferredJavaObject(new HiveDecimalWritable(HiveDecimal.create(
         "107.123456789")));
     DeferredObject[] args = {valueObj};
     HiveDecimalWritable output = (HiveDecimalWritable) udf.evaluate(args);
@@ -147,7 +147,7 @@ public class TestGenericUDFAbs extends TestCase {
     assertEquals("abs() test for HiveDecimal failed ", 107.123456789, output.getHiveDecimal()
         .doubleValue());
 
-    valueObj = new DeferredJavaObject(new HiveDecimalWritable(new HiveDecimal("-107.123456789")));
+    valueObj = new DeferredJavaObject(new HiveDecimalWritable(HiveDecimal.create("-107.123456789")));
     args[0] = valueObj;
     output = (HiveDecimalWritable) udf.evaluate(args);
 

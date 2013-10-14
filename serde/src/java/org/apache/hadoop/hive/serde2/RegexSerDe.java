@@ -126,7 +126,7 @@ public class RegexSerDe extends AbstractSerDe {
       TypeInfo typeInfo = columnTypes.get(c);
       if (typeInfo instanceof PrimitiveTypeInfo) {
         PrimitiveTypeInfo pti = (PrimitiveTypeInfo) columnTypes.get(c);
-        AbstractPrimitiveJavaObjectInspector oi = 
+        AbstractPrimitiveJavaObjectInspector oi =
             PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(pti);
         columnOIs.add(oi);
       } else {
@@ -232,8 +232,7 @@ public class RegexSerDe extends AbstractSerDe {
           d = Date.valueOf(t);
           row.set(c, d);
         } else if (typeName.equals(serdeConstants.DECIMAL_TYPE_NAME)) {
-          HiveDecimal bd;
-          bd = new HiveDecimal(t);
+          HiveDecimal bd = HiveDecimal.create(t);
           row.set(c, bd);
         } else if (typeInfo instanceof VarcharTypeInfo) {
           HiveVarchar hv = new HiveVarchar(t, ((VarcharTypeInfo)typeInfo).getLength());
