@@ -106,6 +106,7 @@
             <env key="WEBHDFS_URL" value="${harness.webhdfs.url}"/>
             <env key="TEMPLETON_URL" value="${harness.templeton.url}"/>
             <env key="USER_NAME" value="${test.user.name}"/>
+            <env key="OTHER_USER_NAME" value="${test.other.user.name}"/>
             <env key="HARNESS_CONF" value="${basedir}/conf/default.conf"/>
             <env key="SECURE_MODE" value="${secure.mode}"/>
             <arg line="${tests.to.run}"/>
