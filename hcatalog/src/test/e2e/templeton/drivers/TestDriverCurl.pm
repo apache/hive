@@ -207,6 +207,17 @@ sub globalSetup
         die "Cannot create temporary directory " . $globalHash->{'tmpPath'} .
           " " . "$ERRNO\n";
 
+    my $testCmdBasics = $self->copyTestBasicConfig($globalHash);
+    $testCmdBasics->{'method'} = 'PUT';
+    $testCmdBasics->{'url'} = ':WEBHDFS_URL:/webhdfs/v1' . $globalHash->{'outpath'} . '?op=MKDIRS&permission=777';
+    if (!defined $globalHash->{'is_secure_mode'} || $globalHash->{'is_secure_mode'} !~ /y.*/i) {
+        $testCmdBasics->{'url'} = $testCmdBasics->{'url'} . '&user.name=' . $globalHash->{'current_user'};
+    }
+    my $curl_result = $self->execCurlCmd($testCmdBasics, "", $log);
+    my $json = new JSON;
+    $json->utf8->decode($curl_result->{'body'})->{'boolean'} or
+        die "Cannot create hdfs directory " . $globalHash->{'outpath'} .
+          " " . "$ERRNO\n";
   }
 
 ###############################################################################
