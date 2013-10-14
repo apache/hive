@@ -260,6 +260,12 @@ sub runTest
     my ($self, $testCmd, $log) = @_;
     my $subName  = (caller(0))[3];
 
+    # Check that we should run this test.  If the current hadoop version
+    # is hadoop 2 and the test is marked as "ignore23", skip the test
+    if ($self->wrongExecutionMode($testCmd, $log)) {
+        my %result;
+        return \%result;
+    }
     # Handle the various methods of running used in 
     # the original TestDrivers
 
@@ -618,6 +624,13 @@ sub compare
     my ($self, $testResult, $benchmarkResult, $log, $testCmd) = @_;
     my $subName  = (caller(0))[3];
 
+    # Check that we should run this test.  If the current hadoop version
+    # is hadoop 2 and the test is marked as "ignore23", skip the test
+    if ($self->wrongExecutionMode($testCmd, $log)) {
+        # Special magic value
+        return $self->{'wrong_execution_mode'};
+    }
+
     my $result = 1;             # until proven wrong...
     if (defined $testCmd->{'status_code'}) {
       my $res = $self->checkResStatusCode($testResult, $testCmd->{'status_code'}, $log);
@@ -962,6 +975,27 @@ sub compare
     }
     return $result;
   }
+
+##############################################################################
+# Check whether we should be running this test or not.
+#
+sub wrongExecutionMode($$)
+{
+    my ($self, $testCmd, $log) = @_;
+
+    my $wrong = 0;
+
+    if (defined $testCmd->{'ignore23'} && $testCmd->{'hadoopversion'}=='23') {
+        $wrong = 1;
+    }
+
+    if ($wrong) {
+        print $log "Skipping test $testCmd->{'group'}" . "_" .
+            $testCmd->{'num'} . " since it is not suppsed to be run in hadoop 23\n";
+    }
+
+    return  $wrong;
+}
 
 ###############################################################################
 sub  setLocationPermGroup{
