@@ -40,6 +40,7 @@ import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.tez.client.AMConfiguration;
 import org.apache.tez.client.TezSession;
 import org.apache.tez.client.TezSessionConfiguration;
+import org.apache.tez.dag.api.SessionNotRunning;
 import org.apache.tez.dag.api.TezConfiguration;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
@@ -131,15 +132,22 @@ public class TezSessionState {
    * @throws IOException
    * @throws TezException
    */
-  public void close() throws TezException, IOException {
+  public void close(boolean keepTmpDir) throws TezException, IOException {
     if (!isOpen()) {
       return;
     }
 
     LOG.info("Closing Tez Session");
-    session.stop();
-    FileSystem fs = tezScratchDir.getFileSystem(conf);
-    fs.delete(tezScratchDir, true);
+    try {
+      session.stop();
+    } catch (SessionNotRunning nr) {
+      // ignore
+    }
+
+    if (!keepTmpDir) {
+      FileSystem fs = tezScratchDir.getFileSystem(conf);
+      fs.delete(tezScratchDir, true);
+    }
     session = null;
     tezScratchDir = null;
     conf = null;

@@ -808,7 +808,7 @@ public class SessionState {
     }
 
     try {
-      tezSessionState.close();
+      tezSessionState.close(false);
     } catch (Exception e) {
       LOG.info("Error closing tez session", e);
     }

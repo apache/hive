@@ -69,7 +69,7 @@ public class TezJobMonitor {
     boolean done = false;
     int checkInterval = 500;
     int printInterval = 3000;
-    int maxRetryInterval = 5000;
+    int maxRetryInterval = 2500;
     int counter = 0;
     int failedCounter = 0;
     int rc = 0;
@@ -86,7 +86,6 @@ public class TezJobMonitor {
       try {
         status = dagClient.getDAGStatus();
         Map<String, Progress> progressMap = status.getVertexProgress();
-        failedCounter = 0;
         DAGStatus.State state = status.getState();
 
         if (state != lastState || state == RUNNING) {
@@ -132,9 +131,15 @@ public class TezJobMonitor {
             break;
           }
         }
+        if (!done) {
+          Thread.sleep(checkInterval);
+        }
       } catch (Exception e) {
-        if (failedCounter % maxRetryInterval/checkInterval == 0) {
+        console.printInfo("Exception: "+e.getMessage());
+        if (++failedCounter % maxRetryInterval/checkInterval == 0
+            || e instanceof InterruptedException) {
           try {
+            console.printInfo("Killing DAG...");
             dagClient.tryKillDAG();
           } catch(IOException io) {
             // best effort
@@ -145,18 +150,19 @@ public class TezJobMonitor {
           console.printError("Execution has failed.");
           rc = 1;
           done = true;
+        } else {
+          console.printInfo("Retrying...");
         }
-      }
-
-      if (done) {
-        if (rc != 0 && status != null) {
-          for (String diag: status.getDiagnostics()) {
-            console.printError(diag);
+      } finally {
+        if (done) {
+          if (rc != 0 && status != null) {
+            for (String diag: status.getDiagnostics()) {
+              console.printError(diag);
+            }
           }
+          break;
         }
-        break;
       }
-      Thread.sleep(500);
     }
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_DAG);
     return rc;
