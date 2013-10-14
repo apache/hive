@@ -128,6 +128,7 @@ percentile
 percentile_approx
 pi
 pmod
+posexplode
 positive
 pow
 power
@@ -242,6 +243,7 @@ negative
 ntile
 parse_url_tuple
 percentile
+posexplode
 positive
 regexp_replace
 reverse
