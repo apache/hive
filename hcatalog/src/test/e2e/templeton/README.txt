@@ -104,6 +104,7 @@ Running the tests
 Use the following command to run tests -
 
 ant test -Dinpdir.hdfs=<location of inpdir on hdfs>  -Dtest.user.name=<user the tests should run as> \
+ -Dtest.other.user.name=<another user who can launch job> \
  -Dsecure.mode=<yes/no>   -Dharness.webhdfs.url=<webhdfs url upto port num>  -Dharness.templeton.url=<templeton url upto port num> 
 
 If you want to run specific test group you can specify the group, for example:  -Dtests.to.run='-t TestHive'
