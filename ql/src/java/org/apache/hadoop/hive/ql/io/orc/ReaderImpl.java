@@ -34,6 +34,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.io.orc.OrcProto.Type;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Text;
@@ -56,6 +57,9 @@ final class ReaderImpl implements Reader {
   private final OrcProto.Footer footer;
   private final ObjectInspector inspector;
   private long deserializedSize = -1;
+
+  private static final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private static final String CLASS_NAME = ReaderImpl.class.getName();
 
   private static class StripeInformationImpl
       implements StripeInformation {
@@ -273,6 +277,7 @@ final class ReaderImpl implements Reader {
   }
 
   ReaderImpl(FileSystem fs, Path path) throws IOException {
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.INIT_ORC_RECORD_READER);
     this.fileSystem = fs;
     this.path = path;
     FSDataInputStream file = fs.open(path);
@@ -328,6 +333,7 @@ final class ReaderImpl implements Reader {
     footer = OrcProto.Footer.parseFrom(instream);
     inspector = OrcStruct.createObjectInspector(0, footer.getTypesList());
     file.close();
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.INIT_ORC_RECORD_READER);
   }
 
   @Override
