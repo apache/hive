@@ -41,7 +41,7 @@ import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.util.StringUtils;
-import org.apache.tez.mapreduce.input.MRInput;
+import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.mapreduce.processor.MRTaskReporter;
 import org.apache.tez.runtime.api.LogicalInput;
 import org.apache.tez.runtime.library.api.KeyValueReader;
@@ -67,7 +67,12 @@ public class MapRecordProcessor  extends RecordProcessor{
     super.init(jconf, mrReporter, inputs, out);
 
     //Update JobConf using MRInput, info like filename comes via this
-    MRInput mrInput = getMRInput(inputs);
+    MRInputLegacy mrInput = getMRInput(inputs);
+    try {
+      mrInput.init();
+    } catch (IOException e) {
+      throw new RuntimeException("Failed while initializing MRInput", e);
+    }
     Configuration updatedConf = mrInput.getConfigUpdates();
     if (updatedConf != null) {
       for (Entry<String, String> entry : updatedConf) {
@@ -84,6 +89,10 @@ public class MapRecordProcessor  extends RecordProcessor{
       if (mapWork == null) {
         mapWork = Utilities.getMapWork(jconf);
         cache.cache(MAP_PLAN_KEY, mapWork);
+        l4j.info("Plan: "+mapWork);
+        for (String s: mapWork.getAliases()) {
+          l4j.info("Alias: "+s);
+        }
       }
       mapOp = new MapOperator();
 
@@ -126,16 +135,16 @@ public class MapRecordProcessor  extends RecordProcessor{
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
   }
 
-  private MRInput getMRInput(Map<String, LogicalInput> inputs) {
+  private MRInputLegacy getMRInput(Map<String, LogicalInput> inputs) {
     //there should be only one MRInput
-    MRInput theMRInput = null;
+    MRInputLegacy theMRInput = null;
     for(LogicalInput inp : inputs.values()){
-      if(inp instanceof MRInput){
+      if(inp instanceof MRInputLegacy){
         if(theMRInput != null){
           throw new IllegalArgumentException("Only one MRInput is expected");
         }
         //a better logic would be to find the alias
-        theMRInput = (MRInput)inp;
+        theMRInput = (MRInputLegacy)inp;
       }
     }
     return theMRInput;
@@ -144,7 +153,7 @@ public class MapRecordProcessor  extends RecordProcessor{
   @Override
   void run() throws IOException{
 
-    MRInput in = getMRInput(inputs);
+    MRInputLegacy in = getMRInput(inputs);
     KeyValueReader reader = in.getReader();
 
     //process records until done

@@ -27,12 +27,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.sql.SQLException;
 
 import jline.ArgumentCompletor;
 import jline.ArgumentCompletor.AbstractArgumentDelimiter;
@@ -271,10 +271,15 @@ public class CliDriver {
               return ret;
             }
 
+            // query has run capture the time
+            long end = System.currentTimeMillis();
+            double timeTaken = (end - start) / 1000.0;
+
             ArrayList<String> res = new ArrayList<String>();
 
             printHeader(qp, out);
 
+            // print the results
             int counter = 0;
             try {
               while (qp.getResults(res)) {
@@ -299,11 +304,8 @@ public class CliDriver {
               ret = cret;
             }
 
-            long end = System.currentTimeMillis();
-            double timeTaken = (end - start) / 1000.0;
             console.printInfo("Time taken: " + timeTaken + " seconds" +
                 (counter == 0 ? "" : ", Fetched: " + counter + " row(s)"));
-
           } else {
             String firstToken = tokenizeCmd(cmd.trim())[0];
             String cmd_1 = getFirstCmd(cmd.trim(), firstToken.length());

@@ -30,6 +30,7 @@ import javax.security.auth.login.LoginException;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.exec.JobCloseFeedBack;
@@ -77,6 +78,9 @@ public class TezTask extends Task<TezWork> {
     Context ctx = null;
     DAGClient client = null;
     TezSessionState session = null;
+
+    // Tez requires us to use RPC for the query plan
+    HiveConf.setBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN, true);
 
     try {
       // Get or create Context object. If we create it we have to clean

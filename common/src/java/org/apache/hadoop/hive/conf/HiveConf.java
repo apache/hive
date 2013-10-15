@@ -820,10 +820,16 @@ public class HiveConf extends Configuration {
     HIVE_JAR_DIRECTORY("hive.jar.directory", "hdfs:///user/hive/"),
     HIVE_USER_INSTALL_DIR("hive.user.install.directory", "hdfs:///user/"),
 
-    //Vectorization enabled
+    // Vectorization enabled
     HIVE_VECTORIZATION_ENABLED("hive.vectorized.execution.enabled", false),
 
     HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true),
+
+    // Whether to send the query plan via local resource or RPC
+    HIVE_RPC_QUERY_PLAN("hive.rpc.query.plan", false),
+
+    // Whether to generate the splits locally or in the AM (tez only)
+    HIVE_AM_SPLIT_GENERATION("hive.compute.splits.in.am", true);
     ;
 
     public final String varname;
