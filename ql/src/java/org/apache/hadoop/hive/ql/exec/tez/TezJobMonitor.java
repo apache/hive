@@ -102,7 +102,6 @@ public class TezJobMonitor {
             if (!running) {
               perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_TO_RUNNING);
               console.printInfo("Status: Running\n");
-              printTaskNumbers(progressMap, console);
               running = true;
             }
 
@@ -174,12 +173,17 @@ public class TezJobMonitor {
     SortedSet<String> keys = new TreeSet<String>(progressMap.keySet());
     for (String s: keys) {
       Progress progress = progressMap.get(s);
-      int percentComplete = (int) (100 * progress.getSucceededTaskCount() / (float) progress.getTotalTaskCount());
-      if (percentComplete == 100 && !completed.contains(s)) {
-        completed.add(s);
-        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
+      int complete = progress.getSucceededTaskCount();
+      int total = progress.getTotalTaskCount();
+      if (total <= 0) {
+        reportBuffer.append(String.format("%s: -/-\t", s, complete, total));
+      } else {
+        if (complete == total && !completed.contains(s)) {
+          completed.add(s);
+          perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
+        }
+        reportBuffer.append(String.format("%s: %d/%d\t", s, complete, total));
       }
-      reportBuffer.append(String.format("%s: %3d%% complete\t", s, percentComplete));
     }
 
     String report = reportBuffer.toString();
@@ -188,25 +192,5 @@ public class TezJobMonitor {
     }
 
     return report;
-  }
-
-  private void printTaskNumbers(Map<String, Progress> progressMap, LogHelper console) {
-    StringBuffer reportBuffer = new StringBuffer();
-
-    SortedSet<String> keys = new TreeSet<String>(progressMap.keySet());
-    for (String s: keys) {
-      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_VERTEX + s);
-      Progress progress = progressMap.get(s);
-      int numTasks = progress.getTotalTaskCount();
-      if (numTasks == 1) {
-        reportBuffer.append(String.format("%s:        1 task\t", s));
-      } else {
-        reportBuffer.append(String.format("%s: %7d tasks\t", s, numTasks));
-      }
-    }
-
-    String report = reportBuffer.toString();
-    console.printInfo(report);
-    console.printInfo("");
   }
 }
