@@ -67,7 +67,7 @@ public class TezJobMonitor {
 
     boolean running = false;
     boolean done = false;
-    int checkInterval = 500;
+    int checkInterval = 200;
     int printInterval = 3000;
     int maxRetryInterval = 2500;
     int counter = 0;

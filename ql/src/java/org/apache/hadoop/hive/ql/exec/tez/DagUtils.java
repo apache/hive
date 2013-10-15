@@ -35,6 +35,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -69,11 +70,12 @@ import org.apache.tez.dag.api.OutputDescriptor;
 import org.apache.tez.dag.api.ProcessorDescriptor;
 import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.mapreduce.common.MRInputSplitDistributor;
+import org.apache.tez.mapreduce.common.MRInputAMSplitGenerator;
 import org.apache.tez.mapreduce.hadoop.InputSplitInfo;
 import org.apache.tez.mapreduce.hadoop.MRHelpers;
 import org.apache.tez.mapreduce.hadoop.MRJobConfig;
 import org.apache.tez.mapreduce.hadoop.MultiStageMRConfToTezTranslator;
-import org.apache.tez.mapreduce.input.MRInput;
+import org.apache.tez.mapreduce.input.MRInputLegacy;
 import org.apache.tez.mapreduce.output.MROutput;
 import org.apache.tez.mapreduce.partition.MRPartitioner;
 import org.apache.tez.runtime.library.input.ShuffledMergedInputLegacy;
@@ -197,20 +199,14 @@ public class DagUtils {
 
     Path tezDir = getTezDir(mrScratchDir);
 
-    // write out the operator plan
+    // set up the operator plan
     Path planPath = Utilities.setMapWork(conf, mapWork,
         mrScratchDir.toUri().toString(), false);
-    LocalResource planLr = createLocalResource(fs,
-        planPath, LocalResourceType.FILE,
-        LocalResourceVisibility.APPLICATION);
 
     // setup input paths and split info
     List<Path> inputPaths = Utilities.getInputPaths(conf, mapWork,
         mrScratchDir.toUri().toString(), ctx);
     Utilities.setInputPaths(conf, inputPaths);
-
-    InputSplitInfo inputSplitInfo = MRHelpers.generateInputSplits(conf,
-        new Path(tezDir, "split_"+mapWork.getName().replaceAll(" ", "_")));
 
     // create the directories FileSinkOperators need
     Utilities.createTmpDirs(conf, mapWork);
@@ -220,38 +216,54 @@ public class DagUtils {
 
     // finally create the vertex
     Vertex map = null;
+
+    int numTasks = -1;
+    Class amSplitGeneratorClass = null;
+    InputSplitInfo inputSplitInfo = null;
+
+    if (HiveConf.getBoolVar(conf, ConfVars.HIVE_AM_SPLIT_GENERATION)) {
+      // if we're generating the splits in the AM, we just need to set
+      // the correct plugin.
+      amSplitGeneratorClass = MRInputAMSplitGenerator.class;
+    } else {
+      // client side split generation means we have to compute them now
+      inputSplitInfo = MRHelpers.generateInputSplits(conf,
+          new Path(tezDir, "split_"+mapWork.getName().replaceAll(" ", "_")));
+      numTasks = inputSplitInfo.getNumTasks();
+    }
+
     byte[] serializedConf = MRHelpers.createUserPayloadFromConf(conf);
-    if (inputSplitInfo.getNumTasks() != 0) {
-      map = new Vertex(mapWork.getName(),
-          new ProcessorDescriptor(MapTezProcessor.class.getName()).
-               setUserPayload(serializedConf),
-          inputSplitInfo.getNumTasks(), MRHelpers.getMapResource(conf));
-      Map<String, String> environment = new HashMap<String, String>();
-      MRHelpers.updateEnvironmentForMRTasks(conf, environment, true);
-      map.setTaskEnvironment(environment);
-      map.setJavaOpts(MRHelpers.getMapJavaOpts(conf));
+    map = new Vertex(mapWork.getName(),
+        new ProcessorDescriptor(MapTezProcessor.class.getName()).
+             setUserPayload(serializedConf), numTasks,
+        MRHelpers.getMapResource(conf));
+    Map<String, String> environment = new HashMap<String, String>();
+    MRHelpers.updateEnvironmentForMRTasks(conf, environment, true);
+    map.setTaskEnvironment(environment);
+    map.setJavaOpts(MRHelpers.getMapJavaOpts(conf));
 
-      assert mapWork.getAliasToWork().keySet().size() == 1;
+    assert mapWork.getAliasToWork().keySet().size() == 1;
 
-      String alias = mapWork.getAliasToWork().keySet().iterator().next();
-      byte[] mrInput = MRHelpers.createMRInputPayload(serializedConf, null);
-      map.addInput(alias,
-          new InputDescriptor(MRInput.class.getName()).
-               setUserPayload(mrInput), null);
+    String alias = mapWork.getAliasToWork().keySet().iterator().next();
+    byte[] mrInput = MRHelpers.createMRInputPayload(serializedConf, null);
+    map.addInput(alias,
+        new InputDescriptor(MRInputLegacy.class.getName()).
+               setUserPayload(mrInput), amSplitGeneratorClass);
 
+    Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();
+    localResources.put(getBaseName(appJarLr), appJarLr);
+    for (LocalResource lr: additionalLr) {
+      localResources.put(getBaseName(lr), lr);
+    }
+
+    if (inputSplitInfo != null) {
+      // only relevant for client-side split generation
       map.setTaskLocationsHint(inputSplitInfo.getTaskLocationHints());
-
-      Map<String, LocalResource> localResources = new HashMap<String, LocalResource>();
-      localResources.put(getBaseName(appJarLr), appJarLr);
-      for (LocalResource lr: additionalLr) {
-        localResources.put(getBaseName(lr), lr);
-      }
-      localResources.put(FilenameUtils.getName(planPath.getName()), planLr);
-
       MRHelpers.updateLocalResourcesForInputSplits(FileSystem.get(conf), inputSplitInfo,
           localResources);
-      map.setTaskLocalResources(localResources);
     }
+
+    map.setTaskLocalResources(localResources);
     return map;
   }
 
@@ -278,11 +290,9 @@ public class DagUtils {
       LocalResource appJarLr, List<LocalResource> additionalLr, FileSystem fs,
       Path mrScratchDir, Context ctx) throws Exception {
 
-    // write out the operator plan
+    // set up operator plan
     Path planPath = Utilities.setReduceWork(conf, reduceWork,
         mrScratchDir.toUri().toString(), false);
-    LocalResource planLr = createLocalResource(fs, planPath,
-        LocalResourceType.FILE, LocalResourceVisibility.APPLICATION);
 
     // create the directories FileSinkOperators need
     Utilities.createTmpDirs(conf, reduceWork);
@@ -308,7 +318,6 @@ public class DagUtils {
     for (LocalResource lr: additionalLr) {
       localResources.put(getBaseName(lr), lr);
     }
-    localResources.put(FilenameUtils.getName(planPath.getName()), planLr);
     reducer.setTaskLocalResources(localResources);
 
     return reducer;
