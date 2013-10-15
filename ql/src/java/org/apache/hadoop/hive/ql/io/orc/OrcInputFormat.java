@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.shims.HadoopShims;
@@ -69,6 +70,9 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   static final String MAX_SPLIT_SIZE = "mapred.max.split.size";
   private static final long DEFAULT_MIN_SPLIT_SIZE = 16 * 1024 * 1024;
   private static final long DEFAULT_MAX_SPLIT_SIZE = 256 * 1024 * 1024;
+
+  private static final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private static final String CLASS_NAME = ReaderImpl.class.getName();
 
   /**
    * When picking the hosts for a split that crosses block boundaries,
@@ -531,6 +535,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
      */
     @Override
     public void run() {
+      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.CREATE_ORC_SPLITS);
       try {
         Reader orcReader = OrcFile.createReader(fs, file.getPath());
         long currentOffset = -1;
@@ -563,6 +568,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           context.errors.add(th);
         }
       }
+      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.CREATE_ORC_SPLITS);
     }
   }
 
