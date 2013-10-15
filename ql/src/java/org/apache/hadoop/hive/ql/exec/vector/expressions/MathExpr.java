@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 
 /**
@@ -49,6 +51,74 @@ public class MathExpr {
 
   public static double sign(long v) {
     return v >= 0 ? 1.0 : -1.0;
+  }
+
+  // for casting integral types to boolean
+  public static long toBool(long v) {
+    return v == 0 ? 0 : 1;
+  }
+
+  // for casting floating point types to boolean
+  public static long toBool(double v) {
+    return v == 0.0D ? 0L : 1L;
+  }
+
+  /* Convert an integer value in miliseconds since the epoch to a timestamp value
+   * for use in a long column vector, which is represented in nanoseconds since the epoch.
+   */
+  public static long longToTimestamp(long v) {
+    return v * 1000000;
+  }
+
+  // Convert seconds since the epoch (with fraction) to nanoseconds, as a long integer.
+  public static long doubleToTimestamp(double v) {
+    return (long)( v * 1000000000.0);
+  }
+
+  /* Convert an integer value representing a timestamp in nanoseconds to one
+   * that represents a timestamp in seconds (since the epoch).
+   */
+  public static long fromTimestamp(long v) {
+    return v / 1000000000;
+  }
+
+  /* Convert an integer value representing a timestamp in nanoseconds to one
+   * that represents a timestamp in seconds, with fraction, since the epoch.
+   */
+  public static double fromTimestampToDouble(long v) {
+    return ((double) v) / 1000000000.0;
+  }
+
+  /* Convert a long to a string. The string is output into the argument
+   * byte array, beginning at character 0. The length is returned.
+   */
+  public static int writeLongToUTF8(byte[] result, long i) {
+    if (i == 0) {
+      result[0] = '0';
+      return 1;
+    }
+
+    int current = 0;
+
+    if (i < 0) {
+      result[current++] ='-';
+    } else {
+      // negative range is bigger than positive range, so there is no risk
+      // of overflow here.
+      i = -i;
+    }
+
+    long start = 1000000000000000000L;
+    while (i / start == 0) {
+      start /= 10;
+    }
+
+    while (start > 0) {
+      result[current++] = (byte) ('0' - (i / start % 10));
+      start /= 10;
+    }
+
+    return current;
   }
 
   // Convert all NaN values in vector v to NULL. Should only be used if n > 0.

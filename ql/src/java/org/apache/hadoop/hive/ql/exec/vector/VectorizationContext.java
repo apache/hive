@@ -39,11 +39,11 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterConstantBooleanVe
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprOrExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterStringColLikeStringScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterStringColRegExpStringScalar;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncRand;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ISetDoubleArg;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ISetLongArg;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterStringColRegExpStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IdentityExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNotNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsTrue;
@@ -75,6 +75,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUD
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarPopLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarSampDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFVarSampLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastLongToBooleanViaLongToLong;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFArgDesc;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -84,11 +85,27 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
+import org.apache.hadoop.hive.ql.udf.UDFAcos;
+import org.apache.hadoop.hive.ql.udf.UDFAsin;
+import org.apache.hadoop.hive.ql.udf.UDFAtan;
+import org.apache.hadoop.hive.ql.udf.UDFBin;
+import org.apache.hadoop.hive.ql.udf.UDFCeil;
+import org.apache.hadoop.hive.ql.udf.UDFConv;
+import org.apache.hadoop.hive.ql.udf.UDFCos;
 import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
+import org.apache.hadoop.hive.ql.udf.UDFDegrees;
+import org.apache.hadoop.hive.ql.udf.UDFExp;
+import org.apache.hadoop.hive.ql.udf.UDFFloor;
+import org.apache.hadoop.hive.ql.udf.UDFHex;
 import org.apache.hadoop.hive.ql.udf.UDFHour;
 import org.apache.hadoop.hive.ql.udf.UDFLTrim;
 import org.apache.hadoop.hive.ql.udf.UDFLength;
 import org.apache.hadoop.hive.ql.udf.UDFLike;
+import org.apache.hadoop.hive.ql.udf.UDFLn;
+import org.apache.hadoop.hive.ql.udf.UDFLog;
+import org.apache.hadoop.hive.ql.udf.UDFLog10;
+import org.apache.hadoop.hive.ql.udf.UDFLog2;
 import org.apache.hadoop.hive.ql.udf.UDFMinute;
 import org.apache.hadoop.hive.ql.udf.UDFMonth;
 import org.apache.hadoop.hive.ql.udf.UDFOPDivide;
@@ -98,31 +115,32 @@ import org.apache.hadoop.hive.ql.udf.UDFOPMultiply;
 import org.apache.hadoop.hive.ql.udf.UDFOPNegative;
 import org.apache.hadoop.hive.ql.udf.UDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
+import org.apache.hadoop.hive.ql.udf.UDFPower;
 import org.apache.hadoop.hive.ql.udf.UDFRegExp;
 import org.apache.hadoop.hive.ql.udf.UDFRTrim;
+import org.apache.hadoop.hive.ql.udf.UDFRadians;
+import org.apache.hadoop.hive.ql.udf.UDFRand;
+import org.apache.hadoop.hive.ql.udf.UDFRound;
 import org.apache.hadoop.hive.ql.udf.UDFSecond;
+import org.apache.hadoop.hive.ql.udf.UDFSign;
+import org.apache.hadoop.hive.ql.udf.UDFSin;
+import org.apache.hadoop.hive.ql.udf.UDFSqrt;
 import org.apache.hadoop.hive.ql.udf.UDFSubstr;
+import org.apache.hadoop.hive.ql.udf.UDFTan;
+import org.apache.hadoop.hive.ql.udf.UDFToBoolean;
+import org.apache.hadoop.hive.ql.udf.UDFToByte;
+import org.apache.hadoop.hive.ql.udf.UDFToInteger;
+import org.apache.hadoop.hive.ql.udf.UDFToLong;
+import org.apache.hadoop.hive.ql.udf.UDFToShort;
+import org.apache.hadoop.hive.ql.udf.UDFToFloat;
+import org.apache.hadoop.hive.ql.udf.UDFToDouble;
+import org.apache.hadoop.hive.ql.udf.UDFToString;
 import org.apache.hadoop.hive.ql.udf.UDFTrim;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
-import org.apache.hadoop.hive.ql.udf.UDFAcos;
-import org.apache.hadoop.hive.ql.udf.UDFAsin;
-import org.apache.hadoop.hive.ql.udf.UDFAtan;
-import org.apache.hadoop.hive.ql.udf.UDFBin;
-import org.apache.hadoop.hive.ql.udf.UDFCeil;
-import org.apache.hadoop.hive.ql.udf.UDFConv;
-import org.apache.hadoop.hive.ql.udf.UDFCos;
-import org.apache.hadoop.hive.ql.udf.UDFDegrees;
-import org.apache.hadoop.hive.ql.udf.UDFExp;
-import org.apache.hadoop.hive.ql.udf.UDFFloor;
-import org.apache.hadoop.hive.ql.udf.UDFHex;
-import org.apache.hadoop.hive.ql.udf.UDFLn;
-import org.apache.hadoop.hive.ql.udf.UDFLog;
-import org.apache.hadoop.hive.ql.udf.UDFLog10;
-import org.apache.hadoop.hive.ql.udf.UDFLog2;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFAbs;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLower;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
@@ -135,18 +153,9 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUpper;
-import org.apache.hadoop.hive.ql.udf.UDFPower;
-import org.apache.hadoop.hive.ql.udf.UDFRadians;
-import org.apache.hadoop.hive.ql.udf.UDFRand;
-import org.apache.hadoop.hive.ql.udf.UDFRound;
-import org.apache.hadoop.hive.ql.udf.UDFSign;
-import org.apache.hadoop.hive.ql.udf.UDFSin;
-import org.apache.hadoop.hive.ql.udf.UDFSqrt;
-import org.apache.hadoop.hive.ql.udf.UDFTan;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFAbs;
-
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -321,11 +330,39 @@ public class VectorizationContext {
       GenericUDFBridge bridge = (GenericUDFBridge) gudf;
       Class<? extends UDF> udfClass = bridge.getUdfClass();
       if (udfClass.equals(UDFHex.class)
-          || udfClass.equals(UDFConv.class)) {
+          || udfClass.equals(UDFConv.class)
+          || isCastToIntFamily(udfClass) && arg0Type(expr).equals("string")
+          || isCastToFloatFamily(udfClass) && arg0Type(expr).equals("string")
+          || udfClass.equals(UDFToString.class) &&
+               (arg0Type(expr).equals("timestamp")
+                   || arg0Type(expr).equals("double")
+                   || arg0Type(expr).equals("float"))) {
         return true;
       }
+    } else if (gudf instanceof GenericUDFTimestamp && arg0Type(expr).equals("string")) {
+      return true;
     }
     return false;
+  }
+
+  public static boolean isCastToIntFamily(Class<? extends UDF> udfClass) {
+    return udfClass.equals(UDFToByte.class)
+        || udfClass.equals(UDFToShort.class)
+        || udfClass.equals(UDFToInteger.class)
+        || udfClass.equals(UDFToLong.class);
+
+    // Boolean is purposely excluded.
+  }
+
+  public static boolean isCastToFloatFamily(Class<? extends UDF> udfClass) {
+    return udfClass.equals(UDFToDouble.class)
+        || udfClass.equals(UDFToFloat.class);
+  }
+
+  // Return the type string of the first argument (argument 0).
+  public static String arg0Type(ExprNodeGenericFuncDesc expr) {
+    String type = expr.getChildExprs().get(0).getTypeString();
+    return type;
   }
 
   // Return true if this is a custom UDF or custom GenericUDF.
@@ -490,7 +527,9 @@ public class VectorizationContext {
     return expr;
   }
 
-  private VectorExpression getUnaryPlusExpression(List<ExprNodeDesc> childExprList)
+  // Used as a fast path for operations that don't modify their input, like unary +
+  // and casting boolean to long.
+  private VectorExpression getIdentityExpression(List<ExprNodeDesc> childExprList)
       throws HiveException {
     ExprNodeDesc childExpr = childExprList.get(0);
     int inputCol;
@@ -550,6 +589,8 @@ public class VectorizationContext {
       return getConcatExpression(childExpr);
     } else if (udf instanceof GenericUDFAbs) {
       return getUnaryAbsExpression(childExpr);
+    } else if (udf instanceof GenericUDFTimestamp) {
+      return getCastToTimestamp(childExpr);
     }
 
     throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
@@ -607,7 +648,7 @@ public class VectorizationContext {
     } else if (cl.equals(UDFOPNegative.class)) {
       return getUnaryMinusExpression(childExpr);
     } else if (cl.equals(UDFOPPositive.class)) {
-      return getUnaryPlusExpression(childExpr);
+      return getIdentityExpression(childExpr);
     } else if (cl.equals(UDFYear.class) ||
         cl.equals(UDFMonth.class) ||
         cl.equals(UDFWeekOfYear.class) ||
@@ -688,9 +729,114 @@ public class VectorizationContext {
       return getRandExpression(childExpr);
     } else if (cl.equals(UDFBin.class)) {
       return getUnaryStringExpression("FuncBin", "String", childExpr);
+    } else if (isCastToIntFamily(cl)) {
+      return getCastToLongExpression(childExpr);
+    } else if (cl.equals(UDFToBoolean.class)) {
+      return getCastToBoolean(childExpr);
+    } else if (isCastToFloatFamily(cl)) {
+      return getCastToDoubleExpression(childExpr);
+    } else if (cl.equals(UDFToString.class)) {
+      return getCastToString(childExpr);
     }
 
     throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
+  }
+
+  private VectorExpression getCastToTimestamp(List<ExprNodeDesc> childExpr)
+      throws HiveException {
+    String inputType = childExpr.get(0).getTypeString();
+    if (isIntFamily(inputType)) {
+      return getUnaryFunctionExpression("CastLongToTimestampVia", "Long", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (isFloatFamily(inputType)) {
+      return getUnaryFunctionExpression("CastDoubleToTimestampVia", "Long", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    }
+    // The string type is deliberately omitted -- it's handled elsewhere. See isLegacyPathUDF.
+
+    throw new HiveException("Unhandled cast input type: " + inputType);
+  }
+
+  private VectorExpression getCastToString(List<ExprNodeDesc> childExpr)
+      throws HiveException {
+    String inputType = childExpr.get(0).getTypeString();
+    if (inputType.equals("boolean")) {
+      // Boolean must come before the integer family. It's a special case.
+      return getUnaryFunctionExpression("CastBooleanToStringVia", "String", childExpr,
+          CUSTOM_EXPR_PACKAGE);
+    } else if (isIntFamily(inputType)) {
+      return getUnaryFunctionExpression("Cast", "String", childExpr,
+          CUSTOM_EXPR_PACKAGE);
+    }
+    /* The string type is deliberately omitted -- the planner removes string to string casts.
+     * Timestamp, float, and double types are handled by the legacy code path. See isLegacyPathUDF.
+     */
+
+    throw new HiveException("Unhandled cast input type: " + inputType);
+  }
+
+  private VectorExpression getCastToDoubleExpression(List<ExprNodeDesc> childExpr)
+      throws HiveException {
+    String inputType = childExpr.get(0).getTypeString();
+    if (isIntFamily(inputType)) {
+      return getUnaryFunctionExpression("Cast", "Double", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (inputType.equals("timestamp")) {
+      return getUnaryFunctionExpression("CastTimestampToDoubleVia", "Double", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (isFloatFamily(inputType)) {
+
+      // float types require no conversion, so use a no-op
+      return getIdentityExpression(childExpr);
+    }
+    // The string type is deliberately omitted -- it's handled elsewhere. See isLegacyPathUDF.
+
+    throw new HiveException("Unhandled cast input type: " + inputType);
+  }
+
+  private VectorExpression getCastToBoolean(List<ExprNodeDesc> childExpr)
+      throws HiveException {
+    String inputType = childExpr.get(0).getTypeString();
+    if (isFloatFamily(inputType)) {
+      return getUnaryFunctionExpression("CastDoubleToBooleanVia", "Long", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (isIntFamily(inputType) || inputType.equals("timestamp")) {
+      return getUnaryFunctionExpression("CastLongToBooleanVia", "Long", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (inputType.equals("string")) {
+
+      // string casts to false if it is 0 characters long, otherwise true
+      VectorExpression lenExpr = getUnaryStringExpression("StringLength", "Long", childExpr);
+
+      int outputCol = ocm.allocateOutputColumn("integer");
+      VectorExpression lenToBoolExpr =
+          new CastLongToBooleanViaLongToLong(lenExpr.getOutputColumn(), outputCol);
+      lenToBoolExpr.setChildExpressions(new VectorExpression[] {lenExpr});
+      ocm.freeOutputColumn(lenExpr.getOutputColumn());
+      return lenToBoolExpr;
+    }
+    // cast(booleanExpr as boolean) case is omitted because planner removes it as a no-op
+
+    throw new HiveException("Unhandled cast input type: " + inputType);
+  }
+
+  private VectorExpression getCastToLongExpression(List<ExprNodeDesc> childExpr)
+      throws HiveException {
+    String inputType = childExpr.get(0).getTypeString();
+    if (isFloatFamily(inputType)) {
+      return getUnaryFunctionExpression("Cast", "Long", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (inputType.equals("timestamp")) {
+      return getUnaryFunctionExpression("CastTimestampToLongVia", "Long", childExpr,
+          GENERATED_EXPR_PACKAGE);
+    } else if (isIntFamily(inputType)) {
+
+      // integer and boolean types require no conversion, so use a no-op
+      return getIdentityExpression(childExpr);
+    }
+    // string type is deliberately omitted -- it's handled elsewhere. See isLegacyPathUDF.
+
+    throw new HiveException("Unhandled cast input type: " + inputType);
   }
 
   private VectorExpression getRandExpression(List<ExprNodeDesc> childExpr)
