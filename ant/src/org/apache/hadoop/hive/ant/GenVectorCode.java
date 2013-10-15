@@ -356,6 +356,26 @@ public class GenVectorCode extends Task {
       {"ColumnUnaryFunc", "FuncSign", "double", "double", "MathExpr.sign", "", "", ""},
       {"ColumnUnaryFunc", "FuncSign", "double", "long", "MathExpr.sign", "(double)", "", ""},
 
+      // Casts
+      {"ColumnUnaryFunc", "Cast", "long", "double", "", "", "(long)", ""},
+      {"ColumnUnaryFunc", "Cast", "double", "long", "", "", "(double)", ""},
+      {"ColumnUnaryFunc", "CastTimestampToLongVia", "long", "long", "MathExpr.fromTimestamp", "",
+        "", ""},
+      {"ColumnUnaryFunc", "CastTimestampToDoubleVia", "double", "long",
+          "MathExpr.fromTimestampToDouble", "", "", ""},
+      {"ColumnUnaryFunc", "CastDoubleToBooleanVia", "long", "double", "MathExpr.toBool", "",
+        "", ""},
+      {"ColumnUnaryFunc", "CastLongToBooleanVia", "long", "long", "MathExpr.toBool", "",
+        "", ""},
+      {"ColumnUnaryFunc", "CastLongToTimestampVia", "long", "long", "MathExpr.longToTimestamp", "",
+          "", ""},
+      {"ColumnUnaryFunc", "CastDoubleToTimestampVia", "long", "double",
+         "MathExpr.doubleToTimestamp", "", "", ""},
+
+      // Boolean to long is done with an IdentityExpression
+      // Boolean to double is done with standard Long to Double cast
+      // See org.apache.hadoop.hive.ql.exec.vector.expressions for remaining cast VectorExpression
+      // classes
 
         {"ColumnUnaryMinus", "long"},
         {"ColumnUnaryMinus", "double"},
