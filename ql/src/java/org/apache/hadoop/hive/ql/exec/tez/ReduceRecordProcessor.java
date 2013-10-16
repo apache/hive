@@ -357,6 +357,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
             + e.getMessage(), e);
       }
     } finally {
+      Utilities.clearWorkMap();
       MapredContext.close();
     }
   }

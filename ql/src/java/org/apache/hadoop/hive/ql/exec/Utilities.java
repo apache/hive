@@ -2877,7 +2877,7 @@ public final class Utilities {
           pathsProcessed.add(path);
 
           LOG.info("Adding input file " + path);
-          if (isEmptyPath(job, path, ctx)) {
+          if (!HiveConf.getBoolVar(job, ConfVars.HIVE_OPTIMIZE_TEZ) && isEmptyPath(job, path, ctx)) {
             path = createDummyFileForEmptyPartition(path, job, work,
                  hiveScratchDir, alias, sequenceNumber++);
 
@@ -2894,7 +2894,7 @@ public final class Utilities {
       // T2) x;
       // If T is empty and T2 contains 100 rows, the user expects: 0, 100 (2
       // rows)
-      if (path == null) {
+      if (path == null && !HiveConf.getBoolVar(job, ConfVars.HIVE_OPTIMIZE_TEZ)) {
         path = createDummyFileForEmptyTable(job, work, hiveScratchDir,
             alias, sequenceNumber++);
         pathsToAdd.add(path);
@@ -3173,6 +3173,10 @@ public final class Utilities {
     String size = partition.getParameters().get("totalSize");
 
     return getSize(conf, size, path);
+  }
+
+  public static void clearWorkMap() {
+    gWorkMap.clear();
   }
 }
 

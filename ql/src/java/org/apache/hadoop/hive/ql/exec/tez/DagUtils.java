@@ -522,13 +522,7 @@ public class DagUtils {
   public static JobConf createConfiguration(HiveConf hiveConf) throws IOException {
     hiveConf.setBoolean("mapred.mapper.new-api", false);
 
-    JobConf conf = (JobConf) MRHelpers.getBaseMRConfiguration();
-
-    for (Map.Entry<String, String> entry: hiveConf) {
-      if (conf.get(entry.getKey()) == null) {
-          conf.set(entry.getKey(), entry.getValue());
-      }
-    }
+    JobConf conf = (JobConf) MRHelpers.getBaseMRConfiguration(hiveConf);
 
     conf.set("mapred.output.committer.class", NullOutputCommitter.class.getName());
 
