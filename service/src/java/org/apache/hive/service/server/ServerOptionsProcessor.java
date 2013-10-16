@@ -39,6 +39,7 @@ public class ServerOptionsProcessor {
   private final Options options = new Options();
   private org.apache.commons.cli.CommandLine commandLine;
   private final String serverName;
+  private StringBuilder debugMessage = new StringBuilder();
 
 
   @SuppressWarnings("static-access")
@@ -67,7 +68,8 @@ public class ServerOptionsProcessor {
       //get hiveconf param values and set the System property values
       Properties confProps = commandLine.getOptionProperties("hiveconf");
       for (String propKey : confProps.stringPropertyNames()) {
-        LOG.debug("Setting " + propKey + "=" + confProps.getProperty(propKey) + ";");
+        //save logging message for log4j output latter after log4j initialize properly
+        debugMessage.append("Setting " + propKey + "=" + confProps.getProperty(propKey) + ";\n");
         System.setProperty(propKey, confProps.getProperty(propKey));
       }
     } catch (ParseException e) {
@@ -76,6 +78,10 @@ public class ServerOptionsProcessor {
       return false;
     }
     return true;
+  }
+
+  public StringBuilder getDebugMessage() {
+    return debugMessage;
   }
 
   private void printUsage() {

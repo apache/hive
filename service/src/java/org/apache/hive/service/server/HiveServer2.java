@@ -82,25 +82,26 @@ public class HiveServer2 extends CompositeService {
    * @param args
    */
   public static void main(String[] args) {
-    //NOTE: It is critical to do this here so that log4j is reinitialized
-    // before any of the other core hive classes are loaded
-    try {
-      LogUtils.initHiveLog4j();
-    } catch (LogInitializationException e) {
-      LOG.warn(e.getMessage());
-    }
-
-    HiveStringUtils.startupShutdownMessage(HiveServer2.class, args, LOG);
     try {
       ServerOptionsProcessor oproc = new ServerOptionsProcessor("hiveserver2");
       if (!oproc.process(args)) {
-        LOG.fatal("Error starting HiveServer2 with given arguments");
+        System.err.println("Error starting HiveServer2 with given arguments");
         System.exit(-1);
       }
+
+      //NOTE: It is critical to do this here so that log4j is reinitialized
+      // before any of the other core hive classes are loaded
+      LogUtils.initHiveLog4j();
+
+      HiveStringUtils.startupShutdownMessage(HiveServer2.class, args, LOG);
+      //log debug message from "oproc" after log4j initialize properly
+      LOG.debug(oproc.getDebugMessage().toString());
       HiveConf hiveConf = new HiveConf();
       HiveServer2 server = new HiveServer2();
       server.init(hiveConf);
       server.start();
+    } catch (LogInitializationException e) {
+      LOG.warn(e.getMessage());
     } catch (Throwable t) {
       LOG.fatal("Error starting HiveServer2", t);
       System.exit(-1);
