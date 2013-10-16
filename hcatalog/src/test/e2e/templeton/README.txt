@@ -104,12 +104,15 @@ Running the tests
 Use the following command to run tests -
 
 ant test -Dinpdir.hdfs=<location of inpdir on hdfs>  -Dtest.user.name=<user the tests should run as> \
+ -Dtest.other.user.name=<another user who can launch job> \
  -Dsecure.mode=<yes/no>   -Dharness.webhdfs.url=<webhdfs url upto port num>  -Dharness.templeton.url=<templeton url upto port num> 
 
 If you want to run specific test group you can specify the group, for example:  -Dtests.to.run='-t TestHive'
 
 If you want to run specific test in a group group you can specify the test, for example:  -Dtests.to.run='-t TestHive_1'
 For example, tests/ddl.conf has several groups such as 'name' => 'REST_DDL_TABLE_BASIC'; use REST_DDL_TABLE_BASIC as the name
+
+If you are running with Hadoop 2, please use the flag: -Dhadoopversion=23
 
 
 Running the hcat authorization tests

@@ -18,32 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.exec.vector.expressions.StringUnaryUDF;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.StringUnaryUDF.IUDFUnaryString;
-import org.apache.hadoop.hive.ql.udf.UDFUnhex;
-import org.apache.hadoop.io.Text;
-
-public class StringUnhex extends StringUnaryUDF {
-  private static final long serialVersionUID = 1L;
-
-  StringUnhex(int colNum, int outputColumn) {
-    super(colNum, outputColumn, new IUDFUnaryString() {
-
-      // Wrap the evaluate method of UDFUnhex to make it return the expected type, Text.
-      @Override
-      public Text evaluate(Text s) {
-        final UDFUnhex unhex = new UDFUnhex();
-        byte[] b = unhex.evaluate(s);
-        if (b == null) {
-          return null;
-        }
-        return new Text(b);
-      }
-
-    });
-  }
-
-  StringUnhex() {
-    super();
-  }
+// used to set the double precision constant argument to function (e.g. a constant base)
+public interface ISetDoubleArg {
+  void setArg(double d);
 }

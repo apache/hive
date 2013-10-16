@@ -1057,7 +1057,7 @@ class RecordReaderImpl implements RecordReader {
     Object next(Object previous) throws IOException {
       super.next(previous);
       if (valuePresent) {
-        return new HiveDecimal(SerializationUtils.readBigInteger(valueStream),
+        return HiveDecimal.create(SerializationUtils.readBigInteger(valueStream),
             (int) scaleStream.next());
       }
       return null;
@@ -1726,6 +1726,7 @@ class RecordReaderImpl implements RecordReader {
           "NextVector is not supported operation for List type");
     }
 
+    @Override
     void checkEncoding(OrcProto.ColumnEncoding encoding) throws IOException {
       if ((encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT) &&
           (encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT_V2)) {
@@ -1819,6 +1820,7 @@ class RecordReaderImpl implements RecordReader {
           "NextVector is not supported operation for Map type");
     }
 
+    @Override
     void checkEncoding(OrcProto.ColumnEncoding encoding) throws IOException {
       if ((encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT) &&
           (encoding.getKind() != OrcProto.ColumnEncoding.Kind.DIRECT_V2)) {

@@ -25,13 +25,15 @@ import com.google.common.collect.Iterators;
 
 public class QFileTestBatch implements TestBatch {
 
+  private final String testCasePropertyName;
   private final String driver;
   private final String queryFilesProperty;
   private final String name;
   private final Set<String> tests;
   private final boolean isParallel;
-  public QFileTestBatch(String driver, String queryFilesProperty,
-      Set<String> tests, boolean isParallel) {
+  public QFileTestBatch(String testCasePropertyName, String driver, 
+      String queryFilesProperty, Set<String> tests, boolean isParallel) {
+    this.testCasePropertyName = testCasePropertyName;
     this.driver = driver;
     this.queryFilesProperty = queryFilesProperty;
     this.tests = tests;
@@ -51,8 +53,12 @@ public class QFileTestBatch implements TestBatch {
     return name;
   }
   @Override
+  public String getTestClass() {
+    return driver;
+  }
+  @Override
   public String getTestArguments() {
-    return String.format("-Dtestcase=%s -D%s=%s", driver, queryFilesProperty,
+    return String.format("-D%s=%s -D%s=%s", testCasePropertyName, driver, queryFilesProperty,
         Joiner.on(",").join(tests));
   }
 

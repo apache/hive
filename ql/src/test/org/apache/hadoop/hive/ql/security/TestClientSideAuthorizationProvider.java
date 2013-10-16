@@ -95,18 +95,26 @@ public class TestClientSideAuthorizationProvider extends TestCase {
   }
 
   private void validateCreateDb(Database expectedDb, String dbName) {
-    assertEquals(expectedDb.getName(), dbName);
+    assertEquals(expectedDb.getName().toLowerCase(), dbName.toLowerCase());
   }
 
   private void validateCreateTable(Table expectedTable, String tblName, String dbName) {
     assertNotNull(expectedTable);
-    assertEquals(expectedTable.getTableName(),tblName);
-    assertEquals(expectedTable.getDbName(),dbName);
+    assertEquals(expectedTable.getTableName().toLowerCase(),tblName.toLowerCase());
+    assertEquals(expectedTable.getDbName().toLowerCase(),dbName.toLowerCase());
+  }
+
+  protected String getTestDbName(){
+    return "smp_cl_db";
+  }
+
+  protected String getTestTableName(){
+    return "smp_cl_tbl";
   }
 
   public void testSimplePrivileges() throws Exception {
-    String dbName = "smpdb";
-    String tblName = "smptbl";
+    String dbName = getTestDbName();
+    String tblName = getTestTableName();
 
     String userName = ugi.getUserName();
 
@@ -159,6 +167,10 @@ public class TestClientSideAuthorizationProvider extends TestCase {
     ret = driver.run("alter table "+tblName+" add partition (b='2011')");
     assertEquals(0,ret.getResponseCode());
 
+    allowDropOnTable(tblName, userName, tbl.getSd().getLocation());
+    allowDropOnDb(dbName,userName,db.getLocationUri());
+    driver.run("drop database if exists "+getTestDbName()+" cascade");
+
   }
 
   protected void allowCreateInTbl(String tableName, String userName, String location)
@@ -180,6 +192,16 @@ public class TestClientSideAuthorizationProvider extends TestCase {
   protected void disallowCreateInDb(String dbName, String userName, String location)
       throws Exception {
     // nothing needed here by default
+  }
+
+  protected void allowDropOnTable(String tblName, String userName, String location)
+      throws Exception {
+    driver.run("grant drop on table "+tblName+" to user "+userName);
+  }
+
+  protected void allowDropOnDb(String dbName, String userName, String location)
+      throws Exception {
+    driver.run("grant drop on database "+dbName+" to user "+userName);
   }
 
   protected void assertNoPrivileges(CommandProcessorResponse ret){

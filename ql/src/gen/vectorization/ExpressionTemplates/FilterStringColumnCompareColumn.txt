@@ -303,7 +303,7 @@ public class <ClassName> extends VectorExpression {
         } else {
           int newSize = 0;
           for(int i = 0; i != n; i++) {
-            if (!nullPos2[i]) {
+            if (!nullPos1[i]) {
               if (StringExpr.compare(vector1[i], start1[i], length1[i], 
                                      vector2[0], start2[0], length2[0]) <OperatorSymbol> 0) {
                 sel[newSize++] = i;

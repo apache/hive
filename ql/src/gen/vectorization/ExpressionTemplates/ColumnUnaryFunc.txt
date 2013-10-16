@@ -95,6 +95,7 @@ public class <ClassName> extends VectorExpression {
       }
       outputColVector.isRepeating = false;
     }
+    <Cleanup>
   }
 
   @Override

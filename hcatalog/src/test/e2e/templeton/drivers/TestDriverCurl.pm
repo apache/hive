@@ -207,6 +207,17 @@ sub globalSetup
         die "Cannot create temporary directory " . $globalHash->{'tmpPath'} .
           " " . "$ERRNO\n";
 
+    my $testCmdBasics = $self->copyTestBasicConfig($globalHash);
+    $testCmdBasics->{'method'} = 'PUT';
+    $testCmdBasics->{'url'} = ':WEBHDFS_URL:/webhdfs/v1' . $globalHash->{'outpath'} . '?op=MKDIRS&permission=777';
+    if (!defined $globalHash->{'is_secure_mode'} || $globalHash->{'is_secure_mode'} !~ /y.*/i) {
+        $testCmdBasics->{'url'} = $testCmdBasics->{'url'} . '&user.name=' . $globalHash->{'current_user'};
+    }
+    my $curl_result = $self->execCurlCmd($testCmdBasics, "", $log);
+    my $json = new JSON;
+    $json->utf8->decode($curl_result->{'body'})->{'boolean'} or
+        die "Cannot create hdfs directory " . $globalHash->{'outpath'} .
+          " " . "$ERRNO\n";
   }
 
 ###############################################################################
@@ -249,6 +260,12 @@ sub runTest
     my ($self, $testCmd, $log) = @_;
     my $subName  = (caller(0))[3];
 
+    # Check that we should run this test.  If the current hadoop version
+    # is hadoop 2 and the test is marked as "ignore23", skip the test
+    if ($self->wrongExecutionMode($testCmd, $log)) {
+        my %result;
+        return \%result;
+    }
     # Handle the various methods of running used in 
     # the original TestDrivers
 
@@ -607,6 +624,13 @@ sub compare
     my ($self, $testResult, $benchmarkResult, $log, $testCmd) = @_;
     my $subName  = (caller(0))[3];
 
+    # Check that we should run this test.  If the current hadoop version
+    # is hadoop 2 and the test is marked as "ignore23", skip the test
+    if ($self->wrongExecutionMode($testCmd, $log)) {
+        # Special magic value
+        return $self->{'wrong_execution_mode'};
+    }
+
     my $result = 1;             # until proven wrong...
     if (defined $testCmd->{'status_code'}) {
       my $res = $self->checkResStatusCode($testResult, $testCmd->{'status_code'}, $log);
@@ -631,7 +655,7 @@ sub compare
 	        # in the tests, we run this case with jobName = "PigLatin:loadstore.pig"
 	        # filter $body to leave only records with this jobName
 	        my @filtered_body = grep {($_->{detail}{profile}{jobName} eq "PigLatin:loadstore.pig")}  @$body;
-			my @sorted_filtered_body = sort { $a->{id} <=> $b->{id} } @filtered_body;
+			my @sorted_filtered_body = sort { $a->{id} cmp $b->{id} } @filtered_body;
         	$value = $path->value(\@sorted_filtered_body);
         } else {
         	$value = $path->value($testResult->{'body'});
@@ -951,6 +975,27 @@ sub compare
     }
     return $result;
   }
+
+##############################################################################
+# Check whether we should be running this test or not.
+#
+sub wrongExecutionMode($$)
+{
+    my ($self, $testCmd, $log) = @_;
+
+    my $wrong = 0;
+
+    if (defined $testCmd->{'ignore23'} && $testCmd->{'hadoopversion'}=='23') {
+        $wrong = 1;
+    }
+
+    if ($wrong) {
+        print $log "Skipping test $testCmd->{'group'}" . "_" .
+            $testCmd->{'num'} . " since it is not suppsed to be run in hadoop 23\n";
+    }
+
+    return  $wrong;
+}
 
 ###############################################################################
 sub  setLocationPermGroup{

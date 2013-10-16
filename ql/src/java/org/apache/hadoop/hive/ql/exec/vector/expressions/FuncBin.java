@@ -26,11 +26,11 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 public class FuncBin extends FuncLongToString {
   private static final long serialVersionUID = 1L;
 
-  FuncBin(int inputCol, int outputCol) {
+  public FuncBin(int inputCol, int outputCol) {
     super(inputCol, outputCol);
   }
 
-  FuncBin() {
+  public FuncBin() {
     super();
   }
 

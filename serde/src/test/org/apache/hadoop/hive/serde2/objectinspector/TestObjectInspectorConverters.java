@@ -149,7 +149,7 @@ public class TestObjectInspectorConverters extends TestCase {
           PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector,
           PrimitiveObjectInspectorFactory.writableStringObjectInspector);
       assertEquals("TextConverter", new Text("100.001"), textConverter
-	  .convert(new HiveDecimal("100.001")));
+	  .convert(HiveDecimal.create("100.001")));
       assertEquals("TextConverter", null, textConverter.convert(null));
 
       // Binary

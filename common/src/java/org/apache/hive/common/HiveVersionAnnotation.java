@@ -41,6 +41,12 @@ public @interface HiveVersionAnnotation {
   String version();
 
   /**
+   * Get the Hive short version containing major/minor/change version numbers
+   * @return the short version string "0.6.3"
+   */
+  String shortVersion();
+
+  /**
    * Get the username that compiled Hive.
    */
   String user();

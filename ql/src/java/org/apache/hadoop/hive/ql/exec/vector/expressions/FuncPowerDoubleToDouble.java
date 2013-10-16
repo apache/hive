@@ -18,20 +18,22 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+
 /**
  * Vectorized implementation for Pow(a, power) and Power(a, power)
  */
-public class FuncPowerDoubleToDouble extends MathFuncDoubleToDouble {
+public class FuncPowerDoubleToDouble extends MathFuncDoubleToDouble
+    implements ISetDoubleArg {
   private static final long serialVersionUID = 1L;
 
   private double power;
 
-  FuncPowerDoubleToDouble(int colNum, double power, int outputColumn) {
+  public FuncPowerDoubleToDouble(int colNum, int outputColumn) {
     super(colNum, outputColumn);
-    this.power = power;
   }
 
-  FuncPowerDoubleToDouble() {
+  public FuncPowerDoubleToDouble() {
     super();
   }
 
@@ -46,5 +48,17 @@ public class FuncPowerDoubleToDouble extends MathFuncDoubleToDouble {
 
   public void setPower(double power) {
     this.power = power;
+  }
+
+  // set the second argument (the power)
+  @Override
+  public void setArg(double d) {
+    this.power = d;
+  }
+
+  @Override
+  protected void cleanup(DoubleColumnVector outputColVector, int[] sel,
+      boolean selectedInUse, int n) {
+    // do nothing
   }
 }

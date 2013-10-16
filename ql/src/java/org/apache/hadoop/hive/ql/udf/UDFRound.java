@@ -79,12 +79,13 @@ public class UDFRound extends UDF {
     if (n == null) {
       return null;
     }
+
     HiveDecimal bd = n.getHiveDecimal();
-    try {
-      bd = n.getHiveDecimal().setScale(i, HiveDecimal.ROUND_HALF_UP);
-    } catch (NumberFormatException e) {
+    bd = n.getHiveDecimal().setScale(i, HiveDecimal.ROUND_HALF_UP);
+    if (bd == null) {
       return null;
     }
+
     decimalWritable.set(bd);
     return decimalWritable;
   }

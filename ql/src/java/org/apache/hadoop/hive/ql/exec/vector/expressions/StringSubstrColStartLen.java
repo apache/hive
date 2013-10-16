@@ -110,6 +110,10 @@ public class StringSubstrColStartLen extends VectorExpression {
       substrStart = length + substrStart;
     }
 
+    if (substrLength == 0) {
+      return;
+    }
+
     int endIdx = substrStart + substrLength - 1;
     for (int i = start; i != end; ++i) {
       if ((utf8String[i] & 0xc0) != 0x80) {

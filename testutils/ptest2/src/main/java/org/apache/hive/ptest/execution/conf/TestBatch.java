@@ -21,6 +21,8 @@ package org.apache.hive.ptest.execution.conf;
 public interface TestBatch {
 
   public String getTestArguments();
+  
+  public String getTestClass();
 
   public String getName();
 
