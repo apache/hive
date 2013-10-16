@@ -882,35 +882,35 @@ public final class PrimitiveObjectInspectorUtils {
         HiveDecimal.ONE : HiveDecimal.ZERO;
       break;
     case BYTE:
-      result = new HiveDecimal(((ByteObjectInspector) oi).get(o));
+      result = HiveDecimal.create(((ByteObjectInspector) oi).get(o));
       break;
     case SHORT:
-      result = new HiveDecimal(((ShortObjectInspector) oi).get(o));
+      result = HiveDecimal.create(((ShortObjectInspector) oi).get(o));
       break;
     case INT:
-      result = new HiveDecimal(((IntObjectInspector) oi).get(o));
+      result = HiveDecimal.create(((IntObjectInspector) oi).get(o));
       break;
     case LONG:
-      result = new HiveDecimal(((LongObjectInspector) oi).get(o));
+      result = HiveDecimal.create(((LongObjectInspector) oi).get(o));
       break;
     case FLOAT:
       Float f = ((FloatObjectInspector) oi).get(o);
-      result = new HiveDecimal(f.toString());
+      result = HiveDecimal.create(f.toString());
       break;
     case DOUBLE:
       Double d = ((DoubleObjectInspector) oi).get(o);
-      result = new HiveDecimal(d.toString());
+      result = HiveDecimal.create(d.toString());
       break;
     case STRING:
-      result = new HiveDecimal(((StringObjectInspector) oi).getPrimitiveJavaObject(o));
+      result = HiveDecimal.create(((StringObjectInspector) oi).getPrimitiveJavaObject(o));
       break;
     case VARCHAR:
-      result = new HiveDecimal(getString(o, oi));
+      result = HiveDecimal.create(getString(o, oi));
       break;
     case TIMESTAMP:
       Double ts = ((TimestampObjectInspector) oi).getPrimitiveWritableObject(o)
         .getDouble();
-      result = new HiveDecimal(ts.toString());
+      result = HiveDecimal.create(ts.toString());
       break;
     case DECIMAL:
       result = ((HiveDecimalObjectInspector) oi).getPrimitiveJavaObject(o);

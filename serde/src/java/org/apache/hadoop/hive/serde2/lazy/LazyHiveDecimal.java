@@ -52,15 +52,20 @@ public class LazyHiveDecimal extends LazyPrimitive<LazyHiveDecimalObjectInspecto
     String byteData = null;
     try {
       byteData = Text.decode(bytes.getData(), start, length);
-      data.set(new HiveDecimal(byteData));
-      isNull = false;
-    } catch (NumberFormatException e) {
-      isNull = true;
-      LOG.debug("Data not in the HiveDecimal data type range so converted to null. Given data is :"
-          + byteData, e);
     } catch (CharacterCodingException e) {
       isNull = true;
       LOG.debug("Data not in the HiveDecimal data type range so converted to null.", e);
+      return;
+    }
+
+    HiveDecimal dec = HiveDecimal.create(byteData);
+    if (dec != null) {
+      data.set(dec);
+      isNull = false;
+    } else {
+      LOG.debug("Data not in the HiveDecimal data type range so converted to null. Given data is :"
+          + byteData);
+      isNull = true;
     }
   }
 

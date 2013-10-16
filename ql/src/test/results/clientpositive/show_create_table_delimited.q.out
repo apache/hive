@@ -19,10 +19,10 @@ PREHOOK: Input: default@tmp_showcrt1
 POSTHOOK: query: SHOW CREATE TABLE tmp_showcrt1
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@tmp_showcrt1
-CREATE  TABLE tmp_showcrt1(
-  key int, 
-  value string, 
-  newvalue bigint)
+CREATE  TABLE `tmp_showcrt1`(
+  `key` int, 
+  `value` string, 
+  `newvalue` bigint)
 ROW FORMAT DELIMITED 
   FIELDS TERMINATED BY ',' 
   COLLECTION ITEMS TERMINATED BY '|' 

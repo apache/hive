@@ -23,7 +23,6 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.AggregationBuffer;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -34,8 +33,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.io.IntWritable;
 
 /**
- * abstract class for Lead & lag UDAFs
- * GenericUDAFLeadLag.
+ * abstract class for Lead & lag UDAFs GenericUDAFLeadLag.
  *
  */
 public abstract class GenericUDAFLeadLag extends AbstractGenericUDAFResolver {
@@ -44,32 +42,31 @@ public abstract class GenericUDAFLeadLag extends AbstractGenericUDAFResolver {
 
   @Override
   public GenericUDAFEvaluator getEvaluator(GenericUDAFParameterInfo parameters)
-      throws SemanticException {
+          throws SemanticException {
 
     ObjectInspector[] paramOIs = parameters.getParameterObjectInspectors();
     String fNm = functionName();
 
-    if (!(paramOIs.length >= 1 && paramOIs.length <= 3) ) {
-      throw new UDFArgumentTypeException(paramOIs.length - 1,
-          "Incorrect invocation of " + fNm + ": _FUNC_(expr, amt, default)");
+    if (!(paramOIs.length >= 1 && paramOIs.length <= 3)) {
+      throw new UDFArgumentTypeException(paramOIs.length - 1, "Incorrect invocation of " + fNm
+              + ": _FUNC_(expr, amt, default)");
     }
 
     int amt = 1;
-    if ( paramOIs.length > 1 ) {
+    if (paramOIs.length > 1) {
       ObjectInspector amtOI = paramOIs[1];
 
-      if ( !ObjectInspectorUtils.isConstantObjectInspector(amtOI) ||
-          (amtOI.getCategory() != ObjectInspector.Category.PRIMITIVE) ||
-          ((PrimitiveObjectInspector)amtOI).getPrimitiveCategory() !=
-          PrimitiveObjectInspector.PrimitiveCategory.INT )
-      {
-        throw new UDFArgumentTypeException(0,
-            fNm + " amount must be a integer value "
-            + amtOI.getTypeName() + " was passed as parameter 1.");
+      if (!ObjectInspectorUtils.isConstantObjectInspector(amtOI)
+              || (amtOI.getCategory() != ObjectInspector.Category.PRIMITIVE)
+              || ((PrimitiveObjectInspector) amtOI).getPrimitiveCategory() != PrimitiveObjectInspector.PrimitiveCategory.INT) {
+        throw new UDFArgumentTypeException(1, fNm + " amount must be a integer value "
+                + amtOI.getTypeName() + " was passed as parameter 1.");
       }
-      Object o = ((ConstantObjectInspector)amtOI).
-          getWritableConstantValue();
-      amt = ((IntWritable)o).get();
+      Object o = ((ConstantObjectInspector) amtOI).getWritableConstantValue();
+      amt = ((IntWritable) o).get();
+      if (amt < 0) {
+        throw new UDFArgumentTypeException(1, fNm + " amount can not be nagative. Specified: " + amt );
+      }
     }
 
     if (paramOIs.length == 3) {
@@ -85,13 +82,6 @@ public abstract class GenericUDAFLeadLag extends AbstractGenericUDAFResolver {
 
   protected abstract GenericUDAFLeadLagEvaluator createLLEvaluator();
 
-  static interface LeadLagBuffer extends AggregationBuffer {
-    void initialize(int leadAmt);
-    void addRow(Object leadExprValue, Object defaultValue) ;
-    Object terminate();
-
-  }
-
   public static abstract class GenericUDAFLeadLagEvaluator extends GenericUDAFEvaluator {
 
     private transient ObjectInspector[] inputOI;
@@ -100,24 +90,21 @@ public abstract class GenericUDAFLeadLag extends AbstractGenericUDAFResolver {
     private transient Converter defaultValueConverter;
 
     @Override
-    public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException
-    {
+    public ObjectInspector init(Mode m, ObjectInspector[] parameters) throws HiveException {
       super.init(m, parameters);
-      if (m != Mode.COMPLETE)
-      {
-        throw new HiveException(
-            "Only COMPLETE mode supported for " + fnName + " function");
+      if (m != Mode.COMPLETE) {
+        throw new HiveException("Only COMPLETE mode supported for " + fnName + " function");
       }
 
       inputOI = parameters;
 
       if (parameters.length == 3) {
-        defaultValueConverter = ObjectInspectorConverters.getConverter(parameters[2], parameters[0]);
+        defaultValueConverter = ObjectInspectorConverters
+                .getConverter(parameters[2], parameters[0]);
       }
 
-      return ObjectInspectorFactory.getStandardListObjectInspector(
-          ObjectInspectorUtils
-          .getStandardObjectInspector(parameters[0]));
+      return ObjectInspectorFactory.getStandardListObjectInspector(ObjectInspectorUtils
+              .getStandardObjectInspector(parameters[0]));
     }
 
     public int getAmt() {
@@ -140,24 +127,22 @@ public abstract class GenericUDAFLeadLag extends AbstractGenericUDAFResolver {
 
     @Override
     public AggregationBuffer getNewAggregationBuffer() throws HiveException {
-      LeadLagBuffer lb =  getNewLLBuffer();
+      LeadLagBuffer lb = getNewLLBuffer();
       lb.initialize(amt);
       return lb;
     }
 
     @Override
     public void reset(AggregationBuffer agg) throws HiveException {
-      ((LeadLagBuffer)agg).initialize(amt);
+      ((LeadLagBuffer) agg).initialize(amt);
     }
 
     @Override
     public void iterate(AggregationBuffer agg, Object[] parameters) throws HiveException {
-      Object rowExprVal = ObjectInspectorUtils.copyToStandardObject(parameters[0],
-          inputOI[0]);
+      Object rowExprVal = ObjectInspectorUtils.copyToStandardObject(parameters[0], inputOI[0]);
       Object defaultVal = parameters.length > 2 ? ObjectInspectorUtils.copyToStandardObject(
-          defaultValueConverter.convert(parameters[2]),
-          inputOI[0]) : null;
-      ((LeadLagBuffer)agg).addRow(rowExprVal, defaultVal);
+              defaultValueConverter.convert(parameters[2]), inputOI[0]) : null;
+      ((LeadLagBuffer) agg).addRow(rowExprVal, defaultVal);
     }
 
     @Override
@@ -172,7 +157,7 @@ public abstract class GenericUDAFLeadLag extends AbstractGenericUDAFResolver {
 
     @Override
     public Object terminate(AggregationBuffer agg) throws HiveException {
-      return ((LeadLagBuffer)agg).terminate();
+      return ((LeadLagBuffer) agg).terminate();
     }
 
   }

@@ -104,7 +104,7 @@ WHERE  ((762 = cbigint)
 -- TargetTypeClasses: Long, Bool, Double, String, Timestamp
 -- Functions: Max, VarP, StDevP, Avg, Min, StDev, Var
 -- ArithmeticOps: Divide, Multiply, Remainder, Subtract
--- FilterOps: LessThan, LessThanOrEqual, GreaterThan, GreaterThanOrEqual, Like
+-- FilterOps: LessThan, LessThanOrEqual, GreaterThan, GreaterThanOrEqual, Like, RLike
 -- GroupBy: NoGroupByProjectAggs
 EXPLAIN SELECT MAX(cint),
        (MAX(cint) / -3728),
@@ -135,7 +135,7 @@ WHERE  (((cbigint <= 197)
         OR ((cdouble >= -26.28)
             AND (csmallint > cdouble))
         OR ((ctinyint > cfloat)
-            AND (cstring1 LIKE '%ss%'))
+            AND (cstring1 RLIKE '.*ss.*'))
            OR ((cfloat > 79.553)
                AND (cstring2 LIKE '10%')));
 SELECT MAX(cint),
@@ -167,7 +167,7 @@ WHERE  (((cbigint <= 197)
         OR ((cdouble >= -26.28)
             AND (csmallint > cdouble))
         OR ((ctinyint > cfloat)
-            AND (cstring1 LIKE '%ss%'))
+            AND (cstring1 RLIKE '.*ss.*'))
            OR ((cfloat > 79.553)
                AND (cstring2 LIKE '10%')));
 
@@ -290,7 +290,7 @@ WHERE  (((ctimestamp2 <= ctimestamp1)
 -- TargetTypeClasses: Timestamp, String, Long, Double, Bool
 -- Functions: Max, Avg, Min, Var, StDev, Count, StDevP, Sum
 -- ArithmeticOps: Multiply, Subtract, Add, Divide
--- FilterOps: Like, NotEqual, LessThan, GreaterThanOrEqual, GreaterThan
+-- FilterOps: Like, NotEqual, LessThan, GreaterThanOrEqual, GreaterThan, RLike
 -- GroupBy: NoGroupByProjectColumns
 EXPLAIN SELECT cint,
        cdouble,
@@ -316,7 +316,7 @@ EXPLAIN SELECT cint,
        (-(ctinyint)),
        (79.553 / ctinyint)
 FROM   alltypesorc
-WHERE  (((cstring1 LIKE 'a%')
+WHERE  (((cstring1 RLIKE 'a.*')
          AND (cstring2 LIKE '%ss%'))
         OR ((1 != cboolean2)
             AND ((csmallint < 79.553)
@@ -349,7 +349,7 @@ SELECT cint,
        (-(ctinyint)),
        (79.553 / ctinyint)
 FROM   alltypesorc
-WHERE  (((cstring1 LIKE 'a%')
+WHERE  (((cstring1 RLIKE 'a.*')
          AND (cstring2 LIKE '%ss%'))
         OR ((1 != cboolean2)
             AND ((csmallint < 79.553)
@@ -664,7 +664,7 @@ ORDER BY cdouble;
 -- TargetTypeClasses: Bool, Timestamp, String, Double, Long
 -- Functions: StDevP, Avg, Count, Min, Var, VarP, Sum
 -- ArithmeticOps: Multiply, Subtract, Add, Divide, Remainder
--- FilterOps: NotEqual, LessThan, Like, Equal
+-- FilterOps: NotEqual, LessThan, Like, Equal, RLike
 -- GroupBy: GroupBy
 EXPLAIN SELECT   ctimestamp1,
          cstring1,
@@ -709,7 +709,7 @@ FROM     alltypesorc
 WHERE    (((ctimestamp1 != 0))
           AND ((((-257 != ctinyint)
                  AND (cboolean2 IS NOT NULL))
-                AND ((cstring1 LIKE '%ss')
+                AND ((cstring1 RLIKE '.*ss')
                      AND (-10669 < ctimestamp1)))
                OR (ctimestamp2 = -10669)
                OR ((ctimestamp1 < 0)
@@ -761,7 +761,7 @@ FROM     alltypesorc
 WHERE    (((ctimestamp1 != 0))
           AND ((((-257 != ctinyint)
                  AND (cboolean2 IS NOT NULL))
-                AND ((cstring1 LIKE '%ss')
+                AND ((cstring1 RLIKE '.*ss')
                      AND (-10669 < ctimestamp1)))
                OR (ctimestamp2 = -10669)
                OR ((ctimestamp1 < 0)
@@ -774,7 +774,7 @@ GROUP BY ctimestamp1, cstring1;
 -- TargetTypeClasses: Double, Long, String, Timestamp, Bool
 -- Functions: Max, Sum, Var, Avg, Min, VarP, StDev, StDevP
 -- ArithmeticOps: Divide, Subtract, Remainder, Add, Multiply
--- FilterOps: GreaterThan, LessThanOrEqual, Equal, LessThan, GreaterThanOrEqual, NotEqual, Like
+-- FilterOps: GreaterThan, LessThanOrEqual, Equal, LessThan, GreaterThanOrEqual, NotEqual, Like, RLike
 -- GroupBy: GroupBy
 EXPLAIN SELECT   cboolean1,
          MAX(cfloat),
@@ -810,7 +810,7 @@ WHERE    (((cboolean1 IS NOT NULL))
                OR ((cint >= -257)
                    AND ((cstring1 IS NOT NULL)
                         AND (cboolean1 >= 1)))
-               OR (cstring2 LIKE 'b')
+               OR (cstring2 RLIKE 'b')
                   OR ((csmallint >= ctinyint)
                       AND (ctimestamp2 IS NULL))))
 GROUP BY cboolean1
@@ -849,7 +849,7 @@ WHERE    (((cboolean1 IS NOT NULL))
                OR ((cint >= -257)
                    AND ((cstring1 IS NOT NULL)
                         AND (cboolean1 >= 1)))
-               OR (cstring2 LIKE 'b')
+               OR (cstring2 RLIKE 'b')
                   OR ((csmallint >= ctinyint)
                       AND (ctimestamp2 IS NULL))))
 GROUP BY cboolean1

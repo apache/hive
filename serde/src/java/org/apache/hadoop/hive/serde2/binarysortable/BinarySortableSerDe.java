@@ -405,7 +405,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
 
         String digits = new String(decimalBuffer, 0, length, decimalCharSet);
         BigInteger bi = new BigInteger(digits);
-        HiveDecimal bd = new HiveDecimal(bi).scaleByPowerOfTen(factor-length);
+        HiveDecimal bd = HiveDecimal.create(bi).scaleByPowerOfTen(factor-length);
 
         if (!positive) {
           bd = bd.negate();

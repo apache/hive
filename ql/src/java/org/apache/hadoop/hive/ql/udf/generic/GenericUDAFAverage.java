@@ -173,11 +173,7 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
       HiveDecimal value = PrimitiveObjectInspectorUtils.getHiveDecimal(parameter, oi);
       aggregation.count++;
       if (aggregation.sum != null) {
-        try {
-          aggregation.sum = aggregation.sum.add(value);
-        } catch (NumberFormatException e) {
-          aggregation.sum = null;
-        }
+        aggregation.sum = aggregation.sum.add(value);
       }
     }
 
@@ -190,11 +186,7 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
       }
       aggregation.count += partialCount;
       if (aggregation.sum != null) {
-        try {
-          aggregation.sum = aggregation.sum.add(value);
-        } catch (NumberFormatException e) {
-          aggregation.sum = null;
-        }
+        aggregation.sum = aggregation.sum.add(value);
       }
     }
 
@@ -217,11 +209,7 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
         return null;
       } else {
         HiveDecimalWritable result = new HiveDecimalWritable(HiveDecimal.ZERO);
-        try {
-          result.set(aggregation.sum.divide(new HiveDecimal(aggregation.count)));
-        } catch (NumberFormatException e) {
-          result = null;
-        }
+        result.set(aggregation.sum.divide(HiveDecimal.create(aggregation.count)));
         return result;
       }
     }

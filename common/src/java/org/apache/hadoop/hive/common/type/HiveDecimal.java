@@ -43,44 +43,47 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
 
   private BigDecimal bd = BigDecimal.ZERO;
 
-  public HiveDecimal(BigDecimal b) {
-    this(b, false);
+  private HiveDecimal(BigDecimal bd) {
+    this.bd = bd;
   }
 
-  public HiveDecimal(BigDecimal b, boolean allowRounding) {
-    bd = this.normalize(b, MAX_PRECISION, allowRounding);
-    if (bd == null) {
-      throw new NumberFormatException("Assignment would result in truncation");
+  public static HiveDecimal create(BigDecimal b) {
+    return create(b, false);
+  }
+
+  public static HiveDecimal create(BigDecimal b, boolean allowRounding) {
+    BigDecimal bd = normalize(b, HiveDecimal.MAX_PRECISION, allowRounding);
+    return bd == null ? null : new HiveDecimal(bd);
+  }
+
+  public static HiveDecimal create(BigInteger unscaled, int scale) {
+    BigDecimal bd = normalize(new BigDecimal(unscaled, scale), HiveDecimal.MAX_PRECISION, false);
+    return bd == null ? null : new HiveDecimal(bd);
+  }
+
+  public static HiveDecimal create(String dec) {
+    BigDecimal bd;
+    try {
+      bd = new BigDecimal(dec);
+    } catch (NumberFormatException ex) {
+      return null;
     }
+
+    bd = normalize(bd, HiveDecimal.MAX_PRECISION, false);
+    return bd == null ? null : new HiveDecimal(bd);
   }
 
-  public HiveDecimal(BigInteger unscaled, int scale) {
-    bd = this.normalize(new BigDecimal(unscaled, scale), MAX_PRECISION, false);
-    if (bd == null) {
-      throw new NumberFormatException("Assignment would result in truncation");
-    }
+  public static HiveDecimal create(BigInteger bi) {
+    BigDecimal bd = normalize(new BigDecimal(bi), HiveDecimal.MAX_PRECISION, false);
+    return bd == null ? null : new HiveDecimal(bd);
   }
 
-  public HiveDecimal(String dec) {
-    bd = this.normalize(new BigDecimal(dec), MAX_PRECISION, false);
-    if (bd == null) {
-      throw new NumberFormatException("Assignment would result in truncation");
-    }
+  public static HiveDecimal create(int i) {
+    return new HiveDecimal(new BigDecimal(i));
   }
 
-  public HiveDecimal(BigInteger bi) {
-    bd = this.normalize(new BigDecimal(bi), MAX_PRECISION, false);
-    if (bd == null) {
-      throw new NumberFormatException("Assignment would result in truncation");
-    }
-  }
-
-  public HiveDecimal(int i) {
-    bd = new BigDecimal(i);
-  }
-
-  public HiveDecimal(long l) {
-    bd = new BigDecimal(l);
+  public static HiveDecimal create(long l) {
+    return new HiveDecimal(new BigDecimal(l));
   }
 
   @Override
@@ -147,15 +150,15 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
   }
 
   public HiveDecimal setScale(int adjustedScale, int rm) {
-    return new HiveDecimal(bd.setScale(adjustedScale, rm));
+    return create(bd.setScale(adjustedScale, rm));
   }
 
   public HiveDecimal subtract(HiveDecimal dec) {
-    return new HiveDecimal(bd.subtract(dec.bd));
+    return create(bd.subtract(dec.bd));
   }
 
   public HiveDecimal multiply(HiveDecimal dec) {
-    return new HiveDecimal(bd.multiply(dec.bd));
+    return create(bd.multiply(dec.bd));
   }
 
   public BigInteger unscaledValue() {
@@ -163,34 +166,34 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
   }
 
   public HiveDecimal scaleByPowerOfTen(int n) {
-    return new HiveDecimal(bd.scaleByPowerOfTen(n));
+    return create(bd.scaleByPowerOfTen(n));
   }
 
   public HiveDecimal abs() {
-    return new HiveDecimal(bd.abs());
+    return create(bd.abs());
   }
 
   public HiveDecimal negate() {
-    return new HiveDecimal(bd.negate());
+    return create(bd.negate());
   }
 
   public HiveDecimal add(HiveDecimal dec) {
-    return new HiveDecimal(bd.add(dec.bd));
+    return create(bd.add(dec.bd));
   }
 
   public HiveDecimal pow(int n) {
-    return new HiveDecimal(bd.pow(n));
+    return create(bd.pow(n));
   }
 
   public HiveDecimal remainder(HiveDecimal dec) {
-    return new HiveDecimal(bd.remainder(dec.bd));
+    return create(bd.remainder(dec.bd));
   }
 
   public HiveDecimal divide(HiveDecimal dec) {
-    return new HiveDecimal(bd.divide(dec.bd, MAX_PRECISION, RoundingMode.HALF_UP), true);
+    return create(bd.divide(dec.bd, MAX_PRECISION, RoundingMode.HALF_UP), true);
   }
 
-  private BigDecimal trim(BigDecimal d) {
+  private static BigDecimal trim(BigDecimal d) {
     if (d.compareTo(BigDecimal.ZERO) == 0) {
       // Special case for 0, because java doesn't strip zeros correctly on that number.
       d = BigDecimal.ZERO;
@@ -204,7 +207,7 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
     return d;
   }
 
-  private BigDecimal normalize(BigDecimal d, int precision, boolean allowRounding) {
+  private static BigDecimal normalize(BigDecimal d, int precision, boolean allowRounding) {
     if (d == null) {
       return null;
     }

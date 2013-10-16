@@ -1927,15 +1927,15 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       outStream = fs.create(resFile);
 
       if (tbl.isView()) {
-        String createTab_stmt = "CREATE VIEW " + tableName + " AS " + tbl.getViewExpandedText();
+        String createTab_stmt = "CREATE VIEW `" + tableName + "` AS " + tbl.getViewExpandedText();
         outStream.writeBytes(createTab_stmt.toString());
         ((FSDataOutputStream) outStream).close();
         outStream = null;
         return 0;
       }
 
-      ST createTab_stmt = new ST("CREATE <" + EXTERNAL + "> TABLE " +
-          tableName + "(\n" +
+      ST createTab_stmt = new ST("CREATE <" + EXTERNAL + "> TABLE `" +
+          tableName + "`(\n" +
           "<" + LIST_COLUMNS + ">)\n" +
           "<" + TBL_COMMENT + ">\n" +
           "<" + LIST_PARTITIONS + ">\n" +
@@ -1958,7 +1958,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       List<FieldSchema> cols = tbl.getCols();
       List<String> columns = new ArrayList<String>();
       for (FieldSchema col : cols) {
-        String columnDesc = "  " + col.getName() + " " + col.getType();
+        String columnDesc = "  `" + col.getName() + "` " + col.getType();
         if (col.getComment() != null) {
           columnDesc = columnDesc + " COMMENT '" + escapeHiveCommand(col.getComment()) + "'";
         }
@@ -1981,7 +1981,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         tbl_partitions += "PARTITIONED BY ( \n";
         List<String> partCols = new ArrayList<String>();
         for (FieldSchema partKey : partKeys) {
-          String partColDesc = "  " + partKey.getName() + " " + partKey.getType();
+          String partColDesc = "  `" + partKey.getName() + "` " + partKey.getType();
           if (partKey.getComment() != null) {
             partColDesc = partColDesc + " COMMENT '" +
                 escapeHiveCommand(partKey.getComment()) + "'";

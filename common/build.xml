@@ -33,6 +33,7 @@ to call at top-level: ant deploy-contrib compile-core-test
     <exec executable="bash" failonerror="true">
       <arg value="${basedir}/src/scripts/saveVersion.sh"/>
       <arg value="${version}"/>
+      <arg value="${shortversion}"/>
       <arg value="${basedir}/src"/>
     </exec>
     <javac

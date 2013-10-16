@@ -260,7 +260,7 @@ public class PartitionPruner implements Transform {
     try {
       if (!tab.isPartitioned()) {
         // If the table is not partitioned, return everything.
-        return new PrunedPartitionList(tab, Hive.get().getAllPartitionsForPruner(tab), false);
+        return new PrunedPartitionList(tab, getAllPartitions(tab), false);
       }
       LOG.debug("tabname = " + tab.getTableName() + " is partitioned");
 
@@ -273,7 +273,7 @@ public class PartitionPruner implements Transform {
 
       if (prunerExpr == null) {
         // Non-strict mode, and there is no predicates at all - get everything.
-        return new PrunedPartitionList(tab, Hive.get().getAllPartitionsForPruner(tab), false);
+        return new PrunedPartitionList(tab, getAllPartitions(tab), false);
       }
 
       // Replace virtual columns with nulls. See javadoc for details.
@@ -284,7 +284,7 @@ public class PartitionPruner implements Transform {
       if (compactExpr == null) {
         // Non-strict mode, and all the predicates are on non-partition columns - get everything.
         LOG.debug("Filter " + oldFilter + " was null after compacting");
-        return new PrunedPartitionList(tab, Hive.get().getAllPartitionsForPruner(tab), true);
+        return new PrunedPartitionList(tab, getAllPartitions(tab), true);
       }
 
       LOG.debug("Filter w/ compacting: " + compactExpr.getExprString()
@@ -326,6 +326,14 @@ public class PartitionPruner implements Transform {
     } catch (Exception e) {
       throw new HiveException(e);
     }
+  }
+
+  private static Set<Partition> getAllPartitions(Table tab) throws HiveException {
+    PerfLogger perfLogger = PerfLogger.getPerfLogger();
+    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
+    Set<Partition> result = Hive.get().getAllPartitionsForPruner(tab);
+    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
+    return result;
   }
 
   /**

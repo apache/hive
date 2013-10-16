@@ -15,9 +15,9 @@ PREHOOK: Input: default@tmp_showcrt1
 POSTHOOK: query: SHOW CREATE TABLE tmp_showcrt1
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@tmp_showcrt1
-CREATE EXTERNAL TABLE tmp_showcrt1(
-  key smallint, 
-  value float)
+CREATE EXTERNAL TABLE `tmp_showcrt1`(
+  `key` smallint, 
+  `value` float)
 CLUSTERED BY ( 
   key) 
 SORTED BY ( 
@@ -49,9 +49,9 @@ PREHOOK: Input: default@tmp_showcrt1
 POSTHOOK: query: SHOW CREATE TABLE tmp_showcrt1
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@tmp_showcrt1
-CREATE  TABLE tmp_showcrt1(
-  key smallint, 
-  value float)
+CREATE  TABLE `tmp_showcrt1`(
+  `key` smallint, 
+  `value` float)
 COMMENT 'temporary table'
 CLUSTERED BY ( 
   key) 
@@ -85,9 +85,9 @@ PREHOOK: Input: default@tmp_showcrt1
 POSTHOOK: query: SHOW CREATE TABLE tmp_showcrt1
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@tmp_showcrt1
-CREATE EXTERNAL TABLE tmp_showcrt1(
-  key smallint, 
-  value float)
+CREATE EXTERNAL TABLE `tmp_showcrt1`(
+  `key` smallint, 
+  `value` float)
 COMMENT 'changed comment'
 CLUSTERED BY ( 
   key) 
@@ -120,9 +120,9 @@ PREHOOK: Input: default@tmp_showcrt1
 POSTHOOK: query: SHOW CREATE TABLE tmp_showcrt1
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@tmp_showcrt1
-CREATE EXTERNAL TABLE tmp_showcrt1(
-  key smallint, 
-  value float)
+CREATE EXTERNAL TABLE `tmp_showcrt1`(
+  `key` smallint, 
+  `value` float)
 COMMENT 'changed comment'
 CLUSTERED BY ( 
   key) 
@@ -155,9 +155,9 @@ PREHOOK: Input: default@tmp_showcrt1
 POSTHOOK: query: SHOW CREATE TABLE tmp_showcrt1
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@tmp_showcrt1
-CREATE EXTERNAL TABLE tmp_showcrt1(
-  key smallint, 
-  value float)
+CREATE EXTERNAL TABLE `tmp_showcrt1`(
+  `key` smallint, 
+  `value` float)
 COMMENT 'changed comment'
 CLUSTERED BY ( 
   key) 

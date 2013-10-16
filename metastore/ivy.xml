@@ -31,7 +31,10 @@
     <dependency org="org.antlr" name="ST4" rev="${ST4.version}" transitive="false"/><!-- manually added (antlr dep), bad POM -->
     <dependency org="org.apache.hive" name="hive-serde" rev="${version}"
                 conf="compile->default" />
-    <dependency org="com.jolbox" name="bonecp" rev="${BoneCP.version}"/>
+    <dependency org="com.jolbox" name="bonecp" rev="${BoneCP.version}">
+        <exclude org="com.google.guava" module="guava"/>
+    </dependency>
+
     <dependency org="commons-pool" name="commons-pool" rev="${commons-pool.version}"/>
     <dependency org="org.datanucleus" name="datanucleus-api-jdo" rev="${datanucleus-api-jdo.version}">
         <exclude org="javax.jdo" module="jdo2-api"/>

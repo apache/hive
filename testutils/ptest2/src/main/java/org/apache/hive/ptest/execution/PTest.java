@@ -103,18 +103,23 @@ public class PTest {
     put("repository", configuration.getRepository()).
     put("repositoryName", configuration.getRepositoryName()).
     put("repositoryType", configuration.getRepositoryType()).
+    put("buildTool", configuration.getBuildTool()).
     put("branch", configuration.getBranch()).
     put("clearLibraryCache", String.valueOf(configuration.isClearLibraryCache())).
     put("workingDir", mExecutionContext.getLocalWorkingDirectory()).
-    put("antArgs", configuration.getAntArgs()).
-    put("antTestArgs", configuration.getAntTestArgs()).
     put("buildTag", buildTag).
     put("logDir", logDir.getAbsolutePath()).
     put("javaHome", configuration.getJavaHome()).
     put("javaHomeForTests", configuration.getJavaHomeForTests()).
-    put("antEnvOpts", configuration.getAntEnvOpts());
+    put("antEnvOpts", configuration.getAntEnvOpts()).
+    put("antArgs", configuration.getAntArgs()).
+    put("antTestArgs", configuration.getAntTestArgs()).
+    put("antTestTarget", configuration.getAntTestTarget()).
+    put("mavenEnvOpts", configuration.getMavenEnvOpts()).
+    put("mavenArgs", configuration.getMavenArgs()).
+    put("mavenTestArgs", configuration.getMavenTestArgs());
     final ImmutableMap<String, String> templateDefaults = templateDefaultsBuilder.build();
-    TestParser testParser = new TestParser(configuration.getContext(),
+    TestParser testParser = new TestParser(configuration.getContext(), configuration.getTestCasePropertyName(),
         new File(mExecutionContext.getLocalWorkingDirectory(), configuration.getRepositoryName() + "-source"),
         logger);
 
@@ -231,6 +236,7 @@ public class PTest {
   private static final String JAVA_HOME_TEST = TestConfiguration.JAVA_HOME_TEST;
   private static final String ANT_TEST_ARGS = TestConfiguration.ANT_TEST_ARGS;
   private static final String ANT_ENV_OPTS = TestConfiguration.ANT_ENV_OPTS;
+  private static final String ANT_TEST_TARGET = TestConfiguration.ANT_TEST_TARGET;
   /**
    * All args override properties file settings except
    * for this one which is additive.
@@ -299,6 +305,10 @@ public class PTest {
         String antEnvOpts = Strings.nullToEmpty(commandLine.getOptionValue(ANT_ENV_OPTS)).trim();
         if(!antEnvOpts.isEmpty()) {
           conf.setAntEnvOpts(antEnvOpts);
+        }
+        String antTestTarget = Strings.nullToEmpty(commandLine.getOptionValue(ANT_TEST_TARGET)).trim();
+        if(!antTestTarget.isEmpty()) {
+          conf.setAntTestTarget(antTestTarget);
         }
         String[] supplementalAntArgs = commandLine.getOptionValues(ANT_ARG);
         if(supplementalAntArgs != null && supplementalAntArgs.length > 0) {

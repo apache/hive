@@ -38,7 +38,7 @@ import org.junit.Test;
 
 
 public class TestVectorMathFunctions {
-  
+
   private static final double eps = 1.0e-7;
   private static boolean equalsWithinTolerance(double a, double b) {
     return Math.abs(a - b) < eps;
@@ -58,7 +58,7 @@ public class TestVectorMathFunctions {
     Assert.assertEquals(1d, resultV.vector[4]);
     Assert.assertEquals(1d, resultV.vector[5]);
     Assert.assertEquals(2d, resultV.vector[6]);
-    
+
     // spot check null propagation
     b.cols[0].noNulls = false;
     b.cols[0].isNull[3] = true;
@@ -66,28 +66,29 @@ public class TestVectorMathFunctions {
     expr.evaluate(b);
     Assert.assertEquals(true, resultV.isNull[3]);
     Assert.assertEquals(false, resultV.noNulls);
-    
+
     // check isRepeating propagation
     b.cols[0].isRepeating = true;
     resultV.isRepeating = false;
     expr.evaluate(b);
     Assert.assertEquals(-2d, resultV.vector[0]);
-    Assert.assertEquals(true, resultV.isRepeating);   
-    
+    Assert.assertEquals(true, resultV.isRepeating);
+
     resultV.isRepeating = false;
     b.cols[0].noNulls = true;
     expr.evaluate(b);
     Assert.assertEquals(-2d, resultV.vector[0]);
-    Assert.assertEquals(true, resultV.isRepeating);   
+    Assert.assertEquals(true, resultV.isRepeating);
   }
-  
+
   @Test
   public void testRoundToDecimalPlaces() {
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
-    VectorExpression expr = new RoundDoubleToDoubleWithNumDigits(0, 4, 1);
+    VectorExpression expr = new RoundWithNumDigitsDoubleToDouble(0, 1);
+    ((ISetLongArg) expr).setArg(4);  // set number of digits
     expr.evaluate(b);
     DoubleColumnVector resultV = (DoubleColumnVector) b.cols[1];
-    
+
     // Verify result is rounded to 4 digits
     Assert.assertEquals(1.2346d, resultV.vector[7]);
   }
@@ -105,14 +106,14 @@ public class TestVectorMathFunctions {
     dcv.vector[4] = 0.5d;
     dcv.vector[5] = 0.7d;
     dcv.vector[6] = 1.5d;
-    
+
     batch.cols[0] = dcv;
     batch.cols[1] = lcv;
-      
+
     batch.size = 7;
     return batch;
   }
-  
+
   public static VectorizedRowBatch getVectorizedRowBatchDoubleInDoubleOut() {
     VectorizedRowBatch batch = new VectorizedRowBatch(2);
     DoubleColumnVector inV;
@@ -127,14 +128,14 @@ public class TestVectorMathFunctions {
     inV.vector[5] = 0.7d;
     inV.vector[6] = 1.5d;
     inV.vector[7] = 1.2345678d;
-    
+
     batch.cols[0] = inV;
     batch.cols[1] = outV;
-      
+
     batch.size = 8;
     return batch;
   }
-  
+
   public static VectorizedRowBatch getVectorizedRowBatchLongInDoubleOut() {
     VectorizedRowBatch batch = new VectorizedRowBatch(2);
     LongColumnVector lcv;
@@ -146,14 +147,14 @@ public class TestVectorMathFunctions {
     lcv.vector[2] = 0;
     lcv.vector[3] = 1;
     lcv.vector[4] = 2;
-    
+
     batch.cols[0] = lcv;
     batch.cols[1] = dcv;
-      
+
     batch.size = 5;
     return batch;
   }
-  
+
   public static VectorizedRowBatch getVectorizedRowBatchLongInLongOut() {
     VectorizedRowBatch batch = new VectorizedRowBatch(2);
     LongColumnVector inV, outV;
@@ -161,14 +162,14 @@ public class TestVectorMathFunctions {
     outV = new LongColumnVector();
     inV.vector[0] = -2;
     inV.vector[1] = 2;
- 
+
     batch.cols[0] = inV;
     batch.cols[1] = outV;
-      
+
     batch.size = 2;
     return batch;
   }
-  
+
   public static VectorizedRowBatch getBatchForStringMath() {
     VectorizedRowBatch batch = new VectorizedRowBatch(3);
     LongColumnVector inL;
@@ -184,7 +185,7 @@ public class TestVectorMathFunctions {
       inS.setVal(0, "00".getBytes("UTF-8"), 0, 2);
       inS.setVal(1, "3232".getBytes("UTF-8"), 0, 4);
       byte[] bad = "bad data".getBytes("UTF-8");
-      inS.setVal(2, bad, 0, bad.length);  
+      inS.setVal(2, bad, 0, bad.length);
     } catch (UnsupportedEncodingException e) {
       e.printStackTrace();
       Assert.assertTrue(false);
@@ -193,12 +194,12 @@ public class TestVectorMathFunctions {
     batch.cols[0] = inS;
     batch.cols[1] = inL;
     batch.cols[2] = outS;
-      
+
     batch.size = 3;
     return batch;
   }
-  
-  /* 
+
+  /*
    * The following tests spot-check that vectorized functions with signature
    * DOUBLE func(DOUBLE) that came from template ColumnUnaryFunc.txt
    * get the right result. Null propagation, isRepeating
@@ -214,7 +215,7 @@ public class TestVectorMathFunctions {
     expr.evaluate(b);
     Assert.assertEquals(Math.sin(0.5d), resultV.vector[4]);
   }
-  
+
   @Test
   public void testVectorCos() {
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
@@ -224,7 +225,7 @@ public class TestVectorMathFunctions {
     expr.evaluate(b);
     Assert.assertEquals(Math.cos(0.5d), resultV.vector[4]);
   }
-  
+
   @Test
   public void testVectorTan() {
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
@@ -234,7 +235,7 @@ public class TestVectorMathFunctions {
     expr.evaluate(b);
     Assert.assertEquals(Math.tan(0.5d), resultV.vector[4]);
   }
-  
+
   @Test
   public void testVectorASin() {
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
@@ -244,7 +245,7 @@ public class TestVectorMathFunctions {
     expr.evaluate(b);
     Assert.assertEquals(Math.asin(0.5d), resultV.vector[4]);
   }
-  
+
   @Test
   public void testVectorACos() {
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
@@ -254,7 +255,7 @@ public class TestVectorMathFunctions {
     expr.evaluate(b);
     Assert.assertEquals(Math.acos(0.5d), resultV.vector[4]);
   }
-  
+
   @Test
   public void testVectorATan() {
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
@@ -264,7 +265,7 @@ public class TestVectorMathFunctions {
     expr.evaluate(b);
     Assert.assertEquals(Math.atan(0.5d), resultV.vector[4]);
   }
-  
+
   @Test
   public void testVectorDegrees() {
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
@@ -274,7 +275,7 @@ public class TestVectorMathFunctions {
     expr.evaluate(b);
     Assert.assertEquals(Math.toDegrees(0.5d), resultV.vector[4]);
   }
-  
+
   @Test
   public void testVectorRadians() {
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
@@ -284,7 +285,7 @@ public class TestVectorMathFunctions {
     expr.evaluate(b);
     Assert.assertEquals(Math.toRadians(0.5d), resultV.vector[4]);
   }
-  
+
   @Test
   public void testVectorFloor() {
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInLongOut();
@@ -295,7 +296,7 @@ public class TestVectorMathFunctions {
     Assert.assertEquals(-2, resultV.vector[0]);
     Assert.assertEquals(1, resultV.vector[6]);
   }
-  
+
   @Test
   public void testVectorCeil() {
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInLongOut();
@@ -306,7 +307,7 @@ public class TestVectorMathFunctions {
     Assert.assertEquals(-1, resultV.vector[0]);
     Assert.assertEquals(2, resultV.vector[6]);
   }
-  
+
   @Test
   public void testVectorExp() {
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
@@ -316,10 +317,10 @@ public class TestVectorMathFunctions {
     expr.evaluate(b);
     Assert.assertEquals(Math.exp(0.5d), resultV.vector[4]);
   }
-  
+
   @Test
   public void testVectorLn() {
-    
+
     // test double->double version
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
     DoubleColumnVector resultV = (DoubleColumnVector) b.cols[1];
@@ -327,7 +328,7 @@ public class TestVectorMathFunctions {
     VectorExpression expr = new FuncLnDoubleToDouble(0, 1);
     expr.evaluate(b);
     Assert.assertEquals(Math.log(0.5), resultV.vector[4]);
-    
+
     // test long->double version
     b = getVectorizedRowBatchLongInDoubleOut();
     resultV = (DoubleColumnVector) b.cols[1];
@@ -336,10 +337,10 @@ public class TestVectorMathFunctions {
     expr.evaluate(b);
     Assert.assertEquals(Math.log(2), resultV.vector[4]);
   }
-  
+
   @Test
   public void testVectorLog2() {
-    
+
     // test double->double version
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
     DoubleColumnVector resultV = (DoubleColumnVector) b.cols[1];
@@ -347,7 +348,7 @@ public class TestVectorMathFunctions {
     VectorExpression expr = new FuncLog2DoubleToDouble(0, 1);
     expr.evaluate(b);
     Assert.assertEquals(Math.log(0.5d) / Math.log(2), resultV.vector[4]);
-    
+
     // test long->double version
     b = getVectorizedRowBatchLongInDoubleOut();
     resultV = (DoubleColumnVector) b.cols[1];
@@ -356,10 +357,10 @@ public class TestVectorMathFunctions {
     expr.evaluate(b);
     Assert.assertEquals(Math.log(1) / Math.log(2), resultV.vector[3]);
   }
-  
+
   @Test
   public void testVectorLog10() {
-    
+
     // test double->double version
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
     DoubleColumnVector resultV = (DoubleColumnVector) b.cols[1];
@@ -367,7 +368,7 @@ public class TestVectorMathFunctions {
     VectorExpression expr = new FuncLog10DoubleToDouble(0, 1);
     expr.evaluate(b);
     Assert.assertTrue(equalsWithinTolerance(Math.log(0.5d) / Math.log(10), resultV.vector[4]));
-    
+
     // test long->double version
     b = getVectorizedRowBatchLongInDoubleOut();
     resultV = (DoubleColumnVector) b.cols[1];
@@ -376,7 +377,7 @@ public class TestVectorMathFunctions {
     expr.evaluate(b);
     Assert.assertEquals(Math.log(1) / Math.log(10), resultV.vector[3]);
   }
-  
+
   @Test
   public void testVectorRand() {
     VectorizedRowBatch b = new VectorizedRowBatch(1);
@@ -393,13 +394,13 @@ public class TestVectorMathFunctions {
       Assert.assertTrue(v.vector[i] >= 0.0 && v.vector[i] <= 1.0);
     }
     double avg = sum / n;
-    
+
     /* The random values must be between 0 and 1, distributed uniformly.
-     * So the average value of a large set should be about 0.5. Verify it is 
+     * So the average value of a large set should be about 0.5. Verify it is
      * close to this value.
      */
     Assert.assertTrue(avg > 0.3 && avg < 0.7);
-    
+
     // Now, test again with a seed.
     Arrays.fill(v.vector, 0);
     expr = new FuncRand(99999, 0);
@@ -412,29 +413,31 @@ public class TestVectorMathFunctions {
     avg = sum / n;
     Assert.assertTrue(avg > 0.3 && avg < 0.7);
   }
-  
+
   @Test
   public void testVectorLogBase() {
-    
+
     // test double->double version
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
     DoubleColumnVector resultV = (DoubleColumnVector) b.cols[1];
     b.cols[0].noNulls = true;
-    VectorExpression expr = new FuncLogWithBaseDoubleToDouble(0, 10.0d, 1);
+    VectorExpression expr = new FuncLogWithBaseDoubleToDouble(0, 1);
+    ((ISetDoubleArg) expr).setArg(10.0d);  // set base
     expr.evaluate(b);
     Assert.assertTrue(equalsWithinTolerance(Math.log(0.5d) / Math.log(10), resultV.vector[4]));
   }
-  
+
   @Test
   public void testVectorPower() {
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
     DoubleColumnVector resultV = (DoubleColumnVector) b.cols[1];
     b.cols[0].noNulls = true;
-    VectorExpression expr = new FuncPowerDoubleToDouble(0, 2.0d, 1);
+    VectorExpression expr = new FuncPowerDoubleToDouble(0, 1);
+    ((ISetDoubleArg) expr).setArg(2.0d);  // set power
     expr.evaluate(b);
     Assert.assertTrue(equalsWithinTolerance(0.5d * 0.5d, resultV.vector[4]));
   }
-  
+
   @Test
   public void testVectorSqrt() {
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
@@ -444,10 +447,10 @@ public class TestVectorMathFunctions {
     expr.evaluate(b);
     Assert.assertEquals(Math.sqrt(0.5d), resultV.vector[4]);
   }
-  
+
   @Test
   public void testVectorAbs() {
-    
+
     // test double->double version
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
     DoubleColumnVector resultV = (DoubleColumnVector) b.cols[1];
@@ -456,7 +459,7 @@ public class TestVectorMathFunctions {
     expr.evaluate(b);
     Assert.assertEquals(1.5, resultV.vector[0]);
     Assert.assertEquals(0.5, resultV.vector[4]);
-    
+
     // test long->long version
     b = getVectorizedRowBatchLongInLongOut();
     LongColumnVector resultVLong = (LongColumnVector) b.cols[1];
@@ -466,10 +469,10 @@ public class TestVectorMathFunctions {
     Assert.assertEquals(2, resultVLong.vector[0]);
     Assert.assertEquals(2, resultVLong.vector[1]);
   }
-  
+
   @Test
   public void testVectorSign() {
-    
+
     // test double->double version
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
     DoubleColumnVector resultV = (DoubleColumnVector) b.cols[1];
@@ -478,7 +481,7 @@ public class TestVectorMathFunctions {
     expr.evaluate(b);
     Assert.assertEquals(-1.0d, resultV.vector[0]);
     Assert.assertEquals(1.0d, resultV.vector[4]);
-    
+
     // test long->double version
     b = getVectorizedRowBatchLongInDoubleOut();
     resultV = (DoubleColumnVector) b.cols[1];
@@ -486,84 +489,41 @@ public class TestVectorMathFunctions {
     expr = new FuncSignLongToDouble(0, 1);
     expr.evaluate(b);
     Assert.assertEquals(-1.0d, resultV.vector[0]);
-    Assert.assertEquals(1.0d, resultV.vector[4]);   
+    Assert.assertEquals(1.0d, resultV.vector[4]);
   }
-  
-  @Test 
+
+  @Test
   public void testVectorBin() {
-    
+
     // test conversion of long->string
     VectorizedRowBatch b = getBatchForStringMath();
     BytesColumnVector resultV = (BytesColumnVector) b.cols[2];
     b.cols[0].noNulls = true;
-    VectorExpression expr = new FuncBin(1, 2); 
+    VectorExpression expr = new FuncBin(1, 2);
     expr.evaluate(b);
     String s = new String(resultV.vector[1], resultV.start[1], resultV.length[1]);
     Assert.assertEquals("11111111", s);
   }
-  
-  @Test 
+
+  @Test
   public void testVectorHex() {
-    
+
     // test long->string version
     VectorizedRowBatch b = getBatchForStringMath();
     BytesColumnVector resultV = (BytesColumnVector) b.cols[2];
     b.cols[1].noNulls = true;
-    VectorExpression expr = new FuncHex(1, 2); 
+    VectorExpression expr = new FuncHex(1, 2);
     expr.evaluate(b);
     String s = new String(resultV.vector[1], resultV.start[1], resultV.length[1]);
     Assert.assertEquals("FF", s);
-    
+
     // test string->string version
     b = getBatchForStringMath();
     resultV = (BytesColumnVector) b.cols[2];
     b.cols[0].noNulls = true;
-    expr = new StringHex(0, 2); 
+    expr = new StringHex(0, 2);
     expr.evaluate(b);
     s = new String(resultV.vector[1], resultV.start[1], resultV.length[1]);
     Assert.assertEquals("33323332", s);
-  }
-  
-  @Test
-  public void testVectorUnhex() {
-    
-    // test string->string version
-    VectorizedRowBatch b = getBatchForStringMath();
-    BytesColumnVector resultV = (BytesColumnVector) b.cols[2];
-    b.cols[0].noNulls = true;
-    resultV.noNulls = true;
-    VectorExpression expr = new StringUnhex(0, 2); 
-    expr.evaluate(b);
-    String s = new String(resultV.vector[1], resultV.start[1], resultV.length[1]);
-    Assert.assertEquals("22", s);
-    
-    // check for NULL output for entry 2 ("bad data")
-    Assert.assertEquals(false, resultV.noNulls);
-    Assert.assertEquals(true, resultV.isNull[2]);
-  }
-  
-  @Test
-  public void testVectorConv() {
-    
-    // test string->string version
-    VectorizedRowBatch b = getBatchForStringMath();
-    BytesColumnVector resultV = (BytesColumnVector) b.cols[2];
-    b.cols[0].noNulls = true;
-    resultV.noNulls = true;
-    VectorExpression expr = new StringConv(0, 2, 10, 16); 
-    expr.evaluate(b);
-    String s[] = new String[3];
-    try {
-      s[0] = new String(resultV.vector[0], resultV.start[0], resultV.length[0], "UTF-8");
-      s[1] = new String(resultV.vector[1], resultV.start[1], resultV.length[1], "UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      e.printStackTrace();
-    }
-    Assert.assertEquals("0", s[0]);
-    Assert.assertEquals("CA0", s[1]);
-    
-    // Note: the documentation says that "bad data" should translate to NULL output,
-    // but that is not the case in the existing code, which returns "0". So, this test skips 
-    // checking output for element 2.
   }
 }
