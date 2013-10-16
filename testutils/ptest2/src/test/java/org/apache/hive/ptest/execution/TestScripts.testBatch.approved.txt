@@ -17,7 +17,8 @@
 set -x
 umask 0022
 echo $$
-ps fauxww
+ps -e -o pid,pgrp,user,args
+ps x -o  "%p %r %y %x %c "
 chmod -R u+w /some/log/dir
 rm -rf /some/log/dir
 # makes /some/log/dir and /some/log/dir/tmp
@@ -32,28 +33,57 @@ then
   export PATH=$JAVA_HOME/bin/:$PATH
 fi
 export ANT_OPTS="-Xmx1g -XX:MaxPermSize=256m -Djava.io.tmpdir=/some/log/dir/tmp -Dhttp.proxyHost=somehost -Dhttp.proxyPort=3128"
+export M2_OPTS="-Xmx1g -XX:MaxPermSize=256m -Djava.io.tmpdir=/some/log/dir/tmp ${mavenEnvOpts}"
 export HADOOP_ROOT_LOGGER=INFO,console
 export HADOOP_OPTS="-Dhive.log.dir=/some/log/dir -Dhive.query.id=hadoop -Djava.io.tmpdir=/some/log/dir/tmp"
 cd /some/local/dir/instance-1/apache-source || exit 1
-find ./build -name 'TEST-*.xml' -delete
-find ./build -name 'hive.log' -delete
-find ./ -name junit_metastore_db | xargs -r rm -rf 
 if [[ -s batch.pid ]]
 then
-  pid="`<batch.pid`"
-  if kill -9 -$pid 2>/dev/null
-  then
-    echo "Killed process group $pid"
-    sleep 1
-  fi
+  while read pid
+  do
+    if kill -9 -$pid 2>/dev/null
+    then
+      echo "Killed process group $pid"
+      sleep 1
+    fi
+  done < batch.pid
 fi
 echo "$$" > batch.pid
-timeout 2h ant testonly -Dtest.junit.output.format=xml \
-   -Divy.default.ivy.user.dir=/some/local/dir/instance-1/ivy \
-   -Divy.default.always.check.exact.revision=false \
-   -Divy.cache.ttl.default=eternal -Divy.checkmodified=false \
-   -Dmvn.local.repo=/some/local/dir/instance-1/maven \
-   -Dant=arg1 -DgrammarBuild.notRequired=true -Dskip.javadoc=true -Dtest=arg1 1>/some/log/dir/ant-test.txt 2>&1
+find ./ -name 'TEST-*.xml' -delete
+find ./ -name 'hive.log' -delete
+find ./ -name junit_metastore_db | xargs -r rm -rf
+ret=0
+if [[ "maven" == "maven" ]]
+then
+  testModule=$(find ./ -name 'TestCliDriver.java' | awk -F'/' '{print $2}')
+  if [[ -z "$testModule" ]]
+  then
+  	testModule=./
+  fi
+  pushd $testModule
+  timeout 2h mvn -o test -Dmaven.repo.local=/some/local/dir/instance-1/maven \
+    $mavenArgs $mavenTestArgs -Dtest=arg1 1>/some/log/dir/maven-test.txt 2>&1 </dev/null &
+
+  pid=$!
+
+  popd
+elif [[ "maven" == "ant" ]]
+then
+  timeout 2h ant testonly -Dtest.junit.output.format=xml \
+    -Divy.default.ivy.user.dir=/some/local/dir/instance-1/ivy \
+    -Divy.default.always.check.exact.revision=false \
+    -Divy.cache.ttl.default=eternal -Divy.checkmodified=false \
+    -Dmvn.local.repo=/some/local/dir/instance-1/maven \
+    -Dant=arg1 -DgrammarBuild.notRequired=true -Dskip.javadoc=true -Dtest=arg1 1>/some/log/dir/ant-test.txt 2>&1 </dev/null &
+
+  pid=$!
+
+else
+  echo "Unknown build tool maven"
+  exit 127
+fi
+echo $pid >> batch.pid
+wait $pid
 ret=$?
 if [[ $ret -ne 0 ]]
 then
@@ -64,19 +94,12 @@ then
     echo "Number of failed tests 20 exceeded threshold, not copying source"
   fi
 fi
-if [[ -f /some/local/dir/instance-1/apache-source/build/ql/tmp/hive.log ]]
-then
-  mv /some/local/dir/instance-1/apache-source/build/ql/tmp/hive.log /some/log/dir/hive.log
-fi
-batchName=batch-1
-for testOutputFile in $(find /some/local/dir/instance-1/apache-source/ -name 'TEST-*.xml')
-do
-  mv "$testOutputFile" "/some/log/dir/TEST-$batchName-$(basename $testOutputFile)"
-done
+find ./ -type f -name hive.log | \
+  xargs -I {} sh -c 'f=$(basename {}); test -f /some/log/dir/$f && f=$f-$(uuidgen); mv {} /some/log/dir/$f'
+find ./ -type f -name 'TEST-*.xml' | \
+  xargs -I {} sh -c 'f=TEST-batch-1-$(basename {}); test -f /some/log/dir/$f && f=$f-$(uuidgen); mv {} /some/log/dir/$f'
 if [[ -f /some/log/dir/.log ]]
 then
   mv /some/log/dir/.log /some/log/dir/dot.log
-else
-  echo "/some/log/dir/.log does not exist"
 fi
 exit $ret

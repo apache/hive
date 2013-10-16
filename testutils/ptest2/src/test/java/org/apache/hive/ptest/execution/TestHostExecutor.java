@@ -104,10 +104,10 @@ public class TestHostExecutor {
     parallelWorkQueue = new LinkedBlockingQueue<TestBatch>();
     isolatedWorkQueue = new LinkedBlockingQueue<TestBatch>();
     failedTestResults = Sets.newHashSet();
-    testBatchParallel1 = new UnitTestBatch(DRIVER_PARALLEL_1, true);
-    testBatchParallel2 = new UnitTestBatch(DRIVER_PARALLEL_2, true);
-    testBatchIsolated1 = new UnitTestBatch(DRIVER_ISOLATED_1, false);
-    testBatchIsolated2 = new UnitTestBatch(DRIVER_ISOLATED_2, false);
+    testBatchParallel1 = new UnitTestBatch("testcase", DRIVER_PARALLEL_1, true);
+    testBatchParallel2 = new UnitTestBatch("testcase", DRIVER_PARALLEL_2, true);
+    testBatchIsolated1 = new UnitTestBatch("testcase", DRIVER_ISOLATED_1, false);
+    testBatchIsolated2 = new UnitTestBatch("testcase", DRIVER_ISOLATED_2, false);
     executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(2));
     localCommandFactory = new MockLocalCommandFactory(LOG);
     localCommand = mock(LocalCommand.class);

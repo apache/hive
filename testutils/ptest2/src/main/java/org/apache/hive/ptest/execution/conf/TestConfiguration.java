@@ -40,21 +40,32 @@ public class TestConfiguration {
   public static final String ANT_ENV_OPTS = "antEnvOpts";
   public static final String ANT_TEST_ARGS = "antTestArgs";
   public static final String ANT_TEST_TARGET = "antTestTarget";
-  
+  public static final String MAVEN_ENV_OPTS = "mavenEnvOpts";
+  public static final String MAVEN_TEST_ARGS = "mavenTestArgs";
+  public static final String MAVEN_TEST_TARGET = "mavenTestTarget";
+
   private static final String REPOSITORY_TYPE = "repositoryType";
   private static final String GIT = "git";
   private static final String SVN = "svn";
+  private static final String ANT = "ant";
+  private static final String MAVEN = "maven";
+  private static final String MAVEN_ARGS = "mavenArgs";
   private static final String ANT_ARGS = "antArgs";
   private static final String JIRA_URL = "jiraUrl";
   private static final String JIRA_USER = "jiraUser";
   private static final String JIRA_PASSWORD = "jiraPassword";
   private static final String JENKINS_URL = "jenkinsURL";
-
+  private static final String TEST_CASE_PROPERTY_NAME = "testCasePropertyName";
+  private static final String BUILD_TOOL = "buildTool";
+  
   private final Context context;
   private String antArgs;
   private String antTestArgs;
   private String antEnvOpts;
   private String antTestTarget;
+  private String mavenArgs;
+  private String mavenTestArgs;
+  private String mavenEnvOpts;
   private String repositoryType;
   private String repository;
   private String repositoryName;
@@ -66,6 +77,9 @@ public class TestConfiguration {
   private final String jiraUrl;
   private final String jiraUser;
   private final String jiraPassword;
+  private final String testCasePropertyName;
+  private final String buildTool;
+  
   private String jiraName;
   private boolean clearLibraryCache;
 
@@ -83,10 +97,17 @@ public class TestConfiguration {
     } else {
       throw new IllegalArgumentException("Unkown repository type '" + repositoryType + "'");
     }
-    antArgs =  Preconditions.checkNotNull(context.getString(ANT_ARGS), ANT_ARGS).trim();
+    buildTool = context.getString(BUILD_TOOL, ANT).trim();
+    if(!(MAVEN.endsWith(buildTool) || ANT.equals(buildTool))) {
+      throw new IllegalArgumentException("Unkown build tool type '" + buildTool + "'");
+    }
+    antArgs =  context.getString(ANT_ARGS, "").trim();
     antTestArgs =  context.getString(ANT_TEST_ARGS, "").trim();
     antEnvOpts =  context.getString(ANT_ENV_OPTS, "").trim();
     antTestTarget = context.getString(ANT_TEST_TARGET, "test").trim();
+    mavenArgs =  context.getString(MAVEN_ARGS, "").trim();
+    mavenTestArgs =  context.getString(MAVEN_TEST_ARGS, "").trim();
+    mavenEnvOpts =  context.getString(MAVEN_ENV_OPTS, "").trim();
     javaHome =  context.getString(JAVA_HOME, "").trim();
     javaHomeForTests = context.getString(JAVA_HOME_TEST, "").trim();
     patch = Strings.nullToEmpty(null);
@@ -95,7 +116,7 @@ public class TestConfiguration {
     jiraUser = context.getString(JIRA_USER, "").trim();
     jiraPassword = context.getString(JIRA_PASSWORD, "").trim();
     jenkinsURL = context.getString(JENKINS_URL, "https://builds.apache.org/job").trim();
-
+    testCasePropertyName = context.getString(TEST_CASE_PROPERTY_NAME, "testcase").trim();
   }
   public Context getContext() {
     return context;
@@ -114,6 +135,9 @@ public class TestConfiguration {
   }
   public void setClearLibraryCache(boolean clearLibraryCache) {
     this.clearLibraryCache = clearLibraryCache;
+  }
+  public String getBuildTool() {
+    return buildTool;
   }
   public String getJiraUrl() {
     return jiraUrl;
@@ -148,6 +172,15 @@ public class TestConfiguration {
   public String getAntTestTarget() {
     return antTestTarget;
   }
+  public String getMavenArgs() {
+    return mavenArgs;
+  }
+  public String getMavenTestArgs() {
+    return mavenTestArgs;
+  }
+  public String getMavenEnvOpts() {
+    return mavenEnvOpts;
+  }
   public String getJavaHome() {
     return javaHome;
   }
@@ -156,6 +189,9 @@ public class TestConfiguration {
   }
   public String getPatch() {
     return patch;
+  }
+  public String getTestCasePropertyName() {
+    return testCasePropertyName;
   }
   public void setPatch(String patch) {
     this.patch = Strings.nullToEmpty(patch);
@@ -187,17 +223,29 @@ public class TestConfiguration {
   public void setAntTestTarget(String antTestTarget) {
     this.antTestTarget = Strings.nullToEmpty(antTestTarget);
   }
+  public void setMavenArgs(String mavenArgs) {
+    this.mavenArgs = Strings.nullToEmpty(mavenArgs);
+  }
+  public void setMavenTestArgs(String mavenTestArgs) {
+    this.mavenTestArgs = mavenTestArgs;
+  }
+  public void setMavenEnvOpts(String mavenEnvOpts) {
+    this.mavenEnvOpts = Strings.nullToEmpty(mavenEnvOpts);
+  }
   @Override
   public String toString() {
     return "TestConfiguration [antArgs=" + antArgs + ", antTestArgs="
         + antTestArgs + ", antEnvOpts=" + antEnvOpts + ", antTestTarget="
-        + antTestTarget + ", repositoryType=" + repositoryType
-        + ", repository=" + repository + ", repositoryName=" + repositoryName
-        + ", patch=" + patch + ", javaHome=" + javaHome + ", javaHomeForTests="
-        + javaHomeForTests + ", branch=" + branch + ", jenkinsURL="
-        + jenkinsURL + ", jiraUrl=" + jiraUrl + ", jiraUser=" + jiraUser
-        + ", jiraPassword=" + jiraPassword + ", jiraName=" + jiraName
-        + ", clearLibraryCache=" + clearLibraryCache + "]";
+        + antTestTarget + ", mavenArgs=" + mavenArgs + ", mavenTestArgs="
+        + mavenTestArgs + ", mavenEnvOpts=" + mavenEnvOpts
+        + ", repositoryType=" + repositoryType + ", repository=" + repository
+        + ", repositoryName=" + repositoryName + ", patch=" + patch
+        + ", javaHome=" + javaHome + ", javaHomeForTests=" + javaHomeForTests
+        + ", branch=" + branch + ", jenkinsURL=" + jenkinsURL + ", jiraUrl="
+        + jiraUrl + ", jiraUser=" + jiraUser + ", jiraPassword=" + jiraPassword
+        + ", testCasePropertyName=" + testCasePropertyName + ", buildTool="
+        + buildTool + ", jiraName=" + jiraName + ", clearLibraryCache="
+        + clearLibraryCache + "]";
   }
   public static TestConfiguration fromInputStream(InputStream inputStream, Logger logger)
       throws IOException {

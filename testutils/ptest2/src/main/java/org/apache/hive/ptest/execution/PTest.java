@@ -103,19 +103,23 @@ public class PTest {
     put("repository", configuration.getRepository()).
     put("repositoryName", configuration.getRepositoryName()).
     put("repositoryType", configuration.getRepositoryType()).
+    put("buildTool", configuration.getBuildTool()).
     put("branch", configuration.getBranch()).
     put("clearLibraryCache", String.valueOf(configuration.isClearLibraryCache())).
     put("workingDir", mExecutionContext.getLocalWorkingDirectory()).
-    put("antArgs", configuration.getAntArgs()).
-    put("antTestArgs", configuration.getAntTestArgs()).
     put("buildTag", buildTag).
     put("logDir", logDir.getAbsolutePath()).
     put("javaHome", configuration.getJavaHome()).
     put("javaHomeForTests", configuration.getJavaHomeForTests()).
     put("antEnvOpts", configuration.getAntEnvOpts()).
-    put("antTestTarget", configuration.getAntTestTarget());
+    put("antArgs", configuration.getAntArgs()).
+    put("antTestArgs", configuration.getAntTestArgs()).
+    put("antTestTarget", configuration.getAntTestTarget()).
+    put("mavenEnvOpts", configuration.getMavenEnvOpts()).
+    put("mavenArgs", configuration.getMavenArgs()).
+    put("mavenTestArgs", configuration.getMavenTestArgs());
     final ImmutableMap<String, String> templateDefaults = templateDefaultsBuilder.build();
-    TestParser testParser = new TestParser(configuration.getContext(),
+    TestParser testParser = new TestParser(configuration.getContext(), configuration.getTestCasePropertyName(),
         new File(mExecutionContext.getLocalWorkingDirectory(), configuration.getRepositoryName() + "-source"),
         logger);
 
