@@ -200,10 +200,8 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
    * @return true for each column that should be included
    */
   public static boolean[] findIncludedColumns(List<OrcProto.Type> types, Configuration conf) {
-    String includedStr = conf.get(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR);
-    LOG.info("included column ids = " + includedStr);
-    if (ColumnProjectionUtils.isReadAllColumns(conf) ||
-      includedStr == null || includedStr.trim().length() == 0) {
+    LOG.info("included column ids = " + conf.get(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR));
+    if (ColumnProjectionUtils.isReadAllColumns(conf)) {
       return null;
     } else {
       int numColumns = types.size();
