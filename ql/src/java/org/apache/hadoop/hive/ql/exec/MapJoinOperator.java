@@ -227,7 +227,9 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
 
   @Override
   public void closeOp(boolean abort) throws HiveException {
-    if (mapJoinTables != null) {
+    if ((this.getExecContext().getLocalWork() != null
+        && this.getExecContext().getLocalWork().getInputFileChangeSensitive())
+        && mapJoinTables != null) {
       for (MapJoinTableContainer tableContainer : mapJoinTables) {
         if (tableContainer != null) {
           tableContainer.clear();
