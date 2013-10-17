@@ -1,0 +1,477 @@
+PREHOOK: query: -- Test type casting in vectorized mode to verify end-to-end functionality.
+
+explain 
+select 
+-- to boolean
+   cast (ctinyint as boolean)
+  ,cast (csmallint as boolean)
+  ,cast (cint as boolean)
+  ,cast (cbigint as boolean)
+  ,cast (cfloat as boolean)
+  ,cast (cdouble as boolean)
+  ,cast (cboolean1 as boolean)
+  ,cast (cbigint * 0 as boolean)
+  ,cast (ctimestamp1 as boolean)
+  ,cast (cstring1 as boolean)
+-- to int family
+  ,cast (ctinyint as int)
+  ,cast (csmallint as int)
+  ,cast (cint as int)
+  ,cast (cbigint as int)
+  ,cast (cfloat as int)
+  ,cast (cdouble as int)
+  ,cast (cboolean1 as int)
+  ,cast (ctimestamp1 as int)
+  ,cast (cstring1 as int)
+  ,cast (substr(cstring1, 1, 1) as int)
+  ,cast (cfloat as tinyint)
+  ,cast (cfloat as smallint)
+  ,cast (cfloat as bigint)
+-- to float family
+  ,cast (ctinyint as double)
+  ,cast (csmallint as double)
+  ,cast (cint as double)
+  ,cast (cbigint as double)
+  ,cast (cfloat as double)
+  ,cast (cdouble as double)
+  ,cast (cboolean1 as double)
+  ,cast (ctimestamp1 as double)
+  ,cast (cstring1 as double)
+  ,cast (substr(cstring1, 1, 1) as double)
+  ,cast (cint as float)
+  ,cast (cdouble as float)
+-- to timestamp
+  ,cast (ctinyint as timestamp)
+  ,cast (csmallint as timestamp)
+  ,cast (cint as timestamp)
+  ,cast (cbigint as timestamp)
+  ,cast (cfloat as timestamp)
+  ,cast (cdouble as timestamp)
+  ,cast (cboolean1 as timestamp)
+  ,cast (cbigint * 0 as timestamp)
+  ,cast (ctimestamp1 as timestamp)
+  ,cast (cstring1 as timestamp)
+  ,cast (substr(cstring1, 1, 1) as timestamp)
+-- to string
+  ,cast (ctinyint as string)
+  ,cast (csmallint as string)
+  ,cast (cint as string)
+  ,cast (cbigint as string)
+  ,cast (cfloat as string)
+  ,cast (cdouble as string)
+  ,cast (cboolean1 as string)
+  ,cast (cbigint * 0 as string)
+  ,cast (ctimestamp1 as string)
+  ,cast (cstring1 as string)
+-- nested and expression arguments
+  ,cast (cast (cfloat as int) as float)
+  ,cast (cint * 2 as double)
+  ,cast (sin(cfloat) as string)
+  ,cast (cint as float) + cast(cboolean1 as double)
+from alltypesorc
+-- limit output to a reasonably small number of rows
+where cbigint % 250 = 0
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Test type casting in vectorized mode to verify end-to-end functionality.
+
+explain 
+select 
+-- to boolean
+   cast (ctinyint as boolean)
+  ,cast (csmallint as boolean)
+  ,cast (cint as boolean)
+  ,cast (cbigint as boolean)
+  ,cast (cfloat as boolean)
+  ,cast (cdouble as boolean)
+  ,cast (cboolean1 as boolean)
+  ,cast (cbigint * 0 as boolean)
+  ,cast (ctimestamp1 as boolean)
+  ,cast (cstring1 as boolean)
+-- to int family
+  ,cast (ctinyint as int)
+  ,cast (csmallint as int)
+  ,cast (cint as int)
+  ,cast (cbigint as int)
+  ,cast (cfloat as int)
+  ,cast (cdouble as int)
+  ,cast (cboolean1 as int)
+  ,cast (ctimestamp1 as int)
+  ,cast (cstring1 as int)
+  ,cast (substr(cstring1, 1, 1) as int)
+  ,cast (cfloat as tinyint)
+  ,cast (cfloat as smallint)
+  ,cast (cfloat as bigint)
+-- to float family
+  ,cast (ctinyint as double)
+  ,cast (csmallint as double)
+  ,cast (cint as double)
+  ,cast (cbigint as double)
+  ,cast (cfloat as double)
+  ,cast (cdouble as double)
+  ,cast (cboolean1 as double)
+  ,cast (ctimestamp1 as double)
+  ,cast (cstring1 as double)
+  ,cast (substr(cstring1, 1, 1) as double)
+  ,cast (cint as float)
+  ,cast (cdouble as float)
+-- to timestamp
+  ,cast (ctinyint as timestamp)
+  ,cast (csmallint as timestamp)
+  ,cast (cint as timestamp)
+  ,cast (cbigint as timestamp)
+  ,cast (cfloat as timestamp)
+  ,cast (cdouble as timestamp)
+  ,cast (cboolean1 as timestamp)
+  ,cast (cbigint * 0 as timestamp)
+  ,cast (ctimestamp1 as timestamp)
+  ,cast (cstring1 as timestamp)
+  ,cast (substr(cstring1, 1, 1) as timestamp)
+-- to string
+  ,cast (ctinyint as string)
+  ,cast (csmallint as string)
+  ,cast (cint as string)
+  ,cast (cbigint as string)
+  ,cast (cfloat as string)
+  ,cast (cdouble as string)
+  ,cast (cboolean1 as string)
+  ,cast (cbigint * 0 as string)
+  ,cast (ctimestamp1 as string)
+  ,cast (cstring1 as string)
+-- nested and expression arguments
+  ,cast (cast (cfloat as int) as float)
+  ,cast (cint * 2 as double)
+  ,cast (sin(cfloat) as string)
+  ,cast (cint as float) + cast(cboolean1 as double)
+from alltypesorc
+-- limit output to a reasonably small number of rows
+where cbigint % 250 = 0
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypesorc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_BOOLEAN (TOK_TABLE_OR_COL ctinyint))) (TOK_SELEXPR (TOK_FUNCTION TOK_BOOLEAN (TOK_TABLE_OR_COL csmallint))) (TOK_SELEXPR (TOK_FUNCTION TOK_BOOLEAN (TOK_TABLE_OR_COL cint))) (TOK_SELEXPR (TOK_FUNCTION TOK_BOOLEAN (TOK_TABLE_OR_COL cbigint))) (TOK_SELEXPR (TOK_FUNCTION TOK_BOOLEAN (TOK_TABLE_OR_COL cfloat))) (TOK_SELEXPR (TOK_FUNCTION TOK_BOOLEAN (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION TOK_BOOLEAN (TOK_TABLE_OR_COL cboolean1))) (TOK_SELEXPR (TOK_FUNCTION TOK_BOOLEAN (* (TOK_TABLE_OR_COL cbigint) 0))) (TOK_SELEXPR (TOK_FUNCTION TOK_BOOLEAN (TOK_TABLE_OR_COL ctimestamp1))) (TOK_SELEXPR (TOK_FUNCTION TOK_BOOLEAN (TOK_TABLE_OR_COL cstring1))) (TOK_SELEXPR (TOK_FUNCTION TOK_INT (TOK_TABLE_OR_COL ctinyint))) (TOK_SELEXPR (TOK_FUNCTION TOK_INT (TOK_TABLE_OR_COL csmallint))) (TOK_SELEXPR (TOK_FUNCTION TOK_INT (TOK_TABLE_OR_COL cint))) (TOK_SELEXPR (TOK_FUNCTION TOK_INT (TOK_TABLE_OR_COL cbigint))) (TOK_SELEXPR (TOK_FUNCTION TOK_INT (TOK_TABLE_OR_COL cfloat))) (TOK_SELEXPR (TOK_FUNCTION TOK_INT (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION TOK_INT (TOK_TABLE_OR_COL cboolean1))) (TOK_SELEXPR (TOK_FUNCTION TOK_INT (TOK_TABLE_OR_COL ctimestamp1))) (TOK_SELEXPR (TOK_FUNCTION TOK_INT (TOK_TABLE_OR_COL cstring1))) (TOK_SELEXPR (TOK_FUNCTION TOK_INT (TOK_FUNCTION substr (TOK_TABLE_OR_COL cstring1) 1 1))) (TOK_SELEXPR (TOK_FUNCTION TOK_TINYINT (TOK_TABLE_OR_COL cfloat))) (TOK_SELEXPR (TOK_FUNCTION TOK_SMALLINT (TOK_TABLE_OR_COL cfloat))) (TOK_SELEXPR (TOK_FUNCTION TOK_BIGINT (TOK_TABLE_OR_COL cfloat))) (TOK_SELEXPR (TOK_FUNCTION TOK_DOUBLE (TOK_TABLE_OR_COL ctinyint))) (TOK_SELEXPR (TOK_FUNCTION TOK_DOUBLE (TOK_TABLE_OR_COL csmallint))) (TOK_SELEXPR (TOK_FUNCTION TOK_DOUBLE (TOK_TABLE_OR_COL cint))) (TOK_SELEXPR (TOK_FUNCTION TOK_DOUBLE (TOK_TABLE_OR_COL cbigint))) (TOK_SELEXPR (TOK_FUNCTION TOK_DOUBLE (TOK_TABLE_OR_COL cfloat))) (TOK_SELEXPR (TOK_FUNCTION TOK_DOUBLE (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION TOK_DOUBLE (TOK_TABLE_OR_COL cboolean1))) (TOK_SELEXPR (TOK_FUNCTION TOK_DOUBLE (TOK_TABLE_OR_COL ctimestamp1))) (TOK_SELEXPR (TOK_FUNCTION TOK_DOUBLE (TOK_TABLE_OR_COL cstring1))) (TOK_SELEXPR (TOK_FUNCTION TOK_DOUBLE (TOK_FUNCTION substr (TOK_TABLE_OR_COL cstring1) 1 1))) (TOK_SELEXPR (TOK_FUNCTION TOK_FLOAT (TOK_TABLE_OR_COL cint))) (TOK_SELEXPR (TOK_FUNCTION TOK_FLOAT (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION TOK_TIMESTAMP (TOK_TABLE_OR_COL ctinyint))) (TOK_SELEXPR (TOK_FUNCTION TOK_TIMESTAMP (TOK_TABLE_OR_COL csmallint))) (TOK_SELEXPR (TOK_FUNCTION TOK_TIMESTAMP (TOK_TABLE_OR_COL cint))) (TOK_SELEXPR (TOK_FUNCTION TOK_TIMESTAMP (TOK_TABLE_OR_COL cbigint))) (TOK_SELEXPR (TOK_FUNCTION TOK_TIMESTAMP (TOK_TABLE_OR_COL cfloat))) (TOK_SELEXPR (TOK_FUNCTION TOK_TIMESTAMP (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION TOK_TIMESTAMP (TOK_TABLE_OR_COL cboolean1))) (TOK_SELEXPR (TOK_FUNCTION TOK_TIMESTAMP (* (TOK_TABLE_OR_COL cbigint) 0))) (TOK_SELEXPR (TOK_FUNCTION TOK_TIMESTAMP (TOK_TABLE_OR_COL ctimestamp1))) (TOK_SELEXPR (TOK_FUNCTION TOK_TIMESTAMP (TOK_TABLE_OR_COL cstring1))) (TOK_SELEXPR (TOK_FUNCTION TOK_TIMESTAMP (TOK_FUNCTION substr (TOK_TABLE_OR_COL cstring1) 1 1))) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_TABLE_OR_COL ctinyint))) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_TABLE_OR_COL csmallint))) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_TABLE_OR_COL cint))) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_TABLE_OR_COL cbigint))) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_TABLE_OR_COL cfloat))) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_TABLE_OR_COL cdouble))) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_TABLE_OR_COL cboolean1))) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (* (TOK_TABLE_OR_COL cbigint) 0))) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_TABLE_OR_COL ctimestamp1))) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_TABLE_OR_COL cstring1))) (TOK_SELEXPR (TOK_FUNCTION TOK_FLOAT (TOK_FUNCTION TOK_INT (TOK_TABLE_OR_COL cfloat)))) (TOK_SELEXPR (TOK_FUNCTION TOK_DOUBLE (* (TOK_TABLE_OR_COL cint) 2))) (TOK_SELEXPR (TOK_FUNCTION TOK_STRING (TOK_FUNCTION sin (TOK_TABLE_OR_COL cfloat)))) (TOK_SELEXPR (+ (TOK_FUNCTION TOK_FLOAT (TOK_TABLE_OR_COL cint)) (TOK_FUNCTION TOK_DOUBLE (TOK_TABLE_OR_COL cboolean1))))) (TOK_WHERE (= (% (TOK_TABLE_OR_COL cbigint) 250) 0))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        alltypesorc 
+          TableScan
+            alias: alltypesorc
+            Filter Operator
+              predicate:
+                  expr: ((cbigint % 250) = 0)
+                  type: boolean
+              Vectorized execution: true
+              Select Operator
+                expressions:
+                      expr: UDFToBoolean(ctinyint)
+                      type: boolean
+                      expr: UDFToBoolean(csmallint)
+                      type: boolean
+                      expr: UDFToBoolean(cint)
+                      type: boolean
+                      expr: UDFToBoolean(cbigint)
+                      type: boolean
+                      expr: UDFToBoolean(cfloat)
+                      type: boolean
+                      expr: UDFToBoolean(cdouble)
+                      type: boolean
+                      expr: cboolean1
+                      type: boolean
+                      expr: UDFToBoolean((cbigint * 0))
+                      type: boolean
+                      expr: UDFToBoolean(ctimestamp1)
+                      type: boolean
+                      expr: UDFToBoolean(cstring1)
+                      type: boolean
+                      expr: UDFToInteger(ctinyint)
+                      type: int
+                      expr: UDFToInteger(csmallint)
+                      type: int
+                      expr: cint
+                      type: int
+                      expr: UDFToInteger(cbigint)
+                      type: int
+                      expr: UDFToInteger(cfloat)
+                      type: int
+                      expr: UDFToInteger(cdouble)
+                      type: int
+                      expr: UDFToInteger(cboolean1)
+                      type: int
+                      expr: UDFToInteger(ctimestamp1)
+                      type: int
+                      expr: UDFToInteger(cstring1)
+                      type: int
+                      expr: UDFToInteger(substr(cstring1, 1, 1))
+                      type: int
+                      expr: UDFToByte(cfloat)
+                      type: tinyint
+                      expr: UDFToShort(cfloat)
+                      type: smallint
+                      expr: UDFToLong(cfloat)
+                      type: bigint
+                      expr: UDFToDouble(ctinyint)
+                      type: double
+                      expr: UDFToDouble(csmallint)
+                      type: double
+                      expr: UDFToDouble(cint)
+                      type: double
+                      expr: UDFToDouble(cbigint)
+                      type: double
+                      expr: UDFToDouble(cfloat)
+                      type: double
+                      expr: cdouble
+                      type: double
+                      expr: UDFToDouble(cboolean1)
+                      type: double
+                      expr: UDFToDouble(ctimestamp1)
+                      type: double
+                      expr: UDFToDouble(cstring1)
+                      type: double
+                      expr: UDFToDouble(substr(cstring1, 1, 1))
+                      type: double
+                      expr: UDFToFloat(cint)
+                      type: float
+                      expr: UDFToFloat(cdouble)
+                      type: float
+                      expr: CAST( ctinyint AS TIMESTAMP)
+                      type: timestamp
+                      expr: CAST( csmallint AS TIMESTAMP)
+                      type: timestamp
+                      expr: CAST( cint AS TIMESTAMP)
+                      type: timestamp
+                      expr: CAST( cbigint AS TIMESTAMP)
+                      type: timestamp
+                      expr: CAST( cfloat AS TIMESTAMP)
+                      type: timestamp
+                      expr: CAST( cdouble AS TIMESTAMP)
+                      type: timestamp
+                      expr: CAST( cboolean1 AS TIMESTAMP)
+                      type: timestamp
+                      expr: CAST( (cbigint * 0) AS TIMESTAMP)
+                      type: timestamp
+                      expr: ctimestamp1
+                      type: timestamp
+                      expr: CAST( cstring1 AS TIMESTAMP)
+                      type: timestamp
+                      expr: CAST( substr(cstring1, 1, 1) AS TIMESTAMP)
+                      type: timestamp
+                      expr: UDFToString(ctinyint)
+                      type: string
+                      expr: UDFToString(csmallint)
+                      type: string
+                      expr: UDFToString(cint)
+                      type: string
+                      expr: UDFToString(cbigint)
+                      type: string
+                      expr: UDFToString(cfloat)
+                      type: string
+                      expr: UDFToString(cdouble)
+                      type: string
+                      expr: UDFToString(cboolean1)
+                      type: string
+                      expr: UDFToString((cbigint * 0))
+                      type: string
+                      expr: UDFToString(ctimestamp1)
+                      type: string
+                      expr: cstring1
+                      type: string
+                      expr: UDFToFloat(UDFToInteger(cfloat))
+                      type: float
+                      expr: UDFToDouble((cint * 2))
+                      type: double
+                      expr: UDFToString(sin(cfloat))
+                      type: string
+                      expr: (UDFToFloat(cint) + UDFToDouble(cboolean1))
+                      type: double
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15, _col16, _col17, _col18, _col19, _col20, _col21, _col22, _col23, _col24, _col25, _col26, _col27, _col28, _col29, _col30, _col31, _col32, _col33, _col34, _col35, _col36, _col37, _col38, _col39, _col40, _col41, _col42, _col43, _col44, _col45, _col46, _col47, _col48, _col49, _col50, _col51, _col52, _col53, _col54, _col55, _col56, _col57, _col58, _col59
+                Vectorized execution: true
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  Vectorized execution: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select 
+-- to boolean
+   cast (ctinyint as boolean)
+  ,cast (csmallint as boolean)
+  ,cast (cint as boolean)
+  ,cast (cbigint as boolean)
+  ,cast (cfloat as boolean)
+  ,cast (cdouble as boolean)
+  ,cast (cboolean1 as boolean)
+  ,cast (cbigint * 0 as boolean)
+  ,cast (ctimestamp1 as boolean)
+  ,cast (cstring1 as boolean)
+-- to int family
+  ,cast (ctinyint as int)
+  ,cast (csmallint as int)
+  ,cast (cint as int)
+  ,cast (cbigint as int)
+  ,cast (cfloat as int)
+  ,cast (cdouble as int)
+  ,cast (cboolean1 as int)
+  ,cast (ctimestamp1 as int)
+  ,cast (cstring1 as int)
+  ,cast (substr(cstring1, 1, 1) as int)
+  ,cast (cfloat as tinyint)
+  ,cast (cfloat as smallint)
+  ,cast (cfloat as bigint)
+-- to float family
+  ,cast (ctinyint as double)
+  ,cast (csmallint as double)
+  ,cast (cint as double)
+  ,cast (cbigint as double)
+  ,cast (cfloat as double)
+  ,cast (cdouble as double)
+  ,cast (cboolean1 as double)
+  ,cast (ctimestamp1 as double)
+  ,cast (cstring1 as double)
+  ,cast (substr(cstring1, 1, 1) as double)
+  ,cast (cint as float)
+  ,cast (cdouble as float)
+-- to timestamp
+  ,cast (ctinyint as timestamp)
+  ,cast (csmallint as timestamp)
+  ,cast (cint as timestamp)
+  ,cast (cbigint as timestamp)
+  ,cast (cfloat as timestamp)
+  ,cast (cdouble as timestamp)
+  ,cast (cboolean1 as timestamp)
+  ,cast (cbigint * 0 as timestamp)
+  ,cast (ctimestamp1 as timestamp)
+  ,cast (cstring1 as timestamp)
+  ,cast (substr(cstring1, 1, 1) as timestamp)
+-- to string
+  ,cast (ctinyint as string)
+  ,cast (csmallint as string)
+  ,cast (cint as string)
+  ,cast (cbigint as string)
+  ,cast (cfloat as string)
+  ,cast (cdouble as string)
+  ,cast (cboolean1 as string)
+  ,cast (cbigint * 0 as string)
+  ,cast (ctimestamp1 as string)
+  ,cast (cstring1 as string)
+-- nested and expression arguments
+  ,cast (cast (cfloat as int) as float)
+  ,cast (cint * 2 as double)
+  ,cast (sin(cfloat) as string)
+  ,cast (cint as float) + cast(cboolean1 as double)
+from alltypesorc
+-- limit output to a reasonably small number of rows
+where cbigint % 250 = 0
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select 
+-- to boolean
+   cast (ctinyint as boolean)
+  ,cast (csmallint as boolean)
+  ,cast (cint as boolean)
+  ,cast (cbigint as boolean)
+  ,cast (cfloat as boolean)
+  ,cast (cdouble as boolean)
+  ,cast (cboolean1 as boolean)
+  ,cast (cbigint * 0 as boolean)
+  ,cast (ctimestamp1 as boolean)
+  ,cast (cstring1 as boolean)
+-- to int family
+  ,cast (ctinyint as int)
+  ,cast (csmallint as int)
+  ,cast (cint as int)
+  ,cast (cbigint as int)
+  ,cast (cfloat as int)
+  ,cast (cdouble as int)
+  ,cast (cboolean1 as int)
+  ,cast (ctimestamp1 as int)
+  ,cast (cstring1 as int)
+  ,cast (substr(cstring1, 1, 1) as int)
+  ,cast (cfloat as tinyint)
+  ,cast (cfloat as smallint)
+  ,cast (cfloat as bigint)
+-- to float family
+  ,cast (ctinyint as double)
+  ,cast (csmallint as double)
+  ,cast (cint as double)
+  ,cast (cbigint as double)
+  ,cast (cfloat as double)
+  ,cast (cdouble as double)
+  ,cast (cboolean1 as double)
+  ,cast (ctimestamp1 as double)
+  ,cast (cstring1 as double)
+  ,cast (substr(cstring1, 1, 1) as double)
+  ,cast (cint as float)
+  ,cast (cdouble as float)
+-- to timestamp
+  ,cast (ctinyint as timestamp)
+  ,cast (csmallint as timestamp)
+  ,cast (cint as timestamp)
+  ,cast (cbigint as timestamp)
+  ,cast (cfloat as timestamp)
+  ,cast (cdouble as timestamp)
+  ,cast (cboolean1 as timestamp)
+  ,cast (cbigint * 0 as timestamp)
+  ,cast (ctimestamp1 as timestamp)
+  ,cast (cstring1 as timestamp)
+  ,cast (substr(cstring1, 1, 1) as timestamp)
+-- to string
+  ,cast (ctinyint as string)
+  ,cast (csmallint as string)
+  ,cast (cint as string)
+  ,cast (cbigint as string)
+  ,cast (cfloat as string)
+  ,cast (cdouble as string)
+  ,cast (cboolean1 as string)
+  ,cast (cbigint * 0 as string)
+  ,cast (ctimestamp1 as string)
+  ,cast (cstring1 as string)
+-- nested and expression arguments
+  ,cast (cast (cfloat as int) as float)
+  ,cast (cint * 2 as double)
+  ,cast (sin(cfloat) as string)
+  ,cast (cint as float) + cast(cboolean1 as double)
+from alltypesorc
+-- limit output to a reasonably small number of rows
+where cbigint % 250 = 0
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+true	true	NULL	true	true	true	NULL	false	true	NULL	-36	-200	NULL	-2006216750	-36	-200	NULL	-14	NULL	NULL	-36	-36	-36	-36.0	-200.0	NULL	-2.00621675E9	-36.0	-200.0	NULL	-14.252	NULL	NULL	NULL	-200.0	1969-12-31 15:59:59.964	1969-12-31 15:59:59.8	NULL	1969-12-08 10:43:03.25	1969-12-31 15:59:24	1969-12-31 15:56:40	NULL	1969-12-31 16:00:00	1969-12-31 15:59:45.748	NULL	NULL	-36	-200	NULL	-2006216750	-36.0	-200.0	NULL	0	1969-12-31 15:59:45.748	NULL	-36.0	NULL	0.9917788534431158	NULL
+true	true	NULL	true	true	true	NULL	false	true	NULL	-36	-200	NULL	1599879000	-36	-200	NULL	-6	NULL	NULL	-36	-36	-36	-36.0	-200.0	NULL	1.599879E9	-36.0	-200.0	NULL	-6.183	NULL	NULL	NULL	-200.0	1969-12-31 15:59:59.964	1969-12-31 15:59:59.8	NULL	1970-01-19 04:24:39	1969-12-31 15:59:24	1969-12-31 15:56:40	NULL	1969-12-31 16:00:00	1969-12-31 15:59:53.817	NULL	NULL	-36	-200	NULL	1599879000	-36.0	-200.0	NULL	0	1969-12-31 15:59:53.817	NULL	-36.0	NULL	0.9917788534431158	NULL
+true	true	NULL	true	true	true	NULL	false	true	NULL	-30	-200	NULL	1429852250	-30	-200	NULL	12	NULL	NULL	-30	-30	-30	-30.0	-200.0	NULL	1.42985225E9	-30.0	-200.0	NULL	12.935	NULL	NULL	NULL	-200.0	1969-12-31 15:59:59.97	1969-12-31 15:59:59.8	NULL	1970-01-17 05:10:52.25	1969-12-31 15:59:30	1969-12-31 15:56:40	NULL	1969-12-31 16:00:00	1969-12-31 16:00:12.935	NULL	NULL	-30	-200	NULL	1429852250	-30.0	-200.0	NULL	0	1969-12-31 16:00:12.935	NULL	-30.0	NULL	0.9880316240928618	NULL
+true	NULL	true	true	true	NULL	false	false	true	true	-51	NULL	773600971	1053923250	-51	NULL	0	8	NULL	2	-51	-51	-51	-51.0	NULL	7.73600971E8	1.05392325E9	-51.0	NULL	0.0	8.451	NULL	2.0	7.7360096E8	NULL	1969-12-31 15:59:59.949	NULL	1970-01-09 14:53:20.971	1970-01-12 20:45:23.25	1969-12-31 15:59:09	NULL	1969-12-31 16:00:00	1969-12-31 16:00:00	1969-12-31 16:00:08.451	NULL	NULL	-51	NULL	773600971	1053923250	-51.0	NULL	FALSE	0	1969-12-31 16:00:08.451	2yK4Bx76O	-51.0	1.547201942E9	-0.6702291758433747	7.73600971E8
+true	NULL	true	true	true	NULL	true	false	true	true	-51	NULL	747553882	-1930467250	-51	NULL	1	8	NULL	NULL	-51	-51	-51	-51.0	NULL	7.47553882E8	-1.93046725E9	-51.0	NULL	1.0	8.451	NULL	NULL	7.4755386E8	NULL	1969-12-31 15:59:59.949	NULL	1970-01-09 07:39:13.882	1969-12-09 07:45:32.75	1969-12-31 15:59:09	NULL	1969-12-31 16:00:00.001	1969-12-31 16:00:00	1969-12-31 16:00:08.451	NULL	NULL	-51	NULL	747553882	-1930467250	-51.0	NULL	TRUE	0	1969-12-31 16:00:08.451	q8M86Fx0r	-51.0	1.495107764E9	-0.6702291758433747	7.47553883E8
+true	true	NULL	true	true	true	NULL	false	true	NULL	20	15601	NULL	-362433250	20	15601	NULL	-14	NULL	NULL	20	20	20	20.0	15601.0	NULL	-3.6243325E8	20.0	15601.0	NULL	-14.871	NULL	NULL	NULL	15601.0	1969-12-31 16:00:00.02	1969-12-31 16:00:15.601	NULL	1969-12-27 11:19:26.75	1969-12-31 16:00:20	1969-12-31 20:20:01	NULL	1969-12-31 16:00:00	1969-12-31 15:59:45.129	NULL	NULL	20	15601	NULL	-362433250	20.0	15601.0	NULL	0	1969-12-31 15:59:45.129	NULL	20.0	NULL	0.9129452507276277	NULL
+true	true	NULL	true	true	true	NULL	false	true	NULL	-38	15601	NULL	-1858689000	-38	15601	NULL	-1	NULL	NULL	-38	-38	-38	-38.0	15601.0	NULL	-1.858689E9	-38.0	15601.0	NULL	-1.386	NULL	NULL	NULL	15601.0	1969-12-31 15:59:59.962	1969-12-31 16:00:15.601	NULL	1969-12-10 03:41:51	1969-12-31 15:59:22	1969-12-31 20:20:01	NULL	1969-12-31 16:00:00	1969-12-31 15:59:58.614	NULL	NULL	-38	15601	NULL	-1858689000	-38.0	15601.0	NULL	0	1969-12-31 15:59:58.614	NULL	-38.0	NULL	-0.2963685787093853	NULL
+true	true	NULL	true	true	true	NULL	false	true	NULL	-5	15601	NULL	612416000	-5	15601	NULL	4	NULL	NULL	-5	-5	-5	-5.0	15601.0	NULL	6.12416E8	-5.0	15601.0	NULL	4.679	NULL	NULL	NULL	15601.0	1969-12-31 15:59:59.995	1969-12-31 16:00:15.601	NULL	1970-01-07 18:06:56	1969-12-31 15:59:55	1969-12-31 20:20:01	NULL	1969-12-31 16:00:00	1969-12-31 16:00:04.679	NULL	NULL	-5	15601	NULL	612416000	-5.0	15601.0	NULL	0	1969-12-31 16:00:04.679	NULL	-5.0	NULL	0.9589242746631385	NULL
+true	true	NULL	true	true	true	NULL	false	true	NULL	48	15601	NULL	-795361000	48	15601	NULL	-9	NULL	NULL	48	48	48	48.0	15601.0	NULL	-7.95361E8	48.0	15601.0	NULL	-9.765	NULL	NULL	NULL	15601.0	1969-12-31 16:00:00.048	1969-12-31 16:00:15.601	NULL	1969-12-22 11:03:59	1969-12-31 16:00:48	1969-12-31 20:20:01	NULL	1969-12-31 16:00:00	1969-12-31 15:59:50.235	NULL	NULL	48	15601	NULL	-795361000	48.0	15601.0	NULL	0	1969-12-31 15:59:50.235	NULL	48.0	NULL	-0.7682546613236668	NULL
+true	NULL	true	true	true	NULL	false	false	true	true	8	NULL	-661621138	-931392750	8	NULL	0	15	NULL	NULL	8	8	8	8.0	NULL	-6.61621138E8	-9.3139275E8	8.0	NULL	0.0	15.892	NULL	NULL	-6.6162112E8	NULL	1969-12-31 16:00:00.008	NULL	1969-12-24 00:12:58.862	1969-12-20 21:16:47.25	1969-12-31 16:00:08	NULL	1969-12-31 16:00:00	1969-12-31 16:00:00	1969-12-31 16:00:15.892	NULL	NULL	8	NULL	-661621138	-931392750	8.0	NULL	FALSE	0	1969-12-31 16:00:15.892	L15l8i5k558tBcDV20	8.0	-1.323242276E9	0.9893582466233818	-6.61621138E8
+true	NULL	true	true	true	NULL	false	false	true	true	8	NULL	-102936434	-1312782750	8	NULL	0	15	NULL	NULL	8	8	8	8.0	NULL	-1.02936434E8	-1.31278275E9	8.0	NULL	0.0	15.892	NULL	NULL	-1.02936432E8	NULL	1969-12-31 16:00:00.008	NULL	1969-12-30 11:24:23.566	1969-12-16 11:20:17.25	1969-12-31 16:00:08	NULL	1969-12-31 16:00:00	1969-12-31 16:00:00	1969-12-31 16:00:15.892	NULL	NULL	8	NULL	-102936434	-1312782750	8.0	NULL	FALSE	0	1969-12-31 16:00:15.892	eJROSNhugc3kQR7Pb	8.0	-2.05872868E8	0.9893582466233818	-1.02936434E8
+true	NULL	true	true	true	NULL	false	false	true	true	8	NULL	805179664	868161500	8	NULL	0	15	NULL	NULL	8	8	8	8.0	NULL	8.05179664E8	8.681615E8	8.0	NULL	0.0	15.892	NULL	NULL	8.0517965E8	NULL	1969-12-31 16:00:00.008	NULL	1970-01-09 23:39:39.664	1970-01-10 17:09:21.5	1969-12-31 16:00:08	NULL	1969-12-31 16:00:00	1969-12-31 16:00:00	1969-12-31 16:00:15.892	NULL	NULL	8	NULL	805179664	868161500	8.0	NULL	FALSE	0	1969-12-31 16:00:15.892	e005B5q	8.0	1.610359328E9	0.9893582466233818	8.05179664E8
+true	NULL	true	true	true	NULL	false	false	true	true	8	NULL	-669632311	1588591250	8	NULL	0	15	NULL	3	8	8	8	8.0	NULL	-6.69632311E8	1.58859125E9	8.0	NULL	0.0	15.892	NULL	3.0	-6.6963232E8	NULL	1969-12-31 16:00:00.008	NULL	1969-12-23 21:59:27.689	1970-01-19 01:16:31.25	1969-12-31 16:00:08	NULL	1969-12-31 16:00:00	1969-12-31 16:00:00	1969-12-31 16:00:15.892	NULL	NULL	8	NULL	-669632311	1588591250	8.0	NULL	FALSE	0	1969-12-31 16:00:15.892	3r3sDvfUkG0yTP3LnX5mNQRr	8.0	-1.339264622E9	0.9893582466233818	-6.69632311E8
+true	NULL	true	true	true	NULL	true	false	true	true	8	NULL	890988972	-1862301000	8	NULL	1	15	NULL	NULL	8	8	8	8.0	NULL	8.90988972E8	-1.862301E9	8.0	NULL	1.0	15.892	NULL	NULL	8.9098899E8	NULL	1969-12-31 16:00:00.008	NULL	1970-01-10 23:29:48.972	1969-12-10 02:41:39	1969-12-31 16:00:08	NULL	1969-12-31 16:00:00.001	1969-12-31 16:00:00	1969-12-31 16:00:15.892	NULL	NULL	8	NULL	890988972	-1862301000	8.0	NULL	TRUE	0	1969-12-31 16:00:15.892	XylAH4	8.0	1.781977944E9	0.9893582466233818	8.90988973E8
+true	NULL	true	true	true	NULL	true	false	true	true	8	NULL	930867246	1205399250	8	NULL	1	15	NULL	NULL	8	8	8	8.0	NULL	9.30867246E8	1.20539925E9	8.0	NULL	1.0	15.892	NULL	NULL	9.3086726E8	NULL	1969-12-31 16:00:00.008	NULL	1970-01-11 10:34:27.246	1970-01-14 14:49:59.25	1969-12-31 16:00:08	NULL	1969-12-31 16:00:00.001	1969-12-31 16:00:00	1969-12-31 16:00:15.892	NULL	NULL	8	NULL	930867246	1205399250	8.0	NULL	TRUE	0	1969-12-31 16:00:15.892	c1V8o1A	8.0	1.861734492E9	0.9893582466233818	9.30867247E8
+true	true	NULL	true	true	true	NULL	false	true	NULL	-59	-7196	NULL	-1604890000	-59	-7196	NULL	13	NULL	NULL	-59	-59	-59	-59.0	-7196.0	NULL	-1.60489E9	-59.0	-7196.0	NULL	13.15	NULL	NULL	NULL	-7196.0	1969-12-31 15:59:59.941	1969-12-31 15:59:52.804	NULL	1969-12-13 02:11:50	1969-12-31 15:59:01	1969-12-31 14:00:04	NULL	1969-12-31 16:00:00	1969-12-31 16:00:13.15	NULL	NULL	-59	-7196	NULL	-1604890000	-59.0	-7196.0	NULL	0	1969-12-31 16:00:13.15	NULL	-59.0	NULL	-0.6367380071391379	NULL
+true	true	NULL	true	true	true	NULL	false	true	NULL	-21	-7196	NULL	1542429000	-21	-7196	NULL	-4	NULL	NULL	-21	-21	-21	-21.0	-7196.0	NULL	1.542429E9	-21.0	-7196.0	NULL	-4.1	NULL	NULL	NULL	-7196.0	1969-12-31 15:59:59.979	1969-12-31 15:59:52.804	NULL	1970-01-18 12:27:09	1969-12-31 15:59:39	1969-12-31 14:00:04	NULL	1969-12-31 16:00:00	1969-12-31 15:59:55.9	NULL	NULL	-21	-7196	NULL	1542429000	-21.0	-7196.0	NULL	0	1969-12-31 15:59:55.9	NULL	-21.0	NULL	-0.8366556385360561	NULL
+true	true	NULL	true	true	true	NULL	false	true	NULL	-60	-7196	NULL	1516314750	-60	-7196	NULL	-7	NULL	NULL	-60	-60	-60	-60.0	-7196.0	NULL	1.51631475E9	-60.0	-7196.0	NULL	-7.592	NULL	NULL	NULL	-7196.0	1969-12-31 15:59:59.94	1969-12-31 15:59:52.804	NULL	1970-01-18 05:11:54.75	1969-12-31 15:59:00	1969-12-31 14:00:04	NULL	1969-12-31 16:00:00	1969-12-31 15:59:52.408	NULL	NULL	-60	-7196	NULL	1516314750	-60.0	-7196.0	NULL	0	1969-12-31 15:59:52.408	NULL	-60.0	NULL	0.3048106211022167	NULL
+true	true	NULL	true	true	true	NULL	false	true	NULL	-14	-7196	NULL	-1552199500	-14	-7196	NULL	11	NULL	NULL	-14	-14	-14	-14.0	-7196.0	NULL	-1.5521995E9	-14.0	-7196.0	NULL	11.065	NULL	NULL	NULL	-7196.0	1969-12-31 15:59:59.986	1969-12-31 15:59:52.804	NULL	1969-12-13 16:50:00.5	1969-12-31 15:59:46	1969-12-31 14:00:04	NULL	1969-12-31 16:00:00	1969-12-31 16:00:11.065	NULL	NULL	-14	-7196	NULL	-1552199500	-14.0	-7196.0	NULL	0	1969-12-31 16:00:11.065	NULL	-14.0	NULL	-0.9906073556948704	NULL
+true	true	NULL	true	true	true	NULL	false	true	NULL	59	-7196	NULL	-1137754500	59	-7196	NULL	10	NULL	NULL	59	59	59	59.0	-7196.0	NULL	-1.1377545E9	59.0	-7196.0	NULL	10.956	NULL	NULL	NULL	-7196.0	1969-12-31 16:00:00.059	1969-12-31 15:59:52.804	NULL	1969-12-18 11:57:25.5	1969-12-31 16:00:59	1969-12-31 14:00:04	NULL	1969-12-31 16:00:00	1969-12-31 16:00:10.956	NULL	NULL	59	-7196	NULL	-1137754500	59.0	-7196.0	NULL	0	1969-12-31 16:00:10.956	NULL	59.0	NULL	0.6367380071391379	NULL
+true	true	NULL	true	true	true	NULL	false	true	NULL	-8	-7196	NULL	-1849991500	-8	-7196	NULL	3	NULL	NULL	-8	-8	-8	-8.0	-7196.0	NULL	-1.8499915E9	-8.0	-7196.0	NULL	3.136	NULL	NULL	NULL	-7196.0	1969-12-31 15:59:59.992	1969-12-31 15:59:52.804	NULL	1969-12-10 06:06:48.5	1969-12-31 15:59:52	1969-12-31 14:00:04	NULL	1969-12-31 16:00:00	1969-12-31 16:00:03.136	NULL	NULL	-8	-7196	NULL	-1849991500	-8.0	-7196.0	NULL	0	1969-12-31 16:00:03.136	NULL	-8.0	NULL	-0.9893582466233818	NULL
+true	true	NULL	true	true	true	NULL	false	true	NULL	5	-7196	NULL	-1015607500	5	-7196	NULL	10	NULL	NULL	5	5	5	5.0	-7196.0	NULL	-1.0156075E9	5.0	-7196.0	NULL	10.973	NULL	NULL	NULL	-7196.0	1969-12-31 16:00:00.005	1969-12-31 15:59:52.804	NULL	1969-12-19 21:53:12.5	1969-12-31 16:00:05	1969-12-31 14:00:04	NULL	1969-12-31 16:00:00	1969-12-31 16:00:10.973	NULL	NULL	5	-7196	NULL	-1015607500	5.0	-7196.0	NULL	0	1969-12-31 16:00:10.973	NULL	5.0	NULL	-0.9589242746631385	NULL
+true	true	NULL	true	true	true	NULL	false	true	NULL	-24	-7196	NULL	829111000	-24	-7196	NULL	-6	NULL	NULL	-24	-24	-24	-24.0	-7196.0	NULL	8.29111E8	-24.0	-7196.0	NULL	-6.855	NULL	NULL	NULL	-7196.0	1969-12-31 15:59:59.976	1969-12-31 15:59:52.804	NULL	1970-01-10 06:18:31	1969-12-31 15:59:36	1969-12-31 14:00:04	NULL	1969-12-31 16:00:00	1969-12-31 15:59:53.145	NULL	NULL	-24	-7196	NULL	829111000	-24.0	-7196.0	NULL	0	1969-12-31 15:59:53.145	NULL	-24.0	NULL	0.9055783620066238	NULL
+true	true	NULL	true	true	true	NULL	false	true	NULL	-50	-7196	NULL	-1031187250	-50	-7196	NULL	-5	NULL	NULL	-50	-50	-50	-50.0	-7196.0	NULL	-1.03118725E9	-50.0	-7196.0	NULL	-5.267	NULL	NULL	NULL	-7196.0	1969-12-31 15:59:59.95	1969-12-31 15:59:52.804	NULL	1969-12-19 17:33:32.75	1969-12-31 15:59:10	1969-12-31 14:00:04	NULL	1969-12-31 16:00:00	1969-12-31 15:59:54.733	NULL	NULL	-50	-7196	NULL	-1031187250	-50.0	-7196.0	NULL	0	1969-12-31 15:59:54.733	NULL	-50.0	NULL	0.26237485370392877	NULL
+true	NULL	true	true	true	NULL	true	false	true	true	11	NULL	-64615982	1803053750	11	NULL	1	2	NULL	8	11	11	11	11.0	NULL	-6.4615982E7	1.80305375E9	11.0	NULL	1.0	2.351	NULL	8.0	-6.4615984E7	NULL	1969-12-31 16:00:00.011	NULL	1969-12-30 22:03:04.018	1970-01-21 12:50:53.75	1969-12-31 16:00:11	NULL	1969-12-31 16:00:00.001	1969-12-31 16:00:00	1969-12-31 16:00:02.351	NULL	NULL	11	NULL	-64615982	1803053750	11.0	NULL	TRUE	0	1969-12-31 16:00:02.351	8J5OB7K26PEV7kdbeHr3	11.0	-1.29231964E8	-0.9999902065507035	-6.4615981E7
+true	NULL	true	true	true	NULL	true	false	true	true	11	NULL	-335450417	1233327000	11	NULL	1	2	NULL	NULL	11	11	11	11.0	NULL	-3.35450417E8	1.233327E9	11.0	NULL	1.0	2.351	NULL	NULL	-3.35450432E8	NULL	1969-12-31 16:00:00.011	NULL	1969-12-27 18:49:09.583	1970-01-14 22:35:27	1969-12-31 16:00:11	NULL	1969-12-31 16:00:00.001	1969-12-31 16:00:00	1969-12-31 16:00:02.351	NULL	NULL	11	NULL	-335450417	1233327000	11.0	NULL	TRUE	0	1969-12-31 16:00:02.351	dOYnqgaXoJ1P3ERwxe5N7	11.0	-6.70900834E8	-0.9999902065507035	-3.35450416E8

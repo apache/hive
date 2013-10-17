@@ -428,6 +428,30 @@ public class TestVectorMathFunctions {
   }
 
   @Test
+  public void testVectorPosMod() {
+
+    // test double->double version
+    VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
+    DoubleColumnVector inV = (DoubleColumnVector) b.cols[0];
+    DoubleColumnVector resultV = (DoubleColumnVector) b.cols[1];
+    b.cols[0].noNulls = true;
+    inV.vector[4] = -4.0;
+    VectorExpression expr = new PosModDoubleToDouble(0, 1);
+    ((ISetDoubleArg) expr).setArg(0.3d);  // set base
+    expr.evaluate(b);
+    Assert.assertTrue(equalsWithinTolerance(((-4.0d % 0.3d) + 0.3d) % 0.3d, resultV.vector[4]));
+
+    // test long->long version
+    b = getVectorizedRowBatchLongInLongOut();
+    LongColumnVector resV2 = (LongColumnVector) b.cols[1];
+    b.cols[0].noNulls = true;
+    expr = new PosModLongToLong(0, 1);
+    ((ISetLongArg) expr).setArg(3);
+    expr.evaluate(b);
+    Assert.assertEquals(((-2 % 3) + 3) % 3, resV2.vector[0]);
+  }
+
+  @Test
   public void testVectorPower() {
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
     DoubleColumnVector resultV = (DoubleColumnVector) b.cols[1];
