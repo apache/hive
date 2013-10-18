@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.SelectOperator;
@@ -54,10 +55,19 @@ public class VectorSelectOperator extends SelectOperator {
     vContext.setOperatorType(OperatorType.SELECT);
     vExpressions = new VectorExpression[colList.size()];
     for (int i = 0; i < colList.size(); i++) {
-      vExpressions[i] = vContext.getVectorExpression(colList.get(i));
+      ExprNodeDesc expr = colList.get(i);
+      VectorExpression ve = vContext.getVectorExpression(expr);
+      vExpressions[i] = ve;
+    }
+
+    Map<String, Integer> cMap = vContext.getColumnMap();
+    for (int i=0; i < colList.size(); ++i) {
       String columnName = this.conf.getOutputColumnNames().get(i);
-      // Update column map with output column names
-      vContext.addToColumnMap(columnName, vExpressions[i].getOutputColumn());
+      if (!cMap.containsKey(columnName)) {
+        VectorExpression ve = vExpressions[i];
+        // Update column map with output column names
+        vContext.addToColumnMap(columnName, ve.getOutputColumn());
+      }
     }
   }
 

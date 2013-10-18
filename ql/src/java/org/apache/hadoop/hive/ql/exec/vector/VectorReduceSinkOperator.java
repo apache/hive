@@ -123,7 +123,7 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
       VectorExpressionWriterFactory.processVectorExpressions(
           conf.getKeyCols(),
           conf.getOutputKeyColumnNames(),
-          new VectorExpressionWriterFactory.Closure() {
+          new VectorExpressionWriterFactory.SingleOIDClosure() {
             @Override
             public void assign(VectorExpressionWriter[] writers,
               ObjectInspector objectInspector) {
@@ -155,7 +155,7 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
       VectorExpressionWriterFactory.processVectorExpressions(
           conf.getValueCols(),
           conf.getOutputValueColumnNames(),
-          new VectorExpressionWriterFactory.Closure() {
+          new VectorExpressionWriterFactory.SingleOIDClosure() {
             @Override
             public void assign(VectorExpressionWriter[] writers,
                 ObjectInspector objectInspector) {
