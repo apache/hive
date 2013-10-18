@@ -32,6 +32,7 @@ import java.util.Stack;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -59,6 +60,7 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
@@ -99,6 +101,7 @@ import org.apache.hadoop.hive.ql.udf.UDFOPMultiply;
 import org.apache.hadoop.hive.ql.udf.UDFOPNegative;
 import org.apache.hadoop.hive.ql.udf.UDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
+import org.apache.hadoop.hive.ql.udf.UDFPosMod;
 import org.apache.hadoop.hive.ql.udf.UDFPower;
 import org.apache.hadoop.hive.ql.udf.UDFRTrim;
 import org.apache.hadoop.hive.ql.udf.UDFRadians;
@@ -220,6 +223,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(UDFLog10.class);
     supportedGenericUDFs.add(UDFLog.class);
     supportedGenericUDFs.add(UDFPower.class);
+    supportedGenericUDFs.add(UDFPosMod.class);
     supportedGenericUDFs.add(UDFRound.class);
     supportedGenericUDFs.add(UDFSqrt.class);
     supportedGenericUDFs.add(UDFSign.class);
@@ -592,7 +596,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return supportedDataTypes.contains(type.toLowerCase());
   }
 
-  private VectorizationContext getVectorizationContext(Operator<? extends OperatorDesc> op,
+  private VectorizationContext getVectorizationContext(TableScanOperator op,
       PhysicalContext pctx) {
     RowResolver rr = pctx.getParseContext().getOpParseCtx().get(op).getRowResolver();
 
@@ -601,6 +605,12 @@ public class Vectorizer implements PhysicalPlanResolver {
     for (ColumnInfo c : rr.getColumnInfos()) {
       if (!c.getIsVirtualCol()) {
         cmap.put(c.getInternalName(), columnCount++);
+      }
+    }
+    Table tab = pctx.getParseContext().getTopToTable().get(op);
+    if (tab.getPartitionKeys() != null) {
+      for (FieldSchema fs : tab.getPartitionKeys()) {
+        cmap.put(fs.getName(), columnCount++);
       }
     }
     return new VectorizationContext(cmap, columnCount);

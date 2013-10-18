@@ -81,7 +81,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   private final Map<Operator<? extends OperatorDesc>, MapOpCtx> childrenOpToOpCtxMap =
     new HashMap<Operator<? extends OperatorDesc>, MapOpCtx>();
 
-  private transient MapOpCtx current;
+  protected transient MapOpCtx current;
   private transient List<Operator<? extends OperatorDesc>> extraChildrenToClose = null;
 
   private static class MapInputPath {
@@ -122,7 +122,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
     }
   }
 
-  private static class MapOpCtx {
+  protected static class MapOpCtx {
 
     StructObjectInspector tblRawRowObjectInspector;  // columns
     StructObjectInspector partObjectInspector;    // partition columns
@@ -150,6 +150,10 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
 
     private Object readRow(Writable value) throws SerDeException {
       return partTblObjectInspectorConverter.convert(deserializer.deserialize(value));
+    }
+
+    public StructObjectInspector getRowObjectInspector() {
+      return rowObjectInspector;
     }
   }
 
@@ -474,7 +478,6 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
       // The child operators cleanup if input file has changed
       cleanUpInputFileChanged();
     }
-
     Object row;
     try {
       row = current.readRow(value);

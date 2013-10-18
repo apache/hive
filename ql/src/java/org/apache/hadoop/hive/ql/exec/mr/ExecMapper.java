@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.ObjectCache;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -109,7 +110,11 @@ public class ExecMapper extends MapReduceBase implements Mapper {
         mrwork = Utilities.getMapWork(job);
         cache.cache(PLAN_KEY, mrwork);
       }
-      mo = new MapOperator();
+      if (mrwork.getVectorMode()) {
+        mo = new VectorMapOperator();
+      } else {
+        mo = new MapOperator();
+      }
       mo.setConf(mrwork);
       // initialize map operator
       mo.setChildren(job);

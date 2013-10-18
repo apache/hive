@@ -115,6 +115,7 @@ import org.apache.hadoop.hive.ql.udf.UDFOPMultiply;
 import org.apache.hadoop.hive.ql.udf.UDFOPNegative;
 import org.apache.hadoop.hive.ql.udf.UDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
+import org.apache.hadoop.hive.ql.udf.UDFPosMod;
 import org.apache.hadoop.hive.ql.udf.UDFPower;
 import org.apache.hadoop.hive.ql.udf.UDFRegExp;
 import org.apache.hadoop.hive.ql.udf.UDFRTrim;
@@ -737,9 +738,43 @@ public class VectorizationContext {
       return getCastToDoubleExpression(childExpr);
     } else if (cl.equals(UDFToString.class)) {
       return getCastToString(childExpr);
+    } else if (cl.equals(UDFPosMod.class)) {
+      return getPosModExpression(childExpr);
     }
 
     throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
+  }
+
+  private VectorExpression getPosModExpression(List<ExprNodeDesc> childExpr)
+      throws HiveException {
+    String inputType = childExpr.get(0).getTypeString();
+
+    if (isIntFamily(inputType)) {
+      // Try to get the second argument (the modulo divisor)
+      long divisor = getLongScalar(childExpr.get(1));
+
+      // Use the standard logic for a unary function to handle the first argument.
+      VectorExpression e = getUnaryFunctionExpression("PosMod", "Long", childExpr,
+          CUSTOM_EXPR_PACKAGE);
+
+      // Set second argument for this special case
+      ((ISetLongArg) e).setArg(divisor);
+      return e;
+    } else if (isFloatFamily(inputType)) {
+
+      // Try to get the second argument (the modulo divisor)
+      double divisor = getDoubleScalar(childExpr.get(1));
+
+      // Use the standard logic for a unary function to handle the first argument.
+      VectorExpression e = getUnaryFunctionExpression("PosMod", "Double", childExpr,
+          CUSTOM_EXPR_PACKAGE);
+
+      // Set second argument for this special case
+      ((ISetDoubleArg) e).setArg(divisor);
+      return e;
+    }
+
+    throw new HiveException("Unhandled input type for PMOD():  " + inputType);
   }
 
   private VectorExpression getCastToTimestamp(List<ExprNodeDesc> childExpr)
@@ -905,16 +940,19 @@ public class VectorizationContext {
       return getUnaryFunctionExpression("FuncLn", "Double", childExpr,
           GENERATED_EXPR_PACKAGE);
     } else if (childExpr.size() == 2) {
-      String argType = childExpr.get(0).getTypeString();
 
-      // Try to get the second argument, typically a constant value (the base)
-      double base = getDoubleScalar(childExpr.get(1));
+      // Get the type of the (normally variable) input expression
+      String argType = childExpr.get(1).getTypeString();
 
-      // Use the standard logic for a unary function to handle the first argument.
-      VectorExpression e = getUnaryFunctionExpression("FuncLogWithBase", "Double", childExpr,
+      // Try to get the first argument, typically a constant value (the base)
+      double base = getDoubleScalar(childExpr.get(0));
+
+      // Use the standard logic for a unary function to handle the second argument.
+      VectorExpression e = getUnaryFunctionExpression("FuncLogWithBase", "Double",
+          childExpr.subList(1, 2), // pass the second argument as the first
           CUSTOM_EXPR_PACKAGE);
 
-      // set the second argument for this special case
+      // set the first argument (the base) for this special case
       ((ISetDoubleArg) e).setArg(base);
       return e;
     }
