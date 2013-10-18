@@ -42,14 +42,15 @@ public class JarDelegator extends LauncherDelegator {
   public EnqueueBean run(String user, Map<String, Object> userArgs, String jar, String mainClass,
                String libjars, String files,
                List<String> jarArgs, List<String> defines,
-               String statusdir, String callback, String completedUrl,
+               String statusdir, String callback, 
+               boolean usehcatalog, String completedUrl,
                boolean enablelog, JobType jobType)
     throws NotAuthorizedException, BadParam, BusyException, QueueException,
     ExecuteException, IOException, InterruptedException {
     runAs = user;
     List<String> args = makeArgs(jar, mainClass,
       libjars, files, jarArgs, defines,
-      statusdir, completedUrl, enablelog, jobType);
+      statusdir, usehcatalog, completedUrl, enablelog, jobType);
 
     return enqueueController(user, userArgs, callback, args);
   }
@@ -57,23 +58,30 @@ public class JarDelegator extends LauncherDelegator {
   private List<String> makeArgs(String jar, String mainClass,
                   String libjars, String files,
                   List<String> jarArgs, List<String> defines,
-                  String statusdir, String completedUrl,
+                  String statusdir, boolean usehcatalog, String completedUrl,
                   boolean enablelog, JobType jobType)
     throws BadParam, IOException, InterruptedException {
     ArrayList<String> args = new ArrayList<String>();
     try {
-      ArrayList<String> allFiles = new ArrayList();
+      ArrayList<String> allFiles = new ArrayList<String>();
       allFiles.add(TempletonUtils.hadoopFsFilename(jar, appConf, runAs));
 
       args.addAll(makeLauncherArgs(appConf, statusdir,
         completedUrl, allFiles, enablelog, jobType));
       args.add("--");
       TempletonUtils.addCmdForWindows(args);
+
+      //check if the rest command specified explicitly to use hcatalog
+      if(usehcatalog){
+        addHiveMetaStoreTokenArg();
+      }
+
       args.add(appConf.clusterHadoop());
       args.add("jar");
       args.add(TempletonUtils.hadoopFsPath(jar, appConf, runAs).getName());
-      if (TempletonUtils.isset(mainClass))
+      if (TempletonUtils.isset(mainClass)) {
         args.add(mainClass);
+      }
       if (TempletonUtils.isset(libjars)) {
         String libjarsListAsString =
             TempletonUtils.hadoopFsListAsString(libjars, appConf, runAs);

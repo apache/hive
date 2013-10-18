@@ -33,10 +33,10 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.io.Text;
-import org.apache.thrift.TException;
 import org.apache.hadoop.security.Credentials;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
+import org.apache.thrift.TException;
 
 /**
  * Helper class to run jobs using Kerberos security.  Always safe to
@@ -44,8 +44,8 @@ import org.apache.hadoop.security.token.Token;
  */
 public class SecureProxySupport {
   private Path tokenPath;
-  private final String HCAT_SERVICE = "hcat";
-  private boolean isEnabled;
+  public static final String HCAT_SERVICE = "hcat";
+  private final boolean isEnabled;
   private String user;
 
   public SecureProxySupport() {

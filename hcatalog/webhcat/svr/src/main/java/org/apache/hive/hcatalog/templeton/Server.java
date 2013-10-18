@@ -186,8 +186,9 @@ public class Server {
     verifyDdlParam(db, ":db");
 
     HcatDelegator d = new HcatDelegator(appConf, execService);
-    if (!TempletonUtils.isset(tablePattern))
+    if (!TempletonUtils.isset(tablePattern)) {
       tablePattern = "*";
+    }
     return d.listTables(getDoAsUser(), db, tablePattern);
   }
 
@@ -252,10 +253,12 @@ public class Server {
     verifyDdlParam(table, ":table");
 
     HcatDelegator d = new HcatDelegator(appConf, execService);
-    if ("extended".equals(format))
+    if ("extended".equals(format)) {
       return d.descExtendedTable(getDoAsUser(), db, table);
-    else
+    }
+    else {
       return d.descTable(getDoAsUser(), db, table, false);
+    }
   }
 
   /**
@@ -455,8 +458,9 @@ public class Server {
     verifyUser();
 
     HcatDelegator d = new HcatDelegator(appConf, execService);
-    if (!TempletonUtils.isset(dbPattern))
+    if (!TempletonUtils.isset(dbPattern)) {
       dbPattern = "*";
+    }
     return d.listDatabases(getDoAsUser(), dbPattern);
   }
 
@@ -508,8 +512,9 @@ public class Server {
     BadParam, ExecuteException, IOException {
     verifyUser();
     verifyDdlParam(db, ":db");
-    if (TempletonUtils.isset(option))
+    if (TempletonUtils.isset(option)) {
       verifyDdlParam(option, "option");
+    }
     HcatDelegator d = new HcatDelegator(appConf, execService);
     return d.dropDatabase(getDoAsUser(), db, ifExists, option,
         group, permissions);
@@ -579,6 +584,7 @@ public class Server {
 
   /**
    * Run a MapReduce Streaming job.
+   * @param callback URL which WebHCat will call when the hive job finishes
    */
   @POST
   @Path("mapreduce/streaming")
@@ -628,6 +634,11 @@ public class Server {
 
   /**
    * Run a MapReduce Jar job.
+   * Params correspond to the REST api params
+   * @param  usehcatalog if {@code true}, means the Jar uses HCat and thus needs to access 
+   *    metastore, which requires additional steps for WebHCat to perform in a secure cluster.  
+   * @param callback URL which WebHCat will call when the hive job finishes
+   * @see org.apache.hive.hcatalog.templeton.tool.TempletonControllerJob
    */
   @POST
   @Path("mapreduce/jar")
@@ -640,6 +651,7 @@ public class Server {
                   @FormParam("define") List<String> defines,
                   @FormParam("statusdir") String statusdir,
                   @FormParam("callback") String callback,
+                  @FormParam("usehcatalog") boolean usehcatalog,
                   @FormParam("enablelog") boolean enablelog)
     throws NotAuthorizedException, BusyException, BadParam, QueueException,
     ExecuteException, IOException, InterruptedException {
@@ -665,11 +677,18 @@ public class Server {
     return d.run(getDoAsUser(), userArgs,
       jar, mainClass,
       libjars, files, args, defines,
-      statusdir, callback, getCompletedUrl(), enablelog, JobType.JAR);
+      statusdir, callback, usehcatalog, getCompletedUrl(), enablelog, JobType.JAR);
   }
 
   /**
    * Run a Pig job.
+   * Params correspond to the REST api params.  If '-useHCatalog' is in the {@code pigArgs, usehcatalog}, 
+   * is interpreted as true.
+   * @param  usehcatalog if {@code true}, means the Pig script uses HCat and thus needs to access 
+   *    metastore, which requires additional steps for WebHCat to perform in a secure cluster.
+   *    This does nothing to ensure that Pig is installed on target node in the cluster.
+   * @param callback URL which WebHCat will call when the hive job finishes
+   * @see org.apache.hive.hcatalog.templeton.tool.TempletonControllerJob
    */
   @POST
   @Path("pig")
@@ -680,12 +699,14 @@ public class Server {
                @FormParam("files") String otherFiles,
                @FormParam("statusdir") String statusdir,
                @FormParam("callback") String callback,
+               @FormParam("usehcatalog") boolean usehcatalog,
                @FormParam("enablelog") boolean enablelog)
     throws NotAuthorizedException, BusyException, BadParam, QueueException,
     ExecuteException, IOException, InterruptedException {
     verifyUser();
-    if (execute == null && srcFile == null)
+    if (execute == null && srcFile == null) {
       throw new BadParam("Either execute or file parameter required");
+    }
     
     //add all function arguments to a map
     Map<String, Object> userArgs = new HashMap<String, Object>();
@@ -704,7 +725,7 @@ public class Server {
     return d.run(getDoAsUser(), userArgs,
       execute, srcFile,
       pigArgs, otherFiles,
-      statusdir, callback, getCompletedUrl(), enablelog);
+      statusdir, callback, usehcatalog, getCompletedUrl(), enablelog);
   }
 
   /**
@@ -719,7 +740,7 @@ public class Server {
    *                   used in "add jar" statement in hive script
    * @param defines    shortcut for command line arguments "--define"
    * @param statusdir  where the stderr/stdout of templeton controller job goes
-   * @param callback   callback url when the hive job finishes
+   * @param callback   URL which WebHCat will call when the hive job finishes
    * @param enablelog  whether to collect mapreduce log into statusdir/logs
    */
   @POST
@@ -736,8 +757,9 @@ public class Server {
     throws NotAuthorizedException, BusyException, BadParam, QueueException,
     ExecuteException, IOException, InterruptedException {
     verifyUser();
-    if (execute == null && srcFile == null)
+    if (execute == null && srcFile == null) {
       throw new BadParam("Either execute or file parameter required");
+    }
     
     //add all function arguments to a map
     Map<String, Object> userArgs = new HashMap<String, Object>();
@@ -874,10 +896,12 @@ public class Server {
   @GET
   @Path("internal/complete/{jobid}")
   @Produces({MediaType.APPLICATION_JSON})
-  public CompleteBean completeJob(@PathParam("jobid") String jobid)
+  public CompleteBean completeJob(@PathParam("jobid") String jobid,
+                                  @QueryParam("status") String jobStatus)
     throws CallbackFailedException, IOException {
+    LOG.debug("Received callback " + theUriInfo.getRequestUri());
     CompleteDelegator d = new CompleteDelegator(appConf);
-    return d.run(jobid);
+    return d.run(jobid, jobStatus);
   }
 
   /**
@@ -887,8 +911,9 @@ public class Server {
     String requestingUser = getRequestingUser();
     if (requestingUser == null) {
       String msg = "No user found.";
-      if (!UserGroupInformation.isSecurityEnabled())
+      if (!UserGroupInformation.isSecurityEnabled()) {
         msg += "  Missing " + PseudoAuthenticator.USER_NAME + " parameter.";
+      }
       throw new NotAuthorizedException(msg);
     }
     if(doAs != null && !doAs.equals(requestingUser)) {
@@ -897,9 +922,10 @@ public class Server {
       ProxyUserSupport.validate(requestingUser, getRequestingHost(requestingUser, request), doAs);
     }
   }
+
   /**
    * All 'tasks' spawned by WebHCat should be run as this user.  W/o doAs query parameter
-   * this is just the user making the request (or 
+   * this is just the user making the request (or
    * {@link org.apache.hadoop.security.authentication.client.PseudoAuthenticator#USER_NAME}
    * query param).
    * @return value of doAs query parameter or {@link #getRequestingUser()}
@@ -912,8 +938,9 @@ public class Server {
    */
   public void verifyParam(String param, String name)
     throws BadParam {
-    if (param == null)
+    if (param == null) {
       throw new BadParam("Missing " + name + " parameter");
+    }
   }
 
   /**
@@ -921,8 +948,9 @@ public class Server {
    */
   public void verifyParam(List<String> param, String name)
     throws BadParam {
-    if (param == null || param.isEmpty())
+    if (param == null || param.isEmpty()) {
       throw new BadParam("Missing " + name + " parameter");
+    }
   }
 
   public static final Pattern DDL_ID = Pattern.compile("[a-zA-Z]\\w*");
@@ -937,8 +965,9 @@ public class Server {
     throws BadParam {
     verifyParam(param, name);
     Matcher m = DDL_ID.matcher(param);
-    if (!m.matches())
+    if (!m.matches()) {
       throw new BadParam("Invalid DDL identifier " + name);
+    }
   }
   /**
    * Get the user name from the security context, i.e. the user making the HTTP request.
@@ -946,10 +975,12 @@ public class Server {
    * value of user.name query param, in kerberos mode it's the kinit'ed user.
    */
   private String getRequestingUser() {
-    if (theSecurityContext == null)
+    if (theSecurityContext == null) { 
       return null;
-    if (theSecurityContext.getUserPrincipal() == null)
+    }
+    if (theSecurityContext.getUserPrincipal() == null) {
       return null;
+    }
     //map hue/foo.bar@something.com->hue since user group checks 
     // and config files are in terms of short name
     return UserGroupInformation.createRemoteUser(
@@ -960,16 +991,18 @@ public class Server {
    * The callback url on this server when a task is completed.
    */
   public String getCompletedUrl() {
-    if (theUriInfo == null)
+    if (theUriInfo == null) {
       return null;
-    if (theUriInfo.getBaseUri() == null)
+    }
+    if (theUriInfo.getBaseUri() == null) {
       return null;
+    }
     return theUriInfo.getBaseUri() + VERSION
-      + "/internal/complete/$jobId";
+      + "/internal/complete/$jobId?status=$jobStatus";
   }
 
   /**
-   * Returns canonical host name from which the request is made; used for doAs validation  
+   * Returns canonical host name from which the request is made; used for doAs validation
    */
   private static String getRequestingHost(String requestingUser, HttpServletRequest request) {
     final String unkHost = "???";
@@ -998,7 +1031,7 @@ public class Server {
   }
   
   private void checkEnableLogPrerequisite(boolean enablelog, String statusdir) throws BadParam {
-    if (enablelog == true && !TempletonUtils.isset(statusdir))
+    if (enablelog && !TempletonUtils.isset(statusdir))
       throw new BadParam("enablelog is only applicable when statusdir is set");
   }
 }
