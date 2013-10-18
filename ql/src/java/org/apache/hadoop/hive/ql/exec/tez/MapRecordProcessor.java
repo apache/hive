@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.reportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
+import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -94,7 +95,11 @@ public class MapRecordProcessor  extends RecordProcessor{
           l4j.info("Alias: "+s);
         }
       }
-      mapOp = new MapOperator();
+      if (mapWork.getVectorMode()) {
+        mapOp = new VectorMapOperator();
+      } else {
+        mapOp = new MapOperator();
+      }
 
       // initialize map operator
       mapOp.setConf(mapWork);
