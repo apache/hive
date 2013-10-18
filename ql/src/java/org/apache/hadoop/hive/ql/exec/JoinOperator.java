@@ -75,7 +75,7 @@ public class JoinOperator extends CommonJoinOperator<JoinDesc> implements
       // get alias
       alias = (byte) tag;
 
-      ArrayList<Object> nr = getFilteredValue(alias, row);
+      List<Object> nr = getFilteredValue(alias, row);
 
       if (handleSkewJoin) {
         skewJoinKeyContext.handleSkew(tag);
