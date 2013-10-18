@@ -75,7 +75,7 @@ public final class VectorExpressionWriterFactory {
       }
       if (null == objectInspector) {
         throw new HiveException(String.format(
-            "Failed to initialize VectorExpressionWriter for expr: %s", 
+            "Failed to initialize VectorExpressionWriter for expr: %s",
             nodeDesc.getExprString()));
       }
       return this;
@@ -378,8 +378,12 @@ public final class VectorExpressionWriterFactory {
    * A poor man Java closure. Works around the problem of having to return multiple objects
    * from one function call.
    */
-  public static interface Closure {
+  public static interface SingleOIDClosure {
     void assign(VectorExpressionWriter[] writers, ObjectInspector objectInspector);
+  }
+
+  public static interface ListOIDClosure {
+    void assign(VectorExpressionWriter[] writers, List<ObjectInspector> oids);
   }
 
   /**
@@ -388,8 +392,8 @@ public final class VectorExpressionWriterFactory {
    */
   public static void processVectorExpressions(
       List<ExprNodeDesc> nodesDesc,
-      List<String> outputColumnNames,
-      Closure closure)
+      List<String> columnNames,
+      SingleOIDClosure closure)
       throws HiveException {
     VectorExpressionWriter[] writers = getExpressionWriters(nodesDesc);
     List<ObjectInspector> oids = new ArrayList<ObjectInspector>(writers.length);
@@ -397,8 +401,24 @@ public final class VectorExpressionWriterFactory {
       oids.add(writers[i].getObjectInspector());
     }
     ObjectInspector objectInspector = ObjectInspectorFactory.
-        getStandardStructObjectInspector(outputColumnNames,oids);
+        getStandardStructObjectInspector(columnNames,oids);
     closure.assign(writers, objectInspector);
+  }
+
+  /**
+   * Creates the value writers for a column vector expression list.
+   * Creates an appropriate output object inspector.
+   */
+  public static void processVectorExpressions(
+      List<ExprNodeDesc> nodesDesc,
+      ListOIDClosure closure)
+      throws HiveException {
+    VectorExpressionWriter[] writers = getExpressionWriters(nodesDesc);
+    List<ObjectInspector> oids = new ArrayList<ObjectInspector>(writers.length);
+    for(int i=0; i<writers.length; ++i) {
+      oids.add(writers[i].getObjectInspector());
+    }
+    closure.assign(writers, oids);
   }
 
 

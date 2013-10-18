@@ -113,6 +113,7 @@ public class MapWork extends BaseWork {
   private boolean useBucketizedHiveInputFormat;
 
   private Map<String, Map<Integer, String>> scratchColumnVectorTypes = null;
+  private Map<String, Map<String, Integer>> scratchColumnMap = null;
   private boolean vectorMode = false;
 
   public MapWork() {}
@@ -495,11 +496,21 @@ public class MapWork extends BaseWork {
     this.scratchColumnVectorTypes = scratchColumnVectorTypes;
   }
 
+  public Map<String, Map<String, Integer>> getScratchColumnMap() {
+    return scratchColumnMap;
+  }
+
+  public void setScratchColumnMap(Map<String, Map<String, Integer>> scratchColumnMap) {
+    this.scratchColumnMap = scratchColumnMap;
+  }
+
   public boolean getVectorMode() {
     return vectorMode;
   }
 
+  @Override
   public void setVectorMode(boolean vectorMode) {
     this.vectorMode = vectorMode;
   }
+
 }

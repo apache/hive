@@ -190,6 +190,8 @@ public class VectorizationContext {
   private static final String GENERATED_EXPR_PACKAGE =
       "org.apache.hadoop.hive.ql.exec.vector.expressions.gen";
 
+  private String fileKey = null;
+
   public VectorizationContext(Map<String, Integer> columnMap,
       int initialOutputCol) {
     this.columnMap = columnMap;
@@ -197,7 +199,18 @@ public class VectorizationContext {
     this.firstOutputColumnIndex = initialOutputCol;
   }
 
+  public String getFileKey() {
+    return fileKey;
+  }
+
+  public void setFileKey(String fileKey) {
+    this.fileKey = fileKey;
+  }
+
   private int getInputColumnIndex(String name) {
+      if (!columnMap.containsKey(name)) {
+        LOG.error(String.format("The column %s is not in the vectorization context column map.", name));
+      }
       return columnMap.get(name);
   }
 
@@ -269,6 +282,7 @@ public class VectorizationContext {
         //Important: It will come here only if the column is being used as a boolean
         expr = new SelectColumnIsTrue(columnNum);
         break;
+      case MAPJOIN:
       case SELECT:
       case GROUPBY:
       case REDUCESINK:
@@ -1171,6 +1185,14 @@ public class VectorizationContext {
     return ve;
   }
 
+  public static boolean isStringFamily(String resultType) {
+    return resultType.equalsIgnoreCase("string");
+  }
+
+  public static boolean isDatetimeFamily(String resultType) {
+    return resultType.equalsIgnoreCase("timestamp");
+  }
+
   // return true if this is any kind of float
   public static boolean isFloatFamily(String resultType) {
     return resultType.equalsIgnoreCase("double")
@@ -1183,7 +1205,23 @@ public class VectorizationContext {
         || resultType.equalsIgnoreCase("smallint")
         || resultType.equalsIgnoreCase("int")
         || resultType.equalsIgnoreCase("bigint")
-        || resultType.equalsIgnoreCase("boolean");
+        || resultType.equalsIgnoreCase("boolean")
+        || resultType.equalsIgnoreCase("long");
+  }
+
+  public static String mapJavaTypeToVectorType(String javaType)
+    throws HiveException {
+    if (isStringFamily(javaType)) {
+      return "string";
+    }
+    if (isFloatFamily(javaType)) {
+      return "double";
+    }
+    if (isIntFamily(javaType) ||
+        isDatetimeFamily(javaType)) {
+      return "bigint";
+    }
+    throw new HiveException("Unsuported type for vectorization: " + javaType);
   }
 
   /* Return a unary string vector expression. This is used for functions like
@@ -2073,21 +2111,43 @@ public class VectorizationContext {
     return map;
   }
 
-  public ColumnVector allocateColumnVector(String type, int defaultSize) {
-    if (type.equalsIgnoreCase("double")) {
+  public Map<String, Integer> getColumnMap() {
+    return columnMap;
+  }
+
+  public static ColumnVector allocateColumnVector(String type, int defaultSize) {
+    if (isFloatFamily(type)) {
       return new DoubleColumnVector(defaultSize);
-    } else if (type.equalsIgnoreCase("string")) {
+    } else if (isStringFamily(type)) {
       return new BytesColumnVector(defaultSize);
     } else {
       return new LongColumnVector(defaultSize);
     }
   }
 
-
-  public void addToColumnMap(String columnName, int outputColumn) {
-    if (columnMap != null) {
-      columnMap.put(columnName, outputColumn);
+  public void addToColumnMap(String columnName, int outputColumn) throws HiveException {
+    if (columnMap.containsKey(columnName) && (columnMap.get(columnName) != outputColumn)) {
+      throw new HiveException(String.format("Column %s is already mapped to %d. Cannot remap to %d.",
+          columnName, columnMap.get(columnName), outputColumn));
     }
+    columnMap.put(columnName, outputColumn);
   }
-}
+
+  public <T> Map<T, VectorExpression[]> getMapVectorExpressions(
+      Map<T, List<ExprNodeDesc>> expressions) throws HiveException {
+    Map<T, VectorExpression[]> result = new HashMap<T, VectorExpression[]>();
+    if (null != expressions) {
+      for(T key: expressions.keySet()) {
+        result.put(key, getVectorExpressions(expressions.get(key)));
+      }
+    }
+    return result;
+  }
+
+  public void addOutputColumn(String columnName, String columnType) throws HiveException {
+    String vectorType = mapJavaTypeToVectorType(columnType);
+    int columnIndex = ocm.allocateOutputColumn(vectorType);
+    this.addToColumnMap(columnName, columnIndex);
+  }
+ }
 

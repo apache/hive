@@ -452,25 +452,20 @@ public class VectorHashKeyWrapperBatch {
     for(int i=0; i < keyExpressions.length; ++i) {
       indexLookup[i] = new KeyLookupHelper();
       String outputType = keyExpressions[i].getOutputType();
-      if (outputType.equalsIgnoreCase("tinyint") ||
-          outputType.equalsIgnoreCase("smallint") ||
-          outputType.equalsIgnoreCase("int")  ||
-          outputType.equalsIgnoreCase("bigint")  ||
-          outputType.equalsIgnoreCase("timestamp") ||
-          outputType.equalsIgnoreCase("boolean")) {
+      if (VectorizationContext.isIntFamily(outputType) ||
+          VectorizationContext.isDatetimeFamily(outputType)) {
         longIndices[longIndicesIndex] = i;
         indexLookup[i].longIndex = longIndicesIndex;
         indexLookup[i].doubleIndex = -1;
         indexLookup[i].stringIndex = -1;
         ++longIndicesIndex;
-      } else if (outputType.equalsIgnoreCase("double") ||
-          outputType.equalsIgnoreCase("float")) {
+      } else if (VectorizationContext.isFloatFamily(outputType)) {
         doubleIndices[doubleIndicesIndex] = i;
         indexLookup[i].longIndex = -1;
         indexLookup[i].doubleIndex = doubleIndicesIndex;
         indexLookup[i].stringIndex = -1;
         ++doubleIndicesIndex;
-      } else if (outputType.equalsIgnoreCase("string")) {
+      } else if (VectorizationContext.isStringFamily(outputType)) {
         stringIndices[stringIndicesIndex]= i;
         indexLookup[i].longIndex = -1;
         indexLookup[i].doubleIndex = -1;

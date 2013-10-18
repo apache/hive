@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -68,6 +69,7 @@ import org.apache.hadoop.hive.ql.plan.AggregationDesc;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
@@ -344,6 +346,7 @@ public class Vectorizer implements PhysicalPlanResolver {
       HashMap<Node, Object> nodeOutput = new HashMap<Node, Object>();
       ogw.startWalking(topNodes, nodeOutput);
       mapWork.setScratchColumnVectorTypes(vnp.getScratchColumnVectorTypes());
+      mapWork.setScratchColumnMap(vnp.getScratchColumnMap());
       return;
     }
   }
@@ -396,6 +399,17 @@ public class Vectorizer implements PhysicalPlanResolver {
       return scratchColumnVectorTypes;
     }
 
+    public Map<String, Map<String, Integer>> getScratchColumnMap() {
+      Map<String, Map<String, Integer>> scratchColumnMap =
+          new HashMap<String, Map<String, Integer>>();
+      for(String oneFile: vectorizationContexts.keySet()) {
+        VectorizationContext vc = vectorizationContexts.get(oneFile);
+        Map<String, Integer> cmap = vc.getColumnMap();
+        scratchColumnMap.put(oneFile, cmap);
+      }
+      return scratchColumnMap;
+    }
+
     @Override
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
@@ -419,6 +433,7 @@ public class Vectorizer implements PhysicalPlanResolver {
           }
         }
         vContext = getVectorizationContext(tsOp, physicalContext);
+        vContext.setFileKey(fileKey);
         vectorizationContexts.put(fileKey, vContext);
         vContextsByTSOp.put(tsOp, vContext);
       }
@@ -473,6 +488,9 @@ public class Vectorizer implements PhysicalPlanResolver {
   boolean validateOperator(Operator<? extends OperatorDesc> op) {
     boolean ret = false;
     switch (op.getType()) {
+      case MAPJOIN:
+        ret = validateMapJoinOperator((MapJoinOperator) op);
+        break;
       case GROUPBY:
         ret = validateGroupByOperator((GroupByOperator) op);
         break;
@@ -495,6 +513,17 @@ public class Vectorizer implements PhysicalPlanResolver {
         break;
     }
     return ret;
+  }
+
+  private boolean validateMapJoinOperator(MapJoinOperator op) {
+    MapJoinDesc desc = op.getConf();
+    byte posBigTable = (byte) desc.getPosBigTable();
+    List<ExprNodeDesc> filterExprs = desc.getFilters().get(posBigTable);
+    List<ExprNodeDesc> keyExprs = desc.getKeys().get(posBigTable);
+    List<ExprNodeDesc> valueExprs = desc.getExprs().get(posBigTable);
+    return validateExprNodeDesc(filterExprs) &&
+        validateExprNodeDesc(keyExprs) &&
+        validateExprNodeDesc(valueExprs);
   }
 
   private boolean validateReduceSinkOperator(ReduceSinkOperator op) {
@@ -616,11 +645,22 @@ public class Vectorizer implements PhysicalPlanResolver {
     return new VectorizationContext(cmap, columnCount);
   }
 
+
+  private void extendVectorizationContextOutput(Operator<? extends OperatorDesc> op,
+      VectorizationContext vContext) throws HiveException {
+
+    RowResolver rr = physicalContext.getParseContext().getOpParseCtx().get(op).getRowResolver();
+    for(ColumnInfo c : rr.getColumnInfos()) {
+      vContext.addOutputColumn(c.getInternalName(), c.getTypeName());
+    }
+  }
+
   Operator<? extends OperatorDesc> vectorizeOperator(Operator<? extends OperatorDesc> op,
       VectorizationContext vContext) throws HiveException {
     Operator<? extends OperatorDesc> vectorOp = null;
 
     switch (op.getType()) {
+      case MAPJOIN:
       case GROUPBY:
       case FILTER:
       case SELECT:
