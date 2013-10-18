@@ -20,11 +20,15 @@ package org.apache.hive.hcatalog.templeton;
 
 import java.io.IOException;
 import java.net.URL;
-import java.net.MalformedURLException;
 import java.util.Date;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hive.hcatalog.common.HCatUtil;
+import org.apache.hive.hcatalog.templeton.tool.DelegationTokenCache;
 import org.apache.hive.hcatalog.templeton.tool.JobState;
 import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
 
@@ -39,11 +43,12 @@ import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
  * this at the same time.  That should never happen.
  *
  * We use a Hadoop config var to notify this class on the completion
- * of a job.  Hadoop will call use multiple times in the event of
+ * of a job.  Hadoop will call us multiple times in the event of
  * failure.  Even if the failure is that the client callback failed.
  *
  * See LauncherDelegator for the HADOOP_END_RETRY* vars that are set.
  */
+@InterfaceAudience.Private
 public class CompleteDelegator extends TempletonDelegator {
   private static final Log LOG = LogFactory.getLog(CompleteDelegator.class);
 
@@ -51,28 +56,36 @@ public class CompleteDelegator extends TempletonDelegator {
     super(appConf);
   }
 
-  public CompleteBean run(String id)
+  public CompleteBean run(String id, String jobStatus)
     throws CallbackFailedException, IOException {
     if (id == null)
       acceptWithError("No jobid given");
 
     JobState state = null;
+    /* we don't want to cancel the delegation token if we think the callback is going to
+     to be retried, for example, because the job is not complete yet */
+    boolean cancelMetastoreToken = false;
     try {
       state = new JobState(id, Main.getAppConfigInstance());
       if (state.getCompleteStatus() == null)
-        failed("Job not yet complete. jobId=" + id, null);
+        failed("Job not yet complete. jobId=" + id + " Status from JT=" + jobStatus, null);
 
       Long notified = state.getNotifiedTime();
-      if (notified != null)
+      if (notified != null) {
+        cancelMetastoreToken = true;
         return acceptWithError("Callback already run for jobId=" + id +
                 " at " + new Date(notified));
+      }
 
       String callback = state.getCallback();
-      if (callback == null)
+      if (callback == null) {
+        cancelMetastoreToken = true;
         return new CompleteBean("No callback registered");
-
+      }
+      
       try {
         doCallback(state.getId(), callback);
+        cancelMetastoreToken = true;
       } catch (Exception e) {
         failed("Callback failed " + callback + " for " + id, e);
       }
@@ -80,8 +93,26 @@ public class CompleteDelegator extends TempletonDelegator {
       state.setNotifiedTime(System.currentTimeMillis());
       return new CompleteBean("Callback sent");
     } finally {
-      if (state != null)
-        state.close();
+      state.close();
+      HiveMetaStoreClient client = null;
+      try {
+        if(cancelMetastoreToken) {
+          String metastoreTokenStrForm =
+                  DelegationTokenCache.getStringFormTokenCache().getDelegationToken(id);
+          if(metastoreTokenStrForm != null) {
+            client = HCatUtil.getHiveClient(new HiveConf());
+            client.cancelDelegationToken(metastoreTokenStrForm);
+            LOG.debug("Cancelled token for jobId=" + id + " status from JT=" + jobStatus);
+            DelegationTokenCache.getStringFormTokenCache().removeDelegationToken(id);
+          }
+        }
+      }
+      catch(Exception ex) {
+        LOG.warn("Failed to cancel metastore delegation token for jobId=" + id, ex);
+      }
+      finally {
+        HCatUtil.closeHiveClientQuietly(client);
+      }
     }
   }
 
@@ -90,8 +121,7 @@ public class CompleteDelegator extends TempletonDelegator {
    * finished.  If the url has the string $jobId in it, it will be
    * replaced with the completed jobid.
    */
-  public static void doCallback(String jobid, String url)
-    throws MalformedURLException, IOException {
+  public static void doCallback(String jobid, String url) throws IOException {
     if (url.contains("$jobId"))
       url = url.replace("$jobId", jobid);
     TempletonUtils.fetchUrl(new URL(url));
