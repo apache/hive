@@ -32,6 +32,7 @@ import java.util.Stack;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
@@ -58,6 +59,7 @@ import org.apache.hadoop.hive.ql.lib.Rule;
 import org.apache.hadoop.hive.ql.lib.RuleRegExp;
 import org.apache.hadoop.hive.ql.lib.TaskGraphWalker;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
@@ -117,7 +119,6 @@ import org.apache.hadoop.hive.ql.udf.UDFToLong;
 import org.apache.hadoop.hive.ql.udf.UDFToShort;
 import org.apache.hadoop.hive.ql.udf.UDFToString;
 import org.apache.hadoop.hive.ql.udf.UDFTrim;
-import org.apache.hadoop.hive.ql.udf.UDFUnhex;
 import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -583,7 +584,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return supportedDataTypes.contains(type.toLowerCase());
   }
 
-  private VectorizationContext getVectorizationContext(Operator<? extends OperatorDesc> op,
+  private VectorizationContext getVectorizationContext(TableScanOperator op,
       PhysicalContext pctx) {
     RowResolver rr = pctx.getParseContext().getOpParseCtx().get(op).getRowResolver();
 
@@ -592,6 +593,12 @@ public class Vectorizer implements PhysicalPlanResolver {
     for (ColumnInfo c : rr.getColumnInfos()) {
       if (!c.getIsVirtualCol()) {
         cmap.put(c.getInternalName(), columnCount++);
+      }
+    }
+    Table tab = pctx.getParseContext().getTopToTable().get(op);
+    if (tab.getPartitionKeys() != null) {
+      for (FieldSchema fs : tab.getPartitionKeys()) {
+        cmap.put(fs.getName(), columnCount++);
       }
     }
     return new VectorizationContext(cmap, columnCount);

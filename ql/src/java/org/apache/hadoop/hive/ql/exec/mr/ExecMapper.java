@@ -33,6 +33,7 @@ import org.apache.hadoop.hive.ql.exec.MapOperator;
 import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -97,7 +98,11 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       execContext.setJc(jc);
       // create map and fetch operators
       MapWork mrwork = Utilities.getMapWork(job);
-      mo = new MapOperator();
+      if (mrwork.getVectorMode()) {
+        mo = new VectorMapOperator();
+      } else {
+        mo = new MapOperator();
+      }
       mo.setConf(mrwork);
       // initialize map operator
       mo.setChildren(job);
