@@ -1,0 +1,169 @@
+PREHOOK: query: -- Test string functions in vectorized mode to verify end-to-end functionality.
+
+explain 
+select 
+   substr(cstring1, 1, 2)
+  ,substr(cstring1, 2)
+  ,lower(cstring1)
+  ,upper(cstring1)
+  ,ucase(cstring1)
+  ,length(cstring1)
+  ,trim(cstring1)
+  ,ltrim(cstring1)
+  ,rtrim(cstring1)
+  ,concat(cstring1, cstring2)
+  ,concat('>', cstring1)
+  ,concat(cstring1, '<')
+  ,concat(substr(cstring1, 1, 2), substr(cstring2, 1, 2))
+from alltypesorc
+-- Limit the number of rows of output to a reasonable amount.
+where cbigint % 237 = 0
+-- Test function use in the WHERE clause.
+and length(substr(cstring1, 1, 2)) <= 2
+and cstring1 like '%'
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Test string functions in vectorized mode to verify end-to-end functionality.
+
+explain 
+select 
+   substr(cstring1, 1, 2)
+  ,substr(cstring1, 2)
+  ,lower(cstring1)
+  ,upper(cstring1)
+  ,ucase(cstring1)
+  ,length(cstring1)
+  ,trim(cstring1)
+  ,ltrim(cstring1)
+  ,rtrim(cstring1)
+  ,concat(cstring1, cstring2)
+  ,concat('>', cstring1)
+  ,concat(cstring1, '<')
+  ,concat(substr(cstring1, 1, 2), substr(cstring2, 1, 2))
+from alltypesorc
+-- Limit the number of rows of output to a reasonable amount.
+where cbigint % 237 = 0
+-- Test function use in the WHERE clause.
+and length(substr(cstring1, 1, 2)) <= 2
+and cstring1 like '%'
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypesorc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION substr (TOK_TABLE_OR_COL cstring1) 1 2)) (TOK_SELEXPR (TOK_FUNCTION substr (TOK_TABLE_OR_COL cstring1) 2)) (TOK_SELEXPR (TOK_FUNCTION lower (TOK_TABLE_OR_COL cstring1))) (TOK_SELEXPR (TOK_FUNCTION upper (TOK_TABLE_OR_COL cstring1))) (TOK_SELEXPR (TOK_FUNCTION ucase (TOK_TABLE_OR_COL cstring1))) (TOK_SELEXPR (TOK_FUNCTION length (TOK_TABLE_OR_COL cstring1))) (TOK_SELEXPR (TOK_FUNCTION trim (TOK_TABLE_OR_COL cstring1))) (TOK_SELEXPR (TOK_FUNCTION ltrim (TOK_TABLE_OR_COL cstring1))) (TOK_SELEXPR (TOK_FUNCTION rtrim (TOK_TABLE_OR_COL cstring1))) (TOK_SELEXPR (TOK_FUNCTION concat (TOK_TABLE_OR_COL cstring1) (TOK_TABLE_OR_COL cstring2))) (TOK_SELEXPR (TOK_FUNCTION concat '>' (TOK_TABLE_OR_COL cstring1))) (TOK_SELEXPR (TOK_FUNCTION concat (TOK_TABLE_OR_COL cstring1) '<')) (TOK_SELEXPR (TOK_FUNCTION concat (TOK_FUNCTION substr (TOK_TABLE_OR_COL cstring1) 1 2) (TOK_FUNCTION substr (TOK_TABLE_OR_COL cstring2) 1 2)))) (TOK_WHERE (and (and (= (% (TOK_TABLE_OR_COL cbigint) 237) 0) (<= (TOK_FUNCTION length (TOK_FUNCTION substr (TOK_TABLE_OR_COL cstring1) 1 2)) 2)) (like (TOK_TABLE_OR_COL cstring1) '%')))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        alltypesorc 
+          TableScan
+            alias: alltypesorc
+            Filter Operator
+              predicate:
+                  expr: ((((cbigint % 237) = 0) and (length(substr(cstring1, 1, 2)) <= 2)) and (cstring1 like '%'))
+                  type: boolean
+              Vectorized execution: true
+              Select Operator
+                expressions:
+                      expr: substr(cstring1, 1, 2)
+                      type: string
+                      expr: substr(cstring1, 2)
+                      type: string
+                      expr: lower(cstring1)
+                      type: string
+                      expr: upper(cstring1)
+                      type: string
+                      expr: upper(cstring1)
+                      type: string
+                      expr: length(cstring1)
+                      type: int
+                      expr: trim(cstring1)
+                      type: string
+                      expr: ltrim(cstring1)
+                      type: string
+                      expr: rtrim(cstring1)
+                      type: string
+                      expr: concat(cstring1, cstring2)
+                      type: string
+                      expr: concat('>', cstring1)
+                      type: string
+                      expr: concat(cstring1, '<')
+                      type: string
+                      expr: concat(substr(cstring1, 1, 2), substr(cstring2, 1, 2))
+                      type: string
+                outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12
+                Vectorized execution: true
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  Vectorized execution: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: select 
+   substr(cstring1, 1, 2)
+  ,substr(cstring1, 2)
+  ,lower(cstring1)
+  ,upper(cstring1)
+  ,ucase(cstring1)
+  ,length(cstring1)
+  ,trim(cstring1)
+  ,ltrim(cstring1)
+  ,rtrim(cstring1)
+  ,concat(cstring1, cstring2)
+  ,concat('>', cstring1)
+  ,concat(cstring1, '<')
+  ,concat(substr(cstring1, 1, 2), substr(cstring2, 1, 2))
+from alltypesorc
+-- Limit the number of rows of output to a reasonable amount.
+where cbigint % 237 = 0
+-- Test function use in the WHERE clause.
+and length(substr(cstring1, 1, 2)) <= 2
+and cstring1 like '%'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: select 
+   substr(cstring1, 1, 2)
+  ,substr(cstring1, 2)
+  ,lower(cstring1)
+  ,upper(cstring1)
+  ,ucase(cstring1)
+  ,length(cstring1)
+  ,trim(cstring1)
+  ,ltrim(cstring1)
+  ,rtrim(cstring1)
+  ,concat(cstring1, cstring2)
+  ,concat('>', cstring1)
+  ,concat(cstring1, '<')
+  ,concat(substr(cstring1, 1, 2), substr(cstring2, 1, 2))
+from alltypesorc
+-- Limit the number of rows of output to a reasonable amount.
+where cbigint % 237 = 0
+-- Test function use in the WHERE clause.
+and length(substr(cstring1, 1, 2)) <= 2
+and cstring1 like '%'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+Vi	iqXS6s88N1yr14lj7I	viqxs6s88n1yr14lj7i	VIQXS6S88N1YR14LJ7I	VIQXS6S88N1YR14LJ7I	19	ViqXS6s88N1yr14lj7I	ViqXS6s88N1yr14lj7I	ViqXS6s88N1yr14lj7I	ViqXS6s88N1yr14lj7ITh638b67kn8o	>ViqXS6s88N1yr14lj7I	ViqXS6s88N1yr14lj7I<	ViTh
+R4	4e7Gf	r4e7gf	R4E7GF	R4E7GF	6	R4e7Gf	R4e7Gf	R4e7Gf	R4e7GfPTBh56R3LS7L13sB4	>R4e7Gf	R4e7Gf<	R4PT
+3g	gubGh4J18TV	3gubgh4j18tv	3GUBGH4J18TV	3GUBGH4J18TV	12	3gubGh4J18TV	3gubGh4J18TV	3gubGh4J18TV	3gubGh4J18TVpJucOe4dN4R5XURJW8	>3gubGh4J18TV	3gubGh4J18TV<	3gpJ
+EP	PCRx8ObNv51rOF	epcrx8obnv51rof	EPCRX8OBNV51ROF	EPCRX8OBNV51ROF	15	EPCRx8ObNv51rOF	EPCRx8ObNv51rOF	EPCRx8ObNv51rOF	EPCRx8ObNv51rOFysaU2Xm11f715L0I35rut2	>EPCRx8ObNv51rOF	EPCRx8ObNv51rOF<	EPys
+8e	eiti74gc5m01xyMKSjUIx	8eiti74gc5m01xymksjuix	8EITI74GC5M01XYMKSJUIX	8EITI74GC5M01XYMKSJUIX	22	8eiti74gc5m01xyMKSjUIx	8eiti74gc5m01xyMKSjUIx	8eiti74gc5m01xyMKSjUIx	8eiti74gc5m01xyMKSjUIxI8x87Fm1J4hE8g4CWNo	>8eiti74gc5m01xyMKSjUIx	8eiti74gc5m01xyMKSjUIx<	8eI8
+m0	0hbv1516qk8	m0hbv1516qk8	M0HBV1516QK8	M0HBV1516QK8	12	m0hbv1516qk8	m0hbv1516qk8	m0hbv1516qk8	m0hbv1516qk8N8i3sxF54C4x5h0	>m0hbv1516qk8	m0hbv1516qk8<	m0N8
+uT	T5e2	ut5e2	UT5E2	UT5E2	5	uT5e2	uT5e2	uT5e2	uT5e2SJp57VKYsDtA2r1Xb2H	>uT5e2	uT5e2<	uTSJ
+l3	35W8012cM77E227Ts	l35w8012cm77e227ts	L35W8012CM77E227TS	L35W8012CM77E227TS	18	l35W8012cM77E227Ts	l35W8012cM77E227Ts	l35W8012cM77E227Ts	l35W8012cM77E227TsMH38bE	>l35W8012cM77E227Ts	l35W8012cM77E227Ts<	l3MH
+o1	1uPH5EflET5ts1RjSB74	o1uph5eflet5ts1rjsb74	O1UPH5EFLET5TS1RJSB74	O1UPH5EFLET5TS1RJSB74	21	o1uPH5EflET5ts1RjSB74	o1uPH5EflET5ts1RjSB74	o1uPH5EflET5ts1RjSB74	o1uPH5EflET5ts1RjSB74a1U3DRA788kW7I0UTF203	>o1uPH5EflET5ts1RjSB74	o1uPH5EflET5ts1RjSB74<	o1a1
+Ix	x8dXlDbC3S44L1FQJqpwa	ix8dxldbc3s44l1fqjqpwa	IX8DXLDBC3S44L1FQJQPWA	IX8DXLDBC3S44L1FQJQPWA	22	Ix8dXlDbC3S44L1FQJqpwa	Ix8dXlDbC3S44L1FQJqpwa	Ix8dXlDbC3S44L1FQJqpwa	Ix8dXlDbC3S44L1FQJqpwa8wQR4X28CiccBVXGqPL7	>Ix8dXlDbC3S44L1FQJqpwa	Ix8dXlDbC3S44L1FQJqpwa<	Ix8w
+OT	Tn0Dj2HiBi05Baq1Xt	otn0dj2hibi05baq1xt	OTN0DJ2HIBI05BAQ1XT	OTN0DJ2HIBI05BAQ1XT	19	OTn0Dj2HiBi05Baq1Xt	OTn0Dj2HiBi05Baq1Xt	OTn0Dj2HiBi05Baq1Xt	OTn0Dj2HiBi05Baq1XtAoQ21J1lQ27kYSmfA	>OTn0Dj2HiBi05Baq1Xt	OTn0Dj2HiBi05Baq1Xt<	OTAo
+a0	0P3sn1ihxJCsTLDb	a0p3sn1ihxjcstldb	A0P3SN1IHXJCSTLDB	A0P3SN1IHXJCSTLDB	17	a0P3sn1ihxJCsTLDb	a0P3sn1ihxJCsTLDb	a0P3sn1ihxJCsTLDb	a0P3sn1ihxJCsTLDbfT4Jlw38k8kmd6Dt1wv	>a0P3sn1ihxJCsTLDb	a0P3sn1ihxJCsTLDb<	a0fT
