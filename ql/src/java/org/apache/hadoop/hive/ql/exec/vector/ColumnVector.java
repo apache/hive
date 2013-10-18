@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.io.Writable;
 
 /**
@@ -26,33 +28,33 @@ import org.apache.hadoop.io.Writable;
  * repeats, i.e. has all values the same, so only the first
  * one is set. This is used to accelerate query performance
  * by handling a whole vector in O(1) time when applicable.
- * 
+ *
  * The fields are public by design since this is a performance-critical
  * structure that is used in the inner loop of query execution.
  */
 public abstract class ColumnVector {
-  
+
   /*
-   * If hasNulls is true, then this array contains true if the value 
-   * is null, otherwise false. The array is always allocated, so a batch can be re-used 
+   * If hasNulls is true, then this array contains true if the value
+   * is null, otherwise false. The array is always allocated, so a batch can be re-used
    * later and nulls added.
    */
-  public boolean[] isNull; 
-  
+  public boolean[] isNull;
+
   // If the whole column vector has no nulls, this is true, otherwise false.
   public boolean noNulls;
-  
-  /* 
-   * True if same value repeats for whole column vector. 
+
+  /*
+   * True if same value repeats for whole column vector.
    * If so, vector[0] holds the repeating value.
    */
-  public boolean isRepeating; 
+  public boolean isRepeating;
   public abstract Writable getWritableObject(int index);
 
   /**
    * Constructor for super-class ColumnVector. This is not called directly,
    * but used to initialize inherited fields.
-   * 
+   *
    * @param len Vector length
    */
   public ColumnVector(int len) {
@@ -60,5 +62,19 @@ public abstract class ColumnVector {
     noNulls = true;
     isRepeating = false;
   }
-}
+
+  /**
+     * Resets the column to default state
+     *  - fills the isNull array with false
+     *  - sets noNulls to true
+     *  - sets isRepeating to false
+     */
+    public void reset() {
+      if (false == noNulls) {
+        Arrays.fill(isNull, false);
+      }
+      noNulls = true;
+      isRepeating = false;
+    }
+  }
 

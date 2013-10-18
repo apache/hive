@@ -262,7 +262,7 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
     // compute keys and values as StandardObjects
     ArrayList<Object> key = JoinUtil.computeKeys(row, joinKeys[alias],
         joinKeysObjectInspectors[alias]);
-    ArrayList<Object> value = getFilteredValue(alias, row);
+    List<Object> value = getFilteredValue(alias, row);
 
 
     //have we reached a new key group?
