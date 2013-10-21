@@ -70,7 +70,7 @@ public class TestVectorizer {
     ExprNodeColumnDesc colExprA = new ExprNodeColumnDesc(Integer.class, "col1", "T", false);
     ExprNodeColumnDesc colExprB = new ExprNodeColumnDesc(Integer.class, "col2", "T", false);
     children.add(colExprA);
-    exprNodeDesc.setChildExprs(children);
+    exprNodeDesc.setChildren(children);
 
     ArrayList<String> outputColumnNames = new ArrayList<String>();
     outputColumnNames.add("_col0");

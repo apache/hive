@@ -103,23 +103,23 @@ public class TestVectorizationContext {
 
     children1.add(minusExpr);
     children1.add(multiplyExpr);
-    sumExpr.setChildExprs(children1);
+    sumExpr.setChildren(children1);
 
     children2.add(sum2Expr);
     children2.add(col3Expr);
-    minusExpr.setChildExprs(children2);
+    minusExpr.setChildren(children2);
 
     children3.add(col1Expr);
     children3.add(col2Expr);
-    sum2Expr.setChildExprs(children3);
+    sum2Expr.setChildren(children3);
 
     children4.add(col4Expr);
     children4.add(modExpr);
-    multiplyExpr.setChildExprs(children4);
+    multiplyExpr.setChildren(children4);
 
     children5.add(col5Expr);
     children5.add(col6Expr);
-    modExpr.setChildExprs(children5);
+    modExpr.setChildren(children5);
 
     Map<String, Integer> columnMap = new HashMap<String, Integer>();
     columnMap.put("col1", 1);
@@ -165,7 +165,7 @@ public class TestVectorizationContext {
     List<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>(2);
     children1.add(col1Expr);
     children1.add(constDesc);
-    exprDesc.setChildExprs(children1);
+    exprDesc.setChildren(children1);
 
     Map<String, Integer> columnMap = new HashMap<String, Integer>();
     columnMap.put("col1", 1);
@@ -190,7 +190,7 @@ public class TestVectorizationContext {
     List<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>(2);
     children1.add(col1Expr);
     children1.add(col2Expr);
-    exprDesc.setChildExprs(children1);
+    exprDesc.setChildren(children1);
 
     Map<String, Integer> columnMap = new HashMap<String, Integer>();
     columnMap.put("col1", 1);
@@ -216,7 +216,7 @@ public class TestVectorizationContext {
     List<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>(2);
     children1.add(col1Expr);
     children1.add(constDesc);
-    exprDesc.setChildExprs(children1);
+    exprDesc.setChildren(children1);
 
     Map<String, Integer> columnMap = new HashMap<String, Integer>();
     columnMap.put("col1", 0);
@@ -240,7 +240,7 @@ public class TestVectorizationContext {
     List<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>(2);
     children1.add(col1Expr);
     children1.add(constDesc);
-    greaterExprDesc.setChildExprs(children1);
+    greaterExprDesc.setChildren(children1);
 
     ExprNodeColumnDesc col2Expr = new ExprNodeColumnDesc(Float.class, "col2", "table", false);
     ExprNodeConstantDesc const2Desc = new ExprNodeConstantDesc(new Float(1.0));
@@ -251,7 +251,7 @@ public class TestVectorizationContext {
     List<ExprNodeDesc> children2 = new ArrayList<ExprNodeDesc>(2);
     children2.add(col2Expr);
     children2.add(const2Desc);
-    lessExprDesc.setChildExprs(children2);
+    lessExprDesc.setChildren(children2);
 
     GenericUDFOPAnd andUdf = new GenericUDFOPAnd();
     ExprNodeGenericFuncDesc andExprDesc = new ExprNodeGenericFuncDesc();
@@ -259,7 +259,7 @@ public class TestVectorizationContext {
     List<ExprNodeDesc> children3 = new ArrayList<ExprNodeDesc>(2);
     children3.add(greaterExprDesc);
     children3.add(lessExprDesc);
-    andExprDesc.setChildExprs(children3);
+    andExprDesc.setChildren(children3);
 
     Map<String, Integer> columnMap = new HashMap<String, Integer>();
     columnMap.put("col1", 0);
@@ -280,7 +280,7 @@ public class TestVectorizationContext {
     List<ExprNodeDesc> children4 = new ArrayList<ExprNodeDesc>(2);
     children4.add(greaterExprDesc);
     children4.add(lessExprDesc);
-    orExprDesc.setChildExprs(children4);
+    orExprDesc.setChildren(children4);
 
 
     VectorExpression veOr = vc.getVectorExpression(orExprDesc);
@@ -302,7 +302,7 @@ public class TestVectorizationContext {
     children.add(constDesc);
     children.add(colDesc);
 
-    scalarMinusConstant.setChildExprs(children);
+    scalarMinusConstant.setChildren(children);
 
     Map<String, Integer> columnMap = new HashMap<String, Integer>();
     columnMap.put("a", 0);
@@ -324,7 +324,7 @@ public class TestVectorizationContext {
     List<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>(2);
     children1.add(col1Expr);
     children1.add(constDesc);
-    exprDesc.setChildExprs(children1);
+    exprDesc.setChildren(children1);
 
     Map<String, Integer> columnMap = new HashMap<String, Integer>();
     columnMap.put("col1", 1);
@@ -346,7 +346,7 @@ public class TestVectorizationContext {
     negExprDesc.setGenericUDF(gudf);
     List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(1);
     children.add(col1Expr);
-    negExprDesc.setChildExprs(children);
+    negExprDesc.setChildren(children);
     Map<String, Integer> columnMap = new HashMap<String, Integer>();
     columnMap.put("col1", 1);
     VectorizationContext vc = new VectorizationContext(columnMap, 1);
@@ -365,7 +365,7 @@ public class TestVectorizationContext {
     negExprDesc.setGenericUDF(gudf);
     List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(1);
     children.add(col1Expr);
-    negExprDesc.setChildExprs(children);
+    negExprDesc.setChildren(children);
     Map<String, Integer> columnMap = new HashMap<String, Integer>();
     columnMap.put("col1", 1);
     VectorizationContext vc = new VectorizationContext(columnMap, 1);
@@ -390,7 +390,7 @@ public class TestVectorizationContext {
     children.add(constDesc);
     children.add(colDesc);
 
-    scalarGreaterColExpr.setChildExprs(children);
+    scalarGreaterColExpr.setChildren(children);
 
     Map<String, Integer> columnMap = new HashMap<String, Integer>();
     columnMap.put("a", 0);
@@ -415,7 +415,7 @@ public class TestVectorizationContext {
     children.add(colDesc);
     children.add(constDesc);
 
-    colEqualScalar.setChildExprs(children);
+    colEqualScalar.setChildren(children);
 
     Map<String, Integer> columnMap = new HashMap<String, Integer>();
     columnMap.put("a", 0);

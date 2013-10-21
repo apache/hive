@@ -4322,7 +4322,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (exprNode instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) exprNode;
-      for (ExprNodeDesc childExpr : funcDesc.getChildExprs()) {
+      for (ExprNodeDesc childExpr : funcDesc.getChildren()) {
         extractColumns(colNamesExprs, childExpr);
       }
     }

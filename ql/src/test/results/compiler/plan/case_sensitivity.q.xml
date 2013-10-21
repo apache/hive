@@ -772,7 +772,7 @@
                    <object id="ExprNodeFieldDesc0" class="org.apache.hadoop.hive.ql.plan.ExprNodeFieldDesc"> 
                     <void property="desc"> 
                      <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
-                      <void property="childExprs"> 
+                      <void property="children"> 
                        <object class="java.util.ArrayList"> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
@@ -856,7 +856,7 @@
                   <void method="put"> 
                    <string>_col0</string> 
                    <object id="ExprNodeGenericFuncDesc0" class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
-                    <void property="childExprs"> 
+                    <void property="children"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
@@ -989,11 +989,11 @@
              <object class="org.apache.hadoop.hive.ql.plan.FilterDesc"> 
               <void property="predicate"> 
                <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
-                <void property="childExprs"> 
+                <void property="children"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
-                    <void property="childExprs"> 
+                    <void property="children"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 

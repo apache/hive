@@ -68,7 +68,7 @@ public class ExprNodeDescUtils {
       }
       // duplicate function with possibily replaced children
       ExprNodeGenericFuncDesc clone = (ExprNodeGenericFuncDesc) func.clone();
-      clone.setChildExprs(children);
+      clone.setChildren(children);
       return clone;
     }
     // constant or null, just return it
@@ -94,7 +94,7 @@ public class ExprNodeDescUtils {
   /**
    * bind two predicates by AND op
    */
-  public static ExprNodeDesc mergePredicates(ExprNodeDesc prev, ExprNodeDesc next) {
+  public static ExprNodeGenericFuncDesc mergePredicates(ExprNodeDesc prev, ExprNodeDesc next) {
     List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(2);
     children.add(prev);
     children.add(next);
@@ -196,7 +196,7 @@ public class ExprNodeDescUtils {
     if (source instanceof ExprNodeGenericFuncDesc) {
       // all children expression should be resolved
       ExprNodeGenericFuncDesc function = (ExprNodeGenericFuncDesc) source.clone();
-      function.setChildExprs(backtrack(function.getChildren(), current, terminal));
+      function.setChildren(backtrack(function.getChildren(), current, terminal));
       return function;
     }
     if (source instanceof ExprNodeColumnDesc) {
