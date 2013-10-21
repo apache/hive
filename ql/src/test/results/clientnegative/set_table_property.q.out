@@ -4,4 +4,3 @@ POSTHOOK: query: create table testTable(col1 int, col2 int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@testTable
 FAILED: ParseException line 4:45 missing StringLiteral at ')' near '<EOF>'
-
