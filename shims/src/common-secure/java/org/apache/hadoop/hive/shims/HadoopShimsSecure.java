@@ -622,4 +622,7 @@ public abstract class HadoopShimsSecure implements HadoopShims {
   @Override
   abstract public boolean moveToAppropriateTrash(FileSystem fs, Path path, Configuration conf)
           throws IOException;
+
+  @Override
+  abstract public FileSystem createProxyFileSystem(FileSystem fs, URI uri);
 }

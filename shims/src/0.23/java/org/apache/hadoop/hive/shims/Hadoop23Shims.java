@@ -24,6 +24,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
 import java.util.Map;
+import java.net.URI;
+import java.io.FileNotFoundException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
@@ -33,6 +35,9 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
+import org.apache.hadoop.fs.ProxyFileSystem;
+import org.apache.hadoop.fs.RemoteIterator;
+import org.apache.hadoop.fs.LocatedFileStatus;
 import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
@@ -407,4 +412,40 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     }
   }
 
+  class ProxyFileSystem23 extends ProxyFileSystem {
+    public ProxyFileSystem23(FileSystem fs) {
+      super(fs);
+    }
+    public ProxyFileSystem23(FileSystem fs, URI uri) {
+      super(fs, uri);
+    }
+
+    @Override
+    public RemoteIterator<LocatedFileStatus> listLocatedStatus(final Path f)
+      throws FileNotFoundException, IOException {
+      return new RemoteIterator<LocatedFileStatus>() {
+        private RemoteIterator<LocatedFileStatus> stats =
+            ProxyFileSystem23.super.listLocatedStatus(
+                ProxyFileSystem23.super.swizzleParamPath(f));
+
+        @Override
+        public boolean hasNext() throws IOException {
+          return stats.hasNext();
+        }
+
+        @Override
+        public LocatedFileStatus next() throws IOException {
+          LocatedFileStatus result = stats.next();
+          return new LocatedFileStatus(
+              ProxyFileSystem23.super.swizzleFileStatus(result, false),
+              result.getBlockLocations());
+        }
+      };
+    }
+  }
+
+  @Override
+  public FileSystem createProxyFileSystem(FileSystem fs, URI uri) {
+    return new ProxyFileSystem23(fs, uri);
+  }
 }

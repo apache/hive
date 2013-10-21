@@ -45,7 +45,7 @@ public class ProxyFileSystem extends FilterFileSystem {
 
 
 
-  private Path swizzleParamPath(Path p) {
+  protected Path swizzleParamPath(Path p) {
     String pathUriString = p.toUri().toString();
     URI newPathUri = URI.create(pathUriString);
     return new Path (realScheme, realAuthority, newPathUri.getPath());
@@ -57,7 +57,7 @@ public class ProxyFileSystem extends FilterFileSystem {
     return new Path (myScheme, myAuthority, newPathUri.getPath());
   }
 
-  private FileStatus swizzleFileStatus(FileStatus orig, boolean isParam) {
+  protected FileStatus swizzleFileStatus(FileStatus orig, boolean isParam) {
     FileStatus ret =
       new FileStatus(orig.getLen(), orig.isDir(), orig.getReplication(),
                      orig.getBlockSize(), orig.getModificationTime(),
