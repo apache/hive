@@ -321,7 +321,7 @@ public class VectorizationContext {
         ve = getCustomUDFExpression(expr);
       } else {
         ve = getVectorExpression(expr.getGenericUDF(),
-            expr.getChildExprs());
+            expr.getChildren());
       }
     } else if (exprDesc instanceof ExprNodeConstantDesc) {
       ve = getConstantVectorExpression((ExprNodeConstantDesc) exprDesc);
@@ -376,7 +376,7 @@ public class VectorizationContext {
 
   // Return the type string of the first argument (argument 0).
   public static String arg0Type(ExprNodeGenericFuncDesc expr) {
-    String type = expr.getChildExprs().get(0).getTypeString();
+    String type = expr.getChildren().get(0).getTypeString();
     return type;
   }
 
@@ -1109,10 +1109,10 @@ public class VectorizationContext {
       throws HiveException {
 
     //GenericUDFBridge udfBridge = (GenericUDFBridge) expr.getGenericUDF();
-    List<ExprNodeDesc> childExprList = expr.getChildExprs();
+    List<ExprNodeDesc> childExprList = expr.getChildren();
 
     // argument descriptors
-    VectorUDFArgDesc[] argDescs = new VectorUDFArgDesc[expr.getChildExprs().size()];
+    VectorUDFArgDesc[] argDescs = new VectorUDFArgDesc[expr.getChildren().size()];
     for (int i = 0; i < argDescs.length; i++) {
       argDescs[i] = new VectorUDFArgDesc();
     }

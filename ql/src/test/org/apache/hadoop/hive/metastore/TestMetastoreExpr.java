@@ -25,7 +25,6 @@ import java.util.Stack;
 
 import junit.framework.TestCase;
 
-
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.Database;
@@ -40,11 +39,11 @@ import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -53,7 +52,7 @@ import org.apache.thrift.TException;
 
 import com.google.common.collect.Lists;
 
-/** 
+/**
  * Tests hive metastore expression support. This should be moved in metastore module
  * as soon as we are able to use ql from metastore server (requires splitting metastore
  * server and client).
@@ -165,7 +164,7 @@ public class TestMetastoreExpr extends TestCase {
   }
 
   public void checkExpr(int numParts,
-      String dbName, String tblName, ExprNodeDesc expr) throws Exception {
+      String dbName, String tblName, ExprNodeGenericFuncDesc expr) throws Exception {
     List<Partition> parts = new ArrayList<Partition>();
     client.listPartitionsByExpr(
         dbName, tblName, Utilities.serializeExpressionToKryo(expr), null, (short)-1, parts);
@@ -180,9 +179,11 @@ public class TestMetastoreExpr extends TestCase {
       this.tblName = tblName;
     }
 
-    public ExprNodeDesc build() throws Exception {
-      if (stack.size() != 1) throw new Exception("Bad test: " + stack.size());
-      return stack.pop();
+    public ExprNodeGenericFuncDesc build() throws Exception {
+      if (stack.size() != 1) {
+        throw new Exception("Bad test: " + stack.size());
+      }
+      return (ExprNodeGenericFuncDesc)stack.pop();
     }
 
     public ExprBuilder pred(String name, int args) {

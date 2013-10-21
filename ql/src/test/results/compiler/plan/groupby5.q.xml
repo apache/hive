@@ -414,7 +414,7 @@
                        <object class="java.util.ArrayList"> 
                         <void method="add"> 
                          <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
-                          <void property="childExprs"> 
+                          <void property="children"> 
                            <object class="java.util.ArrayList"> 
                             <void method="add"> 
                              <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 

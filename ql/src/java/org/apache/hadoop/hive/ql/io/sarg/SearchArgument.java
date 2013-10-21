@@ -18,9 +18,9 @@
 
 package org.apache.hadoop.hive.ql.io.sarg;
 
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-
 import java.util.List;
+
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 
 /**
  * Primary interface for <a href="http://en.wikipedia.org/wiki/Sargable">
@@ -170,7 +170,7 @@ public interface SearchArgument {
    * in interfaces. *DOH*
    */
   public static class Factory {
-    public SearchArgument create(ExprNodeDesc expression) {
+    public SearchArgument create(ExprNodeGenericFuncDesc expression) {
       return new SearchArgumentImpl(expression);
     }
 

@@ -176,7 +176,7 @@ public final class RewriteCanApplyProcFactory {
          canApplyCtx.getGbKeyNameList().addAll(expr.getCols());
        }else if(expr instanceof ExprNodeGenericFuncDesc){
          ExprNodeGenericFuncDesc funcExpr = (ExprNodeGenericFuncDesc)expr;
-         List<ExprNodeDesc> childExprs = funcExpr.getChildExprs();
+         List<ExprNodeDesc> childExprs = funcExpr.getChildren();
          for (ExprNodeDesc childExpr : childExprs) {
            if(childExpr instanceof ExprNodeColumnDesc){
              canApplyCtx.getGbKeyNameList().addAll(expr.getCols());

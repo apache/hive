@@ -18,17 +18,19 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.sql.Date;
-import java.sql.Timestamp;
-
 import static org.apache.hadoop.hive.ql.exec.Utilities.getFileExtension;
+
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 import junit.framework.TestCase;
 
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFFromUtcTimestamp;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.JobConf;
 
@@ -64,10 +66,12 @@ public class TestUtilities extends TestCase {
   public void testSerializeTimestamp() {
     Timestamp ts = new Timestamp(1374554702000L);
     ts.setNanos(123456);
-    ExprNodeConstantDesc constant = new ExprNodeConstantDesc(
-        TypeInfoFactory.timestampTypeInfo, ts);
-    String serialized = Utilities.serializeExpression(constant);
-    ExprNodeDesc deserialized = Utilities.deserializeExpression(serialized, new Configuration());
-    assertEquals(constant.getExprString(), deserialized.getExprString());
+    ExprNodeConstantDesc constant = new ExprNodeConstantDesc(ts);
+    List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(1);
+    children.add(constant);
+    ExprNodeGenericFuncDesc desc = new ExprNodeGenericFuncDesc(TypeInfoFactory.timestampTypeInfo,
+      new GenericUDFFromUtcTimestamp(), children);
+    assertEquals(desc.getExprString(), Utilities.deserializeExpression(
+      Utilities.serializeExpression(desc)).getExprString());
   }
 }
