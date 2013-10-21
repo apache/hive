@@ -2292,17 +2292,24 @@ public final class Utilities {
    * @return
    */
   public static String getHashedStatsPrefix(String statsPrefix, int maxPrefixLength) {
-    String ret = statsPrefix;
+    String ret = appendPathSeparator(statsPrefix);
     if (maxPrefixLength >= 0 && statsPrefix.length() > maxPrefixLength) {
       try {
         MessageDigest digester = MessageDigest.getInstance("MD5");
-        digester.update(statsPrefix.getBytes());
+        digester.update(ret.getBytes());
         ret = new String(digester.digest()) + Path.SEPARATOR;
       } catch (NoSuchAlgorithmException e) {
         throw new RuntimeException(e);
       }
     }
     return ret;
+  }
+
+  private static String appendPathSeparator(String path) {
+    if (!path.endsWith(Path.SEPARATOR)) {
+      path = path + Path.SEPARATOR;
+    }
+    return path;
   }
 
   public static void setColumnNameList(JobConf jobConf, Operator op) {

@@ -705,7 +705,7 @@
                        <object idref="ListBucketingCtx0"/> 
                       </void> 
                       <void property="maxStatsKeyPrefixLength"> 
-                       <int>200</int> 
+                       <int>150</int> 
                       </void> 
                       <void property="numFiles"> 
                        <int>1</int> 

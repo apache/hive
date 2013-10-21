@@ -1114,7 +1114,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       }
     }
     String keyPrefix = Utilities.getHashedStatsPrefix(
-        conf.getStatsAggPrefix() + spSpec + newFspKey + Path.SEPARATOR,
+        conf.getStatsAggPrefix() + spSpec + newFspKey,
         conf.getMaxStatsKeyPrefixLength());
     key = keyPrefix + storedAsDirPostFix + taskID;
     return key;

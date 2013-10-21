@@ -299,7 +299,7 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
         // In case of a partition, the key for temp storage is
         // "tableName + partitionSpecs + taskID"
         String keyPrefix = Utilities.getHashedStatsPrefix(
-            conf.getStatsAggPrefix() + pspecs + Path.SEPARATOR, conf.getMaxStatsKeyPrefixLength());
+            conf.getStatsAggPrefix() + pspecs, conf.getMaxStatsKeyPrefixLength());
         key = keyPrefix + taskID;
       }
       for(String statType : stats.get(pspecs).getStoredStats()) {
