@@ -82,4 +82,4 @@ FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-["a","b","c"]	["one","two","three"]	[]	["5","4","1","2"]
+["a","b","c"]	["one","two","three",""]	[]	["5","4","1","2",""]
