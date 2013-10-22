@@ -82,8 +82,15 @@ public class TUGIContainingTransport extends TFilterTransport {
 
       // UGI information is not available at connection setup time, it will be set later
       // via set_ugi() rpc.
-      transMap.putIfAbsent(trans, new TUGIContainingTransport(trans));
-      return transMap.get(trans);
+      TUGIContainingTransport tugiTrans = transMap.get(trans);
+      if (tugiTrans == null) {
+        tugiTrans = new TUGIContainingTransport(trans);
+        TUGIContainingTransport prev = transMap.putIfAbsent(trans, tugiTrans);
+        if (prev != null) {
+          return prev
+        }
+      }
+      return tugiTrans;
     }
   }
 }
