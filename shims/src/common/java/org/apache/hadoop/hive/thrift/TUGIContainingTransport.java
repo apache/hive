@@ -87,7 +87,7 @@ public class TUGIContainingTransport extends TFilterTransport {
         tugiTrans = new TUGIContainingTransport(trans);
         TUGIContainingTransport prev = transMap.putIfAbsent(trans, tugiTrans);
         if (prev != null) {
-          return prev
+          return prev;
         }
       }
       return tugiTrans;
