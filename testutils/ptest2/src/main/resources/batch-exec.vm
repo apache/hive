@@ -62,7 +62,7 @@ then
   	testModule=./
   fi
   pushd $testModule
-  timeout 2h mvn -o test -Dmaven.repo.local=$localDir/$instanceName/maven \
+  timeout 2h mvn -B -o test -Dmaven.repo.local=$localDir/$instanceName/maven \
     $mavenArgs $mavenTestArgs $testArguments 1>$logDir/maven-test.txt 2>&1 </dev/null &
 #[[
   pid=$!
