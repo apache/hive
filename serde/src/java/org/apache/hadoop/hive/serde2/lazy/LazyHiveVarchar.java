@@ -23,7 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive.LazyHiveVarcharObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -39,11 +39,7 @@ public class LazyHiveVarchar extends
 
   public LazyHiveVarchar(LazyHiveVarcharObjectInspector oi) {
     super(oi);
-    VarcharTypeParams typeParams = (VarcharTypeParams)oi.getTypeParams();
-    if (typeParams == null) {
-      throw new RuntimeException("varchar type used without type params");
-    }
-    maxLength = typeParams.getLength();
+    maxLength = ((VarcharTypeInfo)oi.getTypeInfo()).getLength();
     data = new HiveVarcharWritable();
   }
 

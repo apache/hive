@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
@@ -90,38 +91,12 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
     OrcRecordReader(Reader file, Configuration conf,
                     long offset, long length) throws IOException {
-      String serializedPushdown = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
-      String columnNamesString =
-          conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
-      String[] columnNames = null;
-      SearchArgument sarg = null;
       List<OrcProto.Type> types = file.getTypes();
-      if (types.size() == 0) {
-        numColumns = 0;
-      } else {
-        numColumns = types.get(0).getSubtypesCount();
-      }
-      columnNames = new String[types.size()];
-      LOG.info("included column ids = " +
-          conf.get(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR, "null"));
-      LOG.info("included columns names = " +
-          conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR, "null"));
-      boolean[] includeColumn = findIncludedColumns(types, conf);
-      if (serializedPushdown != null && columnNamesString != null) {
-        sarg = SearchArgument.FACTORY.create
-            (Utilities.deserializeExpression(serializedPushdown, conf));
-        LOG.info("ORC pushdown predicate: " + sarg);
-        String[] neededColumnNames = columnNamesString.split(",");
-        int i = 0;
-        for(int columnId: types.get(0).getSubtypesList()) {
-          if (includeColumn == null || includeColumn[columnId]) {
-            columnNames[columnId] = neededColumnNames[i++];
-          }
-        }
-      } else {
-        LOG.info("No ORC pushdown predicate");
-      }
-      this.reader = file.rows(offset, length, includeColumn, sarg, columnNames);
+      numColumns = (types.size() == 0) ? 0 : types.get(0).getSubtypesCount();
+      boolean[] includedColumns = findIncludedColumns(types, conf);
+      String[] columnNames = getIncludedColumnNames(types, includedColumns, conf);
+      SearchArgument sarg = createSarg(types, conf);
+      this.reader = file.rows(offset, length, includedColumns, sarg, columnNames);
       this.offset = offset;
       this.length = length;
     }
@@ -187,14 +162,45 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     }
   }
 
+  public static SearchArgument createSarg(List<OrcProto.Type> types, Configuration conf) {
+    String serializedPushdown = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
+    if (serializedPushdown == null
+        || conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR) == null) {
+      LOG.info("No ORC pushdown predicate");
+      return null;
+    }
+    SearchArgument sarg = SearchArgument.FACTORY.create
+        (Utilities.deserializeExpression(serializedPushdown));
+    LOG.info("ORC pushdown predicate: " + sarg);
+    return sarg;
+  }
+
+  public static String[] getIncludedColumnNames(
+      List<OrcProto.Type> types, boolean[] includedColumns, Configuration conf) {
+    String columnNamesString = conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
+    LOG.info("included columns names = " + columnNamesString);
+    if (columnNamesString == null || conf.get(TableScanDesc.FILTER_EXPR_CONF_STR) == null) {
+      return null;
+    }
+    String[] neededColumnNames = columnNamesString.split(",");
+    int i = 0;
+    String[] columnNames = new String[types.size()];
+    for(int columnId: types.get(0).getSubtypesList()) {
+      if (includedColumns == null || includedColumns[columnId]) {
+        columnNames[columnId] = neededColumnNames[i++];
+      }
+    }
+    return columnNames;
+  }
+
   /**
    * Take the configuration and figure out which columns we need to include.
    * @param types the types of the file
    * @param conf the configuration
    * @return true for each column that should be included
    */
-  static boolean[] findIncludedColumns(List<OrcProto.Type> types,
-                                               Configuration conf) {
+  public static boolean[] findIncludedColumns(List<OrcProto.Type> types, Configuration conf) {
+    LOG.info("included column ids = " + conf.get(ColumnProjectionUtils.READ_COLUMN_IDS_CONF_STR));
     if (ColumnProjectionUtils.isReadAllColumns(conf)) {
       return null;
     } else {

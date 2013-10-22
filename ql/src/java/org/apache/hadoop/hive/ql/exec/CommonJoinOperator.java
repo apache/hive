@@ -183,7 +183,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     return joinOutputObjectInspector;
   }
 
-  Configuration hconf;
+  protected Configuration hconf;
 
   @Override
   @SuppressWarnings("unchecked")
@@ -407,9 +407,9 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
   //
   // for MapJoin, filter tag is pre-calculated in MapredLocalTask and stored with value.
   // when reading the hashtable, MapJoinObjectValue calculates alias filter and provide it to join
-  protected ArrayList<Object> getFilteredValue(byte alias, Object row) throws HiveException {
+  protected List<Object> getFilteredValue(byte alias, Object row) throws HiveException {
     boolean hasFilter = hasFilter(alias);
-    ArrayList<Object> nr = JoinUtil.computeValues(row, joinValues[alias],
+    List<Object> nr = JoinUtil.computeValues(row, joinValues[alias],
         joinValuesObjectInspectors[alias], hasFilter);
     if (hasFilter) {
       short filterTag = JoinUtil.isFiltered(row, joinFilters[alias],
@@ -434,7 +434,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       }
     }
     if (forward) {
-      forward(forwardCache, null);
+      internalForward(forwardCache, null);
       countAfterReport = 0;
     }
   }
@@ -639,6 +639,10 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     checkAndGenObject();
   }
 
+  protected void internalForward(Object row, ObjectInspector outputOI) throws HiveException {
+    forward(row, outputOI);
+  }
+
   private void genUniqueJoinObject(int aliasNum, int forwardCachePos)
       throws HiveException {
     AbstractRowContainer<List<Object>> alias = storage[order[aliasNum]];
@@ -649,7 +653,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
         forwardCache[p++] = row.get(j);
       }
       if (aliasNum == numAliases - 1) {
-        forward(forwardCache, outputObjInspector);
+        internalForward(forwardCache, outputObjInspector);
         countAfterReport = 0;
       } else {
         genUniqueJoinObject(aliasNum + 1, p);
@@ -668,7 +672,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       }
     }
 
-    forward(forwardCache, outputObjInspector);
+    internalForward(forwardCache, outputObjInspector);
     countAfterReport = 0;
   }
 

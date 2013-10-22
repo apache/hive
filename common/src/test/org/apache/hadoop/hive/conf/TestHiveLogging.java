@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.conf;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 
 import junit.framework.TestCase;
@@ -25,6 +26,7 @@ import junit.framework.TestCase;
 import org.apache.hadoop.hive.common.LogUtils;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hive.common.util.HiveTestUtils;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 
 /**
  * TestHiveLogging
@@ -33,7 +35,7 @@ import org.apache.hive.common.util.HiveTestUtils;
  * Loads configuration files located in common/src/test/resources.
  */
 public class TestHiveLogging extends TestCase {
-  private Runtime runTime;
+  private final Runtime runTime;
   private Process process;
 
   public TestHiveLogging() {
@@ -67,8 +69,9 @@ public class TestHiveLogging extends TestCase {
       new InputStreamReader(process.getInputStream()));
     String line = "";
     while((line = buf.readLine()) != null) {
-      if (line.equals(logFile))
+      if (line.equals(logFile)) {
         logCreated = true;
+      }
     }
     assertEquals(true, logCreated);
   }

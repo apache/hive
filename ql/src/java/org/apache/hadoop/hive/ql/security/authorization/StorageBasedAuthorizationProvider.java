@@ -32,11 +32,13 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStore.HMSHandler;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.metadata.AuthorizationException;
+import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -62,19 +64,30 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     implements HiveMetastoreAuthorizationProvider {
 
   private Warehouse wh;
+  private boolean isRunFromMetaStore = false;
 
   /**
    * Make sure that the warehouse variable is set up properly.
    * @throws MetaException if unable to instantiate
    */
-  private void initWh() throws MetaException {
+  private void initWh() throws MetaException, HiveException {
     if (wh == null){
-      if(!hive_db.isRunFromMetaStore()){
+      if(!isRunFromMetaStore){
+        // Note, although HiveProxy has a method that allows us to check if we're being
+        // called from the metastore or from the client, we don't have an initialized HiveProxy
+        // till we explicitly initialize it as being from the client side. So, we have a
+        // chicken-and-egg problem. So, we now track whether or not we're running from client-side
+        // in the SBAP itself.
+        hive_db = new HiveProxy(Hive.get(new HiveConf(getConf(), StorageBasedAuthorizationProvider.class)));
         this.wh = new Warehouse(getConf());
+        if (this.wh == null){
+          // If wh is still null after just having initialized it, bail out - something's very wrong.
+          throw new IllegalStateException("Unable to initialize Warehouse from clientside.");
+        }
       }else{
         // not good if we reach here, this was initialized at setMetaStoreHandler() time.
         // this means handler.getWh() is returning null. Error out.
-        throw new IllegalStateException("Unitialized Warehouse from MetastoreHandler");
+        throw new IllegalStateException("Uninitialized Warehouse from MetastoreHandler");
       }
     }
   }
@@ -97,8 +110,22 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     // that are user-level do not make sense from the context of storage-permission
     // based auth, denying seems to be more canonical here.
 
-    throw new AuthorizationException(StorageBasedAuthorizationProvider.class.getName() +
-        " does not allow user-level authorization");
+    // Update to previous comment: there does seem to be one place that uses this
+    // and that is to authorize "show databases" in hcat commandline, which is used
+    // by webhcat. And user-level auth seems to be a resonable default in this case.
+    // The now deprecated HdfsAuthorizationProvider in hcatalog approached this in
+    // another way, and that was to see if the user had said above appropriate requested
+    // privileges for the hive root warehouse directory. That seems to be the best
+    // mapping for user level privileges to storage. Using that strategy here.
+
+    Path root = null;
+    try {
+      initWh();
+      root = wh.getWhRoot();
+      authorize(root, readRequiredPriv, writeRequiredPriv);
+    } catch (MetaException ex) {
+      throw hiveException(ex);
+    }
   }
 
   @Override
@@ -141,8 +168,10 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
       throws HiveException, AuthorizationException {
 
     // Partition path can be null in the case of a new create partition - in this case,
-    // we try to default to checking the permissions of the parent table
-    if (part.getLocation() == null) {
+    // we try to default to checking the permissions of the parent table.
+    // Partition itself can also be null, in cases where this gets called as a generic
+    // catch-all call in cases like those with CTAS onto an unpartitioned table (see HIVE-1887)
+    if ((part == null) || (part.getLocation() == null)) {
       authorize(table, readRequiredPriv, writeRequiredPriv);
     } else {
       authorize(part.getPartitionPath(), readRequiredPriv, writeRequiredPriv);
@@ -156,14 +185,18 @@ public class StorageBasedAuthorizationProvider extends HiveAuthorizationProvider
     // In a simple storage-based auth, we have no information about columns
     // living in different files, so we do simple partition-auth and ignore
     // the columns parameter.
-
-    authorize(part.getTable(), part, readRequiredPriv, writeRequiredPriv);
+    if ((part != null) && (part.getTable() != null)) {
+      authorize(part.getTable(), part, readRequiredPriv, writeRequiredPriv);
+    } else {
+      authorize(table, part, readRequiredPriv, writeRequiredPriv);
+    }
   }
 
   @Override
   public void setMetaStoreHandler(HMSHandler handler) {
     hive_db.setHandler(handler);
     this.wh = handler.getWh();
+    this.isRunFromMetaStore = true;
   }
 
   /**

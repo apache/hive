@@ -348,7 +348,7 @@ public class ExpressionTree {
       int partitionColumnIndex = getPartColIndexForFilter(table, filterBuilder);
       if (filterBuilder.hasError()) return;
 
-      String valueAsString = getFilterPushdownParam(table, partitionColumnIndex, filterBuilder);
+      String valueAsString = getJdoFilterPushdownParam(table, partitionColumnIndex, filterBuilder);
       if (filterBuilder.hasError()) return;
 
       String paramName = PARAM_PREFIX + params.size();
@@ -394,22 +394,10 @@ public class ExpressionTree {
      * @param operator operator
      * @return true iff filter pushdown for this operator can be done for integral types.
      */
-    private static boolean doesOperatorSupportIntegral(Operator operator) {
-      // TODO: for SQL-based filtering, this could be amended if we added casts.
+    public boolean canJdoUseStringsWithIntegral() {
       return (operator == Operator.EQUALS)
           || (operator == Operator.NOTEQUALS)
           || (operator == Operator.NOTEQUALS2);
-    }
-
-    /**
-     * @param type type
-     * @return true iff type is an integral type.
-     */
-    private static boolean isIntegralType(String type) {
-      return type.equals(serdeConstants.TINYINT_TYPE_NAME)
-          || type.equals(serdeConstants.SMALLINT_TYPE_NAME)
-          || type.equals(serdeConstants.INT_TYPE_NAME)
-          || type.equals(serdeConstants.BIGINT_TYPE_NAME);
     }
 
     /**
@@ -440,21 +428,20 @@ public class ExpressionTree {
     }
 
     /**
-     * Validates and gets the query parameter for filter pushdown based on the column
+     * Validates and gets the query parameter for JDO filter pushdown based on the column
      * and the constant stored in this node.
-     * In future this may become different for SQL and JDOQL filter pushdown.
      * @param table The table.
      * @param partColIndex The index of the column to check.
      * @param filterBuilder filter builder used to report error, if any.
      * @return The parameter string.
      */
-    public String getFilterPushdownParam(
+    private String getJdoFilterPushdownParam(
         Table table, int partColIndex, FilterBuilder filterBuilder) throws MetaException {
-      boolean isIntegralSupported = doesOperatorSupportIntegral(operator);
+      boolean isIntegralSupported = canJdoUseStringsWithIntegral();
       String colType = table.getPartitionKeys().get(partColIndex).getType();
       // Can only support partitions whose types are string, or maybe integers
       if (!colType.equals(serdeConstants.STRING_TYPE_NAME)
-          && (!isIntegralSupported || !isIntegralType(colType))) {
+          && (!isIntegralSupported || !serdeConstants.IntegralTypes.contains(colType))) {
         filterBuilder.setError("Filtering is supported only on partition keys of type " +
             "string" + (isIntegralSupported ? ", or integral types" : ""));
         return null;

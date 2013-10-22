@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
@@ -44,12 +46,10 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.util.ReflectionUtils;
 
 /**
@@ -62,7 +62,7 @@ import org.apache.hadoop.util.ReflectionUtils;
 public class IndexPredicateAnalyzer
 {
   private static final Log LOG = LogFactory.getLog(IndexPredicateAnalyzer.class.getName());
-  private Set<String> udfNames;
+  private final Set<String> udfNames;
 
   private Set<String> allowedColumnNames;
 
@@ -135,7 +135,7 @@ public class IndexPredicateAnalyzer
           }
         }
 
-        return analyzeExpr((ExprNodeDesc) nd, searchConditions, nodeOutputs);
+        return analyzeExpr((ExprNodeGenericFuncDesc) nd, searchConditions, nodeOutputs);
       }
     };
 
@@ -155,13 +155,11 @@ public class IndexPredicateAnalyzer
   }
 
   private ExprNodeDesc analyzeExpr(
-    ExprNodeDesc expr,
+    ExprNodeGenericFuncDesc expr,
     List<IndexSearchCondition> searchConditions,
     Object... nodeOutputs) {
 
-    if (!(expr instanceof ExprNodeGenericFuncDesc)) {
-      return expr;
-    }
+    expr = (ExprNodeGenericFuncDesc) expr;
     if (FunctionRegistry.isOpAnd(expr)) {
       assert(nodeOutputs.length == 2);
       ExprNodeDesc residual1 = (ExprNodeDesc) nodeOutputs[0];
@@ -182,12 +180,11 @@ public class IndexPredicateAnalyzer
     }
 
     String udfName;
-    ExprNodeGenericFuncDesc funcDesc = (ExprNodeGenericFuncDesc) expr;
-    if (funcDesc.getGenericUDF() instanceof GenericUDFBridge) {
-      GenericUDFBridge func = (GenericUDFBridge) funcDesc.getGenericUDF();
+    if (expr.getGenericUDF() instanceof GenericUDFBridge) {
+      GenericUDFBridge func = (GenericUDFBridge) expr.getGenericUDF();
       udfName = func.getUdfName();
     } else {
-      udfName = funcDesc.getGenericUDF().getClass().getName();
+      udfName = expr.getGenericUDF().getClass().getName();
     }
     if (!udfNames.contains(udfName)) {
       return expr;
@@ -255,7 +252,7 @@ public class IndexPredicateAnalyzer
         }
       }
 
-      for (ExprNodeDesc child : func.getChildExprs()) {
+      for (ExprNodeDesc child : func.getChildren()) {
         if (child instanceof ExprNodeConstantDesc) {
           continue;
         } else if (child instanceof ExprNodeGenericFuncDesc) {
@@ -283,12 +280,12 @@ public class IndexPredicateAnalyzer
    *
    * @param searchConditions (typically produced by analyzePredicate)
    *
-   * @return ExprNodeDesc form of search conditions
+   * @return ExprNodeGenericFuncDesc form of search conditions
    */
-  public ExprNodeDesc translateSearchConditions(
+  public ExprNodeGenericFuncDesc translateSearchConditions(
     List<IndexSearchCondition> searchConditions) {
 
-    ExprNodeDesc expr = null;
+    ExprNodeGenericFuncDesc expr = null;
     for (IndexSearchCondition searchCondition : searchConditions) {
       if (expr == null) {
         expr = searchCondition.getComparisonExpr();

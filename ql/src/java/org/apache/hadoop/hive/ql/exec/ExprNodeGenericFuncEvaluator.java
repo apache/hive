@@ -83,10 +83,10 @@ public class ExprNodeGenericFuncEvaluator extends ExprNodeEvaluator<ExprNodeGene
 
   public ExprNodeGenericFuncEvaluator(ExprNodeGenericFuncDesc expr) throws HiveException {
     super(expr);
-    children = new ExprNodeEvaluator[expr.getChildExprs().size()];
+    children = new ExprNodeEvaluator[expr.getChildren().size()];
     isEager = false;
     for (int i = 0; i < children.length; i++) {
-      ExprNodeDesc child = expr.getChildExprs().get(i);
+      ExprNodeDesc child = expr.getChildren().get(i);
       ExprNodeEvaluator nodeEvaluator = ExprNodeEvaluatorFactory.get(child);
       children[i] = nodeEvaluator;
       // If we have eager evaluators anywhere below us, then we are eager too.

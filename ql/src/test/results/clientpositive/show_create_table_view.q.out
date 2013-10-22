@@ -13,7 +13,7 @@ PREHOOK: Input: default@tmp_copy_src
 POSTHOOK: query: SHOW CREATE TABLE tmp_copy_src
 POSTHOOK: type: SHOW_CREATETABLE
 POSTHOOK: Input: default@tmp_copy_src
-CREATE VIEW tmp_copy_src AS SELECT `src`.`key`, `src`.`value` FROM `default`.`src`
+CREATE VIEW `tmp_copy_src` AS SELECT `src`.`key`, `src`.`value` FROM `default`.`src`
 PREHOOK: query: DROP VIEW tmp_copy_src
 PREHOOK: type: DROPVIEW
 PREHOOK: Input: default@tmp_copy_src

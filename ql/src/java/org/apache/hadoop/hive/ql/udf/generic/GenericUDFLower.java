@@ -29,7 +29,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.Pr
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.StringConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 
 /**
  * UDFLower.
@@ -65,11 +66,9 @@ public class GenericUDFLower extends GenericUDF {
       case VARCHAR:
         // return type should have same length as the input.
         returnType = inputType;
-        VarcharTypeParams varcharParams = new VarcharTypeParams();
-        varcharParams.setLength(
+        VarcharTypeInfo typeInfo = TypeInfoFactory.getVarcharTypeInfo(
             GenericUDFUtils.StringHelper.getFixedStringSizeForType(argumentOI));
-        outputOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-            argumentOI);
+        outputOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(typeInfo);
         break;
       default:
         returnType = PrimitiveCategory.STRING;

@@ -1754,7 +1754,7 @@
                        <object idref="ListBucketingCtx0"/> 
                       </void> 
                       <void property="maxStatsKeyPrefixLength"> 
-                       <int>200</int> 
+                       <int>150</int> 
                       </void> 
                       <void property="numFiles"> 
                        <int>1</int> 
@@ -1939,7 +1939,7 @@
              <object class="org.apache.hadoop.hive.ql.plan.FilterDesc"> 
               <void property="predicate"> 
                <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
-                <void property="childExprs"> 
+                <void property="children"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
@@ -2077,7 +2077,7 @@
                        <object idref="ListBucketingCtx1"/> 
                       </void> 
                       <void property="maxStatsKeyPrefixLength"> 
-                       <int>200</int> 
+                       <int>150</int> 
                       </void> 
                       <void property="numFiles"> 
                        <int>1</int> 
@@ -2259,11 +2259,11 @@
              <object class="org.apache.hadoop.hive.ql.plan.FilterDesc"> 
               <void property="predicate"> 
                <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
-                <void property="childExprs"> 
+                <void property="children"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
-                    <void property="childExprs"> 
+                    <void property="children"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
@@ -2300,7 +2300,7 @@
                   </void> 
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
-                    <void property="childExprs"> 
+                    <void property="children"> 
                      <object class="java.util.ArrayList"> 
                       <void method="add"> 
                        <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
@@ -2414,7 +2414,7 @@
                        <object idref="ListBucketingCtx2"/> 
                       </void> 
                       <void property="maxStatsKeyPrefixLength"> 
-                       <int>200</int> 
+                       <int>150</int> 
                       </void> 
                       <void property="numFiles"> 
                        <int>1</int> 
@@ -2593,7 +2593,7 @@
              <object class="org.apache.hadoop.hive.ql.plan.FilterDesc"> 
               <void property="predicate"> 
                <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
-                <void property="childExprs"> 
+                <void property="children"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
                    <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 

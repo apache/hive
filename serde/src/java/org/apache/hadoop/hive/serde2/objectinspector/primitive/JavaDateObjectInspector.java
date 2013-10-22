@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 import java.sql.Date;
 
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
  * A JavaDateObjectInspector inspects a Java Date Object.
@@ -29,7 +30,7 @@ public class JavaDateObjectInspector
     implements SettableDateObjectInspector {
 
   protected JavaDateObjectInspector() {
-    super(PrimitiveObjectInspectorUtils.dateTypeEntry);
+    super(TypeInfoFactory.dateTypeInfo);
   }
 
   public DateWritable getPrimitiveWritableObject(Object o) {

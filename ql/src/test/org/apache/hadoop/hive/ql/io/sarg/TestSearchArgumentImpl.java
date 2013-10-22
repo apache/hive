@@ -18,19 +18,20 @@
 
 package org.apache.hadoop.hive.ql.io.sarg;
 
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.exec.Utilities;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+
+import java.beans.XMLDecoder;
+import java.io.ByteArrayInputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.List;
+
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.ExpressionBuilder;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.ExpressionTree;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.mina.util.IdentityHashSet;
 import org.junit.Test;
-
-import java.util.List;
-
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 
 /**
  * These test the SARG implementation.
@@ -224,6 +225,23 @@ public class TestSearchArgumentImpl {
     }
   }
 
+  private ExprNodeGenericFuncDesc getFuncDesc (String xmlSerialized) {
+    byte[] bytes;
+    try {
+      bytes = xmlSerialized.getBytes("UTF-8");
+    } catch (UnsupportedEncodingException ex) {
+      throw new RuntimeException("UTF-8 support required", ex);
+    }
+
+    ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+    XMLDecoder decoder = new XMLDecoder(bais, null, null);
+
+    try {
+      return (ExprNodeGenericFuncDesc) decoder.readObject();
+    } finally {
+      decoder.close();
+    }
+  }
   @Test
   public void testExpression1() throws Exception {
     // first_name = 'john' or
@@ -237,35 +255,35 @@ public class TestSearchArgumentImpl {
     String exprStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" +
         "<java version=\"1.6.0_31\" class=\"java.beans.XMLDecoder\"> \n" +
         " <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "  <void property=\"childExprs\"> \n" +
+        "  <void property=\"children\"> \n" +
         "   <object class=\"java.util.ArrayList\"> \n" +
         "    <void method=\"add\"> \n" +
         "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"childExprs\"> \n" +
+        "      <void property=\"children\"> \n" +
         "       <object class=\"java.util.ArrayList\"> \n" +
         "        <void method=\"add\"> \n" +
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"childExprs\"> \n" +
+        "          <void property=\"children\"> \n" +
         "           <object class=\"java.util.ArrayList\"> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"childExprs\"> \n" +
+        "              <void property=\"children\"> \n" +
         "               <object class=\"java.util.ArrayList\"> \n" +
         "                <void method=\"add\"> \n" +
         "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                  <void property=\"childExprs\"> \n" +
+        "                  <void property=\"children\"> \n" +
         "                   <object class=\"java.util.ArrayList\"> \n" +
         "                    <void method=\"add\"> \n" +
         "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                      <void property=\"childExprs\"> \n" +
+        "                      <void property=\"children\"> \n" +
         "                       <object class=\"java.util.ArrayList\"> \n" +
         "                        <void method=\"add\"> \n" +
         "                         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                          <void property=\"childExprs\"> \n" +
+        "                          <void property=\"children\"> \n" +
         "                           <object class=\"java.util.ArrayList\"> \n" +
         "                            <void method=\"add\"> \n" +
         "                             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                              <void property=\"childExprs\"> \n" +
+        "                              <void property=\"children\"> \n" +
         "                               <object class=\"java.util.ArrayList\"> \n" +
         "                                <void method=\"add\"> \n" +
         "                                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -310,7 +328,7 @@ public class TestSearchArgumentImpl {
         "                            </void> \n" +
         "                            <void method=\"add\"> \n" +
         "                             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                              <void property=\"childExprs\"> \n" +
+        "                              <void property=\"children\"> \n" +
         "                               <object class=\"java.util.ArrayList\"> \n" +
         "                                <void method=\"add\"> \n" +
         "                                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
@@ -357,7 +375,7 @@ public class TestSearchArgumentImpl {
         "                        </void> \n" +
         "                        <void method=\"add\"> \n" +
         "                         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                          <void property=\"childExprs\"> \n" +
+        "                          <void property=\"children\"> \n" +
         "                           <object class=\"java.util.ArrayList\"> \n" +
         "                            <void method=\"add\"> \n" +
         "                             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
@@ -404,7 +422,7 @@ public class TestSearchArgumentImpl {
         "                    </void> \n" +
         "                    <void method=\"add\"> \n" +
         "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                      <void property=\"childExprs\"> \n" +
+        "                      <void property=\"children\"> \n" +
         "                       <object class=\"java.util.ArrayList\"> \n" +
         "                        <void method=\"add\"> \n" +
         "                         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -455,7 +473,7 @@ public class TestSearchArgumentImpl {
         "                </void> \n" +
         "                <void method=\"add\"> \n" +
         "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                  <void property=\"childExprs\"> \n" +
+        "                  <void property=\"children\"> \n" +
         "                   <object class=\"java.util.ArrayList\"> \n" +
         "                    <void method=\"add\"> \n" +
         "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
@@ -502,7 +520,7 @@ public class TestSearchArgumentImpl {
         "            </void> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"childExprs\"> \n" +
+        "              <void property=\"children\"> \n" +
         "               <object class=\"java.util.ArrayList\"> \n" +
         "                <void method=\"add\"> \n" +
         "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -549,7 +567,7 @@ public class TestSearchArgumentImpl {
         "        </void> \n" +
         "        <void method=\"add\"> \n" +
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"childExprs\"> \n" +
+        "          <void property=\"children\"> \n" +
         "           <object class=\"java.util.ArrayList\"> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
@@ -596,11 +614,11 @@ public class TestSearchArgumentImpl {
         "    </void> \n" +
         "    <void method=\"add\"> \n" +
         "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"childExprs\"> \n" +
+        "      <void property=\"children\"> \n" +
         "       <object class=\"java.util.ArrayList\"> \n" +
         "        <void method=\"add\"> \n" +
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"childExprs\"> \n" +
+        "          <void property=\"children\"> \n" +
         "           <object class=\"java.util.ArrayList\"> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -637,7 +655,7 @@ public class TestSearchArgumentImpl {
         "        </void> \n" +
         "        <void method=\"add\"> \n" +
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"childExprs\"> \n" +
+        "          <void property=\"children\"> \n" +
         "           <object class=\"java.util.ArrayList\"> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -692,10 +710,9 @@ public class TestSearchArgumentImpl {
         "  </void> \n" +
         " </object> \n" +
         "</java> \n";
-    Configuration conf = new Configuration();
-    ExprNodeDesc expr = Utilities.deserializeExpression(exprStr, conf);
+
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgument.FACTORY.create(expr);
+        (SearchArgumentImpl) SearchArgument.FACTORY.create(getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(9, leaves.size());
 
@@ -771,19 +788,19 @@ public class TestSearchArgumentImpl {
     String exprStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" +
         "<java version=\"1.6.0_31\" class=\"java.beans.XMLDecoder\"> \n" +
         " <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "  <void property=\"childExprs\"> \n" +
+        "  <void property=\"children\"> \n" +
         "   <object class=\"java.util.ArrayList\"> \n" +
         "    <void method=\"add\"> \n" +
         "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"childExprs\"> \n" +
+        "      <void property=\"children\"> \n" +
         "       <object class=\"java.util.ArrayList\"> \n" +
         "        <void method=\"add\"> \n" +
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"childExprs\"> \n" +
+        "          <void property=\"children\"> \n" +
         "           <object class=\"java.util.ArrayList\"> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"childExprs\"> \n" +
+        "              <void property=\"children\"> \n" +
         "               <object class=\"java.util.ArrayList\"> \n" +
         "                <void method=\"add\"> \n" +
         "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -818,7 +835,7 @@ public class TestSearchArgumentImpl {
         "            </void> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"childExprs\"> \n" +
+        "              <void property=\"children\"> \n" +
         "               <object class=\"java.util.ArrayList\"> \n" +
         "                <void method=\"add\"> \n" +
         "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -865,7 +882,7 @@ public class TestSearchArgumentImpl {
         "        </void> \n" +
         "        <void method=\"add\"> \n" +
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"childExprs\"> \n" +
+        "          <void property=\"children\"> \n" +
         "           <object class=\"java.util.ArrayList\"> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -916,7 +933,7 @@ public class TestSearchArgumentImpl {
         "    </void> \n" +
         "    <void method=\"add\"> \n" +
         "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"childExprs\"> \n" +
+        "      <void property=\"children\"> \n" +
         "       <object class=\"java.util.ArrayList\"> \n" +
         "        <void method=\"add\"> \n" +
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -961,10 +978,9 @@ public class TestSearchArgumentImpl {
         "  </void> \n" +
         " </object> \n" +
         "</java> \n";
-    Configuration conf = new Configuration();
-    ExprNodeDesc expr = Utilities.deserializeExpression(exprStr, conf);
+
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgument.FACTORY.create(expr);
+        (SearchArgumentImpl) SearchArgument.FACTORY.create(getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(4, leaves.size());
 
@@ -1048,23 +1064,23 @@ public class TestSearchArgumentImpl {
     String exprStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" +
         "<java version=\"1.6.0_31\" class=\"java.beans.XMLDecoder\"> \n" +
         " <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "  <void property=\"childExprs\"> \n" +
+        "  <void property=\"children\"> \n" +
         "   <object class=\"java.util.ArrayList\"> \n" +
         "    <void method=\"add\"> \n" +
         "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"childExprs\"> \n" +
+        "      <void property=\"children\"> \n" +
         "       <object class=\"java.util.ArrayList\"> \n" +
         "        <void method=\"add\"> \n" +
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"childExprs\"> \n" +
+        "          <void property=\"children\"> \n" +
         "           <object class=\"java.util.ArrayList\"> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"childExprs\"> \n" +
+        "              <void property=\"children\"> \n" +
         "               <object class=\"java.util.ArrayList\"> \n" +
         "                <void method=\"add\"> \n" +
         "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                  <void property=\"childExprs\"> \n" +
+        "                  <void property=\"children\"> \n" +
         "                   <object class=\"java.util.ArrayList\"> \n" +
         "                    <void method=\"add\"> \n" +
         "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
@@ -1129,7 +1145,7 @@ public class TestSearchArgumentImpl {
         "                </void> \n" +
         "                <void method=\"add\"> \n" +
         "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                  <void property=\"childExprs\"> \n" +
+        "                  <void property=\"children\"> \n" +
         "                   <object class=\"java.util.ArrayList\"> \n" +
         "                    <void method=\"add\"> \n" +
         "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -1180,11 +1196,11 @@ public class TestSearchArgumentImpl {
         "            </void> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"childExprs\"> \n" +
+        "              <void property=\"children\"> \n" +
         "               <object class=\"java.util.ArrayList\"> \n" +
         "                <void method=\"add\"> \n" +
         "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                  <void property=\"childExprs\"> \n" +
+        "                  <void property=\"children\"> \n" +
         "                   <object class=\"java.util.ArrayList\"> \n" +
         "                    <void method=\"add\"> \n" +
         "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
@@ -1210,9 +1226,6 @@ public class TestSearchArgumentImpl {
         "                  </void> \n" +
         "                  <void property=\"genericUDF\"> \n" +
         "                   <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge\"> \n" +
-        "                    <void property=\"udfClass\"> \n" +
-        "                     <class>org.apache.hadoop.hive.ql.udf.UDFSubstr</class> \n" +
-        "                    </void> \n" +
         "                    <void property=\"udfClassName\"> \n" +
         "                     <string>org.apache.hadoop.hive.ql.udf.UDFSubstr</string> \n" +
         "                    </void> \n" +
@@ -1261,7 +1274,7 @@ public class TestSearchArgumentImpl {
         "        </void> \n" +
         "        <void method=\"add\"> \n" +
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"childExprs\"> \n" +
+        "          <void property=\"children\"> \n" +
         "           <object class=\"java.util.ArrayList\"> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
@@ -1308,11 +1321,11 @@ public class TestSearchArgumentImpl {
         "    </void> \n" +
         "    <void method=\"add\"> \n" +
         "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"childExprs\"> \n" +
+        "      <void property=\"children\"> \n" +
         "       <object class=\"java.util.ArrayList\"> \n" +
         "        <void method=\"add\"> \n" +
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"childExprs\"> \n" +
+        "          <void property=\"children\"> \n" +
         "           <object class=\"java.util.ArrayList\"> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -1341,9 +1354,6 @@ public class TestSearchArgumentImpl {
         "          </void> \n" +
         "          <void property=\"genericUDF\"> \n" +
         "           <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge\"> \n" +
-        "            <void property=\"udfClass\"> \n" +
-        "             <class>org.apache.hadoop.hive.ql.udf.UDFSubstr</class> \n" +
-        "            </void> \n" +
         "            <void property=\"udfClassName\"> \n" +
         "             <string>org.apache.hadoop.hive.ql.udf.UDFSubstr</string> \n" +
         "            </void> \n" +
@@ -1387,10 +1397,9 @@ public class TestSearchArgumentImpl {
         "  </void> \n" +
         " </object> \n" +
         "</java> \n";
-    Configuration conf = new Configuration();
-    ExprNodeDesc expr = Utilities.deserializeExpression(exprStr, conf);
+
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgument.FACTORY.create(expr);
+        (SearchArgumentImpl) SearchArgument.FACTORY.create(getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(3, leaves.size());
 
@@ -1428,15 +1437,15 @@ public class TestSearchArgumentImpl {
     String exprStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" +
         "<java version=\"1.6.0_31\" class=\"java.beans.XMLDecoder\"> \n" +
         " <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "  <void property=\"childExprs\"> \n" +
+        "  <void property=\"children\"> \n" +
         "   <object class=\"java.util.ArrayList\"> \n" +
         "    <void method=\"add\"> \n" +
         "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"childExprs\"> \n" +
+        "      <void property=\"children\"> \n" +
         "       <object class=\"java.util.ArrayList\"> \n" +
         "        <void method=\"add\"> \n" +
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"childExprs\"> \n" +
+        "          <void property=\"children\"> \n" +
         "           <object class=\"java.util.ArrayList\"> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -1481,7 +1490,7 @@ public class TestSearchArgumentImpl {
         "        </void> \n" +
         "        <void method=\"add\"> \n" +
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"childExprs\"> \n" +
+        "          <void property=\"children\"> \n" +
         "           <object class=\"java.util.ArrayList\"> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -1542,7 +1551,7 @@ public class TestSearchArgumentImpl {
         "    </void> \n" +
         "    <void method=\"add\"> \n" +
         "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"childExprs\"> \n" +
+        "      <void property=\"children\"> \n" +
         "       <object class=\"java.util.ArrayList\"> \n" +
         "        <void method=\"add\"> \n" +
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -1598,10 +1607,9 @@ public class TestSearchArgumentImpl {
         " </object> \n" +
         "</java> \n" +
         "\n";
-    Configuration conf = new Configuration();
-    ExprNodeDesc expr = Utilities.deserializeExpression(exprStr, conf);
+
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgument.FACTORY.create(expr);
+        (SearchArgumentImpl) SearchArgument.FACTORY.create(getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(3, leaves.size());
 
@@ -1654,15 +1662,15 @@ public class TestSearchArgumentImpl {
     String exprStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" +
         "<java version=\"1.6.0_31\" class=\"java.beans.XMLDecoder\"> \n" +
         " <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "  <void property=\"childExprs\"> \n" +
+        "  <void property=\"children\"> \n" +
         "   <object class=\"java.util.ArrayList\"> \n" +
         "    <void method=\"add\"> \n" +
         "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"childExprs\"> \n" +
+        "      <void property=\"children\"> \n" +
         "       <object class=\"java.util.ArrayList\"> \n" +
         "        <void method=\"add\"> \n" +
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"childExprs\"> \n" +
+        "          <void property=\"children\"> \n" +
         "           <object class=\"java.util.ArrayList\"> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -1707,7 +1715,7 @@ public class TestSearchArgumentImpl {
         "        </void> \n" +
         "        <void method=\"add\"> \n" +
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"childExprs\"> \n" +
+        "          <void property=\"children\"> \n" +
         "           <object class=\"java.util.ArrayList\"> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
@@ -1721,7 +1729,7 @@ public class TestSearchArgumentImpl {
         "            </void> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"childExprs\"> \n" +
+        "              <void property=\"children\"> \n" +
         "               <object class=\"java.util.ArrayList\"> \n" +
         "                <void method=\"add\"> \n" +
         "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -1754,9 +1762,6 @@ public class TestSearchArgumentImpl {
         "              </void> \n" +
         "              <void property=\"genericUDF\"> \n" +
         "               <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge\"> \n" +
-        "                <void property=\"udfClass\"> \n" +
-        "                 <class>org.apache.hadoop.hive.ql.udf.UDFSubstr</class> \n" +
-        "                </void> \n" +
         "                <void property=\"udfClassName\"> \n" +
         "                 <string>org.apache.hadoop.hive.ql.udf.UDFSubstr</string> \n" +
         "                </void> \n" +
@@ -1792,7 +1797,7 @@ public class TestSearchArgumentImpl {
         "    </void> \n" +
         "    <void method=\"add\"> \n" +
         "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"childExprs\"> \n" +
+        "      <void property=\"children\"> \n" +
         "       <object class=\"java.util.ArrayList\"> \n" +
         "        <void method=\"add\"> \n" +
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
@@ -1857,10 +1862,9 @@ public class TestSearchArgumentImpl {
         "  </void> \n" +
         " </object> \n" +
         "</java> \n";
-    Configuration conf = new Configuration();
-    ExprNodeDesc expr = Utilities.deserializeExpression(exprStr, conf);
+
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgument.FACTORY.create(expr);
+        (SearchArgumentImpl) SearchArgument.FACTORY.create(getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(1, leaves.size());
 
@@ -1884,27 +1888,27 @@ public class TestSearchArgumentImpl {
     String exprStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" +
         "<java version=\"1.6.0_31\" class=\"java.beans.XMLDecoder\"> \n" +
         " <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "  <void property=\"childExprs\"> \n" +
+        "  <void property=\"children\"> \n" +
         "   <object class=\"java.util.ArrayList\"> \n" +
         "    <void method=\"add\"> \n" +
         "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"childExprs\"> \n" +
+        "      <void property=\"children\"> \n" +
         "       <object class=\"java.util.ArrayList\"> \n" +
         "        <void method=\"add\"> \n" +
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"childExprs\"> \n" +
+        "          <void property=\"children\"> \n" +
         "           <object class=\"java.util.ArrayList\"> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"childExprs\"> \n" +
+        "              <void property=\"children\"> \n" +
         "               <object class=\"java.util.ArrayList\"> \n" +
         "                <void method=\"add\"> \n" +
         "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                  <void property=\"childExprs\"> \n" +
+        "                  <void property=\"children\"> \n" +
         "                   <object class=\"java.util.ArrayList\"> \n" +
         "                    <void method=\"add\"> \n" +
         "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                      <void property=\"childExprs\"> \n" +
+        "                      <void property=\"children\"> \n" +
         "                       <object class=\"java.util.ArrayList\"> \n" +
         "                        <void method=\"add\"> \n" +
         "                         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -1949,7 +1953,7 @@ public class TestSearchArgumentImpl {
         "                    </void> \n" +
         "                    <void method=\"add\"> \n" +
         "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                      <void property=\"childExprs\"> \n" +
+        "                      <void property=\"children\"> \n" +
         "                       <object class=\"java.util.ArrayList\"> \n" +
         "                        <void method=\"add\"> \n" +
         "                         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -1996,7 +2000,7 @@ public class TestSearchArgumentImpl {
         "                </void> \n" +
         "                <void method=\"add\"> \n" +
         "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                  <void property=\"childExprs\"> \n" +
+        "                  <void property=\"children\"> \n" +
         "                   <object class=\"java.util.ArrayList\"> \n" +
         "                    <void method=\"add\"> \n" +
         "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -2043,15 +2047,15 @@ public class TestSearchArgumentImpl {
         "            </void> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"childExprs\"> \n" +
+        "              <void property=\"children\"> \n" +
         "               <object class=\"java.util.ArrayList\"> \n" +
         "                <void method=\"add\"> \n" +
         "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                  <void property=\"childExprs\"> \n" +
+        "                  <void property=\"children\"> \n" +
         "                   <object class=\"java.util.ArrayList\"> \n" +
         "                    <void method=\"add\"> \n" +
         "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                      <void property=\"childExprs\"> \n" +
+        "                      <void property=\"children\"> \n" +
         "                       <object class=\"java.util.ArrayList\"> \n" +
         "                        <void method=\"add\"> \n" +
         "                         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -2088,7 +2092,7 @@ public class TestSearchArgumentImpl {
         "                    </void> \n" +
         "                    <void method=\"add\"> \n" +
         "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                      <void property=\"childExprs\"> \n" +
+        "                      <void property=\"children\"> \n" +
         "                       <object class=\"java.util.ArrayList\"> \n" +
         "                        <void method=\"add\"> \n" +
         "                         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -2135,7 +2139,7 @@ public class TestSearchArgumentImpl {
         "                </void> \n" +
         "                <void method=\"add\"> \n" +
         "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "                  <void property=\"childExprs\"> \n" +
+        "                  <void property=\"children\"> \n" +
         "                   <object class=\"java.util.ArrayList\"> \n" +
         "                    <void method=\"add\"> \n" +
         "                     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -2192,11 +2196,11 @@ public class TestSearchArgumentImpl {
         "        </void> \n" +
         "        <void method=\"add\"> \n" +
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"childExprs\"> \n" +
+        "          <void property=\"children\"> \n" +
         "           <object class=\"java.util.ArrayList\"> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"childExprs\"> \n" +
+        "              <void property=\"children\"> \n" +
         "               <object class=\"java.util.ArrayList\"> \n" +
         "                <void method=\"add\"> \n" +
         "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -2233,7 +2237,7 @@ public class TestSearchArgumentImpl {
         "            </void> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "              <void property=\"childExprs\"> \n" +
+        "              <void property=\"children\"> \n" +
         "               <object class=\"java.util.ArrayList\"> \n" +
         "                <void method=\"add\"> \n" +
         "                 <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -2290,7 +2294,7 @@ public class TestSearchArgumentImpl {
         "    </void> \n" +
         "    <void method=\"add\"> \n" +
         "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"childExprs\"> \n" +
+        "      <void property=\"children\"> \n" +
         "       <object class=\"java.util.ArrayList\"> \n" +
         "        <void method=\"add\"> \n" +
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -2335,10 +2339,9 @@ public class TestSearchArgumentImpl {
         "  </void> \n" +
         " </object>\n" +
         "</java>";
-    Configuration conf = new Configuration();
-    ExprNodeDesc expr = Utilities.deserializeExpression(exprStr, conf);
+
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgument.FACTORY.create(expr);
+        (SearchArgumentImpl) SearchArgument.FACTORY.create(getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(9, leaves.size());
 
@@ -2424,7 +2427,7 @@ public class TestSearchArgumentImpl {
     String exprStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" +
         "<java version=\"1.6.0_31\" class=\"java.beans.XMLDecoder\"> \n" +
         " <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "  <void property=\"childExprs\"> \n" +
+        "  <void property=\"children\"> \n" +
         "   <object class=\"java.util.ArrayList\"> \n" +
         "    <void method=\"add\"> \n" +
         "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -2470,10 +2473,9 @@ public class TestSearchArgumentImpl {
         "  </void> \n" +
         " </object> \n" +
         "</java> ";
-    Configuration conf = new Configuration();
-    ExprNodeDesc expr = Utilities.deserializeExpression(exprStr, conf);
+
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgument.FACTORY.create(expr);
+        (SearchArgumentImpl) SearchArgument.FACTORY.create(getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(0, leaves.size());
 
@@ -2487,7 +2489,7 @@ public class TestSearchArgumentImpl {
     String exprStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" +
         "<java version=\"1.6.0_31\" class=\"java.beans.XMLDecoder\"> \n" +
         " <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "  <void property=\"childExprs\"> \n" +
+        "  <void property=\"children\"> \n" +
         "   <object class=\"java.util.ArrayList\"> \n" +
         "    <void method=\"add\"> \n" +
         "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n" +
@@ -2508,11 +2510,11 @@ public class TestSearchArgumentImpl {
         "    </void> \n" +
         "    <void method=\"add\"> \n" +
         "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "      <void property=\"childExprs\"> \n" +
+        "      <void property=\"children\"> \n" +
         "       <object class=\"java.util.ArrayList\"> \n" +
         "        <void method=\"add\"> \n" +
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n" +
-        "          <void property=\"childExprs\"> \n" +
+        "          <void property=\"children\"> \n" +
         "           <object class=\"java.util.ArrayList\"> \n" +
         "            <void method=\"add\"> \n" +
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc\"> \n" +
@@ -2540,9 +2542,6 @@ public class TestSearchArgumentImpl {
         "           <object class=\"org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge\"> \n" +
         "            <void property=\"operator\"> \n" +
         "             <boolean>true</boolean> \n" +
-        "            </void> \n" +
-        "            <void property=\"udfClass\"> \n" +
-        "             <class>org.apache.hadoop.hive.ql.udf.UDFOPPlus</class> \n" +
         "            </void> \n" +
         "            <void property=\"udfClassName\"> \n" +
         "             <string>org.apache.hadoop.hive.ql.udf.UDFOPPlus</string> \n" +
@@ -2574,9 +2573,6 @@ public class TestSearchArgumentImpl {
         "        <void property=\"operator\"> \n" +
         "         <boolean>true</boolean> \n" +
         "        </void> \n" +
-        "        <void property=\"udfClass\"> \n" +
-        "         <class>org.apache.hadoop.hive.ql.udf.UDFOPPlus</class> \n" +
-        "        </void> \n" +
         "        <void property=\"udfClassName\"> \n" +
         "         <string>org.apache.hadoop.hive.ql.udf.UDFOPPlus</string> \n" +
         "        </void> \n" +
@@ -2604,10 +2600,9 @@ public class TestSearchArgumentImpl {
         "  </void> \n" +
         " </object> \n" +
         "</java> ";
-    Configuration conf = new Configuration();
-    ExprNodeDesc expr = Utilities.deserializeExpression(exprStr, conf);
+
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgument.FACTORY.create(expr);
+        (SearchArgumentImpl) SearchArgument.FACTORY.create(getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(0, leaves.size());
 
@@ -2622,11 +2617,11 @@ public class TestSearchArgumentImpl {
     String exprStr = "<?xml version=\"1.0\" encoding=\"UTF-8\"?> \n" +
         "<java version=\"1.6.0_31\" class=\"java.beans.XMLDecoder\"> \n"+
         " <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n"+
-        "  <void property=\"childExprs\"> \n"+
+        "  <void property=\"children\"> \n"+
         "   <object class=\"java.util.ArrayList\"> \n"+
         "    <void method=\"add\"> \n"+
         "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n"+
-        "      <void property=\"childExprs\"> \n"+
+        "      <void property=\"children\"> \n"+
         "       <object class=\"java.util.ArrayList\"> \n"+
         "        <void method=\"add\"> \n"+
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n"+
@@ -2671,11 +2666,11 @@ public class TestSearchArgumentImpl {
         "    </void> \n"+
         "    <void method=\"add\"> \n"+
         "     <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n"+
-        "      <void property=\"childExprs\"> \n"+
+        "      <void property=\"children\"> \n"+
         "       <object class=\"java.util.ArrayList\"> \n"+
         "        <void method=\"add\"> \n"+
         "         <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc\"> \n"+
-        "          <void property=\"childExprs\"> \n"+
+        "          <void property=\"children\"> \n"+
         "           <object class=\"java.util.ArrayList\"> \n"+
         "            <void method=\"add\"> \n"+
         "             <object class=\"org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc\"> \n"+
@@ -2730,10 +2725,9 @@ public class TestSearchArgumentImpl {
         "  </void> \n"+
         " </object> \n"+
         "</java>";
-    Configuration conf = new Configuration();
-    ExprNodeDesc expr = Utilities.deserializeExpression(exprStr, conf);
+
     SearchArgumentImpl sarg =
-        (SearchArgumentImpl) SearchArgument.FACTORY.create(expr);
+        (SearchArgumentImpl) SearchArgument.FACTORY.create(getFuncDesc(exprStr));
     List<PredicateLeaf> leaves = sarg.getLeaves();
     assertEquals(1, leaves.size());
 

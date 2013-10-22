@@ -16,22 +16,9 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.serde2.typeinfo;
+package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-
-/**
- * Interface to encapsulate retrieving of type information, for the object inspector factory.
- *
- */
-public interface PrimitiveTypeSpec {
-  /**
-   * @return  PrimitiveCategory referred to by the PrimitiveTypeSpec
-   */
-  PrimitiveCategory getPrimitiveCategory();
-
-  /**
-   * @return Type params referred to by the PrimitiveTypeSpec
-   */
-  BaseTypeParams getTypeParams();
+// used to set the double precision constant argument to function (e.g. a constant base)
+public interface ISetDoubleArg {
+  void setArg(double d);
 }

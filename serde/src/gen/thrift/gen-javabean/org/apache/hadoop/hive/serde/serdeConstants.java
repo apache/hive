@@ -131,4 +131,12 @@ public class serdeConstants {
     CollectionTypes.add("map");
   }
 
+  public static final Set<String> IntegralTypes = new HashSet<String>();
+  static {
+    IntegralTypes.add("tinyint");
+    IntegralTypes.add("smallint");
+    IntegralTypes.add("int");
+    IntegralTypes.add("bigint");
+  }
+
 }

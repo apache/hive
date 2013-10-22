@@ -121,7 +121,7 @@ function check_pid() {
 
 # Start the webhcat server in the foreground
 function foreground_webhcat() {
-        $start_cmd
+        exec $start_cmd
 }
 
 # Start the webhcat server in the background.  Record the PID for

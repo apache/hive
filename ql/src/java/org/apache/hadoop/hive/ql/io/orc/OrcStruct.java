@@ -32,18 +32,14 @@ import org.apache.hadoop.hive.serde2.objectinspector.SettableListObjectInspector
 import org.apache.hadoop.hive.serde2.objectinspector.SettableMapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SettableStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
-import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.ParameterizedPrimitiveTypeUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.UnionTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 import org.apache.hadoop.io.Writable;
 
 final class OrcStruct implements Writable {
@@ -487,12 +483,6 @@ final class OrcStruct implements Writable {
           case STRING:
             return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
           case VARCHAR:
-            // For varchar we need to retrieve the string length from the TypeInfo.
-            VarcharTypeParams varcharParams = (VarcharTypeParams)
-                ParameterizedPrimitiveTypeUtils.getTypeParamsFromTypeInfo(info);
-            if (varcharParams == null) {
-              throw new IllegalArgumentException("varchar type used without type params");
-            }
             return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
                 (PrimitiveTypeInfo) info);
           case TIMESTAMP:
@@ -546,11 +536,8 @@ final class OrcStruct implements Writable {
           throw new UnsupportedOperationException(
               "Illegal use of varchar type without length in ORC type definition.");
         }
-        VarcharTypeParams varcharParams = new VarcharTypeParams();
-        varcharParams.setLength(type.getMaximumLength());
         return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
-            PrimitiveObjectInspectorUtils.getTypeEntryFromTypeSpecs(
-                PrimitiveCategory.VARCHAR, varcharParams));
+            TypeInfoFactory.getVarcharTypeInfo(type.getMaximumLength()));
       case TIMESTAMP:
         return PrimitiveObjectInspectorFactory.javaTimestampObjectInspector;
       case DATE:

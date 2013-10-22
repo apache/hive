@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -392,15 +391,30 @@ public final class TypeInfoUtils {
       Token t = expect("type");
 
       // Is this a primitive type?
-      PrimitiveTypeEntry primitiveType = PrimitiveObjectInspectorUtils
-          .getTypeEntryFromTypeName(t.text);
-      if (primitiveType != null
-          && !primitiveType.primitiveCategory.equals(PrimitiveCategory.UNKNOWN)) {
-        if (primitiveType.isParameterized()) {
-          primitiveType = primitiveType.addParameters(parseParams());
+      PrimitiveTypeEntry typeEntry =
+          PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(t.text);
+      if (typeEntry != null && typeEntry.primitiveCategory != PrimitiveCategory.UNKNOWN ) {
+        String qualifiedTypeName = typeEntry.typeName;
+        if (typeEntry.primitiveCategory == PrimitiveCategory.VARCHAR) {
+          int length = HiveVarchar.MAX_VARCHAR_LENGTH;
+          
+          String[] params = parseParams();
+          if (params == null || params.length == 0) {
+            throw new RuntimeException( "Varchar type is specified without length: " + typeInfoString);
+          }
+          
+          if (params.length == 1) {
+            length = Integer.valueOf(params[0]);
+            VarcharUtils.validateParameter(length);
+          } else if (params.length > 1) {
+            throw new RuntimeException("Type varchar only takes one parameter, but " +
+                params.length + " is seen");
+          } 
+
+          qualifiedTypeName = BaseCharTypeInfo.getQualifiedName(typeEntry.typeName, length);
         }
-        // If type has qualifiers, the TypeInfo needs them in its type string
-        return TypeInfoFactory.getPrimitiveTypeInfo(primitiveType.toString());
+
+        return TypeInfoFactory.getPrimitiveTypeInfo(qualifiedTypeName);
       }
 
       // Is this a list type?
@@ -749,11 +763,8 @@ public final class TypeInfoUtils {
       case STRING:
         return HiveVarchar.MAX_VARCHAR_LENGTH;
       case VARCHAR:
-        VarcharTypeParams varcharParams = (VarcharTypeParams) typeInfo.getTypeParams();
-        if (varcharParams == null) {
-          throw new RuntimeException("varchar type used without type params");
-        }
-        return varcharParams.getLength();
+        VarcharTypeInfo varcharTypeInfo = (VarcharTypeInfo) typeInfo;
+        return varcharTypeInfo.getLength();
       default:
         return 0;
     }

@@ -20,19 +20,26 @@ package org.apache.hive.ptest.execution.conf;
 
 public class UnitTestBatch implements TestBatch {
 
+  private final String testCasePropertyName;
   private final String testName;
   private final boolean isParallel;
-  public UnitTestBatch(String testName, boolean isParallel) {
+
+  public UnitTestBatch(String testCasePropertyName, String testName, boolean isParallel) {
+    this.testCasePropertyName = testCasePropertyName;
     this.testName = testName;
     this.isParallel = isParallel;
   }
   @Override
   public String getTestArguments() {
-    return String.format("-Dtestcase=%s", testName);
+    return String.format("-D%s=%s", testCasePropertyName, testName);
   }
 
   @Override
   public String getName() {
+    return testName;
+  }
+  @Override
+  public String getTestClass() {
     return testName;
   }
   @Override

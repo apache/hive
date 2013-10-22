@@ -129,6 +129,19 @@ for jar in ${HIVE_LIB_DIR}/*.jar ; do
 	HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$jar
 done
 
+# add the auxillary jars such as serdes
+if [ -d "${HIVE_AUX_JARS_PATH}" ]; then
+  for f in ${HIVE_AUX_JARS_PATH}/*.jar; do
+    if [[ ! -f $f ]]; then
+        continue;
+    fi
+    HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:$f
+  done
+elif [ "${HIVE_AUX_JARS_PATH}" != "" ]; then 
+  HIVE_AUX_JARS_PATH=`echo $HIVE_AUX_JARS_PATH | sed 's/,/:/g'`
+  HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$HIVE_AUX_JARS_PATH
+fi
+
 # Put external jars, hcat jar, and config file in the classpath
 HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:${HCAT_CLASSPATH}:${HCAT_JAR}:${HIVE_CONF_DIR}
 

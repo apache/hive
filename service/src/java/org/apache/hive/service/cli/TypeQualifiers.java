@@ -21,7 +21,8 @@ package org.apache.hive.service.cli;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hadoop.hive.serde2.typeinfo.BaseTypeParams;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hive.service.cli.thrift.TCLIServiceConstants;
 import org.apache.hive.service.cli.thrift.TTypeQualifierValue;
 import org.apache.hive.service.cli.thrift.TTypeQualifiers;
@@ -73,14 +74,14 @@ public class TypeQualifiers {
     return ret;
   }
 
-  public static TypeQualifiers fromBaseTypeParams(BaseTypeParams typeParams) {
-    TypeQualifiers ret = null;
-    if (typeParams != null) {
-      ret = new TypeQualifiers();
-      if (typeParams.hasCharacterMaximumLength()) {
-        ret.setCharacterMaximumLength(typeParams.getCharacterMaximumLength());
-      }
+  public static TypeQualifiers fromTypeInfo(PrimitiveTypeInfo pti) {
+    if (pti instanceof VarcharTypeInfo) {
+      TypeQualifiers ret = new TypeQualifiers();
+      ret.setCharacterMaximumLength(((VarcharTypeInfo)pti).getLength());
+      return ret;
+    } else {
+      return null;
     }
-    return ret;
   }
+
 }

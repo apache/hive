@@ -124,6 +124,7 @@ public class SQLOperation extends ExecuteStatementOperation {
       // TODO explain should use a FetchTask for reading
       for (Task<? extends Serializable> task: driver.getPlan().getRootTasks()) {
         if (task.getClass() == ExplainTask.class) {
+          resultSchema = new TableSchema(mResultSchema);
           setHasResultSet(true);
           break;
         }

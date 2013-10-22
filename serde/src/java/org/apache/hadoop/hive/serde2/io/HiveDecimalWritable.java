@@ -81,7 +81,7 @@ public class HiveDecimalWritable implements WritableComparable<HiveDecimalWritab
   }
 
   public HiveDecimal getHiveDecimal() {
-    return new HiveDecimal(new BigInteger(internalStorage), scale);
+    return HiveDecimal.create(new BigInteger(internalStorage), scale);
   }
 
   @Override

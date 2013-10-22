@@ -29,6 +29,10 @@ SERVICE=""
 HELP=""
 while [ $# -gt 0 ]; do
   case "$1" in
+    --version)
+      shift
+      SERVICE=version
+      ;;
     --service)
       shift
       SERVICE=$1

@@ -55,6 +55,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc;
 import org.apache.hadoop.hive.ql.plan.JoinCondDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
@@ -695,6 +696,9 @@ public final class OpProcFactory {
     }
 
     ExprNodeDesc condn = ExprNodeDescUtils.mergePredicates(preds);
+    if(!(condn instanceof ExprNodeGenericFuncDesc)) {
+      return null;
+    }
 
     if (op instanceof TableScanOperator) {
       boolean pushFilterToStorage;
@@ -704,7 +708,7 @@ public final class OpProcFactory {
       if (pushFilterToStorage) {
         condn = pushFilterToStorageHandler(
           (TableScanOperator) op,
-          condn,
+          (ExprNodeGenericFuncDesc)condn,
           owi,
           hiveConf);
         if (condn == null) {
@@ -769,9 +773,9 @@ public final class OpProcFactory {
    * by Hive as a post-filter, or null if it was possible
    * to push down the entire predicate
    */
-  private static ExprNodeDesc pushFilterToStorageHandler(
+  private static ExprNodeGenericFuncDesc pushFilterToStorageHandler(
     TableScanOperator tableScanOp,
-    ExprNodeDesc originalPredicate,
+    ExprNodeGenericFuncDesc originalPredicate,
     OpWalkerInfo owi,
     HiveConf hiveConf) {
 
@@ -832,7 +836,7 @@ public final class OpProcFactory {
       }
     }
     tableScanDesc.setFilterExpr(decomposed.pushedPredicate);
-    return decomposed.residualPredicate;
+    return (ExprNodeGenericFuncDesc)decomposed.residualPredicate;
   }
 
   public static NodeProcessor getFilterProc() {

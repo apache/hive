@@ -1,0 +1,29 @@
+PREHOOK: query: create table tab_int(a int)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tab_int(a int)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@tab_int
+PREHOOK: query: -- insert some data
+LOAD DATA LOCAL INPATH "../data/files/int.txt" INTO TABLE tab_int
+PREHOOK: type: LOAD
+PREHOOK: Output: default@tab_int
+POSTHOOK: query: -- insert some data
+LOAD DATA LOCAL INPATH "../data/files/int.txt" INTO TABLE tab_int
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@tab_int
+PREHOOK: query: -- compute stats should raise an error since the number of bit vectors > 1024
+select compute_stats(a, 10000) from tab_int
+PREHOOK: type: QUERY
+PREHOOK: Input: default@tab_int
+#### A masked pattern was here ####
+Execution failed with exit status: 2
+Obtaining error information
+
+Task failed!
+Task ID:
+  Stage-1
+
+Logs:
+
+#### A masked pattern was here ####
+FAILED: Execution Error, return code 2 from org.apache.hadoop.hive.ql.exec.mr.MapRedTask

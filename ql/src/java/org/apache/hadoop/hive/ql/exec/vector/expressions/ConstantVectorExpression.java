@@ -42,8 +42,8 @@ public class ConstantVectorExpression extends VectorExpression {
   private byte[] bytesValue = null;
   private String typeString;
 
-  private transient Type type;
-  private transient int bytesValueLength = 0;
+  private Type type;
+  private int bytesValueLength = 0;
 
   public ConstantVectorExpression() {
     super();

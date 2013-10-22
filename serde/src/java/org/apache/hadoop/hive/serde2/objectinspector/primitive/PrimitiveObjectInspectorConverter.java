@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -302,12 +301,7 @@ public class PrimitiveObjectInspectorConverter {
         return null;
       }
 
-      try {
-        return outputOI.set(r, PrimitiveObjectInspectorUtils.getHiveDecimal(input,
-            inputOI));
-      } catch (NumberFormatException e) {
-        return null;
-      }
+      return outputOI.set(r, PrimitiveObjectInspectorUtils.getHiveDecimal(input, inputOI));
     }
   }
 
@@ -452,7 +446,6 @@ public class PrimitiveObjectInspectorConverter {
         SettableHiveVarcharObjectInspector outputOI) {
       this.inputOI = inputOI;
       this.outputOI = outputOI;
-      VarcharTypeParams typeParams = (VarcharTypeParams) outputOI.getTypeParams();
 
       // unfortunately we seem to get instances of varchar object inspectors without params
       // when an old-style UDF has an evaluate() method with varchar arguments.

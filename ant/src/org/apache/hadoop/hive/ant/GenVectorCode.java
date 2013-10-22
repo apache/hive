@@ -117,6 +117,45 @@ public class GenVectorCode extends Task {
       {"ColumnCompareScalar", "GreaterEqual", "long", "double", ">="},
       {"ColumnCompareScalar", "GreaterEqual", "double", "double", ">="},
 
+      {"ColumnCompareScalar", "Equal", "long", "long", "=="},
+      {"ColumnCompareScalar", "Equal", "double", "long", "=="},
+      {"ColumnCompareScalar", "NotEqual", "long", "long", "!="},
+      {"ColumnCompareScalar", "NotEqual", "double", "long", "!="},
+      {"ColumnCompareScalar", "Less", "long", "long", "<"},
+      {"ColumnCompareScalar", "Less", "double", "long", "<"},
+      {"ColumnCompareScalar", "LessEqual", "long", "long", "<="},
+      {"ColumnCompareScalar", "LessEqual", "double", "long", "<="},
+      {"ColumnCompareScalar", "Greater", "long", "long", ">"},
+      {"ColumnCompareScalar", "Greater", "double", "long", ">"},
+      {"ColumnCompareScalar", "GreaterEqual", "long", "long", ">="},
+      {"ColumnCompareScalar", "GreaterEqual", "double", "long", ">="},
+
+      {"ScalarCompareColumn", "Equal", "long", "double", "=="},
+      {"ScalarCompareColumn", "Equal", "double", "double", "=="},
+      {"ScalarCompareColumn", "NotEqual", "long", "double", "!="},
+      {"ScalarCompareColumn", "NotEqual", "double", "double", "!="},
+      {"ScalarCompareColumn", "Less", "long", "double", "<"},
+      {"ScalarCompareColumn", "Less", "double", "double", "<"},
+      {"ScalarCompareColumn", "LessEqual", "long", "double", "<="},
+      {"ScalarCompareColumn", "LessEqual", "double", "double", "<="},
+      {"ScalarCompareColumn", "Greater", "long", "double", ">"},
+      {"ScalarCompareColumn", "Greater", "double", "double", ">"},
+      {"ScalarCompareColumn", "GreaterEqual", "long", "double", ">="},
+      {"ScalarCompareColumn", "GreaterEqual", "double", "double", ">="},
+
+      {"ScalarCompareColumn", "Equal", "long", "long", "=="},
+      {"ScalarCompareColumn", "Equal", "double", "long", "=="},
+      {"ScalarCompareColumn", "NotEqual", "long", "long", "!="},
+      {"ScalarCompareColumn", "NotEqual", "double", "long", "!="},
+      {"ScalarCompareColumn", "Less", "long", "long", "<"},
+      {"ScalarCompareColumn", "Less", "double", "long", "<"},
+      {"ScalarCompareColumn", "LessEqual", "long", "long", "<="},
+      {"ScalarCompareColumn", "LessEqual", "double", "long", "<="},
+      {"ScalarCompareColumn", "Greater", "long", "long", ">"},
+      {"ScalarCompareColumn", "Greater", "double", "long", ">"},
+      {"ScalarCompareColumn", "GreaterEqual", "long", "long", ">="},
+      {"ScalarCompareColumn", "GreaterEqual", "double", "long", ">="},
+
       {"FilterColumnCompareScalar", "Equal", "long", "double", "=="},
       {"FilterColumnCompareScalar", "Equal", "double", "double", "=="},
       {"FilterColumnCompareScalar", "NotEqual", "long", "double", "!="},
@@ -176,6 +215,13 @@ public class GenVectorCode extends Task {
       {"FilterStringColumnCompareScalar", "Greater", ">"},
       {"FilterStringColumnCompareScalar", "GreaterEqual", ">="},
 
+      {"StringColumnCompareScalar", "Equal", "=="},
+      {"StringColumnCompareScalar", "NotEqual", "!="},
+      {"StringColumnCompareScalar", "Less", "<"},
+      {"StringColumnCompareScalar", "LessEqual", "<="},
+      {"StringColumnCompareScalar", "Greater", ">"},
+      {"StringColumnCompareScalar", "GreaterEqual", ">="},
+
       {"FilterStringScalarCompareColumn", "Equal", "=="},
       {"FilterStringScalarCompareColumn", "NotEqual", "!="},
       {"FilterStringScalarCompareColumn", "Less", "<"},
@@ -183,12 +229,26 @@ public class GenVectorCode extends Task {
       {"FilterStringScalarCompareColumn", "Greater", ">"},
       {"FilterStringScalarCompareColumn", "GreaterEqual", ">="},
 
+      {"StringScalarCompareColumn", "Equal", "=="},
+      {"StringScalarCompareColumn", "NotEqual", "!="},
+      {"StringScalarCompareColumn", "Less", "<"},
+      {"StringScalarCompareColumn", "LessEqual", "<="},
+      {"StringScalarCompareColumn", "Greater", ">"},
+      {"StringScalarCompareColumn", "GreaterEqual", ">="},
+
       {"FilterStringColumnCompareColumn", "Equal", "=="},
       {"FilterStringColumnCompareColumn", "NotEqual", "!="},
       {"FilterStringColumnCompareColumn", "Less", "<"},
       {"FilterStringColumnCompareColumn", "LessEqual", "<="},
       {"FilterStringColumnCompareColumn", "Greater", ">"},
       {"FilterStringColumnCompareColumn", "GreaterEqual", ">="},
+
+      {"StringColumnCompareColumn", "Equal", "=="},
+      {"StringColumnCompareColumn", "NotEqual", "!="},
+      {"StringColumnCompareColumn", "Less", "<"},
+      {"StringColumnCompareColumn", "LessEqual", "<="},
+      {"StringColumnCompareColumn", "Greater", ">"},
+      {"StringColumnCompareColumn", "GreaterEqual", ">="},
 
       {"FilterColumnCompareColumn", "Equal", "long", "double", "=="},
       {"FilterColumnCompareColumn", "Equal", "double", "double", "=="},
@@ -216,45 +276,110 @@ public class GenVectorCode extends Task {
         {"FilterColumnCompareColumn", "GreaterEqual", "long", "long", ">="},
         {"FilterColumnCompareColumn", "GreaterEqual", "double", "long", ">="},
 
+      {"ColumnCompareColumn", "Equal", "long", "double", "=="},
+      {"ColumnCompareColumn", "Equal", "double", "double", "=="},
+      {"ColumnCompareColumn", "NotEqual", "long", "double", "!="},
+      {"ColumnCompareColumn", "NotEqual", "double", "double", "!="},
+      {"ColumnCompareColumn", "Less", "long", "double", "<"},
+      {"ColumnCompareColumn", "Less", "double", "double", "<"},
+      {"ColumnCompareColumn", "LessEqual", "long", "double", "<="},
+      {"ColumnCompareColumn", "LessEqual", "double", "double", "<="},
+      {"ColumnCompareColumn", "Greater", "long", "double", ">"},
+      {"ColumnCompareColumn", "Greater", "double", "double", ">"},
+      {"ColumnCompareColumn", "GreaterEqual", "long", "double", ">="},
+      {"ColumnCompareColumn", "GreaterEqual", "double", "double", ">="},
+
+      {"ColumnCompareColumn", "Equal", "long", "long", "=="},
+      {"ColumnCompareColumn", "Equal", "double", "long", "=="},
+      {"ColumnCompareColumn", "NotEqual", "long", "long", "!="},
+      {"ColumnCompareColumn", "NotEqual", "double", "long", "!="},
+      {"ColumnCompareColumn", "Less", "long", "long", "<"},
+      {"ColumnCompareColumn", "Less", "double", "long", "<"},
+      {"ColumnCompareColumn", "LessEqual", "long", "long", "<="},
+      {"ColumnCompareColumn", "LessEqual", "double", "long", "<="},
+      {"ColumnCompareColumn", "Greater", "long", "long", ">"},
+      {"ColumnCompareColumn", "Greater", "double", "long", ">"},
+      {"ColumnCompareColumn", "GreaterEqual", "long", "long", ">="},
+      {"ColumnCompareColumn", "GreaterEqual", "double", "long", ">="},
+
       // template, <ClassNamePrefix>, <ReturnType>, <OperandType>, <FuncName>, <OperandCast>,
-      //   <ResultCast>
-      {"ColumnUnaryFunc", "FuncRound", "double", "double", "MathExpr.round", "", ""},
+      //   <ResultCast>, <Cleanup>
+      {"ColumnUnaryFunc", "FuncRound", "double", "double", "MathExpr.round", "", "", ""},
       // round(longCol) returns a long and is a no-op. So it will not be implemented here.
       // round(Col, N) is a special case and will be implemented separately from this template
-      {"ColumnUnaryFunc", "FuncFloor", "long", "double", "Math.floor", "", "(long)"},
-      // Note: floor(long) is a no-op so code generation should remove it or use
-      // an IdentityExpression
-      {"ColumnUnaryFunc", "FuncCeil", "long", "double", "Math.ceil", "", "(long)"},
-      // Similarly, ceil(long) is a no-op, so not generating code for it here
-      {"ColumnUnaryFunc", "FuncExp", "double", "double", "Math.exp", "", ""},
-      {"ColumnUnaryFunc", "FuncLn", "double", "double", "Math.log", "", ""},
-      {"ColumnUnaryFunc", "FuncLn", "double", "long", "Math.log", "(double)", ""},
-      {"ColumnUnaryFunc", "FuncLog10", "double", "double", "Math.log10", "", ""},
-      {"ColumnUnaryFunc", "FuncLog10", "double", "long", "Math.log10", "(double)", ""},
+      {"ColumnUnaryFunc", "FuncFloor", "long", "double", "Math.floor", "", "(long)", ""},
+      // Floor on an integer argument is a noop, but it is less code to handle it this way.
+      {"ColumnUnaryFunc", "FuncFloor", "long", "long", "Math.floor", "", "(long)", ""},
+      {"ColumnUnaryFunc", "FuncCeil", "long", "double", "Math.ceil", "", "(long)", ""},
+      // Ceil on an integer argument is a noop, but it is less code to handle it this way.
+      {"ColumnUnaryFunc", "FuncCeil", "long", "long", "Math.ceil", "", "(long)", ""},
+      {"ColumnUnaryFunc", "FuncExp", "double", "double", "Math.exp", "", "", ""},
+      {"ColumnUnaryFunc", "FuncExp", "double", "long", "Math.exp", "(double)", "", ""},
+      {"ColumnUnaryFunc", "FuncLn", "double", "double", "Math.log", "", "",
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
+      {"ColumnUnaryFunc", "FuncLn", "double", "long", "Math.log", "(double)", "",
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
+      {"ColumnUnaryFunc", "FuncLog10", "double", "double", "Math.log10", "", "",
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
+      {"ColumnUnaryFunc", "FuncLog10", "double", "long", "Math.log10", "(double)", "",
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
       // The MathExpr class contains helper functions for cases when existing library
       // routines can't be used directly.
-      {"ColumnUnaryFunc", "FuncLog2", "double", "double", "MathExpr.log2", "", ""},
-      {"ColumnUnaryFunc", "FuncLog2", "double", "long", "MathExpr.log2", "(double)", ""},
+      {"ColumnUnaryFunc", "FuncLog2", "double", "double", "MathExpr.log2", "", "",
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
+      {"ColumnUnaryFunc", "FuncLog2", "double", "long", "MathExpr.log2", "(double)", "",
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
       // Log(base, Col) is a special case and will be implemented separately from this template
       // Pow(col, P) and Power(col, P) are special cases implemented separately from this template
-      {"ColumnUnaryFunc", "FuncSqrt", "double", "double", "Math.sqrt", "", ""},
-      {"ColumnUnaryFunc", "FuncSqrt", "double", "long", "Math.sqrt", "(double)", ""},
-      {"ColumnUnaryFunc", "FuncAbs", "double", "double", "Math.abs", "", ""},
-      {"ColumnUnaryFunc", "FuncAbs", "long", "long", "MathExpr.abs", "", ""},
-      {"ColumnUnaryFunc", "FuncSin", "double", "double", "Math.sin", "", ""},
-      {"ColumnUnaryFunc", "FuncASin", "double", "double", "Math.asin", "", ""},
-      {"ColumnUnaryFunc", "FuncCos", "double", "double", "Math.cos", "", ""},
-      {"ColumnUnaryFunc", "FuncACos", "double", "double", "Math.acos", "", ""},
-      {"ColumnUnaryFunc", "FuncTan", "double", "double", "Math.tan", "", ""},
-      {"ColumnUnaryFunc", "FuncATan", "double", "double", "Math.atan", "", ""},
-      {"ColumnUnaryFunc", "FuncDegrees", "double", "double", "Math.toDegrees", "", ""},
-      {"ColumnUnaryFunc", "FuncRadians", "double", "double", "Math.toRadians", "", ""},
-      {"ColumnUnaryFunc", "FuncSign", "double", "double", "MathExpr.sign", "", ""},
-      {"ColumnUnaryFunc", "FuncSign", "double", "long", "MathExpr.sign", "", ""},
+      {"ColumnUnaryFunc", "FuncSqrt", "double", "double", "Math.sqrt", "", "",
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
+      {"ColumnUnaryFunc", "FuncSqrt", "double", "long", "Math.sqrt", "(double)", "",
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
+      {"ColumnUnaryFunc", "FuncAbs", "double", "double", "Math.abs", "", "", ""},
+      {"ColumnUnaryFunc", "FuncAbs", "long", "long", "MathExpr.abs", "", "", ""},
+      {"ColumnUnaryFunc", "FuncSin", "double", "double", "Math.sin", "", "", ""},
+      {"ColumnUnaryFunc", "FuncSin", "double", "long", "Math.sin", "(double)", "", ""},
+      {"ColumnUnaryFunc", "FuncASin", "double", "double", "Math.asin", "", "", ""},
+      {"ColumnUnaryFunc", "FuncASin", "double", "long", "Math.asin", "(double)", "", ""},
+      {"ColumnUnaryFunc", "FuncCos", "double", "double", "Math.cos", "", "", ""},
+      {"ColumnUnaryFunc", "FuncCos", "double", "long", "Math.cos", "(double)", "", ""},
+      {"ColumnUnaryFunc", "FuncACos", "double", "double", "Math.acos", "", "", ""},
+      {"ColumnUnaryFunc", "FuncACos", "double", "long", "Math.acos", "(double)", "", ""},
+      {"ColumnUnaryFunc", "FuncTan", "double", "double", "Math.tan", "", "", ""},
+      {"ColumnUnaryFunc", "FuncTan", "double", "long", "Math.tan", "(double)", "", ""},
+      {"ColumnUnaryFunc", "FuncATan", "double", "double", "Math.atan", "", "", ""},
+      {"ColumnUnaryFunc", "FuncATan", "double", "long", "Math.atan", "(double)", "", ""},
+      {"ColumnUnaryFunc", "FuncDegrees", "double", "double", "Math.toDegrees", "", "", ""},
+      {"ColumnUnaryFunc", "FuncDegrees", "double", "long", "Math.toDegrees", "(double)", "", ""},
+      {"ColumnUnaryFunc", "FuncRadians", "double", "double", "Math.toRadians", "", "", ""},
+      {"ColumnUnaryFunc", "FuncRadians", "double", "long", "Math.toRadians", "(double)", "", ""},
+      {"ColumnUnaryFunc", "FuncSign", "double", "double", "MathExpr.sign", "", "", ""},
+      {"ColumnUnaryFunc", "FuncSign", "double", "long", "MathExpr.sign", "(double)", "", ""},
 
+      // Casts
+      {"ColumnUnaryFunc", "Cast", "long", "double", "", "", "(long)", ""},
+      {"ColumnUnaryFunc", "Cast", "double", "long", "", "", "(double)", ""},
+      {"ColumnUnaryFunc", "CastTimestampToLongVia", "long", "long", "MathExpr.fromTimestamp", "",
+        "", ""},
+      {"ColumnUnaryFunc", "CastTimestampToDoubleVia", "double", "long",
+          "MathExpr.fromTimestampToDouble", "", "", ""},
+      {"ColumnUnaryFunc", "CastDoubleToBooleanVia", "long", "double", "MathExpr.toBool", "",
+        "", ""},
+      {"ColumnUnaryFunc", "CastLongToBooleanVia", "long", "long", "MathExpr.toBool", "",
+        "", ""},
+      {"ColumnUnaryFunc", "CastLongToTimestampVia", "long", "long", "MathExpr.longToTimestamp", "",
+          "", ""},
+      {"ColumnUnaryFunc", "CastDoubleToTimestampVia", "long", "double",
+         "MathExpr.doubleToTimestamp", "", "", ""},
+
+      // Boolean to long is done with an IdentityExpression
+      // Boolean to double is done with standard Long to Double cast
+      // See org.apache.hadoop.hive.ql.exec.vector.expressions for remaining cast VectorExpression
+      // classes
 
         {"ColumnUnaryMinus", "long"},
         {"ColumnUnaryMinus", "double"},
+
 
       // template, <ClassName>, <ValueType>, <OperatorSymbol>, <DescriptionName>, <DescriptionValue>
       {"VectorUDAFMinMax", "VectorUDAFMinLong", "long", "<", "min",
@@ -380,6 +505,8 @@ public class GenVectorCode extends Task {
         generateColumnArithmeticScalar(tdesc);
       } else if (tdesc[0].equals("ColumnCompareScalar")) {
         generateColumnCompareScalar(tdesc);
+      } else if (tdesc[0].equals("ScalarCompareColumn")) {
+        generateScalarCompareColumn(tdesc);
       } else if (tdesc[0].equals("FilterColumnCompareScalar")) {
         generateFilterColumnCompareScalar(tdesc);
       } else if (tdesc[0].equals("FilterScalarCompareColumn")) {
@@ -388,6 +515,8 @@ public class GenVectorCode extends Task {
         generateScalarArithmeticColumn(tdesc);
       } else if (tdesc[0].equals("FilterColumnCompareColumn")) {
         generateFilterColumnCompareColumn(tdesc);
+      } else if (tdesc[0].equals("ColumnCompareColumn")) {
+        generateColumnCompareColumn(tdesc);
       } else if (tdesc[0].equals("ColumnArithmeticColumn")) {
         generateColumnArithmeticColumn(tdesc);
       } else if (tdesc[0].equals("ColumnUnaryMinus")) {
@@ -406,16 +535,33 @@ public class GenVectorCode extends Task {
         generateVectorUDAFVar(tdesc);
       } else if (tdesc[0].equals("FilterStringColumnCompareScalar")) {
         generateFilterStringColumnCompareScalar(tdesc);
+      } else if (tdesc[0].equals("StringColumnCompareScalar")) {
+        generateStringColumnCompareScalar(tdesc);
       } else if (tdesc[0].equals("FilterStringScalarCompareColumn")) {
         generateFilterStringScalarCompareColumn(tdesc);
+      } else if (tdesc[0].equals("StringScalarCompareColumn")) {
+        generateStringScalarCompareColumn(tdesc);
       } else if (tdesc[0].equals("FilterStringColumnCompareColumn")) {
         generateFilterStringColumnCompareColumn(tdesc);
+      } else if (tdesc[0].equals("StringColumnCompareColumn")) {
+        generateStringColumnCompareColumn(tdesc);
       } else {
         continue;
       }
     }
     System.out.println("Generating vector expression test code");
     testCodeGen.generateTestSuites();
+  }
+
+  private void generateColumnCompareColumn(String[] tdesc) throws IOException {
+    //The variables are all same as ColumnCompareScalar except that
+    //this template doesn't need a return type. Pass anything as return type.
+    String operatorName = tdesc[1];
+    String operandType1 = tdesc[2];
+    String operandType2 = tdesc[3];
+    String className = getCamelCaseType(operandType1)
+        + "Col" + operatorName + getCamelCaseType(operandType2) + "Column";
+    generateColumnBinaryOperatorColumn(tdesc, "long", className);
   }
 
   private void generateVectorUDAFMinMax(String[] tdesc) throws Exception {
@@ -523,22 +669,42 @@ public class GenVectorCode extends Task {
     String className = "FilterStringScalar" + operatorName + "StringColumn";
 
     // Template expansion logic is the same for both column-scalar and scalar-column cases.
-    generateFilterStringColumnCompareScalar(tdesc, className);
+    generateStringColumnCompareScalar(tdesc, className);
+  }
+
+  private void generateStringScalarCompareColumn(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "StringScalar" + operatorName + "StringColumn";
+
+    // Template expansion logic is the same for both column-scalar and scalar-column cases.
+    generateStringColumnCompareScalar(tdesc, className);
   }
 
   private void generateFilterStringColumnCompareScalar(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
     String className = "FilterStringCol" + operatorName + "StringScalar";
-    generateFilterStringColumnCompareScalar(tdesc, className);
+    generateStringColumnCompareScalar(tdesc, className);
+  }
+
+  private void generateStringColumnCompareScalar(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "StringCol" + operatorName + "StringScalar";
+    generateStringColumnCompareScalar(tdesc, className);
   }
 
   private void generateFilterStringColumnCompareColumn(String[] tdesc) throws IOException {
     String operatorName = tdesc[1];
     String className = "FilterStringCol" + operatorName + "StringColumn";
-    generateFilterStringColumnCompareScalar(tdesc, className);
+    generateStringColumnCompareScalar(tdesc, className);
   }
 
-  private void generateFilterStringColumnCompareScalar(String[] tdesc, String className)
+  private void generateStringColumnCompareColumn(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String className = "StringCol" + operatorName + "StringColumn";
+    generateStringColumnCompareScalar(tdesc, className);
+  }
+
+  private void generateStringColumnCompareScalar(String[] tdesc, String className)
       throws IOException {
    String operatorSymbol = tdesc[2];
    String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
@@ -595,6 +761,7 @@ public class GenVectorCode extends Task {
     String funcName = tdesc[4];
     String operandCast = tdesc[5];
     String resultCast = tdesc[6];
+    String cleanup = tdesc[7];
     // Expand, and write result
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
@@ -604,6 +771,7 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<FuncName>", funcName);
     templateString = templateString.replaceAll("<OperandCast>", operandCast);
     templateString = templateString.replaceAll("<ResultCast>", resultCast);
+    templateString = templateString.replaceAll("<Cleanup>", cleanup);
     writeFile(outputFile, templateString);
   }
 
@@ -646,6 +814,16 @@ public class GenVectorCode extends Task {
     String className = getCamelCaseType(operandType1)
         + "Col" + operatorName + getCamelCaseType(operandType2) + "Scalar";
     generateColumnBinaryOperatorScalar(tdesc, returnType, className);
+  }
+
+  private void generateScalarCompareColumn(String[] tdesc) throws IOException {
+    String operatorName = tdesc[1];
+    String operandType1 = tdesc[2];
+    String operandType2 = tdesc[3];
+    String returnType = "long";
+    String className = getCamelCaseType(operandType1)
+        + "Scalar" + operatorName + getCamelCaseType(operandType2) + "Column";
+    generateScalarBinaryOperatorColumn(tdesc, returnType, className);
   }
 
   private void generateColumnBinaryOperatorColumn(String[] tdesc, String returnType,

@@ -19,8 +19,8 @@ package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyShort;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
  * A WritableShortObjectInspector inspects a ShortWritable Object.
@@ -30,7 +30,7 @@ public class LazyShortObjectInspector extends
     ShortObjectInspector {
 
   LazyShortObjectInspector() {
-    super(PrimitiveObjectInspectorUtils.shortTypeEntry);
+    super(TypeInfoFactory.shortTypeInfo);
   }
 
   @Override

@@ -22,7 +22,7 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -56,7 +56,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       "Mapside join exceeds available memory. "
           + "Please try removing the mapjoin hint."};
 
-  private transient MapJoinTableContainer[] mapJoinTables;
+  protected transient MapJoinTableContainer[] mapJoinTables;
   private transient MapJoinTableContainerSerDe[] mapJoinTableSerdes;
   private transient boolean hashTblInitedOnce;
   private transient MapJoinKey key;
@@ -86,7 +86,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
   public void generateMapMetaData() throws HiveException, SerDeException {
     // generate the meta data for key
     // index for key is -1
-    
+
     TableDesc keyTableDesc = conf.getKeyTblDesc();
     SerDe keySerializer = (SerDe) ReflectionUtils.newInstance(keyTableDesc.getDeserializerClass(),
         null);
@@ -154,7 +154,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         LOG.info("\tLoad back 1 hashtable file from tmp file uri:" + path);
         ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(
             new FileInputStream(path.toUri().getPath()), 4096));
-        try{ 
+        try{
           mapJoinTables[pos] = mapJoinTableSerdes[pos].load(in);
         } finally {
           in.close();
@@ -180,6 +180,11 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     }
   }
 
+  protected MapJoinKey computeMapJoinKey(Object row, byte alias) throws HiveException {
+    return JoinUtil.computeMapJoinKeys(key, row, joinKeys[alias],
+        joinKeysObjectInspectors[alias]);
+  }
+
   @Override
   public void processOp(Object row, int tag) throws HiveException {
     try {
@@ -191,8 +196,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
       alias = (byte)tag;
 
       // compute keys and values as StandardObjects
-      key = JoinUtil.computeMapJoinKeys(key, row, joinKeys[alias],
-          joinKeysObjectInspectors[alias]);
+      key = computeMapJoinKey(row, alias);
       boolean joinNeeded = false;
       for (byte pos = 0; pos < order.length; pos++) {
         if (pos != alias) {
@@ -213,7 +217,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
         }
       }
       if (joinNeeded) {
-        ArrayList<Object> value = getFilteredValue(alias, row);
+        List<Object> value = getFilteredValue(alias, row);
         // Add the value to the ArrayList
         storage[alias].add(value);
         // generate the output records

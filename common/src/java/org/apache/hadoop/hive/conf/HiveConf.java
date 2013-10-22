@@ -635,7 +635,7 @@ public class HiveConf extends Configuration {
     // standard error allowed for ndv estimates. A lower value indicates higher accuracy and a
     // higher compute cost.
     HIVE_STATS_NDV_ERROR("hive.stats.ndv.error", (float)20.0),
-    HIVE_STATS_KEY_PREFIX_MAX_LENGTH("hive.stats.key.prefix.max.length", 200),
+    HIVE_STATS_KEY_PREFIX_MAX_LENGTH("hive.stats.key.prefix.max.length", 150),
     HIVE_STATS_KEY_PREFIX("hive.stats.key.prefix", ""), // internal usage only
 
     // Concurrency
@@ -774,7 +774,9 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_TABLE_TYPE_MAPPING("hive.server2.table.type.mapping", "CLASSIC"),
     HIVE_SERVER2_SESSION_HOOK("hive.server2.session.hook", ""),
 
-    HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list", null),
+    HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,delete,compile"),
+
+    HIVE_CONF_RESTRICTED_LIST("hive.conf.restricted.list", ""),
 
     // If this is set all move tasks at the end of a multi-insert query will only begin once all
     // outputs are ready
@@ -966,7 +968,7 @@ public class HiveConf extends Configuration {
 
   public void verifyAndSet(String name, String value) throws IllegalArgumentException {
     if (restrictList.contains(name)) {
-      throw new IllegalArgumentException("Cann't modify " + name + " at runtime");
+      throw new IllegalArgumentException("Cannot modify " + name + " at runtime");
     }
     set(name, value);
   }
@@ -1110,6 +1112,7 @@ public class HiveConf extends Configuration {
     hiveJar = other.hiveJar;
     auxJars = other.auxJars;
     origProp = (Properties)other.origProp.clone();
+    restrictList.addAll(other.restrictList);
   }
 
   public Properties getAllProperties() {
@@ -1165,9 +1168,10 @@ public class HiveConf extends Configuration {
     }
 
     // setup list of conf vars that are not allowed to change runtime
-    String restrictListStr = this.get(ConfVars.HIVE_CONF_RESTRICTED_LIST.toString());
-    if (restrictListStr != null) {
-      for (String entry : restrictListStr.split(",")) {
+    String restrictListStr = this.get(ConfVars.HIVE_CONF_RESTRICTED_LIST.toString(), "").trim();
+    for (String entry : restrictListStr.split(",")) {
+      entry = entry.trim();
+      if (!entry.isEmpty()) {
         restrictList.add(entry);
       }
     }

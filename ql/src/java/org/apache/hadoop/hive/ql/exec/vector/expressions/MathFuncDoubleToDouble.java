@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
  * constant argument(s)) and returns long.
  * May be used for functions like ROUND(d, N), Pow(a, p) etc.
  *
- * Do NOT use this for simple math functions lone sin/cos/exp etc. that just take
+ * Do NOT use this for simple math functions like sin/cos/exp etc. that just take
  * a single argument. For those, modify the template ColumnUnaryFunc.txt
  * and expand the template to generate needed classes.
  */
@@ -38,14 +38,14 @@ public abstract class MathFuncDoubleToDouble extends VectorExpression {
   private int outputColumn;
 
   // Subclasses must override this with a function that implements the desired logic.
-  abstract double func(double d);
+  protected abstract double func(double d);
 
-  MathFuncDoubleToDouble(int colNum, int outputColumn) {
+  public MathFuncDoubleToDouble(int colNum, int outputColumn) {
     this.colNum = colNum;
     this.outputColumn = outputColumn;
   }
 
-  MathFuncDoubleToDouble() {
+  public MathFuncDoubleToDouble() {
   }
 
   @Override
@@ -103,6 +103,13 @@ public abstract class MathFuncDoubleToDouble extends VectorExpression {
       }
       outputColVector.isRepeating = false;
     }
+    cleanup(outputColVector, sel, batch.selectedInUse, n);
+  }
+
+  // override this with a no-op if subclass doesn't need to treat NaN as null
+  protected void cleanup(DoubleColumnVector outputColVector, int[] sel,
+      boolean selectedInUse, int n) {
+    MathExpr.NaNToNull(outputColVector, sel, selectedInUse, n);
   }
 
   @Override

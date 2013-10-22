@@ -32,18 +32,18 @@ import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.IdentityConverter;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeParams;
+import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -52,7 +52,7 @@ import org.apache.hadoop.io.Text;
 public final class GenericUDFUtils {
   /**
    * Checks if b is the first byte of a UTF-8 character.
-   * 
+   *
    */
   public static boolean isUtfStartByte(byte b) {
     return (b & 0xC0) != 0x80;
@@ -60,15 +60,15 @@ public final class GenericUDFUtils {
 
   /**
    * This class helps to find the return ObjectInspector for a GenericUDF.
-   * 
+   *
    * In many cases like CASE and IF, the GenericUDF is returning a value out of
    * several possibilities. However these possibilities may not always have the
    * same ObjectInspector.
-   * 
+   *
    * This class will help detect whether all possibilities have exactly the same
    * ObjectInspector. If not, then we need to convert the Objects to the same
    * ObjectInspector.
-   * 
+   *
    * A special case is when some values are constant NULL. In this case we can
    * use the same ObjectInspector.
    */
@@ -92,7 +92,7 @@ public final class GenericUDFUtils {
     /**
      * Update returnObjectInspector and valueInspectorsAreTheSame based on the
      * ObjectInspector seen.
-     * 
+     *
      * @return false if there is a type mismatch
      */
     public boolean update(ObjectInspector oi) throws UDFArgumentTypeException {
@@ -403,12 +403,8 @@ public final class GenericUDFUtils {
       // TODO: we can support date, int, .. any types which would have a fixed length value
       switch (poi.getPrimitiveCategory()) {
         case VARCHAR:
-          VarcharTypeParams varcharParams = null;
-          varcharParams = (VarcharTypeParams) poi.getTypeParams();
-          if (varcharParams == null || varcharParams.length < 0) {
-            throw new UDFArgumentException("varchar type used without type params");
-          }
-          return varcharParams.length;
+          VarcharTypeInfo typeInfo = (VarcharTypeInfo) poi.getTypeInfo();
+          return typeInfo.getLength();
         default:
           throw new UDFArgumentException("No fixed size for type " + poi.getTypeName());
       }

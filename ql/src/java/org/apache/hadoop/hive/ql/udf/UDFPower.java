@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.udf;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
@@ -69,14 +70,15 @@ public class UDFPower extends UDF {
   public HiveDecimalWritable evaluate(HiveDecimalWritable a, IntWritable b) {
     if (a == null || b == null) {
       return null;
-    } else {
-      try {
-        resultHiveDecimal.set(a.getHiveDecimal().pow(b.get()));
-      } catch (NumberFormatException e) {
-        return null;
-      }
-      return resultHiveDecimal;
     }
+
+    HiveDecimal dec = a.getHiveDecimal().pow(b.get());
+    if (dec == null) {
+      return null;
+    }
+
+    resultHiveDecimal.set(dec);
+    return resultHiveDecimal;
   }
 
 }

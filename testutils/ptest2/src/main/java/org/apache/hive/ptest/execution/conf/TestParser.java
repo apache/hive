@@ -37,11 +37,14 @@ import com.google.common.collect.Sets;
 public class TestParser {
 
   private final Context context;
+  private final String testCasePropertyName;
   private final File sourceDirectory;
   private final Logger logger;
 
-  public TestParser(Context context, File sourceDirectory, Logger logger) {
+  public TestParser(Context context, String testCasePropertyName, 
+      File sourceDirectory, Logger logger) {
     this.context = context;
+    this.testCasePropertyName = testCasePropertyName;
     this.sourceDirectory = sourceDirectory;
     this.logger = logger;
   }
@@ -82,10 +85,10 @@ public class TestParser {
           } else if(included.isEmpty() || included.contains(testName)) {
             if(isolated.contains(testName)) {
               logger.info("Executing isolated unit test " + testName);
-              result.add(new UnitTestBatch(testName, false));
+              result.add(new UnitTestBatch(testCasePropertyName, testName, false));
             } else {
               logger.info("Executing parallel unit test " + testName);
-              result.add(new UnitTestBatch(testName, true));
+              result.add(new UnitTestBatch(testCasePropertyName, testName, true));
             }
           }
         }
@@ -157,17 +160,17 @@ public class TestParser {
         logger.info("Exlcuding test " + driver + " " + test);
       } else if(isolated.contains(test)) {
         logger.info("Executing isolated test " + driver + " " + test);
-        testBatches.add(new QFileTestBatch(driver, queryFilesProperty, Sets.newHashSet(test), isParallel));
+        testBatches.add(new QFileTestBatch(testCasePropertyName, driver, queryFilesProperty, Sets.newHashSet(test), isParallel));
       } else {
         if(testBatch.size() >= batchSize) {
-          testBatches.add(new QFileTestBatch(driver, queryFilesProperty, Sets.newHashSet(testBatch), isParallel));
+          testBatches.add(new QFileTestBatch(testCasePropertyName, driver, queryFilesProperty, Sets.newHashSet(testBatch), isParallel));
           testBatch = Lists.newArrayList();
         }
         testBatch.add(test);
       }
     }
     if(!testBatch.isEmpty()) {
-      testBatches.add(new QFileTestBatch(driver, queryFilesProperty, Sets.newHashSet(testBatch), isParallel));
+      testBatches.add(new QFileTestBatch(testCasePropertyName, driver, queryFilesProperty, Sets.newHashSet(testBatch), isParallel));
     }
     return testBatches;
   }

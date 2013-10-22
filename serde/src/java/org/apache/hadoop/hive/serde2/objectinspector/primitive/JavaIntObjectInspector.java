@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.IntWritable;
 
 /**
@@ -26,7 +27,7 @@ public class JavaIntObjectInspector extends
     AbstractPrimitiveJavaObjectInspector implements SettableIntObjectInspector {
 
   JavaIntObjectInspector() {
-    super(PrimitiveObjectInspectorUtils.intTypeEntry);
+    super(TypeInfoFactory.intTypeInfo);
   }
 
   @Override

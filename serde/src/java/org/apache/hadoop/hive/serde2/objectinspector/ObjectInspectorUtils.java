@@ -65,6 +65,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspec
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableStringObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BytesWritable;
@@ -102,7 +103,8 @@ public final class ObjectInspectorUtils {
     if (oi.getCategory() == Category.PRIMITIVE) {
       PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
       if (!(poi instanceof AbstractPrimitiveWritableObjectInspector)) {
-        return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(poi);
+        return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+            (PrimitiveTypeInfo)poi.getTypeInfo());
       }
     }
     return oi;
@@ -126,22 +128,23 @@ public final class ObjectInspectorUtils {
       switch (objectInspectorOption) {
       case DEFAULT: {
         if (poi.preferWritable()) {
-          result = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(poi);
+          result = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+              poi.getTypeInfo());
         } else {
-          result = PrimitiveObjectInspectorFactory
-              .getPrimitiveJavaObjectInspector(poi);
+          result = PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+              poi.getTypeInfo());
         }
         break;
       }
       case JAVA: {
-        result = PrimitiveObjectInspectorFactory
-            .getPrimitiveJavaObjectInspector(poi);
+        result = PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
+            poi.getTypeInfo());
         break;
       }
-      case WRITABLE: {
-        result = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(poi);
+      case WRITABLE:
+        result = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+            poi.getTypeInfo());
         break;
-      }
       }
       break;
     }
@@ -971,7 +974,7 @@ public final class ObjectInspectorUtils {
       case PRIMITIVE:
         PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
         return PrimitiveObjectInspectorFactory.getPrimitiveWritableConstantObjectInspector(
-            poi, writableValue);
+            poi.getTypeInfo(), writableValue);
       case LIST:
         ListObjectInspector loi = (ListObjectInspector) oi;
         return ObjectInspectorFactory.getStandardConstantListObjectInspector(

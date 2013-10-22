@@ -151,13 +151,7 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
         }
 
         myagg.empty = false;
-
-        try {
-          myagg.sum = myagg.sum.add(
-            PrimitiveObjectInspectorUtils.getHiveDecimal(partial, inputOI));
-        } catch (NumberFormatException e) {
-          myagg.sum = null;
-        }
+        myagg.sum = myagg.sum.add(PrimitiveObjectInspectorUtils.getHiveDecimal(partial, inputOI));
       }
     }
 

@@ -18,32 +18,36 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.exec.vector.expressions.StringUnaryUDF;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.StringUnaryUDF.IUDFUnaryString;
-import org.apache.hadoop.hive.ql.udf.UDFUnhex;
-import org.apache.hadoop.io.Text;
-
-public class StringUnhex extends StringUnaryUDF {
+public class PosModDoubleToDouble extends MathFuncDoubleToDouble
+    implements ISetDoubleArg {
   private static final long serialVersionUID = 1L;
+  private double divisor;
 
-  StringUnhex(int colNum, int outputColumn) {
-    super(colNum, outputColumn, new IUDFUnaryString() {
-
-      // Wrap the evaluate method of UDFUnhex to make it return the expected type, Text.
-      @Override
-      public Text evaluate(Text s) {
-        final UDFUnhex unhex = new UDFUnhex();
-        byte[] b = unhex.evaluate(s);
-        if (b == null) {
-          return null;
-        }
-        return new Text(b);
-      }
-
-    });
+  public PosModDoubleToDouble(int inputCol, int outputCol) {
+    super(inputCol, outputCol);
   }
 
-  StringUnhex() {
+  public PosModDoubleToDouble() {
     super();
+  }
+
+  @Override
+  protected double func(double v) {
+
+    // return positive modulo
+    return ((v % divisor) + divisor) % divisor;
+  }
+
+  @Override
+  public void setArg(double arg) {
+    this.divisor = arg;
+  }
+
+  public void setDivisor(double v) {
+    this.divisor = v;
+  }
+
+  public double getDivisor() {
+    return divisor;
   }
 }

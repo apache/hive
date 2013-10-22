@@ -53,6 +53,7 @@ class serdeConstants {
   std::string LIST_COLUMN_TYPES;
   std::set<std::string>  PrimitiveTypes;
   std::set<std::string>  CollectionTypes;
+  std::set<std::string>  IntegralTypes;
 };
 
 extern const serdeConstants g_serde_constants;

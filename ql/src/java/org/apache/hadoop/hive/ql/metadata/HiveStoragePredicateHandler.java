@@ -18,9 +18,10 @@
 
 package org.apache.hadoop.hive.ql.metadata;
 
-import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
+import org.apache.hadoop.mapred.JobConf;
 
 /**
  * HiveStoragePredicateHandler is an optional companion to {@link
@@ -65,12 +66,12 @@ public interface HiveStoragePredicateHandler {
      * Portion of predicate to be evaluated by storage handler.  Hive
      * will pass this into the storage handler's input format.
      */
-    public ExprNodeDesc pushedPredicate;
+    public ExprNodeGenericFuncDesc pushedPredicate;
 
     /**
      * Portion of predicate to be post-evaluated by Hive for any rows
      * which are returned by storage handler.
      */
-    public ExprNodeDesc residualPredicate;
+    public ExprNodeGenericFuncDesc residualPredicate;
   }
 }

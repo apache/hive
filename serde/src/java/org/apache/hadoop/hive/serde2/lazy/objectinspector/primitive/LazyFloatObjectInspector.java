@@ -19,7 +19,7 @@ package org.apache.hadoop.hive.serde2.lazy.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.lazy.LazyFloat;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.FloatWritable;
 
 /**
@@ -30,7 +30,7 @@ public class LazyFloatObjectInspector extends
     FloatObjectInspector {
 
   LazyFloatObjectInspector() {
-    super(PrimitiveObjectInspectorUtils.floatTypeEntry);
+    super(TypeInfoFactory.floatTypeInfo);
   }
 
   @Override

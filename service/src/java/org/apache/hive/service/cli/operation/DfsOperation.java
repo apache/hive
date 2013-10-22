@@ -16,23 +16,3 @@
  * limitations under the License.
  */
 
-package org.apache.hive.service.cli.operation;
-
-import java.util.Map;
-
-import org.apache.hadoop.hive.ql.processors.DfsProcessor;
-import org.apache.hive.service.cli.session.HiveSession;
-
-/**
- * HiveDfsCommandOperation.
- *
- */
-public class DfsOperation extends HiveCommandOperation {
-
-  protected DfsOperation(HiveSession parentSession, String statement,
-      Map<String, String> confOverlay) {
-    super(parentSession, statement, confOverlay);
-    setCommandProcessor(new DfsProcessor(parentSession.getHiveConf()));
-  }
-
-}

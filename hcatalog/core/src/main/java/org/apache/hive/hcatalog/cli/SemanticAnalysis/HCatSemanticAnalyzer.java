@@ -271,7 +271,11 @@ public class HCatSemanticAnalyzer extends HCatSemanticAnalyzerBase {
     DropDatabaseDesc dropDb = work.getDropDatabaseDesc();
     if (dropDb != null) {
       Database db = cntxt.getHive().getDatabase(dropDb.getDatabaseName());
-      authorize(db, Privilege.DROP);
+      if (db != null){
+        // if above returned a null, then the db does not exist - probably a
+        // "drop database if exists" clause - don't try to authorize then.
+        authorize(db, Privilege.DROP);
+      }
     }
 
     DescDatabaseDesc descDb = work.getDescDatabaseDesc();

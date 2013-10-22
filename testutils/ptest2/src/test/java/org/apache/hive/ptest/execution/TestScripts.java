@@ -53,7 +53,6 @@ public class TestScripts  {
       FileUtils.deleteQuietly(baseDir);
     }
   }
-
   @Test
   public void testBatch() throws Throwable {
     Map<String, String> templateVariables = Maps.newHashMap();
@@ -62,7 +61,9 @@ public class TestScripts  {
     templateVariables.put("branch", "branch-1");
     templateVariables.put("localDir", "/some/local/dir");
     templateVariables.put("workingDir", "/some/working/dir");
+    templateVariables.put("buildTool", "maven");
     templateVariables.put("antArgs", "-Dant=arg1");
+    templateVariables.put("testClass", "TestCliDriver");
     templateVariables.put("buildTag", "build-1");
     templateVariables.put("logDir", "/some/log/dir");
     templateVariables.put("instanceName", "instance-1");
@@ -74,6 +75,7 @@ public class TestScripts  {
     templateVariables.put("javaHome", "/usr/java/jdk1.7");
     templateVariables.put("antEnvOpts", "-Dhttp.proxyHost=somehost -Dhttp.proxyPort=3128");
     templateVariables.put("antTestArgs", "-DgrammarBuild.notRequired=true -Dskip.javadoc=true");
+    templateVariables.put("antTestTarget", "testonly");
     String template = readResource("batch-exec.vm");
     String actual = getTemplateResult(template, templateVariables);
     Approvals.verify(actual);
@@ -86,6 +88,8 @@ public class TestScripts  {
     templateVariables.put("branch", "branch-1");
     templateVariables.put("localDir", "/some/local/dir");
     templateVariables.put("workingDir", "/some/working/dir");
+    templateVariables.put("buildTool", "ant");
+    templateVariables.put("testClass", "TestCliDriver");
     templateVariables.put("antArgs", "-Dant=arg1");
     templateVariables.put("buildTag", "build-1");
     templateVariables.put("logDir", "/some/log/dir");
@@ -111,6 +115,7 @@ public class TestScripts  {
     templateVariables.put("branch", "branch-1");
     templateVariables.put("localDir", "/some/local/dir");
     templateVariables.put("workingDir", "/some/working/dir");
+    templateVariables.put("buildTool", "ant");
     templateVariables.put("antArgs", "-Dant=arg1");
     templateVariables.put("buildTag", "build-1");
     templateVariables.put("logDir", "/some/log/dir");
@@ -150,6 +155,7 @@ public class TestScripts  {
     templateVariables.put("branch", "");
     templateVariables.put("localDir", "/some/local/dir");
     templateVariables.put("workingDir", "/some/working/dir");
+    templateVariables.put("buildTool", "maven");
     templateVariables.put("antArgs", "-Dant=arg1");
     templateVariables.put("buildTag", "build-1");
     templateVariables.put("logDir", "/some/log/dir");

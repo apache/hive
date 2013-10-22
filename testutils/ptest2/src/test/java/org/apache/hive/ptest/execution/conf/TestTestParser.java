@@ -86,7 +86,7 @@ public class TestTestParser {
     context.put("qFileTest.f.isolate", "isolated");
     context.put("qFileTest.f.groups.excluded", "excluded.q");
     context.put("qFileTest.f.groups.isolated", "isolated.q");
-    testParser = new TestParser(context, workingDirectory, LOG);
+    testParser = new TestParser(context, "testcase", workingDirectory, LOG);
     List<TestBatch> testBatches = testParser.parse().get();
     Assert.assertEquals(4, testBatches.size());
   }
@@ -103,7 +103,7 @@ public class TestTestParser {
     context.put("qFileTest.f.queryFilesProperty", "qfile");
     context.put("qFileTest.f.groups.included", "included.q isolated.q");
     context.put("qFileTest.f.groups.isolated", "isolated.q");
-    testParser = new TestParser(context, workingDirectory, LOG);
+    testParser = new TestParser(context, "testcase", workingDirectory, LOG);
     List<TestBatch> testBatches = testParser.parse().get();
     Assert.assertEquals(4, testBatches.size());
   }

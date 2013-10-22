@@ -24,11 +24,11 @@ import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 public class FuncHex extends FuncLongToString {
   private static final long serialVersionUID = 1L;
 
-  FuncHex(int inputCol, int outputCol) {
+  public FuncHex(int inputCol, int outputCol) {
     super(inputCol, outputCol);
   }
 
-  FuncHex() {
+  public FuncHex() {
     super();
   }
 

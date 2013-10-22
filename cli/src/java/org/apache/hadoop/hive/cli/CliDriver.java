@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.cli;
 
+import static org.apache.hadoop.util.StringUtils.stringifyException;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -30,6 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.sql.SQLException;
 
 import jline.ArgumentCompletor;
 import jline.ArgumentCompletor.AbstractArgumentDelimiter;
@@ -122,7 +125,7 @@ public class CliDriver {
           this.processFile(cmd_1);
         } catch (IOException e) {
           console.printError("Failed processing file "+ cmd_1 +" "+ e.getLocalizedMessage(),
-            org.apache.hadoop.util.StringUtils.stringifyException(e));
+            stringifyException(e));
           ret = 1;
         }
       }
@@ -146,7 +149,7 @@ public class CliDriver {
         }
       } catch (Exception e) {
         console.printError("Exception raised from Shell command " + e.getLocalizedMessage(),
-            org.apache.hadoop.util.StringUtils.stringifyException(e));
+            stringifyException(e));
         ret = 1;
       }
 
@@ -212,8 +215,14 @@ public class CliDriver {
         }
       }
     } else { // local mode
-      CommandProcessor proc = CommandProcessorFactory.get(tokens[0], (HiveConf) conf);
-      ret = processLocalCmd(cmd, proc, ss);
+      try {
+        CommandProcessor proc = CommandProcessorFactory.get(tokens[0], (HiveConf) conf);
+        ret = processLocalCmd(cmd, proc, ss);
+      } catch (SQLException e) {
+        console.printError("Failed processing command " + tokens[0] + " " + e.getLocalizedMessage(),
+          org.apache.hadoop.util.StringUtils.stringifyException(e));
+        ret = 1;
+      }
     }
 
     return ret;

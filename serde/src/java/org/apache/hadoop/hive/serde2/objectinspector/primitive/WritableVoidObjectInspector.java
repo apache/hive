@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
  * A WritableVoidObjectInspector inspects a NullWritable Object.
@@ -28,7 +29,7 @@ public class WritableVoidObjectInspector extends
     VoidObjectInspector, ConstantObjectInspector {
 
   WritableVoidObjectInspector() {
-    super(PrimitiveObjectInspectorUtils.voidTypeEntry);
+    super(TypeInfoFactory.voidTypeInfo);
   }
 
   @Override

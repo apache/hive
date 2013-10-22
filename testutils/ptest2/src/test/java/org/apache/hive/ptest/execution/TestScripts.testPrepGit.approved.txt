@@ -21,9 +21,14 @@ then
   export PATH=$JAVA_HOME/bin/:$PATH
 fi
 export ANT_OPTS="-Xmx1g -XX:MaxPermSize=256m -Dhttp.proxyHost=somehost -Dhttp.proxyPort=3128"
+export M2_OPTS="-Xmx1g -XX:MaxPermSize=256m ${mavenEnvOpts}"
 cd /some/working/dir/
 (
-  mkdir -p {maven,ivy}
+  if [[ "true" == "true" ]]
+  then
+    rm -rf ivy maven
+  fi
+  mkdir -p maven ivy
   if [[ "git" = "svn" ]]
   then
     if [[ -n "branch-1" ]]
@@ -76,11 +81,22 @@ cd /some/working/dir/
     chmod +x $patchCommandPath
     $patchCommandPath $patchFilePath
   fi
-  if [[ "true" == "true" ]]
+  if [[ "${buildTool}" == "maven" ]]
   then
-    rm -rf /some/working/dir/ivy /some/working/dir/maven
-    mkdir /some/working/dir/ivy /some/working/dir/maven
-  fi
-  ant -Dant=arg1 -Divy.default.ivy.user.dir=/some/working/dir/ivy -Dmvn.local.repo=/some/working/dir/maven clean package test -Dtestcase=nothing
+    rm -rf /some/working/dir/maven/org/apache/hive
+    mvn clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven
+    mvn test -Dmaven.repo.local=/some/working/dir/maven -Dtest=nothing
+    cd itests
+    mvn clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven
+    mvn test -Dmaven.repo.local=/some/working/dir/maven -Dtest=nothing
+  elif [[ "${buildTool}" == "ant" ]]
+  then
+    ant -Dant=arg1 -Divy.default.ivy.user.dir=/some/working/dir/ivy \
+      -Dmvn.local.repo=/some/working/dir/maven clean package test \
+      -Dtestcase=nothing
+   else
+     echo "Unknown build tool ${buildTool}"
+     exit 127
+   fi
 ) 2>&1 | tee /some/log/dir/source-prep.txt
 exit ${PIPESTATUS[0]}

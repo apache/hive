@@ -92,9 +92,9 @@ public class VectorUDFAdaptor extends VectorExpression {
   // Initialize transient fields. To be called after deserialization of other fields.
   public void init() throws HiveException, UDFArgumentException {
     genericUDF = expr.getGenericUDF();
-    deferredChildren = new GenericUDF.DeferredObject[expr.getChildExprs().size()];
-    childrenOIs = new ObjectInspector[expr.getChildExprs().size()];
-    writers = VectorExpressionWriterFactory.getExpressionWriters(expr.getChildExprs());
+    deferredChildren = new GenericUDF.DeferredObject[expr.getChildren().size()];
+    childrenOIs = new ObjectInspector[expr.getChildren().size()];
+    writers = VectorExpressionWriterFactory.getExpressionWriters(expr.getChildren());
     for (int i = 0; i < childrenOIs.length; i++) {
       childrenOIs[i] = writers[i].getObjectInspector();
     }

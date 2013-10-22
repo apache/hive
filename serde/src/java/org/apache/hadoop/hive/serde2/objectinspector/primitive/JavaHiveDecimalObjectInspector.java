@@ -21,13 +21,14 @@ import java.math.BigInteger;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 public class JavaHiveDecimalObjectInspector
     extends AbstractPrimitiveJavaObjectInspector
     implements SettableHiveDecimalObjectInspector {
 
   protected JavaHiveDecimalObjectInspector() {
-    super(PrimitiveObjectInspectorUtils.decimalTypeEntry);
+    super(TypeInfoFactory.decimalTypeInfo);
   }
 
   @Override
@@ -37,12 +38,12 @@ public class JavaHiveDecimalObjectInspector
     }
 
     if (o instanceof String) {
-      try {
-        o = new HiveDecimal((String)o);
-      } catch(NumberFormatException e) {
+      o = HiveDecimal.create((String)o);
+      if (o == null) {
         return null;
       }
     }
+
     return new HiveDecimalWritable((HiveDecimal) o);
   }
 
@@ -53,7 +54,7 @@ public class JavaHiveDecimalObjectInspector
 
   @Override
   public Object set(Object o, byte[] bytes, int scale) {
-    return new HiveDecimal(new BigInteger(bytes), scale);
+    return HiveDecimal.create(new BigInteger(bytes), scale);
   }
 
   @Override
@@ -68,20 +69,16 @@ public class JavaHiveDecimalObjectInspector
 
   @Override
   public Object create(byte[] bytes, int scale) {
-    try {
-      return new HiveDecimal(new BigInteger(bytes), scale);
-    } catch (NumberFormatException e) {
-      return null;
-    }
+    return HiveDecimal.create(new BigInteger(bytes), scale);
   }
 
   @Override
   public Object create(HiveDecimal t) {
-    try {
-      return t == null ? null : new HiveDecimal(t.unscaledValue(), t.scale());
-    } catch(NumberFormatException e) {
+    if (t == null) {
       return null;
     }
+
+    return HiveDecimal.create(t.unscaledValue(), t.scale());
   }
 
 }

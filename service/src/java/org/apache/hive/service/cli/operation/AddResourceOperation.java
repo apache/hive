@@ -16,23 +16,3 @@
  * limitations under the License.
  */
 
-package org.apache.hive.service.cli.operation;
-
-import java.util.Map;
-
-import org.apache.hadoop.hive.ql.processors.AddResourceProcessor;
-import org.apache.hive.service.cli.session.HiveSession;
-
-/**
- * HiveAddResourceOperation.
- *
- */
-public class AddResourceOperation extends HiveCommandOperation {
-
-  protected AddResourceOperation(HiveSession parentSession, String statement,
-      Map<String, String> confOverlay) {
-    super(parentSession, statement, confOverlay);
-    setCommandProcessor(new AddResourceProcessor());
-  }
-
-}

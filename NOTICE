@@ -1,5 +1,5 @@
 Apache Hive
-Copyright 2008-2011 The Apache Software Foundation
+Copyright 2008-2013 The Apache Software Foundation
 
 This product includes software developed by The Apache Software
 Foundation (http://www.apache.org/).
@@ -8,13 +8,13 @@ This product includes software developed by The JDBM Project
 (http://jdbm.sourceforge.net/).
 
 This product includes/uses ANTLR (http://www.antlr.org/),
-Copyright (c) 2003-2008, Terrence Parr.
+Copyright (c) 2003-2011, Terrence Parr.
 
 This product includes/uses StringTemplate (http://www.stringtemplate.org/),
-Copyright (c) 2008, Terrence Parr.
+Copyright (c) 2011, Terrence Parr.
 
 This product includes/uses ASM (http://asm.ow2.org/),
-Copyright (c) 2000-2005 INRIA, France Telecom.
+Copyright (c) 2000-2007 INRIA, France Telecom.
 
 This product includes/uses org.json (http://www.json.org/java/index.html),
 Copyright (c) 2002 JSON.org
@@ -26,7 +26,7 @@ This product includes/uses SQLLine (http://sqlline.sourceforge.net),
 Copyright (c) 2002, 2003, 2004, 2005 Marc Prud'hommeaux <mwp1@cornell.edu>.
 
 This product includes/uses SLF4J (http://www.slf4j.org/),
-Copyright (c) 2004-2008 QOS.ch
+Copyright (c) 2004-2010 QOS.ch
 
 This product includes/uses Bootstrap (http://twitter.github.com/bootstrap/),
 Copyright (c) 2012 Twitter, Inc.

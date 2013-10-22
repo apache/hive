@@ -81,7 +81,7 @@ import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.index.HiveIndexHandler;
 import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.session.CreateTableAutomaticGrant;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde2.Deserializer;
@@ -1927,7 +1927,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param result the resulting list of partitions
    * @return whether the resulting list contains partitions which may or may not match the expr
    */
-  public boolean getPartitionsByExpr(Table tbl, ExprNodeDesc expr, HiveConf conf,
+  public boolean getPartitionsByExpr(Table tbl, ExprNodeGenericFuncDesc expr, HiveConf conf,
       List<Partition> result) throws HiveException, TException {
     assert result != null;
     byte[] exprBytes = Utilities.serializeExpressionToKryo(expr);

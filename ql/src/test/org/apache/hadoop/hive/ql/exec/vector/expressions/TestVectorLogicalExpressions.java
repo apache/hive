@@ -340,27 +340,6 @@ public class TestVectorLogicalExpressions {
   }
 
   @Test
-  public void testFilterNotExpr() {
-    VectorizedRowBatch batch1 = getBatchThreeBooleanCols();
-    VectorizedRowBatch batch2 = getBatchThreeBooleanCols();
-
-    SelectColumnIsTrue expr = new SelectColumnIsTrue(0);
-    FilterNotExpr notExpr = new FilterNotExpr(expr);
-
-    notExpr.evaluate(batch1);
-
-    notExpr.evaluate(batch2);
-
-    assertEquals(batch1.size, batch2.size);
-    for (int j = 0; j < batch1.size; j++) {
-      assertEquals(batch1.selected[j], batch2.selected[j]);
-      int i = j;
-      assertEquals((((LongColumnVector) batch1.cols[0]).vector[i]),
-          (((LongColumnVector) batch2.cols[0]).vector[i]));
-    }
-  }
-
-  @Test
   public void testFilterExprOrExpr() {
     VectorizedRowBatch batch1 = getBatchThreeBooleanCols();
     VectorizedRowBatch batch2 = getBatchThreeBooleanCols();

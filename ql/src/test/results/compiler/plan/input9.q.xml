@@ -705,7 +705,7 @@
                        <object idref="ListBucketingCtx0"/> 
                       </void> 
                       <void property="maxStatsKeyPrefixLength"> 
-                       <int>200</int> 
+                       <int>150</int> 
                       </void> 
                       <void property="numFiles"> 
                        <int>1</int> 
@@ -843,7 +843,7 @@
                        <string>_col0</string> 
                       </void> 
                       <void property="type"> 
-                       <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                       <object class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
                         <void property="typeName"> 
                          <string>void</string> 
                         </void> 
@@ -882,21 +882,13 @@
              <object class="org.apache.hadoop.hive.ql.plan.FilterDesc"> 
               <void property="predicate"> 
                <object class="org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc"> 
-                <void property="childExprs"> 
+                <void property="children"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc"> 
-                    <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
-                    </void> 
-                   </object> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc"/> 
                   </void> 
                   <void method="add"> 
-                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc"> 
-                    <void property="typeInfo"> 
-                     <object idref="PrimitiveTypeInfo1"/> 
-                    </void> 
-                   </object> 
+                   <object class="org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc"/> 
                   </void> 
                  </object> 
                 </void> 
