@@ -34,4 +34,3 @@ ts                  	string              	None
 dt                  	string              	None                
 ts                  	string              	None                
 FAILED: ParseException line 4:47 cannot recognize input near 'time' ')' '<EOF>' in column type
-

@@ -26,7 +26,7 @@ import org.apache.hadoop.hive.metastore.PartitionExpressionProxy;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 
 /**
  * The basic implementation of PartitionExpressionProxy that uses ql package classes.
@@ -42,7 +42,7 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
   @Override
   public boolean filterPartitionsByExpr(List<String> columnNames, byte[] exprBytes,
       String defaultPartitionName, List<String> partitionNames) throws MetaException {
-    ExprNodeDesc expr = deserializeExpr(exprBytes);
+    ExprNodeGenericFuncDesc expr = deserializeExpr(exprBytes);
     try {
       long startTime = System.nanoTime(), len = partitionNames.size();
       boolean result = PartitionPruner.prunePartitionNames(
@@ -56,8 +56,8 @@ public class PartitionExpressionForMetastore implements PartitionExpressionProxy
     }
   }
 
-  private ExprNodeDesc deserializeExpr(byte[] exprBytes) throws MetaException {
-    ExprNodeDesc expr = null;
+  private ExprNodeGenericFuncDesc deserializeExpr(byte[] exprBytes) throws MetaException {
+    ExprNodeGenericFuncDesc expr = null;
     try {
       expr = Utilities.deserializeExpressionFromKryo(exprBytes);
     } catch (Exception ex) {

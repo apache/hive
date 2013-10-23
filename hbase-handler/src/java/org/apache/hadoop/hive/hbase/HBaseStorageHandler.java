@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveStoragePredicateHandler;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.hive.serde2.SerDe;
@@ -410,8 +411,8 @@ public class HBaseStorageHandler extends DefaultStorageHandler
         hbaseSerde.getStorageFormatOfCol(keyColPos).get(0));
     List<IndexSearchCondition> searchConditions =
       new ArrayList<IndexSearchCondition>();
-    ExprNodeDesc residualPredicate =
-      analyzer.analyzePredicate(predicate, searchConditions);
+    ExprNodeGenericFuncDesc residualPredicate =
+      (ExprNodeGenericFuncDesc)analyzer.analyzePredicate(predicate, searchConditions);
     int scSize = searchConditions.size();
     if (scSize < 1 || 2 < scSize) {
       // Either there was nothing which could be pushed down (size = 0),

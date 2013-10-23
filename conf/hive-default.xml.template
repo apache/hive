@@ -2012,7 +2012,7 @@
 
 <property>
   <name>hive.server2.thrift.sasl.qop</name>
-  <value>auth</auth>
+  <value>auth</value>
   <description>Sasl QOP value; Set it to one of following values to enable higher levels of
      protection for hive server2 communication with clients.
       "auth" - authentication only (default)

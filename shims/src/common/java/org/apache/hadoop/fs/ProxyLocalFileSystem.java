@@ -23,6 +23,8 @@ import java.net.URI;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.util.Shell;
+import org.apache.hadoop.hive.shims.ShimLoader;
+import org.apache.hadoop.hive.shims.HadoopShims;
 
 /****************************************************************
  * A Proxy for LocalFileSystem
@@ -61,7 +63,9 @@ public class ProxyLocalFileSystem extends FilterFileSystem {
 
     String authority = name.getAuthority() != null ? name.getAuthority() : "";
     String proxyUriString = nameUriString + "://" + authority + "/";
-    fs = new ProxyFileSystem(localFs, URI.create(proxyUriString));
+
+    fs = ShimLoader.getHadoopShims().createProxyFileSystem(
+        localFs, URI.create(proxyUriString));
 
     fs.initialize(name, conf);
   }

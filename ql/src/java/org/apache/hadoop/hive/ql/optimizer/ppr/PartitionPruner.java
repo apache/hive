@@ -21,7 +21,6 @@ package org.apache.hadoop.hive.ql.optimizer.ppr;
 import java.util.AbstractSequentialList;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -40,7 +39,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -192,7 +190,8 @@ public class PartitionPruner implements Transform {
       if (((ExprNodeConstantDesc)expr).getValue() == null) {
         return null;
       } else {
-        return expr;
+        throw new IllegalStateException("Unexpected non-null ExprNodeConstantDesc: "
+          + expr.getExprString());
       }
     } else if (expr instanceof ExprNodeGenericFuncDesc) {
       GenericUDF udf = ((ExprNodeGenericFuncDesc)expr).getGenericUDF();
@@ -213,9 +212,10 @@ public class PartitionPruner implements Transform {
           return isAnd ? children.get(0) : null;
         }
       }
-      return expr;
+      return (ExprNodeGenericFuncDesc)expr;
+    } else {
+        throw new IllegalStateException("Unexpected type of ExprNodeDesc: " + expr.getExprString());
     }
-    return expr;
   }
 
   /**
@@ -247,10 +247,16 @@ public class PartitionPruner implements Transform {
    * @return True iff expr contains any non-native user-defined functions.
    */
   static private boolean hasUserFunctions(ExprNodeDesc expr) {
-    if (!(expr instanceof ExprNodeGenericFuncDesc)) return false;
-    if (!FunctionRegistry.isNativeFuncExpr((ExprNodeGenericFuncDesc)expr)) return true;
+    if (!(expr instanceof ExprNodeGenericFuncDesc)) {
+      return false;
+    }
+    if (!FunctionRegistry.isNativeFuncExpr((ExprNodeGenericFuncDesc)expr)) {
+      return true;
+    }
     for (ExprNodeDesc child : expr.getChildren()) {
-      if (hasUserFunctions(child)) return true;
+      if (hasUserFunctions(child)) {
+        return true;
+      }
     }
     return false;
   }
@@ -279,7 +285,7 @@ public class PartitionPruner implements Transform {
       // Replace virtual columns with nulls. See javadoc for details.
       prunerExpr = removeNonPartCols(prunerExpr, extractPartColNames(tab));
       // Remove all parts that are not partition columns. See javadoc for details.
-      ExprNodeDesc compactExpr = compactExpr(prunerExpr.clone());
+      ExprNodeGenericFuncDesc compactExpr = (ExprNodeGenericFuncDesc)compactExpr(prunerExpr.clone());
       String oldFilter = prunerExpr.getExprString();
       if (compactExpr == null) {
         // Non-strict mode, and all the predicates are on non-partition columns - get everything.
@@ -346,7 +352,7 @@ public class PartitionPruner implements Transform {
    * @return true iff the partition pruning expression contains non-partition columns.
    */
   static private boolean pruneBySequentialScan(Table tab, List<Partition> partitions,
-      ExprNodeDesc prunerExpr, HiveConf conf) throws HiveException, MetaException {
+      ExprNodeGenericFuncDesc prunerExpr, HiveConf conf) throws HiveException, MetaException {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PRUNE_LISTING);
 
@@ -385,7 +391,7 @@ public class PartitionPruner implements Transform {
    * @param partNames Partition names to filter. The list is modified in place.
    * @return Whether the list has any partitions for which the expression may or may not match.
    */
-  public static boolean prunePartitionNames(List<String> columnNames, ExprNodeDesc prunerExpr,
+  public static boolean prunePartitionNames(List<String> columnNames, ExprNodeGenericFuncDesc prunerExpr,
       String defaultPartitionName, List<String> partNames) throws HiveException, MetaException {
     // Prepare the expression to filter on the columns.
     ObjectPair<PrimitiveObjectInspector, ExprNodeEvaluator> handle =

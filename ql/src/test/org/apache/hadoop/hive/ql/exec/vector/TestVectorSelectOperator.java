@@ -100,7 +100,7 @@ public class TestVectorSelectOperator {
     List<ExprNodeDesc> children = new  ArrayList<ExprNodeDesc>();
     children.add(colDesc1);
     children.add(colDesc2);
-    plusDesc.setChildExprs(children);
+    plusDesc.setChildren(children);
     plusDesc.setTypeInfo(TypeInfoFactory.longTypeInfo);
 
     colList.add(plusDesc);

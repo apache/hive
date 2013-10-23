@@ -209,7 +209,7 @@ public final class PcrExprProcFactory {
         children.add(wrapper.outExpr);
       }
     }
-    funcExpr.setChildExprs(children);
+    funcExpr.setChildren(children);
 
     return funcExpr;
   }
