@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.index.IndexPredicateAnalyzer;
 import org.apache.hadoop.hive.ql.index.IndexSearchCondition;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ByteStream;
@@ -253,8 +254,8 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     if (filterExprSerialized == null) {
       return scan;
     }
-    ExprNodeDesc filterExpr =
-      Utilities.deserializeExpression(filterExprSerialized, jobConf);
+    ExprNodeGenericFuncDesc filterExpr =
+      Utilities.deserializeExpression(filterExprSerialized);
 
     String colName = jobConf.get(serdeConstants.LIST_COLUMNS).split(",")[iKey];
     String colType = jobConf.get(serdeConstants.LIST_COLUMN_TYPES).split(",")[iKey];

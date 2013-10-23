@@ -58,7 +58,7 @@ public class StreamingDelegator extends LauncherDelegator {
     return d.run(user, userArgs,
       appConf.streamingJar(), null,
       null, files, args, defines,
-      statusdir, callback, completedUrl, enableLog, jobType);
+      statusdir, callback, false, completedUrl, enableLog, jobType);
   }
 
   private List<String> makeArgs(List<String> inputs,

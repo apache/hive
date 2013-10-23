@@ -12,4 +12,3 @@ POSTHOOK: query: create view v partitioned on (ds, hr) as select * from srcpart
 POSTHOOK: type: CREATEVIEW
 POSTHOOK: Output: default@v
 FAILED: ParseException line 2:52 cannot recognize input near 'blah' '<EOF>' '<EOF>' in select clause
-

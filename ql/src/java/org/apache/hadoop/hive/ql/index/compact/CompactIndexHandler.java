@@ -316,7 +316,8 @@ public class CompactIndexHandler extends TableBasedIndexHandler {
     IndexPredicateAnalyzer analyzer = getIndexPredicateAnalyzer(index, queryPartitions);
     List<IndexSearchCondition> searchConditions = new ArrayList<IndexSearchCondition>();
     // split predicate into pushed (what we can handle), and residual (what we can't handle)
-    ExprNodeDesc residualPredicate = analyzer.analyzePredicate(predicate, searchConditions);
+    ExprNodeGenericFuncDesc residualPredicate = (ExprNodeGenericFuncDesc)analyzer.
+      analyzePredicate(predicate, searchConditions);
 
     if (searchConditions.size() == 0) {
       return null;

@@ -116,10 +116,14 @@ public class VectorMapJoinOperator extends MapJoinOperator {
 
     List<String> outColNames = desc.getOutputColumnNames();
     int outputColumnIndex = 0;
+
+    Map<String, Integer> cMap = vContext.getColumnMap();
     for(byte alias:order) {
       for(ExprNodeDesc expr: exprs.get(alias)) {
         String columnName = outColNames.get(outputColumnIndex);
-        vContext.addOutputColumn(columnName, expr.getTypeString());
+        if (!cMap.containsKey(columnName)) {
+          vContext.addOutputColumn(columnName, expr.getTypeString());
+        }
         ++outputColumnIndex;
       }
     }

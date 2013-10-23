@@ -635,7 +635,7 @@ public class HiveConf extends Configuration {
     // standard error allowed for ndv estimates. A lower value indicates higher accuracy and a
     // higher compute cost.
     HIVE_STATS_NDV_ERROR("hive.stats.ndv.error", (float)20.0),
-    HIVE_STATS_KEY_PREFIX_MAX_LENGTH("hive.stats.key.prefix.max.length", 200),
+    HIVE_STATS_KEY_PREFIX_MAX_LENGTH("hive.stats.key.prefix.max.length", 150),
     HIVE_STATS_KEY_PREFIX("hive.stats.key.prefix", ""), // internal usage only
 
     // Concurrency
@@ -978,7 +978,7 @@ public class HiveConf extends Configuration {
 
   public void verifyAndSet(String name, String value) throws IllegalArgumentException {
     if (restrictList.contains(name)) {
-      throw new IllegalArgumentException("Cann't modify " + name + " at runtime");
+      throw new IllegalArgumentException("Cannot modify " + name + " at runtime");
     }
     set(name, value);
   }
@@ -1122,6 +1122,7 @@ public class HiveConf extends Configuration {
     hiveJar = other.hiveJar;
     auxJars = other.auxJars;
     origProp = (Properties)other.origProp.clone();
+    restrictList.addAll(other.restrictList);
   }
 
   public Properties getAllProperties() {

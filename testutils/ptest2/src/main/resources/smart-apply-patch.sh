@@ -84,7 +84,7 @@ elif $PATCH -p1 -E --dry-run < $PATCH_FILE 2>&1 > /dev/null; then
 elif $PATCH -p2 -E --dry-run < $PATCH_FILE 2>&1 > /dev/null; then
   PLEVEL=2
 else
-  echo "The patch does not appear to apply with p0 to p2";
+  echo "The patch does not appear to apply with p0, p1, or p2";
   cleanup 1;
 fi
 

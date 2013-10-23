@@ -18,6 +18,14 @@
 
 package org.apache.hadoop.hive.ql.io.sarg;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -39,14 +47,6 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
-
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * The implementation of SearchArguments.
@@ -221,6 +221,7 @@ final class SearchArgumentImpl implements SearchArgument {
       }
     }
 
+    @Override
     public String toString() {
       StringBuilder buffer = new StringBuilder();
       switch (operator) {
@@ -471,49 +472,49 @@ final class SearchArgumentImpl implements SearchArgument {
         return new ExpressionTree(TruthValue.YES_NO_NULL);
       }
       // get the kind of expression
-      ExprNodeGenericFuncDesc typed = (ExprNodeGenericFuncDesc) expression;
-      Class<?> op = typed.getGenericUDF().getClass();
+      ExprNodeGenericFuncDesc expr = (ExprNodeGenericFuncDesc) expression;
+      Class<?> op = expr.getGenericUDF().getClass();
       ExpressionTree result;
 
       // handle the logical operators
       if (op == GenericUDFOPOr.class) {
         result = new ExpressionTree(ExpressionTree.Operator.OR);
-        addChildren(result, typed, leafCache);
+        addChildren(result, expr, leafCache);
       } else if (op == GenericUDFOPAnd.class) {
         result = new ExpressionTree(ExpressionTree.Operator.AND);
-        addChildren(result, typed, leafCache);
+        addChildren(result, expr, leafCache);
       } else if (op == GenericUDFOPNot.class) {
         result = new ExpressionTree(ExpressionTree.Operator.NOT);
-        addChildren(result, typed, leafCache);
+        addChildren(result, expr, leafCache);
       } else if (op == GenericUDFOPEqual.class) {
-        result = createLeaf(PredicateLeaf.Operator.EQUALS, typed, leafCache);
+        result = createLeaf(PredicateLeaf.Operator.EQUALS, expr, leafCache);
       } else if (op == GenericUDFOPNotEqual.class) {
-        result = negate(createLeaf(PredicateLeaf.Operator.EQUALS, typed,
+        result = negate(createLeaf(PredicateLeaf.Operator.EQUALS, expr,
             leafCache));
       } else if (op == GenericUDFOPEqualNS.class) {
-        result = createLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS, typed,
+        result = createLeaf(PredicateLeaf.Operator.NULL_SAFE_EQUALS, expr,
             leafCache);
       } else if (op == GenericUDFOPGreaterThan.class) {
         result = negate(createLeaf(PredicateLeaf.Operator.LESS_THAN_EQUALS,
-            typed, leafCache));
+            expr, leafCache));
       } else if (op == GenericUDFOPEqualOrGreaterThan.class) {
-        result = negate(createLeaf(PredicateLeaf.Operator.LESS_THAN, typed,
+        result = negate(createLeaf(PredicateLeaf.Operator.LESS_THAN, expr,
             leafCache));
       } else if (op == GenericUDFOPLessThan.class) {
-        result = createLeaf(PredicateLeaf.Operator.LESS_THAN, typed, leafCache);
+        result = createLeaf(PredicateLeaf.Operator.LESS_THAN, expr, leafCache);
       } else if (op == GenericUDFOPEqualOrLessThan.class) {
-        result = createLeaf(PredicateLeaf.Operator.LESS_THAN_EQUALS, typed,
+        result = createLeaf(PredicateLeaf.Operator.LESS_THAN_EQUALS, expr,
             leafCache);
       } else if (op == GenericUDFIn.class) {
-        result = createLeaf(PredicateLeaf.Operator.IN, typed, leafCache, 0);
+        result = createLeaf(PredicateLeaf.Operator.IN, expr, leafCache, 0);
       } else if (op == GenericUDFBetween.class) {
-        result = createLeaf(PredicateLeaf.Operator.BETWEEN, typed, leafCache,
+        result = createLeaf(PredicateLeaf.Operator.BETWEEN, expr, leafCache,
             1);
       } else if (op == GenericUDFOPNull.class) {
-        result = createLeaf(PredicateLeaf.Operator.IS_NULL, typed, leafCache,
+        result = createLeaf(PredicateLeaf.Operator.IS_NULL, expr, leafCache,
             0);
       } else if (op == GenericUDFOPNotNull.class) {
-        result = negate(createLeaf(PredicateLeaf.Operator.IS_NULL, typed,
+        result = negate(createLeaf(PredicateLeaf.Operator.IS_NULL, expr,
             leafCache, 0));
 
       // otherwise, we didn't understand it, so mark it maybe
@@ -753,7 +754,7 @@ final class SearchArgumentImpl implements SearchArgument {
      * @param expression the expression to translate
      * @return The normalized expression.
      */
-    ExpressionTree expression(ExprNodeDesc expression) {
+    ExpressionTree expression(ExprNodeGenericFuncDesc expression) {
       List<PredicateLeaf> leafCache = new ArrayList<PredicateLeaf>();
       ExpressionTree expr = parse(expression, leafCache);
       return expression(expr, leafCache);
@@ -786,7 +787,7 @@ final class SearchArgumentImpl implements SearchArgument {
   private final List<PredicateLeaf> leaves;
   private final ExpressionTree expression;
 
-  SearchArgumentImpl(ExprNodeDesc expr) {
+  SearchArgumentImpl(ExprNodeGenericFuncDesc expr) {
     if (expr == null) {
       leaves = new ArrayList<PredicateLeaf>();
       expression = null;

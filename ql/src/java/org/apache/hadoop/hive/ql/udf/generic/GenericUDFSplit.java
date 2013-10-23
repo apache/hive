@@ -72,7 +72,7 @@ public class GenericUDFSplit extends GenericUDF {
 
     ArrayList<Text> result = new ArrayList<Text>();
 
-    for (String str : s.toString().split(regex.toString())) {
+    for (String str : s.toString().split(regex.toString(), -1)) {
       result.add(new Text(str));
     }
 

@@ -175,7 +175,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       return null;
     }
     SearchArgument sarg = SearchArgument.FACTORY.create
-        (Utilities.deserializeExpression(serializedPushdown, conf));
+        (Utilities.deserializeExpression(serializedPushdown));
     LOG.info("ORC pushdown predicate: " + sarg);
     return sarg;
   }

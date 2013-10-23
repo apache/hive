@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hive.hcatalog.templeton.tool.TempletonControllerJob;
 import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
 
@@ -36,6 +38,7 @@ import org.apache.hive.hcatalog.templeton.tool.TempletonUtils;
  * This is the backend of the pig web service.
  */
 public class PigDelegator extends LauncherDelegator {
+  private static final Log LOG = LogFactory.getLog(PigDelegator.class);
   public PigDelegator(AppConfig appConf) {
     super(appConf);
   }
@@ -43,27 +46,43 @@ public class PigDelegator extends LauncherDelegator {
   public EnqueueBean run(String user, Map<String, Object> userArgs,
                String execute, String srcFile,
                List<String> pigArgs, String otherFiles,
-               String statusdir, String callback, String completedUrl, boolean enablelog)
+               String statusdir, String callback, 
+               boolean usehcatalog, String completedUrl, boolean enablelog)
     throws NotAuthorizedException, BadParam, BusyException, QueueException,
     ExecuteException, IOException, InterruptedException {
     runAs = user;
     List<String> args = makeArgs(execute,
       srcFile, pigArgs,
-      otherFiles, statusdir, completedUrl, enablelog);
+      otherFiles, statusdir, usehcatalog, completedUrl, enablelog);
 
     return enqueueController(user, userArgs, callback, args);
   }
 
+  /**
+   * @param execute pig query string to be executed
+   * @param srcFile pig query file to be executed
+   * @param pigArgs pig command line arguments
+   * @param otherFiles  files to be copied to the map reduce cluster
+   * @param statusdir status dir location
+   * @param usehcatalog whether the command uses hcatalog/needs to connect
+   *         to hive metastore server
+   * @param completedUrl call back url
+   * @return
+   * @throws BadParam
+   * @throws IOException
+   * @throws InterruptedException
+   */
   private List<String> makeArgs(String execute, String srcFile,
                   List<String> pigArgs, String otherFiles,
-                  String statusdir, String completedUrl, boolean enablelog)
+                  String statusdir, boolean usehcatalog,
+                  String completedUrl, boolean enablelog)
     throws BadParam, IOException, InterruptedException {
     ArrayList<String> args = new ArrayList<String>();
     try {
       ArrayList<String> allFiles = new ArrayList<String>();
-      if (TempletonUtils.isset(srcFile))
-        allFiles.add(TempletonUtils.hadoopFsFilename
-          (srcFile, appConf, runAs));
+      if (TempletonUtils.isset(srcFile)) {
+        allFiles.add(TempletonUtils.hadoopFsFilename(srcFile, appConf, runAs));
+      }
       if (TempletonUtils.isset(otherFiles)) {
         String[] ofs = TempletonUtils.hadoopFsListAsArray(otherFiles, appConf, runAs);
         allFiles.addAll(Arrays.asList(ofs));
@@ -85,6 +104,12 @@ public class PigDelegator extends LauncherDelegator {
       for (String pigArg : pigArgs) {
         args.add(TempletonUtils.quoteForWindows(pigArg));
       }
+      //check if the REST command specified explicitly to use hcatalog
+      // or if it says that implicitly using the pig -useHCatalog arg
+      if(usehcatalog || hasPigArgUseHcat(pigArgs)){
+        addHiveMetaStoreTokenArg();
+      }
+      
       if (TempletonUtils.isset(execute)) {
         args.add("-execute");
         args.add(TempletonUtils.quoteForWindows(execute));
@@ -100,5 +125,13 @@ public class PigDelegator extends LauncherDelegator {
     }
 
     return args;
+  }
+
+  /**
+   * Check if the pig arguments has -useHCatalog set
+   * see http://hive.apache.org/docs/hcat_r0.5.0/loadstore.pdf
+   */
+  private boolean hasPigArgUseHcat(List<String> pigArgs) {
+    return pigArgs.contains("-useHCatalog");
   }
 }

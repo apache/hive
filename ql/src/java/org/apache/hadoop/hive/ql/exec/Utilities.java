@@ -133,6 +133,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.GroupByDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -623,10 +624,10 @@ public final class Utilities {
    * @param expr Expression.
    * @return Bytes.
    */
-  public static byte[] serializeExpressionToKryo(ExprNodeDesc expr) {
+  public static byte[] serializeExpressionToKryo(ExprNodeGenericFuncDesc expr) {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     Output output = new Output(baos);
-    runtimeSerializationKryo.get().writeClassAndObject(output, expr);
+    runtimeSerializationKryo.get().writeObject(output, expr);
     output.close();
     return baos.toByteArray();
   }
@@ -636,47 +637,30 @@ public final class Utilities {
    * @param bytes Bytes containing the expression.
    * @return Expression; null if deserialization succeeded, but the result type is incorrect.
    */
-  public static ExprNodeDesc deserializeExpressionFromKryo(byte[] bytes) {
+  public static ExprNodeGenericFuncDesc deserializeExpressionFromKryo(byte[] bytes) {
     Input inp = new Input(new ByteArrayInputStream(bytes));
-    Object o = runtimeSerializationKryo.get().readClassAndObject(inp);
+    ExprNodeGenericFuncDesc func = runtimeSerializationKryo.get().
+      readObject(inp,ExprNodeGenericFuncDesc.class);
     inp.close();
-    return (o instanceof ExprNodeDesc) ? (ExprNodeDesc)o : null;
+    return func;
   }
 
-  public static String serializeExpression(ExprNodeDesc expr) {
-    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-    XMLEncoder encoder = new XMLEncoder(baos);
-    encoder.setPersistenceDelegate(java.sql.Date.class, new DatePersistenceDelegate());
-    encoder.setPersistenceDelegate(Timestamp.class, new TimestampPersistenceDelegate());
+  public static String serializeExpression(ExprNodeGenericFuncDesc expr) {
     try {
-      encoder.writeObject(expr);
-    } finally {
-      encoder.close();
-    }
-    try {
-      return baos.toString("UTF-8");
+      return new String(Base64.encodeBase64(serializeExpressionToKryo(expr)), "UTF-8");
     } catch (UnsupportedEncodingException ex) {
       throw new RuntimeException("UTF-8 support required", ex);
     }
   }
 
-  public static ExprNodeDesc deserializeExpression(String s, Configuration conf) {
+  public static ExprNodeGenericFuncDesc deserializeExpression(String s) {
     byte[] bytes;
     try {
-      bytes = s.getBytes("UTF-8");
+      bytes = Base64.decodeBase64(s.getBytes("UTF-8"));
     } catch (UnsupportedEncodingException ex) {
       throw new RuntimeException("UTF-8 support required", ex);
     }
-
-    ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
-
-    XMLDecoder decoder = new XMLDecoder(bais, null, null);
-    try {
-      ExprNodeDesc expr = (ExprNodeDesc) decoder.readObject();
-      return expr;
-    } finally {
-      decoder.close();
-    }
+    return deserializeExpressionFromKryo(bytes);
   }
 
   public static class CollectionPersistenceDelegate extends DefaultPersistenceDelegate {
@@ -691,6 +675,26 @@ public final class Utilities {
       while (ite.hasNext()) {
         out.writeStatement(new Statement(oldInstance, "add", new Object[] {ite.next()}));
       }
+    }
+  }
+
+  /**
+   * Kryo serializer for timestamp.
+   */
+  private static class TimestampSerializer extends
+  com.esotericsoftware.kryo.Serializer<Timestamp> {
+
+    @Override
+    public Timestamp read(Kryo kryo, Input input, Class<Timestamp> clazz) {
+      Timestamp ts = new Timestamp(input.readLong());
+      ts.setNanos(input.readInt());
+      return ts;
+    }
+
+    @Override
+    public void write(Kryo kryo, Output output, Timestamp ts) {
+      output.writeLong(ts.getTime());
+      output.writeInt(ts.getNanos());
     }
   }
 
@@ -864,6 +868,7 @@ public final class Utilities {
       Kryo kryo = new Kryo();
       kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
       kryo.register(java.sql.Date.class, new SqlDateSerializer());
+      kryo.register(java.sql.Timestamp.class, new TimestampSerializer());
       removeField(kryo, Operator.class, "colExprMap");
       removeField(kryo, ColumnInfo.class, "objectInspector");
       removeField(kryo, MapWork.class, "opParseCtxMap");
@@ -884,6 +889,7 @@ public final class Utilities {
       kryo.setClassLoader(Thread.currentThread().getContextClassLoader());
       kryo.register(CommonToken.class, new CommonTokenSerializer());
       kryo.register(java.sql.Date.class, new SqlDateSerializer());
+      kryo.register(java.sql.Timestamp.class, new TimestampSerializer());
       return kryo;
     };
   };
@@ -2336,17 +2342,24 @@ public final class Utilities {
    * @return
    */
   public static String getHashedStatsPrefix(String statsPrefix, int maxPrefixLength) {
-    String ret = statsPrefix;
+    String ret = appendPathSeparator(statsPrefix);
     if (maxPrefixLength >= 0 && statsPrefix.length() > maxPrefixLength) {
       try {
         MessageDigest digester = MessageDigest.getInstance("MD5");
-        digester.update(statsPrefix.getBytes());
+        digester.update(ret.getBytes());
         ret = new String(digester.digest()) + Path.SEPARATOR;
       } catch (NoSuchAlgorithmException e) {
         throw new RuntimeException(e);
       }
     }
     return ret;
+  }
+
+  private static String appendPathSeparator(String path) {
+    if (!path.endsWith(Path.SEPARATOR)) {
+      path = path + Path.SEPARATOR;
+    }
+    return path;
   }
 
   public static void setColumnNameList(JobConf jobConf, Operator op) {

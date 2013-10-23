@@ -39,8 +39,10 @@ public class ParseException extends Exception {
 
     StringBuilder sb = new StringBuilder();
     for (ParseError err : errors) {
+      if (sb.length() > 0) {
+        sb.append('\n');
+      }
       sb.append(err.getMessage());
-      sb.append("\n");
     }
 
     return sb.toString();
