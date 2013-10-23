@@ -48,7 +48,12 @@ public class TezJobMonitor {
 
   private transient LogHelper console;
   private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
+  private final int checkInterval = 200;
+  private final int maxRetryInterval = 2500;
+  private final int printInterval = 3000;
+  private long lastPrintTime;
   private Set<String> completed;
+
 
   public TezJobMonitor() {
     console = new LogHelper(LOG);
@@ -67,10 +72,6 @@ public class TezJobMonitor {
 
     boolean running = false;
     boolean done = false;
-    int checkInterval = 200;
-    int printInterval = 3000;
-    int maxRetryInterval = 2500;
-    int counter = 0;
     int failedCounter = 0;
     int rc = 0;
     DAGStatus.State lastState = null;
@@ -81,7 +82,6 @@ public class TezJobMonitor {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_SUBMIT_TO_RUNNING);
 
     while(true) {
-      ++counter;
 
       try {
         status = dagClient.getDAGStatus();
@@ -108,9 +108,7 @@ public class TezJobMonitor {
               running = true;
             }
 
-            if (counter % printInterval/checkInterval == 0) {
-              lastReport = printStatus(progressMap, lastReport, console);
-            }
+            lastReport = printStatus(progressMap, lastReport, console);
             break;
           case SUCCEEDED:
             lastReport = printStatus(progressMap, lastReport, console);
@@ -190,8 +188,9 @@ public class TezJobMonitor {
     }
 
     String report = reportBuffer.toString();
-    if (!report.equals(lastReport)) {
+    if (!report.equals(lastReport) || System.currentTimeMillis() >= lastPrintTime + printInterval) {
       console.printInfo(report);
+      lastPrintTime = System.currentTimeMillis();
     }
 
     return report;
