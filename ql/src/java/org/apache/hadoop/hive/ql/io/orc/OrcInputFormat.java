@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
+import org.apache.hadoop.hive.ql.io.orc.Reader.FileMetaInfo;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
@@ -237,13 +238,23 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           reporter);
       return (RecordReader) vorr;
     }
-
-    FileSplit fileSplit = (FileSplit) inputSplit;
-    Path path = fileSplit.getPath();
+    FileSplit fSplit = (FileSplit)inputSplit;
+    reporter.setStatus(fSplit.toString());
+    Path path = fSplit.getPath();
     FileSystem fs = path.getFileSystem(conf);
-    reporter.setStatus(fileSplit.toString());
-    return new OrcRecordReader(OrcFile.createReader(fs, path), conf,
-                               fileSplit.getStart(), fileSplit.getLength());
+    Reader reader = null;
+
+    if(!(fSplit instanceof OrcSplit)){
+      //If CombineHiveInputFormat is used, it works with FileSplit and not OrcSplit
+      reader = OrcFile.createReader(fs, path);
+    } else {
+      //We have OrcSplit, which has footer metadata cached, so used the appropriate reader
+      //constructor
+      OrcSplit orcSplit = (OrcSplit) fSplit;
+      FileMetaInfo fMetaInfo = orcSplit.getFileMetaInfo();
+      reader = OrcFile.createReader(fs, path, fMetaInfo);
+    }
+    return new OrcRecordReader(reader, conf, fSplit.getStart(), fSplit.getLength());
   }
 
   @Override
@@ -301,7 +312,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
    */
   static class Context {
     private final ExecutorService threadPool = Executors.newFixedThreadPool(10);
-    private final List<FileSplit> splits = new ArrayList<FileSplit>(10000);
+    private final List<OrcSplit> splits = new ArrayList<OrcSplit>(10000);
     private final List<Throwable> errors = new ArrayList<Throwable>();
     private final HadoopShims shims = ShimLoader.getHadoopShims();
     private final Configuration conf;
@@ -330,7 +341,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
      *     the back.
      * @result the Nth file split
      */
-    FileSplit getResult(int index) {
+    OrcSplit getResult(int index) {
       if (index >= 0) {
         return splits.get(index);
       } else {
@@ -476,9 +487,10 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
      * are written with large block sizes.
      * @param offset the start of the split
      * @param length the length of the split
+     * @param fileMetaInfo file metadata from footer and postscript
      * @throws IOException
      */
-    void createSplit(long offset, long length) throws IOException {
+    void createSplit(long offset, long length, FileMetaInfo fileMetaInfo) throws IOException {
       String[] hosts;
       if ((offset % blockSize) + length <= blockSize) {
         // handle the single block case
@@ -522,8 +534,8 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         hostList.toArray(hosts);
       }
       synchronized (context.splits) {
-        context.splits.add(new FileSplit(file.getPath(), offset, length,
-            hosts));
+        context.splits.add(new OrcSplit(file.getPath(), offset, length,
+            hosts, fileMetaInfo));
       }
     }
 
@@ -543,7 +555,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           // crossed a block boundary, cut the input split here.
           if (currentOffset != -1 && currentLength > context.minSize &&
               (currentOffset / blockSize != stripe.getOffset() / blockSize)) {
-            createSplit(currentOffset, currentLength);
+            createSplit(currentOffset, currentLength, orcReader.getFileMetaInfo());
             currentOffset = -1;
           }
           // if we aren't building a split, start a new one.
@@ -554,12 +566,12 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
             currentLength += stripe.getLength();
           }
           if (currentLength >= context.maxSize) {
-            createSplit(currentOffset, currentLength);
+            createSplit(currentOffset, currentLength, orcReader.getFileMetaInfo());
             currentOffset = -1;
           }
         }
         if (currentOffset != -1) {
-          createSplit(currentOffset, currentLength);
+          createSplit(currentOffset, currentLength, orcReader.getFileMetaInfo());
         }
       } catch (Throwable th) {
         synchronized (context.errors) {

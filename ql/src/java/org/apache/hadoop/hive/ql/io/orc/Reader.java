@@ -18,12 +18,12 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
+
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 /**
  * The interface for reading ORC files.
@@ -115,6 +115,28 @@ public interface Reader {
   List<OrcProto.Type> getTypes();
 
   /**
+   * FileMetaInfo - represents file metadata stored in footer and postscript sections of the file
+   * that is useful for Reader implementation
+   *
+   */
+  class FileMetaInfo{
+    final String compressionType;
+    final int bufferSize;
+    final ByteBuffer footerBuffer;
+    FileMetaInfo(String compressionType, int bufferSize, ByteBuffer footerBuffer){
+      this.compressionType = compressionType;
+      this.bufferSize = bufferSize;
+      this.footerBuffer = footerBuffer;
+    }
+  }
+
+  /**
+   * Get the metadata stored in footer and postscript sections of the file
+   * @return MetaInfo object with file metadata
+   */
+  FileMetaInfo getFileMetaInfo();
+
+  /**
    * Create a RecordReader that will scan the entire file.
    * @param include true for each column that should be included
    * @return A new RecordReader
@@ -134,6 +156,7 @@ public interface Reader {
    * @throws IOException
    * @deprecated
    */
+  @Deprecated
   RecordReader rows(long offset, long length,
                     boolean[] include) throws IOException;
 
