@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.PosModDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.PosModLongToLong;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -34,6 +37,7 @@ import org.apache.hadoop.io.LongWritable;
  * {org.apache.hadoop.hive.ql.exec.FunctionRegistry}
  */
 @Description(name = "pmod", value = "a _FUNC_ b - Compute the positive modulo")
+@VectorizedExpressions({PosModLongToLong.class, PosModDoubleToDouble.class})
 public class UDFPosMod extends UDFBaseNumericOp {
 
   public UDFPosMod() {

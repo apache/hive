@@ -18,13 +18,16 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+
 public class PosModDoubleToDouble extends MathFuncDoubleToDouble
     implements ISetDoubleArg {
   private static final long serialVersionUID = 1L;
   private double divisor;
 
-  public PosModDoubleToDouble(int inputCol, int outputCol) {
+  public PosModDoubleToDouble(int inputCol, double scalarVal, int outputCol) {
     super(inputCol, outputCol);
+    this.divisor = scalarVal;
   }
 
   public PosModDoubleToDouble() {
@@ -49,5 +52,19 @@ public class PosModDoubleToDouble extends MathFuncDoubleToDouble
 
   public double getDivisor() {
     return divisor;
+  }
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    return (new VectorExpressionDescriptor.Builder())
+        .setMode(
+            VectorExpressionDescriptor.Mode.PROJECTION)
+        .setNumArguments(2)
+        .setArgumentTypes(
+            VectorExpressionDescriptor.ArgumentType.LONG,
+            VectorExpressionDescriptor.ArgumentType.DOUBLE)
+        .setInputExpressionTypes(
+            VectorExpressionDescriptor.InputExpressionType.COLUMN,
+            VectorExpressionDescriptor.InputExpressionType.SCALAR).build();
   }
 }

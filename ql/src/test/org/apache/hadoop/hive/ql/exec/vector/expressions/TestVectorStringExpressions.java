@@ -36,6 +36,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringScalarL
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringColEqualStringScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringColLessStringColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringScalarEqualStringColumn;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.Text;
 import org.junit.Test;
 
@@ -209,7 +210,7 @@ public class TestVectorStringExpressions {
   public void testStringScalarCompareStringCol() {
     VectorizedRowBatch batch = makeStringBatch();
     VectorExpression expr;
-    expr = new FilterStringScalarEqualStringColumn(0, red2);
+    expr = new FilterStringScalarEqualStringColumn(red2, 0);
     expr.evaluate(batch);
 
     // only red qualifies, and it's in entry 0
@@ -217,7 +218,7 @@ public class TestVectorStringExpressions {
     Assert.assertTrue(batch.selected[0] == 0);
 
     batch = makeStringBatch();
-    expr = new FilterStringScalarGreaterStringColumn(0, red2);
+    expr = new FilterStringScalarGreaterStringColumn(red2, 0);
     expr.evaluate(batch);
 
     // only green qualifies, and it's in entry 1
@@ -225,7 +226,7 @@ public class TestVectorStringExpressions {
     Assert.assertTrue(batch.selected[0] == 1);
 
     batch = makeStringBatch();
-    expr = new FilterStringScalarLessEqualStringColumn(0, green);
+    expr = new FilterStringScalarLessEqualStringColumn(green, 0);
     expr.evaluate(batch);
 
     // green and red qualify
@@ -239,7 +240,7 @@ public class TestVectorStringExpressions {
     VectorizedRowBatch batch = makeStringBatch();
     VectorExpression expr;
 
-    expr = new StringScalarEqualStringColumn(0, red2, 2);
+    expr = new StringScalarEqualStringColumn(red2, 0, 2);
     expr.evaluate(batch);
     Assert.assertEquals(3, batch.size);
     LongColumnVector outVector = (LongColumnVector) batch.cols[2];
@@ -248,7 +249,7 @@ public class TestVectorStringExpressions {
     Assert.assertEquals(0, outVector.vector[2]);
 
     batch = makeStringBatch();
-    expr = new StringScalarEqualStringColumn(0, green, 2);
+    expr = new StringScalarEqualStringColumn(green, 0, 2);
     expr.evaluate(batch);
     Assert.assertEquals(3, batch.size);
     outVector = (LongColumnVector) batch.cols[2];
@@ -920,7 +921,7 @@ public class TestVectorStringExpressions {
   }
 
   @Test
-  public void testStringLike() {
+  public void testStringLike() throws HiveException {
 
     // has nulls, not repeating
     VectorizedRowBatch batch;
@@ -928,7 +929,7 @@ public class TestVectorStringExpressions {
     int initialBatchSize;
     batch = makeStringBatchMixedCharSize();
     pattern = new Text(mixPercentPattern);
-    FilterStringColLikeStringScalar expr = new FilterStringColLikeStringScalar(0, pattern);
+    FilterStringColLikeStringScalar expr = new FilterStringColLikeStringScalar(0, mixPercentPattern);
     expr.evaluate(batch);
 
     // verify that the beginning entry is the only one that matches
@@ -973,48 +974,48 @@ public class TestVectorStringExpressions {
     Assert.assertEquals(initialBatchSize, batch.size);
   }
 
-  public void testStringLikePatternType() {
+  public void testStringLikePatternType() throws UnsupportedEncodingException, HiveException {
     FilterStringColLikeStringScalar expr;
 
     // BEGIN pattern
-    expr = new FilterStringColLikeStringScalar(0, new Text("abc%"));
+    expr = new FilterStringColLikeStringScalar(0, "abc%".getBytes());
     Assert.assertEquals(FilterStringColLikeStringScalar.BeginChecker.class,
         expr.checker.getClass());
 
     // END pattern
-    expr = new FilterStringColLikeStringScalar(0, new Text("%abc"));
+    expr = new FilterStringColLikeStringScalar(0, "%abc".getBytes("UTF-8"));
     Assert.assertEquals(FilterStringColLikeStringScalar.EndChecker.class,
         expr.checker.getClass());
 
     // MIDDLE pattern
-    expr = new FilterStringColLikeStringScalar(0, new Text("%abc%"));
+    expr = new FilterStringColLikeStringScalar(0, "%abc%".getBytes());
     Assert.assertEquals(FilterStringColLikeStringScalar.MiddleChecker.class,
         expr.checker.getClass());
 
     // COMPLEX pattern
-    expr = new FilterStringColLikeStringScalar(0, new Text("%abc%de"));
+    expr = new FilterStringColLikeStringScalar(0, "%abc%de".getBytes());
     Assert.assertEquals(FilterStringColLikeStringScalar.ComplexChecker.class,
         expr.checker.getClass());
 
     // NONE pattern
-    expr = new FilterStringColLikeStringScalar(0, new Text("abc"));
+    expr = new FilterStringColLikeStringScalar(0, "abc".getBytes());
     Assert.assertEquals(FilterStringColLikeStringScalar.NoneChecker.class,
         expr.checker.getClass());
   }
 
-  public void testStringLikeMultiByte() {
+  public void testStringLikeMultiByte() throws HiveException {
     FilterStringColLikeStringScalar expr;
     VectorizedRowBatch batch;
 
     // verify that a multi byte LIKE expression matches a matching string
     batch = makeStringBatchMixedCharSize();
-    expr = new FilterStringColLikeStringScalar(0, new Text("%" + multiByte + "%"));
+    expr = new FilterStringColLikeStringScalar(0, ("%" + multiByte + "%").getBytes());
     expr.evaluate(batch);
     Assert.assertEquals(batch.size, 1);
 
     // verify that a multi byte LIKE expression doesn't match a non-matching string
     batch = makeStringBatchMixedCharSize();
-    expr = new FilterStringColLikeStringScalar(0, new Text("%" + multiByte + "x"));
+    expr = new FilterStringColLikeStringScalar(0, ("%" + multiByte + "x").getBytes());
     expr.evaluate(batch);
     Assert.assertEquals(batch.size, 0);
   }
@@ -1024,7 +1025,7 @@ public class TestVectorStringExpressions {
 
     // has nulls, not repeating
     VectorizedRowBatch batch = makeStringBatch();
-    StringConcatColScalar expr = new StringConcatColScalar(0, 1, red);
+    StringConcatColScalar expr = new StringConcatColScalar(0, red, 1);
     expr.evaluate(batch);
     BytesColumnVector outCol = (BytesColumnVector) batch.cols[1];
 

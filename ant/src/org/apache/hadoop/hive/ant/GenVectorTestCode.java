@@ -134,9 +134,11 @@ public class GenVectorTestCode {
       if(op1IsCol){
         testCase = testCase.replaceAll("<Operand1>","inputColumnVector.vector[i]");
         testCase = testCase.replaceAll("<Operand2>","scalarValue");
+        testCase = testCase.replaceAll("<ConstructorParams>","0, scalarValue");
       }else{
         testCase = testCase.replaceAll("<Operand1>","scalarValue");
         testCase = testCase.replaceAll("<Operand2>","inputColumnVector.vector[i]");
+        testCase = testCase.replaceAll("<ConstructorParams>","scalarValue, 0");
       }
 
       testsuites.get(template).append(testCase);

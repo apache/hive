@@ -22,6 +22,7 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
 /**
@@ -160,4 +161,15 @@ public abstract class VectorUDFTimestampFieldLong extends VectorExpression {
     this.outputColumn = outputColumn;
   }
 
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    VectorExpressionDescriptor.Builder b = new VectorExpressionDescriptor.Builder();
+    b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
+        .setNumArguments(1)
+        .setArgumentTypes(
+            VectorExpressionDescriptor.ArgumentType.LONG)
+        .setInputExpressionTypes(
+            VectorExpressionDescriptor.InputExpressionType.COLUMN);
+    return b.build();
+  }
 }

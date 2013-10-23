@@ -21,6 +21,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncRadiansDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncRadiansLongToDouble;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
 
@@ -31,12 +34,13 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
           "  > SELECT _FUNC_(90) FROM src LIMIT 1;\n" +
           "  1.5707963267949mo\n"
       )
+@VectorizedExpressions({FuncRadiansLongToDouble.class, FuncRadiansDoubleToDouble.class})
 public class UDFRadians extends UDF {
 
   @SuppressWarnings("unused")
   private static Log LOG = LogFactory.getLog(UDFRadians.class.getName());
   DoubleWritable result = new DoubleWritable();
-  
+
   public UDFRadians() {
   }
 

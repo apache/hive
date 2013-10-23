@@ -1,0 +1,45 @@
+PREHOOK: query: SELECT VAR_POP(ctinyint),
+       (VAR_POP(ctinyint) / -26.28),
+       SUM(cfloat),
+       (-1.389 + SUM(cfloat)),
+       (SUM(cfloat) * (-1.389 + SUM(cfloat))),
+       MAX(ctinyint),
+       (-((SUM(cfloat) * (-1.389 + SUM(cfloat))))),
+       MAX(cint),
+       (MAX(cint) * 79.553),
+       VAR_SAMP(cdouble),
+       (10.175 % (-((SUM(cfloat) * (-1.389 + SUM(cfloat)))))),
+       COUNT(cint),
+       (-563 % MAX(cint))
+FROM   alltypesorc
+WHERE  (((cdouble > ctinyint)
+         AND (cboolean2 > 0))
+        OR ((cbigint < ctinyint)
+            OR ((cint > cbigint)
+                OR (cboolean1 < 0))))
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT VAR_POP(ctinyint),
+       (VAR_POP(ctinyint) / -26.28),
+       SUM(cfloat),
+       (-1.389 + SUM(cfloat)),
+       (SUM(cfloat) * (-1.389 + SUM(cfloat))),
+       MAX(ctinyint),
+       (-((SUM(cfloat) * (-1.389 + SUM(cfloat))))),
+       MAX(cint),
+       (MAX(cint) * 79.553),
+       VAR_SAMP(cdouble),
+       (10.175 % (-((SUM(cfloat) * (-1.389 + SUM(cfloat)))))),
+       COUNT(cint),
+       (-563 % MAX(cint))
+FROM   alltypesorc
+WHERE  (((cdouble > ctinyint)
+         AND (cboolean2 > 0))
+        OR ((cbigint < ctinyint)
+            OR ((cint > cbigint)
+                OR (cboolean1 < 0))))
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+#### A masked pattern was here ####
+1074.830257547229	-40.89917266161449	-21997.674998402596	-21999.063998402595	4.839282601059194E8	62	-4.839282601059194E8	1073680599	8.5414512692247E10	7.569848642620903E10	10.175	3745	-563

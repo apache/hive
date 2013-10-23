@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
 /**
@@ -35,7 +36,7 @@ public abstract class VectorExpression implements Serializable {
 
   /**
    * This is the primary method to implement expression logic.
-   * @param vrg
+   * @param batch
    */
   public abstract void evaluate(VectorizedRowBatch batch);
 
@@ -61,6 +62,8 @@ public abstract class VectorExpression implements Serializable {
   public VectorExpression[] getChildExpressions() {
     return childExpressions;
   }
+
+  public abstract VectorExpressionDescriptor.Descriptor getDescriptor();
 
   /**
    * Evaluate the child expressions on the given input batch.

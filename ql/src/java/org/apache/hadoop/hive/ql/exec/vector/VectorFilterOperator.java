@@ -45,9 +45,8 @@ public class VectorFilterOperator extends FilterOperator {
   public VectorFilterOperator(VectorizationContext vContext, OperatorDesc conf)
       throws HiveException {
     this();
-    vContext.setOperatorType(OperatorType.FILTER);
     ExprNodeDesc oldExpression = ((FilterDesc) conf).getPredicate();
-    conditionEvaluator = vContext.getVectorExpression(oldExpression);
+    conditionEvaluator = vContext.getVectorExpression(oldExpression, VectorExpressionDescriptor.Mode.FILTER);
     this.conf = (FilterDesc) conf;
   }
 

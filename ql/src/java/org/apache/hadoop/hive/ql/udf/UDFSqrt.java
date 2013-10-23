@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSqrtDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSqrtLongToDouble;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
 /**
@@ -29,8 +32,9 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
     value = "_FUNC_(x) - returns the square root of x",
     extended = "Example:\n "
     + "  > SELECT _FUNC_(4) FROM src LIMIT 1;\n" + "  2")
+@VectorizedExpressions({FuncSqrtLongToDouble.class, FuncSqrtDoubleToDouble.class})
 public class UDFSqrt extends UDF {
-  private DoubleWritable result = new DoubleWritable();
+  private final DoubleWritable result = new DoubleWritable();
 
   public UDFSqrt() {
   }

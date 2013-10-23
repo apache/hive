@@ -21,6 +21,9 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncCeilDoubleToLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncCeilLongToLong;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -35,6 +38,7 @@ import org.apache.hadoop.io.LongWritable;
     + "  > SELECT _FUNC_(-0.1) FROM src LIMIT 1;\n"
     + "  0\n"
     + "  > SELECT _FUNC_(5) FROM src LIMIT 1;\n" + "  5")
+@VectorizedExpressions({FuncCeilLongToLong.class, FuncCeilDoubleToLong.class})
 public class UDFCeil extends UDF {
   private final LongWritable longWritable = new LongWritable();
   private final HiveDecimalWritable decimalWritable = new HiveDecimalWritable();
