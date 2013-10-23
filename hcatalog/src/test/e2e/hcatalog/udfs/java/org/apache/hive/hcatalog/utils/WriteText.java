@@ -35,7 +35,6 @@ import org.apache.hive.hcatalog.data.HCatRecord;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
 import org.apache.hive.hcatalog.mapreduce.HCatOutputFormat;
-import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
 import org.apache.hive.hcatalog.mapreduce.OutputJobInfo;
 
 /**
@@ -103,8 +102,8 @@ public class WriteText extends Configured implements Tool {
     if (principalID != null)
       conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
     Job job = new Job(conf, "WriteText");
-    HCatInputFormat.setInput(job, InputJobInfo.create(dbName,
-      inputTableName, null));
+    HCatInputFormat.setInput(job, dbName,
+      inputTableName);
     // initialize HCatOutputFormat
 
     job.setInputFormatClass(HCatInputFormat.class);
