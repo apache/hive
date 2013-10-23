@@ -2405,6 +2405,15 @@ private void constructOneLBLocationMap(FileStatus fSta,
         HiveMetaStoreClient.class.getName());
   }
 
+  /*
+   * This api just sets up a metastore client. This is used for
+   * pre-launching the metastore client so as to reduce latency
+   * within a single session.
+   */
+  public void setupMSC() throws MetaException {
+    getMSC();
+  }
+
   /**
    *
    * @return the metastore client for the current thread
