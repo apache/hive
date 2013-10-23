@@ -387,8 +387,14 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
         try {
           handleSampling(driverContext, mWork, job, conf);
           job.setPartitionerClass(HiveTotalOrderPartitioner.class);
-        } catch (Exception e) {
+        } catch (IllegalStateException e) {
           console.printInfo("Not enough sampling data.. Rolling back to single reducer task");
+          rWork.setNumReduceTasks(1);
+          job.setNumReduceTasks(1);
+        } catch (Exception e) {
+          LOG.error("Sampling error", e);
+          console.printError(e.toString(),
+              "\n" + org.apache.hadoop.util.StringUtils.stringifyException(e));
           rWork.setNumReduceTasks(1);
           job.setNumReduceTasks(1);
         }

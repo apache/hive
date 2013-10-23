@@ -37,7 +37,6 @@ import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.data.HCatRecord;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
-import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
 
 /**
  * This is a map reduce test for testing hcat that checks that the columns
@@ -150,8 +149,8 @@ public class TypeDataCheck implements Tool {
       }
       Job job = new Job(conf, "typedatacheck");
       // initialize HCatInputFormat
-      HCatInputFormat.setInput(job, InputJobInfo.create(
-        dbName, tableName, null));
+      HCatInputFormat.setInput(job,
+        dbName, tableName);
       HCatSchema s = HCatInputFormat.getTableSchema(job);
       job.getConfiguration().set(SCHEMA_KEY, schemaStr);
       job.getConfiguration().set(DELIM, outputdelim);

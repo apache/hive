@@ -19,6 +19,9 @@
 package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastDoubleToLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastTimestampToLongViaLongToLong;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -36,6 +39,7 @@ import org.apache.hadoop.io.Text;
  * UDFToInteger.
  *
  */
+@VectorizedExpressions({CastTimestampToLongViaLongToLong.class, CastDoubleToLong.class})
 public class UDFToInteger extends UDF {
   private final IntWritable intWritable = new IntWritable();
 

@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorMapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorSelectOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.CollectDesc;
 import org.apache.hadoop.hive.ql.plan.DemuxDesc;
 import org.apache.hadoop.hive.ql.plan.DummyStoreDesc;
@@ -128,7 +129,7 @@ public final class OperatorFactory {
   }
 
   public static <T extends OperatorDesc> Operator<T> getVectorOperator(T conf,
-      VectorizationContext vContext) {
+      VectorizationContext vContext) throws HiveException {
     Class<T> descClass = (Class<T>) conf.getClass();
     for (OpTuple o : vectorOpvec) {
       if (o.descClass == descClass) {
@@ -140,11 +141,11 @@ public final class OperatorFactory {
           return op;
         } catch (Exception e) {
           e.printStackTrace();
-          throw new RuntimeException(e);
+          throw new HiveException(e);
         }
       }
     }
-    throw new RuntimeException("No vector operator for descriptor class "
+    throw new HiveException("No vector operator for descriptor class "
         + descClass.getName());
   }
 

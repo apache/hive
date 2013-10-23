@@ -80,19 +80,12 @@ public class TezSessionState {
    * @throws URISyntaxException
    * @throws LoginException
    * @throws TezException
-   * @throws HiveException
    */
   public void open(String sessionId, HiveConf conf)
-      throws IOException, LoginException, URISyntaxException, TezException, HiveException {
+      throws IOException, LoginException, URISyntaxException, TezException {
 
     this.sessionId = sessionId;
     this.conf = conf;
-
-    // Get the following out of the way when you start the session these take a
-    // while and should be done when we start up.
-    FileSystem.get(conf);
-    ShimLoader.getHadoopShims().getUGIForConf(conf);
-    Hive.get(conf).getAllDatabases();
 
     // create the tez tmp dir
     tezScratchDir = createTezDir(sessionId);

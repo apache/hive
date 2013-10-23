@@ -18,22 +18,38 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 import junit.framework.Assert;
 
-import org.apache.hadoop.hbase.client.coprocessor.Batch;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
-import org.apache.hadoop.hive.ql.exec.vector.expressions.*;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncACosDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncASinDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncATanDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncAbsDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncAbsLongToLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncCeilDoubleToLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncCosDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncDegreesDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncExpDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncFloorDoubleToLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncLnDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncLnLongToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncLog10DoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncLog10LongToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncLog2DoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncLog2LongToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncRadiansDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncRoundDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSignDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSignLongToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSinDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSqrtDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncTanDoubleToDouble;
 import org.junit.Test;
 
 
@@ -84,7 +100,7 @@ public class TestVectorMathFunctions {
   @Test
   public void testRoundToDecimalPlaces() {
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
-    VectorExpression expr = new RoundWithNumDigitsDoubleToDouble(0, 1);
+    VectorExpression expr = new RoundWithNumDigitsDoubleToDouble(0, 4, 1);
     ((ISetLongArg) expr).setArg(4);  // set number of digits
     expr.evaluate(b);
     DoubleColumnVector resultV = (DoubleColumnVector) b.cols[1];
@@ -386,7 +402,7 @@ public class TestVectorMathFunctions {
     b.size = VectorizedRowBatch.DEFAULT_SIZE;
     int n = b.size;
     v.noNulls = true;
-    VectorExpression expr = new FuncRand(0);
+    VectorExpression expr = new FuncRandNoSeed(0);
     expr.evaluate(b);
     double sum = 0;
     for(int i = 0; i != n; i++) {
@@ -421,7 +437,7 @@ public class TestVectorMathFunctions {
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
     DoubleColumnVector resultV = (DoubleColumnVector) b.cols[1];
     b.cols[0].noNulls = true;
-    VectorExpression expr = new FuncLogWithBaseDoubleToDouble(0, 1);
+    VectorExpression expr = new FuncLogWithBaseDoubleToDouble(10.0, 0, 1);
     ((ISetDoubleArg) expr).setArg(10.0d);  // set base
     expr.evaluate(b);
     Assert.assertTrue(equalsWithinTolerance(Math.log(0.5d) / Math.log(10), resultV.vector[4]));
@@ -436,8 +452,8 @@ public class TestVectorMathFunctions {
     DoubleColumnVector resultV = (DoubleColumnVector) b.cols[1];
     b.cols[0].noNulls = true;
     inV.vector[4] = -4.0;
-    VectorExpression expr = new PosModDoubleToDouble(0, 1);
-    ((ISetDoubleArg) expr).setArg(0.3d);  // set base
+    VectorExpression expr = new PosModDoubleToDouble(0, 0.3d, 1);
+    //((ISetDoubleArg) expr).setArg(0.3d);  // set base
     expr.evaluate(b);
     Assert.assertTrue(equalsWithinTolerance(((-4.0d % 0.3d) + 0.3d) % 0.3d, resultV.vector[4]));
 
@@ -445,8 +461,8 @@ public class TestVectorMathFunctions {
     b = getVectorizedRowBatchLongInLongOut();
     LongColumnVector resV2 = (LongColumnVector) b.cols[1];
     b.cols[0].noNulls = true;
-    expr = new PosModLongToLong(0, 1);
-    ((ISetLongArg) expr).setArg(3);
+    expr = new PosModLongToLong(0, 3, 1);
+    //((ISetLongArg) expr).setArg(3);
     expr.evaluate(b);
     Assert.assertEquals(((-2 % 3) + 3) % 3, resV2.vector[0]);
   }
@@ -456,7 +472,7 @@ public class TestVectorMathFunctions {
     VectorizedRowBatch b = getVectorizedRowBatchDoubleInDoubleOut();
     DoubleColumnVector resultV = (DoubleColumnVector) b.cols[1];
     b.cols[0].noNulls = true;
-    VectorExpression expr = new FuncPowerDoubleToDouble(0, 1);
+    VectorExpression expr = new FuncPowerDoubleToDouble(0, 2.0, 1);
     ((ISetDoubleArg) expr).setArg(2.0d);  // set power
     expr.evaluate(b);
     Assert.assertTrue(equalsWithinTolerance(0.5d * 0.5d, resultV.vector[4]));

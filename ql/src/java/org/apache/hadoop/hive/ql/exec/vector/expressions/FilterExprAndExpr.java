@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
 /**
@@ -26,13 +27,6 @@ import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 public class FilterExprAndExpr extends VectorExpression {
 
   private static final long serialVersionUID = 1L;
-
-  public FilterExprAndExpr(VectorExpression childExpr1, VectorExpression childExpr2) {
-    this();
-    this.childExpressions = new VectorExpression[2];
-    childExpressions[0] = childExpr1;
-    childExpressions[1] = childExpr2;
-  }
 
   public FilterExprAndExpr() {
     super();
@@ -52,5 +46,19 @@ public class FilterExprAndExpr extends VectorExpression {
   @Override
   public String getOutputType() {
     return "boolean";
+  }
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    return (new VectorExpressionDescriptor.Builder())
+        .setMode(
+            VectorExpressionDescriptor.Mode.FILTER)
+        .setNumArguments(2)
+        .setArgumentTypes(
+            VectorExpressionDescriptor.ArgumentType.LONG,
+            VectorExpressionDescriptor.ArgumentType.LONG)
+        .setInputExpressionTypes(
+            VectorExpressionDescriptor.InputExpressionType.COLUMN,
+            VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
   }
 }

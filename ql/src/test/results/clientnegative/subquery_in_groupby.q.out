@@ -1,0 +1,1 @@
+FAILED: SemanticException [Error 10249]: Line 5:37 Unsupported SubQuery Expression ''9'': Currently SubQuery expressions are only allowed as Where Clause predicates

@@ -20,6 +20,11 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncLogWithBaseDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncLogWithBaseLongToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncLnDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncLnLongToDouble;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
 /**
@@ -30,8 +35,10 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
     value = "_FUNC_([b], x) - Returns the logarithm of x with base b",
     extended = "Example:\n"
     + "  > SELECT _FUNC_(13, 13) FROM src LIMIT 1;\n" + "  1")
+@VectorizedExpressions({FuncLogWithBaseLongToDouble.class, FuncLogWithBaseDoubleToDouble.class,
+  FuncLnLongToDouble.class, FuncLnDoubleToDouble.class})
 public class UDFLog extends UDF {
-  private DoubleWritable result = new DoubleWritable();
+  private final DoubleWritable result = new DoubleWritable();
 
   public UDFLog() {
   }

@@ -19,6 +19,37 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColEqualDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColEqualDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColEqualLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarEqualDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColEqualDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColEqualDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColEqualLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleScalarEqualDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleScalarEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColEqualDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColEqualDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColEqualLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongScalarEqualDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongScalarEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColEqualStringColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColEqualStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringScalarEqualStringColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColEqualDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColEqualDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColEqualLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarEqualDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringColEqualStringColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringColEqualStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringScalarEqualStringColumn;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 
@@ -26,6 +57,21 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
  * GenericUDF Class for operation EQUAL.
  */
 @Description(name = "=", value = "a _FUNC_ b - Returns TRUE if a equals b and false otherwise")
+@VectorizedExpressions({LongColEqualLongColumn.class, LongColEqualDoubleColumn.class,
+  DoubleColEqualLongColumn.class, DoubleColEqualDoubleColumn.class,
+  LongColEqualLongScalar.class, LongColEqualDoubleScalar.class,
+  DoubleColEqualLongScalar.class, DoubleColEqualDoubleScalar.class,
+  LongScalarEqualLongColumn.class, LongScalarEqualDoubleColumn.class,
+  DoubleScalarEqualLongColumn.class, DoubleScalarEqualDoubleColumn.class,
+  StringColEqualStringColumn.class, StringColEqualStringScalar.class,
+  StringScalarEqualStringColumn.class, FilterStringColEqualStringColumn.class,
+  FilterStringColEqualStringScalar.class, FilterStringScalarEqualStringColumn.class,
+  FilterLongColEqualLongColumn.class, FilterLongColEqualDoubleColumn.class,
+  FilterDoubleColEqualLongColumn.class, FilterDoubleColEqualDoubleColumn.class,
+  FilterLongColEqualLongScalar.class, FilterLongColEqualDoubleScalar.class,
+  FilterDoubleColEqualLongScalar.class, FilterDoubleColEqualDoubleScalar.class,
+  FilterLongScalarEqualLongColumn.class, FilterLongScalarEqualDoubleColumn.class,
+  FilterDoubleScalarEqualLongColumn.class, FilterDoubleScalarEqualDoubleColumn.class})
 public class GenericUDFOPEqual extends GenericUDFBaseCompare {
   public GenericUDFOPEqual(){
     this.opName = "EQUAL";

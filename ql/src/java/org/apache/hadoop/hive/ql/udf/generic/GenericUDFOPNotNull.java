@@ -21,6 +21,9 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IsNotNull;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNotNull;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
@@ -32,8 +35,9 @@ import org.apache.hadoop.io.BooleanWritable;
  */
 @Description(name = "isnotnull",
     value = "_FUNC_ a - Returns true if a is not NULL and false otherwise")
+@VectorizedExpressions({IsNotNull.class, SelectColumnIsNotNull.class})
 public class GenericUDFOPNotNull extends GenericUDF {
-  private BooleanWritable result = new BooleanWritable();
+  private final BooleanWritable result = new BooleanWritable();
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {

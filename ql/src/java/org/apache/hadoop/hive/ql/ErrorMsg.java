@@ -363,6 +363,8 @@ public enum ErrorMsg {
   INVALID_BIGTABLE_MAPJOIN(10246, "{0} table chosen for streaming is not valid", true),
   MISSING_OVER_CLAUSE(10247, "Missing over clause for function : "),
   PARTITION_SPEC_TYPE_MISMATCH(10248, "Cannot add partition column {0} of type {1} as it cannot be converted to type {2}", true),
+  UNSUPPORTED_SUBQUERY_EXPRESSION(10249, "Unsupported SubQuery Expression"),
+  INVALID_SUBQUERY_EXPRESSION(10250, "Invalid SubQuery expression"),
 
   INVALID_HDFS_URI(10248, "{0} is not a hdfs uri", true),
   INVALID_DIR(10249, "{0} is not a directory", true),

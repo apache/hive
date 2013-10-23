@@ -17,6 +17,7 @@
  */
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
 /**
@@ -68,5 +69,10 @@ public class IdentityExpression extends VectorExpression {
 
   public void setType(String type) {
     this.type = type;
+  }
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    return (new VectorExpressionDescriptor.Builder()).build();
   }
 }

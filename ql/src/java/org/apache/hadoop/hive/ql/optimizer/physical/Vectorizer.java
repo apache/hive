@@ -645,16 +645,6 @@ public class Vectorizer implements PhysicalPlanResolver {
     return new VectorizationContext(cmap, columnCount);
   }
 
-
-  private void extendVectorizationContextOutput(Operator<? extends OperatorDesc> op,
-      VectorizationContext vContext) throws HiveException {
-
-    RowResolver rr = physicalContext.getParseContext().getOpParseCtx().get(op).getRowResolver();
-    for(ColumnInfo c : rr.getColumnInfos()) {
-      vContext.addOutputColumn(c.getInternalName(), c.getTypeName());
-    }
-  }
-
   Operator<? extends OperatorDesc> vectorizeOperator(Operator<? extends OperatorDesc> op,
       VectorizationContext vContext) throws HiveException {
     Operator<? extends OperatorDesc> vectorOp = null;

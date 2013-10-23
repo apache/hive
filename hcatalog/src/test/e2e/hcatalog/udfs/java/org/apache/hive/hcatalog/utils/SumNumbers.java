@@ -41,7 +41,6 @@ import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.data.HCatRecord;
 import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
-import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
 
 /**
  * This is a map reduce test for testing hcat which goes against the "numbers"
@@ -162,8 +161,8 @@ public class SumNumbers {
     if (principalID != null)
       conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
     Job job = new Job(conf, "sumnumbers");
-    HCatInputFormat.setInput(job, InputJobInfo.create(
-      dbName, tableName, null));
+    HCatInputFormat.setInput(job,
+      dbName, tableName);
     // initialize HCatOutputFormat
 
     job.setInputFormatClass(HCatInputFormat.class);

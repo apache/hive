@@ -62,15 +62,15 @@ STAGE PLANS:
       Reduce Operator Tree:
         Group By Operator
           aggregations:
-                expr: sum(KEY._col0:2._col0)
-                expr: avg(KEY._col0:2._col0)
+                expr: sum(KEY._col0:0._col0)
+                expr: avg(KEY._col0:0._col0)
                 expr: avg(DISTINCT KEY._col0:0._col0)
-                expr: max(KEY._col0:2._col0)
-                expr: min(KEY._col0:2._col0)
-                expr: std(KEY._col0:2._col0)
-                expr: stddev_samp(KEY._col0:2._col0)
-                expr: variance(KEY._col0:2._col0)
-                expr: var_samp(KEY._col0:2._col0)
+                expr: max(KEY._col0:0._col0)
+                expr: min(KEY._col0:0._col0)
+                expr: std(KEY._col0:0._col0)
+                expr: stddev_samp(KEY._col0:0._col0)
+                expr: variance(KEY._col0:0._col0)
+                expr: var_samp(KEY._col0:0._col0)
                 expr: sum(DISTINCT KEY._col0:1._col0)
                 expr: count(DISTINCT KEY._col0:2._col0)
           bucketGroup: false
@@ -156,17 +156,17 @@ INSERT OVERWRITE TABLE dest1 SELECT
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
-POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.c10 EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: dest1.c11 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest1.c2 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest1.c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c4 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest1.c5 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest1.c6 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest1.c7 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest1.c8 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest1.c9 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest1.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c6 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c7 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c8 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c9 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1
@@ -175,15 +175,15 @@ POSTHOOK: query: SELECT dest1.* FROM dest1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
-POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.c10 EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: dest1.c11 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest1.c2 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest1.c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c4 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest1.c5 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest1.c6 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest1.c7 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest1.c8 EXPRESSION [(src)src.null, ]
-POSTHOOK: Lineage: dest1.c9 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest1.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c5 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c6 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c7 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c8 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c9 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 130091.0	260.182	256.10355987055016	98.0	0.0	142.92680950752379	143.06995106518903	20428.07287599999	20469.010897795582	79136.0	309.0

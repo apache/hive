@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+
 
 public class FuncLogWithBaseDoubleToDouble extends MathFuncDoubleToDouble
     implements ISetDoubleArg {
@@ -25,8 +27,9 @@ public class FuncLogWithBaseDoubleToDouble extends MathFuncDoubleToDouble
 
   private double base;
 
-  public FuncLogWithBaseDoubleToDouble(int colNum, int outputColumn) {
+  public FuncLogWithBaseDoubleToDouble(double scalarVal, int colNum, int outputColumn) {
     super(colNum, outputColumn);
+    this.base = scalarVal;
   }
 
   public FuncLogWithBaseDoubleToDouble() {
@@ -50,5 +53,19 @@ public class FuncLogWithBaseDoubleToDouble extends MathFuncDoubleToDouble
   @Override
   public void setArg(double d) {
     this.base = d;
+  }
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    VectorExpressionDescriptor.Builder b = new VectorExpressionDescriptor.Builder();
+    b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
+        .setNumArguments(2)
+        .setArgumentTypes(
+            VectorExpressionDescriptor.ArgumentType.DOUBLE,
+            VectorExpressionDescriptor.ArgumentType.DOUBLE)
+        .setInputExpressionTypes(
+            VectorExpressionDescriptor.InputExpressionType.SCALAR,
+            VectorExpressionDescriptor.InputExpressionType.COLUMN);
+    return b.build();
   }
 }

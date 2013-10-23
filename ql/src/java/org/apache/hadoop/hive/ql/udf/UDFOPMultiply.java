@@ -20,6 +20,19 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColMultiplyDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColMultiplyDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColMultiplyLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColMultiplyLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarMultiplyDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarMultiplyLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColMultiplyDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColMultiplyDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColMultiplyLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColMultiplyLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarMultiplyDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarMultiplyLongColumn;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -33,6 +46,12 @@ import org.apache.hadoop.io.LongWritable;
  *
  */
 @Description(name = "*", value = "a _FUNC_ b - Multiplies a by b")
+@VectorizedExpressions({LongColMultiplyLongColumn.class, LongColMultiplyDoubleColumn.class,
+    DoubleColMultiplyLongColumn.class, DoubleColMultiplyDoubleColumn.class,
+    LongColMultiplyLongScalar.class, LongColMultiplyDoubleScalar.class,
+    DoubleColMultiplyLongScalar.class, DoubleColMultiplyDoubleScalar.class,
+    LongScalarMultiplyLongColumn.class, LongScalarMultiplyDoubleColumn.class,
+    DoubleScalarMultiplyLongColumn.class, DoubleScalarMultiplyDoubleColumn.class})
 public class UDFOPMultiply extends UDFBaseNumericOp {
 
   public UDFOPMultiply() {

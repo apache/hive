@@ -22,6 +22,9 @@ import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringSubstrColStart;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringSubstrColStartLen;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -44,6 +47,7 @@ import org.apache.hadoop.io.Text;
     + "  'ebook'\n"
     + "  > SELECT _FUNC_('Facebook', 5, 1) FROM src LIMIT 1;\n"
     + "  'b'")
+@VectorizedExpressions({StringSubstrColStart.class, StringSubstrColStartLen.class})
 public class UDFSubstr extends UDF {
 
   private final int[] index;

@@ -20,6 +20,19 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColSubtractDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColSubtractDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColSubtractLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColSubtractLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarSubtractDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarSubtractLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColSubtractDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColSubtractDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColSubtractLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColSubtractLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarSubtractDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarSubtractLongColumn;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -33,6 +46,12 @@ import org.apache.hadoop.io.LongWritable;
  *
  */
 @Description(name = "-", value = "a _FUNC_ b - Returns the difference a-b")
+@VectorizedExpressions({LongColSubtractLongColumn.class, LongColSubtractDoubleColumn.class,
+  DoubleColSubtractLongColumn.class, DoubleColSubtractDoubleColumn.class,
+  LongColSubtractLongScalar.class, LongColSubtractDoubleScalar.class,
+  DoubleColSubtractLongScalar.class, DoubleColSubtractDoubleScalar.class,
+  LongScalarSubtractLongColumn.class, LongScalarSubtractDoubleColumn.class,
+  DoubleScalarSubtractLongColumn.class, DoubleScalarSubtractDoubleColumn.class})
 public class UDFOPMinus extends UDFBaseNumericOp {
 
   public UDFOPMinus() {

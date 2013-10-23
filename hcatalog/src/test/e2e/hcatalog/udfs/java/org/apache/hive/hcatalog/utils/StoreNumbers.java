@@ -39,7 +39,6 @@ import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
 import org.apache.hive.hcatalog.mapreduce.HCatOutputFormat;
-import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
 import org.apache.hive.hcatalog.mapreduce.OutputJobInfo;
 
 /**
@@ -178,8 +177,8 @@ public class StoreNumbers {
     Job job = new Job(conf, "storenumbers");
 
     // initialize HCatInputFormat
-    HCatInputFormat.setInput(job, InputJobInfo.create(
-      dbName, tableName, null));
+    HCatInputFormat.setInput(job,
+      dbName, tableName);
     // initialize HCatOutputFormat
     HCatOutputFormat.setOutput(job, OutputJobInfo.create(
       dbName, outputTableName, outputPartitionKvps));
