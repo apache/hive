@@ -1,0 +1,418 @@
+package org.apache.hadoop.hive.ql.parse;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import org.antlr.runtime.tree.TreeWizard;
+import org.antlr.runtime.tree.TreeWizard.ContextVisitor;
+import org.apache.hadoop.hive.ql.Context;
+import org.apache.hadoop.hive.ql.ErrorMsg;
+import org.apache.hadoop.hive.ql.exec.ColumnInfo;
+import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
+import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.parse.QBSubQuery.SubQueryType;
+import org.apache.hadoop.hive.ql.parse.QBSubQuery.SubQueryTypeDef;
+
+public class SubQueryUtils {
+
+  static void extractConjuncts(ASTNode node, List<ASTNode> conjuncts) {
+    if (node.getType() != HiveParser.KW_AND ) {
+      conjuncts.add(node);
+      return;
+    }
+    extractConjuncts((ASTNode)node.getChild(0), conjuncts);
+    extractConjuncts((ASTNode)node.getChild(1), conjuncts);
+  }
+
+  /*
+   * Remove the SubQuery from the Where CLause Tree.
+   * return the remaining WhereClause.
+   */
+  static ASTNode rewriteParentQueryWhere(ASTNode whereCond, ASTNode subQuery)
+      throws SemanticException {
+    ParentQueryWhereClauseRewrite rewrite =
+        new ParentQueryWhereClauseRewrite(whereCond, subQuery);
+    return rewrite.remove();
+  }
+
+  static ASTNode constructTrueCond() {
+    ASTNode eq = (ASTNode) ParseDriver.adaptor.create(HiveParser.EQUAL, "=");
+    ASTNode lhs = (ASTNode) ParseDriver.adaptor.create(HiveParser.Number, "1");
+    ASTNode rhs = (ASTNode) ParseDriver.adaptor.create(HiveParser.Number, "1");
+    ParseDriver.adaptor.addChild(eq, lhs);
+    ParseDriver.adaptor.addChild(eq, rhs);
+    return eq;
+  }
+
+  static ASTNode andAST(ASTNode left, ASTNode right) {
+    if ( left == null ) {
+      return right;
+    } else if ( right == null ) {
+      return left;
+    } else {
+      Object o = ParseDriver.adaptor.create(HiveParser.KW_AND, "AND");
+      ParseDriver.adaptor.addChild(o, left);
+      ParseDriver.adaptor.addChild(o, right);
+      return (ASTNode) o;
+    }
+  }
+
+  static ASTNode orAST(ASTNode left, ASTNode right) {
+    if ( left == null ) {
+      return right;
+    } else if ( right == null ) {
+      return left;
+    } else {
+      Object o = ParseDriver.adaptor.create(HiveParser.KW_OR, "OR");
+      ParseDriver.adaptor.addChild(o, left);
+      ParseDriver.adaptor.addChild(o, right);
+      return (ASTNode) o;
+    }
+  }
+
+  static ASTNode isNull(ASTNode expr) {
+    ASTNode node = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_FUNCTION, "TOK_FUNCTION");
+    node.addChild((ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_ISNULL, "TOK_ISNULL"));
+    node.addChild(expr);
+    return node;
+  }
+
+
+  /*
+   * Check that SubQuery is a top level conjuncts.
+   * Remove it from the Where Clause AST.
+   */
+  static class ParentQueryWhereClauseRewrite {
+    ASTNode root;
+    ASTNode subQuery;
+
+    ParentQueryWhereClauseRewrite(ASTNode root, ASTNode subQuery) {
+      this.root = root;
+      this.subQuery = subQuery;
+    }
+
+    ASTNode getParentInWhereClause(ASTNode node) {
+      if (node == null || node == root) {
+        return null;
+      }
+      return (ASTNode) node.getParent();
+    }
+
+    boolean removeSubQuery(ASTNode node) {
+      if (node.getType() == HiveParser.KW_AND) {
+        boolean r = removeSubQuery((ASTNode) node.getChild(0));
+        if (!r) {
+          r = removeSubQuery((ASTNode) node.getChild(1));
+        }
+        return r;
+      } else if (node.getType() == HiveParser.KW_NOT) {
+        ASTNode child = (ASTNode) node.getChild(0);
+        if (child == subQuery) {
+          ASTNode sqOpType = (ASTNode) subQuery.getChild(0).getChild(0);
+          if (sqOpType.getType() == HiveParser.KW_EXISTS) {
+            sqOpType.getToken().setType(HiveParser.TOK_SUBQUERY_OP_NOTEXISTS);
+          } else {
+            sqOpType.getToken().setType(HiveParser.TOK_SUBQUERY_OP_NOTIN);
+          }
+          ASTNode parent = getParentInWhereClause(node);
+          if (parent == null) {
+            root = subQuery;
+          } else {
+            int nodeIdx = node.getChildIndex();
+            parent.setChild(nodeIdx, subQuery);
+          }
+          return removeSubQuery(subQuery);
+
+        }
+        return false;
+      } else if (node == subQuery) {
+        ASTNode parent = getParentInWhereClause(node);
+        ASTNode gParent = getParentInWhereClause(parent);
+        ASTNode sibling = null;
+
+        if (parent != null) {
+          if (subQuery.getChildIndex() == 0) {
+            sibling = (ASTNode) parent.getChild(1);
+          } else {
+            sibling = (ASTNode) parent.getChild(0);
+          }
+        }
+
+        /*
+         * SubQuery was only condition in where clause
+         */
+        if (sibling == null) {
+          root = constructTrueCond();
+        } // SubQuery was just one conjunct
+        else if (gParent == null) {
+          root = sibling;
+        } else {
+          // otherwise replace parent by sibling.
+          int pIdx = parent.getChildIndex();
+          gParent.setChild(pIdx, sibling);
+        }
+        return true;
+      } else {
+        return false;
+      }
+    }
+
+    ASTNode remove() throws SemanticException {
+      boolean r = removeSubQuery(root);
+      if (r) {
+        return root;
+      }
+      /*
+       *  Restriction.7.h :: SubQuery predicates can appear only as top level conjuncts.
+       */
+      throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+          subQuery, "Only SubQuery expressions that are top level conjuncts are allowed"));
+    }
+  }
+
+  static List<ASTNode> findSubQueries(ASTNode node)
+      throws SemanticException {
+    TreeWizard tw = new TreeWizard(ParseDriver.adaptor, HiveParser.tokenNames);
+    SubQueryVisitor visitor = new SubQueryVisitor();
+    tw.visit(node, HiveParser.TOK_SUBQUERY_EXPR, visitor);
+    return visitor.getSubQueries();
+  }
+
+  static class SubQueryVisitor implements ContextVisitor {
+    String errMsg;
+    boolean throwError = false;
+    ASTNode errorNode;
+    List<ASTNode> subQueries;
+
+    @SuppressWarnings("rawtypes")
+    @Override
+    public void visit(Object t, Object parent, int childIndex, Map labels) {
+      if (subQueries == null ) {
+        subQueries = new ArrayList<ASTNode>();
+      }
+      subQueries.add((ASTNode)t);
+    }
+
+    public List<ASTNode> getSubQueries() {
+      return subQueries;
+    }
+
+  }
+
+  static QBSubQuery buildSubQuery(String outerQueryId,
+      int sqIdx,
+      ASTNode sqAST,
+      ASTNode originalSQAST,
+      Context ctx) throws SemanticException {
+    ASTNode sqOp = (ASTNode) sqAST.getChild(0);
+    ASTNode sq = (ASTNode) sqAST.getChild(1);
+    ASTNode outerQueryExpr = (ASTNode) sqAST.getChild(2);
+   return new QBSubQuery(outerQueryId, sqIdx, sq, outerQueryExpr,
+       buildSQOperator(sqOp),
+       originalSQAST,
+       ctx);
+  }
+
+  static SubQueryTypeDef buildSQOperator(ASTNode astSQOp) throws SemanticException {
+    ASTNode opAST = (ASTNode) astSQOp.getChild(0);
+    SubQueryType type = SubQueryType.get(opAST);
+    return new SubQueryTypeDef(opAST, type);
+  }
+
+  /*
+   * is this expr a UDAF invocation; does it imply windowing
+   * @return
+   * 0 if implies neither
+   * 1 if implies aggregation
+   * 2 if implies windowing
+   */
+  static int checkAggOrWindowing(ASTNode expressionTree) throws SemanticException {
+    int exprTokenType = expressionTree.getToken().getType();
+    if (exprTokenType == HiveParser.TOK_FUNCTION
+        || exprTokenType == HiveParser.TOK_FUNCTIONDI
+        || exprTokenType == HiveParser.TOK_FUNCTIONSTAR) {
+      assert (expressionTree.getChildCount() != 0);
+      if (expressionTree.getChild(expressionTree.getChildCount()-1).getType()
+          == HiveParser.TOK_WINDOWSPEC) {
+        return 2;
+      }
+      if (expressionTree.getChild(0).getType() == HiveParser.Identifier) {
+        String functionName = SemanticAnalyzer.unescapeIdentifier(expressionTree.getChild(0)
+            .getText());
+        if (FunctionRegistry.getGenericUDAFResolver(functionName) != null) {
+          return 1;
+        }
+      }
+    }
+    int r = 0;
+    for (int i = 0; i < expressionTree.getChildCount(); i++) {
+      int c = checkAggOrWindowing((ASTNode) expressionTree.getChild(i));
+      r = Math.max(r, c);
+    }
+    return r;
+  }
+
+  static List<String> getTableAliasesInSubQuery(QBSubQuery sq) {
+    List<String> aliases = new ArrayList<String>();
+    ASTNode joinAST = (ASTNode) sq.getSubQueryAST().getChild(0);
+    getTableAliasesInSubQuery((ASTNode) joinAST.getChild(0), aliases);
+    return aliases;
+  }
+
+  private static void getTableAliasesInSubQuery(ASTNode joinNode, List<String> aliases) {
+
+    if ((joinNode.getToken().getType() == HiveParser.TOK_TABREF)
+        || (joinNode.getToken().getType() == HiveParser.TOK_SUBQUERY)
+        || (joinNode.getToken().getType() == HiveParser.TOK_PTBLFUNCTION)) {
+      String tableName = SemanticAnalyzer.getUnescapedUnqualifiedTableName((ASTNode) joinNode.getChild(0))
+          .toLowerCase();
+      String alias = joinNode.getChildCount() == 1 ? tableName
+          : SemanticAnalyzer.unescapeIdentifier(joinNode.getChild(joinNode.getChildCount() - 1)
+          .getText().toLowerCase());
+      alias = (joinNode.getToken().getType() == HiveParser.TOK_PTBLFUNCTION) ?
+          SemanticAnalyzer.unescapeIdentifier(joinNode.getChild(1).getText().toLowerCase()) :
+            alias;
+      aliases.add(alias);
+    } else {
+      ASTNode left = (ASTNode) joinNode.getChild(0);
+      ASTNode right = (ASTNode) joinNode.getChild(1);
+      getTableAliasesInSubQuery(left, aliases);
+      getTableAliasesInSubQuery(right, aliases);
+    }
+  }
+
+  /*
+   * construct the ASTNode for the SQ column that will join with the OuterQuery Expression.
+   * So for 'select ... from R1 where A in (select B from R2...)'
+   * this will build (= outerQueryExpr 'ast returned by call to buildSQJoinExpr')
+   */
+  static ASTNode buildOuterQryToSQJoinCond(ASTNode outerQueryExpr,
+      String sqAlias,
+      RowResolver sqRR) {
+    ASTNode node = (ASTNode) ParseDriver.adaptor.create(HiveParser.EQUAL, "=");
+    node.addChild(outerQueryExpr);
+    node.addChild(buildSQJoinExpr(sqAlias, sqRR, false));
+    return node;
+  }
+
+  /*
+   * construct the ASTNode for the SQ column that will join with the OuterQuery Expression.
+   * So for 'select ... from R1 where A in (select B from R2...)'
+   * this will build (. (TOK_TABLE_OR_COL Identifier[SQ_1]) Identifier[B])
+   * where 'SQ_1' is the alias generated for the SubQuery.
+   */
+  static ASTNode buildSQJoinExpr(String sqAlias, RowResolver sqRR,
+      boolean useInternalName) {
+
+    List<ColumnInfo> signature = sqRR.getRowSchema().getSignature();
+    ColumnInfo joinColumn = signature.get(0);
+    String[] joinColName = sqRR.reverseLookup(joinColumn.getInternalName());
+    return createColRefAST(sqAlias, useInternalName ?
+        joinColumn.getInternalName() : joinColName[1]);
+  }
+
+  static ASTNode buildOuterJoinPostCond(String sqAlias, RowResolver sqRR) {
+    return isNull(buildSQJoinExpr(sqAlias, sqRR, false));
+  }
+
+  @SuppressWarnings("rawtypes")
+  static String getAlias(Operator o, Map<String, Operator> aliasToOpInfo) {
+    for(Map.Entry<String, Operator> e : aliasToOpInfo.entrySet()) {
+      if ( e.getValue() == o) {
+        return e.getKey();
+      }
+    }
+    return null;
+  }
+
+  static ASTNode createColRefAST(String tabAlias, String colName) {
+    ASTNode dot = (ASTNode) ParseDriver.adaptor.create(HiveParser.DOT, ".");
+    ASTNode tabAst = createTabRefAST(tabAlias);
+    ASTNode colAst = (ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, colName);
+    dot.addChild(tabAst);
+    dot.addChild(colAst);
+    return dot;
+  }
+
+  static ASTNode createAliasAST(String colName) {
+    return (ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, colName);
+  }
+
+  static ASTNode createTabRefAST(String tabAlias) {
+    ASTNode tabAst = (ASTNode)
+        ParseDriver.adaptor.create(HiveParser.TOK_TABLE_OR_COL, "TOK_TABLE_OR_COL");
+    ASTNode tabName = (ASTNode) ParseDriver.adaptor.create(HiveParser.Identifier, tabAlias);
+    tabAst.addChild(tabName);
+    return tabAst;
+  }
+
+  static ASTNode buildSelectExpr(ASTNode expression) {
+    ASTNode selAst = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
+    selAst.addChild(expression);
+    return selAst;
+  }
+
+  static ASTNode buildGroupBy() {
+    ASTNode gBy = (ASTNode) ParseDriver.adaptor.create(HiveParser.TOK_GROUPBY, "TOK_GROUPBY");
+    return gBy;
+  }
+
+  static ASTNode createSelectItem(ASTNode expr, ASTNode alias) {
+    ASTNode selectItem = (ASTNode)
+        ParseDriver.adaptor.create(HiveParser.TOK_SELEXPR, "TOK_SELEXPR");
+    selectItem.addChild(expr);
+    selectItem.addChild(alias);
+    return selectItem;
+  }
+
+  static ASTNode alterCorrelatedPredicate(ASTNode correlatedExpr, ASTNode sqAlias, boolean left) {
+    if ( left ) {
+      correlatedExpr.setChild(0, sqAlias);
+    } else {
+      correlatedExpr.setChild(1, sqAlias);
+    }
+    return correlatedExpr;
+  }
+
+  static void addGroupExpressionToFront(ASTNode gBy, ASTNode expr) {
+    ASTNode grpExpr = (ASTNode)
+        ParseDriver.adaptor.create(HiveParser.TOK_GROUPING_SETS_EXPRESSION,
+            "TOK_GROUPING_SETS_EXPRESSION");
+    grpExpr.addChild(expr);
+    List<ASTNode> newChildren = new ArrayList<ASTNode>();
+    newChildren.add(expr);
+    int i = gBy.getChildCount() - 1;
+    while ( i >= 0 ) {
+      newChildren.add((ASTNode) gBy.deleteChild(i));
+      i--;
+    }
+    for(ASTNode child : newChildren ) {
+      gBy.addChild(child);
+    }
+  }
+
+  static ASTNode buildPostJoinNullCheck(List<ASTNode> subQueryJoinAliasExprs) {
+    ASTNode check = null;
+    for(ASTNode expr : subQueryJoinAliasExprs) {
+      check = orAST(check, isNull(expr));
+    }
+    return check;
+  }
+
+  static void setOriginDeep(ASTNode node, ASTNodeOrigin origin) {
+    if ( node == null ) {
+      return;
+    }
+    node.setOrigin(origin);
+    int childCnt = node.getChildCount();
+    for(int i=0; i<childCnt; i++) {
+      setOriginDeep((ASTNode)node.getChild(i), origin);
+    }
+  }
+
+}
+
+
+
+

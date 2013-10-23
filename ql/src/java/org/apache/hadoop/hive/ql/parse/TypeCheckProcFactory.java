@@ -70,6 +70,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 
+
 /**
  * The Factory for creating typecheck processors. The typecheck processors are
  * used to processes the syntax trees for expressions and convert them into
@@ -156,13 +157,16 @@ public final class TypeCheckProcFactory {
         + "%|" + HiveParser.KW_IF + "%|" + HiveParser.KW_CASE + "%|"
         + HiveParser.KW_WHEN + "%|" + HiveParser.KW_IN + "%|"
         + HiveParser.KW_ARRAY + "%|" + HiveParser.KW_MAP + "%|"
-        + HiveParser.KW_STRUCT + "%"),
+        + HiveParser.KW_STRUCT + "%|" + HiveParser.KW_EXISTS + "%|"
+        + HiveParser.TOK_SUBQUERY_OP_NOTIN + "%"),
         getStrExprProcessor());
     opRules.put(new RuleRegExp("R4", HiveParser.KW_TRUE + "%|"
         + HiveParser.KW_FALSE + "%"), getBoolExprProcessor());
     opRules.put(new RuleRegExp("R5", HiveParser.TOK_DATELITERAL + "%"), getDateExprProcessor());
     opRules.put(new RuleRegExp("R6", HiveParser.TOK_TABLE_OR_COL + "%"),
         getColumnExprProcessor());
+    opRules.put(new RuleRegExp("R7", HiveParser.TOK_SUBQUERY_OP + "%"),
+        getSubQueryExprProcessor());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
@@ -1119,5 +1123,45 @@ public final class TypeCheckProcFactory {
    */
   public static DefaultExprProcessor getDefaultExprProcessor() {
     return new DefaultExprProcessor();
+  }
+
+  /**
+   * Processor for subquery expressions..
+   */
+  public static class SubQueryExprProcessor implements NodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+
+      TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
+      if (ctx.getError() != null) {
+        return null;
+      }
+
+      ExprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
+      if (desc != null) {
+        return desc;
+      }
+
+      ASTNode expr = (ASTNode) nd;
+      ASTNode sqNode = (ASTNode) expr.getParent().getChild(1);
+      /*
+       * Restriction.1.h :: SubQueries only supported in the SQL Where Clause.
+       */
+      ctx.setError(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(sqNode,
+          "Currently SubQuery expressions are only allowed as Where Clause predicates"),
+          sqNode);
+      return null;
+    }
+  }
+
+  /**
+   * Factory method to get SubQueryExprProcessor.
+   *
+   * @return DateExprProcessor.
+   */
+  public static SubQueryExprProcessor getSubQueryExprProcessor() {
+    return new SubQueryExprProcessor();
   }
 }
