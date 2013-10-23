@@ -84,7 +84,7 @@ STAGE PLANS:
             Group By Operator
               aggregations:
                     expr: count(DISTINCT KEY._col1:0._col0)
-                    expr: sum(KEY._col1:1._col0)
+                    expr: sum(KEY._col1:0._col0)
                     expr: sum(DISTINCT KEY._col1:1._col0)
                     expr: count(VALUE._col0)
               bucketGroup: false
@@ -121,7 +121,7 @@ STAGE PLANS:
             Group By Operator
               aggregations:
                     expr: count(DISTINCT KEY._col1:0._col0)
-                    expr: sum(KEY._col1:1._col0)
+                    expr: sum(KEY._col1:0._col0)
                     expr: sum(DISTINCT KEY._col1:1._col0)
                     expr: count(VALUE._col0)
               bucketGroup: false
@@ -154,7 +154,7 @@ STAGE PLANS:
           Group By Operator
             aggregations:
                   expr: count(DISTINCT KEY._col1:0._col0)
-                  expr: sum(KEY._col1:1._col0)
+                  expr: sum(KEY._col1:0._col0)
                   expr: sum(DISTINCT KEY._col1:1._col0)
                   expr: count(VALUE._col0)
             bucketGroup: false
@@ -447,7 +447,7 @@ STAGE PLANS:
             Group By Operator
               aggregations:
                     expr: count(DISTINCT KEY._col1:0._col0)
-                    expr: sum(KEY._col1:1._col0)
+                    expr: sum(KEY._col1:0._col0)
                     expr: sum(DISTINCT KEY._col1:1._col0)
                     expr: count(VALUE._col0)
               bucketGroup: false
@@ -484,7 +484,7 @@ STAGE PLANS:
             Group By Operator
               aggregations:
                     expr: count(DISTINCT KEY._col1:0._col0)
-                    expr: sum(KEY._col1:1._col0)
+                    expr: sum(KEY._col1:0._col0)
                     expr: sum(DISTINCT KEY._col1:1._col0)
                     expr: count(VALUE._col0)
               bucketGroup: false
@@ -517,7 +517,7 @@ STAGE PLANS:
           Group By Operator
             aggregations:
                   expr: count(DISTINCT KEY._col1:0._col0)
-                  expr: sum(KEY._col1:1._col0)
+                  expr: sum(KEY._col1:0._col0)
                   expr: sum(DISTINCT KEY._col1:1._col0)
                   expr: count(VALUE._col0)
             bucketGroup: false

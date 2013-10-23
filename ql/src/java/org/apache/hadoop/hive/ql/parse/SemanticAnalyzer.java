@@ -3505,7 +3505,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode value = entry.getValue();
       String aggName = unescapeIdentifier(value.getChild(0).getText());
       ArrayList<ExprNodeDesc> aggParameters = new ArrayList<ExprNodeDesc>();
-      new ArrayList<Class<?>>();
       // 0 is the function name
       for (int i = 1; i < value.getChildCount(); i++) {
         ASTNode paraExpr = (ASTNode) value.getChild(i);
@@ -3531,8 +3530,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String field = getColumnInternalName(groupByKeys.size()
           + aggregations.size() - 1);
       outputColumnNames.add(field);
-      groupByOutputRowResolver.putExpression(value, new ColumnInfo(
-          field, udaf.returnType, "", false));
+      if (groupByOutputRowResolver.getExpression(value) == null) {
+        groupByOutputRowResolver.putExpression(value, new ColumnInfo(
+            field, udaf.returnType, "", false));
+      }
       // Save the evaluator so that it can be used by the next-stage
       // GroupByOperators
       if (genericUDAFEvaluators != null) {
@@ -3713,17 +3714,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           // add the expr to reduceKeys if it is not present
           if (ri == reduceKeys.size()) {
+            String name = getColumnInternalName(numExprs);
+            String field = Utilities.ReduceField.KEY.toString() + "." + colName
+                + ":" + i
+                + "." + name;
+            ColumnInfo colInfo = new ColumnInfo(field, expr.getTypeInfo(), null, false);
+            reduceSinkOutputRowResolver.putExpression(parameter, colInfo);
+            colExprMap.put(field, expr);
             reduceKeys.add(expr);
           }
           // add the index of expr in reduceKeys to distinctIndices
           distinctIndices.add(ri);
-          String name = getColumnInternalName(numExprs);
-          String field = Utilities.ReduceField.KEY.toString() + "." + colName
-              + ":" + i
-              + "." + name;
-          ColumnInfo colInfo = new ColumnInfo(field, expr.getTypeInfo(), null, false);
-          reduceSinkOutputRowResolver.putExpression(parameter, colInfo);
-          colExprMap.put(field, expr);
           numExprs++;
         }
         distinctColIndices.add(distinctIndices);
