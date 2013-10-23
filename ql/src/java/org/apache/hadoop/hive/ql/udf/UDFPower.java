@@ -21,6 +21,9 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncPowerDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncPowerLongToDouble;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -33,6 +36,7 @@ import org.apache.hadoop.io.IntWritable;
     value = "_FUNC_(x1, x2) - raise x1 to the power of x2",
     extended = "Example:\n"
     + "  > SELECT _FUNC_(2, 3) FROM src LIMIT 1;\n" + "  8")
+@VectorizedExpressions({FuncPowerLongToDouble.class, FuncPowerDoubleToDouble.class})
 public class UDFPower extends UDF {
   private final DoubleWritable resultDouble = new DoubleWritable();
   private final HiveDecimalWritable resultHiveDecimal = new HiveDecimalWritable();

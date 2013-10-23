@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 
 /**
@@ -140,5 +141,14 @@ public abstract class FuncLongToString extends VectorExpression {
   @Override
   public String getOutputType() {
     return "String";
+  }
+
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    return (new VectorExpressionDescriptor.Builder()).setMode(
+        VectorExpressionDescriptor.Mode.PROJECTION).setNumArguments(1).setInputExpressionTypes(
+            VectorExpressionDescriptor.InputExpressionType.COLUMN).setArgumentTypes(
+                VectorExpressionDescriptor.ArgumentType.LONG).build();
   }
 }

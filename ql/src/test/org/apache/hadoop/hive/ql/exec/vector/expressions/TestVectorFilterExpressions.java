@@ -181,7 +181,7 @@ public class TestVectorFilterExpressions {
     VectorizedRowBatch vrb = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
         5, 2, seed);
     LongColumnVector lcv0 = (LongColumnVector) vrb.cols[0];
-    FilterLongScalarLessLongColumn expr1 = new FilterLongScalarLessLongColumn(0, 15);
+    FilterLongScalarLessLongColumn expr1 = new FilterLongScalarLessLongColumn(15, 0);
 
     //Basic case
     lcv0.vector[0] = 5;
@@ -197,7 +197,7 @@ public class TestVectorFilterExpressions {
     assertEquals(1, vrb.selected[0]);
     assertEquals(2, vrb.selected[1]);
 
-    FilterLongScalarGreaterLongColumn expr2 = new FilterLongScalarGreaterLongColumn(0, 18);
+    FilterLongScalarGreaterLongColumn expr2 = new FilterLongScalarGreaterLongColumn(18, 0);
     expr2.evaluate(vrb);
     assertEquals(1, vrb.size);
     assertTrue(vrb.selectedInUse);

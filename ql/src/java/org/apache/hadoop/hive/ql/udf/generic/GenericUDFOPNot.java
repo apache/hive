@@ -21,6 +21,9 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.NotCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsFalse;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
@@ -32,6 +35,7 @@ import org.apache.hadoop.io.BooleanWritable;
  *
  */
 @Description(name = "not", value = "_FUNC_ a - Logical not")
+@VectorizedExpressions({NotCol.class, SelectColumnIsFalse.class})
 public class GenericUDFOPNot extends GenericUDF {
   private final BooleanWritable result = new BooleanWritable();
   private transient BooleanObjectInspector boi;

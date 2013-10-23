@@ -52,7 +52,6 @@ public class VectorSelectOperator extends SelectOperator {
       throws HiveException {
     this.conf = (SelectDesc) conf;
     List<ExprNodeDesc> colList = this.conf.getColList();
-    vContext.setOperatorType(OperatorType.SELECT);
     vExpressions = new VectorExpression[colList.size()];
     for (int i = 0; i < colList.size(); i++) {
       ExprNodeDesc expr = colList.get(i);

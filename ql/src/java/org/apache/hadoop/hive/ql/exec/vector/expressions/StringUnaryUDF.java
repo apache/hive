@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import java.util.Arrays;
 
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.io.Text;
 
@@ -82,7 +83,7 @@ public class StringUnaryUDF extends VectorExpression {
     // existing built-in function.
 
     if (inputColVector.noNulls) {
-      outV.noNulls = true; 
+      outV.noNulls = true;
       if (inputColVector.isRepeating) {
         outV.isRepeating = true;
         s.set(vector[0], start[0], length[0]);
@@ -91,10 +92,10 @@ public class StringUnaryUDF extends VectorExpression {
       } else if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          
+
           /* Fill output isNull with false for selected elements since there is a chance we'll
            * convert to noNulls == false in setString();
-           */     
+           */
           outV.isNull[i] = false;
           s.set(vector[i], start[i], length[i]);
           t = func.evaluate(s);
@@ -102,7 +103,7 @@ public class StringUnaryUDF extends VectorExpression {
         }
         outV.isRepeating = false;
       } else {
-        
+
         // Set all elements to not null. The setString call can override this.
         Arrays.fill(outV.isNull, 0, n - 1, false);
         for(int i = 0; i != n; i++) {
@@ -127,18 +128,18 @@ public class StringUnaryUDF extends VectorExpression {
       } else if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outV.isNull[i] = inputColVector.isNull[i]; // setString can override this          
+          outV.isNull[i] = inputColVector.isNull[i]; // setString can override this
           if (!inputColVector.isNull[i]) {
             s.set(vector[i], start[i], length[i]);
             t = func.evaluate(s);
             setString(outV, i, t);
-          }  
+          }
         }
         outV.isRepeating = false;
       } else {
-        
+
         // setString can override this null propagation
-        System.arraycopy(inputColVector.isNull, 0, outV.isNull, 0, n); 
+        System.arraycopy(inputColVector.isNull, 0, outV.isNull, 0, n);
         for(int i = 0; i != n; i++) {
           if (!inputColVector.isNull[i]) {
             s.set(vector[i], start[i], length[i]);
@@ -150,7 +151,7 @@ public class StringUnaryUDF extends VectorExpression {
       }
     }
   }
-  
+
   /* Set the output string entry i to the contents of Text object t.
    * If t is a null object reference, record that the value is a SQL NULL.
    */
@@ -191,5 +192,17 @@ public class StringUnaryUDF extends VectorExpression {
 
   public void setOutputColumn(int outputColumn) {
     this.outputColumn = outputColumn;
+  }
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    VectorExpressionDescriptor.Builder b = new VectorExpressionDescriptor.Builder();
+    b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
+        .setNumArguments(1)
+        .setArgumentTypes(
+            VectorExpressionDescriptor.ArgumentType.STRING)
+        .setInputExpressionTypes(
+            VectorExpressionDescriptor.InputExpressionType.COLUMN);
+    return b.build();
   }
 }

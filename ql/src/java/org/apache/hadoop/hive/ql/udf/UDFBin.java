@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.udf;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncBin;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 
@@ -31,9 +33,10 @@ import org.apache.hadoop.io.Text;
     value = "_FUNC_(n) - returns n in binary",
     extended = "n is a BIGINT. Returns NULL if n is NULL.\n"
     + "Example:\n" + "  > SELECT _FUNC_(13) FROM src LIMIT 1\n" + "  '1101'")
+@VectorizedExpressions({FuncBin.class})
 public class UDFBin extends UDF {
   private final Text result = new Text();
-  private byte[] value = new byte[64];
+  private final byte[] value = new byte[64];
 
   public Text evaluate(LongWritable n) {
     if (n == null) {

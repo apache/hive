@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
 /**
  * Vectorized implementation for Pow(a, power) and Power(a, power)
@@ -29,8 +30,9 @@ public class FuncPowerLongToDouble extends MathFuncLongToDouble
 
   private double power;
 
-  public FuncPowerLongToDouble(int colNum, int outputColumn) {
+  public FuncPowerLongToDouble(int colNum, double scalarVal, int outputColumn) {
     super(colNum, outputColumn);
+    this.power = scalarVal;
   }
 
   public FuncPowerLongToDouble() {
@@ -60,5 +62,19 @@ public class FuncPowerLongToDouble extends MathFuncLongToDouble
   protected void cleanup(DoubleColumnVector outputColVector, int[] sel,
       boolean selectedInUse, int n) {
     // do nothing
+  }
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    return (new VectorExpressionDescriptor.Builder())
+        .setMode(
+            VectorExpressionDescriptor.Mode.PROJECTION)
+        .setNumArguments(2)
+        .setArgumentTypes(
+            VectorExpressionDescriptor.ArgumentType.LONG,
+            VectorExpressionDescriptor.ArgumentType.DOUBLE)
+        .setInputExpressionTypes(
+            VectorExpressionDescriptor.InputExpressionType.COLUMN,
+            VectorExpressionDescriptor.InputExpressionType.SCALAR).build();
   }
 }

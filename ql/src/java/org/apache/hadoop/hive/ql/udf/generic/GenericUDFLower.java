@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLower;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -40,6 +42,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 value = "_FUNC_(str) - Returns str with all characters changed to lowercase",
 extended = "Example:\n"
 + "  > SELECT _FUNC_('Facebook') FROM src LIMIT 1;\n" + "  'facebook'")
+@VectorizedExpressions({StringLower.class})
 public class GenericUDFLower extends GenericUDF {
   private transient PrimitiveObjectInspector argumentOI;
   private transient StringConverter stringConverter;

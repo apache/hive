@@ -21,6 +21,8 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLTrim;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -31,8 +33,9 @@ import org.apache.hadoop.io.Text;
     value = "_FUNC_(str) - Removes the leading space characters from str ",
     extended = "Example:\n"
     + "  > SELECT _FUNC_('   facebook') FROM src LIMIT 1;\n" + "  'facebook'")
+@VectorizedExpressions({StringLTrim.class})
 public class UDFLTrim extends UDF {
-  private Text result = new Text();
+  private final Text result = new Text();
 
   public UDFLTrim() {
   }

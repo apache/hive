@@ -100,11 +100,9 @@ public class VectorMapJoinOperator extends MapJoinOperator {
     tagLen = desc.getTagLength();
     noOuterJoin = desc.isNoOuterJoin();
 
-    vContext.setOperatorType(OperatorType.FILTER);
     Map<Byte, List<ExprNodeDesc>> filterExpressions = desc.getFilters();
-    bigTableFilterExpressions = vContext.getVectorExpressions(filterExpressions.get(posBigTable));
-
-    vContext.setOperatorType(OperatorType.MAPJOIN);
+    bigTableFilterExpressions = vContext.getVectorExpressions(filterExpressions.get(posBigTable),
+        VectorExpressionDescriptor.Mode.FILTER);
 
     List<ExprNodeDesc> keyDesc = desc.getKeys().get(posBigTable);
     keyExpressions = vContext.getVectorExpressions(keyDesc);

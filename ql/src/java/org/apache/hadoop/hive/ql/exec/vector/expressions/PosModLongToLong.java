@@ -18,13 +18,16 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+
 public class PosModLongToLong extends MathFuncLongToLong
     implements ISetLongArg {
   private static final long serialVersionUID = 1L;
   private long divisor;
 
-  public PosModLongToLong(int inputCol, int outputCol) {
+  public PosModLongToLong(int inputCol, long scalarVal, int outputCol) {
     super(inputCol, outputCol);
+    this.divisor = scalarVal;
   }
 
   public PosModLongToLong() {
@@ -49,5 +52,19 @@ public class PosModLongToLong extends MathFuncLongToLong
 
   public long getDivisor() {
     return divisor;
+  }
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    return (new VectorExpressionDescriptor.Builder())
+        .setMode(
+            VectorExpressionDescriptor.Mode.PROJECTION)
+        .setNumArguments(2)
+        .setArgumentTypes(
+            VectorExpressionDescriptor.ArgumentType.LONG,
+            VectorExpressionDescriptor.ArgumentType.LONG)
+        .setInputExpressionTypes(
+            VectorExpressionDescriptor.InputExpressionType.COLUMN,
+            VectorExpressionDescriptor.InputExpressionType.SCALAR).build();
   }
 }

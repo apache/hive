@@ -22,6 +22,9 @@ import java.util.Random;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncRandNoSeed;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncRand;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.LongWritable;
 
@@ -32,10 +35,11 @@ import org.apache.hadoop.io.LongWritable;
 @Description(name = "rand",
     value = "_FUNC_([seed]) - Returns a pseudorandom number between 0 and 1")
 @UDFType(deterministic = false)
+@VectorizedExpressions({FuncRandNoSeed.class, FuncRand.class})
 public class UDFRand extends UDF {
   private Random random;
 
-  private DoubleWritable result = new DoubleWritable();
+  private final DoubleWritable result = new DoubleWritable();
 
   public UDFRand() {
   }
