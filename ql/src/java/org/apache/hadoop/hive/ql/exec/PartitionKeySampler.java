@@ -120,7 +120,7 @@ public class PartitionKeySampler implements OutputCollector<HiveKey, Object> {
     int sampleNum = conf.getIntVar(HiveConf.ConfVars.HIVESAMPLINGNUMBERFORORDERBY);
     float samplePercent = conf.getFloatVar(HiveConf.ConfVars.HIVESAMPLINGPERCENTFORORDERBY);
     if (samplePercent < 0.0 || samplePercent > 1.0) {
-      throw new RuntimeException("Percentile value must be within the range of 0 to 1.");
+      throw new IllegalArgumentException("Percentile value must be within the range of 0 to 1.");
     }
     FetchSampler sampler = new FetchSampler(work, job, operator);
     sampler.setSampleNum(sampleNum);
