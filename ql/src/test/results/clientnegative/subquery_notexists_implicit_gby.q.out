@@ -1,0 +1,7 @@
+FAILED: SemanticException Line 7:7 Invalid SubQuery expression 'key' in definition of SubQuery sq_1 [
+exists 
+  (select sum(1)
+  from src a 
+  where b.value = a.value  and a.key = b.key and a.value > 'val_9'
+  )
+] used as sq_1 at Line 5:10: A Not Exists predicate on SubQuery with implicit Aggregation(no Group By clause) cannot be rewritten. (predicate will always return false).
