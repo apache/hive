@@ -156,7 +156,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(DISTINCT KEY._col1:0._col0)
-                expr: sum(KEY._col1:1._col0)
+                expr: sum(KEY._col1:0._col0)
                 expr: sum(DISTINCT KEY._col1:1._col0)
                 expr: count(DISTINCT KEY._col1:2._col0)
           bucketGroup: false
@@ -252,8 +252,8 @@ POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=12
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.c1 EXPRESSION [(srcpart)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.c2 EXPRESSION [(srcpart)src.FieldSchema(name:key, type:string, comment:default), (srcpart)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c3 EXPRESSION [(srcpart)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c4 EXPRESSION [(srcpart)src.null, ]
+POSTHOOK: Lineage: dest1.c3 EXPRESSION [(srcpart)src.null, ]
+POSTHOOK: Lineage: dest1.c4 EXPRESSION [(srcpart)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.key EXPRESSION [(srcpart)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT dest1.* FROM dest1
 PREHOOK: type: QUERY
@@ -265,8 +265,8 @@ POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.c1 EXPRESSION [(srcpart)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.c2 EXPRESSION [(srcpart)src.FieldSchema(name:key, type:string, comment:default), (srcpart)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c3 EXPRESSION [(srcpart)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c4 EXPRESSION [(srcpart)src.null, ]
+POSTHOOK: Lineage: dest1.c3 EXPRESSION [(srcpart)src.null, ]
+POSTHOOK: Lineage: dest1.c4 EXPRESSION [(srcpart)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.key EXPRESSION [(srcpart)src.FieldSchema(name:key, type:string, comment:default), ]
 0	1	00.0	0	1
 1	71	132828.0	10044	71

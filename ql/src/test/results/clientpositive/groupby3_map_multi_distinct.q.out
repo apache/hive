@@ -199,8 +199,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c10 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c11 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c10 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest1.c11 EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: dest1.c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
@@ -218,8 +218,8 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@dest1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: dest1.c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c10 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest1.c11 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: dest1.c10 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest1.c11 EXPRESSION [(src)src.null, ]
 POSTHOOK: Lineage: dest1.c2 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
