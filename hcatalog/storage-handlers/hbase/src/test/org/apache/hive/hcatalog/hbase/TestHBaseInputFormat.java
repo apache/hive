@@ -62,7 +62,6 @@ import org.apache.hive.hcatalog.data.HCatRecord;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
-import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
 import org.junit.Test;
 
 public class TestHBaseInputFormat extends SkeletonHBaseTest {
@@ -160,9 +159,7 @@ public class TestHBaseInputFormat extends SkeletonHBaseTest {
     MapReadHTable.resetCounters();
 
     job.setInputFormatClass(HCatInputFormat.class);
-    InputJobInfo inputJobInfo = InputJobInfo.create(databaseName, tableName,
-                null);
-    HCatInputFormat.setInput(job, inputJobInfo);
+    HCatInputFormat.setInput(job, databaseName, tableName);
     job.setOutputFormatClass(TextOutputFormat.class);
     TextOutputFormat.setOutputPath(job, outputDir);
     job.setMapOutputKeyClass(BytesWritable.class);
@@ -225,10 +222,9 @@ public class TestHBaseInputFormat extends SkeletonHBaseTest {
     job.setJarByClass(this.getClass());
     job.setMapperClass(MapReadProjHTable.class);
     job.setInputFormatClass(HCatInputFormat.class);
-    InputJobInfo inputJobInfo = InputJobInfo.create(
-      MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName, null);
     HCatInputFormat.setOutputSchema(job, getProjectionSchema());
-    HCatInputFormat.setInput(job, inputJobInfo);
+    HCatInputFormat.setInput(job,
+      MetaStoreUtils.DEFAULT_DATABASE_NAME, tableName);
     job.setOutputFormatClass(TextOutputFormat.class);
     TextOutputFormat.setOutputPath(job, outputDir);
     job.setMapOutputKeyClass(BytesWritable.class);

@@ -45,9 +45,7 @@
 	    <li><code>getTableSchema</code></li>
 	</ul>
 
-	<p>To use HCatInputFormat to read data, first instantiate an <code>InputJobInfo</code>
-	with the necessary information from the table being read
-	and then call setInput with the <code>InputJobInfo</code>.</p>
+	<p>To use HCatInputFormat to read data, call setInput with the database name, tablename and an optional partition filter.</p>
 
 <p>You can use the <code>setOutputSchema</code> method to include a projection schema, to
 specify the output fields. If a schema is not specified, all the columns in the table
@@ -62,11 +60,13 @@ will be returned.</p>
    * the information in the conf object. The inputInfo object is updated with
    * information needed in the client context
    * @param job the job object
-   * @param inputJobInfo the input info for table to read
+   * @param dbName the database where the table lies
+   * @param tableName the table to read
+   * @param filter the partition filter to use
    * @throws IOException the exception in communicating with the metadata server
    */
   public static void setInput(Job job,
-      InputJobInfo inputJobInfo) throws IOException;
+      String dbName, String tableName, String filter) throws IOException;
 
   /**
    * Set the schema for the HCatRecord data returned by HCatInputFormat.
@@ -354,8 +354,8 @@ public class GroupByAge extends Configured implements Tool {
         String dbName = null;
 
         Job job = new Job(conf, "GroupByAge");
-        HCatInputFormat.setInput(job, InputJobInfo.create(dbName,
-                inputTableName, null));
+        HCatInputFormat.setInput(job, dbName,
+                inputTableName);
         // initialize HCatOutputFormat
 
         job.setInputFormatClass(HCatInputFormat.class);
@@ -388,8 +388,8 @@ public class GroupByAge extends Configured implements Tool {
 <li>The implementation of Map takes HCatRecord as an input and the implementation of Reduce produces it as an output.</li>
 <li>This example program assumes the schema of the input, but it could also retrieve the schema via
 HCatOutputFormat.getOutputSchema() and retrieve fields based on the results of that call.</li>
-<li>The input descriptor for the table to be read is created by calling InputJobInfo.create.  It requires the database name,
-table name, and partition filter.  In this example the partition filter is null, so all partitions of the table
+<li>The input descriptor for the table to be read is created by passing the database name,
+table name, and an optional partition filter to HCatInputFormat.setInput. In this example the partition filter is null, so all partitions of the table
 will be read.</li>
 <li>The output descriptor for the table to be written is created by calling OutputJobInfo.create.  It requires the
 database name, the table name, and a Map of partition keys and values that describe the partition being written.
@@ -397,7 +397,7 @@ In this example it is assumed the table is unpartitioned, so this Map is null.</
 </ol>
 
 <p>To scan just selected partitions of a table, a filter describing the desired partitions can be passed to
-InputJobInfo.create.  To scan a single partition, the filter string should look like: "<code>ds=20120401</code>"
+HCatInputFormat.setInput.  To scan a single partition, the filter string should look like: "<code>ds=20120401</code>"
 where the datestamp "<code>ds</code>" is the partition column name and "<code>20120401</code>" is the value
 you want to read (year, month, and day).</p>
 </section>
@@ -420,14 +420,14 @@ you want to read (year, month, and day).</p>
 
 <p>Assume for example you have a web_logs table that is partitioned by the column "<code>ds</code>".  You could select one partition of the table by changing</p>
 <source>
-HCatInputFormat.setInput(job, InputJobInfo.create(dbName, inputTableName, null));
+HCatInputFormat.setInput(job, dbName, inputTableName);
 </source>
 <p>
 to
 </p>
 <source>
 HCatInputFormat.setInput(job,
-                         InputJobInfo.create(dbName, inputTableName, "ds=\"20110924\""));
+                         dbName, inputTableName, "ds=\"20110924\"");
 </source>
 <p>
 This filter must reference only partition columns.  Values from other columns will cause the job to fail.</p>

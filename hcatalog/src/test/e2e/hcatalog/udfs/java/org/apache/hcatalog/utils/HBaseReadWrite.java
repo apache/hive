@@ -41,7 +41,6 @@ import org.apache.hcatalog.data.DefaultHCatRecord;
 import org.apache.hcatalog.data.HCatRecord;
 import org.apache.hcatalog.mapreduce.HCatInputFormat;
 import org.apache.hcatalog.mapreduce.HCatOutputFormat;
-import org.apache.hcatalog.mapreduce.InputJobInfo;
 import org.apache.hcatalog.mapreduce.OutputJobInfo;
 
 /**
@@ -165,8 +164,7 @@ public class HBaseReadWrite extends Configured implements Tool {
     if (!succ) return 1;
 
     job = new Job(conf, "HBaseRead");
-    HCatInputFormat.setInput(job, InputJobInfo.create(dbName, tableName,
-      null));
+    HCatInputFormat.setInput(job, dbName, tableName);
 
     job.setInputFormatClass(HCatInputFormat.class);
     job.setOutputFormatClass(TextOutputFormat.class);

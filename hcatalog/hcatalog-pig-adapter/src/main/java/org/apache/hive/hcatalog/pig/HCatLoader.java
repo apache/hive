@@ -116,7 +116,7 @@ public class HCatLoader extends HCatBaseLoader {
       }
     } else {
       Job clone = new Job(job.getConfiguration());
-      HCatInputFormat.setInput(job, dbName, tableName).setFilter(getPartitionFilterString());
+      HCatInputFormat.setInput(job, dbName, tableName, getPartitionFilterString());
 
       // We will store all the new /changed properties in the job in the
       // udf context, so the the HCatInputFormat.setInput method need not
