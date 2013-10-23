@@ -39,6 +39,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.ContentSummary;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -220,6 +221,14 @@ public class Warehouse {
   public boolean deleteDir(Path f, boolean recursive) throws MetaException {
     FileSystem fs = getFs(f);
     return fsHandler.deleteDir(fs, f, recursive, conf);
+  }
+
+  public boolean isEmpty(Path path) throws IOException, MetaException {
+    ContentSummary contents = getFs(path).getContentSummary(path);
+    if (contents != null && contents.getFileCount() == 0 && contents.getDirectoryCount() == 1) {
+      return true;
+    }
+    return false;
   }
 
   public boolean isWritable(Path path) throws IOException {
