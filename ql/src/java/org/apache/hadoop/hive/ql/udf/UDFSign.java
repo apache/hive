@@ -22,6 +22,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSignDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSignLongToDouble;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
 @Description(
@@ -31,6 +34,7 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
     		"  > SELECT _FUNC_(40) FROM src LIMIT 1;\n" +
     		"  1"
     )
+@VectorizedExpressions({FuncSignLongToDouble.class, FuncSignDoubleToDouble.class})
 public class UDFSign extends UDF {
 
   @SuppressWarnings("unused")

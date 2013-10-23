@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.<InputColumnVectorType>;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
 /**
  * Generated from template FilterScalarCompareColumn.txt, which covers binary comparison 
@@ -34,7 +35,7 @@ public class <ClassName> extends VectorExpression {
   private int colNum;
   private <OperandType1> value;
 
-  public <ClassName>(int colNum, <OperandType1> value) { 
+  public <ClassName>(<OperandType1> value, int colNum) { 
     this.colNum = colNum;
     this.value = value;
   }
@@ -154,5 +155,19 @@ public class <ClassName> extends VectorExpression {
 
   public void setValue(<OperandType1> value) {
     this.value = value;
+  }
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    return (new VectorExpressionDescriptor.Builder())
+        .setMode(
+            VectorExpressionDescriptor.Mode.FILTER)
+        .setNumArguments(2)
+        .setArgumentTypes(
+            VectorExpressionDescriptor.ArgumentType.getType("<OperandType1>"),
+            VectorExpressionDescriptor.ArgumentType.getType("<OperandType2>"))
+        .setInputExpressionTypes(
+            VectorExpressionDescriptor.InputExpressionType.SCALAR,
+            VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
   }
 }

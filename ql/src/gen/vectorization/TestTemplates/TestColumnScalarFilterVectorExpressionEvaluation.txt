@@ -32,7 +32,7 @@
     } while(scalarValue == 0);
 
     <VectorExpClassName> vectorExpression =
-      new <VectorExpClassName>(0, scalarValue);
+      new <VectorExpClassName>(<ConstructorParams>);
 
     vectorExpression.evaluate(rowBatch);
 

@@ -21,6 +21,9 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncFloorDoubleToLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncFloorLongToLong;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -35,6 +38,7 @@ import org.apache.hadoop.io.LongWritable;
     + "  > SELECT _FUNC_(-0.1) FROM src LIMIT 1;\n"
     + "  -1\n"
     + "  > SELECT _FUNC_(5) FROM src LIMIT 1;\n" + "  5")
+@VectorizedExpressions({FuncFloorLongToLong.class, FuncFloorDoubleToLong.class})
 public class UDFFloor extends UDF {
   private final LongWritable result = new LongWritable();
   private final HiveDecimalWritable bdResult = new HiveDecimalWritable();

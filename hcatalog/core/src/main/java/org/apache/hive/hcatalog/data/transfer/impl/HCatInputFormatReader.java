@@ -63,7 +63,7 @@ public class HCatInputFormatReader extends HCatReader {
     try {
       Job job = new Job(conf);
       HCatInputFormat hcif = HCatInputFormat.setInput(
-        job, re.getDbName(), re.getTableName()).setFilter(re.getFilterString());
+        job, re.getDbName(), re.getTableName(), re.getFilterString());
       ReaderContext cntxt = new ReaderContext();
       cntxt.setInputSplits(hcif.getSplits(
           ShimLoader.getHadoopShims().getHCatShim().createJobContext(job.getConfiguration(), null)));

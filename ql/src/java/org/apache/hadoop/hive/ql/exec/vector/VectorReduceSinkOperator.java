@@ -93,7 +93,6 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
     this();
     ReduceSinkDesc desc = (ReduceSinkDesc) conf;
     this.conf = desc;
-    vContext.setOperatorType(OperatorType.REDUCESINK);
     keyEval = vContext.getVectorExpressions(desc.getKeyCols());
     valueEval = vContext.getVectorExpressions(desc.getValueCols());
     partitionEval = vContext.getVectorExpressions(desc.getPartitionCols());

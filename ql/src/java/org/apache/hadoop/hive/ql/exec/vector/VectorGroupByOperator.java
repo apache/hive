@@ -123,7 +123,6 @@ public class VectorGroupByOperator extends GroupByOperator {
     this();
     GroupByDesc desc = (GroupByDesc) conf;
     this.conf = desc;
-    vContext.setOperatorType(OperatorType.GROUPBY);
     List<ExprNodeDesc> keysDesc = desc.getKeys();
     keyExpressions = vContext.getVectorExpressions(keysDesc);
     ArrayList<AggregationDesc> aggrDesc = desc.getAggregators();

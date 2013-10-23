@@ -1993,6 +1993,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             } else {
               assert (partPath != null);
               wh.deleteDir(partPath, true);
+              deleteParentRecursive(partPath.getParent(), part_vals.size() - 1);
             }
             // ok even if the data is not deleted
           }
@@ -2005,6 +2006,13 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         }
       }
       return true;
+    }
+
+    private void deleteParentRecursive(Path parent, int depth) throws IOException, MetaException {
+      if (depth > 0 && parent != null && wh.isWritable(parent) && wh.isEmpty(parent)) {
+        wh.deleteDir(parent, true);
+        deleteParentRecursive(parent.getParent(), depth - 1);
+      }
     }
 
     @Override

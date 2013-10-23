@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
 /*
  * Because of the templatized nature of the code, either or both
@@ -143,5 +144,18 @@ public class <ClassName> extends VectorExpression {
   public void setOutputColumn(int outputColumn) {
     this.outputColumn = outputColumn;
   }
-  
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    return (new VectorExpressionDescriptor.Builder())
+        .setMode(
+            VectorExpressionDescriptor.Mode.PROJECTION)
+        .setNumArguments(2)
+        .setArgumentTypes(
+            VectorExpressionDescriptor.ArgumentType.getType("<OperandType1>"),
+            VectorExpressionDescriptor.ArgumentType.getType("<OperandType2>"))
+        .setInputExpressionTypes(
+            VectorExpressionDescriptor.InputExpressionType.SCALAR,
+            VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
+  }
 }

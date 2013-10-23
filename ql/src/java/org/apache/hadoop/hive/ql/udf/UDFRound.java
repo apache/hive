@@ -24,6 +24,9 @@ import java.math.RoundingMode;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.RoundWithNumDigitsDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncRoundDoubleToDouble;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -39,6 +42,7 @@ import org.apache.hadoop.io.LongWritable;
     value = "_FUNC_(x[, d]) - round x to d decimal places",
     extended = "Example:\n"
     + "  > SELECT _FUNC_(12.3456, 1) FROM src LIMIT 1;\n" + "  12.3'")
+@VectorizedExpressions({FuncRoundDoubleToDouble.class, RoundWithNumDigitsDoubleToDouble.class})
 public class UDFRound extends UDF {
   private final HiveDecimalWritable decimalWritable = new HiveDecimalWritable();
   private final DoubleWritable doubleWritable = new DoubleWritable();

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.io.Text;
 
 import java.util.Arrays;
@@ -46,8 +47,13 @@ public class FilterStringColRegExpStringScalar extends AbstractFilterStringColLi
     super();
   }
 
-  public FilterStringColRegExpStringScalar(int colNum, Text regExpPattern) {
-    super(colNum, regExpPattern.toString());
+  public FilterStringColRegExpStringScalar(int colNum, byte [] regExpPattern) throws HiveException {
+    super(colNum, null);
+    try {
+      super.setPattern(new String(regExpPattern, "UTF-8"));
+    } catch (Exception ex) {
+      throw new HiveException(ex);
+    }
   }
 
   @Override

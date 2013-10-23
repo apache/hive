@@ -51,7 +51,7 @@ STAGE PLANS:
         Group By Operator
           aggregations:
                 expr: count(DISTINCT KEY._col1:0._col0)
-                expr: sum(KEY._col1:1._col0)
+                expr: sum(KEY._col1:0._col0)
                 expr: sum(DISTINCT KEY._col1:1._col0)
                 expr: count(VALUE._col0)
           bucketGroup: false
@@ -108,8 +108,8 @@ POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest_g2
 POSTHOOK: Lineage: dest_g2.c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_g2.c2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_g2.c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_g2.c4 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest_g2.c3 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest_g2.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_g2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 PREHOOK: query: SELECT dest_g2.* FROM dest_g2
 PREHOOK: type: QUERY
@@ -121,8 +121,8 @@ POSTHOOK: Input: default@dest_g2
 #### A masked pattern was here ####
 POSTHOOK: Lineage: dest_g2.c1 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_g2.c2 EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), (src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_g2.c3 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: dest_g2.c4 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest_g2.c3 EXPRESSION [(src)src.null, ]
+POSTHOOK: Lineage: dest_g2.c4 EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest_g2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 0	1	00.0	0	3
 1	71	116414.0	10044	115

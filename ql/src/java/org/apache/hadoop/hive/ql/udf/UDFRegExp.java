@@ -25,6 +25,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterStringColRegExpStringScalar;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.Text;
 
@@ -36,6 +38,7 @@ import org.apache.hadoop.io.Text;
     value = "str _FUNC_ regexp - Returns true if str matches regexp and "
     + "false otherwise", extended = "Example:\n"
     + "  > SELECT 'fb' _FUNC_ '.*' FROM src LIMIT 1;\n" + "  true")
+@VectorizedExpressions({FilterStringColRegExpStringScalar.class})
 public class UDFRegExp extends UDF {
   static final Log LOG = LogFactory.getLog(UDFRegExp.class.getName());
 
@@ -43,7 +46,7 @@ public class UDFRegExp extends UDF {
   private Pattern p = null;
   private boolean warned = false;
 
-  private BooleanWritable result = new BooleanWritable();
+  private final BooleanWritable result = new BooleanWritable();
 
   public UDFRegExp() {
   }

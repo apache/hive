@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.udf.UDFRound;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -31,11 +32,12 @@ public class RoundWithNumDigitsDoubleToDouble extends MathFuncDoubleToDouble
   private transient UDFRound roundFunc;
   private transient DoubleWritable dw;
 
-  public RoundWithNumDigitsDoubleToDouble(int colNum, int outputColumn) {
+  public RoundWithNumDigitsDoubleToDouble(int colNum, long scalarVal, int outputColumn) {
     super(colNum, outputColumn);
     this.decimalPlaces = new IntWritable();
     roundFunc = new UDFRound();
     dw = new DoubleWritable();
+    decimalPlaces.set((int) scalarVal);
   }
 
   public RoundWithNumDigitsDoubleToDouble() {
@@ -55,7 +57,7 @@ public class RoundWithNumDigitsDoubleToDouble extends MathFuncDoubleToDouble
     this.decimalPlaces = decimalPlaces;
   }
 
-  IntWritable getDecimalPlaces() {
+  public IntWritable getDecimalPlaces() {
     return this.decimalPlaces;
   }
 
@@ -70,5 +72,19 @@ public class RoundWithNumDigitsDoubleToDouble extends MathFuncDoubleToDouble
   @Override
   public void setArg(long l) {
     this.decimalPlaces.set((int) l);
+  }
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    VectorExpressionDescriptor.Builder b = new VectorExpressionDescriptor.Builder();
+    b.setMode(VectorExpressionDescriptor.Mode.PROJECTION)
+        .setNumArguments(2)
+        .setArgumentTypes(
+            VectorExpressionDescriptor.ArgumentType.DOUBLE,
+            VectorExpressionDescriptor.ArgumentType.LONG)
+        .setInputExpressionTypes(
+            VectorExpressionDescriptor.InputExpressionType.COLUMN,
+            VectorExpressionDescriptor.InputExpressionType.SCALAR);
+    return b.build();
   }
 }

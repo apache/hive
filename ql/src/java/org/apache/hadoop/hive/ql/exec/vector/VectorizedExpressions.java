@@ -16,3 +16,16 @@
  * limitations under the License.
  */
 
+package org.apache.hadoop.hive.ql.exec.vector;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+
+@Retention(RetentionPolicy.RUNTIME)
+public @interface VectorizedExpressions {
+
+  Class<? extends VectorExpression>[] value();
+
+}

@@ -18,23 +18,20 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import java.util.Random;
 
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+
 /**
- * Implements vectorized rand() and rand(seed) function evaluation.
+ * Implements vectorized rand(seed) function evaluation.
  */
 public class FuncRand extends VectorExpression {
   private static final long serialVersionUID = 1L;
 
   private int outputCol;
   private Random random;
-
-  public FuncRand(int outputCol) {
-    this.outputCol = outputCol;
-    random = null;
-  }
 
   public FuncRand(long seed, int outputCol) {
     this.outputCol = outputCol;
@@ -104,5 +101,17 @@ public class FuncRand extends VectorExpression {
   @Override
   public String getOutputType() {
     return "double";
+  }
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    return (new VectorExpressionDescriptor.Builder())
+        .setMode(
+            VectorExpressionDescriptor.Mode.PROJECTION)
+        .setNumArguments(1)
+        .setArgumentTypes(
+            VectorExpressionDescriptor.ArgumentType.LONG)
+        .setInputExpressionTypes(
+            VectorExpressionDescriptor.InputExpressionType.SCALAR).build();
   }
 }
