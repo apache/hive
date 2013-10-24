@@ -22,6 +22,8 @@ package org.apache.hive.hcatalog.data;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.schema.HCatSchema;
 
@@ -31,6 +33,8 @@ import org.apache.hive.hcatalog.data.schema.HCatSchema;
  *   HCatRecord is designed only to be used as in-memory representation only.
  *   Don't use it to store data on the physical device.
  */
+@InterfaceAudience.Public
+@InterfaceStability.Evolving
 public abstract class HCatRecord implements HCatRecordable {
 
   public abstract Object get(String fieldName, HCatSchema recordSchema) throws HCatException;

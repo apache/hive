@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.HCatRecord;
 import org.apache.hive.hcatalog.data.transfer.state.StateProvider;
@@ -33,7 +35,8 @@ import org.apache.hive.hcatalog.data.transfer.state.StateProvider;
  * HCatalog from external systems. Don't try to instantiate this directly.
  * Instead, use {@link DataTransferFactory}
  */
-
+@InterfaceAudience.Public
+@InterfaceStability.Evolving
 public abstract class HCatWriter {
 
   protected Configuration conf;

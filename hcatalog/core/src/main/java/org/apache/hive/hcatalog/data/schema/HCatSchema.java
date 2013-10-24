@@ -25,12 +25,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hive.hcatalog.common.HCatException;
 
 /**
  * HCatSchema. This class is NOT thread-safe.
  */
-
+@InterfaceAudience.Public
+@InterfaceStability.Evolving
 public class HCatSchema implements Serializable {
 
   private static final long serialVersionUID = 1L;
