@@ -15,8 +15,8 @@ load data local inpath "../../data/files/test.dat"
 	into table exim_employee partition (emp_country="us", emp_state="tn");	
 load data local inpath "../../data/files/test.dat" 
 	into table exim_employee partition (emp_country="us", emp_state="ka");		
-dfs ${system:test.dfs.mkdir} target/ql/test/data/exports/exim_employee/temp;
-dfs -rmr target/ql/test/data/exports/exim_employee;
+dfs ${system:test.dfs.mkdir} target/tmp/ql/test/data/exports/exim_employee/temp;
+dfs -rmr target/tmp/ql/test/data/exports/exim_employee;
 export table exim_employee partition (emp_country="in",emp_state="ka") to 'ql/test/data/exports/exim_employee';
 drop table exim_employee;
 
@@ -26,7 +26,7 @@ use importer;
 import from 'ql/test/data/exports/exim_employee';
 describe extended exim_employee;
 show table extended like exim_employee;
-dfs -rmr target/ql/test/data/exports/exim_employee;
+dfs -rmr target/tmp/ql/test/data/exports/exim_employee;
 select * from exim_employee;
 drop table exim_employee;
 

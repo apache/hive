@@ -1,4 +1,3 @@
-ADD JAR ${system:maven.local.repository}/org/apache/hive/hive-internal/${system:hive.version}/hive-internal-${system:hive.version}-test-udf.jar;
 CREATE TABLE src1_rot13_iof(key STRING, value STRING) 
   STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.udf.Rot13InputFormat'
             OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.udf.Rot13OutputFormat';

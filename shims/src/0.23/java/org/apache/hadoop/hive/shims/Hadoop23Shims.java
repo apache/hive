@@ -88,7 +88,6 @@ public class Hadoop23Shims extends HadoopShimsSecure {
 
   @Override
   public JobTrackerState getJobTrackerState(ClusterStatus clusterStatus) throws Exception {
-    JobTrackerState state;
     switch (clusterStatus.getJobTrackerStatus()) {
     case INITIALIZING:
       return JobTrackerState.INITIALIZING;
@@ -217,10 +216,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     public void setupConfiguration(Configuration conf) {
       JobConf jConf = mr.createJobConf();
       for (Map.Entry<String, String> pair: jConf) {
-	//System.out.println("XXX Var: "+pair.getKey() +"="+pair.getValue());
-        //if (conf.get(pair.getKey()) == null) {
-          conf.set(pair.getKey(), pair.getValue());
-	  //}
+        conf.set(pair.getKey(), pair.getValue());
       }
     }
   }

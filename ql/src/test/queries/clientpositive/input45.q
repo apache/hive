@@ -4,6 +4,6 @@ SET hive.output.file.extension=.txt;
 
 INSERT OVERWRITE DIRECTORY 'target/data/x/y/z/' SELECT src.* FROM src;
 
-dfs -cat ${system:test.tmp.dir}/data/x/y/z/*.txt;
+dfs -cat ${system:build.dir}/data/x/y/z/*.txt;
 
-dfs -rmr ${system:test.tmp.dir}/data/x;
+dfs -rmr ${system:build.dir}/data/x;

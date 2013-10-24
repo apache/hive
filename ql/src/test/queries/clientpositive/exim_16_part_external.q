@@ -15,18 +15,18 @@ load data local inpath "../../data/files/test.dat"
 	into table exim_employee partition (emp_country="us", emp_state="tn");	
 load data local inpath "../../data/files/test.dat" 
 	into table exim_employee partition (emp_country="us", emp_state="ka");		
-dfs ${system:test.dfs.mkdir} target/ql/test/data/exports/exim_employee/temp;
-dfs -rmr target/ql/test/data/exports/exim_employee;
+dfs ${system:test.dfs.mkdir} target/tmp/ql/test/data/exports/exim_employee/temp;
+dfs -rmr target/tmp/ql/test/data/exports/exim_employee;
 export table exim_employee to 'ql/test/data/exports/exim_employee';
 drop table exim_employee;
 
 create database importer;
 use importer;
 
-dfs ${system:test.dfs.mkdir} target/ql/test/data/tablestore/exim_employee/temp;
-dfs -rmr target/ql/test/data/tablestore/exim_employee;
-dfs ${system:test.dfs.mkdir} target/ql/test/data/tablestore2/exim_employee/temp;
-dfs -rmr target/ql/test/data/tablestore2/exim_employee;
+dfs ${system:test.dfs.mkdir} target/tmp/ql/test/data/tablestore/exim_employee/temp;
+dfs -rmr target/tmp/ql/test/data/tablestore/exim_employee;
+dfs ${system:test.dfs.mkdir} target/tmp/ql/test/data/tablestore2/exim_employee/temp;
+dfs -rmr target/tmp/ql/test/data/tablestore2/exim_employee;
 
 create external table exim_employee ( emp_id int comment "employee id") 	
 	comment "employee table"
@@ -39,11 +39,11 @@ import table exim_employee partition (emp_country="us", emp_state="tn")
 	location 'ql/test/data/tablestore/exim_employee';
 show table extended like exim_employee;
 show table extended like exim_employee partition (emp_country="us", emp_state="tn");		
-dfs -rmr target/ql/test/data/exports/exim_employee;
+dfs -rmr target/tmp/ql/test/data/exports/exim_employee;
 select * from exim_employee;
-dfs -rmr target/ql/test/data/tablestore/exim_employee;
+dfs -rmr target/tmp/ql/test/data/tablestore/exim_employee;
 select * from exim_employee;
 drop table exim_employee;
-dfs -rmr target/ql/test/data/tablestore2/exim_employee;
+dfs -rmr target/tmp/ql/test/data/tablestore2/exim_employee;
 
 drop database importer;

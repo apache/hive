@@ -74,6 +74,7 @@ public class TestHCatPartitionPublish {
   private static HiveConf hcatConf;
   private static HiveMetaStoreClient msc;
   private static SecurityManager securityManager;
+  private static Configuration conf = new Configuration(true);
 
   @BeforeClass
   public static void setup() throws Exception {
@@ -82,7 +83,6 @@ public class TestHCatPartitionPublish {
     File workDir = new File(new File(testDir).getCanonicalPath());
     FileUtil.fullyDelete(workDir);
     workDir.mkdirs();
-    Configuration conf = new Configuration(true);
     conf.set("yarn.scheduler.capacity.root.queues", "default");
     conf.set("yarn.scheduler.capacity.root.default.capacity", "100");
 
@@ -158,8 +158,9 @@ public class TestHCatPartitionPublish {
     // In Windows, we cannot remove the output directory when job fail. See
     // FileOutputCommitterContainer.abortJob
     if (!Shell.WINDOWS) {
-      Assert.assertFalse(fs.exists(new Path(table.getSd().getLocation()
-          + "/part1=p1value1/part0=p0value1")));
+      Path path = new Path(table.getSd().getLocation()
+          + "/part1=p1value1/part0=p0value1");
+      Assert.assertFalse(path.getFileSystem(conf).exists(path));
     }
   }
 

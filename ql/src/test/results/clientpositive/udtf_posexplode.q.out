@@ -13,10 +13,10 @@ deductions MAP<STRING, FLOAT>,
 address STRUCT<street:STRING, city:STRING, state:STRING, zip:INT>)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@employees
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/posexplode_data.txt' INTO TABLE employees
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/posexplode_data.txt' INTO TABLE employees
 PREHOOK: type: LOAD
 PREHOOK: Output: default@employees
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/posexplode_data.txt' INTO TABLE employees
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/posexplode_data.txt' INTO TABLE employees
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@employees
 PREHOOK: query: SELECT

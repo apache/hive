@@ -477,14 +477,14 @@ public class QTestUtil {
   /**
    * Clear out any side effects of running tests
    */
-  public void clearPostTestEffects () throws Exception {
+  public void clearPostTestEffects() throws Exception {
     setup.postTest(conf);
   }
 
   /**
    * Clear out any side effects of running tests
    */
-  public void clearTestSideEffects () throws Exception {
+  public void clearTestSideEffects() throws Exception {
     // Delete any tables other than the source tables
     // and any databases other than the default database.
     for (String dbName : db.getAllDatabases()) {
@@ -766,7 +766,7 @@ public class QTestUtil {
 
     cliDriver = new CliDriver();
     if (tname.equals("init_file.q")) {
-      ss.initFiles.add("../data/scripts/test_init_file.sql");
+      ss.initFiles.add("../../data/scripts/test_init_file.sql");
     }
     cliDriver.processInitFiles(ss);
   }

@@ -19,11 +19,11 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>0.99.0-SNAPSHOT</version>
+    <version>0.13.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>hive-ql</artifactId>
+  <artifactId>hive-exec</artifactId>
   <packaging>jar</packaging>
   <name>Hive Query Language</name>
 
@@ -100,6 +100,11 @@
       <version>${avro.version}</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.ant</groupId>
+      <artifactId>ant</artifactId>
+      <version>${ant.version}</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.thrift</groupId>
       <artifactId>libfb303</artifactId>
       <version>${libfb303.version}</version>
@@ -113,6 +118,11 @@
       <groupId>org.apache.zookeeper</groupId>
       <artifactId>zookeeper</artifactId>
       <version>${zookeeper.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.groovy</groupId>
+      <artifactId>groovy-all</artifactId>
+      <version>${groovy.version}</version>
     </dependency>
     <dependency>
       <groupId>org.datanucleus</groupId>
@@ -280,13 +290,11 @@
               <goal>shade</goal>
             </goals>
             <configuration>
-              <shadedArtifactAttached>true</shadedArtifactAttached>
-              <shadedClassifierName>exec-bundle</shadedClassifierName>
               <artifactSet>
                 <includes>
                   <!-- order is meant to be the same as the ant build -->
                   <include>org.apache.hive:hive-common</include>
-                  <include>org.apache.hive:hive-ql</include>
+                  <include>org.apache.hive:hive-exec</include>
                   <include>org.apache.hive:hive-serde</include>
                   <include>com.esotericsoftware.kryo:kryo</include>
                   <include>org.apache.thrift:libthrift</include>

@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>0.99.0-SNAPSHOT</version>
+    <version>0.13.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -32,8 +32,6 @@
   </properties>
 
   <modules>
-    <module>exec</module>
-    <module>internal</module>
   </modules>
 
 </project>

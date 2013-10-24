@@ -107,7 +107,7 @@
 
 <property>
   <name>hive.jar.path</name>
-  <value>${user.home}/.m2/repository/org/apache/hive/hive-ql/${hive.version}/hive-ql-${hive.version}-exec-bundle.jar</value>
+  <value>${maven.local.repository}/org/apache/hive/hive-exec/${hive.version}/hive-exec-${hive.version}.jar</value>
   <description></description>
 </property>
 

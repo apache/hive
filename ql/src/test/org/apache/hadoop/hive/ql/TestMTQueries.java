@@ -25,12 +25,19 @@ import java.io.File;
  */
 public class TestMTQueries extends BaseTestQueries {
 
+  public TestMTQueries() {
+    File logDirFile = new File(logDir);
+    if (!(logDirFile.exists() || logDirFile.mkdirs())) {
+      fail("Could not create " + logDir);
+    }
+  }
+
   public void testMTQueries1() throws Exception {
     String[] testNames = new String[] {"join1.q", "join2.q", "groupby1.q",
         "groupby2.q", "join3.q", "input1.q", "input19.q"};
 
     File[] qfiles = setupQFiles(testNames);
-
+ 
     QTestUtil[] qts = QTestUtil.queryListRunnerSetup(qfiles, resDir, logDir);
     boolean success = QTestUtil.queryListRunnerMultiThreaded(qfiles, qts);
     if (!success) {

@@ -43,22 +43,42 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
  *
  */
 public class GenericUDFBridge extends GenericUDF implements Serializable {
+  private static final long serialVersionUID = 4994861742809511113L;
+
   /**
    * The name of the UDF.
    */
-  String udfName;
+  private String udfName;
 
   /**
    * Whether the UDF is an operator or not. This controls how the display string
    * is generated.
    */
-  boolean isOperator;
+  private boolean isOperator;
 
   /**
    * The underlying UDF class Name.
    */
-  String udfClassName;
+  private String udfClassName;
 
+  /**
+   * The underlying method of the UDF class.
+   */
+  private transient Method udfMethod;
+
+  /**
+   * Helper to convert the parameters before passing to udfMethod.
+   */
+  private transient ConversionHelper conversionHelper;
+  /**
+   * The actual udf object.
+   */
+  private transient UDF udf;
+  /**
+   * The non-deferred real arguments for method invocation.
+   */
+  private transient Object[] realArguments;
+  
   /**
    * Create a new GenericUDFBridge object.
    *
@@ -73,7 +93,7 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
     this.isOperator = isOperator;
     this.udfClassName = udfClassName;
   }
-
+  
   // For Java serialization only
   public GenericUDFBridge() {
   }
@@ -109,24 +129,6 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
       throw new RuntimeException(e);
     }
   }
-
-  /**
-   * The underlying method of the UDF class.
-   */
-  transient Method udfMethod;
-
-  /**
-   * Helper to convert the parameters before passing to udfMethod.
-   */
-  transient ConversionHelper conversionHelper;
-  /**
-   * The actual udf object.
-   */
-  transient UDF udf;
-  /**
-   * The non-deferred real arguments for method invocation.
-   */
-  transient Object[] realArguments;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {

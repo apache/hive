@@ -156,7 +156,7 @@ public class TestWebHCatE2e {
   public void createDataBase() throws IOException {
     Map<String, Object> props = new HashMap<String, Object>();
     props.put("comment", "Hello, there");
-    props.put("location", "file://" + System.getProperty("hive.metastore.warehouse.dir"));
+    props.put("location", System.getProperty("test.warehouse.dir"));
     Map<String, String> props2 = new HashMap<String, String>();
     props2.put("prop", "val");
     props.put("properties", props2);

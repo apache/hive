@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.apache.hive</groupId>
     <artifactId>hive</artifactId>
-    <version>0.99.0-SNAPSHOT</version>
+    <version>0.13.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -130,6 +130,7 @@
                 <exec executable="bash" failonerror="true">
                   <arg value="${basedir}/src/scripts/saveVersion.sh"/>
                   <arg value="${project.version}"/>
+                  <arg value="${hive.version.shortname}"/>
                   <arg value="${basedir}/src"/>
                 </exec>
               </target>

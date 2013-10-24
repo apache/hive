@@ -73,6 +73,7 @@ import org.apache.hcatalog.hbase.snapshot.Transaction;
 import org.apache.hcatalog.mapreduce.HCatInputFormat;
 import org.apache.hcatalog.mapreduce.InputJobInfo;
 import org.apache.hcatalog.mapreduce.PartInfo;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TestHCatHBaseInputFormat extends SkeletonHBaseTest {
@@ -82,6 +83,11 @@ public class TestHCatHBaseInputFormat extends SkeletonHBaseTest {
   private final byte[] FAMILY = Bytes.toBytes("testFamily");
   private final byte[] QUALIFIER1 = Bytes.toBytes("testQualifier1");
   private final byte[] QUALIFIER2 = Bytes.toBytes("testQualifier2");
+
+  @BeforeClass
+  public static void setup() throws Throwable {
+    setupSkeletonHBaseTest();
+  }
 
   public TestHCatHBaseInputFormat() throws Exception {
     hcatConf = getHiveConf();

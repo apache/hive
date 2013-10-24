@@ -4,7 +4,7 @@
 -- CustomSerDe(4, 5) irrespective of the inserted values
 
 DROP TABLE PW18;
-ADD JAR ${system:maven.local.repository}/org/apache/hive/hive-internal/${system:hive.version}/hive-internal-${system:hive.version}-custom-serde.jar;
+ADD JAR ${system:maven.local.repository}/org/apache/hive/hive-it-custom-serde/${system:hive.version}/hive-it-custom-serde-${system:hive.version}.jar;
 CREATE TABLE PW18(USER STRING, COMPLEXDT UNIONTYPE<INT, DOUBLE>) PARTITIONED BY (YEAR STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe5';
 LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE PW18 PARTITION (YEAR='1');
 ALTER TABLE PW18 PARTITION(YEAR='1') SET SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe4';
