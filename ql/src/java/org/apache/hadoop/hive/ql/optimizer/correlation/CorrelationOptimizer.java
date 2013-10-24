@@ -168,7 +168,7 @@ public class CorrelationOptimizer implements Transform {
       int numAliases = order.length;
       Set<Integer> bigTableCandidates =
           MapJoinProcessor.getBigTableCandidates(joinDesc.getConds());
-      if (bigTableCandidates == null) {
+      if (bigTableCandidates.isEmpty()) {
         continue;
       }
 

@@ -420,7 +420,7 @@ public class CommonJoinTaskDispatcher extends AbstractJoinTaskDispatcher impleme
           .getConds());
 
       // no table could be the big table; there is no need to convert
-      if (bigTableCandidates == null) {
+      if (bigTableCandidates.isEmpty()) {
         return null;
       }
 
