@@ -19,6 +19,7 @@ import org.apache.hadoop.mapred.FileSplit;
  */
 public class OrcSplit extends FileSplit {
   private Reader.FileMetaInfo fileMetaInfo;
+  private boolean hasFooter;
 
   protected OrcSplit(){
     //The FileSplit() constructor in hadoop 0.20 and 1.x is package private so can't use it.
@@ -31,6 +32,7 @@ public class OrcSplit extends FileSplit {
       FileMetaInfo fileMetaInfo) {
     super(path, offset, length, hosts);
     this.fileMetaInfo = fileMetaInfo;
+    hasFooter = this.fileMetaInfo != null;
   }
 
   @Override
@@ -38,16 +40,22 @@ public class OrcSplit extends FileSplit {
     //serialize path, offset, length using FileSplit
     super.write(out);
 
-    //serialize FileMetaInfo fields
-    Text.writeString(out, fileMetaInfo.compressionType);
-    WritableUtils.writeVInt(out, fileMetaInfo.bufferSize);
+    // Whether footer information follows.
+    out.writeBoolean(hasFooter);
 
-    //serialize FileMetaInfo field footer
-    ByteBuffer footerBuff = fileMetaInfo.footerBuffer;
-    footerBuff.reset();
-    //write length of buffer
-    WritableUtils.writeVInt(out, footerBuff.limit() - footerBuff.position());
-    out.write(footerBuff.array(), footerBuff.position(), footerBuff.limit() - footerBuff.position());
+    if (hasFooter) {
+      // serialize FileMetaInfo fields
+      Text.writeString(out, fileMetaInfo.compressionType);
+      WritableUtils.writeVInt(out, fileMetaInfo.bufferSize);
+
+      // serialize FileMetaInfo field footer
+      ByteBuffer footerBuff = fileMetaInfo.footerBuffer;
+      footerBuff.reset();
+      // write length of buffer
+      WritableUtils.writeVInt(out, footerBuff.limit() - footerBuff.position());
+      out.write(footerBuff.array(), footerBuff.position(),
+          footerBuff.limit() - footerBuff.position());
+    }
   }
 
   @Override
@@ -55,20 +63,27 @@ public class OrcSplit extends FileSplit {
     //deserialize path, offset, length using FileSplit
     super.readFields(in);
 
-    //deserialize FileMetaInfo fields
-    String compressionType = Text.readString(in);
-    int bufferSize = WritableUtils.readVInt(in);
+    hasFooter = in.readBoolean();
 
-    //deserialize FileMetaInfo field footer
-    int footerBuffSize = WritableUtils.readVInt(in);
-    ByteBuffer footerBuff = ByteBuffer.allocate(footerBuffSize);
-    in.readFully(footerBuff.array(), 0, footerBuffSize);
+    if (hasFooter) {
+      // deserialize FileMetaInfo fields
+      String compressionType = Text.readString(in);
+      int bufferSize = WritableUtils.readVInt(in);
 
-    fileMetaInfo = new FileMetaInfo(compressionType, bufferSize, footerBuff);
+      // deserialize FileMetaInfo field footer
+      int footerBuffSize = WritableUtils.readVInt(in);
+      ByteBuffer footerBuff = ByteBuffer.allocate(footerBuffSize);
+      in.readFully(footerBuff.array(), 0, footerBuffSize);
+
+      fileMetaInfo = new FileMetaInfo(compressionType, bufferSize, footerBuff);
+    }
   }
 
   public FileMetaInfo getFileMetaInfo(){
     return fileMetaInfo;
   }
 
+  public boolean hasFooter() {
+    return hasFooter;
+  }
 }
