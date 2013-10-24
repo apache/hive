@@ -237,7 +237,7 @@ public class MapJoinProcessor implements Transform {
    * @return the alias to the big table
    * @throws SemanticException
    */
-  public static String genMapJoinOpAndLocalWork(HiveConf conf, MapredWork newWork, 
+  public static String genMapJoinOpAndLocalWork(HiveConf conf, MapredWork newWork,
     JoinOperator op, int mapJoinPos)
       throws SemanticException {
     LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap =
@@ -663,7 +663,7 @@ public class MapJoinProcessor implements Transform {
    * If see a right outer join, set lastSeenRightOuterJoin to true, clear the
    * bigTableCandidates, and add right side to the bigTableCandidates, it means
    * the right side of a right outer join always win. If see a full outer join,
-   * return null immediately (no one can be the big table, can not do a
+   * return empty set immediately (no one can be the big table, can not do a
    * mapjoin).
    *
    *
@@ -689,7 +689,8 @@ public class MapJoinProcessor implements Transform {
         // changed in future, these 2 are not missing.
         seenOuterJoin = true;
         lastSeenRightOuterJoin = false;
-        return null;
+        // empty set - cannot convert
+        return new HashSet<Integer>();
       } else if (joinType == JoinDesc.LEFT_OUTER_JOIN
           || joinType == JoinDesc.LEFT_SEMI_JOIN) {
         seenOuterJoin = true;
