@@ -71,6 +71,7 @@ public class AppConfig extends Configuration {
   };
 
   public static final String TEMPLETON_HOME_VAR = "TEMPLETON_HOME";
+  public static final String WEBHCAT_CONF_DIR = "WEBHCAT_CONF_DIR";
 
   public static final String[] TEMPLETON_CONF_FILENAMES = {
     "webhcat-default.xml",
@@ -152,6 +153,9 @@ public class AppConfig extends Configuration {
 
   public static String getTempletonDir() {
     return System.getenv(TEMPLETON_HOME_VAR);
+  }
+  public static String getWebhcatConfDir() {
+    return System.getenv(WEBHCAT_CONF_DIR);
   }
 
   private boolean loadOneFileConfig(String dir, String fname) {
