@@ -13,3 +13,9 @@ SELECT
   concat(1),
   concat('1234', 'abc', 'extra argument')
 FROM src LIMIT 1;
+
+-- binary/mixed
+SELECT
+  concat(cast('ab' as binary), cast('cd' as binary)),
+  concat('ab', cast('cd' as binary))
+FROM src LIMIT 1;

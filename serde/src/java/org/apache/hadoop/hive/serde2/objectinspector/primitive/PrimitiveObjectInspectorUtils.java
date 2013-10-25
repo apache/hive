@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.nio.charset.CharacterCodingException;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.HashMap;
@@ -772,6 +773,16 @@ public final class PrimitiveObjectInspectorUtils {
     switch (oi.getPrimitiveCategory()) {
     case VOID:
       result = null;
+      break;
+    case BINARY:
+      try {
+        byte[] bytes = ((BinaryObjectInspector) oi).getPrimitiveWritableObject(o).getBytes();
+        int byteLen = ((BinaryObjectInspector) oi).getPrimitiveWritableObject(o).getLength();
+        result = Text.decode(bytes, 0, byteLen);
+      } catch (CharacterCodingException err) {
+        // we tried ..
+        result = null;
+      }
       break;
     case BOOLEAN:
       result = String.valueOf((((BooleanObjectInspector) oi).get(o)));
