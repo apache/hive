@@ -376,7 +376,7 @@ public class MapJoinProcessor implements Transform {
 
     // create the map-join operator
     MapJoinOperator mapJoinOp = convertJoinOpMapJoinOp(conf, opParseCtxMap,
-        op, joinTree, mapJoinPos, noCheckOuterJoin, validateMapJoinTree);
+        op, joinTree, mapJoinPos, noCheckOuterJoin);
 
 
     // remove old parents
@@ -389,6 +389,10 @@ public class MapJoinProcessor implements Transform {
     mapJoinOp.getParentOperators().removeAll(oldReduceSinkParentOps);
     mapJoinOp.setParentOperators(newParentOps);
 
+    // make sure only map-joins can be performed.
+    if (validateMapJoinTree) {
+      validateMapJoinTypes(mapJoinOp);
+    }
 
     // change the children of the original join operator to point to the map
     // join operator
@@ -398,8 +402,7 @@ public class MapJoinProcessor implements Transform {
 
   public static MapJoinOperator convertJoinOpMapJoinOp(HiveConf hconf,
       LinkedHashMap<Operator<? extends OperatorDesc>, OpParseContext> opParseCtxMap,
-      JoinOperator op, QBJoinTree joinTree, int mapJoinPos, boolean noCheckOuterJoin,
-      boolean validateMapJoinTree)
+      JoinOperator op, QBJoinTree joinTree, int mapJoinPos, boolean noCheckOuterJoin)
       throws SemanticException {
 
     JoinDesc desc = op.getConf();
@@ -564,11 +567,6 @@ public class MapJoinProcessor implements Transform {
     mapJoinOp.setChildOperators(childOps);
     op.setChildOperators(null);
     op.setParentOperators(null);
-
-    // make sure only map-joins can be performed.
-    if (validateMapJoinTree) {
-      validateMapJoinTypes(mapJoinOp);
-    }
 
     return mapJoinOp;
 

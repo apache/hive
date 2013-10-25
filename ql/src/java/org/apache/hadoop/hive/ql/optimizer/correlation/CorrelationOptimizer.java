@@ -346,7 +346,7 @@ public class CorrelationOptimizer implements Transform {
             "involved in this operator");
         return correlatedReduceSinkOperators;
       }
-      if (current.getParentOperators() == null) {
+      if ((current.getParentOperators() == null) || (current.getParentOperators().isEmpty())) {
         return correlatedReduceSinkOperators;
       }
       if (current instanceof PTFOperator) {
