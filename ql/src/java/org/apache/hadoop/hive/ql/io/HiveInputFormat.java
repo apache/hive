@@ -260,7 +260,9 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
 
     Utilities.copyTableJobPropertiesToConf(table, conf);
 
-    pushFilters(conf, tableScan);
+    if (tableScan != null) {
+      pushFilters(conf, tableScan);
+    }
 
     FileInputFormat.setInputPaths(conf, dirs.toArray(new Path[dirs.size()]));
     conf.setInputFormat(inputFormat.getClass());
@@ -300,7 +302,7 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       // Make filter pushdown information available to getSplits.
       if ((aliases != null) && (aliases.size() == 1)) {
         Operator op = mrwork.getAliasToWork().get(aliases.get(0));
-        if ((op != null) && (op instanceof TableScanOperator)) {
+        if (op instanceof TableScanOperator) {
           tableScan = (TableScanOperator) op;
         }
       }
