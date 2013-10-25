@@ -354,7 +354,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     // initialize structure to maintain child op info. operator tree changes
     // while
     // initializing so this need to be done here instead of initialize() method
-    if (childOperators != null) {
+    if (childOperators != null && !childOperators.isEmpty()) {
       childOperatorsArray = new Operator[childOperators.size()];
       for (int i = 0; i < childOperatorsArray.length; i++) {
         childOperatorsArray[i] = childOperators.get(i);
@@ -411,7 +411,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   protected void initializeChildren(Configuration hconf) throws HiveException {
     state = State.INIT;
     LOG.info("Operator " + id + " " + getName() + " initialized");
-    if (childOperators == null) {
+    if (childOperators == null || childOperators.isEmpty()) {
       return;
     }
     LOG.info("Initializing children of " + id + " " + getName());
@@ -780,7 +780,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     Operator<? extends OperatorDesc> currOp = this;
     for (int i = 0; i < depth; i++) {
       // If there are more than 1 children at any level, don't do anything
-      if ((currOp.getChildOperators() == null) ||
+      if ((currOp.getChildOperators() == null) || (currOp.getChildOperators().isEmpty()) || 
           (currOp.getChildOperators().size() > 1)) {
         return false;
       }

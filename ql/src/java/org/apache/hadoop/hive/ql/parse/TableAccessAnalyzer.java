@@ -239,7 +239,7 @@ public class TableAccessAnalyzer {
     // and filters.
     while (true) {
       parentOps = currOp.getParentOperators();
-      if (parentOps == null) {
+      if ((parentOps == null) || (parentOps.isEmpty())) {
         return (TableScanOperator) currOp;
       }
 

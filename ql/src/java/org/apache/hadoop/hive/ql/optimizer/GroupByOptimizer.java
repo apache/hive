@@ -286,7 +286,7 @@ public class GroupByOptimizer implements Transform {
       currOp = currOp.getParentOperators().get(0);
 
       while (true) {
-        if (currOp.getParentOperators() == null) {
+        if ((currOp.getParentOperators() == null) || (currOp.getParentOperators().isEmpty())) {
           break;
         }
 
