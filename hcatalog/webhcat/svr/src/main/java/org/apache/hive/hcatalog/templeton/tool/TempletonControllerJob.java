@@ -18,23 +18,10 @@
  */
 package org.apache.hive.hcatalog.templeton.tool;
 
-import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.net.URISyntaxException;
+import java.net.URI;
 import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,24 +29,24 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
+import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.JobID;
-import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Mapper.Context;
 import org.apache.hadoop.mapreduce.lib.output.NullOutputFormat;
 import org.apache.hadoop.mapreduce.security.token.delegation.DelegationTokenIdentifier;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.security.token.Token;
-import org.apache.hadoop.util.Shell;
 import org.apache.hadoop.util.Tool;
-import org.apache.hive.hcatalog.templeton.BadParam;
-import org.apache.hive.hcatalog.templeton.LauncherDelegator;
+import org.apache.hive.hcatalog.templeton.AppConfig;
+import org.apache.hive.hcatalog.templeton.Main;
 import org.apache.hive.hcatalog.templeton.SecureProxySupport;
 import org.apache.hive.hcatalog.templeton.UgiFactory;
 import org.apache.thrift.TException;
@@ -83,27 +70,90 @@ import org.apache.thrift.TException;
  * parameter supplied in the REST call.  WebHcat takes care of cancelling the token when the job
  * is complete.
  */
-public class TempletonControllerJob extends Configured implements Tool {
-  public static final String COPY_NAME = "templeton.copy";
-  public static final String STATUSDIR_NAME = "templeton.statusdir";
-  public static final String ENABLE_LOG = "templeton.enablelog";
-  public static final String JOB_TYPE = "templeton.jobtype";
-  public static final String JAR_ARGS_NAME = "templeton.args";
-  public static final String OVERRIDE_CLASSPATH = "templeton.override-classpath";
-
-  public static final String STDOUT_FNAME = "stdout";
-  public static final String STDERR_FNAME = "stderr";
-  public static final String EXIT_FNAME = "exit";
-
-  public static final int WATCHER_TIMEOUT_SECS = 10;
-  public static final int KEEP_ALIVE_MSEC = 60 * 1000;
-
-  public static final String TOKEN_FILE_ARG_PLACEHOLDER 
-    = "__WEBHCAT_TOKEN_FILE_LOCATION__";
-
-  private static TrivialExecService execService = TrivialExecService.getInstance();
-
+@InterfaceAudience.Private
+public class TempletonControllerJob extends Configured implements Tool, JobSubmissionConstants {
   private static final Log LOG = LogFactory.getLog(TempletonControllerJob.class);
+  //file to add to DistributedCache
+  private static URI overrideLog4jURI = null;
+  private static boolean overrideContainerLog4jProps;
+  //Jar cmd submission likely will be affected, Pig likely not
+  private static final String affectedMsg = "Monitoring of Hadoop jobs submitted through WebHCat " +
+          "may be affected.";
+  private static final String TMP_DIR_PROP = "hadoop.tmp.dir";
+
+  /**
+   * Copy the file from local file system to tmp dir
+   */
+  private static URI copyLog4JtoFileSystem(final String localFile) throws IOException,
+          InterruptedException {
+    UserGroupInformation ugi = UserGroupInformation.getLoginUser();
+    return ugi.doAs(new PrivilegedExceptionAction<URI>() {
+      @Override
+      public URI run() throws IOException {
+        AppConfig appConfig = Main.getAppConfigInstance();
+        String fsTmpDir = appConfig.get(TMP_DIR_PROP);
+        if(fsTmpDir == null || fsTmpDir.length() <= 0) {
+          LOG.warn("Could not find 'hadoop.tmp.dir'; " + affectedMsg);
+          return null;
+        }
+        FileSystem fs = FileSystem.get(appConfig);
+        Path dirPath = new Path(fsTmpDir);
+        if(!fs.exists(dirPath)) {
+          LOG.warn(dirPath + " does not exist; " + affectedMsg);
+          return null;
+        }
+        Path dst = fs.makeQualified(new Path(fsTmpDir, CONTAINER_LOG4J_PROPS));
+        fs.copyFromLocalFile(new Path(localFile), dst);
+        //make readable by all users since TempletonControllerJob#run() is run as submitting user
+        fs.setPermission(dst, new FsPermission((short)0644));
+        return dst.toUri();
+      }
+    });
+  }
+  /**
+   * local file system
+   * @return
+   */
+  private static String getLog4JPropsLocal() {
+    return AppConfig.getWebhcatConfDir() + File.separator + CONTAINER_LOG4J_PROPS;
+  }
+  static {
+    //initialize once-per-JVM (i.e. one running WebHCat server) state and log it once since it's 
+    // the same for every job
+    try {
+      //safe (thread) publication 
+      // http://docs.oracle.com/javase/specs/jls/se5.0/html/execution.html#12.4.2
+      LOG.info("Using Hadoop Version: " + ShimLoader.getMajorVersion());
+      overrideContainerLog4jProps = "0.23".equals(ShimLoader.getMajorVersion());
+      if(overrideContainerLog4jProps) {
+        //see detailed note in CONTAINER_LOG4J_PROPS file
+        LOG.info(AppConfig.WEBHCAT_CONF_DIR + "=" + AppConfig.getWebhcatConfDir());
+        File localFile = new File(getLog4JPropsLocal());
+        if(localFile.exists()) {
+          LOG.info("Found " + localFile.getAbsolutePath() + " to use for job submission.");
+          try {
+            overrideLog4jURI = copyLog4JtoFileSystem(getLog4JPropsLocal());
+            LOG.info("Job submission will use log4j.properties=" + overrideLog4jURI);
+          }
+          catch(IOException ex) {
+            LOG.warn("Will not add " + CONTAINER_LOG4J_PROPS + " to Distributed Cache.  " +
+                    "Some fields in job status may be unavailable", ex);
+          }
+        }
+        else {
+          LOG.warn("Could not find " + localFile.getAbsolutePath() + ". " + affectedMsg);
+        }
+      }
+    }
+    catch(Throwable t) {
+      //this intentionally doesn't use TempletonControllerJob.class.getName() to be able to
+      //log errors which may be due to class loading
+      String msg = "org.apache.hive.hcatalog.templeton.tool.TempletonControllerJob is not " +
+              "properly initialized. " + affectedMsg;
+      LOG.error(msg, t);
+    }
+  }
+
   private final boolean secureMetastoreAccess;
 
   /**
@@ -114,259 +164,13 @@ public class TempletonControllerJob extends Configured implements Tool {
     super();
     this.secureMetastoreAccess = secureMetastoreAccess;
   }
-  public static class LaunchMapper
-    extends Mapper<NullWritable, NullWritable, Text, Text> {
-    protected Process startJob(Context context, String user,
-                   String overrideClasspath)
-      throws IOException, InterruptedException {
-      Configuration conf = context.getConfiguration();
-      copyLocal(COPY_NAME, conf);
-      String[] jarArgs
-        = TempletonUtils.decodeArray(conf.get(JAR_ARGS_NAME));
-
-      ArrayList<String> removeEnv = new ArrayList<String>();
-      removeEnv.add("HADOOP_ROOT_LOGGER");
-      removeEnv.add("hadoop-command");
-      removeEnv.add("CLASS");
-      removeEnv.add("mapredcommand");
-      Map<String, String> env = TempletonUtils.hadoopUserEnv(user,
-        overrideClasspath);
-      List<String> jarArgsList = new LinkedList<String>(Arrays.asList(jarArgs));
-      String tokenFile = System.getenv("HADOOP_TOKEN_FILE_LOCATION");
-
-
-      if (tokenFile != null) {
-        //Token is available, so replace the placeholder
-        tokenFile = tokenFile.replaceAll("\"", "");
-        String tokenArg = "mapreduce.job.credentials.binary=" + tokenFile;
-        if (Shell.WINDOWS) {
-          try {
-            tokenArg = TempletonUtils.quoteForWindows(tokenArg);
-          } catch (BadParam e) {
-            throw new IOException("cannot pass " + tokenFile + " to mapreduce.job.credentials.binary", e);
-          }
-        }
-        for(int i=0; i<jarArgsList.size(); i++){
-          String newArg = 
-            jarArgsList.get(i).replace(TOKEN_FILE_ARG_PLACEHOLDER, tokenArg);
-          jarArgsList.set(i, newArg);
-        }
-
-      }else{
-        //No token, so remove the placeholder arg
-        Iterator<String> it = jarArgsList.iterator();
-        while(it.hasNext()){
-          String arg = it.next();
-          if(arg.contains(TOKEN_FILE_ARG_PLACEHOLDER)){
-            it.remove();
-          }
-        }
-      }
-      return execService.run(jarArgsList, removeEnv, env);
-    }
-
-    private void copyLocal(String var, Configuration conf)
-      throws IOException {
-      String[] filenames = TempletonUtils.decodeArray(conf.get(var));
-      if (filenames != null) {
-        for (String filename : filenames) {
-          Path src = new Path(filename);
-          Path dst = new Path(src.getName());
-          FileSystem fs = src.getFileSystem(conf);
-          System.err.println("templeton: copy " + src + " => " + dst);
-          fs.copyToLocalFile(src, dst);
-        }
-      }
-    }
-
-    @Override
-    public void run(Context context)
-      throws IOException, InterruptedException {
-
-      Configuration conf = context.getConfiguration();
-
-      Process proc = startJob(context,
-        conf.get("user.name"),
-        conf.get(OVERRIDE_CLASSPATH));
-
-      String statusdir = conf.get(STATUSDIR_NAME);
-
-      if (statusdir != null) {
-        try {
-          statusdir = TempletonUtils.addUserHomeDirectoryIfApplicable(statusdir,
-            conf.get("user.name"));
-        } catch (URISyntaxException e) {
-          throw new IOException("Invalid status dir URI", e);
-        }
-      }
-
-      Boolean enablelog = Boolean.parseBoolean(conf.get(ENABLE_LOG));
-      LauncherDelegator.JobType jobType = LauncherDelegator.JobType.valueOf(conf.get(JOB_TYPE));
-
-      ExecutorService pool = Executors.newCachedThreadPool();
-      executeWatcher(pool, conf, context.getJobID(),
-        proc.getInputStream(), statusdir, STDOUT_FNAME);
-      executeWatcher(pool, conf, context.getJobID(),
-        proc.getErrorStream(), statusdir, STDERR_FNAME);
-      KeepAlive keepAlive = startCounterKeepAlive(pool, context);
-
-      proc.waitFor();
-      keepAlive.sendReport = false;
-      pool.shutdown();
-      if (!pool.awaitTermination(WATCHER_TIMEOUT_SECS, TimeUnit.SECONDS)) {
-        pool.shutdownNow();
-      }
-
-      writeExitValue(conf, proc.exitValue(), statusdir);
-      JobState state = new JobState(context.getJobID().toString(), conf);
-      state.setExitValue(proc.exitValue());
-      state.setCompleteStatus("done");
-      state.close();
-
-      if (enablelog && TempletonUtils.isset(statusdir)) {
-        System.err.println("templeton: collecting logs for " + context.getJobID().toString()
-          + " to " + statusdir + "/logs");
-        LogRetriever logRetriever = new LogRetriever(statusdir, jobType, conf);
-        logRetriever.run();
-      }
-
-      if (proc.exitValue() != 0) {
-        System.err.println("templeton: job failed with exit code "
-          + proc.exitValue());
-      }
-      else {
-        System.err.println("templeton: job completed with exit code 0");
-      }
-    }
-
-    private void executeWatcher(ExecutorService pool, Configuration conf,
-                  JobID jobid, InputStream in, String statusdir,
-                  String name)
-      throws IOException {
-      Watcher w = new Watcher(conf, jobid, in, statusdir, name);
-      pool.execute(w);
-    }
-
-    private KeepAlive startCounterKeepAlive(ExecutorService pool, Context context)
-      throws IOException {
-      KeepAlive k = new KeepAlive(context);
-      pool.execute(k);
-      return k;
-    }
-
-    private void writeExitValue(Configuration conf, int exitValue, String statusdir)
-      throws IOException {
-      if (TempletonUtils.isset(statusdir)) {
-        Path p = new Path(statusdir, EXIT_FNAME);
-        FileSystem fs = p.getFileSystem(conf);
-        OutputStream out = fs.create(p);
-        System.err.println("templeton: Writing exit value "
-          + exitValue + " to " + p);
-        PrintWriter writer = new PrintWriter(out);
-        writer.println(exitValue);
-        writer.close();
-      }
-    }
-  }
-
-  private static class Watcher implements Runnable {
-    private final InputStream in;
-    private OutputStream out;
-    private final JobID jobid;
-    private final Configuration conf;
-
-    public Watcher(Configuration conf, JobID jobid, InputStream in,
-             String statusdir, String name)
-      throws IOException {
-      this.conf = conf;
-      this.jobid = jobid;
-      this.in = in;
-
-      if (name.equals(STDERR_FNAME))
-        out = System.err;
-      else
-        out = System.out;
-
-      if (TempletonUtils.isset(statusdir)) {
-        Path p = new Path(statusdir, name);
-        FileSystem fs = p.getFileSystem(conf);
-        out = fs.create(p);
-        System.err.println("templeton: Writing status to " + p);
-      }
-    }
-
-    @Override
-    public void run() {
-      try {
-        InputStreamReader isr = new InputStreamReader(in);
-        BufferedReader reader = new BufferedReader(isr);
-        PrintWriter writer = new PrintWriter(out);
-
-        String line;
-        while ((line = reader.readLine()) != null) {
-          writer.println(line);
-          JobState state = null;
-          try {
-            String percent = TempletonUtils.extractPercentComplete(line);
-            String childid = TempletonUtils.extractChildJobId(line);
-
-            if (percent != null || childid != null) {
-              state = new JobState(jobid.toString(), conf);
-              state.setPercentComplete(percent);
-              state.setChildId(childid);
-            }
-          } catch (IOException e) {
-            System.err.println("templeton: state error: " + e);
-          } finally {
-            if (state != null) {
-              try {
-                state.close();
-              } catch (IOException e) {
-              }
-            }
-          }
-        }
-        writer.flush();
-      } catch (IOException e) {
-        System.err.println("templeton: execute error: " + e);
-      }
-    }
-  }
-
-  public static class KeepAlive implements Runnable {
-    private Context context;
-    public boolean sendReport;
-
-    public KeepAlive(Context context)
-    {
-      this.sendReport = true;
-      this.context = context;
-    }
-
-    @Override
-    public void run() {
-      try {
-        while (sendReport) {
-          // Periodically report progress on the Context object
-          // to prevent TaskTracker from killing the Templeton
-          // Controller task
-          context.progress();
-          System.err.println("KeepAlive Heart beat");
-          Thread.sleep(KEEP_ALIVE_MSEC);
-        }
-      } catch (InterruptedException e) {
-        // Ok to be interrupted
-      }
-    }
-  }
 
   private JobID submittedJobId;
 
   public String getSubmittedId() {
     if (submittedJobId == null) {
       return null;
-    }
-    else {
+    } else {
       return submittedJobId.toString();
     }
   }
@@ -376,20 +180,39 @@ public class TempletonControllerJob extends Configured implements Tool {
    * @see org.apache.hive.hcatalog.templeton.CompleteDelegator
    */
   @Override
-  public int run(String[] args)
-    throws IOException, InterruptedException, ClassNotFoundException, TException {
+  public int run(String[] args) throws IOException, InterruptedException, ClassNotFoundException, 
+          TException {
     Configuration conf = getConf();
-    
+
     conf.set(JAR_ARGS_NAME, TempletonUtils.encodeArray(args));
     String user = UserGroupInformation.getCurrentUser().getShortUserName();
     conf.set("user.name", user);
+    if(overrideContainerLog4jProps && overrideLog4jURI != null) {
+      //must be done before Job object is created
+      conf.set(OVERRIDE_CONTAINER_LOG4J_PROPS, Boolean.TRUE.toString());
+    }
     Job job = new Job(conf);
-    job.setJarByClass(TempletonControllerJob.class);
-    job.setJobName("TempletonControllerJob");
+    job.setJarByClass(LaunchMapper.class);
+    job.setJobName(TempletonControllerJob.class.getSimpleName());
     job.setMapperClass(LaunchMapper.class);
     job.setMapOutputKeyClass(Text.class);
     job.setMapOutputValueClass(Text.class);
     job.setInputFormatClass(SingleInputFormat.class);
+    if(overrideContainerLog4jProps && overrideLog4jURI != null) {
+      FileSystem fs = FileSystem.get(conf);
+      if(fs.exists(new Path(overrideLog4jURI))) {
+        ShimLoader.getHadoopShims().getWebHCatShim(conf, UgiFactory.getUgi(user)).addCacheFile(
+                overrideLog4jURI, job);
+        LOG.debug("added " + overrideLog4jURI + " to Dist Cache");
+      }
+      else {
+        //in case this file was deleted by someone issue a warning but don't try to add to 
+        // DistributedCache as that will throw and fail job submission
+        LOG.warn("Cannot find " + overrideLog4jURI + " which is created on WebHCat startup/job " +
+                "submission.  " + affectedMsg);
+      }
+    }
+
     NullOutputFormat<NullWritable, NullWritable> of = new NullOutputFormat<NullWritable, NullWritable>();
     job.setOutputFormatClass(of.getClass());
     job.setNumReduceTasks(0);
@@ -404,13 +227,16 @@ public class TempletonControllerJob extends Configured implements Tool {
     job.submit();
 
     submittedJobId = job.getJobID();
-
     if(metastoreTokenStrForm != null) {
       //so that it can be cancelled later from CompleteDelegator
       DelegationTokenCache.getStringFormTokenCache().storeDelegationToken(
               submittedJobId.toString(), metastoreTokenStrForm);
-      LOG.debug("Added metastore delegation token for jobId=" + submittedJobId.toString() + " " +
-              "user=" + user);
+      LOG.debug("Added metastore delegation token for jobId=" + submittedJobId.toString() +
+              " user=" + user);
+    }
+    if(overrideContainerLog4jProps && overrideLog4jURI == null) {
+      //do this here so that log msg has JobID
+      LOG.warn("Could not override container log4j properties for " + submittedJobId);
     }
     return 0;
   }

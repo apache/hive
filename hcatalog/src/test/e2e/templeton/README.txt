@@ -141,8 +141,10 @@ In order for this test suite to work, webhcat-site.xml should have webhcat.proxy
 and webhcat.proxyuser.hue.hosts defined, i.e. 'hue' should be allowed to impersonate 'joe'.
 [Of course, 'hcat' proxyuser should be configured in core-site.xml for the command to succeed.]
 
-Furthermore, metastore side file based security should be enabled.  To do this 3 properties in
-hive-site.xml should be configured:
+Furthermore, metastore side file based security should be enabled. 
+(See https://cwiki.apache.org/confluence/display/Hive/LanguageManual+Authorization#LanguageManualAuthorization-MetastoreServerSecurity for more info) 
+
+To do this 3 properties in hive-site.xml should be configured:
 1) hive.security.metastore.authorization.manager set to 
     org.apache.hadoop.hive.ql.security.authorization.StorageBasedAuthorizationProvider
 2) hive.security.metastore.authenticator.manager set to 

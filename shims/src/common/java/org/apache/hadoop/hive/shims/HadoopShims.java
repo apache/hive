@@ -561,6 +561,11 @@ public interface HadoopShims {
      * Close the connection to the Job Tracker.
      */
     public void close();
+    /**
+     * Does exactly what org.apache.hadoop.mapreduce.Job#addCacheFile(URI) in Hadoop 2.
+     * Assumes that both parameters are not {@code null}.
+     */
+    public void addCacheFile(URI uri, Job job);
   }
 
   /**
