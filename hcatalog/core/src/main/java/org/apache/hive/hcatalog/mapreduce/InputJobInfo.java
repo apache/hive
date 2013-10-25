@@ -36,7 +36,7 @@ import java.util.zip.InflaterInputStream;
  * Container for metadata read from the metadata server.
  * Prior to release 0.5, InputJobInfo was a key part of the public API, exposed directly
  * to end-users as an argument to
- * {@link HCatInputFormat#setInput(org.apache.hadoop.mapreduce.Job, InputJobInfo)}.
+ * HCatInputFormat#setInput(org.apache.hadoop.mapreduce.Job, InputJobInfo).
  * Going forward, we plan on treating InputJobInfo as an implementation detail and no longer
  * expose to end-users. Should you have a need to use InputJobInfo outside HCatalog itself,
  * please contact the developer mailing list before depending on this class.

@@ -67,7 +67,7 @@ public class PigDelegator extends LauncherDelegator {
    * @param usehcatalog whether the command uses hcatalog/needs to connect
    *         to hive metastore server
    * @param completedUrl call back url
-   * @return
+   * @return list of arguments
    * @throws BadParam
    * @throws IOException
    * @throws InterruptedException
