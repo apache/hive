@@ -44,7 +44,6 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
-import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.ql.MapRedStats;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
@@ -285,17 +284,9 @@ public class SessionState {
       Hive.get(startSs.conf).setupMSC();
       ShimLoader.getHadoopShims().getUGIForConf(startSs.conf);
       FileSystem.get(startSs.conf);
-    } catch (IOException e) {
-      // required for the FileSystem.get
-      throw new RuntimeException(e);
-    } catch (LoginException e) {
-      // required for the getUGIForConf
-      throw new RuntimeException(e);
-    } catch (HiveException e) {
-      // required for Hive.get(HiveConf)
-      throw new RuntimeException(e);
-    } catch (MetaException e) {
-      // required for setupMSC()
+    } catch (Exception e) {
+      // catch-all due to some exec time dependencies on session state
+      // that would cause ClassNoFoundException otherwise
       throw new RuntimeException(e);
     }
     
