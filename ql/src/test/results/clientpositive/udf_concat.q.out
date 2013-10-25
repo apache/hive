@@ -43,3 +43,20 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 ab	abc	NULL	NULL	a	NULL	123a	12	1	1234abcextra argument
+PREHOOK: query: -- binary/mixed
+SELECT
+  concat(cast('ab' as binary), cast('cd' as binary)),
+  concat('ab', cast('cd' as binary))
+FROM src LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- binary/mixed
+SELECT
+  concat(cast('ab' as binary), cast('cd' as binary)),
+  concat('ab', cast('cd' as binary))
+FROM src LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+abcd	abcd
