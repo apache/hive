@@ -89,8 +89,9 @@ public class TestMetastoreVersion extends TestCase {
     // session creation should fail since the schema didn't get created
     try {
       SessionState.start(new CliSessionState(hiveConf));
+      fail("Expected exception");
     } catch (RuntimeException re) {
-      assertTrue(re.getCause().getCause() instanceof MetaException);
+      assertTrue(re.getCause().getCause().getCause() instanceof MetaException);
     }
   }
 

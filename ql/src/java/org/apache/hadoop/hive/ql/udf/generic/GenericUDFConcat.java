@@ -61,7 +61,6 @@ public class GenericUDFConcat extends GenericUDF {
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
 
     // Loop through all the inputs to determine the appropriate return type/length.
-    // Either all arguments are binary, or all columns are non-binary.
     // Return type:
     //  All VARCHAR inputs: return VARCHAR
     //  All BINARY inputs: return BINARY
@@ -85,21 +84,16 @@ public class GenericUDFConcat extends GenericUDF {
         case BINARY:
           fixedLengthReturnValue = false;
           if (returnType != currentCategory) {
-            throw new UDFArgumentException(
-                "CONCAT cannot take a mix of binary and non-binary arguments");
+            // mix of binary/non-binary args
+            returnType = PrimitiveCategory.STRING;
           }
           break;
         case VARCHAR:
-          if (returnType == PrimitiveCategory.BINARY) {
-            throw new UDFArgumentException(
-                "CONCAT cannot take a mix of binary and non-binary arguments");
+          if (!fixedLengthReturnValue) {
+            returnType = PrimitiveCategory.STRING;
           }
           break;
         default:
-          if (returnType == PrimitiveCategory.BINARY) {
-            throw new UDFArgumentException(
-                "CONCAT cannot take a mix of binary and non-binary arguments");
-          }
           returnType = PrimitiveCategory.STRING;
           fixedLengthReturnValue = false;
           break;

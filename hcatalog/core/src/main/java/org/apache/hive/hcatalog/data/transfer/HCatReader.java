@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hive.hcatalog.common.HCatException;
 import org.apache.hive.hcatalog.data.HCatRecord;
 import org.apache.hive.hcatalog.data.transfer.state.StateProvider;
@@ -32,7 +34,8 @@ import org.apache.hive.hcatalog.data.transfer.state.StateProvider;
  * This abstract class is internal to HCatalog and abstracts away the notion of
  * underlying system from which reads will be done.
  */
-
+@InterfaceAudience.Public
+@InterfaceStability.Evolving
 public abstract class HCatReader {
 
   /**

@@ -28,6 +28,8 @@ import java.util.HashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hdfs.web.AuthFilter;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.GenericOptionsParser;
@@ -45,6 +47,8 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 /**
  * The main executable that starts up and runs the Server.
  */
+@InterfaceAudience.LimitedPrivate("Integration Tests")
+@InterfaceStability.Unstable
 public class Main {
   public static final String SERVLET_PATH = "templeton";
   private static final Log LOG = LogFactory.getLog(Main.class);
