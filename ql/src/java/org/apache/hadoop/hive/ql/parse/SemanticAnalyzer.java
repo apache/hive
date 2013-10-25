@@ -6192,7 +6192,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     JoinOperator joinOp = (JoinOperator) genJoinOperatorChildren(joinTree,
       joinSrcOp, srcOps, omitOpts);
     joinContext.put(joinOp, joinTree);
-    return joinOp;
+
+    Operator op = joinOp;
+    for(ASTNode condn : joinTree.getPostJoinFilters() ) {
+      op = genFilterPlan(qb, condn, op);
+    }
+    return op;
   }
 
   /**
@@ -6915,9 +6920,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (node.getFiltersForPushing().get(0).size() != 0) {
-      ArrayList<ASTNode> filterPos = filter.get(pos);
-      filterPos.addAll(node.getFiltersForPushing().get(0));
-    }
+      /*
+       * for each predicate:
+       * - does it refer to one or many aliases
+       * - if one: add it to the filterForPushing list of that alias
+       * - if many: add as a filter from merging trees.
+       */
+
+      for(ASTNode nodeFilter : node.getFiltersForPushing().get(0) ) {
+        int fPos = ParseUtils.checkJoinFilterRefersOneAlias(target.getBaseSrc(), nodeFilter);
+
+        if ( fPos != - 1 ) {
+          filter.get(fPos).add(nodeFilter);
+        } else {
+          target.addPostJoinFilter(nodeFilter);
+        }
+      }
+     }
 
     if (node.getNoOuterJoin() && target.getNoOuterJoin()) {
       target.setNoOuterJoin(true);

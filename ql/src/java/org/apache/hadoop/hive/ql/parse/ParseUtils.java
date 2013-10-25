@@ -128,4 +128,55 @@ public final class ParseUtils {
     String lengthStr = node.getChild(0).getText();
     return TypeInfoFactory.getVarcharTypeInfo(Integer.valueOf(lengthStr));
   }
+
+  static int getIndex(String[] list, String elem) {
+    for(int i=0; i < list.length; i++) {
+      if (list[i].toLowerCase().equals(elem)) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
+  /*
+   * if the given filterCondn refers to only 1 table alias in the QBJoinTree,
+   * we return that alias's position. Otherwise we return -1
+   */
+  static int checkJoinFilterRefersOneAlias(String[] tabAliases, ASTNode filterCondn) {
+
+    switch(filterCondn.getType()) {
+    case HiveParser.TOK_TABLE_OR_COL:
+      String tableOrCol = SemanticAnalyzer.unescapeIdentifier(filterCondn.getChild(0).getText()
+          .toLowerCase());
+      return getIndex(tabAliases, tableOrCol);
+    case HiveParser.Identifier:
+    case HiveParser.Number:
+    case HiveParser.StringLiteral:
+    case HiveParser.BigintLiteral:
+    case HiveParser.SmallintLiteral:
+    case HiveParser.TinyintLiteral:
+    case HiveParser.DecimalLiteral:
+    case HiveParser.TOK_STRINGLITERALSEQUENCE:
+    case HiveParser.TOK_CHARSETLITERAL:
+    case HiveParser.TOK_DATELITERAL:
+    case HiveParser.KW_TRUE:
+    case HiveParser.KW_FALSE:
+    case HiveParser.TOK_NULL:
+      return -1;
+    default:
+      int idx = -1;
+      int i = filterCondn.getType() == HiveParser.TOK_FUNCTION ? 1 : 0;
+      for (; i < filterCondn.getChildCount(); i++) {
+        int cIdx = checkJoinFilterRefersOneAlias(tabAliases, (ASTNode) filterCondn.getChild(i));
+        if ( cIdx != idx ) {
+          if ( idx != -1 && cIdx != -1 ) {
+            return -1;
+          }
+          idx = idx == -1 ? cIdx : idx;
+        }
+      }
+      return idx;
+    }
+  }
+
 }
