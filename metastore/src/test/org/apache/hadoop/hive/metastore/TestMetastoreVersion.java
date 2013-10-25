@@ -91,7 +91,7 @@ public class TestMetastoreVersion extends TestCase {
       SessionState.start(new CliSessionState(hiveConf));
       fail("Expected exception");
     } catch (RuntimeException re) {
-      assertTrue(re.getCause().getCause() instanceof MetaException);
+      assertTrue(re.getCause().getCause().getCause() instanceof MetaException);
     }
   }
 
