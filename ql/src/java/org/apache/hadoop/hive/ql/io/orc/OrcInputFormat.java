@@ -333,6 +333,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private final boolean cacheStripeDetails;
     private final AtomicInteger cacheHitCounter = new AtomicInteger(0);
     private final AtomicInteger numFilesCounter = new AtomicInteger(0);
+    private Throwable fatalError = null;
 
     /**
      * A count of the number of threads that may create more work for the
@@ -388,10 +389,14 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
      * @param runnable the object to run
      */
     synchronized void schedule(Runnable runnable) {
-      if (runnable instanceof FileGenerator) {
-        schedulers += 1;
+      if (fatalError == null) {
+        if (runnable instanceof FileGenerator || runnable instanceof SplitGenerator) {
+          schedulers += 1;
+        }
+        threadPool.execute(runnable);
+      } else {
+        throw new RuntimeException("serious problem", fatalError);
       }
-      threadPool.execute(runnable);
     }
 
     /**
@@ -404,6 +409,11 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       }
     }
 
+    synchronized void notifyOnNonIOException(Throwable th) {
+      fatalError = th;
+      notify();
+    }
+
     /**
      * Wait until all of the tasks are done. It waits until all of the
      * threads that may create more work are done and then shuts down the
@@ -413,6 +423,10 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       try {
         while (schedulers != 0) {
           wait();
+          if (fatalError != null) {
+            threadPool.shutdownNow();
+            throw new RuntimeException("serious problem", fatalError);
+          }
         }
         threadPool.shutdown();
         threadPool.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
@@ -457,13 +471,19 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           }
         }
         // mark the fact that we are done
-        context.decrementSchedulers();
         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ORC_GET_BLOCK_LOCATIONS);
       } catch (Throwable th) {
-        context.decrementSchedulers();
+        if (!(th instanceof IOException)) {
+          LOG.error("Unexpected Exception", th);
+        }
         synchronized (context.errors) {
           context.errors.add(th);
         }
+        if (!(th instanceof IOException)) {
+          context.notifyOnNonIOException(th);
+        }
+      } finally {
+        context.decrementSchedulers();
       }
     }
 
@@ -643,9 +663,17 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           createSplit(currentOffset, currentLength, fileMetaInfo);
         }
       } catch (Throwable th) {
+        if (!(th instanceof IOException)) {
+          LOG.error("Unexpected Exception", th);
+        }
         synchronized (context.errors) {
           context.errors.add(th);
         }
+        if (!(th instanceof IOException)) {
+          context.notifyOnNonIOException(th);
+        }
+      } finally {
+        context.decrementSchedulers();
       }
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.CREATE_ORC_SPLITS);
     }
@@ -678,8 +706,14 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           }
         }
       } catch (Throwable th) {
+        if (!(th instanceof IOException)) {
+          LOG.error("Unexpected Exception", th);
+        }
         synchronized (context.errors) {
           context.errors.add(th);
+        }
+        if (!(th instanceof IOException)) {
+          context.notifyOnNonIOException(th);
         }
       }
     }
@@ -705,7 +739,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         if (th instanceof IOException) {
           errors.add((IOException) th);
         } else {
-          throw new IOException("serious problem", th);
+          throw new RuntimeException("serious problem", th);
         }
       }
       throw new InvalidInputException(errors);
