@@ -46,12 +46,13 @@ import java.util.Map;
  *
  */
 public class HiveCallableStatement implements java.sql.CallableStatement {
+  private final Connection connection;
 
   /**
    *
    */
-  public HiveCallableStatement() {
-    // TODO Auto-generated constructor stub
+  public HiveCallableStatement(Connection connection) {
+    this.connection = connection;
   }
 
   /*
@@ -1387,7 +1388,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
    */
 
   public ResultSet executeQuery() throws SQLException {
-    return new HiveQueryResultSet.Builder().build();
+    return new HiveQueryResultSet.Builder(this).build();
   }
 
   /*
@@ -2169,8 +2170,7 @@ public class HiveCallableStatement implements java.sql.CallableStatement {
    */
 
   public Connection getConnection() throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    return this.connection;
   }
 
   /*
