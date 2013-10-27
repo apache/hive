@@ -180,7 +180,7 @@ public class TestJdbcDriver2 {
         + " c15 struct<r:int,s:struct<a:int,b:string>>,"
         + " c16 array<struct<m:map<string,string>,n:int>>,"
         + " c17 timestamp, "
-        + " c18 decimal, "
+        + " c18 decimal(16,7), "
         + " c19 binary, "
         + " c20 date,"
         + " c21 varchar(20)"

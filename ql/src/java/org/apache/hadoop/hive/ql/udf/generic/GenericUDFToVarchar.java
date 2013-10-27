@@ -90,8 +90,8 @@ public class GenericUDFToVarchar extends GenericUDF implements SettableUDF, Seri
     StringBuilder sb = new StringBuilder();
     sb.append("CAST( ");
     sb.append(children[0]);
-    sb.append(" AS VARCHAR(");
-    sb.append("" + typeInfo.getLength());
+    sb.append(" AS ");
+    sb.append(typeInfo.getQualifiedName());
     sb.append(")");
     return sb.toString();
   }

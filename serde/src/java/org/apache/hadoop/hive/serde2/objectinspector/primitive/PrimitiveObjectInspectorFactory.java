@@ -22,7 +22,6 @@ import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
@@ -35,6 +34,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
@@ -82,7 +82,7 @@ public final class PrimitiveObjectInspectorFactory {
   public static final WritableBinaryObjectInspector writableBinaryObjectInspector =
       new WritableBinaryObjectInspector();
   public static final WritableHiveDecimalObjectInspector writableHiveDecimalObjectInspector =
-      new WritableHiveDecimalObjectInspector();
+      new WritableHiveDecimalObjectInspector(TypeInfoFactory.decimalTypeInfo);
 
   // Map from PrimitiveTypeInfo to AbstractPrimitiveWritableObjectInspector.
   private static HashMap<PrimitiveTypeInfo, AbstractPrimitiveWritableObjectInspector> cachedPrimitiveWritableInspectorCache =
@@ -112,8 +112,7 @@ public final class PrimitiveObjectInspectorFactory {
         writableTimestampObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME),
         writableBinaryObjectInspector);
-    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.DECIMAL_TYPE_NAME),
-        writableHiveDecimalObjectInspector);
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.decimalTypeInfo, writableHiveDecimalObjectInspector);
   }
 
   private static Map<PrimitiveCategory, AbstractPrimitiveWritableObjectInspector> primitiveCategoryToWritableOI =
@@ -159,7 +158,7 @@ public final class PrimitiveObjectInspectorFactory {
   public static final JavaBinaryObjectInspector javaByteArrayObjectInspector =
       new JavaBinaryObjectInspector();
   public static final JavaHiveDecimalObjectInspector javaHiveDecimalObjectInspector =
-      new JavaHiveDecimalObjectInspector();
+      new JavaHiveDecimalObjectInspector(TypeInfoFactory.decimalTypeInfo);
 
   // Map from PrimitiveTypeInfo to AbstractPrimitiveJavaObjectInspector.
   private static HashMap<PrimitiveTypeInfo, AbstractPrimitiveJavaObjectInspector> cachedPrimitiveJavaInspectorCache =
@@ -189,8 +188,7 @@ public final class PrimitiveObjectInspectorFactory {
         javaTimestampObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME),
         javaByteArrayObjectInspector);
-    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.DECIMAL_TYPE_NAME),
-        javaHiveDecimalObjectInspector);
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.decimalTypeInfo, javaHiveDecimalObjectInspector);
   }
 
   private static Map<PrimitiveCategory, AbstractPrimitiveJavaObjectInspector> primitiveCategoryToJavaOI =
@@ -244,8 +242,11 @@ public final class PrimitiveObjectInspectorFactory {
     case VARCHAR:
       result = new WritableHiveVarcharObjectInspector((VarcharTypeInfo)typeInfo);
       break;
-      default:
-        throw new RuntimeException("Failed to create WritableHiveVarcharObjectInspector for " + typeInfo );
+    case DECIMAL:
+      result = new WritableHiveDecimalObjectInspector((DecimalTypeInfo)typeInfo);
+      break;
+    default:
+      throw new RuntimeException("Failed to create object inspector for " + typeInfo );
     }
 
     cachedPrimitiveWritableInspectorCache.put(typeInfo, result);
@@ -286,7 +287,7 @@ public final class PrimitiveObjectInspectorFactory {
     case TIMESTAMP:
       return new WritableConstantTimestampObjectInspector((TimestampWritable)value);
     case DECIMAL:
-      return new WritableConstantHiveDecimalObjectInspector((HiveDecimalWritable)value);
+      return new WritableConstantHiveDecimalObjectInspector((DecimalTypeInfo)typeInfo, (HiveDecimalWritable)value);
     case BINARY:
       return new WritableConstantBinaryObjectInspector((BytesWritable)value);
     case VOID:
@@ -329,6 +330,9 @@ public final class PrimitiveObjectInspectorFactory {
     switch (typeInfo.getPrimitiveCategory()) {
     case VARCHAR:
       result = new JavaHiveVarcharObjectInspector((VarcharTypeInfo)typeInfo);
+      break;
+    case DECIMAL:
+      result = new JavaHiveDecimalObjectInspector((DecimalTypeInfo)typeInfo);
       break;
       default:
         throw new RuntimeException("Failed to create JavaHiveVarcharObjectInspector for " + typeInfo );

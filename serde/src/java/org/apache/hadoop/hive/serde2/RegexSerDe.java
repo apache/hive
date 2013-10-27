@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveJavaObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
@@ -231,7 +232,7 @@ public class RegexSerDe extends AbstractSerDe {
           Date d;
           d = Date.valueOf(t);
           row.set(c, d);
-        } else if (typeName.equals(serdeConstants.DECIMAL_TYPE_NAME)) {
+        } else if (typeInfo instanceof DecimalTypeInfo) {
           HiveDecimal bd = HiveDecimal.create(t);
           row.set(c, bd);
         } else if (typeInfo instanceof VarcharTypeInfo) {

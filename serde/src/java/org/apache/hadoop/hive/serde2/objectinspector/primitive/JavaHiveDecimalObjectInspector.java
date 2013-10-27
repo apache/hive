@@ -21,14 +21,18 @@ import java.math.BigInteger;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 
 public class JavaHiveDecimalObjectInspector
-    extends AbstractPrimitiveJavaObjectInspector
-    implements SettableHiveDecimalObjectInspector {
+extends AbstractPrimitiveJavaObjectInspector
+implements SettableHiveDecimalObjectInspector {
 
-  protected JavaHiveDecimalObjectInspector() {
-    super(TypeInfoFactory.decimalTypeInfo);
+  public JavaHiveDecimalObjectInspector() {
+  }
+
+  public JavaHiveDecimalObjectInspector(DecimalTypeInfo typeInfo) {
+    super(typeInfo);
   }
 
   @Override
@@ -38,33 +42,32 @@ public class JavaHiveDecimalObjectInspector
     }
 
     if (o instanceof String) {
-      o = HiveDecimal.create((String)o);
-      if (o == null) {
-        return null;
-      }
+      HiveDecimal dec = enforcePrecisionScale(HiveDecimal.create((String)o));
+      return dec == null ? null : new HiveDecimalWritable(dec);
     }
 
-    return new HiveDecimalWritable((HiveDecimal) o);
+    HiveDecimal dec = enforcePrecisionScale((HiveDecimal)o);
+    return dec == null ? null : new HiveDecimalWritable(dec);
   }
 
   @Override
   public HiveDecimal getPrimitiveJavaObject(Object o) {
-    return o == null ? null : (HiveDecimal) o;
+    return enforcePrecisionScale((HiveDecimal)o);
   }
 
   @Override
   public Object set(Object o, byte[] bytes, int scale) {
-    return HiveDecimal.create(new BigInteger(bytes), scale);
+    return enforcePrecisionScale(HiveDecimal.create(new BigInteger(bytes), scale));
   }
 
   @Override
   public Object set(Object o, HiveDecimal t) {
-    return t;
+    return enforcePrecisionScale(t);
   }
 
   @Override
   public Object set(Object o, HiveDecimalWritable t) {
-    return t == null ? null : t.getHiveDecimal();
+    return t == null ? null : enforcePrecisionScale(t.getHiveDecimal());
   }
 
   @Override
@@ -74,11 +77,11 @@ public class JavaHiveDecimalObjectInspector
 
   @Override
   public Object create(HiveDecimal t) {
-    if (t == null) {
-      return null;
-    }
+    return t;
+  }
 
-    return HiveDecimal.create(t.unscaledValue(), t.scale());
+  private HiveDecimal enforcePrecisionScale(HiveDecimal dec) {
+    return HiveDecimalUtils.enforcePrecisionScale(dec,(DecimalTypeInfo)typeInfo);
   }
 
 }

@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
@@ -64,8 +65,6 @@ public final class LazyPrimitiveObjectInspectorFactory {
       new LazyTimestampObjectInspector();
   public static final LazyBinaryObjectInspector LAZY_BINARY_OBJECT_INSPECTOR =
       new LazyBinaryObjectInspector();
-  public static final LazyHiveDecimalObjectInspector LAZY_BIG_DECIMAL_OBJECT_INSPECTOR =
-      new LazyHiveDecimalObjectInspector();
 
   private LazyPrimitiveObjectInspectorFactory() {
     // prevent instantiation
@@ -98,8 +97,6 @@ public final class LazyPrimitiveObjectInspectorFactory {
         LAZY_DATE_OBJECT_INSPECTOR);
     cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.TIMESTAMP_TYPE_NAME),
         LAZY_TIMESTAMP_OBJECT_INSPECTOR);
-    cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.DECIMAL_TYPE_NAME),
-        LAZY_BIG_DECIMAL_OBJECT_INSPECTOR);
     cachedPrimitiveLazyObjectInspectors.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME),
         LAZY_BINARY_OBJECT_INSPECTOR);
   }
@@ -127,6 +124,9 @@ public final class LazyPrimitiveObjectInspectorFactory {
     switch (typeInfo.getPrimitiveCategory()) {
     case VARCHAR:
       poi = new LazyHiveVarcharObjectInspector((VarcharTypeInfo)typeInfo);
+      break;
+    case DECIMAL:
+      poi = new LazyHiveDecimalObjectInspector((DecimalTypeInfo)typeInfo);
       break;
     default:
       throw new RuntimeException(
