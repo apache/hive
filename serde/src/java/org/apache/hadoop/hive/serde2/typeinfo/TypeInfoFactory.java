@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
@@ -54,7 +55,12 @@ public final class TypeInfoFactory {
   public static final PrimitiveTypeInfo dateTypeInfo = new PrimitiveTypeInfo(serdeConstants.DATE_TYPE_NAME);
   public static final PrimitiveTypeInfo timestampTypeInfo = new PrimitiveTypeInfo(serdeConstants.TIMESTAMP_TYPE_NAME);
   public static final PrimitiveTypeInfo binaryTypeInfo = new PrimitiveTypeInfo(serdeConstants.BINARY_TYPE_NAME);
-  public static final PrimitiveTypeInfo decimalTypeInfo = new PrimitiveTypeInfo(serdeConstants.DECIMAL_TYPE_NAME);
+
+  /**
+   * A DecimalTypeInfo instance that has max precision and max scale.
+   */
+  public static final DecimalTypeInfo decimalTypeInfo = new DecimalTypeInfo(HiveDecimal.MAX_PRECISION,
+      HiveDecimal.MAX_SCALE);
 
   public static final PrimitiveTypeInfo unknownTypeInfo = new PrimitiveTypeInfo("unknown");
 
@@ -75,7 +81,7 @@ public final class TypeInfoFactory {
     cachedPrimitiveTypeInfo.put(serdeConstants.DATE_TYPE_NAME, dateTypeInfo);
     cachedPrimitiveTypeInfo.put(serdeConstants.TIMESTAMP_TYPE_NAME, timestampTypeInfo);
     cachedPrimitiveTypeInfo.put(serdeConstants.BINARY_TYPE_NAME, binaryTypeInfo);
-    cachedPrimitiveTypeInfo.put(serdeConstants.DECIMAL_TYPE_NAME, decimalTypeInfo);
+    cachedPrimitiveTypeInfo.put(decimalTypeInfo.getQualifiedName(), decimalTypeInfo);
     cachedPrimitiveTypeInfo.put("unknown", unknownTypeInfo);
   }
 
@@ -128,6 +134,12 @@ public final class TypeInfoFactory {
           return null;
         }
         return new VarcharTypeInfo(Integer.valueOf(parts.typeParams[0]));
+      case DECIMAL:
+        if (parts.typeParams.length != 2) {
+          return null;
+        }
+        return new DecimalTypeInfo(Integer.valueOf(parts.typeParams[0]),
+            Integer.valueOf(parts.typeParams[1]));
       default:
         return null;
     }
@@ -137,6 +149,11 @@ public final class TypeInfoFactory {
     String fullName = BaseCharTypeInfo.getQualifiedName(serdeConstants.VARCHAR_TYPE_NAME, length);
     return (VarcharTypeInfo) getPrimitiveTypeInfo(fullName);
   }
+
+  public static DecimalTypeInfo getDecimalTypeInfo(int precision, int scale) {
+    String fullName = DecimalTypeInfo.getQualifiedName(precision, scale);
+    return (DecimalTypeInfo) getPrimitiveTypeInfo(fullName);
+  };
 
   public static TypeInfo getPrimitiveTypeInfoFromPrimitiveWritable(
       Class<?> clazz) {
@@ -207,6 +224,6 @@ public final class TypeInfoFactory {
       cachedMapTypeInfo.put(signature, result);
     }
     return result;
-  };
+  }
 
 }

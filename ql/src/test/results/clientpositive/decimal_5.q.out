@@ -1,0 +1,202 @@
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_5
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_5
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE DECIMAL_5(key decimal(10,5), value int)
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE DECIMAL_5(key decimal(10,5), value int)
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@DECIMAL_5
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv7.txt' INTO TABLE DECIMAL_5
+PREHOOK: type: LOAD
+PREHOOK: Output: default@decimal_5
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv7.txt' INTO TABLE DECIMAL_5
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@decimal_5
+PREHOOK: query: SELECT key FROM DECIMAL_5 ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_5
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT key FROM DECIMAL_5 ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_5
+#### A masked pattern was here ####
+NULL
+NULL
+NULL
+-4400
+-1255.49
+-1.122
+-1.12
+-1.12
+-0.333
+-0.33
+-0.3
+0
+0
+0
+0.01
+0.02
+0.1
+0.2
+0.3
+0.33
+0.333
+1
+1
+1
+1.12
+1.122
+2
+2
+3.14
+3.14
+3.14
+3.14
+10
+20
+100
+124
+125.2
+200
+PREHOOK: query: SELECT DISTINCT key FROM DECIMAL_5 ORDER BY key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_5
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT DISTINCT key FROM DECIMAL_5 ORDER BY key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_5
+#### A masked pattern was here ####
+NULL
+-4400
+-1255.49
+-1.122
+-1.12
+-0.333
+-0.33
+-0.3
+0
+0.01
+0.02
+0.1
+0.2
+0.3
+0.33
+0.333
+1
+1.12
+1.122
+2
+3.14
+10
+20
+100
+124
+125.2
+200
+PREHOOK: query: SELECT cast(key as decimal) FROM DECIMAL_5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_5
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cast(key as decimal) FROM DECIMAL_5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_5
+#### A masked pattern was here ####
+-4400
+NULL
+0
+0
+100
+10
+1
+0
+0
+200
+20
+2
+0
+0
+0
+0
+0
+0
+0
+0
+0
+1
+2
+3
+-1
+-1
+-1
+1
+1
+124
+125
+-1255
+3
+3
+3
+1
+NULL
+NULL
+PREHOOK: query: SELECT cast(key as decimal(6,3)) FROM DECIMAL_5
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_5
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT cast(key as decimal(6,3)) FROM DECIMAL_5
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_5
+#### A masked pattern was here ####
+NULL
+NULL
+0
+0
+100
+10
+1
+0.1
+0.01
+200
+20
+2
+0
+0.2
+0.02
+0.3
+0.33
+0.333
+-0.3
+-0.33
+-0.333
+1
+2
+3.14
+-1.12
+-1.12
+-1.122
+1.12
+1.122
+124
+125.2
+NULL
+3.14
+3.14
+3.14
+1
+NULL
+NULL
+PREHOOK: query: DROP TABLE DECIMAL_5
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@decimal_5
+PREHOOK: Output: default@decimal_5
+POSTHOOK: query: DROP TABLE DECIMAL_5
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@decimal_5
+POSTHOOK: Output: default@decimal_5

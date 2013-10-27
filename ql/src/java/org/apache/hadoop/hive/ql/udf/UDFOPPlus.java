@@ -139,12 +139,12 @@ public class UDFOPPlus extends UDFBaseNumericOp {
       return null;
     }
 
-      HiveDecimal dec = a.getHiveDecimal().add(b.getHiveDecimal());
-      if (dec == null) {
-        return null;
-      }
+    HiveDecimal dec = a.getHiveDecimal().add(b.getHiveDecimal());
+    if (dec == null) {
+      return null;
+    }
 
-      decimalWritable.set(dec);
+    decimalWritable.set(dec);
     return decimalWritable;
   }
 

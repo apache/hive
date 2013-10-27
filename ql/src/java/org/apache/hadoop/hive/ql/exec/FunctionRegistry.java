@@ -39,6 +39,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
@@ -147,6 +148,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveGrouping;
+import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -661,7 +663,16 @@ public final class FunctionRegistry {
             TypeInfoUtils.getCharacterLengthForType(a),
             TypeInfoUtils.getCharacterLengthForType(b));
         return TypeInfoFactory.getVarcharTypeInfo(maxLength);
-
+      case DECIMAL:
+          int prec1 = HiveDecimalUtils.getPrecisionForType(a);
+          int prec2 = HiveDecimalUtils.getPrecisionForType(b);
+          int scale1 = HiveDecimalUtils.getScaleForType(a);
+          int scale2 = HiveDecimalUtils.getScaleForType(b);
+          int intPart = Math.max(prec1 - scale1, prec2 - scale2);
+          int decPart = Math.max(scale1, scale2);
+          int prec =  Math.min(intPart + decPart, HiveDecimal.MAX_PRECISION);
+          int scale = Math.min(decPart, HiveDecimal.MAX_PRECISION - intPart);
+          return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
       default:
         // Type doesn't require any qualifiers.
         return TypeInfoFactory.getPrimitiveTypeInfo(
@@ -1491,7 +1502,7 @@ public final class FunctionRegistry {
         udfClass == UDFToShort.class || udfClass == UDFToString.class ||
         udfClass == GenericUDFToVarchar.class ||
         udfClass == GenericUDFTimestamp.class || udfClass == GenericUDFToBinary.class ||
-        udfClass == GenericUDFToDate.class;
+        udfClass == GenericUDFToDate.class  || udfClass == GenericUDFToDecimal.class;
   }
 
   /**

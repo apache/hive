@@ -1269,6 +1269,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
       if (obj != null) {
         HiveDecimal decimal = ((HiveDecimalObjectInspector) inspector).
             getPrimitiveJavaObject(obj);
+        if (decimal == null) {
+          return;
+        }
         SerializationUtils.writeBigInteger(valueStream,
             decimal.unscaledValue());
         scaleStream.write(decimal.scale());
@@ -1622,6 +1625,7 @@ class WriterImpl implements Writer, MemoryManager.Callback {
             type.setKind(OrcProto.Type.Kind.DATE);
             break;
           case DECIMAL:
+            // TODO: save precision/scale
             type.setKind(OrcProto.Type.Kind.DECIMAL);
             break;
           default:

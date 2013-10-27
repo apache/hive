@@ -127,8 +127,7 @@ import org.apache.hadoop.hive.ql.security.authorization.PrivilegeRegistry;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
-import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
@@ -170,11 +169,13 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     switch (token) {
     case HiveParser.TOK_VARCHAR:
-      PrimitiveCategory primitiveCategory = PrimitiveCategory.VARCHAR;
-      typeName = TokenToTypeName.get(token);
-      VarcharTypeInfo varcharTypeInfo = ParseUtils.getVarcharTypeInfo(typeName, node);
+      VarcharTypeInfo varcharTypeInfo = ParseUtils.getVarcharTypeInfo(node);
       typeName = varcharTypeInfo.getQualifiedName();
       break;
+    case HiveParser.TOK_DECIMAL:
+        DecimalTypeInfo decTypeInfo = ParseUtils.getDecimalTypeTypeInfo(node);
+        typeName = decTypeInfo.getQualifiedName();
+        break;
     default:
       typeName = TokenToTypeName.get(token);
     }

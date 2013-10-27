@@ -63,11 +63,11 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 -3.14
-PREHOOK: query: SELECT CAST(CAST(-3.14 AS DECIMAL) AS FLOAT) FROM src LIMIT 1
+PREHOOK: query: SELECT CAST(CAST(-3.14 AS DECIMAL(3,2)) AS FLOAT) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT CAST(CAST(-3.14 AS DECIMAL) AS FLOAT) FROM src LIMIT 1
+POSTHOOK: query: SELECT CAST(CAST(-3.14 AS DECIMAL(3,2)) AS FLOAT) FROM src LIMIT 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

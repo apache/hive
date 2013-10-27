@@ -1,10 +1,10 @@
 PREHOOK: query: -- HIVE-5292 Join on decimal columns fails
 
-create table src_dec (key decimal, value string)
+create table src_dec (key decimal(3,0), value string)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: -- HIVE-5292 Join on decimal columns fails
 
-create table src_dec (key decimal, value string)
+create table src_dec (key decimal(3,0), value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@src_dec
 PREHOOK: query: load data local inpath '../data/files/kv1.txt' into table src_dec

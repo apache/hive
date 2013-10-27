@@ -74,13 +74,17 @@ public class UDFOPDivide extends UDF {
     if ((a == null) || (b == null)) {
       return null;
     }
+
     if (b.getHiveDecimal().compareTo(HiveDecimal.ZERO) == 0) {
       return null;
-    } else {
-        decimalWritable.set(a.getHiveDecimal().divide(
-          b.getHiveDecimal()));
     }
 
+    HiveDecimal dec = a.getHiveDecimal().divide(b.getHiveDecimal());
+    if (dec == null) {
+      return null;
+    }
+
+    decimalWritable.set(dec);
     return decimalWritable;
   }
 }
