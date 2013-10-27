@@ -262,6 +262,78 @@ public class TestJdbcDriver2 {
   }
 
   @Test
+  public void testParentReferences() throws Exception {
+    /* Test parent references from Statement */
+    Statement s = this.con.createStatement();
+    ResultSet rs = s.executeQuery("SELECT * FROM " + dataTypeTableName);
+
+    rs.close();
+    s.close();
+
+    assertTrue(s.getConnection() == this.con);
+    assertTrue(rs.getStatement() == s);
+
+    /* Test parent references from PreparedStatement */
+    PreparedStatement ps = this.con.prepareStatement("SELECT * FROM " + dataTypeTableName);
+    rs = ps.executeQuery();
+
+    rs.close();
+    ps.close();
+
+    assertTrue(ps.getConnection() == this.con);
+    assertTrue(rs.getStatement() == ps);
+
+    /* Test DatabaseMetaData queries which do not have a parent Statement */
+    DatabaseMetaData md = this.con.getMetaData();
+
+    assertTrue(md.getConnection() == this.con);
+
+    rs = md.getCatalogs();
+    assertNull(rs.getStatement());
+    rs.close();
+
+    rs = md.getColumns(null, null, null, null);
+    assertNull(rs.getStatement());
+    rs.close();
+
+    rs = md.getFunctions(null, null, null);
+    assertNull(rs.getStatement());
+    rs.close();
+
+    rs = md.getImportedKeys(null, null, null);
+    assertNull(rs.getStatement());
+    rs.close();
+
+    rs = md.getPrimaryKeys(null, null, null);
+    assertNull(rs.getStatement());
+    rs.close();
+
+    rs = md.getProcedureColumns(null, null, null, null);
+    assertNull(rs.getStatement());
+    rs.close();
+
+    rs = md.getProcedures(null, null, null);
+    assertNull(rs.getStatement());
+    rs.close();
+
+    rs = md.getSchemas();
+    assertNull(rs.getStatement());
+    rs.close();
+
+    rs = md.getTableTypes();
+    assertNull(rs.getStatement());
+    rs.close();
+
+    rs = md.getTables(null, null, null, null);
+    assertNull(rs.getStatement());
+    rs.close();
+
+    rs = md.getTypeInfo();
+    assertNull(rs.getStatement());
+    rs.close();
+  }
+
+  @Test
   public void testDataTypes2() throws Exception {
     Statement stmt = con.createStatement();
 

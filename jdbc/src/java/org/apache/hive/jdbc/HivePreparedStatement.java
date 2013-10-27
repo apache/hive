@@ -55,9 +55,9 @@ public class HivePreparedStatement extends HiveStatement implements PreparedStat
    */
   private final HashMap<Integer, String> parameters=new HashMap<Integer, String>();
 
-  public HivePreparedStatement(TCLIService.Iface client, TSessionHandle sessHandle,
-      String sql) {
-    super(client, sessHandle);
+  public HivePreparedStatement(HiveConnection connection, TCLIService.Iface client,
+      TSessionHandle sessHandle, String sql) {
+    super(connection, client, sessHandle);
     this.sql = sql;
   }
 
