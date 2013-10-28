@@ -77,16 +77,23 @@ public class BucketizedHiveInputFormat<K extends WritableComparable, V extends W
     return rr;
   }
 
-  protected FileStatus[] listStatus(JobConf job, Path path) throws IOException {
+  /**
+   * Recursively lists status for all files starting from the directory dir
+   * @param job
+   * @param dir
+   * @return
+   * @throws IOException
+   */
+  protected FileStatus[] listStatus(JobConf job, Path dir) throws IOException {
     ArrayList<FileStatus> result = new ArrayList<FileStatus>();
     List<IOException> errors = new ArrayList<IOException>();
 
-    FileSystem fs = path.getFileSystem(job);
-    FileStatus[] matches = fs.globStatus(path);
+    FileSystem fs = dir.getFileSystem(job);
+    FileStatus[] matches = fs.globStatus(dir);
     if (matches == null) {
-      errors.add(new IOException("Input path does not exist: " + path));
+      errors.add(new IOException("Input path does not exist: " + dir));
     } else if (matches.length == 0) {
-      errors.add(new IOException("Input Pattern " + path + " matches 0 files"));
+      errors.add(new IOException("Input Pattern " + dir + " matches 0 files"));
     } else {
       for (FileStatus globStat : matches) {
         FileUtils.listStatusRecursively(fs, globStat, result);

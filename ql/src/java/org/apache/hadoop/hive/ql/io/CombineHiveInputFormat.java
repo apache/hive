@@ -317,6 +317,8 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
         // https://issues.apache.org/jira/browse/MAPREDUCE-1597 is fixed.
         // Hadoop does not handle non-splittable files correctly for CombineFileInputFormat,
         // so don't use CombineFileInputFormat for non-splittable files
+
+        //ie, dont't combine if inputformat is a TextInputFormat and has compression turned on
         FileSystem inpFs = path.getFileSystem(job);
 
         if (inputFormat instanceof TextInputFormat) {
@@ -327,6 +329,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
           if (fStats.isDir()) {
             dirs.offer(path);
           } else if ((new CompressionCodecFactory(job)).getCodec(path) != null) {
+            //if compresssion codec is set, use HiveInputFormat.getSplits (don't combine)
             splits = super.getSplits(job, numSplits);
             perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
             return splits;
@@ -340,6 +343,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
                 dirs.offer(fStatus[idx].getPath());
               } else if ((new CompressionCodecFactory(job)).getCodec(
                   fStatus[idx].getPath()) != null) {
+                //if compresssion codec is set, use HiveInputFormat.getSplits (don't combine)
                 splits = super.getSplits(job, numSplits);
                 perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
                 return splits;
@@ -348,7 +352,7 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
           }
         }
       }
-
+      //don't combine if inputformat is a SymlinkTextInputFormat
       if (inputFormat instanceof SymlinkTextInputFormat) {
         splits = super.getSplits(job, numSplits);
         perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.GET_SPLITS);
@@ -362,6 +366,10 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       List<Operator<? extends OperatorDesc>> opList = null;
 
       if (!mrwork.isMapperCannotSpanPartns()) {
+        //if mapper can span partitions, make sure a splits does not contain multiple
+        // opList + inputFormatClassName + deserializerClassName combination
+        // This is done using the Map of CombinePathInputFormat to PathFilter
+
         opList = HiveFileFormatUtils.doGetWorksFromPath(
                    pathToAliases, aliasToWork, filterPath);
         CombinePathInputFormat combinePathInputFormat =
@@ -397,6 +405,9 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
     // Processing directories
     List<InputSplitShim> iss = new ArrayList<InputSplitShim>();
     if (!mrwork.isMapperCannotSpanPartns()) {
+      //mapper can span partitions
+      //combine into as few as one split, subject to the PathFilters set
+      // using combine.createPool.
       iss = Arrays.asList(combine.getSplits(job, 1));
     } else {
       for (Path path : inpDirs) {
