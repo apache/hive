@@ -73,6 +73,8 @@ public final class PrimitiveObjectInspectorFactory {
       new WritableDoubleObjectInspector();
   public static final WritableStringObjectInspector writableStringObjectInspector =
       new WritableStringObjectInspector();
+  public static final WritableHiveVarcharObjectInspector writableHiveVarcharObjectInspector =
+      new WritableHiveVarcharObjectInspector((VarcharTypeInfo) TypeInfoFactory.varcharTypeInfo);
   public static final WritableVoidObjectInspector writableVoidObjectInspector =
       new WritableVoidObjectInspector();
   public static final WritableDateObjectInspector writableDateObjectInspector =
@@ -104,6 +106,7 @@ public final class PrimitiveObjectInspectorFactory {
         writableDoubleObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME),
         writableStringObjectInspector);
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.varcharTypeInfo, writableHiveVarcharObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.VOID_TYPE_NAME),
         writableVoidObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.DATE_TYPE_NAME),
@@ -126,6 +129,7 @@ public final class PrimitiveObjectInspectorFactory {
     primitiveCategoryToWritableOI.put(PrimitiveCategory.FLOAT, writableFloatObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.DOUBLE, writableDoubleObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.STRING, writableStringObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.VARCHAR, writableHiveVarcharObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.VOID, writableVoidObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.DATE, writableDateObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.TIMESTAMP, writableTimestampObjectInspector);
@@ -149,6 +153,8 @@ public final class PrimitiveObjectInspectorFactory {
       new JavaDoubleObjectInspector();
   public static final JavaStringObjectInspector javaStringObjectInspector =
       new JavaStringObjectInspector();
+  public static final JavaHiveVarcharObjectInspector javaHiveVarcharObjectInspector =
+      new JavaHiveVarcharObjectInspector((VarcharTypeInfo) TypeInfoFactory.varcharTypeInfo);
   public static final JavaVoidObjectInspector javaVoidObjectInspector =
       new JavaVoidObjectInspector();
   public static final JavaDateObjectInspector javaDateObjectInspector =
@@ -180,6 +186,7 @@ public final class PrimitiveObjectInspectorFactory {
         javaDoubleObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME),
         javaStringObjectInspector);
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.varcharTypeInfo, javaHiveVarcharObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.VOID_TYPE_NAME),
         javaVoidObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.DATE_TYPE_NAME),
@@ -202,6 +209,7 @@ public final class PrimitiveObjectInspectorFactory {
     primitiveCategoryToJavaOI.put(PrimitiveCategory.FLOAT, javaFloatObjectInspector);
     primitiveCategoryToJavaOI.put(PrimitiveCategory.DOUBLE, javaDoubleObjectInspector);
     primitiveCategoryToJavaOI.put(PrimitiveCategory.STRING, javaStringObjectInspector);
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.VARCHAR, javaHiveVarcharObjectInspector);
     primitiveCategoryToJavaOI.put(PrimitiveCategory.VOID, javaVoidObjectInspector);
     primitiveCategoryToJavaOI.put(PrimitiveCategory.DATE, javaDateObjectInspector);
     primitiveCategoryToJavaOI.put(PrimitiveCategory.TIMESTAMP, javaTimestampObjectInspector);

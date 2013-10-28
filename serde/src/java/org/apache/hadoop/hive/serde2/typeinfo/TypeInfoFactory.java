@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
@@ -48,6 +49,7 @@ public final class TypeInfoFactory {
   public static final PrimitiveTypeInfo intTypeInfo = new PrimitiveTypeInfo(serdeConstants.INT_TYPE_NAME);
   public static final PrimitiveTypeInfo longTypeInfo = new PrimitiveTypeInfo(serdeConstants.BIGINT_TYPE_NAME);
   public static final PrimitiveTypeInfo stringTypeInfo = new PrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME);
+  public static final PrimitiveTypeInfo varcharTypeInfo = new VarcharTypeInfo(HiveVarchar.MAX_VARCHAR_LENGTH);
   public static final PrimitiveTypeInfo floatTypeInfo = new PrimitiveTypeInfo(serdeConstants.FLOAT_TYPE_NAME);
   public static final PrimitiveTypeInfo doubleTypeInfo = new PrimitiveTypeInfo(serdeConstants.DOUBLE_TYPE_NAME);
   public static final PrimitiveTypeInfo byteTypeInfo = new PrimitiveTypeInfo(serdeConstants.TINYINT_TYPE_NAME);
@@ -74,6 +76,7 @@ public final class TypeInfoFactory {
     cachedPrimitiveTypeInfo.put(serdeConstants.INT_TYPE_NAME, intTypeInfo);
     cachedPrimitiveTypeInfo.put(serdeConstants.BIGINT_TYPE_NAME, longTypeInfo);
     cachedPrimitiveTypeInfo.put(serdeConstants.STRING_TYPE_NAME, stringTypeInfo);
+    cachedPrimitiveTypeInfo.put(varcharTypeInfo.getQualifiedName(), varcharTypeInfo);
     cachedPrimitiveTypeInfo.put(serdeConstants.FLOAT_TYPE_NAME, floatTypeInfo);
     cachedPrimitiveTypeInfo.put(serdeConstants.DOUBLE_TYPE_NAME, doubleTypeInfo);
     cachedPrimitiveTypeInfo.put(serdeConstants.TINYINT_TYPE_NAME, byteTypeInfo);
