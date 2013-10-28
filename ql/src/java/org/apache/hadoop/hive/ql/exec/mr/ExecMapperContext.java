@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.mr;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.io.IOContext;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
@@ -29,14 +30,14 @@ public class ExecMapperContext {
 
   public static final Log l4j = ExecMapper.l4j;
 
-  // lastInputFile should be changed by the root of the operator tree ExecMapper.map()
+  // lastInputPath should be changed by the root of the operator tree ExecMapper.map()
   // but kept unchanged throughout the operator tree for one row
-  private String lastInputFile = null;
+  private Path lastInputPath = null;
 
   // currentInputFile will be updated only by inputFileChanged(). If inputFileChanged()
-  // is not called throughout the opertor tree, currentInputFile won't be used anyways
+  // is not called throughout the operator tree, currentInputPath won't be used anyways
   // so it won't be updated.
-  private String currentInputFile = null;
+  private Path currentInputPath = null;
   private boolean inputFileChecked = false;
 
   // for SMB join, replaced with number part of task-id , making output file name
@@ -80,10 +81,10 @@ public class ExecMapperContext {
    */
   public boolean inputFileChanged() {
     if (!inputFileChecked) {
-      currentInputFile = this.ioCxt.getInputFile();
+      currentInputPath = this.ioCxt.getInputPath();
       inputFileChecked = true;
     }
-    return lastInputFile == null || !lastInputFile.equals(currentInputFile);
+    return lastInputPath == null || !lastInputPath.equals(currentInputPath);
   }
 
   /**
@@ -93,25 +94,25 @@ public class ExecMapperContext {
    */
   public void resetRow() {
     // Update the lastInputFile with the currentInputFile.
-    lastInputFile = currentInputFile;
+    lastInputPath = currentInputPath;
     inputFileChecked = false;
   }
 
-  public String getLastInputFile() {
-    return lastInputFile;
+  public Path getLastInputPath() {
+    return lastInputPath;
   }
 
-  public void setLastInputFile(String lastInputFile) {
-    this.lastInputFile = lastInputFile;
+  public void setLastInputPath(Path lastInputPath) {
+    this.lastInputPath = lastInputPath;
   }
 
-  public String getCurrentInputFile() {
-    currentInputFile = this.ioCxt.getInputFile();
-    return currentInputFile;
+  public Path getCurrentInputPath() {
+    currentInputPath = this.ioCxt.getInputPath();
+    return currentInputPath;
   }
 
-  public void setCurrentInputFile(String currentInputFile) {
-    this.currentInputFile = currentInputFile;
+  public void setCurrentInputPath(Path currentInputPath) {
+    this.currentInputPath = currentInputPath;
   }
 
   public JobConf getJc() {
