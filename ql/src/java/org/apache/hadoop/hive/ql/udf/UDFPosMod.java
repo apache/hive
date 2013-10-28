@@ -47,7 +47,7 @@ public class UDFPosMod extends UDFBaseNumericOp {
   public ByteWritable evaluate(ByteWritable a, ByteWritable b) {
     // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
     // + b);
-    if ((a == null) || (b == null)) {
+    if (a == null || b == null || b.get() == 0) {
       return null;
     }
 
@@ -59,7 +59,7 @@ public class UDFPosMod extends UDFBaseNumericOp {
   public ShortWritable evaluate(ShortWritable a, ShortWritable b) {
     // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
     // + b);
-    if ((a == null) || (b == null)) {
+    if (a == null || b == null || b.get() == 0) {
       return null;
     }
 
@@ -71,7 +71,7 @@ public class UDFPosMod extends UDFBaseNumericOp {
   public IntWritable evaluate(IntWritable a, IntWritable b) {
     // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
     // + b);
-    if ((a == null) || (b == null)) {
+    if (a == null || b == null || b.get() == 0) {
       return null;
     }
 
@@ -83,7 +83,7 @@ public class UDFPosMod extends UDFBaseNumericOp {
   public LongWritable evaluate(LongWritable a, LongWritable b) {
     // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
     // + b);
-    if ((a == null) || (b == null)) {
+    if (a == null || b == null || b.get() == 0L) {
       return null;
     }
 
@@ -95,7 +95,7 @@ public class UDFPosMod extends UDFBaseNumericOp {
   public FloatWritable evaluate(FloatWritable a, FloatWritable b) {
     // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
     // + b);
-    if ((a == null) || (b == null)) {
+    if (a == null || b == null || b.get() == 0.0f) {
       return null;
     }
 
@@ -107,7 +107,7 @@ public class UDFPosMod extends UDFBaseNumericOp {
   public DoubleWritable evaluate(DoubleWritable a, DoubleWritable b) {
     // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
     // + b);
-    if ((a == null) || (b == null)) {
+    if (a == null || b == null || b.get() == 0.0) {
       return null;
     }
 
