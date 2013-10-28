@@ -53,7 +53,7 @@ SHELL = /bin/sh
 LIBTOOL = $(SHELL) /usr/bin/libtool
 LINK = ln -sf
 
-BUILD_DIR = $(HIVE_ROOT)/build
+BUILD_DIR = $(BASE_DIR)/target
 ODBC_BUILD_DIR = $(BUILD_DIR)/odbc
 OBJ_SERVICE_BUILD_DIR = $(BUILD_DIR)/service/objs
 OBJ_QL_BUILD_DIR = $(BUILD_DIR)/ql/objs
