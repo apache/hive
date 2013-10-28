@@ -30,8 +30,7 @@ import org.junit.BeforeClass;
  *
  */
 public class TestEmbeddedThriftBinaryCLIService extends CLIServiceTest {
-
-  private static ThriftCLIService service;
+  protected static ThriftCLIService service;
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {

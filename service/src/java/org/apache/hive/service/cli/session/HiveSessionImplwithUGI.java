@@ -18,11 +18,9 @@
 
 package org.apache.hive.service.cli.session;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 
-import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -46,7 +44,6 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
       String delegationToken) throws HiveSQLException {
     super(username, password, sessionConf);
     setSessionUGI(username);
-    setUserPath(username);
     setDelegationToken(delegationToken);
   }
 
@@ -135,20 +132,6 @@ public class HiveSessionImplwithUGI extends HiveSessionImpl {
       }
       // close the metastore connection created with this delegation token
       Hive.closeCurrent();
-    }
-  }
-
-  // Append the user name to temp/scratch directory path for each impersonated user
-  private void setUserPath(String userName) {
-    for (HiveConf.ConfVars var: HiveConf.userVars) {
-      String userVar = getHiveConf().getVar(var);
-      if (userVar != null) {
-        // If there's a path separator at end then remove it
-        if (userVar.endsWith(File.separator)) {
-          userVar = userVar.substring(0, userVar.length()-2);
-        }
-        getHiveConf().setVar(var, userVar + "-" + userName);
-      }
     }
   }
 
