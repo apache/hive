@@ -29,7 +29,7 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>hcatalog-it-unit</artifactId>
+  <artifactId>hive-hcatalog-it-unit</artifactId>
   <packaging>jar</packaging>
   <name>Hive Integration - HCatalog Unit Tests</name>
 
@@ -41,27 +41,27 @@
     <!-- test intra-project -->
     <dependency>
       <groupId>org.apache.hive.hcatalog</groupId>
-      <artifactId>hcatalog-core</artifactId>
+      <artifactId>hive-hcatalog-core</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive.hcatalog</groupId>
-      <artifactId>hcatalog-core</artifactId>
-      <version>${project.version}</version>
-      <classifier>tests</classifier>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive.hcatalog</groupId>
-      <artifactId>hbase-storage-handler</artifactId>
+      <artifactId>hive-hcatalog-core</artifactId>
       <version>${project.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive.hcatalog</groupId>
-      <artifactId>hcatalog-pig-adapter</artifactId>
+      <artifactId>hive-hbase-storage-handler</artifactId>
+      <version>${project.version}</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive.hcatalog</groupId>
+      <artifactId>hive-hcatalog-pig-adapter</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>

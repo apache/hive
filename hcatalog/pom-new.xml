@@ -29,7 +29,7 @@
   </parent>
 
   <groupId>org.apache.hive.hcatalog</groupId>
-  <artifactId>hcatalog</artifactId>
+  <artifactId>hive-hcatalog</artifactId>
   <packaging>pom</packaging>
   <name>Hive HCatalog</name>
 

@@ -24,7 +24,7 @@
   </parent>
 
   <groupId>org.apache.hive.shims</groupId>
-  <artifactId>common</artifactId>
+  <artifactId>hive-shims-common</artifactId>
   <packaging>jar</packaging>
   <name>Hive Shims Common</name>
 

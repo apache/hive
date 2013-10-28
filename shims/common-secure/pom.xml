@@ -24,7 +24,7 @@
   </parent>
 
   <groupId>org.apache.hive.shims</groupId>
-  <artifactId>common-secure</artifactId>
+  <artifactId>hive-shims-common-secure</artifactId>
   <packaging>jar</packaging>
   <name>Hive Shims Secure Common</name>
 
@@ -36,7 +36,7 @@
     <!-- intra-project -->
     <dependency>
       <groupId>org.apache.hive.shims</groupId>
-      <artifactId>common</artifactId>
+      <artifactId>hive-shims-common</artifactId>
       <version>${project.version}</version>
     </dependency>
     <!-- inter-project -->

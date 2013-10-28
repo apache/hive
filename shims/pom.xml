@@ -42,27 +42,27 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.hive.shims</groupId>
-      <artifactId>common</artifactId>
+      <artifactId>hive-shims-common</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive.shims</groupId>
-      <artifactId>0.20</artifactId>
+      <artifactId>hive-shims-0.20</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive.shims</groupId>
-      <artifactId>common-secure</artifactId>
+      <artifactId>hive-shims-common-secure</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive.shims</groupId>
-      <artifactId>0.20S</artifactId>
+      <artifactId>hive-shims-0.20S</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.hive.shims</groupId>
-      <artifactId>0.23</artifactId>
+      <artifactId>hive-shims-0.23</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>
