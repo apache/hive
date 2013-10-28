@@ -7,7 +7,7 @@ CREATE TABLE orc_pred(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal,
+           dec decimal(4,2),
            bin binary)
 STORED AS ORC;
 
@@ -22,7 +22,7 @@ CREATE TABLE staging(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal,
+           dec decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE;

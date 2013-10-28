@@ -19,6 +19,8 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.*;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -28,6 +30,21 @@ import org.apache.hadoop.io.Text;
  * GenericUDF Class for operation LessThan.
  */
 @Description(name = "<", value = "a _FUNC_ b - Returns TRUE if a is less than b")
+@VectorizedExpressions({LongColLessLongColumn.class, LongColLessDoubleColumn.class,
+    DoubleColLessLongColumn.class, DoubleColLessDoubleColumn.class,
+    LongColLessLongScalar.class, LongColLessDoubleScalar.class,
+    DoubleColLessLongScalar.class, DoubleColLessDoubleScalar.class,
+    LongScalarLessLongColumn.class, LongScalarLessDoubleColumn.class,
+    DoubleScalarLessLongColumn.class, DoubleScalarLessDoubleColumn.class,
+    StringColLessStringColumn.class, StringColLessStringScalar.class,
+    StringScalarLessStringColumn.class, FilterStringColLessStringColumn.class,
+    FilterStringColLessStringScalar.class, FilterStringScalarLessStringColumn.class,
+    FilterLongColLessLongColumn.class, FilterLongColLessDoubleColumn.class,
+    FilterDoubleColLessLongColumn.class, FilterDoubleColLessDoubleColumn.class,
+    FilterLongColLessLongScalar.class, FilterLongColLessDoubleScalar.class,
+    FilterDoubleColLessLongScalar.class, FilterDoubleColLessDoubleScalar.class,
+    FilterLongScalarLessLongColumn.class, FilterLongScalarLessDoubleColumn.class,
+    FilterDoubleScalarLessLongColumn.class, FilterDoubleScalarLessDoubleColumn.class})
 public class GenericUDFOPLessThan extends GenericUDFBaseCompare {
   public GenericUDFOPLessThan(){
     this.opName = "LESS THAN";

@@ -9,7 +9,7 @@ CREATE TABLE part(
     p_type STRING,
     p_size INT,
     p_container STRING,
-    p_retailprice DECIMAL,
+    p_retailprice DECIMAL(6,2),
     p_comment STRING
 );
 

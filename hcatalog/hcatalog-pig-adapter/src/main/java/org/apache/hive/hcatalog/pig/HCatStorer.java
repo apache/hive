@@ -27,6 +27,8 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.OutputFormat;
@@ -48,7 +50,8 @@ import org.apache.pig.impl.util.UDFContext;
  * HCatStorer.
  *
  */
-
+@InterfaceAudience.Public
+@InterfaceStability.Evolving
 public class HCatStorer extends HCatBaseStorer {
 
   // Signature for wrapped storer, see comments in LoadFuncBasedInputDriver.initialize

@@ -39,7 +39,6 @@ import org.apache.hive.hcatalog.data.schema.HCatSchema;
 import org.apache.hive.hcatalog.data.schema.HCatFieldSchema;
 import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
 import org.apache.hive.hcatalog.mapreduce.HCatOutputFormat;
-import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
 import org.apache.hive.hcatalog.mapreduce.OutputJobInfo;
 
 /**
@@ -94,8 +93,8 @@ public class WriteTextPartitioned extends Configured implements Tool {
     if (principalID != null)
       conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
     Job job = new Job(conf, "WriteTextPartitioned");
-    HCatInputFormat.setInput(job, InputJobInfo.create(dbName,
-      inputTableName, filter));
+    HCatInputFormat.setInput(job, dbName,
+      inputTableName, filter);
     // initialize HCatOutputFormat
 
     job.setInputFormatClass(HCatInputFormat.class);

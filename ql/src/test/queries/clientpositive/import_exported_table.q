@@ -6,5 +6,5 @@ IMPORT FROM '/tmp/test/exported_table';
 DESCRIBE j1_41;
 SELECT * from j1_41;
 
-dfs -rmr hdfs:///tmp/test/exported_table;
+dfs -rmr hdfs:///tmp/test;
 

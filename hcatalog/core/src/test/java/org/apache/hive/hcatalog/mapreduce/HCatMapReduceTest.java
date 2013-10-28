@@ -341,7 +341,7 @@ public abstract class HCatMapReduceTest extends HCatBaseTest {
     job.setInputFormatClass(HCatInputFormat.class);
     job.setOutputFormatClass(TextOutputFormat.class);
 
-    HCatInputFormat.setInput(job, dbName, tableName).setFilter(filter);
+    HCatInputFormat.setInput(job, dbName, tableName, filter);
 
     job.setMapOutputKeyClass(BytesWritable.class);
     job.setMapOutputValueClass(Text.class);

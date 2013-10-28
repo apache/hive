@@ -93,7 +93,6 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
     this();
     ReduceSinkDesc desc = (ReduceSinkDesc) conf;
     this.conf = desc;
-    vContext.setOperatorType(OperatorType.REDUCESINK);
     keyEval = vContext.getVectorExpressions(desc.getKeyCols());
     valueEval = vContext.getVectorExpressions(desc.getValueCols());
     partitionEval = vContext.getVectorExpressions(desc.getPartitionCols());
@@ -179,6 +178,10 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
         numDistributionKeys;
       cachedKeys = new Object[numKeys][keyLen];
       cachedValues = new Object[valueEval.length];
+      
+      int tag = conf.getTag();
+      tagByte[0] = (byte) tag;
+      LOG.info("Using tag = " + tag);
 
     } catch(Exception e) {
       throw new HiveException(e);

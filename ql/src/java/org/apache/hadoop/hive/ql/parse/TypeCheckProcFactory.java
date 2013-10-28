@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -69,6 +70,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.StructTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
+
 
 /**
  * The Factory for creating typecheck processors. The typecheck processors are
@@ -156,13 +158,16 @@ public final class TypeCheckProcFactory {
         + "%|" + HiveParser.KW_IF + "%|" + HiveParser.KW_CASE + "%|"
         + HiveParser.KW_WHEN + "%|" + HiveParser.KW_IN + "%|"
         + HiveParser.KW_ARRAY + "%|" + HiveParser.KW_MAP + "%|"
-        + HiveParser.KW_STRUCT + "%"),
+        + HiveParser.KW_STRUCT + "%|" + HiveParser.KW_EXISTS + "%|"
+        + HiveParser.TOK_SUBQUERY_OP_NOTIN + "%"),
         getStrExprProcessor());
     opRules.put(new RuleRegExp("R4", HiveParser.KW_TRUE + "%|"
         + HiveParser.KW_FALSE + "%"), getBoolExprProcessor());
     opRules.put(new RuleRegExp("R5", HiveParser.TOK_DATELITERAL + "%"), getDateExprProcessor());
     opRules.put(new RuleRegExp("R6", HiveParser.TOK_TABLE_OR_COL + "%"),
         getColumnExprProcessor());
+    opRules.put(new RuleRegExp("R7", HiveParser.TOK_SUBQUERY_OP + "%"),
+        getSubQueryExprProcessor());
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
@@ -792,11 +797,15 @@ public final class TypeCheckProcFactory {
           ASTNode funcNameNode = (ASTNode)expr.getChild(0);
           switch (funcNameNode.getType()) {
             case HiveParser.TOK_VARCHAR:
-              // Add type params
-              VarcharTypeInfo varcharTypeInfo = TypeInfoFactory.getVarcharTypeInfo(
-                  Integer.valueOf((funcNameNode.getChild(0).getText())));
+              VarcharTypeInfo varcharTypeInfo = ParseUtils.getVarcharTypeInfo(funcNameNode);
               if (genericUDF != null) {
                 ((SettableUDF)genericUDF).setTypeInfo(varcharTypeInfo);
+              }
+              break;
+            case HiveParser.TOK_DECIMAL:
+              DecimalTypeInfo decTypeInfo = ParseUtils.getDecimalTypeTypeInfo(funcNameNode);
+              if (genericUDF != null) {
+                ((SettableUDF)genericUDF).setTypeInfo(decTypeInfo);
               }
               break;
             default:
@@ -1119,5 +1128,45 @@ public final class TypeCheckProcFactory {
    */
   public static DefaultExprProcessor getDefaultExprProcessor() {
     return new DefaultExprProcessor();
+  }
+
+  /**
+   * Processor for subquery expressions..
+   */
+  public static class SubQueryExprProcessor implements NodeProcessor {
+
+    @Override
+    public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
+        Object... nodeOutputs) throws SemanticException {
+
+      TypeCheckCtx ctx = (TypeCheckCtx) procCtx;
+      if (ctx.getError() != null) {
+        return null;
+      }
+
+      ExprNodeDesc desc = TypeCheckProcFactory.processGByExpr(nd, procCtx);
+      if (desc != null) {
+        return desc;
+      }
+
+      ASTNode expr = (ASTNode) nd;
+      ASTNode sqNode = (ASTNode) expr.getParent().getChild(1);
+      /*
+       * Restriction.1.h :: SubQueries only supported in the SQL Where Clause.
+       */
+      ctx.setError(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(sqNode,
+          "Currently SubQuery expressions are only allowed as Where Clause predicates"),
+          sqNode);
+      return null;
+    }
+  }
+
+  /**
+   * Factory method to get SubQueryExprProcessor.
+   *
+   * @return DateExprProcessor.
+   */
+  public static SubQueryExprProcessor getSubQueryExprProcessor() {
+    return new SubQueryExprProcessor();
   }
 }

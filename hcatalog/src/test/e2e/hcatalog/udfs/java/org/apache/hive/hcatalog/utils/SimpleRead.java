@@ -37,7 +37,6 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.data.HCatRecord;
 import org.apache.hive.hcatalog.mapreduce.HCatInputFormat;
-import org.apache.hive.hcatalog.mapreduce.InputJobInfo;
 
 /**
  * This is a map reduce test for testing hcat which goes against the "numbers"
@@ -87,8 +86,8 @@ public class SimpleRead extends Configured implements Tool {
     if (principalID != null)
       conf.set(HCatConstants.HCAT_METASTORE_PRINCIPAL, principalID);
     Job job = new Job(conf, "SimpleRead");
-    HCatInputFormat.setInput(job, InputJobInfo.create(
-      dbName, tableName, null));
+    HCatInputFormat.setInput(job,
+      dbName, tableName, null);
     // initialize HCatOutputFormat
 
     job.setInputFormatClass(HCatInputFormat.class);

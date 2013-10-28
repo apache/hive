@@ -17,27 +17,43 @@
  */
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 
 /**
  * A WritableConstantHiveDecimalObjectInspector is a WritableHiveDecimalObjectInspector
  * that implements ConstantObjectInspector.
  */
 public class WritableConstantHiveDecimalObjectInspector extends WritableHiveDecimalObjectInspector
-    implements ConstantObjectInspector {
+implements ConstantObjectInspector {
 
   private HiveDecimalWritable value;
 
   protected WritableConstantHiveDecimalObjectInspector() {
     super();
   }
-  WritableConstantHiveDecimalObjectInspector(HiveDecimalWritable value) {
+
+  WritableConstantHiveDecimalObjectInspector(DecimalTypeInfo typeInfo,
+      HiveDecimalWritable value) {
+    super(typeInfo);
     this.value = value;
   }
 
   @Override
   public HiveDecimalWritable getWritableConstantValue() {
-    return value;
+    // We need to enforce precision/scale here.
+    // A little inefficiency here as we need to create a HiveDecimal instance from the writable and
+    // recreate a HiveDecimalWritable instance on the HiveDecimal instance. However, we don't know
+    // the precision/scale of the original writable until we get a HiveDecimal instance from it.
+    DecimalTypeInfo decTypeInfo = (DecimalTypeInfo)typeInfo;
+    HiveDecimal dec = value == null ? null :
+      value.getHiveDecimal(decTypeInfo.precision(), decTypeInfo.scale());
+    if (dec == null) {
+      return null;
+    }
+    return new HiveDecimalWritable(dec);
   }
+
 }

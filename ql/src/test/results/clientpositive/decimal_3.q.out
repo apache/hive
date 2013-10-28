@@ -2,12 +2,12 @@ PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_3
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_3
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE DECIMAL_3(key decimal, value int) 
+PREHOOK: query: CREATE TABLE DECIMAL_3(key decimal(65,30), value int) 
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE DECIMAL_3(key decimal, value int) 
+POSTHOOK: query: CREATE TABLE DECIMAL_3(key decimal(65,30), value int) 
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
@@ -28,7 +28,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_3
 #### A masked pattern was here ####
 NULL	0
-NULL	0
 -1234567890.123456789	-1234567890
 -4400	4400
 -1255.49	-1255
@@ -38,6 +37,7 @@ NULL	0
 -0.333	0
 -0.33	0
 -0.3	0
+0	0
 0	0
 0	0
 0.01	0
@@ -100,6 +100,7 @@ POSTHOOK: Input: default@decimal_3
 0.01	0
 0	0
 0	0
+0	0
 -0.3	0
 -0.33	0
 -0.333	0
@@ -109,7 +110,6 @@ POSTHOOK: Input: default@decimal_3
 -1255.49	-1255
 -4400	4400
 -1234567890.123456789	-1234567890
-NULL	0
 NULL	0
 PREHOOK: query: SELECT * FROM DECIMAL_3 ORDER BY key, value
 PREHOOK: type: QUERY
@@ -120,7 +120,6 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_3
 #### A masked pattern was here ####
 NULL	0
-NULL	0
 -1234567890.123456789	-1234567890
 -4400	4400
 -1255.49	-1255
@@ -130,6 +129,7 @@ NULL	0
 -0.333	0
 -0.33	0
 -0.3	0
+0	0
 0	0
 0	0
 0.01	0
@@ -277,6 +277,11 @@ POSTHOOK: Input: default@decimal_3
 -0.333	0	-0.333	0
 -0.33	0	-0.33	0
 -0.3	0	-0.3	0
+0	0	0	0
+0	0	0	0
+0	0	0	0
+0	0	0	0
+0	0	0	0
 0	0	0	0
 0	0	0	0
 0	0	0	0

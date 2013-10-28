@@ -21,6 +21,7 @@ package org.apache.hive.jdbc;
 import static org.apache.hive.service.cli.thrift.TCLIServiceConstants.TYPE_NAMES;
 
 import java.sql.ResultSetMetaData;
+import java.sql.Statement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -55,7 +56,6 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
 
   private TCLIService.Iface client;
   private TOperationHandle stmtHandle;
-  private HiveStatement hiveStatement;
   private TSessionHandle sessHandle;
   private int maxRows;
   private int fetchSize;
@@ -68,10 +68,10 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
 
   public static class Builder {
 
+    private final Statement statement;
     private TCLIService.Iface client = null;
     private TOperationHandle stmtHandle = null;
     private TSessionHandle sessHandle  = null;
-    private HiveStatement hiveStatement = null;
 
     /**
      * Sets the limit for the maximum number of rows that any ResultSet object produced by this
@@ -86,6 +86,10 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     private int fetchSize = 50;
     private boolean emptyResultSet = false;
 
+    public Builder(Statement statement) {
+      this.statement = statement;
+    }
+
     public Builder setClient(TCLIService.Iface client) {
       this.client = client;
       return this;
@@ -98,11 +102,6 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
 
     public Builder setSessionHandle(TSessionHandle sessHandle) {
       this.sessHandle = sessHandle;
-      return this;
-    }
-
-    public Builder setHiveStatement(HiveStatement hiveStatement) {
-      this.hiveStatement = hiveStatement;
       return this;
     }
 
@@ -149,11 +148,11 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
   }
 
   protected HiveQueryResultSet(Builder builder) throws SQLException {
+    this.statement = builder.statement;
     this.client = builder.client;
     this.stmtHandle = builder.stmtHandle;
     this.sessHandle = builder.sessHandle;
     this.fetchSize = builder.fetchSize;
-    this.hiveStatement = builder.hiveStatement;
     columnNames = new ArrayList<String>();
     columnTypes = new ArrayList<String>();
     columnAttributes = new ArrayList<JdbcColumnAttributes>();
@@ -252,13 +251,13 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
 
   @Override
   public void close() throws SQLException {
-    if (hiveStatement != null) {
-      hiveStatement.closeClientOperation();
+    if (this.statement != null && (this.statement instanceof HiveStatement)) {
+      HiveStatement s = (HiveStatement) this.statement;
+      s.closeClientOperation();
     }
     // Need reset during re-open when needed
     client = null;
     stmtHandle = null;
-    hiveStatement = null;
     sessHandle = null;
     isClosed = true;
   }

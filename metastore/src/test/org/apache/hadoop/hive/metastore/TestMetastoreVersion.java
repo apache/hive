@@ -86,12 +86,14 @@ public class TestMetastoreVersion extends TestCase {
     assertFalse(hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_AUTO_CREATE_SCHEMA));
     assertTrue(hiveConf.getBoolVar(HiveConf.ConfVars.METASTORE_FIXED_DATASTORE));
 
-    SessionState.start(new CliSessionState(hiveConf));
-    driver = new Driver(hiveConf);
-    // driver execution should fail since the schema didn't get created
-    CommandProcessorResponse proc = driver.run("show tables");
-    assertFalse(proc.getResponseCode() == 0);
-   }
+    // session creation should fail since the schema didn't get created
+    try {
+      SessionState.start(new CliSessionState(hiveConf));
+      fail("Expected exception");
+    } catch (RuntimeException re) {
+      assertTrue(re.getCause().getCause().getCause() instanceof MetaException);
+    }
+  }
 
   /***
    * Test that with no verification, hive populates the schema and version correctly

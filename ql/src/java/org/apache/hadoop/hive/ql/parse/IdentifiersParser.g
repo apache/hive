@@ -371,6 +371,11 @@ precedenceEqualOperator
     precedenceEqualNegatableOperator | EQUAL | EQUAL_NS | NOTEQUAL | LESSTHANOREQUALTO | LESSTHAN | GREATERTHANOREQUALTO | GREATERTHAN
     ;
 
+subQueryExpression 
+    : 
+    LPAREN! selectStatement RPAREN!     
+ ;
+ 
 precedenceEqualExpression
     :
     (left=precedenceBitwiseOrExpression -> $left)
@@ -379,8 +384,12 @@ precedenceEqualExpression
        -> ^(KW_NOT ^(precedenceEqualNegatableOperator $precedenceEqualExpression $notExpr))
     | (precedenceEqualOperator equalExpr=precedenceBitwiseOrExpression)
        -> ^(precedenceEqualOperator $precedenceEqualExpression $equalExpr)
+    | (KW_NOT KW_IN LPAREN KW_SELECT)=>  (KW_NOT KW_IN subQueryExpression) 
+       -> ^(KW_NOT ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP KW_IN) subQueryExpression $precedenceEqualExpression))
     | (KW_NOT KW_IN expressions)
        -> ^(KW_NOT ^(TOK_FUNCTION KW_IN $precedenceEqualExpression expressions))
+    | (KW_IN LPAREN KW_SELECT)=>  (KW_IN subQueryExpression) 
+       -> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP KW_IN) subQueryExpression $precedenceEqualExpression)
     | (KW_IN expressions)
        -> ^(TOK_FUNCTION KW_IN $precedenceEqualExpression expressions)
     | ( KW_NOT KW_BETWEEN (min=precedenceBitwiseOrExpression) KW_AND (max=precedenceBitwiseOrExpression) )
@@ -388,6 +397,7 @@ precedenceEqualExpression
     | ( KW_BETWEEN (min=precedenceBitwiseOrExpression) KW_AND (max=precedenceBitwiseOrExpression) )
        -> ^(TOK_FUNCTION Identifier["between"] KW_FALSE $left $min $max)
     )*
+    | (KW_EXISTS LPAREN KW_SELECT)=> (KW_EXISTS subQueryExpression) -> ^(TOK_SUBQUERY_EXPR ^(TOK_SUBQUERY_OP KW_EXISTS) subQueryExpression)
     ;
 
 expressions

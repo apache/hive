@@ -7,7 +7,7 @@ PREHOOK: query: CREATE TABLE orc_pred(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal,
+           dec decimal(4,2),
            bin binary)
 STORED AS ORC
 PREHOOK: type: CREATETABLE
@@ -20,7 +20,7 @@ POSTHOOK: query: CREATE TABLE orc_pred(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal,
+           dec decimal(4,2),
            bin binary)
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
@@ -42,7 +42,7 @@ PREHOOK: query: CREATE TABLE staging(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal,
+           dec decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
@@ -56,7 +56,7 @@ POSTHOOK: query: CREATE TABLE staging(t tinyint,
            bo boolean,
            s string,
            ts timestamp,
-           dec decimal,
+           dec decimal(4,2),
            bin binary)
 ROW FORMAT DELIMITED FIELDS TERMINATED BY '|'
 STORED AS TEXTFILE
@@ -80,7 +80,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -103,7 +103,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -123,7 +123,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -139,7 +139,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -210,7 +210,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -299,7 +299,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -325,7 +325,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -347,7 +347,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -428,7 +428,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -518,7 +518,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -547,7 +547,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -572,7 +572,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -646,7 +646,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -729,7 +729,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -761,7 +761,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -789,7 +789,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -867,7 +867,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -960,7 +960,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -1000,7 +1000,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -1036,7 +1036,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -1129,7 +1129,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -1233,7 +1233,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -1275,7 +1275,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -1313,7 +1313,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
@@ -1442,7 +1442,7 @@ POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:
 POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
 POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
 POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
-POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
 POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
 POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
 POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]

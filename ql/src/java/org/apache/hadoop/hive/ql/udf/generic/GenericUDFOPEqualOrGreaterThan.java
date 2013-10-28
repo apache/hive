@@ -19,6 +19,37 @@
 package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.ql.exec.Description;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColGreaterEqualDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColGreaterEqualDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColGreaterEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColGreaterEqualLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarGreaterEqualDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarGreaterEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColGreaterEqualDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColGreaterEqualDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColGreaterEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColGreaterEqualLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleScalarGreaterEqualDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleScalarGreaterEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterEqualDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterEqualDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterEqualLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongScalarGreaterEqualDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongScalarGreaterEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColGreaterEqualStringColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColGreaterEqualStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringScalarGreaterEqualStringColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColGreaterEqualDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColGreaterEqualDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColGreaterEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColGreaterEqualLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarGreaterEqualDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarGreaterEqualLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringColGreaterEqualStringColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringColGreaterEqualStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.StringScalarGreaterEqualStringColumn;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -28,6 +59,21 @@ import org.apache.hadoop.io.Text;
  * GenericUDF Class for operation EqualOrGreaterThan.
  */
 @Description(name = ">=", value = "a _FUNC_ b - Returns TRUE if a is not smaller than b")
+@VectorizedExpressions({LongColGreaterEqualLongColumn.class, LongColGreaterEqualDoubleColumn.class,
+  DoubleColGreaterEqualLongColumn.class, DoubleColGreaterEqualDoubleColumn.class,
+  LongColGreaterEqualLongScalar.class, LongColGreaterEqualDoubleScalar.class,
+  DoubleColGreaterEqualLongScalar.class, DoubleColGreaterEqualDoubleScalar.class,
+  LongScalarGreaterEqualLongColumn.class, LongScalarGreaterEqualDoubleColumn.class,
+  DoubleScalarGreaterEqualLongColumn.class, DoubleScalarGreaterEqualDoubleColumn.class,
+  StringColGreaterEqualStringColumn.class, StringColGreaterEqualStringScalar.class,
+  StringScalarGreaterEqualStringColumn.class, FilterStringColGreaterEqualStringColumn.class,
+  FilterStringColGreaterEqualStringScalar.class, FilterStringScalarGreaterEqualStringColumn.class,
+  FilterLongColGreaterEqualLongColumn.class, FilterLongColGreaterEqualDoubleColumn.class,
+  FilterDoubleColGreaterEqualLongColumn.class, FilterDoubleColGreaterEqualDoubleColumn.class,
+  FilterLongColGreaterEqualLongScalar.class, FilterLongColGreaterEqualDoubleScalar.class,
+  FilterDoubleColGreaterEqualLongScalar.class, FilterDoubleColGreaterEqualDoubleScalar.class,
+  FilterLongScalarGreaterEqualLongColumn.class, FilterLongScalarGreaterEqualDoubleColumn.class,
+  FilterDoubleScalarGreaterEqualLongColumn.class, FilterDoubleScalarGreaterEqualDoubleColumn.class})
 public class GenericUDFOPEqualOrGreaterThan extends GenericUDFBaseCompare {
   public GenericUDFOPEqualOrGreaterThan(){
     this.opName = "EQUAL OR GREATER THAN";

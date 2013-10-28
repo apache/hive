@@ -25,6 +25,8 @@ import java.util.Date;
 
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFYearLong;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -40,11 +42,12 @@ import org.apache.hadoop.io.Text;
     + "'yyyy-MM-dd'.\n"
     + "Example:\n "
     + "  > SELECT _FUNC_('2009-30-07', 1) FROM src LIMIT 1;\n" + "  2009")
+@VectorizedExpressions({VectorUDFYearLong.class})
 public class UDFYear extends UDF {
   private final SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
   private final Calendar calendar = Calendar.getInstance();
 
-  private IntWritable result = new IntWritable();
+  private final IntWritable result = new IntWritable();
 
   public UDFYear() {
   }

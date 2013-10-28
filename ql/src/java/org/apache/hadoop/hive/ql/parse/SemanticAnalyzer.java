@@ -99,6 +99,7 @@ import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionExpression;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionedTableFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitioningSpec;
+import org.apache.hadoop.hive.ql.parse.QBSubQuery.SubQueryType;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.CurrentRowSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
@@ -1758,11 +1759,105 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private Operator genFilterPlan(String dest, QB qb, Operator input)
+  private Operator genFilterPlan(String dest, QB qb, Operator input,
+      Map<String, Operator> aliasToOpInfo)
       throws SemanticException {
 
+    OpParseContext inputCtx = opParseCtx.get(input);
+    RowResolver inputRR = inputCtx.getRowResolver();
     ASTNode whereExpr = qb.getParseInfo().getWhrForClause(dest);
-    return genFilterPlan(qb, (ASTNode) whereExpr.getChild(0), input);
+
+    /*
+     * Handling of SubQuery Expressions:
+     * if "Where clause contains no SubQuery expressions" then
+     *   -->[true] ===CONTINUE_FILTER_PROCESSING===
+     * else
+     *   -->[false] "extract SubQuery expressions\n from Where clause"
+     *   if "this is a nested SubQuery or \nthere are more than 1 SubQuery expressions" then
+     *     -->[yes] "throw Unsupported Error"
+     *   else
+     *     --> "Rewrite Search condition to \nremove SubQuery predicate"
+     *      --> "build QBSubQuery"
+     *        --> "extract correlated predicates \nfrom Where Clause"
+     *        --> "add correlated Items to \nSelect List and Group By"
+     *        --> "construct Join Predicate \nfrom correlation predicates"
+     *     --> "Generate Plan for\n modified SubQuery"
+     *     --> "Build the Join Condition\n for Parent Query to SubQuery join"
+     *     --> "Build the QBJoinTree from the Join condition"
+     *     --> "Update Parent Query Filter\n with any Post Join conditions"
+     *     --> ===CONTINUE_FILTER_PROCESSING===
+     *   endif
+     * endif
+     */
+    ASTNode searchCond = (ASTNode) whereExpr.getChild(0);
+    List<ASTNode> subQueriesInOriginalTree = SubQueryUtils.findSubQueries(searchCond);
+
+    if ( subQueriesInOriginalTree != null ) {
+
+      /*
+       * Restriction.8.m :: We allow only 1 SubQuery expression per Query.
+       */
+      if (subQueriesInOriginalTree.size() > 1 ) {
+
+        throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+            subQueriesInOriginalTree.get(1), "Only 1 SubQuery expression is supported."));
+      }
+
+      /*
+       * Clone the Search AST; apply all rewrites on the clone.
+       */
+      ASTNode clonedSearchCond = (ASTNode) ParseDriver.adaptor.dupTree(searchCond);
+      List<ASTNode> subQueries = SubQueryUtils.findSubQueries(clonedSearchCond);
+
+      for(int i=0; i < subQueries.size(); i++) {
+        ASTNode subQueryAST = subQueries.get(i);
+        ASTNode originalSubQueryAST = subQueriesInOriginalTree.get(i);
+
+        int sqIdx = i+1;
+        clonedSearchCond = SubQueryUtils.rewriteParentQueryWhere(clonedSearchCond, subQueryAST);
+
+        QBSubQuery subQuery = SubQueryUtils.buildSubQuery(qb.getId(),
+            sqIdx, subQueryAST, originalSubQueryAST, ctx);
+
+        subQuery.validateAndRewriteAST(inputRR);
+
+        QB qbSQ = new QB(subQuery.getOuterQueryId(), subQuery.getAlias(), true);
+        Phase1Ctx ctx_1 = initPhase1Ctx();
+        doPhase1(subQuery.getSubQueryAST(), qbSQ, ctx_1);
+        getMetaData(qbSQ);
+        Operator sqPlanTopOp = genPlan(qbSQ);
+        aliasToOpInfo.put(subQuery.getAlias(), sqPlanTopOp);
+        RowResolver sqRR = opParseCtx.get(sqPlanTopOp).getRowResolver();
+
+        /*
+         * Check.5.h :: For In and Not In the SubQuery must implicitly or
+         * explicitly only contain one select item.
+         */
+        if ( subQuery.getOperator().getType() != SubQueryType.EXISTS &&
+            subQuery.getOperator().getType() != SubQueryType.NOT_EXISTS &&
+            sqRR.getColumnInfos().size() -
+               subQuery.getNumOfCorrelationExprsAddedToSQSelect() > 1 ) {
+          throw new SemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
+              subQueryAST, "SubQuery can contain only 1 item in Select List."));
+        }
+
+        /*
+         * Gen Join between outer Operator and SQ op
+         */
+        subQuery.buildJoinCondition(inputRR, sqRR);
+        QBJoinTree joinTree = genSQJoinTree(qb, subQuery,
+            input,
+            aliasToOpInfo);
+        /*
+         * push filters only for this QBJoinTree. Child QBJoinTrees have already been handled.
+         */
+        pushJoinFilters(qb, joinTree, aliasToOpInfo, false);
+        input = genJoinOperator(qbSQ, joinTree, aliasToOpInfo, input);
+        searchCond = subQuery.updateOuterQueryFilter(clonedSearchCond);
+      }
+    }
+
+    return genFilterPlan(qb, searchCond, input);
   }
 
   /**
@@ -3410,7 +3505,6 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       ASTNode value = entry.getValue();
       String aggName = unescapeIdentifier(value.getChild(0).getText());
       ArrayList<ExprNodeDesc> aggParameters = new ArrayList<ExprNodeDesc>();
-      new ArrayList<Class<?>>();
       // 0 is the function name
       for (int i = 1; i < value.getChildCount(); i++) {
         ASTNode paraExpr = (ASTNode) value.getChild(i);
@@ -3436,8 +3530,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String field = getColumnInternalName(groupByKeys.size()
           + aggregations.size() - 1);
       outputColumnNames.add(field);
-      groupByOutputRowResolver.putExpression(value, new ColumnInfo(
-          field, udaf.returnType, "", false));
+      if (groupByOutputRowResolver.getExpression(value) == null) {
+        groupByOutputRowResolver.putExpression(value, new ColumnInfo(
+            field, udaf.returnType, "", false));
+      }
       // Save the evaluator so that it can be used by the next-stage
       // GroupByOperators
       if (genericUDAFEvaluators != null) {
@@ -3618,17 +3714,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           }
           // add the expr to reduceKeys if it is not present
           if (ri == reduceKeys.size()) {
+            String name = getColumnInternalName(numExprs);
+            String field = Utilities.ReduceField.KEY.toString() + "." + colName
+                + ":" + i
+                + "." + name;
+            ColumnInfo colInfo = new ColumnInfo(field, expr.getTypeInfo(), null, false);
+            reduceSinkOutputRowResolver.putExpression(parameter, colInfo);
+            colExprMap.put(field, expr);
             reduceKeys.add(expr);
           }
           // add the index of expr in reduceKeys to distinctIndices
           distinctIndices.add(ri);
-          String name = getColumnInternalName(numExprs);
-          String field = Utilities.ReduceField.KEY.toString() + "." + colName
-              + ":" + i
-              + "." + name;
-          ColumnInfo colInfo = new ColumnInfo(field, expr.getTypeInfo(), null, false);
-          reduceSinkOutputRowResolver.putExpression(parameter, colInfo);
-          colExprMap.put(field, expr);
           numExprs++;
         }
         distinctColIndices.add(distinctIndices);
@@ -4038,7 +4134,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings({"nls"})
-  private Operator genGroupByPlan1ReduceMultiGBY(List<String> dests, QB qb, Operator input)
+  private Operator genGroupByPlan1ReduceMultiGBY(List<String> dests, QB qb, Operator input,
+      Map<String, Operator> aliasToOpInfo)
       throws SemanticException {
 
     QBParseInfo parseInfo = qb.getParseInfo();
@@ -4118,7 +4215,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       curr = forwardOp;
 
       if (parseInfo.getWhrForClause(dest) != null) {
-        curr = genFilterPlan(dest, qb, forwardOp);
+        curr = genFilterPlan(dest, qb, forwardOp, aliasToOpInfo);
       }
 
       // Generate GroupbyOperator
@@ -6035,17 +6132,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private Operator genJoinOperator(QB qb, QBJoinTree joinTree,
-      Map<String, Operator> map) throws SemanticException {
+      Map<String, Operator> map,
+      Operator joiningOp) throws SemanticException {
     QBJoinTree leftChild = joinTree.getJoinSrc();
-    Operator joinSrcOp = null;
-    if (leftChild != null) {
-      Operator joinOp = genJoinOperator(qb, leftChild, map);
+    Operator joinSrcOp = joiningOp instanceof JoinOperator ? joiningOp : null;
+
+    if (joinSrcOp == null && leftChild != null) {
+      joinSrcOp = genJoinOperator(qb, leftChild, map, null);
+    }
+
+    if ( joinSrcOp != null ) {
       ArrayList<ASTNode> filter = joinTree.getFiltersForPushing().get(0);
       for (ASTNode cond : filter) {
-        joinOp = genFilterPlan(qb, cond, joinOp);
+        joinSrcOp = genFilterPlan(qb, cond, joinSrcOp);
       }
-
-      joinSrcOp = genJoinReduceSinkChild(qb, joinTree, joinOp, null, 0);
+      joinSrcOp = genJoinReduceSinkChild(qb, joinTree, joinSrcOp, null, 0);
     }
 
     Operator[] srcOps = new Operator[joinTree.getBaseSrc().length];
@@ -6091,7 +6192,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     JoinOperator joinOp = (JoinOperator) genJoinOperatorChildren(joinTree,
       joinSrcOp, srcOps, omitOpts);
     joinContext.put(joinOp, joinTree);
-    return joinOp;
+
+    Operator op = joinOp;
+    for(ASTNode condn : joinTree.getPostJoinFilters() ) {
+      op = genFilterPlan(qb, condn, op);
+    }
+    return op;
   }
 
   /**
@@ -6240,7 +6346,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private Operator genJoinPlan(QB qb, Map<String, Operator> map)
       throws SemanticException {
     QBJoinTree joinTree = qb.getQbJoinTree();
-    Operator joinOp = genJoinOperator(qb, joinTree, map);
+    Operator joinOp = genJoinOperator(qb, joinTree, map, null);
     return joinOp;
   }
 
@@ -6250,8 +6356,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    */
   private void pushJoinFilters(QB qb, QBJoinTree joinTree,
       Map<String, Operator> map) throws SemanticException {
-    if (joinTree.getJoinSrc() != null) {
-      pushJoinFilters(qb, joinTree.getJoinSrc(), map);
+    pushJoinFilters(qb, joinTree, map, true);
+  }
+
+  /**
+   * Extract the filters from the join condition and push them on top of the
+   * source operators. This procedure traverses the query tree recursively,
+   */
+  private void pushJoinFilters(QB qb, QBJoinTree joinTree,
+      Map<String, Operator> map,
+      boolean recursively) throws SemanticException {
+    if ( recursively ) {
+      if (joinTree.getJoinSrc() != null) {
+        pushJoinFilters(qb, joinTree.getJoinSrc(), map);
+      }
     }
     ArrayList<ArrayList<ASTNode>> filters = joinTree.getFiltersForPushing();
     int pos = 0;
@@ -6399,6 +6517,134 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     if (qb.getParseInfo().getHints() != null) {
       parseStreamTables(joinTree, qb);
+    }
+
+    return joinTree;
+  }
+
+  /*
+   * Setup a QBJoinTree between a SubQuery and its Parent Query. The Parent Query
+   * is the lhs of the Join.
+   *
+   * The Parent Query is represented by the last Operator needed to process its From Clause.
+   * In case of a single table Query this will be a TableScan, but it can be a Join Operator
+   * if the Parent Query contains Join clauses, or in case of a single source from clause,
+   * the source could be a SubQuery or a PTF invocation.
+   *
+   * We setup the QBJoinTree with the above constrains in place. So:
+   * - the lhs of the QBJoinTree can be a another QBJoinTree if the Parent Query operator
+   *   is a JoinOperator. In this case we get its QBJoinTree from the 'joinContext'
+   * - the rhs is always a reference to the SubQuery. Its alias is obtained from the
+   *   QBSubQuery object.
+   *
+   * The QBSubQuery also provides the Joining Condition AST. The Joining Condition has been
+   * transformed in QBSubQuery setup, before this call. The Joining condition has any correlated
+   * predicates and a predicate for joining the Parent Query expression with the SubQuery.
+   *
+   * The QBSubQuery also specifies what kind of Join to construct.
+   *
+   * Given this information, once we initialize the QBJoinTree, we call the 'parseJoinCondition'
+   * method to validate and parse Join conditions.
+   */
+  private QBJoinTree genSQJoinTree(QB qb, QBSubQuery subQuery,
+      Operator joiningOp,
+      Map<String, Operator> aliasToOpInfo)
+          throws SemanticException {
+    QBJoinTree joinTree = new QBJoinTree();
+    JoinCond[] condn = new JoinCond[1];
+
+    switch (subQuery.getJoinType()) {
+    case LEFTOUTER:
+      joinTree.setNoOuterJoin(false);
+      condn[0] = new JoinCond(0, 1, JoinType.LEFTOUTER);
+      break;
+    case RIGHTOUTER:
+      joinTree.setNoOuterJoin(false);
+      condn[0] = new JoinCond(0, 1, JoinType.RIGHTOUTER);
+      break;
+    case FULLOUTER:
+      joinTree.setNoOuterJoin(false);
+      condn[0] = new JoinCond(0, 1, JoinType.FULLOUTER);
+      break;
+    case LEFTSEMI:
+      joinTree.setNoSemiJoin(false);
+      condn[0] = new JoinCond(0, 1, JoinType.LEFTSEMI);
+      break;
+    default:
+      condn[0] = new JoinCond(0, 1, JoinType.INNER);
+      joinTree.setNoOuterJoin(true);
+      break;
+    }
+    joinTree.setJoinCond(condn);
+
+    if ( joiningOp instanceof JoinOperator ) {
+      QBJoinTree leftTree = joinContext.get(joiningOp);
+      joinTree.setJoinSrc(leftTree);
+      String[] leftChildAliases = leftTree.getLeftAliases();
+      String leftAliases[] = new String[leftChildAliases.length + 1];
+      for (int i = 0; i < leftChildAliases.length; i++) {
+        leftAliases[i] = leftChildAliases[i];
+      }
+      leftAliases[leftChildAliases.length] = leftTree.getRightAliases()[0];
+      joinTree.setLeftAliases(leftAliases);
+    } else {
+      String alias = unescapeIdentifier(
+          SubQueryUtils.getAlias(joiningOp, aliasToOpInfo).toLowerCase());
+      joinTree.setLeftAlias(alias);
+      String[] leftAliases = new String[1];
+      leftAliases[0] = alias;
+      joinTree.setLeftAliases(leftAliases);
+      String[] children = new String[2];
+      children[0] = alias;
+      joinTree.setBaseSrc(children);
+      joinTree.setId(qb.getId());
+      joinTree.getAliasToOpInfo().put(
+          getModifiedAlias(qb, alias), aliasToOpInfo.get(alias));
+    }
+
+    String rightalias = unescapeIdentifier(subQuery.getAlias().toLowerCase());
+    String[] rightAliases = new String[1];
+    rightAliases[0] = rightalias;
+    joinTree.setRightAliases(rightAliases);
+    String[] children = joinTree.getBaseSrc();
+    if (children == null) {
+      children = new String[2];
+    }
+    children[1] = rightalias;
+    joinTree.setBaseSrc(children);
+    joinTree.setId(qb.getId());
+    joinTree.getAliasToOpInfo().put(
+        getModifiedAlias(qb, rightalias), aliasToOpInfo.get(rightalias));
+    // remember rhs table for semijoin
+    if (joinTree.getNoSemiJoin() == false) {
+      joinTree.addRHSSemijoin(rightalias);
+    }
+
+    ArrayList<ArrayList<ASTNode>> expressions = new ArrayList<ArrayList<ASTNode>>();
+    expressions.add(new ArrayList<ASTNode>());
+    expressions.add(new ArrayList<ASTNode>());
+    joinTree.setExpressions(expressions);
+
+    ArrayList<Boolean> nullsafes = new ArrayList<Boolean>();
+    joinTree.setNullSafes(nullsafes);
+
+    ArrayList<ArrayList<ASTNode>> filters = new ArrayList<ArrayList<ASTNode>>();
+    filters.add(new ArrayList<ASTNode>());
+    filters.add(new ArrayList<ASTNode>());
+    joinTree.setFilters(filters);
+    joinTree.setFilterMap(new int[2][]);
+
+    ArrayList<ArrayList<ASTNode>> filtersForPushing =
+        new ArrayList<ArrayList<ASTNode>>();
+    filtersForPushing.add(new ArrayList<ASTNode>());
+    filtersForPushing.add(new ArrayList<ASTNode>());
+    joinTree.setFiltersForPushing(filtersForPushing);
+
+    ASTNode joinCond = subQuery.getJoinConditionAST();
+    ArrayList<String> leftSrc = new ArrayList<String>();
+    parseJoinCondition(joinTree, joinCond, leftSrc);
+    if (leftSrc.size() == 1) {
+      joinTree.setLeftAlias(leftSrc.get(0));
     }
 
     return joinTree;
@@ -6674,9 +6920,23 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
 
     if (node.getFiltersForPushing().get(0).size() != 0) {
-      ArrayList<ASTNode> filterPos = filter.get(pos);
-      filterPos.addAll(node.getFiltersForPushing().get(0));
-    }
+      /*
+       * for each predicate:
+       * - does it refer to one or many aliases
+       * - if one: add it to the filterForPushing list of that alias
+       * - if many: add as a filter from merging trees.
+       */
+
+      for(ASTNode nodeFilter : node.getFiltersForPushing().get(0) ) {
+        int fPos = ParseUtils.checkJoinFilterRefersOneAlias(target.getBaseSrc(), nodeFilter);
+
+        if ( fPos != - 1 ) {
+          filter.get(fPos).add(nodeFilter);
+        } else {
+          target.addPostJoinFilter(nodeFilter);
+        }
+      }
+     }
 
     if (node.getNoOuterJoin() && target.getNoOuterJoin()) {
       target.setNoOuterJoin(true);
@@ -7194,7 +7454,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private Operator genBodyPlan(QB qb, Operator input) throws SemanticException {
+  private Operator genBodyPlan(QB qb, Operator input, Map<String, Operator> aliasToOpInfo)
+      throws SemanticException {
     QBParseInfo qbp = qb.getParseInfo();
 
     TreeSet<String> ks = new TreeSet<String>(qbp.getClauseNames());
@@ -7290,7 +7551,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               curr = inputs.get(dest);
 
               if (qbp.getWhrForClause(dest) != null) {
-                curr = genFilterPlan(dest, qb, curr);
+                curr = genFilterPlan(dest, qb, curr, aliasToOpInfo);
               }
 
               if (qbp.getAggregationExprsForClause(dest).size() != 0
@@ -7320,7 +7581,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               curr = genPostGroupByBodyPlan(curr, dest, qb);
             }
           } else {
-            curr = genGroupByPlan1ReduceMultiGBY(commonGroupByDestGroup, qb, input);
+            curr = genGroupByPlan1ReduceMultiGBY(commonGroupByDestGroup, qb, input, aliasToOpInfo);
           }
         }
       }
@@ -8120,7 +8381,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       srcOpInfo = lastPTFOp != null ? lastPTFOp : srcOpInfo;
     }
 
-    Operator bodyOpInfo = genBodyPlan(qb, srcOpInfo);
+    Operator bodyOpInfo = genBodyPlan(qb, srcOpInfo, aliasToOpInfo);
 
     if (LOG.isDebugEnabled()) {
       LOG.debug("Created Plan for Query Block " + qb.getId());

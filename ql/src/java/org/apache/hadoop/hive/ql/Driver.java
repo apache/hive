@@ -319,7 +319,7 @@ public class Driver implements CommandProcessor {
   public Driver(HiveConf conf) {
     this.conf = conf;
   }
-  
+
   public Driver(HiveConf conf, String userName) {
     this(conf);
     this.userName = userName;
@@ -1603,4 +1603,9 @@ public class Driver implements CommandProcessor {
   public org.apache.hadoop.hive.ql.plan.api.Query getQueryPlan() throws IOException {
     return plan.getQueryPlan();
   }
+
+  public String getErrorMsg() {
+    return errorMessage;
+  }
+
 }

@@ -21,6 +21,10 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringConcatColCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringConcatColScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringConcatScalarCol;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
@@ -44,6 +48,8 @@ extended = "Returns NULL if any argument is NULL.\n"
 + "Example:\n"
 + "  > SELECT _FUNC_('abc', 'def') FROM src LIMIT 1;\n"
 + "  'abcdef'")
+@VectorizedExpressions({StringConcatColCol.class, StringConcatColScalar.class,
+    StringConcatScalarCol.class})
 public class GenericUDFConcat extends GenericUDF {
   private transient ObjectInspector[] argumentOIs;
   private transient StringConverter[] stringConverters;
@@ -55,7 +61,6 @@ public class GenericUDFConcat extends GenericUDF {
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
 
     // Loop through all the inputs to determine the appropriate return type/length.
-    // Either all arguments are binary, or all columns are non-binary.
     // Return type:
     //  All VARCHAR inputs: return VARCHAR
     //  All BINARY inputs: return BINARY
@@ -79,21 +84,16 @@ public class GenericUDFConcat extends GenericUDF {
         case BINARY:
           fixedLengthReturnValue = false;
           if (returnType != currentCategory) {
-            throw new UDFArgumentException(
-                "CONCAT cannot take a mix of binary and non-binary arguments");
+            // mix of binary/non-binary args
+            returnType = PrimitiveCategory.STRING;
           }
           break;
         case VARCHAR:
-          if (returnType == PrimitiveCategory.BINARY) {
-            throw new UDFArgumentException(
-                "CONCAT cannot take a mix of binary and non-binary arguments");
+          if (!fixedLengthReturnValue) {
+            returnType = PrimitiveCategory.STRING;
           }
           break;
         default:
-          if (returnType == PrimitiveCategory.BINARY) {
-            throw new UDFArgumentException(
-                "CONCAT cannot take a mix of binary and non-binary arguments");
-          }
           returnType = PrimitiveCategory.STRING;
           fixedLengthReturnValue = false;
           break;

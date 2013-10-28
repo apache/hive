@@ -23,6 +23,7 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.StringExpr;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
 /**
  * This is a generated class to evaluate a <OperatorSymbol> comparison on a vector of strings.
@@ -36,7 +37,7 @@ public class <ClassName> extends VectorExpression {
   private byte[] value;
   private int outputColumn;
 
-  public <ClassName>(int colNum, byte[] value, int outputColumn) {
+  public <ClassName>(byte[] value, int colNum, int outputColumn) {
     this.colNum = colNum;
     this.value = value;
     this.outputColumn = outputColumn;
@@ -161,5 +162,19 @@ public class <ClassName> extends VectorExpression {
 
   public void setOutputColumn(int outputColumn) {
     this.outputColumn = outputColumn;
+  }
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+    return (new VectorExpressionDescriptor.Builder())
+        .setMode(
+            VectorExpressionDescriptor.Mode.PROJECTION)
+        .setNumArguments(2)
+        .setArgumentTypes(
+            VectorExpressionDescriptor.ArgumentType.getType("string"),
+            VectorExpressionDescriptor.ArgumentType.getType("string"))
+        .setInputExpressionTypes(
+            VectorExpressionDescriptor.InputExpressionType.SCALAR,
+            VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
   }
 }

@@ -32,6 +32,6 @@ class PigJobIDParser extends JobIDParser {
 
   @Override
   List<String> parseJobID() throws IOException {
-    return parseJobID(TempletonControllerJob.STDERR_FNAME, jobidPattern);
+    return parseJobID(JobSubmissionConstants.STDERR_FNAME, jobidPattern);
   }
 }

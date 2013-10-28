@@ -21,6 +21,19 @@ package org.apache.hadoop.hive.ql.udf;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColDivideLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColDivideLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongScalarDivideLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColDivideDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColDivideDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColDivideLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColDivideLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarDivideDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleScalarDivideLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColDivideDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColDivideDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarDivideDoubleColumn;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 
@@ -30,6 +43,12 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
  */
 @Description(name = "/", value = "a _FUNC_ b - Divide a by b", extended = "Example:\n"
     + "  > SELECT 3 _FUNC_ 2 FROM src LIMIT 1;\n" + "  1.5")
+@VectorizedExpressions({LongColDivideLongColumn.class, LongColDivideDoubleColumn.class,
+  DoubleColDivideLongColumn.class, DoubleColDivideDoubleColumn.class,
+  LongColDivideLongScalar.class, LongColDivideDoubleScalar.class,
+  DoubleColDivideLongScalar.class, DoubleColDivideDoubleScalar.class,
+  LongScalarDivideLongColumn.class, LongScalarDivideDoubleColumn.class,
+  DoubleScalarDivideLongColumn.class, DoubleScalarDivideDoubleColumn.class})
 /**
  * Note that in SQL, the return type of divide is not necessarily the same
  * as the parameters. For example, 3 / 2 = 1.5, not 1. To follow SQL, we always
@@ -55,13 +74,17 @@ public class UDFOPDivide extends UDF {
     if ((a == null) || (b == null)) {
       return null;
     }
+
     if (b.getHiveDecimal().compareTo(HiveDecimal.ZERO) == 0) {
       return null;
-    } else {
-        decimalWritable.set(a.getHiveDecimal().divide(
-          b.getHiveDecimal()));
     }
 
+    HiveDecimal dec = a.getHiveDecimal().divide(b.getHiveDecimal());
+    if (dec == null) {
+      return null;
+    }
+
+    decimalWritable.set(dec);
     return decimalWritable;
   }
 }

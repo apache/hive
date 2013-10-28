@@ -85,10 +85,11 @@ public class TempletonUtils {
     return (col != null) && (!col.isEmpty());
   }
 
-
-  public static final Pattern JAR_COMPLETE
-    = Pattern.compile(" map \\d+%\\s+reduce \\d+%$");
+  //looking for map 100% reduce 100%
+  public static final Pattern JAR_COMPLETE = Pattern.compile(" map \\d+%\\s+reduce \\d+%$");
   public static final Pattern PIG_COMPLETE = Pattern.compile(" \\d+% complete$");
+  //looking for map = 100%,  reduce = 100%
+  public static final Pattern HIVE_COMPLETE = Pattern.compile(" map = \\d+%,\\s+reduce = \\d+%$");
 
   /**
    * Extract the percent complete line from Pig or Jar jobs.
@@ -101,7 +102,19 @@ public class TempletonUtils {
     Matcher pig = PIG_COMPLETE.matcher(line);
     if (pig.find())
       return pig.group().trim();
-
+    
+    Matcher hive = HIVE_COMPLETE.matcher(line);
+    if(hive.find()) {
+      StringBuilder sb = new StringBuilder(hive.group().trim());
+      String[] toRemove = {"= ", ", "};
+      for(String pattern : toRemove) {
+        int pos;
+        while((pos = sb.indexOf(pattern)) >= 0) {
+          sb.delete(pos, pos + pattern.length());
+        }
+      }
+      return sb.toString();//normalized to look like JAR_COMPLETE
+    }
     return null;
   }
 

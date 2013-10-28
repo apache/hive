@@ -22,6 +22,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncATanDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncATanLongToDouble;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 
 @Description(
@@ -31,6 +34,7 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
         "  > SELECT _FUNC_(0) FROM src LIMIT 1;\n" +
         "  0"
     )
+@VectorizedExpressions({FuncATanLongToDouble.class, FuncATanDoubleToDouble.class})
 public class UDFAtan extends UDF {
 
   @SuppressWarnings("unused")

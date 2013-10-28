@@ -23,14 +23,17 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFUtils.ConversionHelper;
+import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.ObjectInspectorOptions;
+import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 
@@ -177,6 +180,13 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
     // Call the function
     Object result = FunctionRegistry.invoke(udfMethod, udf, conversionHelper
         .convertIfNecessary(realArguments));
+
+    // For non-generic UDF, type info isn't available. This poses a problem for Hive Decimal.
+    // If the returned value is HiveDecimal, we assume maximum precision/scale.
+    if (result != null && result instanceof HiveDecimalWritable) {
+      result = HiveDecimalUtils.enforcePrecisionScale((HiveDecimalWritable) result,
+          HiveDecimal.MAX_PRECISION, HiveDecimal.MAX_SCALE);
+    }
 
     return result;
   }
