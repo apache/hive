@@ -178,6 +178,10 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
         numDistributionKeys;
       cachedKeys = new Object[numKeys][keyLen];
       cachedValues = new Object[valueEval.length];
+      
+      int tag = conf.getTag();
+      tagByte[0] = (byte) tag;
+      LOG.info("Using tag = " + tag);
 
     } catch(Exception e) {
       throw new HiveException(e);
