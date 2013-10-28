@@ -441,7 +441,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   // Find context for current input file
   @Override
   public void cleanUpInputFileChangedOp() throws HiveException {
-    Path fpath = normalizePath(getExecContext().getCurrentInputFile());
+    Path fpath = getExecContext().getCurrentInputPath();
 
     for (String onefile : conf.getPathToAliases().keySet()) {
       Path onepath = normalizePath(onefile);
@@ -537,7 +537,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
       VirtualColumn vc = vcs.get(i);
       if (vc.equals(VirtualColumn.FILENAME)) {
         if (ctx.inputFileChanged()) {
-          vcValues[i] = new Text(ctx.getCurrentInputFile());
+          vcValues[i] = new Text(ctx.getCurrentInputPath().toString());
         }
       } else if (vc.equals(VirtualColumn.BLOCKOFFSET)) {
         long current = ctx.getIoCxt().getCurrentBlockStart();

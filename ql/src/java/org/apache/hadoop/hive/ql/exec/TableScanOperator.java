@@ -105,9 +105,9 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     Map<String, Integer> bucketNameMapping =
         (conf != null) ? conf.getBucketFileNameMapping() : null;
     if ((bucketNameMapping != null) && (!bucketNameMapping.isEmpty())) {
-      String currentInputFile = getExecContext().getCurrentInputFile();
+      Path currentInputPath = getExecContext().getCurrentInputPath();
       getExecContext().setFileId(Integer.toString(bucketNameMapping.get(
-          Utilities.getFileNameFromDirName(currentInputFile))));
+          currentInputPath.getName())));
     }
   }
 

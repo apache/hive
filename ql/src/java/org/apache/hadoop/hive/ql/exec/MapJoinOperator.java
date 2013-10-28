@@ -120,7 +120,7 @@ public class MapJoinOperator extends AbstractMapJoinOperator<MapJoinDesc> implem
     }
 
     String baseDir = null;
-    String currentInputFile = getExecContext().getCurrentInputFile();
+    String currentInputFile = getExecContext().getCurrentInputPath().toString();
     LOG.info("******* Load from HashTable File: input : " + currentInputFile);
     String fileName = getExecContext().getLocalWork().getBucketFileName(currentInputFile);
     try {

@@ -515,19 +515,19 @@ public class SMBMapJoinOperator extends AbstractMapJoinOperator<SMBJoinDesc> imp
   private void setUpFetchContexts(String alias, MergeQueue mergeQueue) throws HiveException {
     mergeQueue.clearFetchContext();
 
-    String currentInputFile = getExecContext().getCurrentInputFile();
+    Path currentInputPath = getExecContext().getCurrentInputPath();
 
     BucketMapJoinContext bucketMatcherCxt = localWork.getBucketMapjoinContext();
     Class<? extends BucketMatcher> bucketMatcherCls = bucketMatcherCxt.getBucketMatcherClass();
     BucketMatcher bucketMatcher = ReflectionUtils.newInstance(bucketMatcherCls, null);
 
-    getExecContext().setFileId(bucketMatcherCxt.createFileId(currentInputFile));
+    getExecContext().setFileId(bucketMatcherCxt.createFileId(currentInputPath.toString()));
     LOG.info("set task id: " + getExecContext().getFileId());
 
     bucketMatcher.setAliasBucketFileNameMapping(bucketMatcherCxt
         .getAliasBucketFileNameMapping());
 
-    List<Path> aliasFiles = bucketMatcher.getAliasBucketFiles(currentInputFile,
+    List<Path> aliasFiles = bucketMatcher.getAliasBucketFiles(currentInputPath.toString(),
         bucketMatcherCxt.getMapJoinBigTableAlias(), alias);
 
     mergeQueue.setupContext(aliasFiles);
