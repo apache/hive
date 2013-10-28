@@ -43,3 +43,6 @@ delete hcatalog/build-support/ant/build-command.xml
 delete hcatalog/build-support/ant/deploy.xml
 delete hcatalog/build-support/ant/test.xml
 delete ivy
+delete maven-rollback.sh
+delete maven-rollforward.sh
+delete maven-delete-ant.sh
