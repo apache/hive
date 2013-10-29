@@ -83,6 +83,7 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
 
   protected transient MapOpCtx current;
   private transient List<Operator<? extends OperatorDesc>> extraChildrenToClose = null;
+  private final Map<String, Path> normalizedPaths = new HashMap<String, Path>();
 
   private static class MapInputPath {
     String path;
@@ -467,7 +468,14 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
   }
 
   private Path normalizePath(String onefile) {
-    return new Path(onefile);
+    //creating Path is expensive, so cache the corresponding
+    //Path object in normalizedPaths
+    Path path = normalizedPaths.get(onefile);
+    if(path == null){
+      path = new Path(onefile);
+      normalizedPaths.put(onefile, path);
+    }
+    return path;
   }
 
   public void process(Writable value) throws HiveException {
