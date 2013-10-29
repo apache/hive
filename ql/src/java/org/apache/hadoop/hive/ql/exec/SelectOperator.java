@@ -40,14 +40,16 @@ public class SelectOperator extends Operator<SelectDesc> implements
 
   transient Object[] output;
 
+  private transient boolean isSelectStarNoCompute = false;
+
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     // Just forward the row as is
     if (conf.isSelStarNoCompute()) {
       initializeChildren(hconf);
+      isSelectStarNoCompute = true;
       return;
     }
-
     List<ExprNodeDesc> colList = conf.getColList();
     eval = new ExprNodeEvaluator[colList.size()];
     for (int i = 0; i < colList.size(); i++) {
@@ -57,7 +59,6 @@ public class SelectOperator extends Operator<SelectDesc> implements
         eval[i] = ExprNodeEvaluatorFactory.toCachedEval(eval[i]);
       }
     }
-
     output = new Object[eval.length];
     LOG.info("SELECT "
         + ((StructObjectInspector) inputObjInspectors[0]).getTypeName());
@@ -68,22 +69,20 @@ public class SelectOperator extends Operator<SelectDesc> implements
 
   @Override
   public void processOp(Object row, int tag) throws HiveException {
-
-    // Just forward the row as is
-    if (conf.isSelStarNoCompute()) {
+    if (isSelectStarNoCompute) {
       forward(row, inputObjInspectors[tag]);
       return;
     }
-
-    for (int i = 0; i < eval.length; i++) {
-      try {
+    int i = 0;
+    try {
+      for (; i < eval.length; ++i) {
         output[i] = eval[i].evaluate(row);
-      } catch (HiveException e) {
-        throw e;
-      } catch (RuntimeException e) {
-        throw new HiveException("Error evaluating "
-            + conf.getColList().get(i).getExprString(), e);
       }
+    } catch (HiveException e) {
+      throw e;
+    } catch (RuntimeException e) {
+      throw new HiveException("Error evaluating "
+          + conf.getColList().get(i).getExprString(), e);
     }
     forward(output, outputObjInspector);
   }
