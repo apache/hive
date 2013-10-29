@@ -1732,7 +1732,7 @@ public class ObjectStore implements RawStore, Configurable {
       LOG.debug("Done executing query for listMPartitions");
       pm.retrieveAll(mparts);
       success = commitTransaction();
-      LOG.debug("Done retrieving all objects for listMPartitions");
+      LOG.debug("Done retrieving all objects for listMPartitions " + mparts);
     } finally {
       if (!success) {
         rollbackTransaction();

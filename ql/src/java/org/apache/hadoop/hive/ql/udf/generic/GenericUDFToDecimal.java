@@ -21,16 +21,22 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter.HiveDecimalConverter;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveDecimalObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 
 @Description(name = "decimal", value = "_FUNC_(a) - cast a to decimal")
-public class GenericUDFToDecimal extends GenericUDF {
+public class GenericUDFToDecimal extends GenericUDF implements SettableUDF {
 
   private transient PrimitiveObjectInspector argumentOI;
   private transient HiveDecimalConverter bdConverter;
+
+  private DecimalTypeInfo typeInfo;
 
   @Override
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
@@ -46,9 +52,13 @@ public class GenericUDFToDecimal extends GenericUDF {
           "The function DECIMAL takes only primitive types");
     }
 
-    bdConverter = new HiveDecimalConverter(argumentOI,
-        PrimitiveObjectInspectorFactory.writableHiveDecimalObjectInspector);
-    return PrimitiveObjectInspectorFactory.writableHiveDecimalObjectInspector;
+    // Check if this UDF has been provided with type params for the output varchar type
+    SettableHiveDecimalObjectInspector outputOI;
+    outputOI = (SettableHiveDecimalObjectInspector)
+          PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(typeInfo);
+
+    bdConverter = new HiveDecimalConverter(argumentOI, outputOI);
+    return outputOI;
   }
 
   @Override
@@ -67,8 +77,23 @@ public class GenericUDFToDecimal extends GenericUDF {
     StringBuilder sb = new StringBuilder();
     sb.append("CAST( ");
     sb.append(children[0]);
-    sb.append(" AS DECIMAL)");
+    sb.append(" AS ");
+    sb.append(typeInfo.getQualifiedName());
+    sb.append(")");
     return sb.toString();
+  }
+
+  public DecimalTypeInfo getTypeInfo() {
+    return typeInfo;
+  }
+
+  public void setTypeInfo(DecimalTypeInfo typeInfo) {
+    this.typeInfo = typeInfo;
+  }
+
+  @Override
+  public void setTypeInfo(TypeInfo typeInfo) throws UDFArgumentException {
+    this.typeInfo = (DecimalTypeInfo) typeInfo;
   }
 
 }

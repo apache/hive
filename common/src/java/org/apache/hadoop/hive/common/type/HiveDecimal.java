@@ -28,17 +28,16 @@ import java.math.RoundingMode;
  *
  */
 public class HiveDecimal implements Comparable<HiveDecimal> {
+  public static final int MAX_PRECISION = 65;
+  public static final int MAX_SCALE = 30;
+  public static final int DEFAULT_PRECISION = 10;
+  public static final int DEFAULT_SCALE = 0;
 
   public static final HiveDecimal ZERO = new HiveDecimal(BigDecimal.ZERO);
-
-  public static final int MAX_PRECISION = 38; // fits into 128 bits
-
   public static final HiveDecimal ONE = new HiveDecimal(BigDecimal.ONE);
 
   public static final int ROUND_FLOOR = BigDecimal.ROUND_FLOOR;
-
   public static final int ROUND_CEILING = BigDecimal.ROUND_CEILING;
-
   public static final int ROUND_HALF_UP = BigDecimal.ROUND_HALF_UP;
 
   private BigDecimal bd = BigDecimal.ZERO;
@@ -48,16 +47,16 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
   }
 
   public static HiveDecimal create(BigDecimal b) {
-    return create(b, false);
+    return create(b, true);
   }
 
   public static HiveDecimal create(BigDecimal b, boolean allowRounding) {
-    BigDecimal bd = normalize(b, HiveDecimal.MAX_PRECISION, allowRounding);
+    BigDecimal bd = normalize(b, allowRounding);
     return bd == null ? null : new HiveDecimal(bd);
   }
 
   public static HiveDecimal create(BigInteger unscaled, int scale) {
-    BigDecimal bd = normalize(new BigDecimal(unscaled, scale), HiveDecimal.MAX_PRECISION, false);
+    BigDecimal bd = normalize(new BigDecimal(unscaled, scale), true);
     return bd == null ? null : new HiveDecimal(bd);
   }
 
@@ -69,12 +68,12 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
       return null;
     }
 
-    bd = normalize(bd, HiveDecimal.MAX_PRECISION, false);
+    bd = normalize(bd, true);
     return bd == null ? null : new HiveDecimal(bd);
   }
 
   public static HiveDecimal create(BigInteger bi) {
-    BigDecimal bd = normalize(new BigDecimal(bi), HiveDecimal.MAX_PRECISION, false);
+    BigDecimal bd = normalize(new BigDecimal(bi), true);
     return bd == null ? null : new HiveDecimal(bd);
   }
 
@@ -92,7 +91,7 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
   }
 
   public HiveDecimal setScale(int i) {
-    return new HiveDecimal(bd.setScale(i));
+    return new HiveDecimal(bd.setScale(i, RoundingMode.HALF_UP));
   }
 
   @Override
@@ -158,7 +157,7 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
   }
 
   public HiveDecimal multiply(HiveDecimal dec) {
-    return create(bd.multiply(dec.bd));
+    return create(bd.multiply(dec.bd), false);
   }
 
   public BigInteger unscaledValue() {
@@ -182,7 +181,8 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
   }
 
   public HiveDecimal pow(int n) {
-    return create(bd.pow(n));
+    BigDecimal result = normalize(bd.pow(n), false);
+    return result == null ? null : new HiveDecimal(result);
   }
 
   public HiveDecimal remainder(HiveDecimal dec) {
@@ -190,7 +190,7 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
   }
 
   public HiveDecimal divide(HiveDecimal dec) {
-    return create(bd.divide(dec.bd, MAX_PRECISION, RoundingMode.HALF_UP), true);
+    return create(bd.divide(dec.bd, MAX_SCALE, RoundingMode.HALF_UP), true);
   }
 
   private static BigDecimal trim(BigDecimal d) {
@@ -207,31 +207,45 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
     return d;
   }
 
-  private static BigDecimal normalize(BigDecimal d, int precision, boolean allowRounding) {
-    if (d == null) {
+  private static BigDecimal normalize(BigDecimal bd, boolean allowRounding) {
+    if (bd == null) {
       return null;
     }
 
-    d = trim(d);
+    bd = trim(bd);
 
-    // compute the number of digits of the decimal
-    int valuePrecision = d.precision()
-        + Math.max(0, 1 + d.scale() - d.precision());
+    int intDigits = bd.precision() - bd.scale();
 
-    if (valuePrecision > precision) {
-      if (allowRounding) {
-        // round "half up" until we hit the decimal point
-        int adjustedScale = d.scale() - (valuePrecision-precision);
-        if (adjustedScale >= 0) {
-          d = d.setScale(adjustedScale, RoundingMode.HALF_UP);
-          d = trim(d);
-        } else {
-          d = null;
-        }
-      } else {
-        d = null;
-      }
+    if (intDigits > MAX_PRECISION) {
+      return null;
     }
-    return d;
+
+    int maxScale = Math.min(MAX_SCALE, Math.min(MAX_PRECISION - intDigits, bd.scale()));
+    if (bd.scale() > maxScale ) {
+      bd = allowRounding ? bd.setScale(maxScale, RoundingMode.HALF_UP) : null;
+    }
+
+    return bd;
   }
+
+  public static BigDecimal enforcePrecisionScale(BigDecimal bd, int maxPrecision, int maxScale) {
+    if (bd == null) {
+      return null;
+    }
+
+    bd = trim(bd);
+
+    int maxIntDigits = maxPrecision - maxScale;
+    int intDigits = bd.precision() - bd.scale();
+    if (intDigits > maxIntDigits) {
+      return null;
+    }
+
+    if (bd.scale() > maxScale) {
+      bd = bd.setScale(maxScale, RoundingMode.HALF_UP);
+    }
+
+    return bd;
+  }
+
 }

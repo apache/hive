@@ -68,4 +68,9 @@ public abstract class TypeInfo implements Serializable {
 
   @Override
   public abstract int hashCode();
+
+  public boolean accept(TypeInfo other) {
+    return this.equals(other);
+  }
+
 }

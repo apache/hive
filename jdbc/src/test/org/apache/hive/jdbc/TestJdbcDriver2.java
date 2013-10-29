@@ -54,6 +54,7 @@ import org.apache.hive.service.cli.operation.ClassicTableTypeMapping;
 import org.apache.hive.service.cli.operation.ClassicTableTypeMapping.ClassicTableTypes;
 import org.apache.hive.service.cli.operation.HiveTableTypeMapping;
 import org.apache.hive.service.cli.operation.TableTypeMappingFactory.TableTypeMappings;
+import org.apache.hive.service.server.HiveServer2;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -180,7 +181,7 @@ public class TestJdbcDriver2 {
         + " c15 struct<r:int,s:struct<a:int,b:string>>,"
         + " c16 array<struct<m:map<string,string>,n:int>>,"
         + " c17 timestamp, "
-        + " c18 decimal, "
+        + " c18 decimal(16,7), "
         + " c19 binary, "
         + " c20 date,"
         + " c21 varchar(20)"
@@ -250,7 +251,6 @@ public class TestJdbcDriver2 {
     checkBadUrl("jdbc:hive2://localhost:10000test");
   }
 
-
   private void checkBadUrl(String url) throws SQLException {
     try{
       DriverManager.getConnection(url, "", "");
@@ -258,6 +258,131 @@ public class TestJdbcDriver2 {
     }catch(IllegalArgumentException i){
       assertTrue(i.getMessage().contains("Bad URL format. Hostname not found "
           + " in authority part of the url"));
+    }
+  }
+
+  @Test
+  public void testParentReferences() throws Exception {
+    /* Test parent references from Statement */
+    Statement s = this.con.createStatement();
+    ResultSet rs = s.executeQuery("SELECT * FROM " + dataTypeTableName);
+
+    rs.close();
+    s.close();
+
+    assertTrue(s.getConnection() == this.con);
+    assertTrue(rs.getStatement() == s);
+
+    /* Test parent references from PreparedStatement */
+    PreparedStatement ps = this.con.prepareStatement("SELECT * FROM " + dataTypeTableName);
+    rs = ps.executeQuery();
+
+    rs.close();
+    ps.close();
+
+    assertTrue(ps.getConnection() == this.con);
+    assertTrue(rs.getStatement() == ps);
+
+    /* Test DatabaseMetaData queries which do not have a parent Statement */
+    DatabaseMetaData md = this.con.getMetaData();
+
+    assertTrue(md.getConnection() == this.con);
+
+    rs = md.getCatalogs();
+    assertNull(rs.getStatement());
+    rs.close();
+
+    rs = md.getColumns(null, null, null, null);
+    assertNull(rs.getStatement());
+    rs.close();
+
+    rs = md.getFunctions(null, null, null);
+    assertNull(rs.getStatement());
+    rs.close();
+
+    rs = md.getImportedKeys(null, null, null);
+    assertNull(rs.getStatement());
+    rs.close();
+
+    rs = md.getPrimaryKeys(null, null, null);
+    assertNull(rs.getStatement());
+    rs.close();
+
+    rs = md.getProcedureColumns(null, null, null, null);
+    assertNull(rs.getStatement());
+    rs.close();
+
+    rs = md.getProcedures(null, null, null);
+    assertNull(rs.getStatement());
+    rs.close();
+
+    rs = md.getSchemas();
+    assertNull(rs.getStatement());
+    rs.close();
+
+    rs = md.getTableTypes();
+    assertNull(rs.getStatement());
+    rs.close();
+
+    rs = md.getTables(null, null, null, null);
+    assertNull(rs.getStatement());
+    rs.close();
+
+    rs = md.getTypeInfo();
+    assertNull(rs.getStatement());
+    rs.close();
+  }
+
+  /**
+   * This method tests whether while creating a new connection,
+   * the config variables specified in the JDBC URI are properly set for the connection.
+   * This is a test for HiveConnection#configureConnection.
+   * @throws Exception
+   */
+  @Test
+  public void testNewConnectionConfiguration() throws Exception {
+    // Start HiveServer2 with default conf
+    HiveServer2 hiveServer2 = new HiveServer2();
+    hiveServer2.init(new HiveConf());
+    hiveServer2.start();
+    Thread.sleep(3000);
+
+    // Set some conf parameters
+    String hiveConf = "hive.cli.print.header=true;hive.server2.async.exec.shutdown.timeout=20;" +
+        "hive.server2.async.exec.threads=30;hive.server2.thrift.http.max.worker.threads=15";
+    // Set some conf vars
+    String hiveVar = "stab=salesTable;icol=customerID";
+    String jdbcUri = "jdbc:hive2://localhost:10000/default" +
+        "?" + hiveConf +
+        "#" + hiveVar;
+
+    // Open a new connection with these conf & vars
+    Connection con1 = DriverManager.getConnection(jdbcUri);
+
+    // Execute "set" command and retrieve values for the conf & vars specified above
+    // Assert values retrieved
+    Statement stmt = con1.createStatement();
+
+    // Verify that the property has been properly set while creating the connection above
+    verifyConfProperty(stmt, "hive.cli.print.header", "true");
+    verifyConfProperty(stmt, "hive.server2.async.exec.shutdown.timeout", "20");
+    verifyConfProperty(stmt, "hive.server2.async.exec.threads", "30");
+    verifyConfProperty(stmt, "hive.server2.thrift.http.max.worker.threads", "15");
+    verifyConfProperty(stmt, "stab", "salesTable");
+    verifyConfProperty(stmt, "icol", "customerID");
+    con1.close();
+
+    if(hiveServer2 != null) {
+      hiveServer2.stop();
+    }
+  }
+
+  private void verifyConfProperty(Statement stmt, String property, String expectedValue)
+      throws Exception {
+    ResultSet res = stmt.executeQuery("set " + property);
+    while(res.next()) {
+      String resultValues[] = res.getString(1).split("=");
+      assertEquals(resultValues[1], expectedValue);
     }
   }
 

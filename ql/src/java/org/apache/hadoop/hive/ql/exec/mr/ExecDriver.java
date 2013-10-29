@@ -666,6 +666,12 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
 
     boolean isSilent = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVESESSIONSILENT);
 
+    String queryId = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEQUERYID, "").trim();
+    if(queryId.isEmpty()) {
+      queryId = "unknown-" + System.currentTimeMillis();
+    }
+    System.setProperty(HiveConf.ConfVars.HIVEQUERYID.toString(), queryId);
+
     if (noLog) {
       // If started from main(), and noLog is on, we should not output
       // any logs. To turn the log on, please set -Dtest.silent=false

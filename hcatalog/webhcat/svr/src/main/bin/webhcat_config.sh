@@ -75,7 +75,7 @@ elif [ -e "${WEBHCAT_PREFIX}/conf/webhcat-env.sh" -o -e "${WEBHCAT_PREFIX}/etc/w
 else
   DEFAULT_CONF_DIR="/etc/webhcat"
 fi
-WEBHCAT_CONF_DIR="${WEBHCAT_CONF_DIR:-$DEFAULT_CONF_DIR}"
+export WEBHCAT_CONF_DIR="${WEBHCAT_CONF_DIR:-$DEFAULT_CONF_DIR}"
 
 #users can add various env vars to webhcat-env.sh in the conf
 #rather than having to export them before running the command

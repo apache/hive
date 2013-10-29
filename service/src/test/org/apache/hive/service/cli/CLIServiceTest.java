@@ -20,10 +20,13 @@ package org.apache.hive.service.cli;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -223,5 +226,69 @@ public abstract class CLIServiceTest {
     state = client.getOperationStatus(ophandle);
     System.out.println(ophandle + " after cancelling, state= " + state);
     assertEquals("Query should be cancelled", OperationState.CANCELED, state);
+  }
+
+  /**
+   * Test per statement configuration overlay.
+   * Create a table using hiveconf: var substitution, with the conf var passed
+   * via confOverlay.Verify the confOverlay works for the query and does set the
+   * value in the session configuration
+   * @throws Exception
+   */
+  @Test
+  public void testConfOverlay() throws Exception {
+    SessionHandle sessionHandle = client.openSession("tom", "password", new HashMap<String, String>());
+    assertNotNull(sessionHandle);
+    String tabName = "TEST_CONF_EXEC";
+    String tabNameVar = "tabNameVar";
+
+    String setLockMgr = "SET " + HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname
+        + " = false";
+    OperationHandle opHandle = client.executeStatement(sessionHandle, setLockMgr, null);
+    client.closeOperation(opHandle);
+
+    String dropTable = "DROP TABLE IF EXISTS " + tabName;
+    opHandle = client.executeStatement(sessionHandle, dropTable, null);
+    client.closeOperation(opHandle);
+
+    // set a pass a property to operation and check if its set the query config
+    Map <String, String> confOverlay = new HashMap<String, String>();
+    confOverlay.put(tabNameVar, tabName);
+
+    // execute statement with the conf overlay
+    String createTab = "CREATE TABLE ${hiveconf:" + tabNameVar + "} (id int)";
+    opHandle = client.executeStatement(sessionHandle, createTab, confOverlay);
+    assertNotNull(opHandle);
+    // query should pass and create the table
+    assertEquals("Query should be finished",
+        OperationState.FINISHED, client.getOperationStatus(opHandle));
+    client.closeOperation(opHandle);
+
+    // select from  the new table should pass
+    String selectTab = "SELECT * FROM " + tabName;
+    opHandle = client.executeStatement(sessionHandle, selectTab, null);
+    assertNotNull(opHandle);
+    // query should pass and create the table
+    assertEquals("Query should be finished",
+        OperationState.FINISHED, client.getOperationStatus(opHandle));
+    client.closeOperation(opHandle);
+
+    // the settings in confoverly should not be part of session config
+    // another query referring that property with the conf overlay should fail
+    selectTab = "SELECT * FROM ${hiveconf:" + tabNameVar + "}";
+    try {
+      opHandle = client.executeStatement(sessionHandle, selectTab, null);
+      fail("Query should fail");
+    } catch (HiveSQLException e) {
+      // Expected exception
+    }
+
+    // cleanup
+    dropTable = "DROP TABLE IF EXISTS " + tabName;
+    opHandle = client.executeStatement(sessionHandle, dropTable, null);
+    client.closeOperation(opHandle);
+
+
+    client.closeSession(sessionHandle);
   }
 }

@@ -32,6 +32,14 @@ import java.util.regex.Pattern;
  *  ignored.
  */
 public class TestLocationQueries extends BaseTestQueries {
+
+  public TestLocationQueries() {
+    File logDirFile = new File(logDir);
+    if (!(logDirFile.exists() || logDirFile.mkdirs())) {
+      fail("Could not create " + logDir);
+    }
+  }
+
   /**
    * Our own checker - validate the location of the partition.
    */

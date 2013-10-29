@@ -1779,7 +1779,7 @@ primitiveType
     | KW_TIMESTAMP     ->    TOK_TIMESTAMP
     | KW_STRING        ->    TOK_STRING
     | KW_BINARY        ->    TOK_BINARY
-    | KW_DECIMAL       ->    TOK_DECIMAL
+    | KW_DECIMAL (LPAREN prec=Number (COMMA scale=Number)? RPAREN)? -> ^(TOK_DECIMAL $prec? $scale?)
     | KW_VARCHAR LPAREN length=Number RPAREN      ->    ^(TOK_VARCHAR $length)
     ;
 

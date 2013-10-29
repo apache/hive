@@ -75,6 +75,14 @@ public class QBJoinTree implements Serializable{
   // big tables that should be streamed
   private List<String> streamAliases;
 
+  /*
+   * when a QBJoinTree is merged into this one, its left(pos =0) filters can
+   * refer to any of the srces in this QBJoinTree. If a particular filterForPushing refers
+   * to multiple srces in this QBJoinTree, we collect them into 'postJoinFilters'
+   * We then add a Filter Operator after the Join Operator for this QBJoinTree.
+   */
+  private final List<ASTNode> postJoinFilters;
+
   /**
    * constructor.
    */
@@ -84,6 +92,7 @@ public class QBJoinTree implements Serializable{
     noSemiJoin = true;
     rhsSemijoin = new HashMap<String, ArrayList<ASTNode>>();
     aliasToOpInfo = new HashMap<String, Operator<? extends OperatorDesc>>();
+    postJoinFilters = new ArrayList<ASTNode>();
   }
 
   /**
@@ -345,5 +354,13 @@ public class QBJoinTree implements Serializable{
 
   public void setId(String id) {
     this.id = id;
+  }
+
+  public void addPostJoinFilter(ASTNode filter) {
+    postJoinFilters.add(filter);
+  }
+
+  public List<ASTNode> getPostJoinFilters() {
+    return postJoinFilters;
   }
 }

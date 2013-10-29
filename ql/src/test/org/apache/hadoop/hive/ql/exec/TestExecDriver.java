@@ -131,8 +131,7 @@ public class TestExecDriver extends TestCase {
       }
 
     } catch (Throwable e) {
-      e.printStackTrace();
-      throw new RuntimeException("Encountered throwable");
+      throw new RuntimeException("Encountered throwable", e);
     }
   }
 
@@ -472,118 +471,70 @@ public class TestExecDriver extends TestCase {
   public void testMapPlan1() throws Exception {
 
     LOG.info("Beginning testMapPlan1");
-
-    try {
-      populateMapPlan1(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "src"));
-      executePlan();
-      fileDiff("lt100.txt.deflate", "mapplan1.out");
-    } catch (Throwable e) {
-      e.printStackTrace();
-      fail("Got Throwable");
-    }
+    populateMapPlan1(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "src"));
+    executePlan();
+    fileDiff("lt100.txt.deflate", "mapplan1.out");
   }
 
   public void testMapPlan2() throws Exception {
 
     LOG.info("Beginning testMapPlan2");
-
-    try {
-      populateMapPlan2(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "src"));
-      executePlan();
-      fileDiff("lt100.txt", "mapplan2.out");
-    } catch (Throwable e) {
-      e.printStackTrace();
-      fail("Got Throwable");
-    }
+    populateMapPlan2(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "src"));
+    executePlan();
+    fileDiff("lt100.txt", "mapplan2.out");
   }
 
   public void testMapRedPlan1() throws Exception {
 
     LOG.info("Beginning testMapRedPlan1");
-
-    try {
-      populateMapRedPlan1(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
-          "src"));
-      executePlan();
-      fileDiff("kv1.val.sorted.txt", "mapredplan1.out");
-    } catch (Throwable e) {
-      e.printStackTrace();
-      fail("Got Throwable");
-    }
+    populateMapRedPlan1(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
+        "src"));
+    executePlan();
+    fileDiff("kv1.val.sorted.txt", "mapredplan1.out");
   }
 
   public void testMapRedPlan2() throws Exception {
 
     LOG.info("Beginning testMapPlan2");
-
-    try {
-      populateMapRedPlan2(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
-          "src"));
-      executePlan();
-      fileDiff("lt100.sorted.txt", "mapredplan2.out");
-    } catch (Throwable e) {
-      e.printStackTrace();
-      fail("Got Throwable");
-    }
+    populateMapRedPlan2(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
+        "src"));
+    executePlan();
+    fileDiff("lt100.sorted.txt", "mapredplan2.out");
   }
 
   public void testMapRedPlan3() throws Exception {
 
     LOG.info("Beginning testMapPlan3");
-
-    try {
-      populateMapRedPlan3(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
-          "src"), db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "src2"));
-      executePlan();
-      fileDiff("kv1kv2.cogroup.txt", "mapredplan3.out");
-    } catch (Throwable e) {
-      e.printStackTrace();
-      fail("Got Throwable");
-    }
+    populateMapRedPlan3(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
+        "src"), db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, "src2"));
+    executePlan();
+    fileDiff("kv1kv2.cogroup.txt", "mapredplan3.out");
   }
 
   public void testMapRedPlan4() throws Exception {
 
     LOG.info("Beginning testMapPlan4");
-
-    try {
-      populateMapRedPlan4(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
-          "src"));
-      executePlan();
-      fileDiff("kv1.string-sorted.txt", "mapredplan4.out");
-    } catch (Throwable e) {
-      e.printStackTrace();
-      fail("Got Throwable");
-    }
+    populateMapRedPlan4(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
+        "src"));
+    executePlan();
+    fileDiff("kv1.string-sorted.txt", "mapredplan4.out");
   }
 
   public void testMapRedPlan5() throws Exception {
 
     LOG.info("Beginning testMapPlan5");
-
-    try {
-      populateMapRedPlan5(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
-          "src"));
-      executePlan();
-      fileDiff("kv1.string-sorted.txt", "mapredplan5.out");
-    } catch (Throwable e) {
-      e.printStackTrace();
-      fail("Got Throwable");
-    }
+    populateMapRedPlan5(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
+        "src"));
+    executePlan();
+    fileDiff("kv1.string-sorted.txt", "mapredplan5.out");
   }
 
   public void testMapRedPlan6() throws Exception {
 
     LOG.info("Beginning testMapPlan6");
-
-    try {
-      populateMapRedPlan6(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
-          "src"));
-      executePlan();
-      fileDiff("lt100.sorted.txt", "mapredplan6.out");
-    } catch (Throwable e) {
-      e.printStackTrace();
-      fail("Got Throwable");
-    }
+    populateMapRedPlan6(db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME,
+        "src"));
+    executePlan();
+    fileDiff("lt100.sorted.txt", "mapredplan6.out");
   }
 }

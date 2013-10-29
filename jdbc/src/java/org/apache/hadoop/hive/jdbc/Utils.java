@@ -50,7 +50,7 @@ public class Utils {
       return Types.DATE;
     } else if ("timestamp".equalsIgnoreCase(type)) {
       return Types.TIMESTAMP;
-    } else if ("decimal".equalsIgnoreCase(type)) {
+    } else if (type.startsWith("decimal")) {
       return Types.DECIMAL;
     } else if (type.startsWith("map<")) {
       return Types.VARCHAR;

@@ -20,24 +20,27 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
-import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 
-public class WritableHiveDecimalObjectInspector
-    extends AbstractPrimitiveWritableObjectInspector
-    implements SettableHiveDecimalObjectInspector {
+public class WritableHiveDecimalObjectInspector extends AbstractPrimitiveWritableObjectInspector
+implements SettableHiveDecimalObjectInspector {
 
-  protected WritableHiveDecimalObjectInspector() {
-    super(TypeInfoFactory.decimalTypeInfo);
+  public WritableHiveDecimalObjectInspector() {
+  }
+
+  protected WritableHiveDecimalObjectInspector(DecimalTypeInfo typeInfo) {
+    super(typeInfo);
   }
 
   @Override
   public HiveDecimalWritable getPrimitiveWritableObject(Object o) {
-    return o == null ? null : (HiveDecimalWritable) o;
+    return enforcePrecisionScale(((HiveDecimalWritable) o));
   }
 
   @Override
   public HiveDecimal getPrimitiveJavaObject(Object o) {
-    return o == null ? null : ((HiveDecimalWritable) o).getHiveDecimal();
+    return enforcePrecisionScale(((HiveDecimalWritable)o).getHiveDecimal());
   }
 
   @Override
@@ -47,27 +50,34 @@ public class WritableHiveDecimalObjectInspector
 
   @Override
   public Object set(Object o, byte[] bytes, int scale) {
-    ((HiveDecimalWritable) o).set(bytes, scale);
-    return o;
+    HiveDecimalWritable writable = (HiveDecimalWritable)create(bytes, scale);
+    if (writable != null) {
+      ((HiveDecimalWritable)o).set(writable);
+      return o;
+    } else {
+      return null;
+    }
   }
 
   @Override
   public Object set(Object o, HiveDecimal t) {
-    if (t == null) {
+    HiveDecimal dec = enforcePrecisionScale(t);
+    if (dec != null) {
+      ((HiveDecimalWritable) o).set(dec);
+      return o;
+    } else {
       return null;
     }
-
-    ((HiveDecimalWritable) o).set(t);
-    return o;
   }
 
   @Override
   public Object set(Object o, HiveDecimalWritable t) {
-    if (t == null) {
+    HiveDecimalWritable writable = enforcePrecisionScale(t);
+    if (writable == null) {
       return null;
     }
 
-    ((HiveDecimalWritable) o).set(t);
+    ((HiveDecimalWritable) o).set(writable);
     return o;
   }
 
@@ -78,11 +88,15 @@ public class WritableHiveDecimalObjectInspector
 
   @Override
   public Object create(HiveDecimal t) {
-    if (t == null) {
-      return null;
-    }
+    return t == null ? null : new HiveDecimalWritable(t);
+  }
 
-    return new HiveDecimalWritable(t);
+  private HiveDecimal enforcePrecisionScale(HiveDecimal dec) {
+    return HiveDecimalUtils.enforcePrecisionScale(dec, (DecimalTypeInfo)typeInfo);
+  }
+
+  private HiveDecimalWritable enforcePrecisionScale(HiveDecimalWritable writable) {
+    return HiveDecimalUtils.enforcePrecisionScale(writable, (DecimalTypeInfo)typeInfo);
   }
 
 }

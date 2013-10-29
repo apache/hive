@@ -1087,10 +1087,6 @@ public class QTestUtil {
     in = new BufferedReader(new FileReader(fname));
     out = new BufferedWriter(new FileWriter(fname + ".orig"));
     while (null != (line = in.readLine())) {
-      // Ignore the empty lines on windows
-      if(line.isEmpty() && Shell.WINDOWS) {
-        continue;
-      }
       out.write(line);
       out.write('\n');
     }
