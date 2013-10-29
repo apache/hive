@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
@@ -63,66 +64,9 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
-import org.apache.hadoop.hive.ql.plan.AbstractOperatorDesc;
-import org.apache.hadoop.hive.ql.plan.AggregationDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
-import org.apache.hadoop.hive.ql.plan.MapWork;
-import org.apache.hadoop.hive.ql.plan.OperatorDesc;
-import org.apache.hadoop.hive.ql.plan.PartitionDesc;
+import org.apache.hadoop.hive.ql.plan.*;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
-import org.apache.hadoop.hive.ql.udf.UDFAcos;
-import org.apache.hadoop.hive.ql.udf.UDFAsin;
-import org.apache.hadoop.hive.ql.udf.UDFAtan;
-import org.apache.hadoop.hive.ql.udf.UDFBin;
-import org.apache.hadoop.hive.ql.udf.UDFCeil;
-import org.apache.hadoop.hive.ql.udf.UDFConv;
-import org.apache.hadoop.hive.ql.udf.UDFCos;
-import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
-import org.apache.hadoop.hive.ql.udf.UDFDegrees;
-import org.apache.hadoop.hive.ql.udf.UDFExp;
-import org.apache.hadoop.hive.ql.udf.UDFFloor;
-import org.apache.hadoop.hive.ql.udf.UDFHex;
-import org.apache.hadoop.hive.ql.udf.UDFHour;
-import org.apache.hadoop.hive.ql.udf.UDFLTrim;
-import org.apache.hadoop.hive.ql.udf.UDFLength;
-import org.apache.hadoop.hive.ql.udf.UDFLike;
-import org.apache.hadoop.hive.ql.udf.UDFLn;
-import org.apache.hadoop.hive.ql.udf.UDFLog;
-import org.apache.hadoop.hive.ql.udf.UDFLog10;
-import org.apache.hadoop.hive.ql.udf.UDFLog2;
-import org.apache.hadoop.hive.ql.udf.UDFMinute;
-import org.apache.hadoop.hive.ql.udf.UDFOPDivide;
-import org.apache.hadoop.hive.ql.udf.UDFOPMinus;
-import org.apache.hadoop.hive.ql.udf.UDFOPMod;
-import org.apache.hadoop.hive.ql.udf.UDFOPMultiply;
-import org.apache.hadoop.hive.ql.udf.UDFOPNegative;
-import org.apache.hadoop.hive.ql.udf.UDFOPPlus;
-import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
-import org.apache.hadoop.hive.ql.udf.UDFPosMod;
-import org.apache.hadoop.hive.ql.udf.UDFPower;
-import org.apache.hadoop.hive.ql.udf.UDFRTrim;
-import org.apache.hadoop.hive.ql.udf.UDFRadians;
-import org.apache.hadoop.hive.ql.udf.UDFRand;
-import org.apache.hadoop.hive.ql.udf.UDFRound;
-import org.apache.hadoop.hive.ql.udf.UDFSecond;
-import org.apache.hadoop.hive.ql.udf.UDFSign;
-import org.apache.hadoop.hive.ql.udf.UDFSin;
-import org.apache.hadoop.hive.ql.udf.UDFSqrt;
-import org.apache.hadoop.hive.ql.udf.UDFSubstr;
-import org.apache.hadoop.hive.ql.udf.UDFTan;
-import org.apache.hadoop.hive.ql.udf.UDFToBoolean;
-import org.apache.hadoop.hive.ql.udf.UDFToByte;
-import org.apache.hadoop.hive.ql.udf.UDFToDouble;
-import org.apache.hadoop.hive.ql.udf.UDFToFloat;
-import org.apache.hadoop.hive.ql.udf.UDFToInteger;
-import org.apache.hadoop.hive.ql.udf.UDFToLong;
-import org.apache.hadoop.hive.ql.udf.UDFToShort;
-import org.apache.hadoop.hive.ql.udf.UDFToString;
-import org.apache.hadoop.hive.ql.udf.UDFTrim;
-import org.apache.hadoop.hive.ql.udf.UDFWeekOfYear;
-import org.apache.hadoop.hive.ql.udf.UDFYear;
+import org.apache.hadoop.hive.ql.udf.*;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFAbs;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
@@ -201,6 +145,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(UDFDayOfMonth.class);
 
     supportedGenericUDFs.add(UDFLike.class);
+    supportedGenericUDFs.add(UDFRegExp.class);
     supportedGenericUDFs.add(UDFSubstr.class);
     supportedGenericUDFs.add(UDFLTrim.class);
     supportedGenericUDFs.add(UDFRTrim.class);
@@ -352,7 +297,7 @@ public class Vectorizer implements PhysicalPlanResolver {
         }
         boolean ret = validateOperator(op);
         if (!ret) {
-          LOG.info("Operator: "+op.getName()+" could not be vectorized.");
+          LOG.info("Operator: " + op.getName() + " could not be vectorized.");
           return new Boolean(false);
         }
       }
@@ -451,6 +396,22 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
   }
 
+  private static class ValidatorVectorizationContext extends VectorizationContext {
+    private ValidatorVectorizationContext() {
+      super(null, -1);
+    }
+
+    @Override
+    protected int getInputColumnIndex(String name) {
+      return 0;
+    }
+
+    @Override
+    protected int getInputColumnIndex(ExprNodeColumnDesc colExpr) {
+      return 0;
+    }
+  }
+
   @Override
   public PhysicalContext resolve(PhysicalContext pctx) throws SemanticException {
     this.physicalContext  = pctx;
@@ -509,7 +470,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     List<ExprNodeDesc> filterExprs = desc.getFilters().get(posBigTable);
     List<ExprNodeDesc> keyExprs = desc.getKeys().get(posBigTable);
     List<ExprNodeDesc> valueExprs = desc.getExprs().get(posBigTable);
-    return validateExprNodeDesc(filterExprs) &&
+    return validateExprNodeDesc(filterExprs, VectorExpressionDescriptor.Mode.FILTER) &&
         validateExprNodeDesc(keyExprs) &&
         validateExprNodeDesc(valueExprs);
   }
@@ -535,7 +496,7 @@ public class Vectorizer implements PhysicalPlanResolver {
 
   private boolean validateFilterOperator(FilterOperator op) {
     ExprNodeDesc desc = op.getConf().getPredicate();
-    return validateExprNodeDesc(desc);
+    return validateExprNodeDesc(desc, VectorExpressionDescriptor.Mode.FILTER);
   }
 
   private boolean validateGroupByOperator(GroupByOperator op) {
@@ -547,8 +508,12 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private boolean validateExprNodeDesc(List<ExprNodeDesc> descs) {
+    return validateExprNodeDesc(descs, VectorExpressionDescriptor.Mode.PROJECTION);
+  }
+
+  private boolean validateExprNodeDesc(List<ExprNodeDesc> descs, VectorExpressionDescriptor.Mode mode) {
     for (ExprNodeDesc d : descs) {
-      boolean ret = validateExprNodeDesc(d);
+      boolean ret = validateExprNodeDesc(d, mode);
       if (!ret) {
         return false;
       }
@@ -566,7 +531,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return true;
   }
 
-  private boolean validateExprNodeDesc(ExprNodeDesc desc) {
+  private boolean validateExprNodeDescRecursive(ExprNodeDesc desc) {
     boolean ret = validateDataType(desc.getTypeInfo().getTypeName());
     if (!ret) {
       return false;
@@ -580,8 +545,33 @@ public class Vectorizer implements PhysicalPlanResolver {
     }
     if (desc.getChildren() != null) {
       for (ExprNodeDesc d: desc.getChildren()) {
-        validateExprNodeDesc(d);
+        boolean r = validateExprNodeDescRecursive(d);
+        if (!r) {
+          return false;
+        }
       }
+    }
+    return true;
+  }
+
+  private boolean validateExprNodeDesc(ExprNodeDesc desc) {
+    return validateExprNodeDesc(desc, VectorExpressionDescriptor.Mode.PROJECTION);
+  }
+
+  boolean validateExprNodeDesc(ExprNodeDesc desc, VectorExpressionDescriptor.Mode mode) {
+    if (!validateExprNodeDescRecursive(desc)) {
+      return false;
+    }
+    try {
+      VectorizationContext vc = new ValidatorVectorizationContext();
+      if (vc.getVectorExpression(desc, mode) == null) {
+        return false;
+      }
+    } catch (HiveException e) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Failed to vectorize", e);
+      }
+      return false;
     }
     return true;
   }

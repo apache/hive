@@ -124,14 +124,14 @@ public class VectorizationContext {
     this.fileKey = fileKey;
   }
 
-  private int getInputColumnIndex(String name) {
-      if (!columnMap.containsKey(name)) {
-        LOG.error(String.format("The column %s is not in the vectorization context column map.", name));
-      }
-      return columnMap.get(name);
+  protected int getInputColumnIndex(String name) {
+    if (!columnMap.containsKey(name)) {
+      LOG.error(String.format("The column %s is not in the vectorization context column map.", name));
+    }
+    return columnMap.get(name);
   }
 
-  private int getInputColumnIndex(ExprNodeColumnDesc colExpr) {
+  protected int getInputColumnIndex(ExprNodeColumnDesc colExpr) {
     return columnMap.get(colExpr.getColumn());
   }
 
@@ -139,7 +139,7 @@ public class VectorizationContext {
     private final int initialOutputCol;
     private int outputColCount = 0;
 
-    OutputColumnManager(int initialOutputCol) {
+    protected OutputColumnManager(int initialOutputCol) {
       this.initialOutputCol = initialOutputCol;
     }
 
@@ -152,6 +152,10 @@ public class VectorizationContext {
     private final Set<Integer> usedOutputColumns = new HashSet<Integer>();
 
     int allocateOutputColumn(String columnType) {
+      if (initialOutputCol < 0) {
+        // This is a test
+        return 0;
+      }
       int relativeCol = allocateOutputColumnInternal(columnType);
       return initialOutputCol + relativeCol;
     }
@@ -183,6 +187,10 @@ public class VectorizationContext {
     }
 
     void freeOutputColumn(int index) {
+      if (initialOutputCol < 0) {
+        // This is a test
+        return;
+      }
       int colIndex = index-initialOutputCol;
       if (colIndex >= 0) {
         usedOutputColumns.remove(index-initialOutputCol);
@@ -423,6 +431,9 @@ public class VectorizationContext {
   private VectorExpression getVectorExpressionForUdf(Class<?> udf, List<ExprNodeDesc> childExpr, Mode mode)
       throws HiveException {
     int numChildren = (childExpr == null) ? 0 : childExpr.size();
+    if (numChildren > VectorExpressionDescriptor.MAX_NUM_ARGUMENTS) {
+      return null;
+    }
     VectorExpressionDescriptor.Builder builder = new VectorExpressionDescriptor.Builder();
     builder.setNumArguments(numChildren);
     builder.setMode(mode);
