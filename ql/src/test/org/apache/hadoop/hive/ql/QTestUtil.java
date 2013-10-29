@@ -67,7 +67,6 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
 import org.apache.hadoop.hive.ql.exec.vector.util.AllVectorTypesRecord;
-import org.apache.hadoop.hive.ql.exec.vector.util.OrcFileGenerator;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -83,6 +82,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.thrift.ThriftDeserializer;
 import org.apache.hadoop.hive.serde2.thrift.test.Complex;
 import org.apache.hadoop.hive.shims.HadoopShims;
+import org.apache.hadoop.hive.shims.TezShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
@@ -127,6 +127,7 @@ public class QTestUtil {
   private boolean miniMr = false;
   private String hadoopVer = null;
   private QTestSetup setup = null;
+  private boolean miniTez = false;
 
   public boolean deleteDirectory(File path) {
     if (path.exists()) {
@@ -195,7 +196,7 @@ public class QTestUtil {
   }
 
   public QTestUtil(String outDir, String logDir) throws Exception {
-    this(outDir, logDir, false, "0.20");
+    this(outDir, logDir, "", "0.20");
   }
 
   public String getOutputDirectory() {
@@ -233,9 +234,8 @@ public class QTestUtil {
     conf.setVar(HiveConf.ConfVars.METASTORE_RAW_STORE_IMPL,
         "org.apache.hadoop.hive.metastore.VerifyingObjectStore");
 
-    if (miniMr) {
+    if (mr != null) {
       assert dfs != null;
-      assert mr != null;
 
       mr.setupConfiguration(conf);
 
@@ -288,23 +288,47 @@ public class QTestUtil {
     return uriStr;
   }
 
-  public QTestUtil(String outDir, String logDir, boolean miniMr, String hadoopVer)
+  public enum MiniClusterType {
+    miniMr,
+    tez
+  }
+
+  public QTestUtil(String outDir, String logDir, String miniMr, String hadoopVer)
     throws Exception {
     this.outDir = outDir;
     this.logDir = logDir;
     conf = new HiveConf(Driver.class);
-    this.miniMr = miniMr;
+    this.miniMr = miniMr.equals("miniMr");
+    this.miniTez = miniMr.equals("tez");
     this.hadoopVer = getHadoopMainVersion(hadoopVer);
     qMap = new TreeMap<String, String>();
     qSkipSet = new HashSet<String>();
     qSortSet = new HashSet<String>();
 
-    if (miniMr) {
-      dfs = ShimLoader.getHadoopShims().getMiniDfs(conf, 4, true, null);
-      FileSystem fs = dfs.getFileSystem();
-      mr = ShimLoader.getHadoopShims().getMiniMrCluster(conf, 4, getHdfsUriString(fs.getUri().toString()), 1);
+    HadoopShims shims = null;
+    MiniClusterType clusterType = MiniClusterType.valueOf(miniMr);
+    switch (clusterType) {
+      case miniMr:
+        shims = ShimLoader.getHadoopShims();
+        break;
+
+      case tez:
+        if (!hadoopVer.equals("23")) {
+          throw new Exception("Unsupported version of hadoop for tez. Please use " + 
+              "-Dhadoop.mr.rev=23 on the command line");
+        }
+
+        shims = (HadoopShims) new TezShims();
+        break;
+
+      default:
+        throw new Exception("Unknown cluster type");
     }
 
+    dfs = shims.getMiniDfs(conf, 4, true, null);
+    FileSystem fs = dfs.getFileSystem();
+    mr = shims.getMiniMrCluster(conf, 4, getHdfsUriString(fs.getUri().toString()), 1);
+    
     initConf();
 
     // Use the current directory if it is not specified
@@ -1430,7 +1454,7 @@ public class QTestUtil {
   {
     QTestUtil[] qt = new QTestUtil[qfiles.length];
     for (int i = 0; i < qfiles.length; i++) {
-      qt[i] = new QTestUtil(resDir, logDir, false, "0.20");
+      qt[i] = new QTestUtil(resDir, logDir, "", "0.20");
       qt[i].addFile(qfiles[i]);
       qt[i].clearTestSideEffects();
     }

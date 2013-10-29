@@ -26,29 +26,49 @@ to call at top-level: ant deploy-contrib compile-core-test
   <import file="../build-common.xml"/>
 
   <!-- default list of shims to build -->
-  <property name="shims.include" value="0.20,0.20S,0.23"/>
+  <property name="shims.include" value="hadoop0.20,hadoop0.20S,hadoop0.23,tez"/>
   <property name="shims.common.sources" value="${basedir}/src/common/java"/>	
   <property name="shims.common.secure.sources" value="${basedir}/src/common/java;${basedir}/src/common-secure/java"/>
   <!-- sources and hadoop version for each shim -->
-  <property name="shims.0.20.sources" value="${shims.common.sources};${basedir}/src/0.20/java" />	
-  <property name="shims.0.20.version" value="${hadoop-0.20.version}" />	
-  <property name="shims.0.20S.sources" value="${shims.common.secure.sources};${basedir}/src/0.20S/java" />	
-  <property name="shims.0.20S.version" value="${hadoop-0.20S.version}" />	
-  <property name="shims.0.23.sources" value="${shims.common.secure.sources};${basedir}/src/0.23/java" />	
-  <property name="shims.0.23.version" value="${hadoop-0.23.version}" />	
-  <property name="shims.0.20.hadoop.ivy.dir" value="${hive.root}/build/ivy/lib/hadoop0.20.shim" />
-  <property name="shims.0.20S.hadoop.ivy.dir" value="${hive.root}/build/ivy/lib/hadoop0.20S.shim" />
-  <property name="shims.0.23.hadoop.ivy.dir" value="${hive.root}/build/ivy/lib/hadoop0.23.shim" />
+  <property name="shims.hadoop0.20.sources" value="${shims.common.sources};${basedir}/src/0.20/java" />	
+  <property name="shims.hadoop0.20.version" value="${hadoop-0.20.version}" />	
+  <property name="shims.hadoop0.20S.sources" value="${shims.common.secure.sources};${basedir}/src/0.20S/java" />	
+  <property name="shims.hadoop0.20S.version" value="${hadoop-0.20S.version}" />	
+  <property name="shims.hadoop0.23.sources" value="${shims.common.secure.sources};${basedir}/src/0.23/java" />	
+  <property name="shims.hadoop0.23.version" value="${hadoop-0.23.version}" />	
+  <property name="shims.hadoop0.20.hadoop.ivy.dir" value="${hive.root}/build/ivy/lib/hadoop0.20.shim" />
+  <property name="shims.hadoop0.20S.hadoop.ivy.dir" value="${hive.root}/build/ivy/lib/hadoop0.20S.shim" />
+  <property name="shims.hadoop0.23.hadoop.ivy.dir" value="${hive.root}/build/ivy/lib/hadoop0.23.shim" />
+  <property name="shims.tez.sources" value="${shims.common.sources};${basedir}/src/tez/java"/>
+  <property name="shims.tez.hadoop.ivy.dir" value="${hive.root}/build/ivy/lib/hadoop0.23.shim"/>
+  <property name="shims.tez.version" value="${hadoop-0.23.version}"/>
 
   <target name="build-shims"
           description="Build shims against a particular hadoop version">
     <echo message="Project: ${ant.project.name}"/>
     <echo message="Compiling ${sources} against hadoop ${hadoop.version.ant-internal} (${hadoop.root})"/>
+    <if>
+      <equals arg1="${shimNameGiven}" arg2="tez"/>
+      <then>
+        <property name="shim.name" value="hadoop0.23"/>
+        <property name="was.tez" value="true"/>
+      </then>
+      <else>
+        <property name="shim.name" value="${shimNameGiven}"/>
+      </else>
+    </if>
 
     <antcall target="ivy-retrieve-hadoop-shim" inheritRefs="false" inheritAll="false">
-      <param name="ivy.hadoop.shim.conf" value="hadoop${shim.name}.shim" />
+      <param name="ivy.hadoop.shim.conf" value="${shim.name}.shim" />
     </antcall>
     
+    <if>
+      <equals arg1="${was.tez}" arg2="true"/>
+      <then>
+        <property name="shim.name" value="tez"/>
+        <property name="was.tez" value="false"/>
+      </then>
+    </if>
     <path id="shims.classpath">
       <fileset dir="${hadoop.ivy.dir}" includes="*.jar" />
       <fileset dir="../lib" includes="*.jar" />
@@ -77,7 +97,7 @@ to call at top-level: ant deploy-contrib compile-core-test
           <param name="hadoop.version.ant-internal" value="${shims.@{shimName}.version}" />
           <param name="sources" value="${shims.@{shimName}.sources}" />
           <param name="hadoop.ivy.dir" value="${shims.@{shimName}.hadoop.ivy.dir}" />
-          <param name="shim.name" value="@{shimName}" />
+          <param name="shimNameGiven" value="@{shimName}" />
         </antcall>
       </sequential>
     </for>  	

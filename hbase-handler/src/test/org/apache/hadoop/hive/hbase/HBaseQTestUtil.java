@@ -24,7 +24,7 @@ import org.apache.hadoop.hive.ql.QTestUtil;
  */
 public class HBaseQTestUtil extends QTestUtil {
   public HBaseQTestUtil(
-    String outDir, String logDir, boolean miniMr, HBaseTestSetup setup)
+    String outDir, String logDir, String miniMr, HBaseTestSetup setup)
     throws Exception {
 
     super(outDir, logDir, miniMr, null);
@@ -32,6 +32,7 @@ public class HBaseQTestUtil extends QTestUtil {
     super.init();
   }
 
+  @Override
   public void init() throws Exception {
     // defer
   }

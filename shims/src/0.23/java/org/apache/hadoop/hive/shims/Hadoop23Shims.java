@@ -184,6 +184,11 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     private final MiniMRCluster mr;
     private final Configuration conf;
 
+    public MiniMrShim() {
+      mr = null;
+      conf = null;
+    }
+
     public MiniMrShim(Configuration conf, int numberOfTaskTrackers, 
                       String nameNode, int numDir) throws IOException {
       this.conf = conf;

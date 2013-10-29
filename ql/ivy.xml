@@ -54,6 +54,7 @@
     <dependency org="org.apache.tez" name="tez-common" rev="${tez.version}" conf="compile->master" />
     <dependency org="org.apache.tez" name="tez-runtime-library" rev="${tez.version}" conf="compile->master" />
     <dependency org="org.apache.tez" name="tez-mapreduce" rev="${tez.version}" conf="compile->master" />
+    <dependency org="org.apache.tez" name="tez-runtime-internals" rev="${tez.version}" conf="compile->master" />
     <dependency org="org.apache.hadoop" name="hadoop-yarn-api" rev="${hadoop-0.23.version}" 
                 conf="compile->master" transitive="false" />
     <dependency org="org.apache.hadoop" name="hadoop-yarn-common" rev="${hadoop-0.23.version}" 

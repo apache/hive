@@ -34,8 +34,8 @@ public class $className extends TestCase {
 
   static {
     try {
-      boolean miniMR = "$clusterMode".equals("miniMR");
       String hadoopVer = "$hadoopVersion";
+      String miniMR = "$clusterMode";
       qt = new QTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR, hadoopVer);
 
       // do a one time initialization
