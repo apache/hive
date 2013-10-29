@@ -25,18 +25,18 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
+import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorGroupByOperator;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUDAFSumLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncAbsLongToLong;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.plan.AggregationDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.GroupByDesc;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFAbs;
+import org.apache.hadoop.hive.ql.plan.*;
+import org.apache.hadoop.hive.ql.udf.generic.*;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,9 +50,28 @@ public class TestVectorizer {
     Map<String, Integer> columnMap = new HashMap<String, Integer>();
     columnMap.put("col1", 0);
     columnMap.put("col2", 1);
+    columnMap.put("col3", 2);
 
     //Generate vectorized expression
-    vContext = new VectorizationContext(columnMap, 2);
+    vContext = new VectorizationContext(columnMap, 3);
+  }
+
+  @Description(name = "fake", value = "FAKE")
+  static class FakeGenericUDF extends GenericUDF {
+    @Override
+    public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentException {
+      return null;
+    }
+
+    @Override
+    public Object evaluate(DeferredObject[] arguments) throws HiveException {
+      return null;
+    }
+
+    @Override
+    public String getDisplayString(String[] children) {
+      return "fake";
+    }
   }
 
   @Test
@@ -95,5 +114,38 @@ public class TestVectorizer {
     Assert.assertEquals(VectorUDAFSumLong.class, vectorOp.getAggregators()[0].getClass());
     VectorUDAFSumLong udaf = (VectorUDAFSumLong) vectorOp.getAggregators()[0];
     Assert.assertEquals(FuncAbsLongToLong.class, udaf.getInputExpression().getClass());
+  }
+
+  @Test
+  public void testValidateNestedExpressions() {
+    ExprNodeColumnDesc col1Expr = new ExprNodeColumnDesc(Integer.class, "col1", "table", false);
+    ExprNodeConstantDesc constDesc = new ExprNodeConstantDesc(new Integer(10));
+
+    GenericUDFOPGreaterThan udf = new GenericUDFOPGreaterThan();
+    ExprNodeGenericFuncDesc greaterExprDesc = new ExprNodeGenericFuncDesc();
+    greaterExprDesc.setTypeInfo(TypeInfoFactory.booleanTypeInfo);
+    greaterExprDesc.setGenericUDF(udf);
+    List<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>(2);
+    children1.add(col1Expr);
+    children1.add(constDesc);
+    greaterExprDesc.setChildren(children1);
+
+    FakeGenericUDF udf2 = new FakeGenericUDF();
+    ExprNodeGenericFuncDesc nonSupportedExpr = new ExprNodeGenericFuncDesc();
+    nonSupportedExpr.setTypeInfo(TypeInfoFactory.booleanTypeInfo);
+    nonSupportedExpr.setGenericUDF(udf2);
+
+    GenericUDFOPAnd andUdf = new GenericUDFOPAnd();
+    ExprNodeGenericFuncDesc andExprDesc = new ExprNodeGenericFuncDesc();
+    andExprDesc.setTypeInfo(TypeInfoFactory.booleanTypeInfo);
+    andExprDesc.setGenericUDF(andUdf);
+    List<ExprNodeDesc> children3 = new ArrayList<ExprNodeDesc>(2);
+    children3.add(greaterExprDesc);
+    children3.add(nonSupportedExpr);
+    andExprDesc.setChildren(children3);
+
+    Vectorizer v = new Vectorizer();
+    Assert.assertFalse(v.validateExprNodeDesc(andExprDesc, VectorExpressionDescriptor.Mode.FILTER));
+    Assert.assertFalse(v.validateExprNodeDesc(andExprDesc, VectorExpressionDescriptor.Mode.PROJECTION));
   }
 }
