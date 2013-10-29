@@ -228,7 +228,8 @@ public class TezSessionState {
 
         // jar wasn't in the directory, copy the one in current use
         if (jarPath == null) {
-          return DagUtils.localizeResource(new Path(currentVersionPathStr), hiveJarDirPath, conf);
+          Path dest = new Path(hiveJarDir + "/" + currentJarName);
+          return DagUtils.localizeResource(new Path(currentVersionPathStr), dest, conf);
         }
       }
     }

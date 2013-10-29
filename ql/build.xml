@@ -35,7 +35,7 @@
   <property name="ql.test.results.beelinepositive.dir" location="${ql.test.results.dir}/beelinepositive"/>
 
   <import file="../build-common.xml"/>
-  <property name="ql.test.clientpositive.exclude" value="${minimr.query.files}"/>
+  <property name="ql.test.clientpositive.exclude" value="${minimr.query.files},${minitez.query.files}"/>
 
   <property name="ql.test.beelinepositive.exclude" value="${test.beelinepositive.exclude}"/>
   
@@ -97,7 +97,7 @@
                   resultsDirectory="${ql.test.results.beelinepositive.dir}" className="TestBeeLineDriver"
                   logFile="${test.log.dir}/testbeelinedrivergen.log"
                   logDirectory="${test.log.dir}/beelinepositive"
-                  hadoopVersion="${hadoopVersion}" />
+                  hadoopVersion="${hadoopVersion}"/>
       </then>
     </if>
 
@@ -135,6 +135,31 @@
                   logDirectory="${test.log.dir}/clientnegative"
                   hadoopVersion="${hadoopVersion}"
                   />
+        
+        <if>
+          <equals arg1="${hadoop.mr.rev}" arg2="23"/>
+          <then>
+            <echo message="hadoop mr rev: ${hadoop.mr.rev}"/>
+            <qtestgen hiveRootDirectory="${hive.root}"
+                  outputDirectory="${test.build.src}/org/apache/hadoop/hive/cli" 
+                  templatePath="${ql.test.template.dir}" template="TestCliDriver.vm" 
+                  queryDirectory="${ql.test.query.clientpositive.dir}" 
+                  queryFile="${qfile}"
+                  includeQueryFile="${minitez.query.files}"
+                  queryFileRegex="${qfile_regex}"
+                  clusterMode="tez"
+                  runDisabled="${run_disabled}"
+                  resultsDirectory="${ql.test.results.clientpositive.dir}" className="TestMiniTezCliDriver"
+                  logFile="${test.log.dir}/testminimrclidrivergen.log"
+                  logDirectory="${test.log.dir}/clientpositive"
+                  hadoopVersion="23"
+                  />
+          </then>
+          <else>
+          </else>
+        </if>
+
+
       </then>
     </if>
 

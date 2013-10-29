@@ -82,7 +82,7 @@ public class TestLocationQueries extends BaseTestQueries {
       return failedCount;
     }
 
-    public CheckResults(String outDir, String logDir, boolean miniMr,
+    public CheckResults(String outDir, String logDir, String miniMr,
         String hadoopVer, String locationSubdir)
       throws Exception
     {
@@ -103,7 +103,7 @@ public class TestLocationQueries extends BaseTestQueries {
 
     QTestUtil[] qt = new QTestUtil[qfiles.length];
     for (int i = 0; i < qfiles.length; i++) {
-      qt[i] = new CheckResults(resDir, logDir, false, "0.20", "parta");
+      qt[i] = new CheckResults(resDir, logDir, "non-minimr", "0.20", "parta");
       qt[i].addFile(qfiles[i]);
       qt[i].clearTestSideEffects();
     }
