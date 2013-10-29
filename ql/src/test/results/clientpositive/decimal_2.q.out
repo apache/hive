@@ -2,9 +2,9 @@ PREHOOK: query: drop table decimal_2
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table decimal_2
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table decimal_2 (t decimal)
+PREHOOK: query: create table decimal_2 (t decimal(18,9))
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table decimal_2 (t decimal)
+POSTHOOK: query: create table decimal_2 (t decimal(18,9))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@decimal_2
 PREHOOK: query: alter table decimal_2 set serde 'org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe'
@@ -16,12 +16,12 @@ POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@decimal_2
 POSTHOOK: Output: default@decimal_2
 PREHOOK: query: insert overwrite table decimal_2
-  select cast('17.29' as decimal) from src limit 1
+  select cast('17.29' as decimal(4,2)) from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@decimal_2
 POSTHOOK: query: insert overwrite table decimal_2
-  select cast('17.29' as decimal) from src limit 1
+  select cast('17.29' as decimal(4,2)) from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@decimal_2
@@ -107,12 +107,12 @@ POSTHOOK: Input: default@decimal_2
 POSTHOOK: Lineage: decimal_2.t EXPRESSION []
 17.29
 PREHOOK: query: insert overwrite table decimal_2
-  select cast('3404045.5044003' as decimal) from src limit 1
+  select cast('3404045.5044003' as decimal(18,9)) from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@decimal_2
 POSTHOOK: query: insert overwrite table decimal_2
-  select cast('3404045.5044003' as decimal) from src limit 1
+  select cast('3404045.5044003' as decimal(18,9)) from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@decimal_2
@@ -206,33 +206,33 @@ POSTHOOK: Input: default@decimal_2
 POSTHOOK: Lineage: decimal_2.t EXPRESSION []
 POSTHOOK: Lineage: decimal_2.t EXPRESSION []
 3404045.5044003
-PREHOOK: query: select cast(3.14 as decimal) from decimal_2 limit 1
+PREHOOK: query: select cast(3.14 as decimal(4,2)) from decimal_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_2
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(3.14 as decimal) from decimal_2 limit 1
+POSTHOOK: query: select cast(3.14 as decimal(4,2)) from decimal_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_2
 #### A masked pattern was here ####
 POSTHOOK: Lineage: decimal_2.t EXPRESSION []
 POSTHOOK: Lineage: decimal_2.t EXPRESSION []
 3.14
-PREHOOK: query: select cast(cast(3.14 as float) as decimal) from decimal_2 limit 1
+PREHOOK: query: select cast(cast(3.14 as float) as decimal(4,2)) from decimal_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_2
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(cast(3.14 as float) as decimal) from decimal_2 limit 1
+POSTHOOK: query: select cast(cast(3.14 as float) as decimal(4,2)) from decimal_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_2
 #### A masked pattern was here ####
 POSTHOOK: Lineage: decimal_2.t EXPRESSION []
 POSTHOOK: Lineage: decimal_2.t EXPRESSION []
 3.14
-PREHOOK: query: select cast(cast('2012-12-19 11:12:19.1234567' as timestamp) as decimal) from decimal_2 limit 1
+PREHOOK: query: select cast(cast('2012-12-19 11:12:19.1234567' as timestamp) as decimal(30,8)) from decimal_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_2
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(cast('2012-12-19 11:12:19.1234567' as timestamp) as decimal) from decimal_2 limit 1
+POSTHOOK: query: select cast(cast('2012-12-19 11:12:19.1234567' as timestamp) as decimal(30,8)) from decimal_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_2
 #### A masked pattern was here ####
@@ -294,22 +294,22 @@ POSTHOOK: Input: default@decimal_2
 POSTHOOK: Lineage: decimal_2.t EXPRESSION []
 POSTHOOK: Lineage: decimal_2.t EXPRESSION []
 3
-PREHOOK: query: select cast(0.99999999999999999999 as decimal) from decimal_2 limit 1
+PREHOOK: query: select cast(0.99999999999999999999 as decimal(20,19)) from decimal_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_2
 #### A masked pattern was here ####
-POSTHOOK: query: select cast(0.99999999999999999999 as decimal) from decimal_2 limit 1
+POSTHOOK: query: select cast(0.99999999999999999999 as decimal(20,19)) from decimal_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_2
 #### A masked pattern was here ####
 POSTHOOK: Lineage: decimal_2.t EXPRESSION []
 POSTHOOK: Lineage: decimal_2.t EXPRESSION []
 1
-PREHOOK: query: select cast('0.99999999999999999999' as decimal) from decimal_2 limit 1
+PREHOOK: query: select cast('0.99999999999999999999' as decimal(20,20)) from decimal_2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_2
 #### A masked pattern was here ####
-POSTHOOK: query: select cast('0.99999999999999999999' as decimal) from decimal_2 limit 1
+POSTHOOK: query: select cast('0.99999999999999999999' as decimal(20,20)) from decimal_2 limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_2
 #### A masked pattern was here ####

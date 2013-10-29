@@ -334,9 +334,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         } catch (Exception e) {
           // log exception, but ignore inability to start
           LOG.error("error in Metrics init: " + e.getClass().getName() + " "
-              + e.getMessage());
-          MetaStoreUtils.printStackTrace(e);
-
+              + e.getMessage(), e);
         }
       }
 
@@ -466,8 +464,7 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         Metrics.startScope(function);
       } catch (IOException e) {
         LOG.debug("Exception when starting metrics scope"
-            + e.getClass().getName() + " " + e.getMessage());
-        MetaStoreUtils.printStackTrace(e);
+            + e.getClass().getName() + " " + e.getMessage(), e);
       }
       return function;
     }

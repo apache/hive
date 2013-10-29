@@ -62,6 +62,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -796,11 +797,15 @@ public final class TypeCheckProcFactory {
           ASTNode funcNameNode = (ASTNode)expr.getChild(0);
           switch (funcNameNode.getType()) {
             case HiveParser.TOK_VARCHAR:
-              // Add type params
-              VarcharTypeInfo varcharTypeInfo = TypeInfoFactory.getVarcharTypeInfo(
-                  Integer.valueOf((funcNameNode.getChild(0).getText())));
+              VarcharTypeInfo varcharTypeInfo = ParseUtils.getVarcharTypeInfo(funcNameNode);
               if (genericUDF != null) {
                 ((SettableUDF)genericUDF).setTypeInfo(varcharTypeInfo);
+              }
+              break;
+            case HiveParser.TOK_DECIMAL:
+              DecimalTypeInfo decTypeInfo = ParseUtils.getDecimalTypeTypeInfo(funcNameNode);
+              if (genericUDF != null) {
+                ((SettableUDF)genericUDF).setTypeInfo(decTypeInfo);
               }
               break;
             default:

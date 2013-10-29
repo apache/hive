@@ -76,21 +76,6 @@ public class MetaStoreUtils {
 
   public static final String DATABASE_WAREHOUSE_SUFFIX = ".db";
 
-  /**
-   * printStackTrace
-   *
-   * Helper function to print an exception stack trace to the log and not stderr
-   *
-   * @param e
-   *          the exception
-   *
-   */
-  static public void printStackTrace(Exception e) {
-    for (StackTraceElement s : e.getStackTrace()) {
-      LOG.error(s);
-    }
-  }
-
   public static Table createColumnsetSchema(String name, List<String> columns,
       List<String> partCols, Configuration conf) throws MetaException {
 
@@ -175,14 +160,17 @@ public class MetaStoreUtils {
   static public Deserializer getDeserializer(Configuration conf,
       Properties schema) throws MetaException {
     try {
-      Deserializer deserializer = ReflectionUtils.newInstance(conf.getClassByName(
-      schema.getProperty(serdeConstants.SERIALIZATION_LIB)).asSubclass(Deserializer.class), conf);
+      String clazzName = schema.getProperty(serdeConstants.SERIALIZATION_LIB);
+      if(clazzName == null) {
+        throw new IllegalStateException("Property " + serdeConstants.SERIALIZATION_LIB + " cannot be null");
+      }
+      Deserializer deserializer = ReflectionUtils.newInstance(conf.getClassByName(clazzName)
+          .asSubclass(Deserializer.class), conf);
       deserializer.initialize(conf, schema);
       return deserializer;
     } catch (Exception e) {
       LOG.error("error in initSerDe: " + e.getClass().getName() + " "
-          + e.getMessage());
-      MetaStoreUtils.printStackTrace(e);
+          + e.getMessage(), e);
       throw new MetaException(e.getClass().getName() + " " + e.getMessage());
     }
   }
@@ -221,8 +209,7 @@ public class MetaStoreUtils {
       throw e;
     } catch (Exception e) {
       LOG.error("error in initSerDe: " + e.getClass().getName() + " "
-          + e.getMessage());
-      MetaStoreUtils.printStackTrace(e);
+          + e.getMessage(), e);
       throw new MetaException(e.getClass().getName() + " " + e.getMessage());
     }
   }
@@ -258,8 +245,7 @@ public class MetaStoreUtils {
       throw e;
     } catch (Exception e) {
       LOG.error("error in initSerDe: " + e.getClass().getName() + " "
-          + e.getMessage());
-      MetaStoreUtils.printStackTrace(e);
+          + e.getMessage(), e);
       throw new MetaException(e.getClass().getName() + " " + e.getMessage());
     }
   }

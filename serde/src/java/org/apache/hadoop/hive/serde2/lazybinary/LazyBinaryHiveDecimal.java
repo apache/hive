@@ -17,15 +17,23 @@
  */
 package org.apache.hadoop.hive.serde2.lazybinary;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.lazy.ByteArrayRef;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveDecimalObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 
 public class LazyBinaryHiveDecimal extends
     LazyBinaryPrimitive<WritableHiveDecimalObjectInspector, HiveDecimalWritable> {
+  private int precision;
+  private int scale;
 
   LazyBinaryHiveDecimal(WritableHiveDecimalObjectInspector oi) {
     super(oi);
+
+    DecimalTypeInfo typeInfo = (DecimalTypeInfo) oi.getTypeInfo();
+    this.precision = typeInfo.precision();
+    this.scale = typeInfo.scale();
     data = new HiveDecimalWritable();
   }
 
@@ -37,6 +45,8 @@ public class LazyBinaryHiveDecimal extends
   @Override
   public void init(ByteArrayRef bytes, int start, int length) {
     data.setFromBytes(bytes.getData(), start, length);
+    HiveDecimal dec = data.getHiveDecimal(precision, scale);
+    data = dec == null ? null : new HiveDecimalWritable(dec);
   }
 
 }

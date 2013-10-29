@@ -140,55 +140,45 @@ public class Driver implements CommandProcessor {
 
   private String userName;
 
-  private boolean checkLockManager() {
+  private boolean checkConcurrency() throws SemanticException {
     boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
     if (!supportConcurrency) {
+      LOG.info("Concurrency mode is disabled, not creating a lock manager");
       return false;
     }
-    if ((hiveLockMgr == null)) {
-      try {
-        setLockManager();
-      } catch (SemanticException e) {
-        errorMessage = "FAILED: Error in semantic analysis: " + e.getMessage();
-        SQLState = ErrorMsg.findSQLState(e.getMessage());
-        downstreamError = e;
-        console.printError(errorMessage, "\n"
-            + org.apache.hadoop.util.StringUtils.stringifyException(e));
-        return false;
-      }
-    }
+    createLockManager();
     // the reason that we set the lock manager for the cxt here is because each
     // query has its own ctx object. The hiveLockMgr is shared accross the
     // same instance of Driver, which can run multiple queries.
     ctx.setHiveLockMgr(hiveLockMgr);
-    return hiveLockMgr != null;
+    return true;
   }
 
-  private void setLockManager() throws SemanticException {
-    boolean supportConcurrency = conf.getBoolVar(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY);
-    if (supportConcurrency) {
-      String lockMgr = conf.getVar(HiveConf.ConfVars.HIVE_LOCK_MANAGER);
-      if ((lockMgr == null) || (lockMgr.isEmpty())) {
-        throw new SemanticException(ErrorMsg.LOCKMGR_NOT_SPECIFIED.getMsg());
-      }
-
-      try {
-        hiveLockMgr = (HiveLockManager) ReflectionUtils.newInstance(conf.getClassByName(lockMgr),
-            conf);
-        hiveLockMgr.setContext(new HiveLockManagerCtx(conf));
-      } catch (Exception e) {
-        // set hiveLockMgr to null just in case this invalid manager got set to
-        // next query's ctx.
-        if (hiveLockMgr != null) {
-          try {
-            hiveLockMgr.close();
-          } catch (LockException e1) {
-            //nothing can do here
-          }
-          hiveLockMgr = null;
+  private void createLockManager() throws SemanticException {
+    if (hiveLockMgr != null) {
+      return;
+    }
+    String lockMgr = conf.getVar(HiveConf.ConfVars.HIVE_LOCK_MANAGER);
+    LOG.info("Creating lock manager of type " + lockMgr);
+    if ((lockMgr == null) || (lockMgr.isEmpty())) {
+      throw new SemanticException(ErrorMsg.LOCKMGR_NOT_SPECIFIED.getMsg());
+    }
+    try {
+      hiveLockMgr = (HiveLockManager) ReflectionUtils.newInstance(conf.getClassByName(lockMgr),
+          conf);
+      hiveLockMgr.setContext(new HiveLockManagerCtx(conf));
+    } catch (Exception e1) {
+      // set hiveLockMgr to null just in case this invalid manager got set to
+      // next query's ctx.
+      if (hiveLockMgr != null) {
+        try {
+          hiveLockMgr.close();
+        } catch (LockException e2) {
+          //nothing can do here
         }
-        throw new SemanticException(ErrorMsg.LOCKMGR_NOT_INITIALIZED.getMsg() + e.getMessage());
+        hiveLockMgr = null;
       }
+      throw new SemanticException(ErrorMsg.LOCKMGR_NOT_INITIALIZED.getMsg() + e1.getMessage(), e1);
     }
   }
 
@@ -329,7 +319,7 @@ public class Driver implements CommandProcessor {
   public Driver(HiveConf conf) {
     this.conf = conf;
   }
-  
+
   public Driver(HiveConf conf, String userName) {
     this(conf);
     this.userName = userName;
@@ -1009,7 +999,18 @@ public class Driver implements CommandProcessor {
     }
 
     boolean requireLock = false;
-    boolean ckLock = checkLockManager();
+    boolean ckLock = false;
+    try {
+      ckLock = checkConcurrency();
+    } catch (SemanticException e) {
+      errorMessage = "FAILED: Error in semantic analysis: " + e.getMessage();
+      SQLState = ErrorMsg.findSQLState(e.getMessage());
+      downstreamError = e;
+      console.printError(errorMessage, "\n"
+          + org.apache.hadoop.util.StringUtils.stringifyException(e));
+      ret = 10;
+      return new CommandProcessorResponse(ret, errorMessage, SQLState);
+    }
 
     if (ckLock) {
       boolean lockOnlyMapred = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_LOCK_MAPRED_ONLY);
@@ -1603,4 +1604,9 @@ public class Driver implements CommandProcessor {
   public org.apache.hadoop.hive.ql.plan.api.Query getQueryPlan() throws IOException {
     return plan.getQueryPlan();
   }
+
+  public String getErrorMsg() {
+    return errorMessage;
+  }
+
 }

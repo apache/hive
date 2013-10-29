@@ -146,12 +146,12 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
     return IOContext.get();
   }
 
-  public void initIOContext(long startPos, boolean isBlockPointer, String inputFile) {
+  public void initIOContext(long startPos, boolean isBlockPointer, Path inputPath) {
     ioCxtRef = this.getIOContext();
     ioCxtRef.currentBlockStart = startPos;
     ioCxtRef.isBlockPointer = isBlockPointer;
-    ioCxtRef.inputFile = inputFile;
-    LOG.info("Processing file " + inputFile);
+    ioCxtRef.inputPath = inputPath;
+    LOG.info("Processing file " + inputPath);
     initDone = true;
   }
 
@@ -184,7 +184,7 @@ public abstract class HiveContextAwareRecordReader<K, V> implements RecordReader
       blockStart = in.getPosition();
       in.close();
     }
-    this.initIOContext(blockStart, blockPointer, path.makeQualified(fs).toString());
+    this.initIOContext(blockStart, blockPointer, path.makeQualified(fs));
 
     this.initIOContextSortedProps(split, recordReader, job);
   }

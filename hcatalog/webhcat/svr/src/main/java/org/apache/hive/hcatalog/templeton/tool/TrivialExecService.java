@@ -18,21 +18,30 @@
  */
 package org.apache.hive.hcatalog.templeton.tool;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * Execute a local program.  This is a singleton service that will
  * execute a programs on the local box.
+ * 
+ * Note that is is executed from LaunchMapper which is executed in 
+ * different JVM from WebHCat (Templeton) server.  Thus it should not call any classes
+ * not available on every node in the cluster (outside webhcat jar)
  */
-public class TrivialExecService {
-  private static volatile TrivialExecService theSingleton;
+final class TrivialExecService {
+  //with default log4j config, this output ends up in 'syslog' of the LaunchMapper task
   private static final Log LOG = LogFactory.getLog(TrivialExecService.class);
-
+  private static volatile TrivialExecService theSingleton;
+  private static final String HADOOP_CLIENT_OPTS = "HADOOP_CLIENT_OPTS";
   /**
    * Retrieve the singleton.
    */
@@ -41,32 +50,53 @@ public class TrivialExecService {
       theSingleton = new TrivialExecService();
     return theSingleton;
   }
-
-  public Process run(List<String> cmd, List<String> removeEnv,
-             Map<String, String> environmentVariables)
-    throws IOException {
-    logDebugCmd(cmd, environmentVariables);
-    ProcessBuilder pb = new ProcessBuilder(cmd);
-    for (String key : removeEnv)
-      pb.environment().remove(key);
-    pb.environment().putAll(environmentVariables);
-    return pb.start();
-  }
-
-  private void logDebugCmd(List<String> cmd,
-    Map<String, String> environmentVariables) {
-    if(!LOG.isDebugEnabled()){
+  /**
+   * See {@link JobSubmissionConstants#CONTAINER_LOG4J_PROPS} file for details.
+   */
+  private static void hadoop2LogRedirect(ProcessBuilder processBuilder) {
+    Map<String, String> env = processBuilder.environment();
+    if(!env.containsKey(HADOOP_CLIENT_OPTS)) {
       return;
     }
-    LOG.debug("starting " + cmd);
-    LOG.debug("With environment variables: " );
-    for(Map.Entry<String, String> keyVal : environmentVariables.entrySet()){
-      LOG.debug(keyVal.getKey() + "=" + keyVal.getValue());
+    String hcopts = env.get(HADOOP_CLIENT_OPTS);
+    if(!hcopts.contains("log4j.configuration=container-log4j.properties")) {
+      return;
     }
-    LOG.debug("With environment variables already set: " );
-    Map<String, String> env = System.getenv();
-    for (String envName : env.keySet()) {
-      LOG.debug(envName + "=" + env.get(envName));
+    //TempletonControllerJob ensures that this file is in DistributedCache
+    File log4jProps = new File(JobSubmissionConstants.CONTAINER_LOG4J_PROPS);
+    hcopts = hcopts.replace("log4j.configuration=container-log4j.properties",
+            "log4j.configuration=file://" + log4jProps.getAbsolutePath());
+    //helps figure out what log4j is doing, but may confuse 
+    //some jobs due to extra output to stdout
+    //hcopts = hcopts + " -Dlog4j.debug=true";
+    env.put(HADOOP_CLIENT_OPTS, hcopts);
+  }
+  public Process run(List<String> cmd, List<String> removeEnv,
+             Map<String, String> environmentVariables, boolean overrideContainerLog4jProps)
+    throws IOException {
+    LOG.info("run(cmd, removeEnv, environmentVariables, " + overrideContainerLog4jProps + ")");
+    LOG.info("Starting cmd: " + cmd);
+    ProcessBuilder pb = new ProcessBuilder(cmd);
+    for (String key : removeEnv) {
+      if(pb.environment().containsKey(key)) {
+        LOG.info("Removing env var: " + key + "=" + pb.environment().get(key));
+      }
+      pb.environment().remove(key);
     }
+    pb.environment().putAll(environmentVariables);
+    if(overrideContainerLog4jProps) {
+      hadoop2LogRedirect(pb);
+    }
+    logDebugInfo("Starting process with env:", pb.environment());
+    return pb.start();
+  }
+  private static void logDebugInfo(String msg, Map<String, String> props) {
+    LOG.info(msg);
+    List<String> keys = new ArrayList<String>();
+    keys.addAll(props.keySet());
+    Collections.sort(keys);
+    for(String key : keys) {
+      LOG.info(key + "=" + props.get(key));
+    }    
   }
 }

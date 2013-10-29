@@ -395,23 +395,39 @@ public final class TypeInfoUtils {
           PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(t.text);
       if (typeEntry != null && typeEntry.primitiveCategory != PrimitiveCategory.UNKNOWN ) {
         String qualifiedTypeName = typeEntry.typeName;
-        if (typeEntry.primitiveCategory == PrimitiveCategory.VARCHAR) {
-          int length = HiveVarchar.MAX_VARCHAR_LENGTH;
-          
-          String[] params = parseParams();
+        String[] params = parseParams();
+        switch (typeEntry.primitiveCategory) {
+        case VARCHAR:
           if (params == null || params.length == 0) {
-            throw new RuntimeException( "Varchar type is specified without length: " + typeInfoString);
+            throw new IllegalArgumentException( "Varchar type is specified without length: " + typeInfoString);
           }
-          
-          if (params.length == 1) {
-            length = Integer.valueOf(params[0]);
-            VarcharUtils.validateParameter(length);
-          } else if (params.length > 1) {
-            throw new RuntimeException("Type varchar only takes one parameter, but " +
-                params.length + " is seen");
-          } 
 
-          qualifiedTypeName = BaseCharTypeInfo.getQualifiedName(typeEntry.typeName, length);
+          if (params.length == 1) {
+            int length = Integer.valueOf(params[0]);
+            VarcharUtils.validateParameter(length);
+            qualifiedTypeName = BaseCharTypeInfo.getQualifiedName(typeEntry.typeName, length);
+          } else if (params.length > 1) {
+            throw new IllegalArgumentException("Type varchar only takes one parameter, but " +
+                params.length + " is seen");
+          }
+
+          break;
+        case DECIMAL:
+          if (params == null || params.length == 0) {
+            throw new IllegalArgumentException( "Decimal type is specified without length: " + typeInfoString);
+          }
+
+          if (params.length == 2) {
+            int precision = Integer.valueOf(params[0]);
+            int scale = Integer.valueOf(params[1]);
+            HiveDecimalUtils.validateParameter(precision, scale);
+            qualifiedTypeName = DecimalTypeInfo.getQualifiedName(precision, scale);
+          } else if (params.length > 1) {
+            throw new IllegalArgumentException("Type varchar only takes one parameter, but " +
+                params.length + " is seen");
+          }
+
+          break;
         }
 
         return TypeInfoFactory.getPrimitiveTypeInfo(qualifiedTypeName);
@@ -679,7 +695,7 @@ public final class TypeInfoUtils {
     switch (oi.getCategory()) {
     case PRIMITIVE: {
       PrimitiveObjectInspector poi = (PrimitiveObjectInspector) oi;
-      result = TypeInfoFactory.getPrimitiveTypeInfo(poi.getTypeName());
+      result = poi.getTypeInfo();
       break;
     }
     case LIST: {

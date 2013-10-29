@@ -2,9 +2,9 @@ PREHOOK: query: drop table decimal_1
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: drop table decimal_1
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: create table decimal_1 (t decimal)
+PREHOOK: query: create table decimal_1 (t decimal(4,2))
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: create table decimal_1 (t decimal)
+POSTHOOK: query: create table decimal_1 (t decimal(4,2))
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@decimal_1
 PREHOOK: query: alter table decimal_1 set serde 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'
@@ -16,12 +16,12 @@ POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@decimal_1
 POSTHOOK: Output: default@decimal_1
 PREHOOK: query: insert overwrite table decimal_1
-  select cast('17.29' as decimal) from src limit 1
+  select cast('17.29' as decimal(4,2)) from src limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@decimal_1
 POSTHOOK: query: insert overwrite table decimal_1
-  select cast('17.29' as decimal) from src limit 1
+  select cast('17.29' as decimal(4,2)) from src limit 1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@decimal_1

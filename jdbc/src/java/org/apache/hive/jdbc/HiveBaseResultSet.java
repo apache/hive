@@ -59,6 +59,7 @@ import org.apache.hive.service.cli.thrift.TStringValue;
  * all Hive result sets.
  */
 public abstract class HiveBaseResultSet implements ResultSet {
+  protected Statement statement = null;
   protected SQLWarning warningChain = null;
   protected boolean wasNull = false;
   protected TRow row;
@@ -615,7 +616,7 @@ public abstract class HiveBaseResultSet implements ResultSet {
   }
 
   public Statement getStatement() throws SQLException {
-    throw new SQLException("Method not supported");
+    return this.statement;
   }
 
   /**

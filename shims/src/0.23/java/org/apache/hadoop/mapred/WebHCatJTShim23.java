@@ -18,10 +18,12 @@
 package org.apache.hadoop.mapred;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.hive.shims.HadoopShims.WebHCatJTShim;
 
 import java.io.IOException;
+import java.net.URI;
 
 public class WebHCatJTShim23 implements WebHCatJTShim {
   private JobClient jc;
@@ -87,5 +89,9 @@ public class WebHCatJTShim23 implements WebHCatJTShim {
       jc.close();
     } catch (IOException e) {
     }
+  }
+  @Override
+  public void addCacheFile(URI uri, Job job) {
+    job.addCacheFile(uri);
   }
 }

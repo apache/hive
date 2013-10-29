@@ -48,7 +48,7 @@ import org.junit.Test;
 
 public class TestPassProperties {
   private static final String TEST_DATA_DIR = System.getProperty("user.dir") +
-      "/build/test/data/" + TestSequenceFileReadWrite.class.getCanonicalName();
+      "/build/test/data/" + TestPassProperties.class.getCanonicalName();
   private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
   private static final String INPUT_FILE_NAME = TEST_DATA_DIR + "/input.data";
 
@@ -93,7 +93,7 @@ public class TestPassProperties {
       conf.set("hive.metastore.uris", "thrift://no.such.machine:10888");
       conf.set("hive.metastore.local", "false");
       Job job = new Job(conf, "Write-hcat-seq-table");
-      job.setJarByClass(TestSequenceFileReadWrite.class);
+      job.setJarByClass(TestPassProperties.class);
 
       job.setMapperClass(Map.class);
       job.setOutputKeyClass(NullWritable.class);

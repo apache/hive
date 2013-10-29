@@ -21,9 +21,13 @@ package org.apache.hadoop.hive.ql.exec.vector;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
-import java.util.Arrays;
-
+/**
+ * Describes a vector expression and encapsulates the {@link Mode}, number of arguments,
+ * argument types {@link ArgumentType} and expression types {@link InputExpressionType}.
+ */
 public class VectorExpressionDescriptor {
+
+  final static int MAX_NUM_ARGUMENTS = 3;
 
   public enum ArgumentType {
     NONE(0),
@@ -79,39 +83,20 @@ public class VectorExpressionDescriptor {
   }
 
   /**
-   * Each vector expression has a bitmap that determines the kind or a classification for
-   * the expression. Following parameters are used to identify the kind of an expression.
-   * <ol>
-   * <li>The expression produces an output column (projection) or does in-place filtering
-   *     (filter).</li>
-   * <li>Number if arguments the expression takes (unary, binary etc). For now we assume maximum 3
-   *     arguments.</li>
-   * <li>Types of each argument (long/double/string)</li>
-   * <li>The input to the expression is a column or a scalar.</li>
-   * </ol>
-   * The bitmap consists of 18 bits:
-   *   <ul>
-   *   <li>1 bit for filter/projection.
-   *   <li>2 bits for number of input arguments.
-   *   <li>3 bits for each argument type. Total 9 bits for maximum 3 arguments. For unary
-   *       expressions only first 3 bits are set, rest of the 6 bits are set to 0.
-   *   <li>2 bits to encode whether argument is a column or scalar. Total 6 bits for each argument.
-   *   <ul>
+   * Builder builds a {@link Descriptor} object. Setter methods are provided to set the {@link Mode}, number
+   * of arguments, argument types and expression types for each argument.
    */
   public static class Builder {
     private Mode mode = Mode.PROJECTION;
-    private final int maxNumArguments = 3;
-    ArgumentType [] argTypes = new ArgumentType[maxNumArguments];
-    InputExpressionType [] exprTypes = new InputExpressionType[maxNumArguments];
+    ArgumentType [] argTypes = new ArgumentType[MAX_NUM_ARGUMENTS];
+    InputExpressionType [] exprTypes = new InputExpressionType[MAX_NUM_ARGUMENTS];
     private int argCount = 0;
 
     public Builder() {
-      argTypes[0] = ArgumentType.NONE;
-      argTypes[1] = ArgumentType.NONE;
-      argTypes[2] = ArgumentType.NONE;
-      exprTypes[0] = InputExpressionType.NONE;
-      exprTypes[1] = InputExpressionType.NONE;
-      exprTypes[2] = InputExpressionType.NONE;
+      for (int i = 0 ; i < MAX_NUM_ARGUMENTS; i++) {
+        argTypes[i] = ArgumentType.NONE;
+        exprTypes[i] = InputExpressionType.NONE;
+      }
     }
 
     public Builder setMode(Mode m) {
@@ -166,7 +151,8 @@ public class VectorExpressionDescriptor {
   }
 
   /**
-   * Descriptor is immutable and is constructed by the {@link Builder} only.
+   * Descriptor is immutable and is constructed by the {@link Builder} only. {@link #equals(Object)} is the only
+   * publicly exposed member which can be used to compare two descriptors.
    */
   public static final class Descriptor {
 

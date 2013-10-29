@@ -19,15 +19,21 @@
 package org.apache.hadoop.hive.metastore;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 
-public class TestMarkPartitionRemote extends TestMarkPartition{
+public class TestMarkPartitionRemote extends TestMarkPartition {
 
   private static class RunMS implements Runnable {
 
+    private final int port;
+
+    public RunMS(int port) {
+      this.port = port;
+    }
     @Override
     public void run() {
       try {
-        HiveMetaStore.main(new String[] { "29111" });
+        HiveMetaStore.main(new String[] { String.valueOf(port) });
       } catch (Throwable e) {
         e.printStackTrace(System.err);
         assert false;
@@ -38,10 +44,11 @@ public class TestMarkPartitionRemote extends TestMarkPartition{
   @Override
   protected void setUp() throws Exception {
     super.setUp();
-    Thread t = new Thread(new RunMS());
+    int port = MetaStoreUtils.findFreePort();
+    Thread t = new Thread(new RunMS(port));
     t.setDaemon(true);
     t.start();
-    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:29111");
+    hiveConf.setVar(HiveConf.ConfVars.METASTOREURIS, "thrift://localhost:" + port);
     hiveConf.setIntVar(HiveConf.ConfVars.METASTORETHRIFTCONNECTIONRETRIES, 3);
     Thread.sleep(30000);
   }

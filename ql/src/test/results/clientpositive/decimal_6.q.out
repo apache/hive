@@ -1,0 +1,131 @@
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_6_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_6_1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_6_2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_6_2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_6_3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_6_3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE DECIMAL_6_1(key decimal(10,5), value int)
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE DECIMAL_6_1(key decimal(10,5), value int)
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@DECIMAL_6_1
+PREHOOK: query: CREATE TABLE DECIMAL_6_2(key decimal(17,4), value int)
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE DECIMAL_6_2(key decimal(17,4), value int)
+ROW FORMAT DELIMITED
+   FIELDS TERMINATED BY ' '
+STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@DECIMAL_6_2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv9.txt' INTO TABLE DECIMAL_6_1
+PREHOOK: type: LOAD
+PREHOOK: Output: default@decimal_6_1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv9.txt' INTO TABLE DECIMAL_6_1
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@decimal_6_1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv9.txt' INTO TABLE DECIMAL_6_2
+PREHOOK: type: LOAD
+PREHOOK: Output: default@decimal_6_2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv9.txt' INTO TABLE DECIMAL_6_2
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@decimal_6_2
+PREHOOK: query: SELECT T.key from (
+  SELECT key, value from DECIMAL_6_1
+  UNION ALL
+  SELECT key, value from DECIMAL_6_2
+) T order by T.key
+PREHOOK: type: QUERY
+PREHOOK: Input: default@decimal_6_1
+PREHOOK: Input: default@decimal_6_2
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT T.key from (
+  SELECT key, value from DECIMAL_6_1
+  UNION ALL
+  SELECT key, value from DECIMAL_6_2
+) T order by T.key
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@decimal_6_1
+POSTHOOK: Input: default@decimal_6_2
+#### A masked pattern was here ####
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+-1234567890.1235
+-4400
+-4400
+-1255.49
+-1255.49
+-1.122
+-1.122
+-1.12
+-1.12
+-0.333
+-0.333
+-0.3
+-0.3
+0
+0
+0
+0
+0.333
+0.333
+1
+1
+1
+1
+1.12
+1.12
+1.122
+1.122
+2
+2
+3.14
+3.14
+3.14
+3.14
+3.14
+3.14
+10
+10
+10.7343
+10.73433
+124
+124
+125.2
+125.2
+23232.23435
+23232.2344
+2389432.2375
+2389432.2375
+1234567890.1235
+PREHOOK: query: CREATE TABLE DECIMAL_6_3 AS SELECT key + 5.5 AS k, value * 11 AS v from DECIMAL_6_1 ORDER BY v
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@decimal_6_1
+POSTHOOK: query: CREATE TABLE DECIMAL_6_3 AS SELECT key + 5.5 AS k, value * 11 AS v from DECIMAL_6_1 ORDER BY v
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@decimal_6_1
+POSTHOOK: Output: default@DECIMAL_6_3
+PREHOOK: query: desc DECIMAL_6_3
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc DECIMAL_6_3
+POSTHOOK: type: DESCTABLE
+k                   	decimal(65,30)      	None                
+v                   	int                 	None                

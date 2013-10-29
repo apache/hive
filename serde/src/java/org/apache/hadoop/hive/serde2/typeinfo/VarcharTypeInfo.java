@@ -45,7 +45,7 @@ public class VarcharTypeInfo extends BaseCharTypeInfo {
 
     VarcharTypeInfo pti = (VarcharTypeInfo) other;
 
-    return this.typeName.equals(pti.typeName) && this.getLength() == pti.getLength();
+    return this.getLength() == pti.getLength();
   }
 
   /**
@@ -53,7 +53,7 @@ public class VarcharTypeInfo extends BaseCharTypeInfo {
    */
   @Override
   public int hashCode() {
-    return getQualifiedName().hashCode();
+    return getLength();
   }
 
   @Override

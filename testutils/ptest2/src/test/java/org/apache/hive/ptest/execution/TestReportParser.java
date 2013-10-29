@@ -50,10 +50,12 @@ public class TestReportParser {
   public void test() throws Exception {
     File reportDir = new File("src/test/resources/test-outputs");
     for(File file : reportDir.listFiles()) {
-      if(file.getName().endsWith(".xml")) {
-        Files.copy(file, new File(baseDir, "TEST-" + file.getName()));
-      } else {
-        Files.copy(file, new File(baseDir, file.getName()));
+      if(file.isFile()) {
+        if(file.getName().endsWith(".xml")) {
+          Files.copy(file, new File(baseDir, "TEST-" + file.getName()));
+        } else {
+          Files.copy(file, new File(baseDir, file.getName()));
+        }
       }
     }
     JUnitReportParser parser = new JUnitReportParser(LOG, baseDir);

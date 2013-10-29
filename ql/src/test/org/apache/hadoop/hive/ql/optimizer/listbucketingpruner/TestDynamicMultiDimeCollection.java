@@ -32,7 +32,7 @@ import org.junit.Test;
  * Test {@link DynamicMultiDimeContainer}
  *
  */
-public class DynamicMultiDimeCollectionTest extends TestCase {
+public class TestDynamicMultiDimeCollection extends TestCase {
   private static String DEF_DIR = "default";
 
   @Test

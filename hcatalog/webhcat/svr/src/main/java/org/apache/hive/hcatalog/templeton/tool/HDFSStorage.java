@@ -91,6 +91,12 @@ public class HDFSStorage implements TempletonStorage {
     BufferedReader in = null;
     Path p = new Path(getPath(type) + "/" + id + "/" + key);
     try {
+      if(!fs.exists(p)) {
+        //check first, otherwise webhcat.log is full of stack traces from FileSystem when
+        //clients check for status ('exitValue', 'completed', etc.)
+        LOG.debug(p + " does not exist.");
+        return null;
+      }
       in = new BufferedReader(new InputStreamReader(fs.open(p)));
       String line = null;
       String val = "";
@@ -102,9 +108,7 @@ public class HDFSStorage implements TempletonStorage {
       }
       return val;
     } catch (Exception e) {
-      //don't print stack trace since clients poll for 'exitValue', 'completed',
-      //files which are not there until job completes
-      LOG.info("Couldn't find " + p + ": " + e.getMessage());
+      LOG.error("Couldn't find " + p + ": " + e.getMessage(), e);
     } finally {
       close(in);
     }
