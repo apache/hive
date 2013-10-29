@@ -585,13 +585,6 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
         }
       }
 
-      //      for (Entry<String,Map<String,String>> spec : partitionsDiscoveredByPath.entrySet()){
-      //        LOG.info("Partition "+ spec.getKey());
-      //        for (Entry<String,String> e : spec.getValue().entrySet()){
-      //          LOG.info(e.getKey() + "=>" +e.getValue());
-      //        }
-      //      }
-
       this.partitionsDiscovered = true;
     }
   }
@@ -652,7 +645,6 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
       for(Partition ptn : partitionsToAdd){
         ptnInfos.add(InternalUtil.createPtnKeyValueMap(new Table(tableInfo.getTable()), ptn));
       }
-
       //Publish the new partition(s)
       if (dynamicPartitioningUsed && harProcessor.isEnabled() && (!partitionsToAdd.isEmpty())){
 
@@ -678,7 +670,7 @@ class FileOutputCommitterContainer extends OutputCommitterContainer {
           throw e;
         }
 
-      }else{
+      } else {
         // no harProcessor, regular operation
         updateTableSchema(client, table, jobInfo.getOutputSchema());
         LOG.info("HAR not is not being used. The table {} has new partitions {}.", table.getTableName(), ptnInfos);

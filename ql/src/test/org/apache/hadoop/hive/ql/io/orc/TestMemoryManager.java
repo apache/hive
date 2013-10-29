@@ -51,7 +51,7 @@ public class TestMemoryManager {
     NullCallback callback = new NullCallback();
     long poolSize = mgr.getTotalMemoryPool();
     assertEquals(Math.round(ManagementFactory.getMemoryMXBean().
-        getHeapMemoryUsage().getMax() * 0.5f), poolSize);
+        getHeapMemoryUsage().getMax() * 0.5d), poolSize);
     assertEquals(1.0, mgr.getAllocationScale(), 0.00001);
     mgr.addWriter(new Path("p1"), 1000, callback);
     assertEquals(1.0, mgr.getAllocationScale(), 0.00001);
