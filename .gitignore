@@ -13,7 +13,8 @@ common/src/gen
 *.iml
 *.ipr
 *.iws
-ql/derby.log
 derby.log
+datanucleus.log
 .arc
-ql/TempStatsStore
+TempStatsStore/
+target/

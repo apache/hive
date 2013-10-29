@@ -25,8 +25,6 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 
-import jline.Terminal;
-
 /**
  * This class provides methods to format the output of DESCRIBE PRETTY
  * in a human-readable way.
@@ -116,8 +114,8 @@ public final class MetaDataPrettyFormatUtils {
       int columnsAlreadyConsumed, int prettyOutputNumCols) {
 
     if (prettyOutputNumCols == -1) {
-      Terminal terminal = Terminal.getTerminal();
-      prettyOutputNumCols = terminal.getTerminalWidth() - 1;
+      // XXX fixed to 80 to remove jline dep
+      prettyOutputNumCols = 80 - 1;
     }
 
     int commentNumCols = prettyOutputNumCols - columnsAlreadyConsumed;

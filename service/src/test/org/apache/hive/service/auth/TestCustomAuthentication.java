@@ -26,102 +26,72 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.security.sasl.AuthenticationException;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
 public class TestCustomAuthentication {
 
-  private static HiveServer2 hiveserver2 = null;
-
-  private static File configFile = null;
+  private static HiveServer2 hiveserver2;
+  private static HiveConf hiveConf;
+  private static byte[] hiveConfBackup;
 
   @BeforeClass
   public static void setUp() throws Exception {
-    createConfig();
-    startServer();
-  }
-
-  @AfterClass
-  public static void tearDown() throws Exception {
-    stopServer();
-    removeConfig();
-  }
-
-  private static void startServer() throws Exception{
-
-    HiveConf hiveConf = new HiveConf();
+    hiveConf = new HiveConf();
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    hiveConf.writeXml(baos);
+    baos.close();
+    hiveConfBackup = baos.toByteArray();
+    hiveConf.set("hive.server2.authentication", "CUSTOM");
+    hiveConf.set("hive.server2.custom.authentication.class",
+        "org.apache.hive.service.auth.TestCustomAuthentication$SimpleAuthenticationProviderImpl");
+    FileOutputStream fos = new FileOutputStream(new File(hiveConf.getHiveSiteLocation().toURI()));
+    hiveConf.writeXml(fos);
+    fos.close();
     hiveserver2 = new HiveServer2();
     hiveserver2.init(hiveConf);
     hiveserver2.start();
     Thread.sleep(1000);
     System.out.println("hiveServer2 start ......");
-
   }
 
-  private static void stopServer(){
-    try {
-      if (hiveserver2 != null) {
-        hiveserver2.stop();
-        hiveserver2 = null;
-      }
-      Thread.sleep(1000);
-    } catch (Exception e) {
-      e.printStackTrace();
+  @AfterClass
+  public static void tearDown() throws Exception {
+    if(hiveConf != null && hiveConfBackup != null) {
+      FileOutputStream fos = new FileOutputStream(new File(hiveConf.getHiveSiteLocation().toURI()));
+      fos.write(hiveConfBackup);
+      fos.close();
     }
+    if (hiveserver2 != null) {
+      hiveserver2.stop();
+      hiveserver2 = null;
+    }
+    Thread.sleep(1000);
     System.out.println("hiveServer2 stop ......");
   }
 
-  private static void createConfig() throws Exception{
-
-    Configuration conf = new Configuration(false);
-    conf.set("hive.server2.authentication", "CUSTOM");
-    conf.set("hive.server2.custom.authentication.class",
-        "org.apache.hive.service.auth.TestCustomAuthentication$SimpleAuthenticationProviderImpl");
-
-    configFile = new File("../build/service/test/resources","hive-site.xml");
-
-    FileOutputStream out = new FileOutputStream(configFile);
-    conf.writeXml(out);
-  }
-
-  private static void removeConfig(){
-    try {
-      configFile.delete();
-    } catch (Exception e){
-      System.out.println(e.getMessage());
-    }
-  }
-
   @Test
-  public void testCustomAuthentication() throws Exception{
+  public void testCustomAuthentication() throws Exception {
 
     String url = "jdbc:hive2://localhost:10000/default";
+    Class.forName("org.apache.hive.jdbc.HiveDriver");
 
-    Exception exception = null;
-    try{
-      Class.forName("org.apache.hive.jdbc.HiveDriver");
-      Connection connection =  DriverManager.getConnection(url, "wronguser", "pwd");
-      connection.close();
-    } catch (Exception e){
-      exception = e;
+    try {
+      DriverManager.getConnection(url, "wronguser", "pwd");
+      Assert.fail("Expected Exception");
+    } catch(SQLException e) {
+      Assert.assertNotNull(e.getMessage());
+      Assert.assertTrue(e.getMessage(), e.getMessage().contains("Peer indicated failure: Error validating the login"));
     }
 
-    Assert.assertNotNull(exception);
-
-    exception = null;
-    try{
-      Class.forName("org.apache.hive.jdbc.HiveDriver");
-      Connection connection =  DriverManager.getConnection(url, "hiveuser", "hive");
-      connection.close();
-    } catch (Exception e){
-      exception = e;
-    }
-
-    Assert.assertNull(exception);
+    Connection connection = DriverManager.getConnection(url, "hiveuser", "hive");
+    connection.close();
 
     System.out.println(">>> PASSED testCustomAuthentication");
   }

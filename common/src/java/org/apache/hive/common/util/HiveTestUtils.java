@@ -16,32 +16,22 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql;
+package org.apache.hive.common.util;
 
-import java.io.File;
+import java.net.URL;
 
-/**
- * Suite for testing running of queries in multi-threaded mode.
- */
-public class TestMTQueries extends BaseTestQueries {
+import org.apache.hadoop.hive.common.classification.InterfaceAudience;
+import org.apache.hadoop.hive.common.classification.InterfaceStability;
 
-  public TestMTQueries() {
-    File logDirFile = new File(logDir);
-    if (!(logDirFile.exists() || logDirFile.mkdirs())) {
-      fail("Could not create " + logDir);
+@InterfaceAudience.Private
+@InterfaceStability.Unstable
+public class HiveTestUtils {
+
+  public static String getFileFromClasspath(String name) {
+    URL url = ClassLoader.getSystemResource(name);
+    if (url == null) {
+      throw new IllegalArgumentException("Could not find " + name);
     }
-  }
-
-  public void testMTQueries1() throws Exception {
-    String[] testNames = new String[] {"join1.q", "join2.q", "groupby1.q",
-        "groupby2.q", "join3.q", "input1.q", "input19.q"};
-
-    File[] qfiles = setupQFiles(testNames);
-
-    QTestUtil[] qts = QTestUtil.queryListRunnerSetup(qfiles, resDir, logDir);
-    boolean success = QTestUtil.queryListRunnerMultiThreaded(qfiles, qts);
-    if (!success) {
-      fail("One or more queries failed");
-    }
+    return url.getPath();
   }
 }

@@ -15,33 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.hadoop.hive.ql.udf.generic;
 
-package org.apache.hadoop.hive.ql;
+import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.junit.Test;
 
-import java.io.File;
+public class TestGenericUDFBridge {
 
-/**
- * Suite for testing running of queries in multi-threaded mode.
- */
-public class TestMTQueries extends BaseTestQueries {
-
-  public TestMTQueries() {
-    File logDirFile = new File(logDir);
-    if (!(logDirFile.exists() || logDirFile.mkdirs())) {
-      fail("Could not create " + logDir);
-    }
+  @Test(expected = UDFArgumentException.class)
+  public void testInvalidName() throws Exception {
+    GenericUDFBridge udf = new GenericUDFBridge("someudf", false, "not a class name");
+    udf.initialize(new ObjectInspector[0]);
+    udf.close();
   }
 
-  public void testMTQueries1() throws Exception {
-    String[] testNames = new String[] {"join1.q", "join2.q", "groupby1.q",
-        "groupby2.q", "join3.q", "input1.q", "input19.q"};
-
-    File[] qfiles = setupQFiles(testNames);
-
-    QTestUtil[] qts = QTestUtil.queryListRunnerSetup(qfiles, resDir, logDir);
-    boolean success = QTestUtil.queryListRunnerMultiThreaded(qfiles, qts);
-    if (!success) {
-      fail("One or more queries failed");
-    }
+  @Test(expected = UDFArgumentException.class)
+  public void testNullName() throws Exception {
+    GenericUDFBridge udf = new GenericUDFBridge("someudf", false, null);
+    udf.initialize(new ObjectInspector[0]);
+    udf.close();
   }
 }
