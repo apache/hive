@@ -1,0 +1,28 @@
+PREHOOK: query: CREATE TABLE part( 
+    p_partkey INT,
+    p_name STRING,
+    p_mfgr STRING,
+    p_brand STRING,
+    p_type STRING,
+    p_size INT,
+    p_container STRING,
+    p_retailprice DOUBLE,
+    p_comment STRING
+)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE part( 
+    p_partkey INT,
+    p_name STRING,
+    p_mfgr STRING,
+    p_brand STRING,
+    p_type STRING,
+    p_size INT,
+    p_container STRING,
+    p_retailprice DOUBLE,
+    p_comment STRING
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@part
+FAILED: SemanticException Line 5:53 Unsupported SubQuery Expression 'p_name' in definition of SubQuery sq_1 [
+x.p_name in (select y.p_name from part y where exists (select z.p_name from part z where y.p_name = z.p_name))
+] used as sq_1 at Line 5:15: Nested SubQuery expressions are not supported.

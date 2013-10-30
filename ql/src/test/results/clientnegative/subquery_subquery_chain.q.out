@@ -1,1 +1,1 @@
-FAILED: SemanticException [Error 10249]: Line 5:14 Unsupported SubQuery Expression 'key': Only 1 SubQuery expression is supported.
+FAILED: SemanticException [Error 10249]: Line 5:59 Unsupported SubQuery Expression 'key': Only 1 SubQuery expression is supported.
