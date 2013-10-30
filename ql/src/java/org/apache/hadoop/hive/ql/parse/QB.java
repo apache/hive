@@ -65,6 +65,11 @@ public class QB {
    */
   private HashMap<String, WindowingSpec> destToWindowingSpec;
 
+  /*
+   * If this QB represents a SubQuery predicate then this will point to the SubQuery object.
+   */
+  private QBSubQuery subQueryPredicateDef;
+
   // results
 
   public void print(String msg) {
@@ -308,5 +313,12 @@ public class QB {
     return destToWindowingSpec;
   }
 
+  protected void setSubQueryDef(QBSubQuery subQueryPredicateDef) {
+    this.subQueryPredicateDef = subQueryPredicateDef;
+  }
+
+  protected QBSubQuery getSubQueryPredicateDef() {
+    return subQueryPredicateDef;
+  }
 
 }

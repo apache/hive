@@ -1792,7 +1792,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ASTNode searchCond = (ASTNode) whereExpr.getChild(0);
     List<ASTNode> subQueriesInOriginalTree = SubQueryUtils.findSubQueries(searchCond);
 
-    if ( subQueriesInOriginalTree != null ) {
+    if ( subQueriesInOriginalTree.size() > 0 ) {
+
+      /*
+       * Restriction.9.m :: disallow nested SubQuery expressions.
+       */
+      if (qb.getSubQueryPredicateDef() != null  ) {
+        throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+            subQueriesInOriginalTree.get(0), "Nested SubQuery expressions are not supported."));
+      }
 
       /*
        * Restriction.8.m :: We allow only 1 SubQuery expression per Query.
@@ -1822,6 +1830,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         subQuery.validateAndRewriteAST(inputRR);
 
         QB qbSQ = new QB(subQuery.getOuterQueryId(), subQuery.getAlias(), true);
+        qbSQ.setSubQueryDef(subQuery);
         Phase1Ctx ctx_1 = initPhase1Ctx();
         doPhase1(subQuery.getSubQueryAST(), qbSQ, ctx_1);
         getMetaData(qbSQ);
