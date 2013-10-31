@@ -337,7 +337,7 @@ public class PartitionPruner implements Transform {
   private static Set<Partition> getAllPartitions(Table tab) throws HiveException {
     PerfLogger perfLogger = PerfLogger.getPerfLogger();
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
-    Set<Partition> result = Hive.get().getAllPartitionsForPruner(tab);
+    Set<Partition> result = Hive.get().getAllPartitionsOf(tab);
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.PARTITION_RETRIEVING);
     return result;
   }

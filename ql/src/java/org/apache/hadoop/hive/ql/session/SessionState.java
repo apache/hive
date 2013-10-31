@@ -33,8 +33,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.security.auth.login.LoginException;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -281,7 +279,7 @@ public class SessionState {
     // Get the following out of the way when you start the session these take a
     // while and should be done when we start up.
     try {
-      Hive.get(startSs.conf).setupMSC();
+      Hive.get(startSs.conf).getMSC();
       ShimLoader.getHadoopShims().getUGIForConf(startSs.conf);
       FileSystem.get(startSs.conf);
     } catch (Exception e) {
@@ -289,7 +287,7 @@ public class SessionState {
       // that would cause ClassNoFoundException otherwise
       throw new RuntimeException(e);
     }
-    
+
     try {
       startSs.authenticator = HiveUtils.getAuthenticator(
           startSs.getConf(),HiveConf.ConfVars.HIVE_AUTHENTICATOR_MANAGER);
