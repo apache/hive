@@ -647,19 +647,16 @@ sub compare
       foreach my $key (keys %$json_matches) {
         my $regex_expected_value = $json_matches->{$key};
         my $path = JSON::Path->new($key);
-        my $value; 
-        # when filter_job_status is defined 
-        if (defined $testCmd->{'filter_job_status'}) {
-	        # decode $testResult->{'body'} to an array of hash
-	        my $body = decode_json $testResult->{'body'};
-	        # in the tests, we run this case with jobName = "PigLatin:loadstore.pig"
-	        # filter $body to leave only records with this jobName
-	        my @filtered_body = grep {($_->{detail}{profile}{jobName} eq "PigLatin:loadstore.pig")}  @$body;
-			my @sorted_filtered_body = sort { $a->{id} cmp $b->{id} } @filtered_body;
-        	$value = $path->value(\@sorted_filtered_body);
+
+        # decode $testResult->{'body'} to an array of hash
+        my $body = decode_json $testResult->{'body'};
+        my @sorted_body;
+        if (ref @$body[0] eq 'HASH') {
+          @sorted_body = sort { $a->{id} cmp $b->{id} } @$body;
         } else {
-        	$value = $path->value($testResult->{'body'});
+          @sorted_body = sort { $a cmp $b } @$body;
         }
+        my $value = $path->value(\@sorted_body);
         
         if ($value !~ /$regex_expected_value/s) {
           print $log "$0::$subName INFO check failed:"

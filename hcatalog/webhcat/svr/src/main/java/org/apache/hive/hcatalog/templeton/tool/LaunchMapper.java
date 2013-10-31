@@ -261,8 +261,15 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
 
             if (percent != null || childid != null) {
               state = new JobState(jobid.toString(), conf);
-              state.setPercentComplete(percent);
-              state.setChildId(childid);
+              if (percent != null) {
+                state.setPercentComplete(percent);
+              }
+              if (childid != null) {
+                JobState childState = new JobState(childid, conf);
+                childState.setParent(jobid.toString());
+                state.addChild(childid);
+                state.close();
+              }
             }
           } catch (IOException e) {
             LOG.error("templeton: state error: ", e);
