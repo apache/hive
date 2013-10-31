@@ -498,6 +498,13 @@ public class FetchOperator implements Serializable {
    * Currently only used by FetchTask.
    **/
   public boolean pushRow() throws IOException, HiveException {
+    if(work.getRowsComputedUsingStats() != null) {
+      for (List<Object> row : work.getRowsComputedUsingStats()) {
+        operator.process(row, 0);
+      }
+      operator.flush();
+      return true;
+    }
     InspectableObject row = getNextRow();
     if (row != null) {
       pushRow(row);
@@ -609,6 +616,9 @@ public class FetchOperator implements Serializable {
    * returns output ObjectInspector, never null
    */
   public ObjectInspector getOutputObjectInspector() throws HiveException {
+    if(null != work.getStatRowOI()) {
+      return work.getStatRowOI();
+    }
     try {
       if (work.isNotPartitioned()) {
         return getRowInspectorFromTable(work.getTblDesc());

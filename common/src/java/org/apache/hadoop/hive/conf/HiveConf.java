@@ -658,6 +658,8 @@ public class HiveConf extends Configuration {
 
     HIVEFETCHTASKAGGR("hive.fetch.task.aggr", false),
 
+    HIVEOPTIMIZEMETADATAQUERIES("hive.compute.query.using.stats", false),
+
     // Serde for FetchTask
     HIVEFETCHOUTPUTSERDE("hive.fetch.output.serde", "org.apache.hadoop.hive.serde2.DelimitedJSONSerDe"),
 

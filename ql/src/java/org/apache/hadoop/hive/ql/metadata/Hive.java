@@ -48,6 +48,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
+import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaException;
@@ -1730,7 +1732,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
    * @param tbl table for which partitions are needed
    * @return list of partition objects
    */
-  public Set<Partition> getAllPartitionsForPruner(Table tbl) throws HiveException {
+  public Set<Partition> getAllPartitionsOf(Table tbl) throws HiveException {
     if (!tbl.isPartitioned()) {
       return Sets.newHashSet(new Partition(tbl));
     }
@@ -2405,21 +2407,13 @@ private void constructOneLBLocationMap(FileStatus fSta,
         HiveMetaStoreClient.class.getName());
   }
 
-  /*
-   * This api just sets up a metastore client. This is used for
-   * pre-launching the metastore client so as to reduce latency
-   * within a single session.
-   */
-  public void setupMSC() throws MetaException {
-    getMSC();
-  }
-
   /**
-   *
    * @return the metastore client for the current thread
    * @throws MetaException
    */
-  private IMetaStoreClient getMSC() throws MetaException {
+  @LimitedPrivate(value = {"Hive"})
+  @Unstable
+  public IMetaStoreClient getMSC() throws MetaException {
     if (metaStoreClient == null) {
       metaStoreClient = createMetaStoreClient();
     }
