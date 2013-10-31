@@ -45,10 +45,10 @@ max_nested_struct   	array<array<array<array<array<array<array<array<array<array
 simple_string       	string              	None                
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: load data local inpath '../data/files/nested_complex.txt' overwrite into table nestedcomplex
+PREHOOK: query: load data local inpath '../../data/files/nested_complex.txt' overwrite into table nestedcomplex
 PREHOOK: type: LOAD
 PREHOOK: Output: default@nestedcomplex
-POSTHOOK: query: load data local inpath '../data/files/nested_complex.txt' overwrite into table nestedcomplex
+POSTHOOK: query: load data local inpath '../../data/files/nested_complex.txt' overwrite into table nestedcomplex
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@nestedcomplex
 PREHOOK: query: select * from nestedcomplex sort by simple_int

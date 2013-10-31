@@ -4,7 +4,7 @@ POSTHOOK: query: CREATE TABLE loadpart1(a STRING, b STRING) PARTITIONED BY (ds S
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@loadpart1
 PREHOOK: query: INSERT OVERWRITE TABLE loadpart1 PARTITION (ds='2009-01-01')
-SELECT TRANSFORM(src.key, src.value) USING '../data/scripts/error_script' AS (tkey, tvalue)
+SELECT TRANSFORM(src.key, src.value) USING '../../data/scripts/error_script' AS (tkey, tvalue)
 FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

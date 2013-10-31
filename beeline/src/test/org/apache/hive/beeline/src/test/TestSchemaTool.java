@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hive.beeline.src.test;
+package org.apache.hive.beeline;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -48,7 +48,7 @@ public class TestSchemaTool extends TestCase {
     System.setProperty(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname,
         "jdbc:derby:" + testMetastoreDB + ";create=true");
     hiveConf = new HiveConf(this.getClass());
-    schemaTool = new HiveSchemaTool(System.getProperty("hive.home"), hiveConf, "derby");
+    schemaTool = new HiveSchemaTool(System.getProperty("test.tmp.dir"), hiveConf, "derby");
     System.setProperty("beeLine.system.exit", "true");
   }
 

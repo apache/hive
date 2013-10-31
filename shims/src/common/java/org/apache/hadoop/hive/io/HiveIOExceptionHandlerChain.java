@@ -34,7 +34,7 @@ import org.apache.hadoop.util.ReflectionUtils;
  * exception to the caller.
  */
 public class HiveIOExceptionHandlerChain {
-  
+
   public static String HIVE_IO_EXCEPTION_HANDLE_CHAIN = "hive.io.exception.handlers";
 
   @SuppressWarnings("unchecked")
@@ -49,7 +49,7 @@ public class HiveIOExceptionHandlerChain {
         for (String handlerStr : handlerArr) {
           if (!handlerStr.trim().equals("")) {
             try {
-              Class<? extends HiveIOExceptionHandler> handlerCls = 
+              Class<? extends HiveIOExceptionHandler> handlerCls =
                 (Class<? extends HiveIOExceptionHandler>) Class.forName(handlerStr);
               HiveIOExceptionHandler handler = ReflectionUtils.newInstance(handlerCls, null);
               handlerChain.add(handler);
@@ -96,7 +96,7 @@ public class HiveIOExceptionHandlerChain {
     //re-throw the exception as an IOException
     throw new IOException(e);
   }
-  
+
   /**
    * This is to handle exception when doing next operations. Here we use a
    * HiveIOExceptionNextHandleResult to store the results of each handler. If
@@ -117,7 +117,7 @@ public class HiveIOExceptionHandlerChain {
       }
     }
 
-    //re-throw the exception as an IOException 
+    //re-throw the exception as an IOException
     throw new IOException(e);
   }
 

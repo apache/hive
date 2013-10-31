@@ -9,11 +9,11 @@ POSTHOOK: query: CREATE table tmp_jo_tab_test (message_line STRING)
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tmp_jo_tab_test
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/input.txt'
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/input.txt'
 OVERWRITE INTO TABLE tmp_jo_tab_test
 PREHOOK: type: LOAD
 PREHOOK: Output: default@tmp_jo_tab_test
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/input.txt'
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/input.txt'
 OVERWRITE INTO TABLE tmp_jo_tab_test
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@tmp_jo_tab_test

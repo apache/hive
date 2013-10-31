@@ -105,6 +105,7 @@ public class TestHCatMultiOutputFormat {
         HiveMetaStore.main(new String[]{"-v", "-p", msPort, "--hiveconf", warehouseConf});
       } catch (Throwable t) {
         System.err.println("Exiting. Got exception from metastore: " + t.getMessage());
+        t.printStackTrace();
       }
     }
 
@@ -160,13 +161,14 @@ public class TestHCatMultiOutputFormat {
 
   @BeforeClass
   public static void setup() throws Exception {
-    String testDir = System.getProperty("test.data.dir", "./");
+    System.clearProperty("mapred.job.tracker");
+    String testDir = System.getProperty("test.tmp.dir", "./");
     testDir = testDir + "/test_multitable_" + Math.abs(new Random().nextLong()) + "/";
     workDir = new File(new File(testDir).getCanonicalPath());
     FileUtil.fullyDelete(workDir);
     workDir.mkdirs();
 
-    warehousedir = new Path(workDir + "/warehouse");
+    warehousedir = new Path(System.getProperty("test.warehouse.dir"));
 
     // Run hive metastore server
     t = new Thread(new RunMS());
@@ -183,9 +185,10 @@ public class TestHCatMultiOutputFormat {
     mrCluster = new MiniMRCluster(1, fs.getUri().toString(), 1, null, null,
       new JobConf(conf));
     mrConf = mrCluster.createJobConf();
-    fs.mkdirs(warehousedir);
 
     initializeSetup();
+
+    warehousedir.getFileSystem(conf).mkdirs(warehousedir);
   }
 
   private static void initializeSetup() throws Exception {
@@ -248,14 +251,15 @@ public class TestHCatMultiOutputFormat {
     tbl.setPartitionKeys(ColumnHolder.partitionCols);
 
     hmsc.createTable(tbl);
-    FileSystem fs = FileSystem.get(mrConf);
-    fs.setPermission(new Path(warehousedir, tableName), new FsPermission(tablePerm));
+    Path path = new Path(warehousedir, tableName);
+    FileSystem fs = path.getFileSystem(hiveConf);
+    fs.setPermission(path, new FsPermission(tablePerm));
   }
 
   @AfterClass
   public static void tearDown() throws IOException {
     FileUtil.fullyDelete(workDir);
-    FileSystem fs = FileSystem.get(mrConf);
+    FileSystem fs = warehousedir.getFileSystem(hiveConf);
     if (fs.exists(warehousedir)) {
       fs.delete(warehousedir, true);
     }
@@ -312,7 +316,8 @@ public class TestHCatMultiOutputFormat {
     Assert.assertEquals("Comparing output of table " +
       tableNames[0] + " is not correct", outputs.get(0), "a,a,1,ag");
     Assert.assertEquals("Comparing output of table " +
-      tableNames[1] + " is not correct", outputs.get(1), "a,1,ag");
+      tableNames[1] + " is not correct", outputs.get(1),
+      "a,1,ag");
     Assert.assertEquals("Comparing output of table " +
       tableNames[2] + " is not correct", outputs.get(2), "a,a,extra,1,ag");
 

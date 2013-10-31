@@ -58,9 +58,9 @@ public class HBaseTestSetup extends TestSetup {
   }
 
   void preTest(HiveConf conf) throws Exception {
-	
+
     setUpFixtures(conf);
-	
+
     conf.set("hbase.rootdir", hbaseRoot);
     conf.set("hbase.master", hbaseCluster.getMaster().getServerName().getHostAndPort());
     conf.set("hbase.zookeeper.property.clientPort", Integer.toString(zooKeeperPort));
@@ -73,15 +73,15 @@ public class HBaseTestSetup extends TestSetup {
   }
 
   private void setUpFixtures(HiveConf conf) throws Exception {
-    /* We are not starting zookeeper server here because 
+    /* We are not starting zookeeper server here because
      * QTestUtil already starts it.
      */
     int zkPort = conf.getInt("hive.zookeeper.client.port", -1);
     if ((zkPort == zooKeeperPort) && (hbaseCluster != null)) {
-    	return;
+      return;
     }
     zooKeeperPort = zkPort;
-    String tmpdir =  System.getProperty("user.dir")+"/../build/ql/tmp";
+    String tmpdir =  System.getProperty("test.tmp.dir");
     this.tearDown();
     conf.set("hbase.master", "local");
 

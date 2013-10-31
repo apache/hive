@@ -13,10 +13,10 @@ ROW FORMAT DELIMITED
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@DECIMAL_UDF
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv7.txt' INTO TABLE DECIMAL_UDF
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_UDF
 PREHOOK: type: LOAD
 PREHOOK: Output: default@decimal_udf
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv7.txt' INTO TABLE DECIMAL_UDF
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_UDF
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@decimal_udf
 PREHOOK: query: -- addition

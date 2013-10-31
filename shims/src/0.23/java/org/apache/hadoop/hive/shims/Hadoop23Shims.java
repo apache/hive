@@ -171,7 +171,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
   /**
    * Returns a shim to wrap MiniMrCluster
    */
-  public MiniMrShim getMiniMrCluster(Configuration conf, int numberOfTaskTrackers, 
+  public MiniMrShim getMiniMrCluster(Configuration conf, int numberOfTaskTrackers,
                                      String nameNode, int numDir) throws IOException {
     return new MiniMrShim(conf, numberOfTaskTrackers, nameNode, numDir);
   }
@@ -184,7 +184,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
     private final MiniMRCluster mr;
     private final Configuration conf;
 
-    public MiniMrShim(Configuration conf, int numberOfTaskTrackers, 
+    public MiniMrShim(Configuration conf, int numberOfTaskTrackers,
                       String nameNode, int numDir) throws IOException {
       this.conf = conf;
 
@@ -203,7 +203,7 @@ public class Hadoop23Shims extends HadoopShimsSecure {
       if (StringUtils.isBlank(address)) {
         throw new IllegalArgumentException("Invalid YARN resource manager port.");
       }
-      
+
       return Integer.parseInt(address);
     }
 

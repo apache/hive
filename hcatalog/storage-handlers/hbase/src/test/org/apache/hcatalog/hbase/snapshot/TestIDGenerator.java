@@ -26,9 +26,15 @@ import java.util.HashMap;
 
 import org.apache.hcatalog.hbase.SkeletonHBaseTest;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TestIDGenerator extends SkeletonHBaseTest {
+
+  @BeforeClass
+  public static void setup() throws Throwable {
+    setupSkeletonHBaseTest();
+  }
 
   @Test
   public void testIDGeneration() throws Exception {

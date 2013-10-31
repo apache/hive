@@ -27,9 +27,9 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.OptionHandler;
 
 public class HiveEventCounter implements Appender, OptionHandler {
-  
+
   AppenderSkeleton hadoopEventCounter;
-  
+
   public HiveEventCounter() {
     hadoopEventCounter = ShimLoader.getEventCounter();
   }

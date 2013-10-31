@@ -66,6 +66,7 @@ import org.apache.hcatalog.mapreduce.HCatInputFormat;
 import org.apache.hcatalog.mapreduce.HCatOutputFormat;
 import org.apache.hcatalog.mapreduce.OutputJobInfo;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,6 +89,11 @@ public class TestHBaseBulkOutputFormat extends SkeletonHBaseTest {
 
   private final HiveConf allConf;
   private final HCatDriver hcatDriver;
+
+  @BeforeClass
+  public static void setup() throws Throwable {
+    setupSkeletonHBaseTest();
+  }
 
   public TestHBaseBulkOutputFormat() {
     allConf = getHiveConf();

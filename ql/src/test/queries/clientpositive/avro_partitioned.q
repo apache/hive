@@ -28,7 +28,7 @@ TBLPROPERTIES ('avro.schema.literal'='{
   ]
 }');
 
-LOAD DATA LOCAL INPATH '../data/files/episodes.avro' INTO TABLE episodes;
+LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes;
 
 CREATE TABLE episodes_partitioned
 PARTITIONED BY (doctor_pt INT)

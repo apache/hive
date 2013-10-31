@@ -302,10 +302,10 @@ Bucket Columns:     	[]
 Sort Columns:       	[]                  	 
 Storage Desc Params:	 	 
 	serialization.format	1                   
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging
 PREHOOK: type: LOAD
 PREHOOK: Output: default@orc_create_staging
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@orc_create_staging
 PREHOOK: query: SELECT * from orc_create_staging
@@ -425,11 +425,11 @@ POSTHOOK: Lineage: orc_create_complex.lst SIMPLE [(orc_create_staging)orc_create
 POSTHOOK: Lineage: orc_create_complex.mp SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:mp, type:map<string,string>, comment:null), ]
 POSTHOOK: Lineage: orc_create_complex.str SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:str, type:string, comment:null), ]
 POSTHOOK: Lineage: orc_create_complex.strct SIMPLE [(orc_create_staging)orc_create_staging.FieldSchema(name:strct, type:struct<A:string,B:string>, comment:null), ]
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/orc_create_people.txt'
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create_people.txt'
   OVERWRITE INTO TABLE orc_create_people_staging
 PREHOOK: type: LOAD
 PREHOOK: Output: default@orc_create_people_staging
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/orc_create_people.txt'
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/orc_create_people.txt'
   OVERWRITE INTO TABLE orc_create_people_staging
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@orc_create_people_staging

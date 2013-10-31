@@ -36,7 +36,6 @@ import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hcatalog.common.HCatConstants;
 import org.apache.hcatalog.common.HCatException;
 import org.apache.hcatalog.data.schema.HCatFieldSchema;
@@ -52,6 +51,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.fail;
 
 /**
  * @deprecated Use/modify {@link org.apache.hive.hcatalog.api.TestHCatClient} instead
@@ -123,9 +123,9 @@ public class TestHCatClient {
     assertTrue(testDb.getComment() == null);
     assertTrue(testDb.getProperties().size() == 0);
     String warehouseDir = System
-      .getProperty(ConfVars.METASTOREWAREHOUSE.varname, "/user/hive/warehouse");
-    assertTrue(testDb.getLocation().equals(
-      "file:" + warehouseDir + "/" + db + ".db"));
+      .getProperty("test.warehouse.dir", "/user/hive/warehouse");
+    String expectedDir = warehouseDir.replaceAll("\\\\", "/").replaceFirst("pfile:///", "pfile:/");
+    assertEquals(expectedDir + "/" + db + ".db", testDb.getLocation());
     ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
     cols.add(new HCatFieldSchema("id", Type.INT, "id comment"));
     cols.add(new HCatFieldSchema("value", Type.STRING, "value comment"));
@@ -145,6 +145,7 @@ public class TestHCatClient {
     // will result in an exception.
     try {
       client.createTable(tableDesc);
+      fail("Expected exception");
     } catch (HCatException e) {
       assertTrue(e.getMessage().contains(
         "AlreadyExistsException while creating table."));
@@ -159,8 +160,7 @@ public class TestHCatClient {
       TextInputFormat.class.getName()));
     assertTrue(table2.getOutputFileFormat().equalsIgnoreCase(
       IgnoreKeyTextOutputFormat.class.getName()));
-    assertTrue(table2.getLocation().equalsIgnoreCase(
-      "file:" + warehouseDir + "/" + db + ".db/" + tableTwo));
+    assertEquals((expectedDir + "/" + db + ".db/" + tableTwo).toLowerCase(), table2.getLocation().toLowerCase());
     client.close();
   }
 

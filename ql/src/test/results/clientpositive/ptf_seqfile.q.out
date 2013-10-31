@@ -27,10 +27,10 @@ POSTHOOK: query: CREATE TABLE part_seq(
 ) STORED AS SEQUENCEFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@part_seq
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part.seq' overwrite into table part_seq
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.seq' overwrite into table part_seq
 PREHOOK: type: LOAD
 PREHOOK: Output: default@part_seq
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/part.seq' overwrite into table part_seq
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/part.seq' overwrite into table part_seq
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@part_seq
 PREHOOK: query: -- testWindowingPTFWithPartSeqFile

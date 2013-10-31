@@ -44,7 +44,7 @@ import java.util.Map;
 /**
  * A set of tests exercising e2e WebHCat DDL APIs.  These tests are somewhat
  * between WebHCat e2e (hcatalog/src/tests/e2e/templeton) tests and simple58
- * 
+ *
  * unit tests.  This will start a WebHCat server and make REST calls to it.
  * It doesn't need Hadoop or (standalone) metastore to be running.
  * Running this is much simpler than e2e tests.
@@ -75,7 +75,7 @@ public class TestWebHCatE2e {
       LOG.warn("Unable to find free port; using default: " + webhcatPort);
     }
     templetonBaseUrl = templetonBaseUrl.replace("50111", Integer.toString(webhcatPort));
-    templetonServer = new Main(new String[] {"-D" + 
+    templetonServer = new Main(new String[] {"-D" +
             AppConfig.UNIT_TEST_MODE + "=true", "-D" + AppConfig.PORT + "=" + webhcatPort});
     LOG.info("Starting Main; WebHCat using port: " + webhcatPort);
     templetonServer.run();
@@ -156,7 +156,7 @@ public class TestWebHCatE2e {
   public void createDataBase() throws IOException {
     Map<String, Object> props = new HashMap<String, Object>();
     props.put("comment", "Hello, there");
-    props.put("location", "file://" + System.getProperty("hive.metastore.warehouse.dir"));
+    props.put("location", System.getProperty("test.warehouse.dir"));
     Map<String, String> props2 = new HashMap<String, String>();
     props2.put("prop", "val");
     props.put("properties", props2);

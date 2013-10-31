@@ -43,16 +43,16 @@ public class TestZooKeeperTokenStore extends TestCase {
   private ZooKeeperTokenStore ts;
   // connect timeout large enough for slower test environments
   private final int connectTimeoutMillis = 30000;
-  
+
   @Override
   protected void setUp() throws Exception {
-    File zkDataDir = new File(System.getProperty("java.io.tmpdir"));
+    File zkDataDir = new File(System.getProperty("test.tmp.dir"));
     if (this.zkCluster != null) {
       throw new IOException("Cluster already running");
     }
     this.zkCluster = new MiniZooKeeperCluster();
     this.zkPort = this.zkCluster.startup(zkDataDir);
-    
+
     this.zkClient = ZooKeeperTokenStore.createConnectedClient("localhost:" + zkPort, 3000,
         connectTimeoutMillis);
   }

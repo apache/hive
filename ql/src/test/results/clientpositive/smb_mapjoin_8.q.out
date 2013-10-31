@@ -3,10 +3,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table smb_bucket_input (key int, value string) stored as rcfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@smb_bucket_input
-PREHOOK: query: load data local inpath '../data/files/smb_bucket_input.rc' into table smb_bucket_input
+PREHOOK: query: load data local inpath '../../data/files/smb_bucket_input.rc' into table smb_bucket_input
 PREHOOK: type: LOAD
 PREHOOK: Output: default@smb_bucket_input
-POSTHOOK: query: load data local inpath '../data/files/smb_bucket_input.rc' into table smb_bucket_input
+POSTHOOK: query: load data local inpath '../../data/files/smb_bucket_input.rc' into table smb_bucket_input
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@smb_bucket_input
 PREHOOK: query: CREATE TABLE smb_bucket4_1(key int, value string) CLUSTERED BY (key) SORTED BY (key) INTO 1 BUCKETS

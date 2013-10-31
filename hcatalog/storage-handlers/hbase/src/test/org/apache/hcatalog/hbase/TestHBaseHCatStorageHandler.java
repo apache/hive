@@ -41,6 +41,7 @@ import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hcatalog.hbase.snapshot.RevisionManager;
 import org.apache.hcatalog.hbase.snapshot.RevisionManagerConfiguration;
 import org.apache.zookeeper.KeeperException.NoNodeException;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TestHBaseHCatStorageHandler extends SkeletonHBaseTest {
@@ -48,6 +49,11 @@ public class TestHBaseHCatStorageHandler extends SkeletonHBaseTest {
   private static HiveConf   hcatConf;
   private static HCatDriver hcatDriver;
   private static Warehouse  wh;
+
+  @BeforeClass
+  public static void setup() throws Throwable {
+    setupSkeletonHBaseTest();
+  }
 
   public void Initialize() throws Exception {
 

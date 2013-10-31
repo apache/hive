@@ -32,7 +32,7 @@ CREATE TABLE dest1 (
 	timestamps ARRAY<TIMESTAMP>
 ) STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH '../data/files/primitive_type_arrays.txt' OVERWRITE INTO TABLE dest1;
+LOAD DATA LOCAL INPATH '../../data/files/primitive_type_arrays.txt' OVERWRITE INTO TABLE dest1;
 
 SELECT	sort_array(tinyints), sort_array(smallints), sort_array(ints),
 	sort_array(bigints), sort_array(booleans), sort_array(floats),

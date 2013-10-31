@@ -13,11 +13,11 @@ POSTHOOK: query: CREATE TABLE table1 (key STRING, value STRING)
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: db1@table1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt'
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
 OVERWRITE INTO TABLE table1
 PREHOOK: type: LOAD
 PREHOOK: Output: db1@table1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt'
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
 OVERWRITE INTO TABLE table1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: db1@table1
@@ -28,11 +28,11 @@ POSTHOOK: query: CREATE TABLE table2 (key STRING, value STRING)
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: db1@table2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt'
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
 OVERWRITE INTO TABLE table2
 PREHOOK: type: LOAD
 PREHOOK: Output: db1@table2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt'
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
 OVERWRITE INTO TABLE table2
 POSTHOOK: type: LOAD
 POSTHOOK: Output: db1@table2

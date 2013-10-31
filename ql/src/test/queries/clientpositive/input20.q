@@ -1,6 +1,6 @@
 CREATE TABLE dest1(key INT, value STRING) STORED AS TEXTFILE;
 
-ADD FILE ../data/scripts/input20_script;
+ADD FILE ../../data/scripts/input20_script;
 
 EXPLAIN
 FROM (

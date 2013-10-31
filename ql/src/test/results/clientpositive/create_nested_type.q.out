@@ -31,10 +31,10 @@ c                   	array<map<string,string>>	None
 d                   	map<string,array<string>>	None                
 	 	 
 #### A masked pattern was here ####
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/create_nested_type.txt' OVERWRITE INTO TABLE table1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/create_nested_type.txt' OVERWRITE INTO TABLE table1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@table1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/create_nested_type.txt' OVERWRITE INTO TABLE table1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/create_nested_type.txt' OVERWRITE INTO TABLE table1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@table1
 PREHOOK: query: SELECT * from table1

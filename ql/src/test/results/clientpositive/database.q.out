@@ -160,12 +160,12 @@ col1                	string              	None
 	 	 
 #### A masked pattern was here ####
 PREHOOK: query: -- LOAD and SELECT
-LOAD DATA LOCAL INPATH '../data/files/test.dat'
+LOAD DATA LOCAL INPATH '../../data/files/test.dat'
 OVERWRITE INTO TABLE test_table
 PREHOOK: type: LOAD
 PREHOOK: Output: test_db@test_table
 POSTHOOK: query: -- LOAD and SELECT
-LOAD DATA LOCAL INPATH '../data/files/test.dat'
+LOAD DATA LOCAL INPATH '../../data/files/test.dat'
 OVERWRITE INTO TABLE test_table
 POSTHOOK: type: LOAD
 POSTHOOK: Output: test_db@test_table
@@ -503,12 +503,12 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: db1@src
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: -- LOAD into foreign table
-LOAD DATA LOCAL INPATH '../data/files/kv1.txt'
+LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
 OVERWRITE INTO TABLE db1.src
 PREHOOK: type: LOAD
 PREHOOK: Output: db1@src
 POSTHOOK: query: -- LOAD into foreign table
-LOAD DATA LOCAL INPATH '../data/files/kv1.txt'
+LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
 OVERWRITE INTO TABLE db1.src
 POSTHOOK: type: LOAD
 POSTHOOK: Output: db1@src
@@ -1037,13 +1037,13 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: db1@srcpart
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: -- LOAD data into Partitioned foreign table
-LOAD DATA LOCAL INPATH '../data/files/kv1.txt'
+LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
 OVERWRITE INTO TABLE db1.srcpart
 PARTITION (ds='2008-04-08', hr='11')
 PREHOOK: type: LOAD
 PREHOOK: Output: db1@srcpart
 POSTHOOK: query: -- LOAD data into Partitioned foreign table
-LOAD DATA LOCAL INPATH '../data/files/kv1.txt'
+LOAD DATA LOCAL INPATH '../../data/files/kv1.txt'
 OVERWRITE INTO TABLE db1.srcpart
 PARTITION (ds='2008-04-08', hr='11')
 POSTHOOK: type: LOAD

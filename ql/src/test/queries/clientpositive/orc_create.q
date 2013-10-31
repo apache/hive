@@ -53,7 +53,7 @@ CREATE TABLE orc_create_complex (
 
 DESCRIBE FORMATTED orc_create_complex;
 
-LOAD DATA LOCAL INPATH '../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging;
+LOAD DATA LOCAL INPATH '../../data/files/orc_create.txt' OVERWRITE INTO TABLE orc_create_staging;
 
 SELECT * from orc_create_staging;
 
@@ -72,7 +72,7 @@ CREATE TABLE orc_create_people_staging (
   address string,
   state string);
 
-LOAD DATA LOCAL INPATH '../data/files/orc_create_people.txt'
+LOAD DATA LOCAL INPATH '../../data/files/orc_create_people.txt'
   OVERWRITE INTO TABLE orc_create_people_staging;
 
 CREATE TABLE orc_create_people (

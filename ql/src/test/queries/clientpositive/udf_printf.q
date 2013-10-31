@@ -29,7 +29,7 @@ CREATE TABLE binay_udf(key binary, value int)
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '9'
 STORED AS TEXTFILE;
-LOAD DATA LOCAL INPATH '../data/files/string.txt' INTO TABLE binay_udf;
+LOAD DATA LOCAL INPATH '../../data/files/string.txt' INTO TABLE binay_udf;
 create table dest1 (key binary, value int);
 insert overwrite table dest1 select transform(*) using 'cat' as key binary, value int from binay_udf;
 select value, printf("format key: %s", key) from dest1;

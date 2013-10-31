@@ -27,7 +27,7 @@ import junit.framework.TestCase;
 
 public class TestDosToUnix extends TestCase {
 
-  private static final String dataFile = System.getProperty("test.data.dir", ".") + "data_TestDosToUnix";
+  private static final String dataFile = System.getProperty("test.tmp.dir", ".") + "data_TestDosToUnix";
   @Override
   protected void setUp() throws Exception {
     super.setUp();

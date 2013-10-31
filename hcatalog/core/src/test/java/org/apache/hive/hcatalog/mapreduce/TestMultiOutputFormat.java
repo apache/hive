@@ -85,7 +85,7 @@ public class TestMultiOutputFormat {
   }
 
   private static void createWorkDir() throws IOException {
-    String testDir = System.getProperty("test.data.dir", "./");
+    String testDir = System.getProperty("test.tmp.dir", "./");
     testDir = testDir + "/test_multiout_" + Math.abs(new Random().nextLong()) + "/";
     workDir = new File(new File(testDir).getCanonicalPath());
     FileUtil.fullyDelete(workDir);

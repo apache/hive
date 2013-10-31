@@ -1,13 +1,13 @@
-PREHOOK: query: insert overwrite local directory '../data/files/local_src_table_1'
+PREHOOK: query: insert overwrite local directory '../../data/files/local_src_table_1'
 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: ../data/files/local_src_table_1
-POSTHOOK: query: insert overwrite local directory '../data/files/local_src_table_1'
+PREHOOK: Output: ../../data/files/local_src_table_1
+POSTHOOK: query: insert overwrite local directory '../../data/files/local_src_table_1'
 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: ../data/files/local_src_table_1
+POSTHOOK: Output: ../../data/files/local_src_table_1
 238val_238
 86val_86
 311val_311
@@ -508,20 +508,20 @@ POSTHOOK: Output: ../data/files/local_src_table_1
 400val_400
 200val_200
 97val_97
-PREHOOK: query: insert overwrite local directory '../data/files/local_src_table_2'
+PREHOOK: query: insert overwrite local directory '../../data/files/local_src_table_2'
 row format delimited 
 FIELDS TERMINATED BY ':' 
 select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: ../data/files/local_src_table_2
-POSTHOOK: query: insert overwrite local directory '../data/files/local_src_table_2'
+PREHOOK: Output: ../../data/files/local_src_table_2
+POSTHOOK: query: insert overwrite local directory '../../data/files/local_src_table_2'
 row format delimited 
 FIELDS TERMINATED BY ':' 
 select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: ../data/files/local_src_table_2
+POSTHOOK: Output: ../../data/files/local_src_table_2
 238:val_238
 86:val_86
 311:val_311
@@ -1033,58 +1033,58 @@ FIELDS TERMINATED BY '\t'
 COLLECTION ITEMS TERMINATED BY ','
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@array_table
-PREHOOK: query: load data local inpath "../data/files/array_table.txt" overwrite into table array_table
+PREHOOK: query: load data local inpath "../../data/files/array_table.txt" overwrite into table array_table
 PREHOOK: type: LOAD
 PREHOOK: Output: default@array_table
-POSTHOOK: query: load data local inpath "../data/files/array_table.txt" overwrite into table array_table
+POSTHOOK: query: load data local inpath "../../data/files/array_table.txt" overwrite into table array_table
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@array_table
-PREHOOK: query: insert overwrite local directory '../data/files/local_array_table_1'
+PREHOOK: query: insert overwrite local directory '../../data/files/local_array_table_1'
 select * from array_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@array_table
-PREHOOK: Output: ../data/files/local_array_table_1
-POSTHOOK: query: insert overwrite local directory '../data/files/local_array_table_1'
+PREHOOK: Output: ../../data/files/local_array_table_1
+POSTHOOK: query: insert overwrite local directory '../../data/files/local_array_table_1'
 select * from array_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@array_table
-POSTHOOK: Output: ../data/files/local_array_table_1
+POSTHOOK: Output: ../../data/files/local_array_table_1
 a1a2a3b1b2b3b4
 a21a22a23b21b22b23b24
-PREHOOK: query: insert overwrite local directory '../data/files/local_array_table_2'
+PREHOOK: query: insert overwrite local directory '../../data/files/local_array_table_2'
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ':'
 COLLECTION ITEMS TERMINATED BY '#'
 select * from array_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@array_table
-PREHOOK: Output: ../data/files/local_array_table_2
-POSTHOOK: query: insert overwrite local directory '../data/files/local_array_table_2'
+PREHOOK: Output: ../../data/files/local_array_table_2
+POSTHOOK: query: insert overwrite local directory '../../data/files/local_array_table_2'
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ':'
 COLLECTION ITEMS TERMINATED BY '#'
 select * from array_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@array_table
-POSTHOOK: Output: ../data/files/local_array_table_2
+POSTHOOK: Output: ../../data/files/local_array_table_2
 a1#a2#a3:b1#b2#b3#b4
 a21#a22#a23:b21#b22#b23#b24
-PREHOOK: query: insert overwrite local directory '../data/files/local_array_table_2_withfields'
+PREHOOK: query: insert overwrite local directory '../../data/files/local_array_table_2_withfields'
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ':'
 COLLECTION ITEMS TERMINATED BY '#'
 select b,a from array_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@array_table
-PREHOOK: Output: ../data/files/local_array_table_2_withfields
-POSTHOOK: query: insert overwrite local directory '../data/files/local_array_table_2_withfields'
+PREHOOK: Output: ../../data/files/local_array_table_2_withfields
+POSTHOOK: query: insert overwrite local directory '../../data/files/local_array_table_2_withfields'
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ':'
 COLLECTION ITEMS TERMINATED BY '#'
 select b,a from array_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@array_table
-POSTHOOK: Output: ../data/files/local_array_table_2_withfields
+POSTHOOK: Output: ../../data/files/local_array_table_2_withfields
 b1#b2#b3#b4:a1#a2#a3
 b21#b22#b23#b24:a21#a22#a23
 PREHOOK: query: create table map_table (foo STRING , bar MAP<STRING, STRING>)
@@ -1102,25 +1102,25 @@ MAP KEYS TERMINATED BY ':'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@map_table
-PREHOOK: query: load data local inpath "../data/files/map_table.txt" overwrite into table map_table
+PREHOOK: query: load data local inpath "../../data/files/map_table.txt" overwrite into table map_table
 PREHOOK: type: LOAD
 PREHOOK: Output: default@map_table
-POSTHOOK: query: load data local inpath "../data/files/map_table.txt" overwrite into table map_table
+POSTHOOK: query: load data local inpath "../../data/files/map_table.txt" overwrite into table map_table
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@map_table
-PREHOOK: query: insert overwrite local directory '../data/files/local_map_table_1'
+PREHOOK: query: insert overwrite local directory '../../data/files/local_map_table_1'
 select * from map_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@map_table
-PREHOOK: Output: ../data/files/local_map_table_1
-POSTHOOK: query: insert overwrite local directory '../data/files/local_map_table_1'
+PREHOOK: Output: ../../data/files/local_map_table_1
+POSTHOOK: query: insert overwrite local directory '../../data/files/local_map_table_1'
 select * from map_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@map_table
-POSTHOOK: Output: ../data/files/local_map_table_1
+POSTHOOK: Output: ../../data/files/local_map_table_1
 foo1k1v1k2v2k3v3
 foo2k21v21k22v22k31v31
-PREHOOK: query: insert overwrite local directory '../data/files/local_map_table_2'
+PREHOOK: query: insert overwrite local directory '../../data/files/local_map_table_2'
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ':'
 COLLECTION ITEMS TERMINATED BY '#'
@@ -1128,8 +1128,8 @@ MAP KEYS TERMINATED BY '='
 select * from map_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@map_table
-PREHOOK: Output: ../data/files/local_map_table_2
-POSTHOOK: query: insert overwrite local directory '../data/files/local_map_table_2'
+PREHOOK: Output: ../../data/files/local_map_table_2
+POSTHOOK: query: insert overwrite local directory '../../data/files/local_map_table_2'
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ':'
 COLLECTION ITEMS TERMINATED BY '#'
@@ -1137,10 +1137,10 @@ MAP KEYS TERMINATED BY '='
 select * from map_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@map_table
-POSTHOOK: Output: ../data/files/local_map_table_2
+POSTHOOK: Output: ../../data/files/local_map_table_2
 foo1:k1=v1#k2=v2#k3=v3
 foo2:k21=v21#k22=v22#k31=v31
-PREHOOK: query: insert overwrite local directory '../data/files/local_map_table_2_withfields'
+PREHOOK: query: insert overwrite local directory '../../data/files/local_map_table_2_withfields'
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ':'
 COLLECTION ITEMS TERMINATED BY '#'
@@ -1148,8 +1148,8 @@ MAP KEYS TERMINATED BY '='
 select bar,foo from map_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@map_table
-PREHOOK: Output: ../data/files/local_map_table_2_withfields
-POSTHOOK: query: insert overwrite local directory '../data/files/local_map_table_2_withfields'
+PREHOOK: Output: ../../data/files/local_map_table_2_withfields
+POSTHOOK: query: insert overwrite local directory '../../data/files/local_map_table_2_withfields'
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY ':'
 COLLECTION ITEMS TERMINATED BY '#'
@@ -1157,53 +1157,53 @@ MAP KEYS TERMINATED BY '='
 select bar,foo from map_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@map_table
-POSTHOOK: Output: ../data/files/local_map_table_2_withfields
+POSTHOOK: Output: ../../data/files/local_map_table_2_withfields
 k1=v1#k2=v2#k3=v3:foo1
 k21=v21#k22=v22#k31=v31:foo2
-PREHOOK: query: insert overwrite local directory '../data/files/local_array_table_3'
+PREHOOK: query: insert overwrite local directory '../../data/files/local_array_table_3'
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.DelimitedJSONSerDe'
 STORED AS TEXTFILE
 select * from array_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@array_table
-PREHOOK: Output: ../data/files/local_array_table_3
-POSTHOOK: query: insert overwrite local directory '../data/files/local_array_table_3'
+PREHOOK: Output: ../../data/files/local_array_table_3
+POSTHOOK: query: insert overwrite local directory '../../data/files/local_array_table_3'
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.DelimitedJSONSerDe'
 STORED AS TEXTFILE
 select * from array_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@array_table
-POSTHOOK: Output: ../data/files/local_array_table_3
+POSTHOOK: Output: ../../data/files/local_array_table_3
 ["a1","a2","a3"]["b1","b2","b3","b4"]
 ["a21","a22","a23"]["b21","b22","b23","b24"]
-PREHOOK: query: insert overwrite local directory '../data/files/local_map_table_3'
+PREHOOK: query: insert overwrite local directory '../../data/files/local_map_table_3'
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.DelimitedJSONSerDe'
 STORED AS TEXTFILE
 select * from map_table
 PREHOOK: type: QUERY
 PREHOOK: Input: default@map_table
-PREHOOK: Output: ../data/files/local_map_table_3
-POSTHOOK: query: insert overwrite local directory '../data/files/local_map_table_3'
+PREHOOK: Output: ../../data/files/local_map_table_3
+POSTHOOK: query: insert overwrite local directory '../../data/files/local_map_table_3'
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.DelimitedJSONSerDe'
 STORED AS TEXTFILE
 select * from map_table
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@map_table
-POSTHOOK: Output: ../data/files/local_map_table_3
+POSTHOOK: Output: ../../data/files/local_map_table_3
 foo1{"k1":"v1","k2":"v2","k3":"v3"}
 foo2{"k21":"v21","k22":"v22","k31":"v31"}
-PREHOOK: query: insert overwrite local directory '../data/files/local_rctable'
+PREHOOK: query: insert overwrite local directory '../../data/files/local_rctable'
 STORED AS RCFILE
 select value,key from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: ../data/files/local_rctable
-POSTHOOK: query: insert overwrite local directory '../data/files/local_rctable'
+PREHOOK: Output: ../../data/files/local_rctable
+POSTHOOK: query: insert overwrite local directory '../../data/files/local_rctable'
 STORED AS RCFILE
 select value,key from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: ../data/files/local_rctable
+POSTHOOK: Output: ../../data/files/local_rctable
 #### A masked pattern was here ####
 PREHOOK: query: create external table local_rctable(value string, key string)
 STORED AS RCFILE
@@ -1214,20 +1214,20 @@ STORED AS RCFILE
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@local_rctable
-PREHOOK: query: insert overwrite local directory '../data/files/local_rctable_out'
+PREHOOK: query: insert overwrite local directory '../../data/files/local_rctable_out'
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 select key,value from local_rctable
 PREHOOK: type: QUERY
 PREHOOK: Input: default@local_rctable
-PREHOOK: Output: ../data/files/local_rctable_out
-POSTHOOK: query: insert overwrite local directory '../data/files/local_rctable_out'
+PREHOOK: Output: ../../data/files/local_rctable_out
+POSTHOOK: query: insert overwrite local directory '../../data/files/local_rctable_out'
 ROW FORMAT DELIMITED
 FIELDS TERMINATED BY '\t'
 select key,value from local_rctable
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@local_rctable
-POSTHOOK: Output: ../data/files/local_rctable_out
+POSTHOOK: Output: ../../data/files/local_rctable_out
 238	val_238
 86	val_86
 311	val_311

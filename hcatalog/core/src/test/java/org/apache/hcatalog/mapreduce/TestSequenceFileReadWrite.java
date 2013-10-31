@@ -69,7 +69,7 @@ public class TestSequenceFileReadWrite {
 
   @Before
   public void setup() throws Exception {
-    dataDir = new File(System.getProperty("java.io.tmpdir") + File.separator + 
+    dataDir = new File(System.getProperty("java.io.tmpdir") + File.separator +
         TestSequenceFileReadWrite.class.getCanonicalName() + "-" + System.currentTimeMillis());
     hiveConf = new HiveConf(this.getClass());
     warehouseDir = new File(dataDir, "warehouse").getAbsolutePath();
@@ -102,7 +102,7 @@ public class TestSequenceFileReadWrite {
       FileUtils.deleteDirectory(dataDir);
     }
   }
-  
+
   @Test
   public void testSequenceTableWriteRead() throws Exception {
     String createTable = "CREATE TABLE demo_table(a0 int, a1 String, a2 String) STORED AS SEQUENCEFILE";

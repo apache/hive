@@ -26,10 +26,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table alter_rename_partition_src ( col1 string ) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@alter_rename_partition_src
-PREHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table alter_rename_partition_src
+PREHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table alter_rename_partition_src
 PREHOOK: type: LOAD
 PREHOOK: Output: default@alter_rename_partition_src
-POSTHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table alter_rename_partition_src
+POSTHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table alter_rename_partition_src
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@alter_rename_partition_src
 PREHOOK: query: create table alter_rename_partition ( col1 string ) partitioned by (pcol1 string , pcol2 string) stored as sequencefile
@@ -165,10 +165,10 @@ POSTHOOK: query: CREATE TABLE alter_rename_partition_src (col1 STRING) STORED AS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: alter_rename_partition_db@alter_rename_partition_src
 POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1:,pcol2=old_part2:).col1 SIMPLE [(alter_rename_partition_src)alter_rename_partition_src.FieldSchema(name:col1, type:string, comment:null), ]
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/test.dat' OVERWRITE INTO TABLE alter_rename_partition_src
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/test.dat' OVERWRITE INTO TABLE alter_rename_partition_src
 PREHOOK: type: LOAD
 PREHOOK: Output: alter_rename_partition_db@alter_rename_partition_src
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/test.dat' OVERWRITE INTO TABLE alter_rename_partition_src
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/test.dat' OVERWRITE INTO TABLE alter_rename_partition_src
 POSTHOOK: type: LOAD
 POSTHOOK: Output: alter_rename_partition_db@alter_rename_partition_src
 POSTHOOK: Lineage: alter_rename_partition PARTITION(pcol1=old_part1:,pcol2=old_part2:).col1 SIMPLE [(alter_rename_partition_src)alter_rename_partition_src.FieldSchema(name:col1, type:string, comment:null), ]

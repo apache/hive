@@ -34,16 +34,13 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hive.common.util.HiveTestUtils;
 import org.junit.Before;
 import org.junit.Test;
 
 public class TestFileDump {
 
-  Path workDir = new Path(System.getProperty("test.tmp.dir",
-      "target" + File.separator + "test" + File.separator + "tmp"));
-  Path resourceDir = new Path(System.getProperty("test.build.resources",
-      "ql" + File.separator + "src" + File.separator + "test" + File.separator + "resources"));
-
+  Path workDir = new Path(System.getProperty("test.tmp.dir"));
   Configuration conf;
   FileSystem fs;
   Path testFilePath;
@@ -71,13 +68,16 @@ public class TestFileDump {
   private static void checkOutput(String expected,
                                   String actual) throws Exception {
     BufferedReader eStream =
-        new BufferedReader(new FileReader(expected));
+        new BufferedReader(new FileReader(HiveTestUtils.getFileFromClasspath(expected)));
     BufferedReader aStream =
         new BufferedReader(new FileReader(actual));
-    String line = eStream.readLine();
-    while (line != null) {
-      assertEquals(line, aStream.readLine());
-      line = eStream.readLine();
+    String expectedLine = eStream.readLine();
+    while (expectedLine != null) {
+      String actualLine = aStream.readLine();
+      System.out.println("actual:   " + actualLine);
+      System.out.println("expected: " + expectedLine);
+      assertEquals(expectedLine, actualLine);
+      expectedLine = eStream.readLine();
     }
     assertNull(eStream.readLine());
     assertNull(aStream.readLine());
@@ -110,8 +110,8 @@ public class TestFileDump {
     }
     writer.close();
     PrintStream origOut = System.out;
-    String outputFilename = File.separator + "orc-file-dump.out";
-    FileOutputStream myOut = new FileOutputStream(workDir + outputFilename);
+    String outputFilename = "orc-file-dump.out";
+    FileOutputStream myOut = new FileOutputStream(workDir + File.separator + outputFilename);
 
     // replace stdout and run command
     System.setOut(new PrintStream(myOut));
@@ -120,7 +120,7 @@ public class TestFileDump {
     System.setOut(origOut);
 
 
-    checkOutput(resourceDir + outputFilename, workDir + outputFilename);
+    checkOutput(outputFilename, workDir + File.separator + outputFilename);
   }
 
   // Test that if the fraction of rows that have distinct strings is greater than the configured
@@ -164,8 +164,8 @@ public class TestFileDump {
     }
     writer.close();
     PrintStream origOut = System.out;
-    String outputFilename = File.separator + "orc-file-dump-dictionary-threshold.out";
-    FileOutputStream myOut = new FileOutputStream(workDir + outputFilename);
+    String outputFilename = "orc-file-dump-dictionary-threshold.out";
+    FileOutputStream myOut = new FileOutputStream(workDir + File.separator + outputFilename);
 
     // replace stdout and run command
     System.setOut(new PrintStream(myOut));
@@ -173,6 +173,6 @@ public class TestFileDump {
     System.out.flush();
     System.setOut(origOut);
 
-    checkOutput(resourceDir + outputFilename, workDir + outputFilename);
+    checkOutput(outputFilename, workDir + File.separator + outputFilename);
   }
 }
