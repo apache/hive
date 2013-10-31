@@ -22,14 +22,22 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColumnBetween;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColumnNotBetween;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColEqualLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColLessLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColumnBetween;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColumnNotBetween;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongScalarGreaterLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongScalarLessLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColumnBetween;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColumnNotBetween;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColAddLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.util.VectorizedRowGroupGenUtil;
 import org.junit.Assert;
@@ -277,5 +285,262 @@ public class TestVectorFilterExpressions {
 
     expr1.evaluate(vrb3);
     assertEquals(0, vrb3.size);
+  }
+
+  @Test
+  public void testFilterLongBetween() {
+    int seed = 17;
+    VectorizedRowBatch vrb = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        5, 2, seed);
+    LongColumnVector lcv0 = (LongColumnVector) vrb.cols[0];
+    VectorExpression expr1 = new FilterLongColumnBetween(0, 15, 17);
+
+    //Basic case
+    lcv0.vector[0] = 5;
+    lcv0.vector[1] = 20;
+    lcv0.vector[2] = 17;
+    lcv0.vector[3] = 15;
+    lcv0.vector[4] = 10;
+
+    expr1.evaluate(vrb);
+
+    assertEquals(2, vrb.size);
+    assertTrue(vrb.selectedInUse);
+    assertEquals(2, vrb.selected[0]);
+    assertEquals(3, vrb.selected[1]);
+
+    //With nulls
+    VectorizedRowBatch vrb1 = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        5, 2, seed);
+
+    lcv0 = (LongColumnVector) vrb1.cols[0];
+
+    lcv0.vector[0] = 5;
+    lcv0.vector[1] = 20;
+    lcv0.vector[2] = 17;
+    lcv0.vector[3] = 15;
+    lcv0.vector[4] = 10;
+
+    lcv0.noNulls = false;
+    lcv0.isNull[0] = true;
+    lcv0.isNull[2] = true;
+
+    expr1.evaluate(vrb1);
+    assertEquals(1, vrb1.size);
+    assertTrue(vrb1.selectedInUse);
+    assertEquals(3, vrb1.selected[0]);
+
+    //With nulls and selected
+    VectorizedRowBatch vrb2 = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        7, 2, seed);
+    vrb2.selectedInUse = true;
+    vrb2.selected[0] = 1;
+    vrb2.selected[1] = 2;
+    vrb2.selected[2] = 4;
+    vrb2.size = 3;
+
+    lcv0 = (LongColumnVector) vrb2.cols[0];
+
+    lcv0.vector[0] = 5;
+    lcv0.vector[1] = 20;
+    lcv0.vector[2] = 17;
+    lcv0.vector[3] = 15;
+    lcv0.vector[4] = 10;
+    lcv0.vector[5] = 19;
+    lcv0.vector[6] = 21;
+
+    lcv0.noNulls = false;
+    lcv0.isNull[0] = true;
+    lcv0.isNull[2] = true;
+    lcv0.isNull[5] = true;
+
+    expr1.evaluate(vrb2);
+    assertEquals(0, vrb2.size);
+
+    //Repeating non null
+    VectorizedRowBatch vrb3 = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        7, 2, seed);
+    lcv0 = (LongColumnVector) vrb3.cols[0];
+
+    lcv0.isRepeating = true;
+    lcv0.vector[0] = 17;
+    lcv0.vector[1] = 20;
+    lcv0.vector[2] = 17;
+    lcv0.vector[3] = 15;
+    lcv0.vector[4] = 10;
+
+    expr1.evaluate(vrb3);
+    assertEquals(7, vrb3.size);
+    assertFalse(vrb3.selectedInUse);
+    assertTrue(lcv0.isRepeating);
+
+    //Repeating null
+    lcv0.noNulls = false;
+    lcv0.vector[0] = 17;
+    lcv0.isNull[0] = true;
+
+    expr1.evaluate(vrb3);
+    assertEquals(0, vrb3.size);
+
+  }
+
+  @Test
+  public void testFilterLongNotBetween() {
+
+    // Spot check only. null & repeating behavior are checked elsewhere for the same template.
+    int seed = 17;
+    VectorizedRowBatch vrb = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        5, 2, seed);
+    LongColumnVector lcv0 = (LongColumnVector) vrb.cols[0];
+
+    //Basic case
+    lcv0.vector[0] = 5;
+    lcv0.vector[1] = 20;
+    lcv0.vector[2] = 17;
+    lcv0.vector[3] = 15;
+    lcv0.vector[4] = 10;
+
+    VectorExpression expr = new FilterLongColumnNotBetween(0, 10, 20);
+    expr.evaluate(vrb);
+    assertEquals(1, vrb.size);
+    assertTrue(vrb.selectedInUse);
+    assertEquals(0, vrb.selected[0]);
+  }
+
+  @Test
+  public void testFilterDoubleBetween() {
+
+    // Spot check only. null & repeating behavior are checked elsewhere for the same template.
+    int seed = 17;
+    VectorizedRowBatch vrb = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        5, 2, seed);
+    DoubleColumnVector dcv0 = new DoubleColumnVector();
+    vrb.cols[0] = dcv0;
+
+    //Basic case
+    dcv0.vector[0] = 5;
+    dcv0.vector[1] = 20;
+    dcv0.vector[2] = 17;
+    dcv0.vector[3] = 15;
+    dcv0.vector[4] = 10;
+
+    VectorExpression expr = new FilterDoubleColumnBetween(0, 20, 21);
+    expr.evaluate(vrb);
+    assertEquals(1, vrb.size);
+    assertTrue(vrb.selectedInUse);
+    assertEquals(1, vrb.selected[0]);
+  }
+
+  @Test
+  public void testFilterDoubleNotBetween() {
+
+    // Spot check only. null & repeating behavior are checked elsewhere for the same template.
+    int seed = 17;
+    VectorizedRowBatch vrb = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        5, 2, seed);
+    vrb.cols[0] = new DoubleColumnVector();
+    DoubleColumnVector dcv = (DoubleColumnVector) vrb.cols[0];
+
+    //Basic case
+    dcv.vector[0] = 5;
+    dcv.vector[1] = 20;
+    dcv.vector[2] = 17;
+    dcv.vector[3] = 15;
+    dcv.vector[4] = 10;
+
+    VectorExpression expr = new FilterDoubleColumnNotBetween(0, 10, 20);
+    expr.evaluate(vrb);
+    assertEquals(1, vrb.size);
+    assertTrue(vrb.selectedInUse);
+    assertEquals(0, vrb.selected[0]);
+  }
+
+  static byte[] a = null;
+  static byte[] b = null;
+  static byte[] c = null;
+
+  static {
+    try {
+      a = "a".getBytes("UTF-8");
+      b = "b".getBytes("UTF-8");
+      c = "c".getBytes("UTF-8");
+    } catch (Exception e) {
+      ; // won't happen
+    }
+  }
+
+  @Test
+  public void testFilterStringBetween() {
+    int seed = 17;
+    VectorizedRowBatch vrb = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        3, 2, seed);
+    vrb.cols[0] = new BytesColumnVector();
+    BytesColumnVector bcv = (BytesColumnVector) vrb.cols[0];
+
+    bcv.initBuffer();
+    bcv.setVal(0, a, 0, 1);
+    bcv.setVal(1, b, 0, 1);
+    bcv.setVal(2, c, 0, 1);
+
+    VectorExpression expr = new FilterStringColumnBetween(0, b, c);
+
+    // basic test
+    expr.evaluate(vrb);
+
+    assertEquals(2, vrb.size);
+    assertTrue(vrb.selectedInUse);
+    assertEquals(1, vrb.selected[0]);
+    assertEquals(2, vrb.selected[1]);
+
+    // nulls
+    vrb.selectedInUse = false;
+    vrb.size = 3;
+    bcv.noNulls = false;
+    bcv.isNull[2] = true;
+    expr.evaluate(vrb);
+    assertEquals(1, vrb.size);
+    assertEquals(1, vrb.selected[0]);
+    assertTrue(vrb.selectedInUse);
+
+    // repeating
+    vrb.selectedInUse = false;
+    vrb.size = 3;
+    bcv.noNulls = true;
+    bcv.isRepeating = true;
+    expr.evaluate(vrb);
+    assertEquals(0, vrb.size);
+
+    // nulls and repeating
+    vrb.selectedInUse = false;
+    vrb.size = 3;
+    bcv.noNulls = false;
+    bcv.isRepeating = true;
+    bcv.isNull[0] = true;
+    bcv.setVal(0, b, 0, 1);
+    expr.evaluate(vrb);
+    assertEquals(0, vrb.size);
+  }
+
+  @Test
+  public void testFilterStringNotBetween() {
+
+    // Spot check only. Non-standard cases are checked for the same template in another test.
+    int seed = 17;
+    VectorizedRowBatch vrb = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        3, 2, seed);
+    vrb.cols[0] = new BytesColumnVector();
+    BytesColumnVector bcv = (BytesColumnVector) vrb.cols[0];
+
+    bcv.initBuffer();
+    bcv.setVal(0, a, 0, 1);
+    bcv.setVal(1, b, 0, 1);
+    bcv.setVal(2, c, 0, 1);
+
+    VectorExpression expr = new FilterStringColumnNotBetween(0, b, c);
+    expr.evaluate(vrb);
+
+    assertEquals(1, vrb.size);
+    assertTrue(vrb.selectedInUse);
+    assertEquals(0, vrb.selected[0]);
   }
 }
