@@ -280,8 +280,8 @@ STAGE PLANS:
             HashTable Sink Operator
               condition expressions:
                 0 
-                1 {key}
-                2 {key}
+                1 
+                2 
               handleSkewJoin: false
               keys:
                 0 [Column[key]]
@@ -295,8 +295,8 @@ STAGE PLANS:
             HashTable Sink Operator
               condition expressions:
                 0 
-                1 {key}
-                2 {key}
+                1 
+                2 
               handleSkewJoin: false
               keys:
                 0 [Column[key]]
@@ -330,44 +330,38 @@ STAGE PLANS:
                    Inner Join 1 to 2
               condition expressions:
                 0 
-                1 {key}
-                2 {key}
+                1 
+                2 
               handleSkewJoin: false
               keys:
                 0 [Column[key]]
                 1 [Column[key]]
                 2 [Column[key]]
-              outputColumnNames: _col5, _col10
               Position of Big Table: 2
-              Filter Operator
-                isSamplingPred: false
-                predicate:
-                    expr: (_col10 = _col5)
-                    type: boolean
-                Map Join Operator
-                  condition map:
-                       Inner Join 0 to 1
-                  condition expressions:
-                    0 
-                    1 
-                  handleSkewJoin: false
-                  keys:
-                    0 []
-                    1 []
-                  Position of Big Table: 0
-                  Select Operator
-                    Group By Operator
-                      aggregations:
-                            expr: count()
-                      bucketGroup: false
-                      mode: hash
-                      outputColumnNames: _col0
-                      Reduce Output Operator
-                        sort order: 
-                        tag: -1
-                        value expressions:
-                              expr: _col0
-                              type: bigint
+              Map Join Operator
+                condition map:
+                     Inner Join 0 to 1
+                condition expressions:
+                  0 
+                  1 
+                handleSkewJoin: false
+                keys:
+                  0 []
+                  1 []
+                Position of Big Table: 0
+                Select Operator
+                  Group By Operator
+                    aggregations:
+                          expr: count()
+                    bucketGroup: false
+                    mode: hash
+                    outputColumnNames: _col0
+                    Reduce Output Operator
+                      sort order: 
+                      tag: -1
+                      value expressions:
+                            expr: _col0
+                            type: bigint
       Local Work:
         Map Reduce Local Work
       Path -> Alias:
