@@ -15,7 +15,7 @@ create table over10k(
        row format delimited
        fields terminated by '|';
 
-load data local inpath '../data/files/over10k' into table over10k;
+load data local inpath '../../data/files/over10k' into table over10k;
 
 create table stats_tbl(
            t tinyint,
