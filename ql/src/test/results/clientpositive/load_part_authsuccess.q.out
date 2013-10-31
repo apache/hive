@@ -9,10 +9,10 @@ PREHOOK: Output: default@hive_test_src
 POSTHOOK: query: grant Update on table hive_test_src to user hive_test_user
 POSTHOOK: type: GRANT_PRIVILEGE
 POSTHOOK: Output: default@hive_test_src
-PREHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table hive_test_src partition (pcol1 = 'test_part')
+PREHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table hive_test_src partition (pcol1 = 'test_part')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@hive_test_src
-POSTHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table hive_test_src partition (pcol1 = 'test_part')
+POSTHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table hive_test_src partition (pcol1 = 'test_part')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@hive_test_src
 POSTHOOK: Output: default@hive_test_src@pcol1=test_part

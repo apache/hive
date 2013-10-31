@@ -11,7 +11,7 @@ POSTHOOK: query: -- test for loading into tables with the correct file format
 CREATE TABLE T1(name STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.seq' INTO TABLE T1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.seq' INTO TABLE T1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@t1
 Failed with exception Wrong file format. Please check the file's format.

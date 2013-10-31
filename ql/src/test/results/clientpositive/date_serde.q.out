@@ -55,10 +55,10 @@ with serdeproperties (
 stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@date_serde_regex
-PREHOOK: query: load data local inpath '../data/files/flights_tiny.txt.1' overwrite into table date_serde_regex
+PREHOOK: query: load data local inpath '../../data/files/flights_tiny.txt.1' overwrite into table date_serde_regex
 PREHOOK: type: LOAD
 PREHOOK: Output: default@date_serde_regex
-POSTHOOK: query: load data local inpath '../data/files/flights_tiny.txt.1' overwrite into table date_serde_regex
+POSTHOOK: query: load data local inpath '../../data/files/flights_tiny.txt.1' overwrite into table date_serde_regex
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@date_serde_regex
 PREHOOK: query: select * from date_serde_regex

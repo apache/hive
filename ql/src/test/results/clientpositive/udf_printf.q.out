@@ -132,10 +132,10 @@ STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@binay_udf
 POSTHOOK: Lineage: timestamp_udf.t EXPRESSION []
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/string.txt' INTO TABLE binay_udf
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/string.txt' INTO TABLE binay_udf
 PREHOOK: type: LOAD
 PREHOOK: Output: default@binay_udf
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/string.txt' INTO TABLE binay_udf
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/string.txt' INTO TABLE binay_udf
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@binay_udf
 POSTHOOK: Lineage: timestamp_udf.t EXPRESSION []

@@ -5896,11 +5896,11 @@ POSTHOOK: Lineage: pcr_t3.key SIMPLE [(pcr_t1)pcr_t1.FieldSchema(name:key, type:
 POSTHOOK: Lineage: pcr_t3.key SIMPLE [(pcr_t1)pcr_t1.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: pcr_t3.value SIMPLE [(pcr_t1)pcr_t1.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: pcr_t3.value SIMPLE [(pcr_t1)pcr_t1.FieldSchema(name:value, type:string, comment:null), ]
-PREHOOK: query: load data local inpath '../data/files/kv1.txt'
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt'
 overwrite into table ab
 PREHOOK: type: LOAD
 PREHOOK: Output: default@ab
-POSTHOOK: query: load data local inpath '../data/files/kv1.txt'
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt'
 overwrite into table ab
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@ab

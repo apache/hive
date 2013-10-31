@@ -60,7 +60,7 @@ public class TestFlatFileInputFormat extends TestCase {
       conf = new Configuration();
       job = new JobConf(conf);
       fs = FileSystem.getLocal(conf);
-      dir = new Path(System.getProperty("test.data.dir", ".") + "/mapred");
+      dir = new Path(System.getProperty("test.tmp.dir", ".") + "/mapred");
       file = new Path(dir, "test.txt");
       reporter = Reporter.NULL;
       fs.delete(dir, true);
@@ -142,7 +142,7 @@ public class TestFlatFileInputFormat extends TestCase {
       conf = new Configuration();
       job = new JobConf(conf);
       fs = FileSystem.getLocal(conf);
-      dir = new Path(System.getProperty("test.data.dir", ".") + "/mapred");
+      dir = new Path(System.getProperty("test.tmp.dir", ".") + "/mapred");
       file = new Path(dir, "test.txt");
       reporter = Reporter.NULL;
       fs.delete(dir, true);
@@ -212,49 +212,49 @@ public class TestFlatFileInputFormat extends TestCase {
    * public void testFlatFileInputThrift() throws Exception { Configuration
    * conf; JobConf job ; FileSystem fs; Path dir ; Path file; Reporter reporter;
    * FSDataOutputStream ds;
-   * 
+   *
    * try { // // create job and filesystem and reporter and such. // conf = new
    * Configuration(); job = new JobConf(conf); fs = FileSystem.getLocal(conf);
-   * dir = new Path(System.getProperty("test.data.dir",".") + "/mapred"); file =
+   * dir = new Path(System.getProperty("test.tmp.dir",".") + "/mapred"); file =
    * new Path(dir, "test.txt"); reporter = Reporter.NULL; fs.delete(dir, true);
-   * 
+   *
    * job.setClass(FlatFileInputFormat.SerializationContextFromConf.
    * SerializationImplKey,
    * org.apache.hadoop.contrib.serialization.thrift.ThriftSerialization.class,
    * org.apache.hadoop.io.serializer.Serialization.class);
-   * 
+   *
    * job.setClass(FlatFileInputFormat.SerializationContextFromConf.
    * SerializationSubclassKey, FlatFileThriftTestObj.class, TBase.class);
-   * 
+   *
    * // // Write some data out to a flat file //
    * FileInputFormat.setInputPaths(job, dir); ds = fs.create(file); Serializer
    * serializer = new ThriftSerialization().getSerializer(TBase.class);
-   * 
+   *
    * // construct some data and write it serializer.open(ds); for (int i = 0; i
    * < 10; i++) { serializer.serialize(new FlatFileThriftTestObj("Hello World! "
    * + String.valueOf(i), i)); } serializer.close();
-   * 
+   *
    * // // Construct the reader // FileInputFormat<Void,
    * FlatFileInputFormat.RowContainer<TBase>> format = new
    * FlatFileInputFormat<TBase>(); InputSplit[] splits = format.getSplits(job,
    * 1);
-   * 
+   *
    * // construct the record reader RecordReader<Void,
    * FlatFileInputFormat.RowContainer<TBase>> reader =
    * format.getRecordReader(splits[0], job, reporter);
-   * 
+   *
    * // create key/value Void key = reader.createKey();
    * FlatFileInputFormat.RowContainer<TBase> value = reader.createValue();
-   * 
+   *
    * // // read back the data using the FlatFileRecordReader // int count = 0;
    * while (reader.next(key, value)) { assertTrue(key == null);
    * assertTrue(((FlatFileThriftTestObj)value.row).s.equals("Hello World! "
    * +String.valueOf(count))); assertTrue(((FlatFileThriftTestObj)value.row).num
    * == count); count++; } reader.close();
-   * 
+   *
    * } catch(Exception e) { System.err.println("caught: " + e);
    * e.printStackTrace(); } finally { }
-   * 
+   *
    * }
    */
 

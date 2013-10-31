@@ -8,10 +8,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table destpart_dp like srcpart
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@destpart_dp
-PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcpart_dp partition(ds='2008-04-08', hr=11)
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcpart_dp partition(ds='2008-04-08', hr=11)
 PREHOOK: type: LOAD
 PREHOOK: Output: default@srcpart_dp
-POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcpart_dp partition(ds='2008-04-08', hr=11)
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcpart_dp partition(ds='2008-04-08', hr=11)
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcpart_dp
 POSTHOOK: Output: default@srcpart_dp@ds=2008-04-08/hr=11

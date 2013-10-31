@@ -11,10 +11,10 @@ POSTHOOK: query: -- test for loading into tables with the correct file format
 CREATE TABLE T1(name STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE T1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE T1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t1
 PREHOOK: query: SELECT COUNT(1) FROM T1
@@ -31,10 +31,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE T2(name STRING) STORED AS SEQUENCEFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@T2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.seq' INTO TABLE T2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.seq' INTO TABLE T2
 PREHOOK: type: LOAD
 PREHOOK: Output: default@t2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.seq' INTO TABLE T2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.seq' INTO TABLE T2
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t2
 PREHOOK: query: SELECT COUNT(1) FROM T2
@@ -51,10 +51,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE T3(name STRING) PARTITIONED BY(ds STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@T3
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T3 PARTITION (ds='2008-04-09')
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE T3 PARTITION (ds='2008-04-09')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@t3
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE T3 PARTITION (ds='2008-04-09')
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE T3 PARTITION (ds='2008-04-09')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t3
 POSTHOOK: Output: default@t3@ds=2008-04-09
@@ -74,10 +74,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE T4(name STRING) PARTITIONED BY(ds STRING) STORED AS SEQUENCEFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@T4
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.seq' INTO TABLE T4 PARTITION (ds='2008-04-09')
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.seq' INTO TABLE T4 PARTITION (ds='2008-04-09')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@t4
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.seq' INTO TABLE T4 PARTITION (ds='2008-04-09')
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.seq' INTO TABLE T4 PARTITION (ds='2008-04-09')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t4
 POSTHOOK: Output: default@t4@ds=2008-04-09

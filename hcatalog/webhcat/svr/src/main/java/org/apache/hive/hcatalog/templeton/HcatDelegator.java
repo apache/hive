@@ -107,12 +107,12 @@ public class HcatDelegator extends LauncherDelegator {
     }
     LOG.info("Main.getAppConfigInstance().get(AppConfig.UNIT_TEST_MODE)=" +
         Main.getAppConfigInstance().get(AppConfig.UNIT_TEST_MODE));
-    if(System.getProperty("hive.metastore.warehouse.dir") != null) {
+    if(System.getProperty("test.warehouse.dir") != null) {
       /*when running in unit test mode, pass this property to HCat,
       which will in turn pass it to Hive to make sure that Hive
       tries to write to a directory that exists.*/
       args.add("-D");
-      args.add("hive.metastore.warehouse.dir=" + System.getProperty("hive.metastore.warehouse.dir"));
+      args.add("hive.metastore.warehouse.dir=" + System.getProperty("test.warehouse.dir"));
     }
     return args;
   }
@@ -645,7 +645,7 @@ public class HcatDelegator extends LauncherDelegator {
     } catch (HcatException e) {
       if (e.execBean.stderr.contains("SemanticException") &&
         e.execBean.stderr.contains("Partition not found")) {
-        String emsg = "Partition " + partition + " for table " 
+        String emsg = "Partition " + partition + " for table "
           + table + " does not exist" + db + "." + table + " does not exist";
         return JsonBuilder.create()
           .put("error", emsg)

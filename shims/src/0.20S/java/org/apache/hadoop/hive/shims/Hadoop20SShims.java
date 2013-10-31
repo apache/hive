@@ -153,7 +153,7 @@ public class Hadoop20SShims extends HadoopShimsSecure {
   /**
    * Returns a shim to wrap MiniMrCluster
    */
-  public MiniMrShim getMiniMrCluster(Configuration conf, int numberOfTaskTrackers, 
+  public MiniMrShim getMiniMrCluster(Configuration conf, int numberOfTaskTrackers,
                                      String nameNode, int numDir) throws IOException {
     return new MiniMrShim(conf, numberOfTaskTrackers, nameNode, numDir);
   }

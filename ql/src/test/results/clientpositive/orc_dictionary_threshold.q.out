@@ -66,11 +66,11 @@ POSTHOOK: query: CREATE TABLE src_thousand(key STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@src_thousand
 POSTHOOK: Lineage: test_orc.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1kv2.cogroup.txt' 
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1kv2.cogroup.txt' 
      INTO TABLE src_thousand
 PREHOOK: type: LOAD
 PREHOOK: Output: default@src_thousand
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1kv2.cogroup.txt' 
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1kv2.cogroup.txt' 
      INTO TABLE src_thousand
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@src_thousand

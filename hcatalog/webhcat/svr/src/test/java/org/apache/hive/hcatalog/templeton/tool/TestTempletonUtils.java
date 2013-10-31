@@ -35,7 +35,7 @@ public class TestTempletonUtils {
     "2011-12-15 18:12:21,758 [main] INFO  org.apache.pig.backend.hadoop.executionengine.mapReduceLayer.MapReduceLauncher - More information at: http://localhost:50030/jobdetails.jsp?jobid=job_201112140012_0047",
     "2011-12-15 18:12:46,907 [main] INFO  org.apache.pig.tools.pigstats.SimplePigStats - Script Statistics: "
   };
-  public static final String testDataDir = System.getProperty("test.data.dir");
+  public static final String testDataDir = System.getProperty("test.tmp.dir");
   File tmpFile;
   File usrFile;
 

@@ -23,10 +23,10 @@ FL_NUM string
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@flights_tiny
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/flights_tiny.txt' OVERWRITE INTO TABLE flights_tiny
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt' OVERWRITE INTO TABLE flights_tiny
 PREHOOK: type: LOAD
 PREHOOK: Output: default@flights_tiny
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/flights_tiny.txt' OVERWRITE INTO TABLE flights_tiny
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt' OVERWRITE INTO TABLE flights_tiny
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@flights_tiny
 PREHOOK: query: create temporary function matchpathtest as 'org.apache.hadoop.hive.ql.udf.ptf.MatchPath$MatchPathResolver'

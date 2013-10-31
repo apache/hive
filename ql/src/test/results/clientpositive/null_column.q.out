@@ -3,10 +3,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table temp_null(a int) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@temp_null
-PREHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table temp_null
+PREHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table temp_null
 PREHOOK: type: LOAD
 PREHOOK: Output: default@temp_null
-POSTHOOK: query: load data local inpath '../data/files/test.dat' overwrite into table temp_null
+POSTHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table temp_null
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@temp_null
 PREHOOK: query: select null, null from temp_null
@@ -91,14 +91,14 @@ NULL	NULL
 NULL	NULL
 NULL	NULL
 NULL	NULL
-PREHOOK: query: insert overwrite directory "../build/ql/test/data/warehouse/null_columns.out" select null, null from temp_null
+PREHOOK: query: insert overwrite directory "target/warehouse/null_columns.out" select null, null from temp_null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@temp_null
-PREHOOK: Output: ../build/ql/test/data/warehouse/null_columns.out
-POSTHOOK: query: insert overwrite directory "../build/ql/test/data/warehouse/null_columns.out" select null, null from temp_null
+PREHOOK: Output: target/warehouse/null_columns.out
+POSTHOOK: query: insert overwrite directory "target/warehouse/null_columns.out" select null, null from temp_null
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@temp_null
-POSTHOOK: Output: ../build/ql/test/data/warehouse/null_columns.out
+POSTHOOK: Output: target/warehouse/null_columns.out
 POSTHOOK: Lineage: tt.a EXPRESSION []
 POSTHOOK: Lineage: tt.b SIMPLE []
 POSTHOOK: Lineage: tt_b.a EXPRESSION []

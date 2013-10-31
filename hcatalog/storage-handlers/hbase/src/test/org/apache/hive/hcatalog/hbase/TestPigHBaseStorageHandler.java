@@ -73,6 +73,7 @@ public class TestPigHBaseStorageHandler extends SkeletonHBaseTest {
     URI fsuri = getFileSystem().getUri();
     Path whPath = new Path(fsuri.getScheme(), fsuri.getAuthority(),
         getTestDir());
+    hcatConf.set(HiveConf.ConfVars.HIVE_SUPPORT_CONCURRENCY.varname, "false");
     hcatConf.set(HiveConf.ConfVars.PREEXECHOOKS.varname, "");
     hcatConf.set(HiveConf.ConfVars.POSTEXECHOOKS.varname, "");
     hcatConf.set(ConfVars.METASTOREWAREHOUSE.varname, whPath.toString());

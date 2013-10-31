@@ -3,16 +3,16 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table src5 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@src5
-PREHOOK: query: load data local inpath '../data/files/kv5.txt' into table src5
+PREHOOK: query: load data local inpath '../../data/files/kv5.txt' into table src5
 PREHOOK: type: LOAD
 PREHOOK: Output: default@src5
-POSTHOOK: query: load data local inpath '../data/files/kv5.txt' into table src5
+POSTHOOK: query: load data local inpath '../../data/files/kv5.txt' into table src5
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@src5
-PREHOOK: query: load data local inpath '../data/files/kv5.txt' into table src5
+PREHOOK: query: load data local inpath '../../data/files/kv5.txt' into table src5
 PREHOOK: type: LOAD
 PREHOOK: Output: default@src5
-POSTHOOK: query: load data local inpath '../data/files/kv5.txt' into table src5
+POSTHOOK: query: load data local inpath '../../data/files/kv5.txt' into table src5
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@src5
 PREHOOK: query: explain

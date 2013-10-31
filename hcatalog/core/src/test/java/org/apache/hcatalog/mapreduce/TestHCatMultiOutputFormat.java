@@ -108,6 +108,7 @@ public class TestHCatMultiOutputFormat {
         HiveMetaStore.main(new String[]{"-v", "-p", msPort, "--hiveconf", warehouseConf});
       } catch (Throwable t) {
         System.err.println("Exiting. Got exception from metastore: " + t.getMessage());
+        t.printStackTrace();
       }
     }
 
@@ -163,13 +164,14 @@ public class TestHCatMultiOutputFormat {
 
   @BeforeClass
   public static void setup() throws Exception {
-    String testDir = System.getProperty("test.data.dir", "./");
+    System.clearProperty("mapred.job.tracker");
+    String testDir = System.getProperty("test.tmp.dir", "./");
     testDir = testDir + "/test_multitable_" + Math.abs(new Random().nextLong()) + "/";
     workDir = new File(new File(testDir).getCanonicalPath());
     FileUtil.fullyDelete(workDir);
     workDir.mkdirs();
 
-    warehousedir = new Path(workDir + "/warehouse");
+    warehousedir = new Path(System.getProperty("test.warehouse.dir"));
 
     // Run hive metastore server
     t = new Thread(new RunMS());
@@ -186,9 +188,10 @@ public class TestHCatMultiOutputFormat {
     mrCluster = new MiniMRCluster(1, fs.getUri().toString(), 1, null, null,
       new JobConf(conf));
     mrConf = mrCluster.createJobConf();
-    fs.mkdirs(warehousedir);
 
     initializeSetup();
+
+    warehousedir.getFileSystem(hiveConf).mkdirs(warehousedir);
   }
 
   private static void initializeSetup() throws Exception {
@@ -251,14 +254,15 @@ public class TestHCatMultiOutputFormat {
     tbl.setPartitionKeys(ColumnHolder.partitionCols);
 
     hmsc.createTable(tbl);
-    FileSystem fs = FileSystem.get(mrConf);
-    fs.setPermission(new Path(warehousedir, tableName), new FsPermission(tablePerm));
+    Path path = new Path(warehousedir, tableName);
+    FileSystem fs = path.getFileSystem(hiveConf);
+    fs.setPermission(path, new FsPermission(tablePerm));
   }
 
   @AfterClass
   public static void tearDown() throws IOException {
     FileUtil.fullyDelete(workDir);
-    FileSystem fs = FileSystem.get(mrConf);
+    FileSystem fs = warehousedir.getFileSystem(hiveConf);
     if (fs.exists(warehousedir)) {
       fs.delete(warehousedir, true);
     }
@@ -367,14 +371,14 @@ public class TestHCatMultiOutputFormat {
    * @throws Exception if any error occurs
    */
   private List<String> getTableData(String table, String database) throws Exception {
-    HiveConf conf = new HiveConf();
-    conf.addResource("hive-site.xml");
     ArrayList<String> results = new ArrayList<String>();
     ArrayList<String> temp = new ArrayList<String>();
-    Hive hive = Hive.get(conf);
+    Hive hive = Hive.get(hiveConf);
     org.apache.hadoop.hive.ql.metadata.Table tbl = hive.getTable(database, table);
     FetchWork work;
-    if (!tbl.getPartCols().isEmpty()) {
+    if (tbl.getPartCols().isEmpty()) {
+      work = new FetchWork(tbl.getDataLocation().toString(), Utilities.getTableDesc(tbl));
+    } else {
       List<Partition> partitions = hive.getPartitions(tbl);
       List<PartitionDesc> partDesc = new ArrayList<PartitionDesc>();
       List<String> partLocs = new ArrayList<String>();
@@ -384,12 +388,10 @@ public class TestHCatMultiOutputFormat {
       }
       work = new FetchWork(partLocs, partDesc, Utilities.getTableDesc(tbl));
       work.setLimit(100);
-    } else {
-      work = new FetchWork(tbl.getDataLocation().toString(), Utilities.getTableDesc(tbl));
     }
     FetchTask task = new FetchTask();
     task.setWork(work);
-    task.initialize(conf, null, null);
+    task.initialize(hiveConf, null, null);
     task.fetch(temp);
     for (String str : temp) {
       results.add(str.replace("\t", ","));

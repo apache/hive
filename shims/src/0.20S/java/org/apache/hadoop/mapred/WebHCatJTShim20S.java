@@ -30,7 +30,7 @@ import java.net.InetSocketAddress;
 import java.net.URI;
 
 /**
- * This is in org.apache.hadoop.mapred package because it relies on 
+ * This is in org.apache.hadoop.mapred package because it relies on
  * JobSubmissionProtocol which is package private
  */
 public class WebHCatJTShim20S implements WebHCatJTShim {

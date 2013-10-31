@@ -23,22 +23,22 @@ POSTHOOK: query: create table hive_count (bar_id int, n int) row format delimite
 terminated by ',' stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@hive_count
-PREHOOK: query: load data local inpath '../data/files/hive_626_foo.txt' overwrite into table hive_foo
+PREHOOK: query: load data local inpath '../../data/files/hive_626_foo.txt' overwrite into table hive_foo
 PREHOOK: type: LOAD
 PREHOOK: Output: default@hive_foo
-POSTHOOK: query: load data local inpath '../data/files/hive_626_foo.txt' overwrite into table hive_foo
+POSTHOOK: query: load data local inpath '../../data/files/hive_626_foo.txt' overwrite into table hive_foo
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@hive_foo
-PREHOOK: query: load data local inpath '../data/files/hive_626_bar.txt' overwrite into table hive_bar
+PREHOOK: query: load data local inpath '../../data/files/hive_626_bar.txt' overwrite into table hive_bar
 PREHOOK: type: LOAD
 PREHOOK: Output: default@hive_bar
-POSTHOOK: query: load data local inpath '../data/files/hive_626_bar.txt' overwrite into table hive_bar
+POSTHOOK: query: load data local inpath '../../data/files/hive_626_bar.txt' overwrite into table hive_bar
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@hive_bar
-PREHOOK: query: load data local inpath '../data/files/hive_626_count.txt' overwrite into table hive_count
+PREHOOK: query: load data local inpath '../../data/files/hive_626_count.txt' overwrite into table hive_count
 PREHOOK: type: LOAD
 PREHOOK: Output: default@hive_count
-POSTHOOK: query: load data local inpath '../data/files/hive_626_count.txt' overwrite into table hive_count
+POSTHOOK: query: load data local inpath '../../data/files/hive_626_count.txt' overwrite into table hive_count
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@hive_count
 PREHOOK: query: explain

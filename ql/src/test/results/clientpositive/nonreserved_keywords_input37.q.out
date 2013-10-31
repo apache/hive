@@ -3,10 +3,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE table(string string) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@table
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/docurl.txt' INTO TABLE table
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/docurl.txt' INTO TABLE table
 PREHOOK: type: LOAD
 PREHOOK: Output: default@table
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/docurl.txt' INTO TABLE table
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/docurl.txt' INTO TABLE table
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@table
 PREHOOK: query: SELECT table, count(1)

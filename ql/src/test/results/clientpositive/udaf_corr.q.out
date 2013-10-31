@@ -11,11 +11,11 @@ ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t'
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@covar_tab
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/covar_tab.txt' OVERWRITE
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/covar_tab.txt' OVERWRITE
 INTO TABLE covar_tab
 PREHOOK: type: LOAD
 PREHOOK: Output: default@covar_tab
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/covar_tab.txt' OVERWRITE
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/covar_tab.txt' OVERWRITE
 INTO TABLE covar_tab
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@covar_tab

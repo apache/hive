@@ -18,17 +18,17 @@ FROM src
 INSERT OVERWRITE TABLE dest1 SELECT src.* WHERE src.key < 100
 INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
 INSERT OVERWRITE TABLE dest3 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
-INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
+INSERT OVERWRITE DIRECTORY 'target/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN
 FROM src
 INSERT OVERWRITE TABLE dest1 SELECT src.* WHERE src.key < 100
 INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
 INSERT OVERWRITE TABLE dest3 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
-INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
+INSERT OVERWRITE DIRECTORY 'target/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest1))) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME src)))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL src) key) 100))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest2))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value))) (TOK_WHERE (and (>= (. (TOK_TABLE_OR_COL src) key) 100) (< (. (TOK_TABLE_OR_COL src) key) 200)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest3) (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08') (TOK_PARTVAL hr '12')))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key))) (TOK_WHERE (and (>= (. (TOK_TABLE_OR_COL src) key) 200) (< (. (TOK_TABLE_OR_COL src) key) 300)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR '../build/ql/test/data/warehouse/dest4.out')) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value))) (TOK_WHERE (>= (. (TOK_TABLE_OR_COL src) key) 300))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest1))) (TOK_SELECT (TOK_SELEXPR (TOK_ALLCOLREF (TOK_TABNAME src)))) (TOK_WHERE (< (. (TOK_TABLE_OR_COL src) key) 100))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest2))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value))) (TOK_WHERE (and (>= (. (TOK_TABLE_OR_COL src) key) 100) (< (. (TOK_TABLE_OR_COL src) key) 200)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest3) (TOK_PARTSPEC (TOK_PARTVAL ds '2008-04-08') (TOK_PARTVAL hr '12')))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key))) (TOK_WHERE (and (>= (. (TOK_TABLE_OR_COL src) key) 200) (< (. (TOK_TABLE_OR_COL src) key) 300)))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR 'target/warehouse/dest4.out')) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value))) (TOK_WHERE (>= (. (TOK_TABLE_OR_COL src) key) 300))))
 
 STAGE DEPENDENCIES:
   Stage-4 is a root stage
@@ -323,7 +323,7 @@ STAGE PLANS:
     Move Operator
       files:
           hdfs directory: true
-          destination: ../build/ql/test/data/warehouse/dest4.out
+          destination: target/warehouse/dest4.out
 
   Stage: Stage-23
     Map Reduce
@@ -362,24 +362,24 @@ PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1 SELECT src.* WHERE src.key < 100
 INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
 INSERT OVERWRITE TABLE dest3 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
-INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
+INSERT OVERWRITE DIRECTORY 'target/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
-PREHOOK: Output: ../build/ql/test/data/warehouse/dest4.out
 PREHOOK: Output: default@dest1
 PREHOOK: Output: default@dest2
 PREHOOK: Output: default@dest3@ds=2008-04-08/hr=12
+PREHOOK: Output: target/warehouse/dest4.out
 POSTHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1 SELECT src.* WHERE src.key < 100
 INSERT OVERWRITE TABLE dest2 SELECT src.key, src.value WHERE src.key >= 100 and src.key < 200
 INSERT OVERWRITE TABLE dest3 PARTITION(ds='2008-04-08', hr='12') SELECT src.key WHERE src.key >= 200 and src.key < 300
-INSERT OVERWRITE DIRECTORY '../build/ql/test/data/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
+INSERT OVERWRITE DIRECTORY 'target/warehouse/dest4.out' SELECT src.value WHERE src.key >= 300
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
-POSTHOOK: Output: ../build/ql/test/data/warehouse/dest4.out
 POSTHOOK: Output: default@dest1
 POSTHOOK: Output: default@dest2
 POSTHOOK: Output: default@dest3@ds=2008-04-08/hr=12
+POSTHOOK: Output: target/warehouse/dest4.out
 POSTHOOK: Lineage: dest1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: dest1.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: dest2.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]

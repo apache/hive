@@ -27,7 +27,7 @@ FROM src tablesample (1 rows);
 
 
 CREATE TABLE test_table(col1 STRING, col2 STRING) STORED AS TEXTFILE;
-LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE test_table;
+LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE test_table;
 
 select col1,col2,
   field("66",col1),
@@ -44,7 +44,7 @@ from test_table where col1="86" or col1="66";
 
 
 CREATE TABLE test_table1(col1 int, col2 string) STORED AS TEXTFILE;
-LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE test_table1;
+LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE test_table1;
 
 select col1,col2,
   field(66,col1),

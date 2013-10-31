@@ -28,11 +28,11 @@ import junit.framework.TestCase;
 public abstract class BaseTestQueries extends TestCase {
 
   protected final String inpDir = System
-      .getProperty("ql.test.query.clientpositive.dir");
+      .getProperty("hive.root") + "/ql/src/test/queries/clientpositive";
   protected final String resDir = System
-      .getProperty("ql.test.results.clientpositive.dir");
-  protected final String logDir = System.getProperty("test.log.dir")
-      + "/clientpositive";
+      .getProperty("hive.root") + "/ql/src/test/results/clientpositive";
+  protected final String logDir = System
+      .getProperty("build.dir") + "/junit-qfile-results/clientpositive";
 
   /**
    * Create a file for each test name in the inpDir.

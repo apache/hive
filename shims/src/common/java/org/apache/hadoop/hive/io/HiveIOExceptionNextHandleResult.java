@@ -46,7 +46,7 @@ public class HiveIOExceptionNextHandleResult {
   public void setHandleResult(boolean handleResult) {
     this.handleResult = handleResult;
   }
-  
+
   public void clear() {
     handled = false;
     handleResult = false;

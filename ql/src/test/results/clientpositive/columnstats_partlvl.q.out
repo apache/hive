@@ -9,17 +9,17 @@ POSTHOOK: query: CREATE TABLE Employee_Part(employeeID int, employeeName String)
 row format delimited fields terminated by '|'  stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@Employee_Part
-PREHOOK: query: LOAD DATA LOCAL INPATH "../data/files/employee.dat" INTO TABLE Employee_Part partition(employeeSalary=2000.0)
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat" INTO TABLE Employee_Part partition(employeeSalary=2000.0)
 PREHOOK: type: LOAD
 PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../data/files/employee.dat" INTO TABLE Employee_Part partition(employeeSalary=2000.0)
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat" INTO TABLE Employee_Part partition(employeeSalary=2000.0)
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@employee_part
 POSTHOOK: Output: default@employee_part@employeesalary=2000.0
-PREHOOK: query: LOAD DATA LOCAL INPATH "../data/files/employee.dat" INTO TABLE Employee_Part partition(employeeSalary=4000.0)
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat" INTO TABLE Employee_Part partition(employeeSalary=4000.0)
 PREHOOK: type: LOAD
 PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../data/files/employee.dat" INTO TABLE Employee_Part partition(employeeSalary=4000.0)
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat" INTO TABLE Employee_Part partition(employeeSalary=4000.0)
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@employee_part
 POSTHOOK: Output: default@employee_part@employeesalary=4000.0

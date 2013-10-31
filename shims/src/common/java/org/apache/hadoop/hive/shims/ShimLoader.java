@@ -58,13 +58,13 @@ public abstract class ShimLoader {
     JETTY_SHIM_CLASSES.put("0.20S", "org.apache.hadoop.hive.shims.Jetty20SShims");
     JETTY_SHIM_CLASSES.put("0.23", "org.apache.hadoop.hive.shims.Jetty23Shims");
   }
-  
+
   /**
    * The names of the classes for shimming Hadoop's event counter
    */
   private static final HashMap<String, String> EVENT_COUNTER_SHIM_CLASSES =
       new HashMap<String, String>();
-  
+
   static {
     EVENT_COUNTER_SHIM_CLASSES.put("0.20", "org.apache.hadoop.metrics.jvm.EventCounter");
     EVENT_COUNTER_SHIM_CLASSES.put("0.20S", "org.apache.hadoop.log.metrics.EventCounter");
@@ -92,7 +92,7 @@ public abstract class ShimLoader {
     }
     return jettyShims;
   }
-  
+
   public static synchronized AppenderSkeleton getEventCounter() {
     if (eventCounter == null) {
       eventCounter = loadShims(EVENT_COUNTER_SHIM_CLASSES, AppenderSkeleton.class);
@@ -153,7 +153,7 @@ public abstract class ShimLoader {
     default:
       throw new IllegalArgumentException("Unrecognized Hadoop major version number: " + vers);
     }
-    
+
     String majorVersion = parts[0] + "." + parts[1];
 
     // If we are running a security release, we won't have UnixUserGroupInformation

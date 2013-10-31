@@ -7,10 +7,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE timestamp_null (t1 TIMESTAMP)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@timestamp_null
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/test.dat' OVERWRITE INTO TABLE timestamp_null
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/test.dat' OVERWRITE INTO TABLE timestamp_null
 PREHOOK: type: LOAD
 PREHOOK: Output: default@timestamp_null
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/test.dat' OVERWRITE INTO TABLE timestamp_null
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/test.dat' OVERWRITE INTO TABLE timestamp_null
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@timestamp_null
 PREHOOK: query: SELECT * FROM timestamp_null LIMIT 1

@@ -24,11 +24,11 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 public class DummyAuthenticator implements HiveAuthenticationProvider {
-  
+
   private List<String> groupNames;
   private String userName;
   private Configuration conf;
-  
+
   public DummyAuthenticator() {
     this.groupNames = new ArrayList<String>();
     groupNames.add("hive_test_group1");
@@ -55,7 +55,7 @@ public class DummyAuthenticator implements HiveAuthenticationProvider {
   public void setConf(Configuration conf) {
     this.conf = conf;
   }
-  
+
   public Configuration getConf() {
     return this.conf;
   }

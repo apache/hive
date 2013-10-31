@@ -7,10 +7,10 @@ POSTHOOK: query: CREATE TABLE fetchtask_ioexception (
   VALUE STRING) STORED AS SEQUENCEFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@fetchtask_ioexception
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1_broken.seq' OVERWRITE INTO TABLE fetchtask_ioexception
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1_broken.seq' OVERWRITE INTO TABLE fetchtask_ioexception
 PREHOOK: type: LOAD
 PREHOOK: Output: default@fetchtask_ioexception
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1_broken.seq' OVERWRITE INTO TABLE fetchtask_ioexception
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1_broken.seq' OVERWRITE INTO TABLE fetchtask_ioexception
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@fetchtask_ioexception
 PREHOOK: query: SELECT * FROM fetchtask_ioexception

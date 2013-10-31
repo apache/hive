@@ -9,28 +9,28 @@ POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.23)
 CREATE TABLE bucket (key double, value string) CLUSTERED BY (key) SORTED BY (key DESC)  INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@bucket
-PREHOOK: query: load data local inpath '../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket
+PREHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket
 PREHOOK: type: LOAD
 PREHOOK: Output: default@bucket
-POSTHOOK: query: load data local inpath '../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket
+POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' INTO TABLE bucket
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@bucket
-PREHOOK: query: load data local inpath '../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket
+PREHOOK: query: load data local inpath '../../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket
 PREHOOK: type: LOAD
 PREHOOK: Output: default@bucket
-POSTHOOK: query: load data local inpath '../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket
+POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket2outof4.txt' INTO TABLE bucket
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@bucket
-PREHOOK: query: load data local inpath '../data/files/srcsortbucket3outof4.txt' INTO TABLE bucket
+PREHOOK: query: load data local inpath '../../data/files/srcsortbucket3outof4.txt' INTO TABLE bucket
 PREHOOK: type: LOAD
 PREHOOK: Output: default@bucket
-POSTHOOK: query: load data local inpath '../data/files/srcsortbucket3outof4.txt' INTO TABLE bucket
+POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket3outof4.txt' INTO TABLE bucket
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@bucket
-PREHOOK: query: load data local inpath '../data/files/srcsortbucket4outof4.txt' INTO TABLE bucket
+PREHOOK: query: load data local inpath '../../data/files/srcsortbucket4outof4.txt' INTO TABLE bucket
 PREHOOK: type: LOAD
 PREHOOK: Output: default@bucket
-POSTHOOK: query: load data local inpath '../data/files/srcsortbucket4outof4.txt' INTO TABLE bucket
+POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket4outof4.txt' INTO TABLE bucket
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@bucket
 PREHOOK: query: create table t1 (result double)

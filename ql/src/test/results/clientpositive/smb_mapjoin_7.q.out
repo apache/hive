@@ -23,16 +23,16 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table normal_join_results(k1 int, v1 string, k2 int, v2 string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@normal_join_results
-PREHOOK: query: load data local inpath '../data/files/empty1.txt' into table smb_bucket4_1
+PREHOOK: query: load data local inpath '../../data/files/empty1.txt' into table smb_bucket4_1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@smb_bucket4_1
-POSTHOOK: query: load data local inpath '../data/files/empty1.txt' into table smb_bucket4_1
+POSTHOOK: query: load data local inpath '../../data/files/empty1.txt' into table smb_bucket4_1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@smb_bucket4_1
-PREHOOK: query: load data local inpath '../data/files/empty2.txt' into table smb_bucket4_1
+PREHOOK: query: load data local inpath '../../data/files/empty2.txt' into table smb_bucket4_1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@smb_bucket4_1
-POSTHOOK: query: load data local inpath '../data/files/empty2.txt' into table smb_bucket4_1
+POSTHOOK: query: load data local inpath '../../data/files/empty2.txt' into table smb_bucket4_1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@smb_bucket4_1
 PREHOOK: query: insert overwrite table smb_bucket4_2
