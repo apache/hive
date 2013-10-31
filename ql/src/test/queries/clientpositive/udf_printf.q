@@ -4,21 +4,23 @@ use default;
 DESCRIBE FUNCTION printf;
 DESCRIBE FUNCTION EXTENDED printf;
 
+set hive.fetch.task.conversion=more;
+
 EXPLAIN
-SELECT printf("Hello World %d %s", 100, "days") FROM src LIMIT 1;
+SELECT printf("Hello World %d %s", 100, "days") FROM src tablesample (1 rows);
 
 -- Test Primitive Types
-SELECT printf("Hello World %d %s", 100, "days") FROM src LIMIT 1;
-SELECT printf("All Type Test: %b, %c, %d, %e, %+10.4f, %g, %h, %s, %a", false, 65, 15000, 12.3400, 27183.240051, 2300.41, 50, "corret", 256.125) FROM src LIMIT 1;
+SELECT printf("Hello World %d %s", 100, "days") FROM src tablesample (1 rows);
+SELECT printf("All Type Test: %b, %c, %d, %e, %+10.4f, %g, %h, %s, %a", false, 65, 15000, 12.3400, 27183.240051, 2300.41, 50, "corret", 256.125) FROM src tablesample (1 rows);
 
 -- Test NULL Values
-SELECT printf("Color %s, String Null: %s, number1 %d, number2 %05d, Integer Null: %d, hex %#x, float %5.2f Double Null: %f\n", "red", NULL, 123456, 89, NULL, 255, 3.14159, NULL) FROM src LIMIT 1;
+SELECT printf("Color %s, String Null: %s, number1 %d, number2 %05d, Integer Null: %d, hex %#x, float %5.2f Double Null: %f\n", "red", NULL, 123456, 89, NULL, 255, 3.14159, NULL) FROM src tablesample (1 rows);
 
 -- Test Timestamp
 create table timestamp_udf (t timestamp);
-from src
+from (select * from src tablesample (1 rows)) s
   insert overwrite table timestamp_udf
-    select '2011-05-06 07:08:09.1234567' limit 1;
+    select '2011-05-06 07:08:09.1234567';
 select printf("timestamp: %s", t) from timestamp_udf;
 drop table timestamp_udf;
 

@@ -29,7 +29,7 @@ SELECT
   unhex('61'),
   unhex('2D34'),
   unhex('')
-FROM src limit 1
+FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -41,7 +41,7 @@ SELECT
   unhex('61'),
   unhex('2D34'),
   unhex('')
-FROM src limit 1
+FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -51,7 +51,7 @@ SELECT
   unhex('MySQL'),
   unhex('G123'),
   unhex('\0')
-FROM src limit 1
+FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -60,7 +60,7 @@ SELECT
   unhex('MySQL'),
   unhex('G123'),
   unhex('\0')
-FROM src limit 1
+FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

@@ -22,11 +22,11 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table orderpayment_small (`dealid` int,`date` string,`time` string, `cityid` int, `userid` int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@orderpayment_small
-PREHOOK: query: insert overwrite table orderpayment_small select 748, '2011-03-24', '2011-03-24', 55 ,5372613 from testsrc limit 1
+PREHOOK: query: insert overwrite table orderpayment_small select 748, '2011-03-24', '2011-03-24', 55 ,5372613 from testsrc tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testsrc
 PREHOOK: Output: default@orderpayment_small
-POSTHOOK: query: insert overwrite table orderpayment_small select 748, '2011-03-24', '2011-03-24', 55 ,5372613 from testsrc limit 1
+POSTHOOK: query: insert overwrite table orderpayment_small select 748, '2011-03-24', '2011-03-24', 55 ,5372613 from testsrc tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testsrc
 POSTHOOK: Output: default@orderpayment_small
@@ -54,11 +54,11 @@ POSTHOOK: Lineage: orderpayment_small.date SIMPLE []
 POSTHOOK: Lineage: orderpayment_small.dealid SIMPLE []
 POSTHOOK: Lineage: orderpayment_small.time SIMPLE []
 POSTHOOK: Lineage: orderpayment_small.userid SIMPLE []
-PREHOOK: query: insert overwrite table user_small select key from testsrc limit 100
+PREHOOK: query: insert overwrite table user_small select key from testsrc tablesample (100 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testsrc
 PREHOOK: Output: default@user_small
-POSTHOOK: query: insert overwrite table user_small select key from testsrc limit 100
+POSTHOOK: query: insert overwrite table user_small select key from testsrc tablesample (100 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testsrc
 POSTHOOK: Output: default@user_small

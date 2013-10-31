@@ -1,3 +1,5 @@
+set hive.fetch.task.conversion=more;
+
 DESCRIBE FUNCTION to_unix_timestamp;
 DESCRIBE FUNCTION EXTENDED to_unix_timestamp;
 

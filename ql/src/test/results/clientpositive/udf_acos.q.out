@@ -14,45 +14,45 @@ Example:
   > SELECT acos(2) FROM src LIMIT 1;
   NULL
 PREHOOK: query: SELECT acos(null)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT acos(null)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 NULL
 PREHOOK: query: SELECT acos(0)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT acos(0)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 1.5707963267948966
 PREHOOK: query: SELECT acos(-0.5), asin(0.66)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT acos(-0.5), asin(0.66)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 2.0943951023931957	0.7208187608700897
 PREHOOK: query: SELECT acos(2)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT acos(2)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

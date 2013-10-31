@@ -1,3 +1,5 @@
+set hive.fetch.task.conversion=more;
+
 DESCRIBE FUNCTION length;
 DESCRIBE FUNCTION EXTENDED length;
 

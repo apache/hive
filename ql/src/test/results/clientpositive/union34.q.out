@@ -18,7 +18,7 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table src10_4 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@src10_4
-PREHOOK: query: from (select * from src limit 10) a
+PREHOOK: query: from (select * from src tablesample (10 rows)) a
 insert overwrite table src10_1 select *
 insert overwrite table src10_2 select *
 insert overwrite table src10_3 select *
@@ -29,7 +29,7 @@ PREHOOK: Output: default@src10_1
 PREHOOK: Output: default@src10_2
 PREHOOK: Output: default@src10_3
 PREHOOK: Output: default@src10_4
-POSTHOOK: query: from (select * from src limit 10) a
+POSTHOOK: query: from (select * from src tablesample (10 rows)) a
 insert overwrite table src10_1 select *
 insert overwrite table src10_2 select *
 insert overwrite table src10_3 select *

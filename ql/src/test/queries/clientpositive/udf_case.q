@@ -1,3 +1,5 @@
+set hive.fetch.task.conversion=more;
+
 DESCRIBE FUNCTION case;
 DESCRIBE FUNCTION EXTENDED case;
 
@@ -27,7 +29,7 @@ SELECT CASE 1
         WHEN 22 THEN 23
         WHEN 21 THEN 24
        END
-FROM src LIMIT 1;
+FROM src tablesample (1 rows);
 
 SELECT CASE 1
         WHEN 1 THEN 2
@@ -54,10 +56,10 @@ SELECT CASE 1
         WHEN 22 THEN 23
         WHEN 21 THEN 24
        END
-FROM src LIMIT 1;
+FROM src tablesample (1 rows);
 
 -- verify that short-circuiting is working correctly for CASE
 -- we should never get to the ELSE branch, which would raise an exception
 SELECT CASE 1 WHEN 1 THEN 'yo'
 ELSE reflect('java.lang.String', 'bogus', 1) END
-FROM src LIMIT 1;
+FROM src tablesample (1 rows);

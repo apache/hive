@@ -12,24 +12,24 @@ POSTHOOK: query: create table t1_new (key string, value string) partitioned by (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@t1_new
 PREHOOK: query: insert overwrite table t1_new partition (ds = '2011-10-15')
-select 'key1', 'value1' from src limit 1
+select 'key1', 'value1' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@t1_new@ds=2011-10-15
 POSTHOOK: query: insert overwrite table t1_new partition (ds = '2011-10-15')
-select 'key1', 'value1' from src limit 1
+select 'key1', 'value1' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t1_new@ds=2011-10-15
 POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-15).key SIMPLE []
 POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-15).value SIMPLE []
 PREHOOK: query: insert overwrite table t1_new partition (ds = '2011-10-16')
-select 'key2', 'value2' from src limit 1
+select 'key2', 'value2' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@t1_new@ds=2011-10-16
 POSTHOOK: query: insert overwrite table t1_new partition (ds = '2011-10-16')
-select 'key2', 'value2' from src limit 1
+select 'key2', 'value2' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t1_new@ds=2011-10-16
@@ -47,12 +47,12 @@ POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-15).value SIMPLE []
 POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-16).key SIMPLE []
 POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-16).value SIMPLE []
 PREHOOK: query: insert overwrite table t1_old partition (ds = '2011-10-13')
-select 'keymap3', 'value3' from src limit 1
+select 'keymap3', 'value3' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@t1_old@ds=2011-10-13
 POSTHOOK: query: insert overwrite table t1_old partition (ds = '2011-10-13')
-select 'keymap3', 'value3' from src limit 1
+select 'keymap3', 'value3' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t1_old@ds=2011-10-13
@@ -63,12 +63,12 @@ POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-16).value SIMPLE []
 POSTHOOK: Lineage: t1_old PARTITION(ds=2011-10-13).keymap SIMPLE []
 POSTHOOK: Lineage: t1_old PARTITION(ds=2011-10-13).value SIMPLE []
 PREHOOK: query: insert overwrite table t1_old partition (ds = '2011-10-14')
-select 'keymap4', 'value4' from src limit 1
+select 'keymap4', 'value4' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@t1_old@ds=2011-10-14
 POSTHOOK: query: insert overwrite table t1_old partition (ds = '2011-10-14')
-select 'keymap4', 'value4' from src limit 1
+select 'keymap4', 'value4' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t1_old@ds=2011-10-14
@@ -94,12 +94,12 @@ POSTHOOK: Lineage: t1_old PARTITION(ds=2011-10-13).value SIMPLE []
 POSTHOOK: Lineage: t1_old PARTITION(ds=2011-10-14).keymap SIMPLE []
 POSTHOOK: Lineage: t1_old PARTITION(ds=2011-10-14).value SIMPLE []
 PREHOOK: query: insert overwrite table t1_mapping partition (ds = '2011-10-13')
-select 'key3', 'keymap3' from src limit 1
+select 'key3', 'keymap3' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@t1_mapping@ds=2011-10-13
 POSTHOOK: query: insert overwrite table t1_mapping partition (ds = '2011-10-13')
-select 'key3', 'keymap3' from src limit 1
+select 'key3', 'keymap3' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t1_mapping@ds=2011-10-13
@@ -114,12 +114,12 @@ POSTHOOK: Lineage: t1_old PARTITION(ds=2011-10-13).value SIMPLE []
 POSTHOOK: Lineage: t1_old PARTITION(ds=2011-10-14).keymap SIMPLE []
 POSTHOOK: Lineage: t1_old PARTITION(ds=2011-10-14).value SIMPLE []
 PREHOOK: query: insert overwrite table t1_mapping partition (ds = '2011-10-14')
-select 'key4', 'keymap4' from src limit 1
+select 'key4', 'keymap4' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@t1_mapping@ds=2011-10-14
 POSTHOOK: query: insert overwrite table t1_mapping partition (ds = '2011-10-14')
-select 'key4', 'keymap4' from src limit 1
+select 'key4', 'keymap4' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t1_mapping@ds=2011-10-14

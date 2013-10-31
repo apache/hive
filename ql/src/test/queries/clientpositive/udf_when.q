@@ -1,3 +1,5 @@
+set hive.fetch.task.conversion=more;
+
 DESCRIBE FUNCTION when;
 DESCRIBE FUNCTION EXTENDED when;
 
@@ -27,7 +29,7 @@ SELECT CASE
         WHEN 25=26 THEN 27
         WHEN 28=28 THEN NULL
        END
-FROM src LIMIT 1;
+FROM src tablesample (1 rows);
 
 SELECT CASE
         WHEN 1=1 THEN 2
@@ -54,4 +56,4 @@ SELECT CASE
         WHEN 25=26 THEN 27
         WHEN 28=28 THEN NULL
        END
-FROM src LIMIT 1;
+FROM src tablesample (1 rows);

@@ -8120,7 +8120,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private String getAliasId(String alias, QB qb) {
-    return (qb.getId() == null ? alias : qb.getId() + ":" + alias);
+    return (qb.getId() == null ? alias : qb.getId() + ":" + alias).toLowerCase();
   }
 
   @SuppressWarnings("nls")

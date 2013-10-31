@@ -23,7 +23,7 @@ PREHOOK: query: SELECT
   concat(1, 2),
   concat(1),
   concat('1234', 'abc', 'extra argument')
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -38,7 +38,7 @@ POSTHOOK: query: SELECT
   concat(1, 2),
   concat(1),
   concat('1234', 'abc', 'extra argument')
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -47,7 +47,7 @@ PREHOOK: query: -- binary/mixed
 SELECT
   concat(cast('ab' as binary), cast('cd' as binary)),
   concat('ab', cast('cd' as binary))
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -55,7 +55,7 @@ POSTHOOK: query: -- binary/mixed
 SELECT
   concat(cast('ab' as binary), cast('cd' as binary)),
   concat('ab', cast('cd' as binary))
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

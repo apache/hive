@@ -13,7 +13,7 @@ PREHOOK: query: SELECT
   field("x", "a", "b", "c", "d"),
   field(NULL, "a", "b", "c", "d"),
   field(0, 1, 2, 3, 4)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -21,7 +21,7 @@ POSTHOOK: query: SELECT
   field("x", "a", "b", "c", "d"),
   field(NULL, "a", "b", "c", "d"),
   field(0, 1, 2, 3, 4)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -32,7 +32,7 @@ PREHOOK: query: SELECT
   field("c", "a", "b", "c", "d"),
   field("d", "a", "b", "c", "d"),
   field("d", "a", "b", NULL, "d")
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -42,7 +42,7 @@ POSTHOOK: query: SELECT
   field("c", "a", "b", "c", "d"),
   field("d", "a", "b", "c", "d"),
   field("d", "a", "b", NULL, "d")
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -53,7 +53,7 @@ PREHOOK: query: SELECT
   field(3, 1, 2, 3, 4),
   field(4, 1, 2, 3, 4),
   field(4, 1, 2, NULL, 4)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -63,7 +63,7 @@ POSTHOOK: query: SELECT
   field(3, 1, 2, 3, 4),
   field(4, 1, 2, 3, 4),
   field(4, 1, 2, NULL, 4)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
