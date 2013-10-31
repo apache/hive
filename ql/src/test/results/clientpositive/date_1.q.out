@@ -8,12 +8,12 @@ POSTHOOK: query: create table date_1 (d date)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@date_1
 PREHOOK: query: insert overwrite table date_1 
-  select cast('2011-01-01' as date) from src limit 1
+  select cast('2011-01-01' as date) from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@date_1
 POSTHOOK: query: insert overwrite table date_1 
-  select cast('2011-01-01' as date) from src limit 1
+  select cast('2011-01-01' as date) from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@date_1
@@ -39,12 +39,12 @@ POSTHOOK: Input: default@date_1
 POSTHOOK: Lineage: date_1.d EXPRESSION []
 2011-01-01	1
 PREHOOK: query: insert overwrite table date_1 
-  select date '2011-01-01' from src limit 1
+  select date '2011-01-01' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@date_1
 POSTHOOK: query: insert overwrite table date_1 
-  select date '2011-01-01' from src limit 1
+  select date '2011-01-01' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@date_1
@@ -73,12 +73,12 @@ POSTHOOK: Lineage: date_1.d EXPRESSION []
 POSTHOOK: Lineage: date_1.d SIMPLE []
 2011-01-01	1
 PREHOOK: query: insert overwrite table date_1 
-  select cast(cast('2011-01-01 00:00:00' as timestamp) as date) from src limit 1
+  select cast(cast('2011-01-01 00:00:00' as timestamp) as date) from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@date_1
 POSTHOOK: query: insert overwrite table date_1 
-  select cast(cast('2011-01-01 00:00:00' as timestamp) as date) from src limit 1
+  select cast(cast('2011-01-01 00:00:00' as timestamp) as date) from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@date_1

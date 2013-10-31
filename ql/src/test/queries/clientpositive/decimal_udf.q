@@ -1,3 +1,5 @@
+set hive.fetch.task.conversion=more;
+
 DROP TABLE IF EXISTS DECIMAL_UDF;
 
 CREATE TABLE DECIMAL_UDF (key decimal(65,30), value int) 

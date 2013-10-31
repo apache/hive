@@ -5,34 +5,34 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@json_t
 PREHOOK: query: insert overwrite table json_t
 select * from (
-  select '1', '{"f1": "value1", "f2": "value2", "f3": 3, "f5": 5.23}' from src limit 1
+  select '1', '{"f1": "value1", "f2": "value2", "f3": 3, "f5": 5.23}' from src tablesample (1 rows)
   union all
-  select '2', '{"f1": "value12", "f3": "value3", "f2": 2, "f4": 4.01}' from src limit 1
+  select '2', '{"f1": "value12", "f3": "value3", "f2": 2, "f4": 4.01}' from src tablesample (1 rows)
   union all
-  select '3', '{"f1": "value13", "f4": "value44", "f3": "value33", "f2": 2, "f5": 5.01}' from src limit 1
+  select '3', '{"f1": "value13", "f4": "value44", "f3": "value33", "f2": 2, "f5": 5.01}' from src tablesample (1 rows)
   union all
-  select '4', cast(null as string) from src limit 1
+  select '4', cast(null as string) from src tablesample (1 rows)
   union all
-  select '5', '{"f1": "", "f5": null}' from src limit 1
+  select '5', '{"f1": "", "f5": null}' from src tablesample (1 rows)
   union all
-  select '6', '[invalid JSON string]' from src limit 1
+  select '6', '[invalid JSON string]' from src tablesample (1 rows)
 ) s
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@json_t
 POSTHOOK: query: insert overwrite table json_t
 select * from (
-  select '1', '{"f1": "value1", "f2": "value2", "f3": 3, "f5": 5.23}' from src limit 1
+  select '1', '{"f1": "value1", "f2": "value2", "f3": 3, "f5": 5.23}' from src tablesample (1 rows)
   union all
-  select '2', '{"f1": "value12", "f3": "value3", "f2": 2, "f4": 4.01}' from src limit 1
+  select '2', '{"f1": "value12", "f3": "value3", "f2": 2, "f4": 4.01}' from src tablesample (1 rows)
   union all
-  select '3', '{"f1": "value13", "f4": "value44", "f3": "value33", "f2": 2, "f5": 5.01}' from src limit 1
+  select '3', '{"f1": "value13", "f4": "value44", "f3": "value33", "f2": 2, "f5": 5.01}' from src tablesample (1 rows)
   union all
-  select '4', cast(null as string) from src limit 1
+  select '4', cast(null as string) from src tablesample (1 rows)
   union all
-  select '5', '{"f1": "", "f5": null}' from src limit 1
+  select '5', '{"f1": "", "f5": null}' from src tablesample (1 rows)
   union all
-  select '6', '[invalid JSON string]' from src limit 1
+  select '6', '[invalid JSON string]' from src tablesample (1 rows)
 ) s
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
@@ -588,11 +588,11 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@dest1
 POSTHOOK: Lineage: json_t.jstring EXPRESSION []
 POSTHOOK: Lineage: json_t.key EXPRESSION []
-PREHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT '{"a":"b\nc"}' FROM src LIMIT 1
+PREHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT '{"a":"b\nc"}' FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest1
-POSTHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT '{"a":"b\nc"}' FROM src LIMIT 1
+POSTHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT '{"a":"b\nc"}' FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest1

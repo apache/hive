@@ -15,13 +15,13 @@ POSTHOOK: query: alter table timestamp_3 set serde 'org.apache.hadoop.hive.serde
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@timestamp_3
 POSTHOOK: Output: default@timestamp_3
-PREHOOK: query: insert overwrite table timestamp_3 
-  select cast(cast('1.3041352164485E9' as double) as timestamp) from src limit 1
+PREHOOK: query: insert overwrite table timestamp_3
+  select cast(cast('1.3041352164485E9' as double) as timestamp) from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@timestamp_3
-POSTHOOK: query: insert overwrite table timestamp_3 
-  select cast(cast('1.3041352164485E9' as double) as timestamp) from src limit 1
+POSTHOOK: query: insert overwrite table timestamp_3
+  select cast(cast('1.3041352164485E9' as double) as timestamp) from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@timestamp_3

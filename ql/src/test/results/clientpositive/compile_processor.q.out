@@ -2,11 +2,11 @@ PREHOOK: query: CREATE TEMPORARY FUNCTION Pyth as 'Pyth'
 PREHOOK: type: CREATEFUNCTION
 POSTHOOK: query: CREATE TEMPORARY FUNCTION Pyth as 'Pyth'
 POSTHOOK: type: CREATEFUNCTION
-PREHOOK: query: SELECT Pyth(3,4) FROM src limit 1
+PREHOOK: query: SELECT Pyth(3,4) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT Pyth(3,4) FROM src limit 1
+POSTHOOK: query: SELECT Pyth(3,4) FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

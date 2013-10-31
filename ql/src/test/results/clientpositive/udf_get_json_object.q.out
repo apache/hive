@@ -48,32 +48,21 @@ ABSTRACT SYNTAX TREE:
 #### A masked pattern was here ####
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        src_json 
-          TableScan
-            alias: src_json
-            Select Operator
-              expressions:
-#### A masked pattern was here ####
-                    type: string
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: src_json
+          Select Operator
+            expressions:
+#### A masked pattern was here ####
+                  type: string
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT get_json_object(src_json.json, '$') FROM src_json
@@ -184,11 +173,11 @@ CREATE TABLE dest2(c1 STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@dest2
 POSTHOOK: Lineage: dest1.c1 SIMPLE []
-PREHOOK: query: INSERT OVERWRITE TABLE dest2 SELECT '{"a":"b\nc"}' FROM src LIMIT 1
+PREHOOK: query: INSERT OVERWRITE TABLE dest2 SELECT '{"a":"b\nc"}' FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@dest2
-POSTHOOK: query: INSERT OVERWRITE TABLE dest2 SELECT '{"a":"b\nc"}' FROM src LIMIT 1
+POSTHOOK: query: INSERT OVERWRITE TABLE dest2 SELECT '{"a":"b\nc"}' FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@dest2

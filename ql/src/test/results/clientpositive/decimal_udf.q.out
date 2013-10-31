@@ -29,32 +29,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (+ (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL key))))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: (key + key)
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: (key + key)
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT key + key FROM DECIMAL_UDF
@@ -111,32 +100,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (+ (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value))))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: (key + value)
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: (key + value)
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT key + value FROM DECIMAL_UDF
@@ -193,32 +171,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (+ (TOK_TABLE_OR_COL key) (/ (TOK_TABLE_OR_COL value) 2))))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: (key + (value / 2))
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: (key + (value / 2))
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT key + (value/2) FROM DECIMAL_UDF
@@ -275,32 +242,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (+ (TOK_TABLE_OR_COL key) '1.0')))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: (key + '1.0')
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: (key + '1.0')
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT key + '1.0' FROM DECIMAL_UDF
@@ -359,32 +315,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (- (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL key))))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: (key - key)
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: (key - key)
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT key - key FROM DECIMAL_UDF
@@ -441,32 +386,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (- (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value))))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: (key - value)
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: (key - value)
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT key - value FROM DECIMAL_UDF
@@ -523,32 +457,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (- (TOK_TABLE_OR_COL key) (/ (TOK_TABLE_OR_COL value) 2))))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: (key - (value / 2))
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: (key - (value / 2))
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT key - (value/2) FROM DECIMAL_UDF
@@ -605,32 +528,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (- (TOK_TABLE_OR_COL key) '1.0')))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: (key - '1.0')
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: (key - '1.0')
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT key - '1.0' FROM DECIMAL_UDF
@@ -689,32 +601,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (* (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL key))))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: (key * key)
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: (key * key)
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT key * key FROM DECIMAL_UDF
@@ -771,32 +672,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (* (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value))))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: (key * value)
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: (key * value)
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT key * value FROM DECIMAL_UDF
@@ -853,32 +743,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (* (TOK_TABLE_OR_COL key) (/ (TOK_TABLE_OR_COL value) 2))))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: (key * (value / 2))
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: (key * (value / 2))
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT key * (value/2) FROM DECIMAL_UDF
@@ -935,32 +814,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (* (TOK_TABLE_OR_COL key) '2.0')))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: (key * '2.0')
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: (key * '2.0')
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT key * '2.0' FROM DECIMAL_UDF
@@ -1019,33 +887,22 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (/ (TOK_TABLE_OR_COL key) 0))) (TOK_LIMIT 1)))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: (key / 0)
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              Limit
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: 1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: (key / 0)
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            Limit
+              ListSink
 
 
 PREHOOK: query: SELECT key / 0 FROM DECIMAL_UDF limit 1
@@ -1065,33 +922,22 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (/ (TOK_TABLE_OR_COL key) TOK_NULL))) (TOK_LIMIT 1)))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: (key / null)
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              Limit
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: 1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: (key / null)
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            Limit
+              ListSink
 
 
 PREHOOK: query: SELECT key / NULL FROM DECIMAL_UDF limit 1
@@ -1111,36 +957,25 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (/ (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL key)))) (TOK_WHERE (and (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL key)) (<> (TOK_TABLE_OR_COL key) 0)))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Filter Operator
-              predicate:
-                  expr: (key is not null and (key <> 0))
-                  type: boolean
-              Select Operator
-                expressions:
-                      expr: (key / key)
-                      type: decimal(65,30)
-                outputColumnNames: _col0
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Filter Operator
+            predicate:
+                expr: (key is not null and (key <> 0))
+                type: boolean
+            Select Operator
+              expressions:
+                    expr: (key / key)
+                    type: decimal(65,30)
+              outputColumnNames: _col0
+              ListSink
 
 
 PREHOOK: query: SELECT key / key FROM DECIMAL_UDF WHERE key is not null and key <> 0
@@ -1193,36 +1028,25 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (/ (TOK_TABLE_OR_COL key) (TOK_TABLE_OR_COL value)))) (TOK_WHERE (and (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL value)) (<> (TOK_TABLE_OR_COL value) 0)))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Filter Operator
-              predicate:
-                  expr: (value is not null and (value <> 0))
-                  type: boolean
-              Select Operator
-                expressions:
-                      expr: (key / value)
-                      type: decimal(65,30)
-                outputColumnNames: _col0
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Filter Operator
+            predicate:
+                expr: (value is not null and (value <> 0))
+                type: boolean
+            Select Operator
+              expressions:
+                    expr: (key / value)
+                    type: decimal(65,30)
+              outputColumnNames: _col0
+              ListSink
 
 
 PREHOOK: query: SELECT key / value FROM DECIMAL_UDF WHERE value is not null and value <> 0
@@ -1265,36 +1089,25 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (/ (TOK_TABLE_OR_COL key) (/ (TOK_TABLE_OR_COL value) 2)))) (TOK_WHERE (and (TOK_FUNCTION TOK_ISNOTNULL (TOK_TABLE_OR_COL value)) (<> (TOK_TABLE_OR_COL value) 0)))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Filter Operator
-              predicate:
-                  expr: (value is not null and (value <> 0))
-                  type: boolean
-              Select Operator
-                expressions:
-                      expr: (key / (value / 2))
-                      type: decimal(65,30)
-                outputColumnNames: _col0
-                File Output Operator
-                  compressed: false
-                  GlobalTableId: 0
-                  table:
-                      input format: org.apache.hadoop.mapred.TextInputFormat
-                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Filter Operator
+            predicate:
+                expr: (value is not null and (value <> 0))
+                type: boolean
+            Select Operator
+              expressions:
+                    expr: (key / (value / 2))
+                    type: decimal(65,30)
+              outputColumnNames: _col0
+              ListSink
 
 
 PREHOOK: query: SELECT key / (value/2) FROM DECIMAL_UDF  WHERE value is not null and value <> 0
@@ -1337,32 +1150,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (/ (TOK_TABLE_OR_COL key) '2.0')))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: (key / '2.0')
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: (key / '2.0')
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT key / '2.0' FROM DECIMAL_UDF
@@ -1421,32 +1223,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION abs (TOK_TABLE_OR_COL key))))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: abs(key)
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: abs(key)
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT abs(key) FROM DECIMAL_UDF
@@ -1647,32 +1438,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (- (TOK_TABLE_OR_COL key))))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: (- key)
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: (- key)
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT -key FROM DECIMAL_UDF
@@ -1731,32 +1511,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (+ (TOK_TABLE_OR_COL key))))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: key
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: key
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT +key FROM DECIMAL_UDF
@@ -1815,32 +1584,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION CEIL (TOK_TABLE_OR_COL key))))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: ceil(key)
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: ceil(key)
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT CEIL(key) FROM DECIMAL_UDF
@@ -1899,32 +1657,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION FLOOR (TOK_TABLE_OR_COL key))))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: floor(key)
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: floor(key)
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT FLOOR(key) FROM DECIMAL_UDF
@@ -1983,32 +1730,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION ROUND (TOK_TABLE_OR_COL key) 2)))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: round(key, 2)
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: round(key, 2)
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT ROUND(key, 2) FROM DECIMAL_UDF
@@ -2067,32 +1803,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION POWER (TOK_TABLE_OR_COL key) 2)))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: power(key, 2)
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: power(key, 2)
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT POWER(key, 2) FROM DECIMAL_UDF
@@ -2151,32 +1876,21 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (% (+ (TOK_TABLE_OR_COL key) 1) (/ (TOK_TABLE_OR_COL key) 2))))))
 
 STAGE DEPENDENCIES:
-  Stage-1 is a root stage
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-1
-    Map Reduce
-      Alias -> Map Operator Tree:
-        decimal_udf 
-          TableScan
-            alias: decimal_udf
-            Select Operator
-              expressions:
-                    expr: ((key + 1) % (key / 2))
-                    type: decimal(65,30)
-              outputColumnNames: _col0
-              File Output Operator
-                compressed: false
-                GlobalTableId: 0
-                table:
-                    input format: org.apache.hadoop.mapred.TextInputFormat
-                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-
   Stage: Stage-0
     Fetch Operator
       limit: -1
+      Processor Tree:
+        TableScan
+          alias: decimal_udf
+          Select Operator
+            expressions:
+                  expr: ((key + 1) % (key / 2))
+                  type: decimal(65,30)
+            outputColumnNames: _col0
+            ListSink
 
 
 PREHOOK: query: SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF

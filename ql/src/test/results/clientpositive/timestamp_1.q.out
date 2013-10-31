@@ -15,13 +15,13 @@ POSTHOOK: query: alter table timestamp_1 set serde 'org.apache.hadoop.hive.serde
 POSTHOOK: type: ALTERTABLE_SERIALIZER
 POSTHOOK: Input: default@timestamp_1
 POSTHOOK: Output: default@timestamp_1
-PREHOOK: query: insert overwrite table timestamp_1 
-  select cast('2011-01-01 01:01:01' as timestamp) from src limit 1
+PREHOOK: query: insert overwrite table timestamp_1
+  select cast('2011-01-01 01:01:01' as timestamp) from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@timestamp_1
-POSTHOOK: query: insert overwrite table timestamp_1 
-  select cast('2011-01-01 01:01:01' as timestamp) from src limit 1
+POSTHOOK: query: insert overwrite table timestamp_1
+  select cast('2011-01-01 01:01:01' as timestamp) from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@timestamp_1
@@ -107,12 +107,12 @@ POSTHOOK: Input: default@timestamp_1
 POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 2011-01-01 01:01:01
 PREHOOK: query: insert overwrite table timestamp_1
-  select '2011-01-01 01:01:01' from src limit 1
+  select '2011-01-01 01:01:01' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@timestamp_1
 POSTHOOK: query: insert overwrite table timestamp_1
-  select '2011-01-01 01:01:01' from src limit 1
+  select '2011-01-01 01:01:01' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@timestamp_1
@@ -207,12 +207,12 @@ POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 2011-01-01 01:01:01
 PREHOOK: query: insert overwrite table timestamp_1
-  select '2011-01-01 01:01:01.1' from src limit 1
+  select '2011-01-01 01:01:01.1' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@timestamp_1
 POSTHOOK: query: insert overwrite table timestamp_1
-  select '2011-01-01 01:01:01.1' from src limit 1
+  select '2011-01-01 01:01:01.1' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@timestamp_1
@@ -316,12 +316,12 @@ POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 2011-01-01 01:01:01.1
 PREHOOK: query: insert overwrite table timestamp_1
-  select '2011-01-01 01:01:01.0001' from src limit 1
+  select '2011-01-01 01:01:01.0001' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@timestamp_1
 POSTHOOK: query: insert overwrite table timestamp_1
-  select '2011-01-01 01:01:01.0001' from src limit 1
+  select '2011-01-01 01:01:01.0001' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@timestamp_1
@@ -434,12 +434,12 @@ POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 2011-01-01 01:01:01.0001
 PREHOOK: query: insert overwrite table timestamp_1
-  select '2011-01-01 01:01:01.000100000' from src limit 1
+  select '2011-01-01 01:01:01.000100000' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@timestamp_1
 POSTHOOK: query: insert overwrite table timestamp_1
-  select '2011-01-01 01:01:01.000100000' from src limit 1
+  select '2011-01-01 01:01:01.000100000' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@timestamp_1
@@ -561,12 +561,12 @@ POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 POSTHOOK: Lineage: timestamp_1.t EXPRESSION []
 2011-01-01 01:01:01.0001
 PREHOOK: query: insert overwrite table timestamp_1
-  select '2011-01-01 01:01:01.001000011' from src limit 1
+  select '2011-01-01 01:01:01.001000011' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@timestamp_1
 POSTHOOK: query: insert overwrite table timestamp_1
-  select '2011-01-01 01:01:01.001000011' from src limit 1
+  select '2011-01-01 01:01:01.001000011' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@timestamp_1

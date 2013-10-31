@@ -17,74 +17,74 @@ Example:
   'b2'
   > SELECT xpath_string('<a><b>b1</b><b>b2</b></a>','a') FROM src LIMIT 1;
   'b1b2'
-PREHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a') FROM src LIMIT 1
+PREHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a') FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a') FROM src LIMIT 1
+POSTHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a') FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 bbcc
-PREHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a/b') FROM src LIMIT 1
+PREHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a/b') FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a/b') FROM src LIMIT 1
+POSTHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a/b') FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 bb
-PREHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a/c') FROM src LIMIT 1
+PREHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a/c') FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a/c') FROM src LIMIT 1
+POSTHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a/c') FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 cc
-PREHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a/d') FROM src LIMIT 1
+PREHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a/d') FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a/d') FROM src LIMIT 1
+POSTHOOK: query: SELECT xpath_string ('<a><b>bb</b><c>cc</c></a>', 'a/d') FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 
-PREHOOK: query: SELECT xpath_string ('<a><b>b1</b><b>b2</b></a>', '//b') FROM src LIMIT 1
+PREHOOK: query: SELECT xpath_string ('<a><b>b1</b><b>b2</b></a>', '//b') FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT xpath_string ('<a><b>b1</b><b>b2</b></a>', '//b') FROM src LIMIT 1
+POSTHOOK: query: SELECT xpath_string ('<a><b>b1</b><b>b2</b></a>', '//b') FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 b1
-PREHOOK: query: SELECT xpath_string ('<a><b>b1</b><b>b2</b></a>', 'a/b[1]') FROM src LIMIT 1
+PREHOOK: query: SELECT xpath_string ('<a><b>b1</b><b>b2</b></a>', 'a/b[1]') FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT xpath_string ('<a><b>b1</b><b>b2</b></a>', 'a/b[1]') FROM src LIMIT 1
+POSTHOOK: query: SELECT xpath_string ('<a><b>b1</b><b>b2</b></a>', 'a/b[1]') FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 b1
-PREHOOK: query: SELECT xpath_string ('<a><b>b1</b><b>b2</b></a>', 'a/b[2]') FROM src LIMIT 1
+PREHOOK: query: SELECT xpath_string ('<a><b>b1</b><b>b2</b></a>', 'a/b[2]') FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT xpath_string ('<a><b>b1</b><b>b2</b></a>', 'a/b[2]') FROM src LIMIT 1
+POSTHOOK: query: SELECT xpath_string ('<a><b>b1</b><b>b2</b></a>', 'a/b[2]') FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 b2
-PREHOOK: query: SELECT xpath_string ('<a><b>b1</b><b id="b_2">b2</b></a>', 'a/b[@id="b_2"]') FROM src LIMIT 1
+PREHOOK: query: SELECT xpath_string ('<a><b>b1</b><b id="b_2">b2</b></a>', 'a/b[@id="b_2"]') FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT xpath_string ('<a><b>b1</b><b id="b_2">b2</b></a>', 'a/b[@id="b_2"]') FROM src LIMIT 1
+POSTHOOK: query: SELECT xpath_string ('<a><b>b1</b><b id="b_2">b2</b></a>', 'a/b[@id="b_2"]') FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
