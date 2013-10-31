@@ -13,10 +13,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE stats_null_part(a double, b int, c STRING, d smallint) partitioned by (dt string) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@stats_null_part
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/null.txt' INTO TABLE temps_null
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE temps_null
 PREHOOK: type: LOAD
 PREHOOK: Output: default@temps_null
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/null.txt' INTO TABLE temps_null
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE temps_null
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@temps_null
 PREHOOK: query: insert overwrite table stats_null select * from temps_null

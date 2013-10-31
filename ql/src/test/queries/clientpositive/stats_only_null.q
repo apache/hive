@@ -6,7 +6,7 @@ CREATE TABLE stats_null(a double, b int, c STRING, d smallint) STORED AS TEXTFIL
 
 CREATE TABLE stats_null_part(a double, b int, c STRING, d smallint) partitioned by (dt string) STORED AS TEXTFILE; 
 
-LOAD DATA LOCAL INPATH '../data/files/null.txt' INTO TABLE temps_null;
+LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE temps_null;
 
 insert overwrite table stats_null select * from temps_null;
 insert overwrite table stats_null_part partition(dt='2010') select * from temps_null where d <=5;
