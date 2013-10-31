@@ -31,12 +31,18 @@ import junit.framework.Assert;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.*;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColUnaryMinus;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColLessDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColumnBetween;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColumnNotBetween;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColEqualLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColGreaterLongScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColLessDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColumnBetween;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColumnNotBetween;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongScalarGreaterLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColGreaterStringColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColGreaterStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColumnBetween;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColumnNotBetween;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncLnDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncRoundDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncSinDoubleToDouble;
@@ -66,6 +72,7 @@ import org.apache.hadoop.hive.ql.udf.UDFRound;
 import org.apache.hadoop.hive.ql.udf.UDFSin;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLower;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
@@ -858,5 +865,61 @@ public class TestVectorizationContext {
     tsFuncExpr.setTypeInfo(TypeInfoFactory.longTypeInfo);
     ve = vc.getVectorExpression(tsFuncExpr);
     Assert.assertEquals(VectorUDFUnixTimeStampLong.class, ve.getClass());
+  }
+
+  @Test
+  public void testBetweenFilters() throws HiveException {
+    ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(String.class, "col1", "table", false);
+    ExprNodeConstantDesc constDesc = new ExprNodeConstantDesc("Alpha");
+    ExprNodeConstantDesc constDesc2 = new ExprNodeConstantDesc("Bravo");
+
+    // string BETWEEN
+    GenericUDFBetween udf = new GenericUDFBetween();
+    ExprNodeGenericFuncDesc exprDesc = new ExprNodeGenericFuncDesc();
+    exprDesc.setGenericUDF(udf);
+    List<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>();
+    children1.add(new ExprNodeConstantDesc(new Boolean(false))); // no NOT keyword
+    children1.add(col1Expr);
+    children1.add(constDesc);
+    children1.add(constDesc2);
+    exprDesc.setChildren(children1);
+
+    Map<String, Integer> columnMap = new HashMap<String, Integer>();
+    columnMap.put("col1", 1);
+    columnMap.put("col2", 2);
+    VectorizationContext vc = new VectorizationContext(columnMap, 2);
+    VectorExpression ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    assertTrue(ve instanceof FilterStringColumnBetween);
+
+    // string NOT BETWEEN
+    children1.set(0, new ExprNodeConstantDesc(new Boolean(true))); // has NOT keyword
+    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    assertTrue(ve instanceof FilterStringColumnNotBetween);
+
+    // long BETWEEN
+    children1.set(0, new ExprNodeConstantDesc(new Boolean(false)));
+    children1.set(1, new ExprNodeColumnDesc(Long.class, "col1", "table", false));
+    children1.set(2, new ExprNodeConstantDesc(10));
+    children1.set(3, new ExprNodeConstantDesc(20));
+    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    assertTrue(ve instanceof FilterLongColumnBetween);
+
+    // long NOT BETWEEN
+    children1.set(0, new ExprNodeConstantDesc(new Boolean(true)));
+    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    assertTrue(ve instanceof FilterLongColumnNotBetween);
+
+    // double BETWEEN
+    children1.set(0, new ExprNodeConstantDesc(new Boolean(false)));
+    children1.set(1, new ExprNodeColumnDesc(Double.class, "col1", "table", false));
+    children1.set(2, new ExprNodeConstantDesc(10.0d));
+    children1.set(3, new ExprNodeConstantDesc(20.0d));
+    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    assertTrue(ve instanceof FilterDoubleColumnBetween);
+
+    // double NOT BETWEEN
+    children1.set(0, new ExprNodeConstantDesc(new Boolean(true)));
+    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    assertTrue(ve instanceof FilterDoubleColumnNotBetween);
   }
 }
