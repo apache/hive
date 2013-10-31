@@ -26,7 +26,6 @@ import org.apache.hadoop.hive.shims.HadoopShims.WebHCatJTShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.security.UserGroupInformation;
-import org.apache.hive.hcatalog.templeton.tool.JobState;
 
 /**
  * List jobs owned by a user.
@@ -50,17 +49,9 @@ public class ListDelegator extends TempletonDelegator {
 
       if (jobs != null) {
         for (JobStatus job : jobs) {
-          JobState state = null;
-          try {
-            String id = job.getJobID().toString();
-            state = new JobState(id, Main.getAppConfigInstance());
-            if (showall || user.equals(state.getUser()))
-              ids.add(id);
-          } finally {
-            if (state != null) {
-              state.close();
-            }
-          }
+          String id = job.getJobID().toString();
+          if (showall || user.equals(job.getUsername()))
+            ids.add(id);
         }
       }
 
