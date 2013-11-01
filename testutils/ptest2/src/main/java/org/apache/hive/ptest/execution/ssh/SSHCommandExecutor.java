@@ -23,14 +23,22 @@ import java.util.concurrent.TimeUnit;
 import org.apache.hive.ptest.execution.Constants;
 import org.apache.hive.ptest.execution.LocalCommand;
 import org.apache.hive.ptest.execution.LocalCommand.CollectPolicy;
+import org.apache.hive.ptest.execution.LocalCommandFactory;
 import org.slf4j.Logger;
 
 public class SSHCommandExecutor {
 
   private final Logger mLogger;
-
-  public SSHCommandExecutor(Logger logger) {
+  private final LocalCommandFactory mLocalCommandFactory;
+  private volatile boolean mShutdown;
+  
+  public SSHCommandExecutor(Logger logger, LocalCommandFactory localCommandFactory) {
     mLogger = logger;
+    mShutdown = false;
+    mLocalCommandFactory = localCommandFactory;
+  }
+  public SSHCommandExecutor(Logger logger) {
+    this(logger, new LocalCommandFactory(logger));
   }
   /**
    * Execute the given command via the ssh command line tool. If the command
@@ -46,13 +54,19 @@ public class SSHCommandExecutor {
       LocalCommand cmd;
       do {
         retry = false;
-        cmd = new LocalCommand(mLogger, collector, commandText);
+        cmd = mLocalCommandFactory.create(collector, commandText);
+        if(mShutdown) {
+          mLogger.warn("Shutting down command " + command);
+          cmd.kill();
+          command.setExitCode(Constants.EXIT_CODE_UNKNOWN);
+          return;
+        }
         if(attempts++ <= 3 && cmd.getExitCode() == Constants.EXIT_CODE_UNKNOWN) {
           mLogger.warn("Command exited with " + cmd.getExitCode() + ", will retry: " + command);
           retry = true;
           TimeUnit.SECONDS.sleep(5);
         }
-      } while (retry); // an error occurred, re-try
+      } while (!mShutdown && retry); // an error occurred, re-try
       command.setExitCode(cmd.getExitCode());
     } catch (Exception e) {
       if(command.getExitCode() == Constants.EXIT_CODE_SUCCESS) {
@@ -62,5 +76,11 @@ public class SSHCommandExecutor {
     } finally {
       command.setOutput(collector.getOutput());
     }
+  }
+  boolean isShutdown() {
+    return mShutdown;
+  }
+  public void shutdownNow() {
+    this.mShutdown = true;
   }
 }
