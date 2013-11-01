@@ -169,15 +169,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_big
-                numFiles 4
-                numPartitions 2
-                numRows 0
                 partition_columns ds
-                rawDataSize 0
                 serialization.ddl struct bucket_big { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 5500
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket_big
@@ -217,15 +212,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_big
-                numFiles 4
-                numPartitions 2
-                numRows 0
                 partition_columns ds
-                rawDataSize 0
                 serialization.ddl struct bucket_big { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 5500
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket_big
@@ -372,15 +362,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_big
-                numFiles 4
-                numPartitions 2
-                numRows 0
                 partition_columns ds
-                rawDataSize 0
                 serialization.ddl struct bucket_big { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 5500
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket_big
@@ -420,15 +405,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_big
-                numFiles 4
-                numPartitions 2
-                numRows 0
                 partition_columns ds
-                rawDataSize 0
                 serialization.ddl struct bucket_big { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 5500
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket_big
@@ -554,15 +534,10 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_small
-                      numFiles 8
-                      numPartitions 2
-                      numRows 0
                       partition_columns ds
-                      rawDataSize 0
                       serialization.ddl struct bucket_small { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 452
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.bucket_small
@@ -600,15 +575,10 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_small
-                      numFiles 8
-                      numPartitions 2
-                      numRows 0
                       partition_columns ds
-                      rawDataSize 0
                       serialization.ddl struct bucket_small { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 452
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.bucket_small
@@ -699,15 +669,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_big
-                numFiles 4
-                numPartitions 2
-                numRows 0
                 partition_columns ds
-                rawDataSize 0
                 serialization.ddl struct bucket_big { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 5500
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket_big
@@ -747,15 +712,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_big
-                numFiles 4
-                numPartitions 2
-                numRows 0
                 partition_columns ds
-                rawDataSize 0
                 serialization.ddl struct bucket_big { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 5500
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket_big
@@ -794,15 +754,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_small
-                numFiles 8
-                numPartitions 2
-                numRows 0
                 partition_columns ds
-                rawDataSize 0
                 serialization.ddl struct bucket_small { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 452
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket_small
@@ -841,15 +796,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_small
-                numFiles 8
-                numPartitions 2
-                numRows 0
                 partition_columns ds
-                rawDataSize 0
                 serialization.ddl struct bucket_small { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 452
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket_small
@@ -932,15 +882,10 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_big
-                      numFiles 4
-                      numPartitions 2
-                      numRows 0
                       partition_columns ds
-                      rawDataSize 0
                       serialization.ddl struct bucket_big { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 5500
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.bucket_big
@@ -979,15 +924,10 @@ STAGE PLANS:
                       columns.types string:string
 #### A masked pattern was here ####
                       name default.bucket_big
-                      numFiles 4
-                      numPartitions 2
-                      numRows 0
                       partition_columns ds
-                      rawDataSize 0
                       serialization.ddl struct bucket_big { string key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 5500
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.bucket_big
@@ -1078,15 +1018,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_big
-                numFiles 4
-                numPartitions 2
-                numRows 0
                 partition_columns ds
-                rawDataSize 0
                 serialization.ddl struct bucket_big { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 5500
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket_big
@@ -1126,15 +1061,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_big
-                numFiles 4
-                numPartitions 2
-                numRows 0
                 partition_columns ds
-                rawDataSize 0
                 serialization.ddl struct bucket_big { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 5500
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket_big
@@ -1173,15 +1103,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_small
-                numFiles 8
-                numPartitions 2
-                numRows 0
                 partition_columns ds
-                rawDataSize 0
                 serialization.ddl struct bucket_small { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 452
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket_small
@@ -1220,15 +1145,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_small
-                numFiles 8
-                numPartitions 2
-                numRows 0
                 partition_columns ds
-                rawDataSize 0
                 serialization.ddl struct bucket_small { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 452
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket_small
@@ -1339,15 +1259,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_big
-                numFiles 4
-                numPartitions 2
-                numRows 0
                 partition_columns ds
-                rawDataSize 0
                 serialization.ddl struct bucket_big { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 5500
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket_big
@@ -1387,15 +1302,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.bucket_big
-                numFiles 4
-                numPartitions 2
-                numRows 0
                 partition_columns ds
-                rawDataSize 0
                 serialization.ddl struct bucket_big { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 5500
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.bucket_big

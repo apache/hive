@@ -275,15 +275,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1_mapping
-                numFiles 2
-                numPartitions 2
-                numRows 2
                 partition_columns ds
-                rawDataSize 24
                 serialization.ddl struct t1_mapping { string key, string keymap}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 26
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1_mapping
@@ -320,15 +315,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1_old
-                numFiles 2
-                numPartitions 2
-                numRows 2
                 partition_columns ds
-                rawDataSize 28
                 serialization.ddl struct t1_old { string keymap, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1_old
@@ -486,7 +476,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select * from t1 where ds = '2011-10-13'
 PREHOOK: type: QUERY
@@ -803,15 +792,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1_new
-                numFiles 2
-                numPartitions 2
-                numRows 2
                 partition_columns ds
-                rawDataSize 22
                 serialization.ddl struct t1_new { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 24
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1_new

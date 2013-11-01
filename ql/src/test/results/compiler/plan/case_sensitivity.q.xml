@@ -640,10 +640,6 @@
              <string>0</string> 
             </void> 
             <void method="put"> 
-             <string>numPartitions</string> 
-             <string>0</string> 
-            </void> 
-            <void method="put"> 
              <string>serialization.class</string> 
              <string>org.apache.hadoop.hive.serde2.thrift.test.Complex</string> 
             </void> 
@@ -1371,10 +1367,6 @@
            <string>0</string> 
           </void> 
           <void method="put"> 
-           <string>numPartitions</string> 
-           <string>0</string> 
-          </void> 
-          <void method="put"> 
            <string>serialization.class</string> 
            <string>org.apache.hadoop.hive.serde2.thrift.test.Complex</string> 
           </void> 
@@ -1448,10 +1440,6 @@
             </void> 
             <void method="put"> 
              <string>numRows</string> 
-             <string>0</string> 
-            </void> 
-            <void method="put"> 
-             <string>numPartitions</string> 
              <string>0</string> 
             </void> 
             <void method="put"> 

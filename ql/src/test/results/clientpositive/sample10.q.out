@@ -133,15 +133,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.srcpartbucket
-                numFiles 16
-                numPartitions 4
-                numRows 40
                 partition_columns ds/hr
-                rawDataSize 240
                 serialization.ddl struct srcpartbucket { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                totalSize 1228
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.srcpartbucket
@@ -181,15 +176,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.srcpartbucket
-                numFiles 16
-                numPartitions 4
-                numRows 40
                 partition_columns ds/hr
-                rawDataSize 240
                 serialization.ddl struct srcpartbucket { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                totalSize 1228
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.srcpartbucket
@@ -229,15 +219,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.srcpartbucket
-                numFiles 16
-                numPartitions 4
-                numRows 40
                 partition_columns ds/hr
-                rawDataSize 240
                 serialization.ddl struct srcpartbucket { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                totalSize 1228
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.srcpartbucket
@@ -277,15 +262,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.srcpartbucket
-                numFiles 16
-                numPartitions 4
-                numRows 40
                 partition_columns ds/hr
-                rawDataSize 240
                 serialization.ddl struct srcpartbucket { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                totalSize 1228
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.srcpartbucket

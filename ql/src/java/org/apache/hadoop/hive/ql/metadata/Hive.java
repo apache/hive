@@ -48,6 +48,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.HiveStatsUtils;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience.LimitedPrivate;
 import org.apache.hadoop.hive.common.classification.InterfaceStability.Unstable;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -1367,7 +1369,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
         new ArrayList<LinkedHashMap<String, String>>();
 
       FileSystem fs = loadPath.getFileSystem(conf);
-      FileStatus[] leafStatus = Utilities.getFileStatusRecurse(loadPath, numDP+1, fs);
+      FileStatus[] leafStatus = HiveStatsUtils.getFileStatusRecurse(loadPath, numDP+1, fs);
       // Check for empty partitions
       for (FileStatus s : leafStatus) {
         // Check if the hadoop version supports sub-directories for tables/partitions
@@ -1560,6 +1562,17 @@ private void constructOneLBLocationMap(FileStatus fSta,
     return getPartition(tbl, partSpec, forceCreate, null, true);
   }
 
+  private static void clearPartitionStats(org.apache.hadoop.hive.metastore.api.Partition tpart) {
+    Map<String,String> tpartParams = tpart.getParameters();
+    if (tpartParams == null) {
+      return;
+    }
+    List<String> statTypes = StatsSetupConst.getSupportedStats();
+    for (String statType : statTypes) {
+      tpartParams.remove(statType);
+    }
+  }
+
   /**
    * Returns partition metadata
    *
@@ -1629,6 +1642,7 @@ private void constructOneLBLocationMap(FileStatus fSta,
             throw new HiveException("new partition path should not be null or empty.");
           }
           tpart.getSd().setLocation(partPath);
+          clearPartitionStats(tpart);
           String fullName = tbl.getTableName();
           if (!org.apache.commons.lang.StringUtils.isEmpty(tbl.getDbName())) {
             fullName = tbl.getDbName() + "." + tbl.getTableName();
@@ -2559,4 +2573,5 @@ private void constructOneLBLocationMap(FileStatus fSta,
   private static String[] getQualifiedNames(String qualifiedName) {
     return qualifiedName.split("\\.");
   }
+
 };

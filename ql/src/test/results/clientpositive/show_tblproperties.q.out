@@ -29,10 +29,12 @@ PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties tmpfoo
 POSTHOOK: type: SHOW_TBLPROPERTIES
 	 
+numFiles	0
 #### A masked pattern was here ####
 tmp	true
 #### A masked pattern was here ####
 bar	bar value
+totalSize	0
 PREHOOK: query: show tblproperties tmpfoo("bar")
 PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: show tblproperties tmpfoo("bar")

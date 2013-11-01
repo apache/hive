@@ -1029,7 +1029,8 @@ public class HiveMetaStore extends ThriftHiveMetastore {
 
         ms.openTransaction();
 
-        if (ms.getDatabase(tbl.getDbName()) == null) {
+        Database db = ms.getDatabase(tbl.getDbName());
+        if (db == null) {
           throw new NoSuchObjectException("The database " + tbl.getDbName() + " does not exist");
         }
 
@@ -1061,6 +1062,14 @@ public class HiveMetaStore extends ThriftHiveMetastore {
                   + " is not a directory or unable to create one");
             }
             madeDir = true;
+          }
+        }
+        if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVESTATSAUTOGATHER) &&
+            !MetaStoreUtils.isView(tbl)) {
+          if (tbl.getPartitionKeysSize() == 0)  { // Unpartitioned table
+            MetaStoreUtils.updateUnpartitionedTableStatsFast(db, tbl, wh, madeDir);
+          } else { // Partitioned table with no partitions.
+            MetaStoreUtils.updateUnpartitionedTableStatsFast(db, tbl, wh, true);
           }
         }
 
@@ -1540,6 +1549,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
         part.setCreateTime((int) time);
         part.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(time));
 
+        if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVESTATSAUTOGATHER) &&
+            !MetaStoreUtils.isView(tbl)) {
+          MetaStoreUtils.updatePartitionStatsFast(part, wh, madeDir);
+        }
+
         success = ms.addPartition(part);
         if (success) {
           success = ms.commitTransaction();
@@ -1758,6 +1772,11 @@ public class HiveMetaStore extends ThriftHiveMetastore {
             }
             madeDir = true;
           }
+        }
+
+        if (HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVESTATSAUTOGATHER) &&
+            !MetaStoreUtils.isView(tbl)) {
+          MetaStoreUtils.updatePartitionStatsFast(part, wh, madeDir);
         }
 
         // set create time

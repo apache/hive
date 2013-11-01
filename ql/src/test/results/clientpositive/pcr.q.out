@@ -140,15 +140,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -185,15 +180,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -341,15 +331,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -386,15 +371,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -431,15 +411,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -631,15 +606,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -676,15 +646,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -840,15 +805,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -885,15 +845,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -1051,15 +1006,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -1096,15 +1046,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -1141,15 +1086,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -1318,15 +1258,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -1363,15 +1298,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -1408,15 +1338,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -1589,15 +1514,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -1634,15 +1554,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -1777,15 +1692,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -1822,15 +1732,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -2005,15 +1910,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -2050,15 +1950,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -2095,15 +1990,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -2312,15 +2202,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -2357,15 +2242,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -2518,15 +2398,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -2806,15 +2681,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -2851,15 +2721,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 3
-                numPartitions 3
-                numRows 60
                 partition_columns ds
-                rawDataSize 480
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 540
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -3154,15 +3019,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 4
-                numPartitions 4
-                numRows 80
                 partition_columns ds
-                rawDataSize 640
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 720
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -3199,15 +3059,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 4
-                numPartitions 4
-                numRows 80
                 partition_columns ds
-                rawDataSize 640
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 720
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -3244,15 +3099,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 4
-                numPartitions 4
-                numRows 80
                 partition_columns ds
-                rawDataSize 640
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 720
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -3289,15 +3139,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 4
-                numPartitions 4
-                numRows 80
                 partition_columns ds
-                rawDataSize 640
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 720
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -3495,15 +3340,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 4
-                numPartitions 4
-                numRows 80
                 partition_columns ds
-                rawDataSize 640
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 720
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -3540,15 +3380,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 4
-                numPartitions 4
-                numRows 80
                 partition_columns ds
-                rawDataSize 640
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 720
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -3585,15 +3420,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 4
-                numPartitions 4
-                numRows 80
                 partition_columns ds
-                rawDataSize 640
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 720
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -3863,15 +3693,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 4
-                numPartitions 4
-                numRows 80
                 partition_columns ds
-                rawDataSize 640
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 720
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -4336,7 +4161,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                         name default.pcr_t2
                         numFiles 1
-                        numPartitions 0
                         numRows 20
                         rawDataSize 160
                         serialization.ddl struct pcr_t2 { i32 key, string value}
@@ -4377,7 +4201,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                         name default.pcr_t3
                         numFiles 1
-                        numPartitions 0
                         numRows 20
                         rawDataSize 160
                         serialization.ddl struct pcr_t3 { i32 key, string value}
@@ -4425,15 +4248,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.pcr_t1
-                numFiles 4
-                numPartitions 4
-                numRows 80
                 partition_columns ds
-                rawDataSize 640
                 serialization.ddl struct pcr_t1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 720
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.pcr_t1
@@ -4465,7 +4283,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.pcr_t2
                 numFiles 1
-                numPartitions 0
                 numRows 20
                 rawDataSize 160
                 serialization.ddl struct pcr_t2 { i32 key, string value}
@@ -4502,7 +4319,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.pcr_t2
                     numFiles 1
-                    numPartitions 0
                     numRows 20
                     rawDataSize 160
                     serialization.ddl struct pcr_t2 { i32 key, string value}
@@ -4530,7 +4346,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t2
               numFiles 1
-              numPartitions 0
               numRows 20
               rawDataSize 160
               serialization.ddl struct pcr_t2 { i32 key, string value}
@@ -4549,7 +4364,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.pcr_t2
                 numFiles 1
-                numPartitions 0
                 numRows 20
                 rawDataSize 160
                 serialization.ddl struct pcr_t2 { i32 key, string value}
@@ -4584,7 +4398,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.pcr_t2
                     numFiles 1
-                    numPartitions 0
                     numRows 20
                     rawDataSize 160
                     serialization.ddl struct pcr_t2 { i32 key, string value}
@@ -4612,7 +4425,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t2
               numFiles 1
-              numPartitions 0
               numRows 20
               rawDataSize 160
               serialization.ddl struct pcr_t2 { i32 key, string value}
@@ -4631,7 +4443,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.pcr_t2
                 numFiles 1
-                numPartitions 0
                 numRows 20
                 rawDataSize 160
                 serialization.ddl struct pcr_t2 { i32 key, string value}
@@ -4675,7 +4486,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.pcr_t3
                 numFiles 1
-                numPartitions 0
                 numRows 20
                 rawDataSize 160
                 serialization.ddl struct pcr_t3 { i32 key, string value}
@@ -4712,7 +4522,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.pcr_t3
                     numFiles 1
-                    numPartitions 0
                     numRows 20
                     rawDataSize 160
                     serialization.ddl struct pcr_t3 { i32 key, string value}
@@ -4740,7 +4549,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t3
               numFiles 1
-              numPartitions 0
               numRows 20
               rawDataSize 160
               serialization.ddl struct pcr_t3 { i32 key, string value}
@@ -4759,7 +4567,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.pcr_t3
                 numFiles 1
-                numPartitions 0
                 numRows 20
                 rawDataSize 160
                 serialization.ddl struct pcr_t3 { i32 key, string value}
@@ -4794,7 +4601,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.pcr_t3
                     numFiles 1
-                    numPartitions 0
                     numRows 20
                     rawDataSize 160
                     serialization.ddl struct pcr_t3 { i32 key, string value}
@@ -4822,7 +4628,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.pcr_t3
               numFiles 1
-              numPartitions 0
               numRows 20
               rawDataSize 160
               serialization.ddl struct pcr_t3 { i32 key, string value}
@@ -4841,7 +4646,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.pcr_t3
                 numFiles 1
-                numPartitions 0
                 numRows 20
                 rawDataSize 160
                 serialization.ddl struct pcr_t3 { i32 key, string value}
@@ -4860,7 +4664,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: from pcr_t1
 insert overwrite table pcr_t2 select key, value where ds='2000-04-08' and key=2
@@ -4983,15 +4786,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.srcpart
-                numFiles 4
-                numPartitions 4
-                numRows 0
                 partition_columns ds/hr
-                rawDataSize 0
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 23248
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
@@ -5158,15 +4956,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.srcpart
-                numFiles 4
-                numPartitions 4
-                numRows 0
                 partition_columns ds/hr
-                rawDataSize 0
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 23248
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
@@ -5204,15 +4997,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.srcpart
-                numFiles 4
-                numPartitions 4
-                numRows 0
                 partition_columns ds/hr
-                rawDataSize 0
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 23248
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
@@ -5385,15 +5173,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.srcpart
-                numFiles 4
-                numPartitions 4
-                numRows 0
                 partition_columns ds/hr
-                rawDataSize 0
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 23248
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
@@ -5431,15 +5214,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.srcpart
-                numFiles 4
-                numPartitions 4
-                numRows 0
                 partition_columns ds/hr
-                rawDataSize 0
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 23248
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart

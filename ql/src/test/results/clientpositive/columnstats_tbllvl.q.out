@@ -178,7 +178,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.uservisits_web_text_none
               numFiles 1
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct uservisits_web_text_none { string sourceip, string desturl, string visitdate, float adrevenue, string useragent, string ccode, string lcode, string skeyword, i32 avgtimeonsite}
@@ -198,7 +197,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.uservisits_web_text_none
                 numFiles 1
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct uservisits_web_text_none { string sourceip, string desturl, string visitdate, float adrevenue, string useragent, string ccode, string lcode, string skeyword, i32 avgtimeonsite}

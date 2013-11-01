@@ -60,6 +60,9 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	SORTBUCKETCOLSPREFIX	TRUE                
 #### A masked pattern was here ####
+	numFiles            	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 

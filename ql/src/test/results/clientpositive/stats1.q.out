@@ -206,7 +206,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	2                   
-	numPartitions       	0                   
 	numRows             	26                  
 	rawDataSize         	199                 
 	totalSize           	225                 
@@ -256,7 +255,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	3                   
-	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	1583                

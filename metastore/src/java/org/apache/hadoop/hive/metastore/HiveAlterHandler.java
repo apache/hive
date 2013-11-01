@@ -31,6 +31,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidObjectException;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -195,6 +196,12 @@ public class HiveAlterHandler implements AlterHandler {
             msdb.alterPartition(dbname, name, part.getValues(), part);
           }
         }
+      } else if (MetaStoreUtils.requireCalStats(hiveConf, null, null, newt) &&
+        (newt.getPartitionKeysSize() == 0)) {
+          Database db = msdb.getDatabase(newt.getDbName());
+          // Update table stats. For partitioned table, we update stats in
+          // alterPartition()
+          MetaStoreUtils.updateUnpartitionedTableStatsFast(db, newt, wh, false, true);
       }
       // now finally call alter table
       msdb.alterTable(dbname, name, newt);
@@ -254,10 +261,10 @@ public class HiveAlterHandler implements AlterHandler {
     Path destPath = null;
     FileSystem srcFs = null;
     FileSystem destFs = null;
-    Table tbl = null;
     Partition oldPart = null;
     String oldPartLoc = null;
     String newPartLoc = null;
+
     // Set DDL time to now if not specified
     if (new_part.getParameters() == null ||
         new_part.getParameters().get(hive_metastoreConstants.DDL_TIME) == null ||
@@ -265,10 +272,15 @@ public class HiveAlterHandler implements AlterHandler {
       new_part.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(System
           .currentTimeMillis() / 1000));
     }
+
+    Table tbl = msdb.getTable(dbname, name);
     //alter partition
     if (part_vals == null || part_vals.size() == 0) {
       try {
         oldPart = msdb.getPartition(dbname, name, new_part.getValues());
+        if (MetaStoreUtils.requireCalStats(hiveConf, oldPart, new_part, tbl)) {
+          MetaStoreUtils.updatePartitionStatsFast(new_part, wh, false, true);
+        }
         msdb.alterPartition(dbname, name, new_part.getValues(), new_part);
       } catch (InvalidObjectException e) {
         throw new InvalidOperationException("alter is not possible");
@@ -299,7 +311,6 @@ public class HiveAlterHandler implements AlterHandler {
         throw new AlreadyExistsException("Partition already exists:" + dbname + "." + name + "." +
             new_part.getValues());
       }
-      tbl = msdb.getTable(dbname, name);
       if (tbl == null) {
         throw new InvalidObjectException(
             "Unable to rename partition because table or database do not exist");
@@ -351,6 +362,9 @@ public class HiveAlterHandler implements AlterHandler {
               + tbl.getTableName() + " " + new_part.getValues());
           }
           new_part.getSd().setLocation(newPartLoc);
+          if (MetaStoreUtils.requireCalStats(hiveConf, oldPart, new_part, tbl)) {
+            MetaStoreUtils.updatePartitionStatsFast(new_part, wh, false, true);
+          }
           msdb.alterPartition(dbname, name, part_vals, new_part);
         }
       }
@@ -399,6 +413,7 @@ public class HiveAlterHandler implements AlterHandler {
       MetaException {
     List<Partition> oldParts = new ArrayList<Partition>();
     List<List<String>> partValsList = new ArrayList<List<String>>();
+    Table tbl = msdb.getTable(dbname, name);
     try {
       for (Partition tmpPart: new_parts) {
         // Set DDL time to now if not specified
@@ -408,9 +423,14 @@ public class HiveAlterHandler implements AlterHandler {
           tmpPart.putToParameters(hive_metastoreConstants.DDL_TIME, Long.toString(System
               .currentTimeMillis() / 1000));
         }
+
         Partition oldTmpPart = msdb.getPartition(dbname, name, tmpPart.getValues());
         oldParts.add(oldTmpPart);
         partValsList.add(tmpPart.getValues());
+
+        if (MetaStoreUtils.requireCalStats(hiveConf, oldTmpPart, tmpPart, tbl)) {
+          MetaStoreUtils.updatePartitionStatsFast(tmpPart, wh, false, true);
+        }
       }
       msdb.alterPartitions(dbname, name, partValsList, new_parts);
     } catch (InvalidObjectException e) {

@@ -142,7 +142,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.test_table1
               numFiles 16
-              numPartitions 0
               numRows 500
               rawDataSize 5312
               serialization.ddl struct test_table1 { i32 key, string value}
@@ -163,7 +162,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.test_table1
                 numFiles 16
-                numPartitions 0
                 numRows 500
                 rawDataSize 5312
                 serialization.ddl struct test_table1 { i32 key, string value}
@@ -346,7 +344,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.test_table3
               numFiles 16
-              numPartitions 0
               numRows 500
               rawDataSize 5312
               serialization.ddl struct test_table3 { i32 key, string value}
@@ -367,7 +364,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.test_table3
                 numFiles 16
-                numPartitions 0
                 numRows 500
                 rawDataSize 5312
                 serialization.ddl struct test_table3 { i32 key, string value}

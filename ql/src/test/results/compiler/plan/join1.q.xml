@@ -257,10 +257,6 @@
              <string>0</string> 
             </void> 
             <void method="put"> 
-             <string>numPartitions</string> 
-             <string>0</string> 
-            </void> 
-            <void method="put"> 
              <string>bucket_count</string> 
              <string>-1</string> 
             </void> 
@@ -390,10 +386,6 @@
             </void> 
             <void method="put"> 
              <string>numRows</string> 
-             <string>0</string> 
-            </void> 
-            <void method="put"> 
-             <string>numPartitions</string> 
              <string>0</string> 
             </void> 
             <void method="put"> 
@@ -1185,10 +1177,6 @@
            <string>0</string> 
           </void> 
           <void method="put"> 
-           <string>numPartitions</string> 
-           <string>0</string> 
-          </void> 
-          <void method="put"> 
            <string>bucket_count</string> 
            <string>-1</string> 
           </void> 
@@ -1258,10 +1246,6 @@
             </void> 
             <void method="put"> 
              <string>numRows</string> 
-             <string>0</string> 
-            </void> 
-            <void method="put"> 
-             <string>numPartitions</string> 
              <string>0</string> 
             </void> 
             <void method="put"> 

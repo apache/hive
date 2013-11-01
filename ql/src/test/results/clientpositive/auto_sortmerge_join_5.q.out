@@ -108,7 +108,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.bucket_big
               numFiles 2
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct bucket_big { string key, string value}
@@ -129,7 +128,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.bucket_big
                 numFiles 2
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct bucket_big { string key, string value}
@@ -252,7 +250,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.bucket_big
               numFiles 2
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct bucket_big { string key, string value}
@@ -273,7 +270,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.bucket_big
                 numFiles 2
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct bucket_big { string key, string value}
@@ -427,7 +423,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.bucket_big
               numFiles 2
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct bucket_big { string key, string value}
@@ -448,7 +443,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.bucket_big
                 numFiles 2
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct bucket_big { string key, string value}
@@ -486,7 +480,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.bucket_small
                 numFiles 4
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct bucket_small { string key, string value}
@@ -604,7 +597,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.bucket_big
               numFiles 2
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct bucket_big { string key, string value}
@@ -625,7 +617,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.bucket_big
                 numFiles 2
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct bucket_big { string key, string value}
@@ -663,7 +654,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.bucket_small
                 numFiles 4
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct bucket_small { string key, string value}
@@ -758,7 +748,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.bucket_big
               numFiles 2
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct bucket_big { string key, string value}
@@ -779,7 +768,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.bucket_big
                 numFiles 2
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct bucket_big { string key, string value}

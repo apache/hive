@@ -126,7 +126,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.table1
               numFiles 1
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct table1 { string key, string value}
@@ -147,7 +146,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.table1
                 numFiles 1
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct table1 { string key, string value}
