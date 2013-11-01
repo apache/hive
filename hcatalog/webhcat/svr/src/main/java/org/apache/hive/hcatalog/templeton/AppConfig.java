@@ -91,6 +91,14 @@ public class AppConfig extends Configuration {
   public static final String PYTHON_NAME         = "templeton.python";
   public static final String HIVE_ARCHIVE_NAME   = "templeton.hive.archive";
   public static final String HIVE_PATH_NAME      = "templeton.hive.path";
+  /**
+   * see webhcat-default.xml
+   */
+  public static final String HIVE_HOME_PATH      = "templeton.hive.home";
+  /**
+   * see webhcat-default.xml
+   */
+  public static final String HCAT_HOME_PATH      = "templeton.hcat.home";
   public static final String HIVE_PROPS_NAME     = "templeton.hive.properties";
   public static final String LIB_JARS_NAME       = "templeton.libjars";
   public static final String PIG_ARCHIVE_NAME    = "templeton.pig.archive";

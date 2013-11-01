@@ -116,6 +116,25 @@
   </property>
 
   <property>
+    <name>templeton.hive.home</name>
+    <value>hive-0.13.0-SNAPSHOT-bin.tar.gz/hive-0.13.0-SNAPSHOT-bin</value>
+    <description>
+      The path to the Hive home within the tar.  This is needed if Hive is not installed on all
+      nodes in the cluster and needs to be shipped to the target node in the cluster to execute Pig
+      job which uses HCat, Hive query, etc.  Has no effect if templeton.hive.archive is not set.
+    </description>
+  </property>
+  <property>
+    <name>templeton.hcat.home</name>
+    <value>hive-0.13.0-SNAPSHOT-bin.tar.gz/hive-0.13.0-SNAPSHOT-bin/hcatalog</value>
+    <description>
+      The path to the HCat home within the tar.  This is needed if Hive is not installed on all
+      nodes in the cluster and needs to be shipped to the target node in the cluster to execute Pig
+      job which uses HCat, Hive query, etc.  Has no effect if templeton.hive.archive is not set.
+    </description>
+  </property>
+
+  <property>
     <name>templeton.hive.properties</name>
     <value>hive.metastore.local=false,hive.metastore.uris=thrift://localhost:9933,hive.metastore.sasl.enabled=false</value>
     <description>Properties to set when running hive.</description>

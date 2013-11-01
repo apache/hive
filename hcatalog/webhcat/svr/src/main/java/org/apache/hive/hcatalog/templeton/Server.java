@@ -635,7 +635,7 @@ public class Server {
   /**
    * Run a MapReduce Jar job.
    * Params correspond to the REST api params
-   * @param  usehcatalog if {@code true}, means the Jar uses HCat and thus needs to access 
+   * @param  usesHcatalog if {@code true}, means the Jar uses HCat and thus needs to access 
    *    metastore, which requires additional steps for WebHCat to perform in a secure cluster.  
    * @param callback URL which WebHCat will call when the hive job finishes
    * @see org.apache.hive.hcatalog.templeton.tool.TempletonControllerJob
@@ -651,7 +651,7 @@ public class Server {
                   @FormParam("define") List<String> defines,
                   @FormParam("statusdir") String statusdir,
                   @FormParam("callback") String callback,
-                  @FormParam("usehcatalog") boolean usehcatalog,
+                  @FormParam("usehcatalog") boolean usesHcatalog,
                   @FormParam("enablelog") boolean enablelog)
     throws NotAuthorizedException, BusyException, BadParam, QueueException,
     ExecuteException, IOException, InterruptedException {
@@ -677,14 +677,14 @@ public class Server {
     return d.run(getDoAsUser(), userArgs,
       jar, mainClass,
       libjars, files, args, defines,
-      statusdir, callback, usehcatalog, getCompletedUrl(), enablelog, JobType.JAR);
+      statusdir, callback, usesHcatalog, getCompletedUrl(), enablelog, JobType.JAR);
   }
 
   /**
    * Run a Pig job.
-   * Params correspond to the REST api params.  If '-useHCatalog' is in the {@code pigArgs, usehcatalog}, 
+   * Params correspond to the REST api params.  If '-useHCatalog' is in the {@code pigArgs, usesHcatalog},
    * is interpreted as true.
-   * @param  usehcatalog if {@code true}, means the Pig script uses HCat and thus needs to access 
+   * @param  usesHcatalog if {@code true}, means the Pig script uses HCat and thus needs to access 
    *    metastore, which requires additional steps for WebHCat to perform in a secure cluster.
    *    This does nothing to ensure that Pig is installed on target node in the cluster.
    * @param callback URL which WebHCat will call when the hive job finishes
@@ -699,7 +699,7 @@ public class Server {
                @FormParam("files") String otherFiles,
                @FormParam("statusdir") String statusdir,
                @FormParam("callback") String callback,
-               @FormParam("usehcatalog") boolean usehcatalog,
+               @FormParam("usehcatalog") boolean usesHcatalog,
                @FormParam("enablelog") boolean enablelog)
     throws NotAuthorizedException, BusyException, BadParam, QueueException,
     ExecuteException, IOException, InterruptedException {
@@ -725,7 +725,7 @@ public class Server {
     return d.run(getDoAsUser(), userArgs,
       execute, srcFile,
       pigArgs, otherFiles,
-      statusdir, callback, usehcatalog, getCompletedUrl(), enablelog);
+      statusdir, callback, usesHcatalog, getCompletedUrl(), enablelog);
   }
 
   /**

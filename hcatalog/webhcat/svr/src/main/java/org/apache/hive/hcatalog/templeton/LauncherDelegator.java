@@ -97,6 +97,9 @@ public class LauncherDelegator extends TempletonDelegator {
 
   private String queueAsUser(UserGroupInformation ugi, final List<String> args)
     throws IOException, InterruptedException {
+    if(LOG.isDebugEnabled()) {
+      LOG.debug("Launching job: " + args);
+    }
     return ugi.doAs(new PrivilegedExceptionAction<String>() {
       public String run() throws Exception {
         String[] array = new String[args.size()];

@@ -24,6 +24,11 @@ package org.apache.hive.hcatalog.templeton;
  * or hive.
  */
 public class TempletonDelegator {
+  /**
+   * http://hadoop.apache.org/docs/r1.0.4/commands_manual.html#Generic+Options
+   */
+  public static final String ARCHIVES = "-archives";
+  
   protected AppConfig appConf;
 
   public TempletonDelegator(AppConfig appConf) {
