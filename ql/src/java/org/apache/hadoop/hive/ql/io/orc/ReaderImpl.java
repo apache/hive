@@ -288,7 +288,6 @@ final class ReaderImpl implements Reader {
    * @throws IOException
    */
   ReaderImpl(FileSystem fs, Path path) throws IOException {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.INIT_ORC_RECORD_READER);
     this.fileSystem = fs;
     this.path = path;
 
@@ -303,7 +302,6 @@ final class ReaderImpl implements Reader {
     this.bufferSize = rInfo.bufferSize;
     this.footer = rInfo.footer;
     this.inspector = rInfo.inspector;
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.INIT_ORC_RECORD_READER);
   }
 
 
@@ -317,7 +315,6 @@ final class ReaderImpl implements Reader {
    */
   ReaderImpl(FileSystem fs, Path path, FileMetaInfo fMetaInfo)
       throws IOException {
-    perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.INIT_ORC_RECORD_READER);
     this.fileSystem = fs;
     this.path = path;
 
@@ -332,8 +329,6 @@ final class ReaderImpl implements Reader {
     this.bufferSize = rInfo.bufferSize;
     this.footer = rInfo.footer;
     this.inspector = rInfo.inspector;
-    perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.INIT_ORC_RECORD_READER);
-
   }
 
 

@@ -63,10 +63,7 @@ public class PerfLogger {
   public static final String TEZ_RUN_PROCESSOR = "TezRunProcessor";
   public static final String TEZ_INIT_OPERATORS = "TezInitializeOperators";
   public static final String LOAD_HASHTABLE = "LoadHashtable";
-  public static final String INIT_ORC_RECORD_READER = "OrcRecordReaderInit";
-  public static final String CREATE_ORC_SPLITS = "OrcCreateSplits";
   public static final String ORC_GET_SPLITS = "OrcGetSplits";
-  public static final String ORC_GET_BLOCK_LOCATIONS = "OrcGetBlockLocations";
 
   protected static final ThreadLocal<PerfLogger> perfLogger = new ThreadLocal<PerfLogger>();
 
