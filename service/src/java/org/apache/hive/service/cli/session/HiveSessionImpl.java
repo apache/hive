@@ -89,6 +89,7 @@ public class HiveSessionImpl implements HiveSession {
     hiveConf.set(ConfVars.HIVESESSIONID.varname,
         sessionHandle.getHandleIdentifier().toString());
     sessionState = new SessionState(hiveConf);
+    SessionState.start(sessionState);
   }
 
   public SessionManager getSessionManager() {
@@ -108,7 +109,9 @@ public class HiveSessionImpl implements HiveSession {
   }
 
   protected synchronized void acquire() throws HiveSQLException {
-    SessionState.start(sessionState);
+    // need to make sure that the this connections session state is
+    // stored in the thread local for sessions.
+    SessionState.setCurrentSessionState(sessionState);
   }
 
   protected synchronized void release() {
@@ -312,7 +315,7 @@ public class HiveSessionImpl implements HiveSession {
     opHandleSet.add(opHandle);
     return opHandle;
     } catch (HiveSQLException e) {
-      operationManager.closeOperation(opHandle); 
+      operationManager.closeOperation(opHandle);
       throw e;
     } finally {
       release();
