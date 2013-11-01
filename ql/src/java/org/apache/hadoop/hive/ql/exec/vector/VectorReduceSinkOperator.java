@@ -19,12 +19,14 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Random;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.TopNHash;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
@@ -39,6 +41,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 
 public class VectorReduceSinkOperator extends ReduceSinkOperator {
 
@@ -51,42 +54,44 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
    * The evaluators for the key columns. Key columns decide the sort order on
    * the reducer side. Key columns are passed to the reducer in the "key".
    */
-  protected VectorExpression[] keyEval;
+  private VectorExpression[] keyEval;
 
   /**
    * The key value writers. These know how to write the necessary writable type
    * based on key column metadata, from the primitive vector type.
    */
-  protected transient VectorExpressionWriter[] keyWriters;
+  private transient VectorExpressionWriter[] keyWriters;
 
   /**
    * The evaluators for the value columns. Value columns are passed to reducer
    * in the "value".
    */
-  protected VectorExpression[] valueEval;
+  private VectorExpression[] valueEval;
 
   /**
    * The output value writers. These know how to write the necessary writable type
    * based on value column metadata, from the primitive vector type.
    */
-  protected transient VectorExpressionWriter[] valueWriters;
+  private transient VectorExpressionWriter[] valueWriters;
 
   /**
    * The evaluators for the partition columns (CLUSTER BY or DISTRIBUTE BY in
    * Hive language). Partition columns decide the reducer that the current row
    * goes to. Partition columns are not passed to reducer.
    */
-  protected VectorExpression[] partitionEval;
+  private VectorExpression[] partitionEval;
 
   /**
    * The partition value writers. These know how to write the necessary writable type
    * based on partition column metadata, from the primitive vector type.
    */
-  protected transient VectorExpressionWriter[] partitionWriters;
+  private transient VectorExpressionWriter[] partitionWriters;
 
-  transient ObjectInspector keyObjectInspector;
-  transient ObjectInspector valueObjectInspector;
-  transient int [] keyHashCode = new int [VectorizedRowBatch.DEFAULT_SIZE];
+  private transient ObjectInspector keyObjectInspector;
+  private transient ObjectInspector valueObjectInspector;
+  private transient int [] keyHashCode = new int [VectorizedRowBatch.DEFAULT_SIZE];
+
+  private transient int[] hashResult; // the pre-created array for reducerHash results
 
   public VectorReduceSinkOperator(VectorizationContext vContext, OperatorDesc conf)
       throws HiveException {
@@ -183,6 +188,11 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
       tagByte[0] = (byte) tag;
       LOG.info("Using tag = " + tag);
 
+      int limit = conf.getTopN();
+      float memUsage = conf.getTopNMemoryUsage();
+      if (limit >= 0 && memUsage > 0) {
+        reducerHash.initialize(limit, memUsage, conf.isMapGroupBy(), this);
+      }
     } catch(Exception e) {
       throw new HiveException(e);
     }
@@ -215,21 +225,22 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
 
       Object[] distributionKeys = new Object[numDistributionKeys];
 
-      // Emit a (k,v) pair for each row in the batch
-      //
+      // Determine which rows we need to emit based on topN optimization
+      int startResult = reducerHash.startVectorizedBatch();
+      if (startResult == TopNHash.EXCLUDED) {
+        return; // TopN wants us to exclude all rows.
+      }
+      boolean useTopN = startResult != TopNHash.FORWARD;
+      if (useTopN && (hashResult == null || hashResult.length < vrg.size)) {
+        hashResult = new int[Math.max(vrg.size, VectorizedRowBatch.DEFAULT_SIZE)];
+      }
+
       for (int j = 0 ; j < vrg.size; ++j) {
         int rowIndex = j;
         if (vrg.selectedInUse) {
           rowIndex = vrg.selected[j];
         }
-        for (int i = 0; i < valueEval.length; i++) {
-          int batchColumn = valueEval[i].getOutputColumn();
-          ColumnVector vectorColumn = vrg.cols[batchColumn];
-          cachedValues[i] = valueWriters[i].writeValue(vectorColumn, rowIndex);
-        }
-        // Serialize the value
-        value = valueSerializer.serialize(cachedValues, valueObjectInspector);
-
+        // First, evaluate the key - the way things stand we'd need it regardless.
         for (int i = 0; i < keyEval.length; i++) {
           int batchColumn = keyEval[i].getOutputColumn();
           ColumnVector vectorColumn = vrg.cols[batchColumn];
@@ -237,69 +248,42 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
         }
         // no distinct key
         System.arraycopy(distributionKeys, 0, cachedKeys[0], 0, numDistributionKeys);
-        // Serialize the keys and append the tag
+        // TopN is not supported for multi-distinct currently. If we have more cachedKeys
+        // than one for every input key horrible things will happen (OOB error on array likely).
+        assert !useTopN || cachedKeys.length <= 1;
         for (int i = 0; i < cachedKeys.length; i++) {
-          if (keyIsText) {
-            Text key = (Text) keySerializer.serialize(cachedKeys[i],
-                keyObjectInspector);
-            if (tag == -1) {
-              keyWritable.set(key.getBytes(), 0, key.getLength());
-            } else {
-              int keyLength = key.getLength();
-              keyWritable.setSize(keyLength + 1);
-              System.arraycopy(key.getBytes(), 0, keyWritable.get(), 0, keyLength);
-              keyWritable.get()[keyLength] = tagByte[0];
-            }
+          // Serialize the keys and append the tag.
+          Object keyObj = keySerializer.serialize(cachedKeys[i], keyObjectInspector);
+          setKeyWritable(keyIsText ? (Text)keyObj : (BytesWritable)keyObj, tag);
+          if (useTopN) {
+            reducerHash.tryStoreVectorizedKey(keyWritable, j, hashResult);
           } else {
-            // Must be BytesWritable
-            BytesWritable key = (BytesWritable) keySerializer.serialize(
-                cachedKeys[i], keyObjectInspector);
-            if (tag == -1) {
-              keyWritable.set(key.getBytes(), 0, key.getLength());
-            } else {
-              int keyLength = key.getLength();
-              keyWritable.setSize(keyLength + 1);
-              System.arraycopy(key.getBytes(), 0, keyWritable.get(), 0, keyLength);
-              keyWritable.get()[keyLength] = tagByte[0];
-            }
-          }
-          // Evaluate the HashCode
-          int keyHashCode = 0;
-          if (partitionEval.length == 0) {
-            // If no partition cols, just distribute the data uniformly to provide
-            // better
-            // load balance. If the requirement is to have a single reducer, we
-            // should set
-            // the number of reducers to 1.
-            // Use a constant seed to make the code deterministic.
-            if (random == null) {
-              random = new Random(12345);
-            }
-            keyHashCode = random.nextInt();
-          } else {
-            for (int p = 0; p < partitionEval.length; p++) {
-              ColumnVector columnVector = vrg.cols[partitionEval[p].getOutputColumn()];
-              Object partitionValue = partitionWriters[p].writeValue(columnVector, rowIndex);
-              keyHashCode = keyHashCode
-                  * 31
-                  + ObjectInspectorUtils.hashCode(
-                      partitionValue,
-                      partitionWriters[p].getObjectInspector());
-            }
-          }
-          keyWritable.setHashCode(keyHashCode);
-          if (out != null) {
-            out.collect(keyWritable, value);
-            // Since this is a terminal operator, update counters explicitly -
-            // forward is not called
-            if (counterNameToEnum != null) {
-              ++outputRows;
-              if (outputRows % 1000 == 0) {
-                incrCounter(numOutputRowsCntr, outputRows);
-                outputRows = 0;
-              }
-            }
-          }
+            // No TopN, just forward the key
+            keyWritable.setHashCode(computeHashCode(vrg, rowIndex));
+            collect(keyWritable, makeValueWritable(vrg, rowIndex));
+           }
+        }
+      }
+
+      if (!useTopN) return; // All done.
+
+      // If we use topN, we have called tryStore on every key now. We can process the results.
+      for (int j = 0 ; j < vrg.size; ++j) {
+        int index = hashResult[j];
+        if (index == TopNHash.EXCLUDED) continue;
+        int rowIndex = j;
+        if (vrg.selectedInUse) {
+          rowIndex = vrg.selected[j];
+        }
+        // Compute everything now - we'd either store it, or forward it.
+        int hashCode = computeHashCode(vrg, rowIndex);
+        BytesWritable value = makeValueWritable(vrg, rowIndex);
+        if (index < 0) {
+          // Kinda hacky; see getVectorizedKeyToForward javadoc.
+          byte[] key = reducerHash.getVectorizedKeyToForward(index);
+          collect(key, value, hashCode);
+        } else {
+          reducerHash.storeValue(index, value, hashCode, true);
         }
       }
     } catch (SerDeException e) {
@@ -307,6 +291,45 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
     } catch (IOException e) {
       throw new HiveException(e);
     }
+  }
+
+  private BytesWritable makeValueWritable(VectorizedRowBatch vrg, int rowIndex)
+      throws HiveException, SerDeException {
+    for (int i = 0; i < valueEval.length; i++) {
+      int batchColumn = valueEval[i].getOutputColumn();
+      ColumnVector vectorColumn = vrg.cols[batchColumn];
+      cachedValues[i] = valueWriters[i].writeValue(vectorColumn, rowIndex);
+    }
+    // Serialize the value
+    return (BytesWritable)valueSerializer.serialize(cachedValues, valueObjectInspector);
+  }
+
+  private int computeHashCode(VectorizedRowBatch vrg, int rowIndex) throws HiveException {
+    // Evaluate the HashCode
+    int keyHashCode = 0;
+    if (partitionEval.length == 0) {
+      // If no partition cols, just distribute the data uniformly to provide
+      // better
+      // load balance. If the requirement is to have a single reducer, we
+      // should set
+      // the number of reducers to 1.
+      // Use a constant seed to make the code deterministic.
+      if (random == null) {
+        random = new Random(12345);
+      }
+      keyHashCode = random.nextInt();
+    } else {
+      for (int p = 0; p < partitionEval.length; p++) {
+        ColumnVector columnVector = vrg.cols[partitionEval[p].getOutputColumn()];
+        Object partitionValue = partitionWriters[p].writeValue(columnVector, rowIndex);
+        keyHashCode = keyHashCode
+            * 31
+            + ObjectInspectorUtils.hashCode(
+                partitionValue,
+                partitionWriters[p].getObjectInspector());
+      }
+    }
+    return keyHashCode;
   }
 
   static public String getOperatorName() {
