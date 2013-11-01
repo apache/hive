@@ -58,6 +58,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 class JIRAService {
+  static final int MAX_MESSAGES = 200;
+  static final String TRIMMED_MESSAGE = "**** This message was trimmed, see log for full details ****";
   private final Logger mLogger;
   private final String mName;
   private final String mBuildTag;
@@ -120,7 +122,7 @@ class JIRAService {
       if(!messages.isEmpty()) {
         comments.add("Messages:");
         comments.add("{noformat}");
-        comments.addAll(messages);
+        comments.addAll(trimMessages(messages));
         comments.add("{noformat}");
         comments.add("");
       }
@@ -156,7 +158,14 @@ class JIRAService {
       httpClient.getConnectionManager().shutdown();
     }
   }
-
+  static List<String> trimMessages(List<String> messages) {
+    int size = messages.size();
+    if(size > MAX_MESSAGES) {
+      messages = messages.subList(size - MAX_MESSAGES, size);
+      messages.add(0, TRIMMED_MESSAGE);
+    }
+    return messages;
+  }
   @SuppressWarnings("unused")
   private static class Body {
     private String body;
