@@ -43,6 +43,8 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.FileGenerator;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.SplitGenerator;
 import org.apache.hadoop.hive.ql.io.orc.Reader.FileMetaInfo;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
@@ -457,7 +459,6 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     @Override
     public void run() {
       try {
-        perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.ORC_GET_BLOCK_LOCATIONS);
         Iterator<FileStatus> itr = context.shims.listLocatedStatus(fs, dir,
             hiddenFileFilter);
         while (itr.hasNext()) {
@@ -470,8 +471,6 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
             context.schedule(new SplitGenerator(context, fs, file, fileInfo));
           }
         }
-        // mark the fact that we are done
-        perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.ORC_GET_BLOCK_LOCATIONS);
       } catch (Throwable th) {
         if (!(th instanceof IOException)) {
           LOG.error("Unexpected Exception", th);
@@ -634,7 +633,6 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
      */
     @Override
     public void run() {
-      perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.CREATE_ORC_SPLITS);
       try {
         populateAndCacheStripeDetails();
         long currentOffset = -1;
@@ -675,7 +673,6 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       } finally {
         context.decrementSchedulers();
       }
-      perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.CREATE_ORC_SPLITS);
     }
 
 
