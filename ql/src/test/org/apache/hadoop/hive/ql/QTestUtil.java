@@ -127,7 +127,6 @@ public class QTestUtil {
   private boolean miniMr = false;
   private String hadoopVer = null;
   private QTestSetup setup = null;
-  private boolean miniTez = false;
 
   public boolean deleteDirectory(File path) {
     if (path.exists()) {
@@ -196,7 +195,7 @@ public class QTestUtil {
   }
 
   public QTestUtil(String outDir, String logDir) throws Exception {
-    this(outDir, logDir, "", "0.20");
+    this(outDir, logDir, MiniClusterType.none, "0.20");
   }
 
   public String getOutputDirectory() {
@@ -289,26 +288,35 @@ public class QTestUtil {
   }
 
   public enum MiniClusterType {
-    miniMr,
-    tez
+    mr,
+    tez,
+    none;
+
+    public static MiniClusterType valueForString(String type) {
+      if (type.equals("miniMR")) {
+        return mr;
+      } else if (type.equals("tez")) {
+        return tez;
+      } else {
+        return none;
+      }
+    }
   }
 
-  public QTestUtil(String outDir, String logDir, String miniMr, String hadoopVer)
+  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType, String hadoopVer)
     throws Exception {
     this.outDir = outDir;
     this.logDir = logDir;
     conf = new HiveConf(Driver.class);
-    this.miniMr = miniMr.equals("miniMr");
-    this.miniTez = miniMr.equals("tez");
+    this.miniMr = (clusterType == MiniClusterType.mr);
     this.hadoopVer = getHadoopMainVersion(hadoopVer);
     qMap = new TreeMap<String, String>();
     qSkipSet = new HashSet<String>();
     qSortSet = new HashSet<String>();
 
     HadoopShims shims = null;
-    MiniClusterType clusterType = MiniClusterType.valueOf(miniMr);
     switch (clusterType) {
-      case miniMr:
+      case mr:
         shims = ShimLoader.getHadoopShims();
         break;
 
@@ -321,14 +329,20 @@ public class QTestUtil {
         shims = (HadoopShims) new TezShims();
         break;
 
+      case none:
+        break;
+
       default:
-        throw new Exception("Unknown cluster type");
+        throw new Exception("Unrecognized cluster type");
     }
 
-    dfs = shims.getMiniDfs(conf, 4, true, null);
-    FileSystem fs = dfs.getFileSystem();
-    mr = shims.getMiniMrCluster(conf, 4, getHdfsUriString(fs.getUri().toString()), 1);
+    if (shims != null) {
+      dfs = shims.getMiniDfs(conf, 4, true, null);
+      FileSystem fs = dfs.getFileSystem();
+      mr = shims.getMiniMrCluster(conf, 4, getHdfsUriString(fs.getUri().toString()), 1);
     
+    }
+
     initConf();
 
     // Use the current directory if it is not specified
@@ -1454,7 +1468,7 @@ public class QTestUtil {
   {
     QTestUtil[] qt = new QTestUtil[qfiles.length];
     for (int i = 0; i < qfiles.length; i++) {
-      qt[i] = new QTestUtil(resDir, logDir, "", "0.20");
+      qt[i] = new QTestUtil(resDir, logDir, MiniClusterType.none, "0.20");
       qt[i].addFile(qfiles[i]);
       qt[i].clearTestSideEffects();
     }
