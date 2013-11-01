@@ -48,6 +48,12 @@ public class LocalCommand {
       return exitCode;
     }
   }
+  
+  public void kill() {
+    synchronized (process) {
+      process.destroy();
+    }
+  }
 
   public static interface OutputPolicy {
     public void handleOutput(String line);

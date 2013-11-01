@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 
 public class LocalCommandFactory {
 
-
   private final Logger mLogger;
 
   public LocalCommandFactory(Logger logger) {

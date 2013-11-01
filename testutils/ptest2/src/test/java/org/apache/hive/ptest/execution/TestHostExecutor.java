@@ -193,6 +193,20 @@ public class TestHostExecutor {
     Approvals.verify(getExecutedCommands());
   }
   @Test
+  public void testShutdownBeforeExec()
+      throws Exception {
+    rsyncCommandExecutor.putFailure("/tmp/hive-ptest-units/TestHostExecutor/scratch/hiveptest-driver-parallel-1.sh "
+        + "/some/local/dir/somehost-someuser-0/scratch/hiveptest-driver-parallel-1.sh", Constants.EXIT_CODE_UNKNOWN);
+    HostExecutor executor = createHostExecutor();
+    parallelWorkQueue.addAll(Lists.newArrayList(testBatchParallel1));
+    executor.shutdownNow();
+    executor.submitTests(parallelWorkQueue, isolatedWorkQueue, failedTestResults).get();
+    Assert.assertEquals(Collections.emptySet(),  failedTestResults);
+    Assert.assertEquals(parallelWorkQueue.toString(), 1, parallelWorkQueue.size());
+    Approvals.verify(getExecutedCommands());
+    Assert.assertTrue(executor.isShutdown());
+  }
+  @Test
   public void testIsolatedFailsOnRsyncUnknown()
       throws Exception {
     rsyncCommandExecutor.putFailure("/tmp/hive-ptest-units/TestHostExecutor/scratch/hiveptest-driver-isolated-1.sh "+
@@ -201,7 +215,7 @@ public class TestHostExecutor {
     isolatedWorkQueue.addAll(Lists.newArrayList(testBatchIsolated1));
     executor.submitTests(parallelWorkQueue, isolatedWorkQueue, failedTestResults).get();
     Assert.assertEquals(Collections.emptySet(),  failedTestResults);
-    Assert.assertTrue(isolatedWorkQueue.toString(), parallelWorkQueue.isEmpty());
+    Assert.assertTrue(isolatedWorkQueue.toString(), isolatedWorkQueue.isEmpty());
     Approvals.verify(getExecutedCommands());
   }
   @Test

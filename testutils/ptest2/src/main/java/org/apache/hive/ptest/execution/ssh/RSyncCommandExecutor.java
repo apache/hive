@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.hive.ptest.execution.Constants;
 import org.apache.hive.ptest.execution.LocalCommand;
+import org.apache.hive.ptest.execution.LocalCommandFactory;
 import org.apache.hive.ptest.execution.LocalCommand.CollectPolicy;
 import org.slf4j.Logger;
 
@@ -30,12 +32,20 @@ import org.slf4j.Logger;
 public class RSyncCommandExecutor {
 
   private final Logger mLogger;
+  private final LocalCommandFactory mLocalCommandFactory;
   private final Semaphore mSemaphore;
+  private volatile boolean mShutdown;
 
-  public RSyncCommandExecutor(Logger logger) {
+  public RSyncCommandExecutor(Logger logger, LocalCommandFactory localCommandFactory) {
     mLogger = logger;
-    mSemaphore = new Semaphore(5);
+    mLocalCommandFactory = localCommandFactory;
+    mSemaphore = new Semaphore(Math.min(Runtime.getRuntime().availableProcessors() * 5, 10));
+    mShutdown = false;
   }
+  public RSyncCommandExecutor(Logger logger) {
+    this(logger, new LocalCommandFactory(logger));
+  }
+
   /**
    * Execute the given RSync. If the command exits with a non-zero
    * exit status the command will be retried up to three times.
@@ -52,17 +62,23 @@ public class RSyncCommandExecutor {
       do {
         retry = false;
         if(command.getType() == RSyncCommand.Type.TO_LOCAL) {
-          cmd = new LocalCommand(mLogger, collector,
+          cmd = mLocalCommandFactory.create(collector,
               String.format("timeout 1h rsync -vaPe \"ssh -i %s\" --timeout 600 %s@%s:%s %s",
                   command.getPrivateKey(), command.getUser(), command.getHost(),
                   command.getRemoteFile(), command.getLocalFile()));
         } else if(command.getType() == RSyncCommand.Type.FROM_LOCAL) {
-          cmd = new LocalCommand(mLogger, collector,
+          cmd = mLocalCommandFactory.create(collector,
               String.format("timeout 1h rsync -vaPe \"ssh -i %s\" --timeout 600 --delete --delete-during --force %s %s@%s:%s",
                   command.getPrivateKey(), command.getLocalFile(), command.getUser(), command.getHost(),
                   command.getRemoteFile()));
         } else {
           throw new UnsupportedOperationException(String.valueOf(command.getType()));
+        }
+        if(mShutdown) {
+          mLogger.warn("Shutting down command " + command);
+          cmd.kill();
+          command.setExitCode(Constants.EXIT_CODE_UNKNOWN);
+          return;
         }
         // 12 is timeout and 255 is unspecified error
         if(attempts++ <= 3 && cmd.getExitCode() != 0) {
@@ -70,7 +86,7 @@ public class RSyncCommandExecutor {
           retry = true;
           TimeUnit.SECONDS.sleep(20);
         }
-      } while (retry); // an error occurred, re-try
+      } while (!mShutdown && retry); // an error occurred, re-try
       command.setExitCode(cmd.getExitCode());
     } catch (IOException e) {
       command.setException(e);
@@ -82,5 +98,11 @@ public class RSyncCommandExecutor {
       }
       command.setOutput(collector.getOutput());
     }
+  }
+  boolean isShutdown() {
+    return mShutdown;
+  }
+  public void shutdownNow() {
+    this.mShutdown = true;
   }
 }
