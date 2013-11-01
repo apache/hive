@@ -25,6 +25,7 @@ import java.io.*;
 import java.util.*;
 
 import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class $className extends TestCase {
@@ -33,9 +34,10 @@ public class $className extends TestCase {
   private static QTestUtil qt;
 
   static {
+
+    MiniClusterType miniMR = MiniClusterType.valueForString("$clusterMode");
     try {
       String hadoopVer = "$hadoopVersion";
-      String miniMR = "$clusterMode";
       qt = new QTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR, hadoopVer);
 
       // do a one time initialization

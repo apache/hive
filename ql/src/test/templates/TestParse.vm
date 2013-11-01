@@ -25,16 +25,18 @@ import java.io.*;
 import java.util.*;
 
 import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 import org.apache.hadoop.hive.ql.exec.Task;
 
 public class $className extends TestCase {
 
   private static final String HIVE_ROOT = QTestUtil.ensurePathEndsInSlash(System.getProperty("hive.root"));
   private static QTestUtil qt;
-
+  
   static {
+    MiniClusterType miniMR = MiniClusterType.valueForString("$clusterMode");
+
     try {
-      String miniMR = "$clusterMode";
       String hadoopVer = "$hadoopVersion";
       qt = new QTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR, hadoopVer);
       qt.init(null);

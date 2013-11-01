@@ -18,13 +18,14 @@
 package org.apache.hadoop.hive.hbase;
 
 import org.apache.hadoop.hive.ql.QTestUtil;
+import org.apache.hadoop.hive.ql.QTestUtil.MiniClusterType;
 
 /**
  * HBaseQTestUtil initializes HBase-specific test fixtures.
  */
 public class HBaseQTestUtil extends QTestUtil {
   public HBaseQTestUtil(
-    String outDir, String logDir, String miniMr, HBaseTestSetup setup)
+    String outDir, String logDir, MiniClusterType miniMr, HBaseTestSetup setup)
     throws Exception {
 
     super(outDir, logDir, miniMr, null);
