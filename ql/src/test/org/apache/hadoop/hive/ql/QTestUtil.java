@@ -114,6 +114,7 @@ public class QTestUtil {
         "src_sequencefile", "srcpart", "alltypesorc"
       }));
 
+  private static MiniClusterType clusterType = MiniClusterType.none;
   private ParseDriver pd;
   private Hive db;
   protected HiveConf conf;
@@ -313,6 +314,7 @@ public class QTestUtil {
     qMap = new TreeMap<String, String>();
     qSkipSet = new HashSet<String>();
     qSortSet = new HashSet<String>();
+    this.clusterType = clusterType;
 
     HadoopShims shims = null;
     switch (clusterType) {
@@ -790,6 +792,11 @@ public class QTestUtil {
     ss.err = new CachingPrintStream(fo, true, "UTF-8");
     ss.setIsSilent(true);
     SessionState oldSs = SessionState.get();
+
+    if (oldSs != null && clusterType == MiniClusterType.tez) {
+      oldSs.close();
+    }
+
     if (oldSs != null && oldSs.out != null && oldSs.out != System.out) {
       oldSs.out.close();
     }
