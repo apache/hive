@@ -249,6 +249,13 @@ public class SessionState {
   }
 
   /**
+   * Sets the given session state in the thread local var for sessions.
+   */
+  public static void setCurrentSessionState(SessionState session) {
+    tss.set(session);
+  }
+
+  /**
    * set current session to existing session object if a thread is running
    * multiple sessions - it must call this method with the new session object
    * when switching from one session to another.
@@ -256,7 +263,7 @@ public class SessionState {
    */
   public static SessionState start(SessionState startSs) {
 
-    tss.set(startSs);
+    setCurrentSessionState(startSs);
 
     if(startSs.hiveHist == null){
       if (startSs.getConf().getBoolVar(HiveConf.ConfVars.HIVE_SESSION_HISTORY_ENABLED)) {
