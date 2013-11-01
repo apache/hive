@@ -19,23 +19,19 @@
 
 package org.apache.hadoop.hive.ql.exec;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.Serializable;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.DriverContext;
@@ -43,7 +39,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.optimizer.listbucketingpruner.ListBucketingPrunerUtils;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
@@ -52,12 +47,16 @@ import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
-import org.apache.hadoop.hive.ql.stats.StatsSetupConst;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.util.StringUtils;
 
 /**
- * StatsTask implementation.
+ * StatsTask implementation. StatsTask mainly deals with "collectable" stats. These are
+ * stats that require data scanning and are collected during query execution (unless the user
+ * explicitly requests data scanning just for the purpose of stats computation using the "ANALYZE"
+ * command. All other stats are computed directly by the MetaStore. The rationale being that the
+ * MetaStore layer covers all Thrift calls and provides better guarantees about the accuracy of
+ * those stats.
  **/
 public class StatsTask extends Task<StatsWork> implements Serializable {
 
@@ -67,25 +66,8 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
   private Table table;
   private List<LinkedHashMap<String, String>> dpPartSpecs;
 
-  private static final List<String> supportedStats = new ArrayList<String>();
-  private static final List<String> collectableStats = new ArrayList<String>();
-  private static final Map<String, String> nameMapping = new HashMap<String, String>();
-  static {
-    // supported statistics
-    supportedStats.add(StatsSetupConst.NUM_FILES);
-    supportedStats.add(StatsSetupConst.ROW_COUNT);
-    supportedStats.add(StatsSetupConst.TOTAL_SIZE);
-    supportedStats.add(StatsSetupConst.RAW_DATA_SIZE);
-
-    // statistics that need to be collected throughout the execution
-    collectableStats.add(StatsSetupConst.ROW_COUNT);
-    collectableStats.add(StatsSetupConst.RAW_DATA_SIZE);
-
-    nameMapping.put(StatsSetupConst.NUM_FILES, "num_files");
-    nameMapping.put(StatsSetupConst.ROW_COUNT, "num_rows");
-    nameMapping.put(StatsSetupConst.TOTAL_SIZE, "total_size");
-    nameMapping.put(StatsSetupConst.RAW_DATA_SIZE, "raw_data_size");
-  }
+  private static final List<String> collectableStats = StatsSetupConst.getStatsToBeCollected();
+  private static final List<String> supportedStats = StatsSetupConst.getSupportedStats();
 
   public StatsTask() {
     super();
@@ -94,20 +76,20 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
   /**
    *
-   * Partition Level Statistics.
+   * Statistics for a Partition or Unpartitioned Table
    *
    */
-  class PartitionStatistics {
+  class Statistics {
     Map<String, LongWritable> stats;
 
-    public PartitionStatistics() {
+    public Statistics() {
       stats = new HashMap<String, LongWritable>();
       for (String statType : supportedStats) {
         stats.put(statType, new LongWritable(0L));
       }
     }
 
-    public PartitionStatistics(Map<String, Long> st) {
+    public Statistics(Map<String, Long> st) {
       stats = new HashMap<String, LongWritable>();
       for (String statType : st.keySet()) {
         Long stValue = st.get(statType) == null ? 0L : st.get(statType);
@@ -126,86 +108,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder();
-      for (String statType : supportedStats) {
-        sb.append(nameMapping.get(statType)).append(": ").append(stats.get(statType)).append(", ");
-      }
-      sb.delete(sb.length() - 2, sb.length());
-      return sb.toString();
-    }
-  }
-
-  /**
-   * Table Level Statistics.
-   */
-  class TableStatistics extends PartitionStatistics {
-    int numPartitions; // number of partitions
-
-    public TableStatistics() {
-      super();
-      numPartitions = 0;
-    }
-
-    public void setNumPartitions(int np) {
-      numPartitions = np;
-    }
-
-    public int getNumPartitions() {
-      return numPartitions;
-    }
-
-    /**
-     * Incrementally update the table statistics according to the old and new
-     * partition level statistics.
-     *
-     * @param oldStats
-     *          The old statistics of a partition.
-     * @param newStats
-     *          The new statistics of a partition.
-     */
-    public void updateStats(PartitionStatistics oldStats, PartitionStatistics newStats) {
-      deletePartitionStats(oldStats);
-      addPartitionStats(newStats);
-    }
-
-    /**
-     * Update the table level statistics when a new partition is added.
-     *
-     * @param newStats
-     *          the new partition statistics.
-     */
-    public void addPartitionStats(PartitionStatistics newStats) {
-      for (String statType : supportedStats) {
-        LongWritable value = stats.get(statType);
-        if (value == null) {
-          stats.put(statType, new LongWritable(newStats.getStat(statType)));
-        } else {
-          value.set(value.get() + newStats.getStat(statType));
-        }
-      }
-      this.numPartitions++;
-    }
-
-    /**
-     * Update the table level statistics when an old partition is dropped.
-     *
-     * @param oldStats
-     *          the old partition statistics.
-     */
-    public void deletePartitionStats(PartitionStatistics oldStats) {
-      for (String statType : supportedStats) {
-        LongWritable value = stats.get(statType);
-        value.set(value.get() - oldStats.getStat(statType));
-      }
-      this.numPartitions--;
-    }
-
-    @Override
-    public String toString() {
-      StringBuilder sb = new StringBuilder();
-      sb.append("num_partitions: ").append(numPartitions).append(", ");
-      sb.append(super.toString());
-      return sb.toString();
+      return org.apache.commons.lang.StringUtils.join(supportedStats, ", ");
     }
   }
 
@@ -297,7 +200,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         }
       }
 
-      TableStatistics tblStats = new TableStatistics();
+      Statistics tblStats = new Statistics();
 
       org.apache.hadoop.hive.metastore.api.Table tTable = table.getTTable();
       Map<String, String> parameters = tTable.getParameters();
@@ -310,10 +213,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         }
       }
 
-      if (parameters.containsKey(StatsSetupConst.NUM_PARTITIONS)) {
-        tblStats.setNumPartitions(Integer.parseInt(parameters.get(StatsSetupConst.NUM_PARTITIONS)));
-      }
-
       List<Partition> partitions = getPartitionsList();
       boolean atomic = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_ATOMIC);
       int maxPrefixLength = HiveConf.getIntVar(conf,
@@ -324,10 +223,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         if (!tableStatsExist && atomic) {
           return 0;
         }
-        long[] summary = summary(conf, table);
-        tblStats.setStat(StatsSetupConst.NUM_FILES, summary[0]);
-        tblStats.setStat(StatsSetupConst.TOTAL_SIZE, summary[1]);
-
         // In case of a non-partitioned table, the key for stats temporary store is "rootDir"
         if (statsAggregator != null) {
           String aggKey = Utilities.getHashedStatsPrefix(work.getAggKey(), maxPrefixLength);
@@ -344,6 +239,19 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
             }
           }
         }
+
+        // write table stats to metastore
+        parameters = tTable.getParameters();
+        for (String statType : collectableStats) {
+          parameters.put(statType, Long.toString(tblStats.getStat(statType)));
+        }
+        tTable.setParameters(parameters);
+
+        String tableFullName = table.getDbName() + "." + table.getTableName();
+
+        db.alterTable(tableFullName, new Table(tTable));
+
+        console.printInfo("Table " + tableFullName + " stats: [" + tblStats.toString() + ']');
       } else {
         // Partitioned table:
         // Need to get the old stats of the partition
@@ -370,7 +278,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
           //
           // get the new partition stats
           //
-          PartitionStatistics newPartStats = new PartitionStatistics();
+          Statistics newPartStats = new Statistics();
 
           // In that case of a partition, the key for stats temporary store is
           // "rootDir/[dynamic_partition_specs/]%"
@@ -398,16 +306,16 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
             }
           }
 
-          long[] summary = summary(conf, partn);
-          newPartStats.setStat(StatsSetupConst.NUM_FILES, summary[0]);
-          newPartStats.setStat(StatsSetupConst.TOTAL_SIZE, summary[1]);
-
-          if (hasStats) {
-            PartitionStatistics oldPartStats = new PartitionStatistics(currentValues);
-            tblStats.updateStats(oldPartStats, newPartStats);
-          } else {
-            tblStats.addPartitionStats(newPartStats);
+          /**
+           * calculate fast statistics
+           */
+          FileStatus[] partfileStatus = wh.getFileStatusesForPartition(tPart);
+          newPartStats.setStat(StatsSetupConst.NUM_FILES, partfileStatus.length);
+          long partSize = 0L;
+          for (int i = 0; i < partfileStatus.length; i++) {
+            partSize += partfileStatus[i].getLen();
           }
+          newPartStats.setStat(StatsSetupConst.TOTAL_SIZE, partSize);
 
           //
           // update the metastore
@@ -429,22 +337,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
       }
 
-      //
-      // write table stats to metastore
-      //
-      parameters = tTable.getParameters();
-      for (String statType : supportedStats) {
-        parameters.put(statType, Long.toString(tblStats.getStat(statType)));
-      }
-      parameters.put(StatsSetupConst.NUM_PARTITIONS, Integer.toString(tblStats.getNumPartitions()));
-      tTable.setParameters(parameters);
-
-      String tableFullName = table.getDbName() + "." + table.getTableName();
-
-      db.alterTable(tableFullName, new Table(tTable));
-
-      console.printInfo("Table " + tableFullName + " stats: [" + tblStats.toString() + ']');
-
     } catch (Exception e) {
       console.printInfo("[Warning] could not update stats.",
           "Failed with exception " + e.getMessage() + "\n"
@@ -464,105 +356,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     return ret;
   }
 
-  private long[] summary(HiveConf conf, Partition partn) throws IOException {
-    Path path = partn.getPartitionPath();
-    FileSystem fs = path.getFileSystem(conf);
-    List<String> skewedColNames = partn.getSkewedColNames();
-    if (skewedColNames == null || skewedColNames.isEmpty()) {
-      return summary(fs, path);
-    }
-    List<List<String>> skewColValues = table.getSkewedColValues();
-    if (skewColValues == null || skewColValues.isEmpty()) {
-      return summary(fs, toDefaultLBPath(path));
-    }
-    return summary(fs, path, skewedColNames);
-  }
-
-  private long[] summary(HiveConf conf, Table table) throws IOException {
-    Path path = table.getPath();
-    FileSystem fs = path.getFileSystem(conf);
-    List<String> skewedColNames = table.getSkewedColNames();
-    if (skewedColNames == null || skewedColNames.isEmpty()) {
-      return summary(fs, path);
-    }
-    List<List<String>> skewColValues = table.getSkewedColValues();
-    if (skewColValues == null || skewColValues.isEmpty()) {
-      return summary(fs, toDefaultLBPath(path));
-    }
-    return summary(fs, path, table.getSkewedColNames());
-  }
-
-  private Path toDefaultLBPath(Path path) {
-    return new Path(path, ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME);
-  }
-
-  private long[] summary(FileSystem fs, Path path) throws IOException {
-    try {
-      FileStatus status = fs.getFileStatus(path);
-      if (!status.isDir()) {
-        return new long[] {1, status.getLen()};
-      }
-    } catch (FileNotFoundException e) {
-      return new long[] {0, 0};
-    }
-    FileStatus[] children = fs.listStatus(path);  // can be null
-    if (children == null) {
-      return new long[] {0, 0};
-    }
-    long numFiles = 0L;
-    long tableSize = 0L;
-    for (FileStatus child : children) {
-      if (!child.isDir()) {
-        tableSize += child.getLen();
-        numFiles++;
-      }
-    }
-    return new long[] {numFiles, tableSize};
-  }
-
-  private Pattern toPattern(List<String> skewCols) {
-    StringBuilder builder = new StringBuilder();
-    for (String skewCol : skewCols) {
-      if (builder.length() > 0) {
-        builder.append(Path.SEPARATOR_CHAR);
-      }
-      builder.append(skewCol).append('=');
-      builder.append("[^").append(Path.SEPARATOR_CHAR).append("]*");
-    }
-    builder.append(Path.SEPARATOR_CHAR);
-    builder.append("[^").append(Path.SEPARATOR_CHAR).append("]*$");
-    return Pattern.compile(builder.toString());
-  }
-
-  private long[] summary(FileSystem fs, Path path, List<String> skewCols) throws IOException {
-    long numFiles = 0L;
-    long tableSize = 0L;
-    Pattern pattern = toPattern(skewCols);
-    for (FileStatus status : Utilities.getFileStatusRecurse(path, skewCols.size() + 1, fs)) {
-      if (status.isDir()) {
-        continue;
-      }
-      String relative = toRelativePath(path, status.getPath());
-      if (relative == null) {
-        continue;
-      }
-      if (relative.startsWith(ListBucketingPrunerUtils.HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME) ||
-        pattern.matcher(relative).matches()) {
-        tableSize += status.getLen();
-        numFiles++;
-      }
-    }
-    return new long[] {numFiles, tableSize};
-  }
-
-  private String toRelativePath(Path path1, Path path2) {
-    URI relative = path1.toUri().relativize(path2.toUri());
-    if (relative == path2.toUri()) {
-      return null;
-    }
-    return relative.getPath();
-  }
-
   private boolean existStats(Map<String, String> parameters) {
     return parameters.containsKey(StatsSetupConst.ROW_COUNT)
         || parameters.containsKey(StatsSetupConst.NUM_FILES)
@@ -571,7 +364,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         || parameters.containsKey(StatsSetupConst.NUM_PARTITIONS);
   }
 
-  private void updateStats(List<String> statsList, PartitionStatistics stats,
+  private void updateStats(List<String> statsList, Statistics stats,
       StatsAggregator statsAggregator, Map<String, String> parameters,
       String aggKey, boolean atomic) throws HiveException {
 

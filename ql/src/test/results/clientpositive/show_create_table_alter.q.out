@@ -68,7 +68,9 @@ LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
   'EXTERNAL'='FALSE', 
+  'numFiles'='0', 
 #### A masked pattern was here ####
+  'totalSize'='0')
 PREHOOK: query: -- Alter the table comment, change the EXTERNAL property back and test SHOW CREATE TABLE on the change.
 ALTER TABLE tmp_showcrt1 SET TBLPROPERTIES ('comment'='changed comment', 'EXTERNAL'='TRUE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -103,7 +105,9 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'numFiles'='0', 
 #### A masked pattern was here ####
+  'totalSize'='0')
 PREHOOK: query: -- Change the 'SORTBUCKETCOLSPREFIX' property and test SHOW CREATE TABLE. The output should not change.
 ALTER TABLE tmp_showcrt1 SET TBLPROPERTIES ('SORTBUCKETCOLSPREFIX'='FALSE')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -138,7 +142,9 @@ OUTPUTFORMAT
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'numFiles'='0', 
 #### A masked pattern was here ####
+  'totalSize'='0')
 PREHOOK: query: -- Alter the storage handler of the table, and test SHOW CREATE TABLE.
 ALTER TABLE tmp_showcrt1 SET TBLPROPERTIES ('storage_handler'='org.apache.hadoop.hive.ql.metadata.DefaultStorageHandler')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -173,7 +179,9 @@ WITH SERDEPROPERTIES (
 LOCATION
 #### A masked pattern was here ####
 TBLPROPERTIES (
+  'numFiles'='0', 
 #### A masked pattern was here ####
+  'totalSize'='0')
 PREHOOK: query: DROP TABLE tmp_showcrt1
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@tmp_showcrt1

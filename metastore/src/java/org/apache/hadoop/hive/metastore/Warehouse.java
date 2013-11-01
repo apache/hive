@@ -45,11 +45,15 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsAction;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Partition;
+import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hadoop.util.ReflectionUtils;
@@ -493,6 +497,63 @@ public class Warehouse {
   public static String makePartName(List<FieldSchema> partCols,
       List<String> vals) throws MetaException {
     return makePartName(partCols, vals, null);
+  }
+
+  /**
+   * @param partn
+   * @return array of FileStatus objects corresponding to the files making up the passed partition
+   */
+  public FileStatus[] getFileStatusesForPartition(Partition partn)
+      throws MetaException {
+    try {
+      Path path = new Path(partn.getSd().getLocation());
+      FileSystem fileSys = path.getFileSystem(conf);
+      /* consider sub-directory created from list bucketing. */
+      int listBucketingDepth = calculateListBucketingDMLDepth(partn);
+      return HiveStatsUtils.getFileStatusRecurse(path, (1 + listBucketingDepth), fileSys);
+    } catch (IOException ioe) {
+      MetaStoreUtils.logAndThrowMetaException(ioe);
+    }
+    return null;
+  }
+
+  /**
+   * List bucketing will introduce sub-directories.
+   * calculate it here in order to go to the leaf directory
+   * so that we can count right number of files.
+   * @param partn
+   * @return
+   */
+  private static int calculateListBucketingDMLDepth(Partition partn) {
+    // list bucketing will introduce more files
+    int listBucketingDepth = 0;
+    SkewedInfo skewedInfo = partn.getSd().getSkewedInfo();
+    if ((skewedInfo != null) && (skewedInfo.getSkewedColNames() != null)
+        && (skewedInfo.getSkewedColNames().size() > 0)
+        && (skewedInfo.getSkewedColValues() != null)
+        && (skewedInfo.getSkewedColValues().size() > 0)
+        && (skewedInfo.getSkewedColValueLocationMaps() != null)
+        && (skewedInfo.getSkewedColValueLocationMaps().size() > 0)) {
+      listBucketingDepth = skewedInfo.getSkewedColNames().size();
+    }
+    return listBucketingDepth;
+  }
+
+  /**
+   * @param table
+   * @return array of FileStatus objects corresponding to the files making up the passed
+   * unpartitioned table
+   */
+  public FileStatus[] getFileStatusesForUnpartitionedTable(Database db, Table table)
+      throws MetaException {
+    Path tablePath = getTablePath(db, table.getTableName());
+    try {
+      FileSystem fileSys = tablePath.getFileSystem(conf);
+      return HiveStatsUtils.getFileStatusRecurse(tablePath, 1, fileSys);
+    } catch (IOException ioe) {
+      MetaStoreUtils.logAndThrowMetaException(ioe);
+    }
+    return null;
   }
 
   /**

@@ -46,6 +46,9 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 #### A masked pattern was here ####
+	numFiles            	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -93,6 +96,9 @@ Protect Mode:       	None
 #### A masked pattern was here ####
 Partition Parameters:	 	 
 #### A masked pattern was here ####
+	numFiles            	0                   
+	totalSize           	0                   
+#### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
 SerDe Library:      	org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe	 
@@ -139,6 +145,9 @@ Table:              	alter_table_partition_clusterby_sortby
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+#### A masked pattern was here ####
+	numFiles            	0                   
+	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

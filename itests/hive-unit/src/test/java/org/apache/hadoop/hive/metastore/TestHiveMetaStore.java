@@ -467,7 +467,7 @@ public abstract class TestHiveMetaStore extends TestCase {
   }
 
   private static Partition makePartitionObject(String dbName, String tblName,
-      List<String> ptnVals, Table tbl, String ptnLocationSuffix) {
+      List<String> ptnVals, Table tbl, String ptnLocationSuffix) throws MetaException {
     Partition part4 = new Partition();
     part4.setDbName(dbName);
     part4.setTableName(tblName);
@@ -476,6 +476,7 @@ public abstract class TestHiveMetaStore extends TestCase {
     part4.setSd(tbl.getSd().deepCopy());
     part4.getSd().setSerdeInfo(tbl.getSd().getSerdeInfo().deepCopy());
     part4.getSd().setLocation(tbl.getSd().getLocation() + ptnLocationSuffix);
+    MetaStoreUtils.updatePartitionStatsFast(part4, warehouse);
     return part4;
   }
 

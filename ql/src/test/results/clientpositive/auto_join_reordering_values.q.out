@@ -159,7 +159,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.orderpayment_small
               numFiles 1
-              numPartitions 0
               numRows 1
               rawDataSize 36
               serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
@@ -178,7 +177,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.orderpayment_small
                 numFiles 1
-                numPartitions 0
                 numRows 1
                 rawDataSize 36
                 serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
@@ -292,7 +290,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.orderpayment_small
               numFiles 1
-              numPartitions 0
               numRows 1
               rawDataSize 36
               serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
@@ -311,7 +308,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.orderpayment_small
                 numFiles 1
-                numPartitions 0
                 numRows 1
                 rawDataSize 36
                 serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
@@ -423,7 +419,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.orderpayment_small
               numFiles 1
-              numPartitions 0
               numRows 1
               rawDataSize 36
               serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
@@ -442,7 +437,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.orderpayment_small
                 numFiles 1
-                numPartitions 0
                 numRows 1
                 rawDataSize 36
                 serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
@@ -552,7 +546,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.user_small
               numFiles 1
-              numPartitions 0
               numRows 100
               rawDataSize 288
               serialization.ddl struct user_small { i32 userid}
@@ -571,7 +564,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.user_small
                 numFiles 1
-                numPartitions 0
                 numRows 100
                 rawDataSize 288
                 serialization.ddl struct user_small { i32 userid}

@@ -331,15 +331,10 @@ STAGE PLANS:
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.srcbucket_mapjoin_part
-                      numFiles 4
-                      numPartitions 1
-                      numRows 0
                       partition_columns ds
-                      rawDataSize 0
                       serialization.ddl struct srcbucket_mapjoin_part { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 5812
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.srcbucket_mapjoin_part
@@ -437,7 +432,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcbucket_mapjoin
               numFiles 2
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct srcbucket_mapjoin { i32 key, string value}
@@ -457,7 +451,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.srcbucket_mapjoin
                 numFiles 2
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct srcbucket_mapjoin { i32 key, string value}
@@ -902,7 +895,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                         name default.bucketmapjoin_tmp_result
                         numFiles 1
-                        numPartitions 0
                         numRows 464
                         rawDataSize 8519
                         serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
@@ -954,15 +946,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.srcbucket_mapjoin_part
-                numFiles 4
-                numPartitions 1
-                numRows 0
                 partition_columns ds
-                rawDataSize 0
                 serialization.ddl struct srcbucket_mapjoin_part { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 5812
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket_mapjoin_part
@@ -994,7 +981,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
                 numFiles 1
-                numPartitions 0
                 numRows 464
                 rawDataSize 8519
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
@@ -1031,7 +1017,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.bucketmapjoin_tmp_result
                     numFiles 1
-                    numPartitions 0
                     numRows 464
                     rawDataSize 8519
                     serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
@@ -1059,7 +1044,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.bucketmapjoin_tmp_result
               numFiles 1
-              numPartitions 0
               numRows 464
               rawDataSize 8519
               serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
@@ -1078,7 +1062,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
                 numFiles 1
-                numPartitions 0
                 numRows 464
                 rawDataSize 8519
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
@@ -1113,7 +1096,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.bucketmapjoin_tmp_result
                     numFiles 1
-                    numPartitions 0
                     numRows 464
                     rawDataSize 8519
                     serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
@@ -1141,7 +1123,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.bucketmapjoin_tmp_result
               numFiles 1
-              numPartitions 0
               numRows 464
               rawDataSize 8519
               serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
@@ -1160,7 +1141,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
                 numFiles 1
-                numPartitions 0
                 numRows 464
                 rawDataSize 8519
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}

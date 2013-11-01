@@ -116,15 +116,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.filter_join_breaktask
-                numFiles 1
-                numPartitions 1
-                numRows 25
                 partition_columns ds
-                rawDataSize 211
                 serialization.ddl struct filter_join_breaktask { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 236
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.filter_join_breaktask
@@ -253,15 +248,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.filter_join_breaktask
-                numFiles 1
-                numPartitions 1
-                numRows 25
                 partition_columns ds
-                rawDataSize 211
                 serialization.ddl struct filter_join_breaktask { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 236
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.filter_join_breaktask

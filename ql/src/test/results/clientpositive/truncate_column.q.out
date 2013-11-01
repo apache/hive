@@ -39,7 +39,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	94                  
 	totalSize           	185                 
@@ -107,7 +106,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	94                  
 	totalSize           	150                 
@@ -193,7 +191,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	94                  
 	totalSize           	75                  
@@ -269,7 +266,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	94                  
 	totalSize           	75                  
@@ -362,7 +358,6 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 #### A masked pattern was here ####
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	94                  
 	totalSize           	185                 
@@ -443,7 +438,6 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 #### A masked pattern was here ####
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	94                  
 	totalSize           	150                 
@@ -526,7 +520,6 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 #### A masked pattern was here ####
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	94                  
 	totalSize           	75                  

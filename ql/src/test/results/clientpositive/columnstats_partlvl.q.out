@@ -164,15 +164,10 @@ STAGE PLANS:
                 field.delim |
 #### A masked pattern was here ####
                 name default.employee_part
-                numFiles 2
-                numPartitions 2
-                numRows 0
                 partition_columns employeesalary
-                rawDataSize 0
                 serialization.ddl struct employee_part { i32 employeeid, string employeename}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 210
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.employee_part
@@ -374,15 +369,10 @@ STAGE PLANS:
                 field.delim |
 #### A masked pattern was here ####
                 name default.employee_part
-                numFiles 2
-                numPartitions 2
-                numRows 0
                 partition_columns employeesalary
-                rawDataSize 0
                 serialization.ddl struct employee_part { i32 employeeid, string employeename}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 210
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.employee_part

@@ -204,7 +204,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcbucket_mapjoin
               numFiles 2
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct srcbucket_mapjoin { i32 key, string value}
@@ -224,7 +223,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.srcbucket_mapjoin
                 numFiles 2
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct srcbucket_mapjoin { i32 key, string value}
@@ -661,7 +659,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                         name default.bucketmapjoin_tmp_result
                         numFiles 1
-                        numPartitions 0
                         numRows 464
                         rawDataSize 8519
                         serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
@@ -692,7 +689,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcbucket_mapjoin
               numFiles 2
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct srcbucket_mapjoin { i32 key, string value}
@@ -712,7 +708,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.srcbucket_mapjoin
                 numFiles 2
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct srcbucket_mapjoin { i32 key, string value}
@@ -750,7 +745,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
                 numFiles 1
-                numPartitions 0
                 numRows 464
                 rawDataSize 8519
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
@@ -787,7 +781,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.bucketmapjoin_tmp_result
                     numFiles 1
-                    numPartitions 0
                     numRows 464
                     rawDataSize 8519
                     serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
@@ -815,7 +808,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.bucketmapjoin_tmp_result
               numFiles 1
-              numPartitions 0
               numRows 464
               rawDataSize 8519
               serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
@@ -834,7 +826,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
                 numFiles 1
-                numPartitions 0
                 numRows 464
                 rawDataSize 8519
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
@@ -869,7 +860,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.bucketmapjoin_tmp_result
                     numFiles 1
-                    numPartitions 0
                     numRows 464
                     rawDataSize 8519
                     serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
@@ -897,7 +887,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.bucketmapjoin_tmp_result
               numFiles 1
-              numPartitions 0
               numRows 464
               rawDataSize 8519
               serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
@@ -916,7 +905,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
                 numFiles 1
-                numPartitions 0
                 numRows 464
                 rawDataSize 8519
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
