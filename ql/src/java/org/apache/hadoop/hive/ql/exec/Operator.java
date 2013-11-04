@@ -385,6 +385,14 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     passExecContext(this.execContext);
 
     initializeOp(hconf);
+
+    // sanity check
+    if (childOperatorsArray == null
+        && !(childOperators == null || childOperators.isEmpty())) {
+      throw new HiveException(
+          "Internal Hive error during operator initialization.");
+    }
+
     LOG.info("Initialization Done " + id + " " + getName());
   }
 
@@ -780,7 +788,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     Operator<? extends OperatorDesc> currOp = this;
     for (int i = 0; i < depth; i++) {
       // If there are more than 1 children at any level, don't do anything
-      if ((currOp.getChildOperators() == null) || (currOp.getChildOperators().isEmpty()) || 
+      if ((currOp.getChildOperators() == null) || (currOp.getChildOperators().isEmpty()) ||
           (currOp.getChildOperators().size() > 1)) {
         return false;
       }
@@ -843,11 +851,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     // SerDeUtils.getJSONString(row, rowInspector));
     // System.out.println("" + this.getClass() + ">> " +
     // ObjectInspectorUtils.getObjectInspectorName(rowInspector));
-
-    if (childOperatorsArray == null && childOperators != null) {
-      throw new HiveException(
-          "Internal Hive error during operator initialization.");
-    }
 
     if ((childOperatorsArray == null) || (getDone())) {
       return;
