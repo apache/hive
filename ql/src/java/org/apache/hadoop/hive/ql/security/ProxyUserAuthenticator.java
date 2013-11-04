@@ -22,56 +22,47 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
 
-public class HadoopDefaultAuthenticator implements HiveAuthenticationProvider {
+/**
+ * ProxyUserAuthenticator extends HadoopDefaultAuthenticator
+ * but honours a proxy config setting proxy.user.name instead of the
+ * current user if set. This allows server processes like webhcat which
+ * proxy other users to easily specify an override if allowed.
+ */
+public class ProxyUserAuthenticator extends HadoopDefaultAuthenticator {
 
-  protected String userName;
-  protected List<String> groupNames;
-  
-  protected Configuration conf;
-
-  @Override
-  public List<String> getGroupNames() {
-    return groupNames;
-  }
-
-  @Override
-  public String getUserName() {
-    return userName;
-  }
+  private static final String PROXY_USER_NAME = "proxy.user.name";
 
   @Override
   public void setConf(Configuration conf) {
     this.conf = conf;
     UserGroupInformation ugi = null;
+    String proxyUser = conf.get(PROXY_USER_NAME);
+
+    if (proxyUser == null){
+      super.setConf(conf);
+      return;
+    }
+
+    // If we're here, proxy user is set.
+
     try {
-      ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
+      ugi = ShimLoader.getHadoopShims().createRemoteUser(proxyUser,null);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
 
     if (ugi == null) {
       throw new RuntimeException(
-          "Can not initialize HadoopDefaultAuthenticator.");
+          "Can not initialize ProxyUserAuthenticator for user ["+proxyUser+"]");
     }
 
     this.userName = ShimLoader.getHadoopShims().getShortUserName(ugi);
     if (ugi.getGroupNames() != null) {
       this.groupNames = Arrays.asList(ugi.getGroupNames());
     }
-  }
-
-  @Override
-  public void destroy() throws HiveException {
-    return;
-  }
-
-  @Override
-  public Configuration getConf() {
-    return this.conf;
   }
 
 }
