@@ -19,8 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
-import org.apache.hadoop.hive.ql.udf.UDFRound;
-import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.ql.udf.generic.RoundUtils;
 import org.apache.hadoop.io.IntWritable;
 
 // Vectorized implementation of ROUND(Col, N) function
@@ -29,28 +28,21 @@ public class RoundWithNumDigitsDoubleToDouble extends MathFuncDoubleToDouble
   private static final long serialVersionUID = 1L;
 
   private IntWritable decimalPlaces;
-  private transient UDFRound roundFunc;
-  private transient DoubleWritable dw;
 
   public RoundWithNumDigitsDoubleToDouble(int colNum, long scalarVal, int outputColumn) {
     super(colNum, outputColumn);
     this.decimalPlaces = new IntWritable();
-    roundFunc = new UDFRound();
-    dw = new DoubleWritable();
     decimalPlaces.set((int) scalarVal);
   }
 
   public RoundWithNumDigitsDoubleToDouble() {
     super();
-    dw = new DoubleWritable();
-    roundFunc = new UDFRound();
   }
 
   // Round to the specified number of decimal places using the standard Hive round function.
   @Override
   public double func(double d) {
-    dw.set(d);
-    return roundFunc.evaluate(dw, decimalPlaces).get();
+    return RoundUtils.round(d, decimalPlaces.get());
   }
 
   void setDecimalPlaces(IntWritable decimalPlaces) {
@@ -59,14 +51,6 @@ public class RoundWithNumDigitsDoubleToDouble extends MathFuncDoubleToDouble
 
   public IntWritable getDecimalPlaces() {
     return this.decimalPlaces;
-  }
-
-  void setRoundFunc(UDFRound roundFunc) {
-    this.roundFunc = roundFunc;
-  }
-
-  UDFRound getRoundFunc() {
-    return this.roundFunc;
   }
 
   @Override
