@@ -33,11 +33,15 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.DemuxOperator;
+import org.apache.hadoop.hive.ql.exec.DependencyCollectionTask;
+import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
+import org.apache.hadoop.hive.ql.exec.MoveTask;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorFactory;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
@@ -50,6 +54,8 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
+import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
+import org.apache.hadoop.hive.ql.io.rcfile.merge.MergeWork;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.optimizer.GenMRProcContext.GenMRUnionCtx;
@@ -61,20 +67,31 @@ import org.apache.hadoop.hive.ql.parse.ParseContext;
 import org.apache.hadoop.hive.ql.parse.PrunedPartitionList;
 import org.apache.hadoop.hive.ql.parse.RowResolver;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles;
+import org.apache.hadoop.hive.ql.plan.ConditionalResolverMergeFiles.ConditionalResolverMergeFilesCtx;
+import org.apache.hadoop.hive.ql.plan.ConditionalWork;
+import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.FetchWork;
 import org.apache.hadoop.hive.ql.plan.FileSinkDesc;
 import org.apache.hadoop.hive.ql.plan.FilterDesc.sampleDesc;
+import org.apache.hadoop.hive.ql.plan.LoadFileDesc;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.MapredLocalWork;
 import org.apache.hadoop.hive.ql.plan.MapredWork;
+import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
+import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.ql.plan.TezWork;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
+import org.apache.hadoop.mapred.InputFormat;
 
 /**
  * General utility common functions for the Processor to convert operator into
@@ -1105,6 +1122,571 @@ public final class GenMapRedUtils {
       }
       targetPathToAliases.get(pathToAdd).add(sourceAlias);
     }
+  }
+
+  /**
+   * @param fsInput The FileSink operator.
+   * @param ctx The MR processing context.
+   * @param finalName the final destination path the merge job should output.
+   * @param dependencyTask
+   * @param mvTasks
+   * @param conf
+   * @param currTask
+   * @throws SemanticException
+
+   * create a Map-only merge job using CombineHiveInputFormat for all partitions with
+   * following operators:
+   *          MR job J0:
+   *          ...
+   *          |
+   *          v
+   *          FileSinkOperator_1 (fsInput)
+   *          |
+   *          v
+   *          Merge job J1:
+   *          |
+   *          v
+   *          TableScan (using CombineHiveInputFormat) (tsMerge)
+   *          |
+   *          v
+   *          FileSinkOperator (fsMerge)
+   *
+   *          Here the pathToPartitionInfo & pathToAlias will remain the same, which means the paths
+   *          do
+   *          not contain the dynamic partitions (their parent). So after the dynamic partitions are
+   *          created (after the first job finished before the moveTask or ConditionalTask start),
+   *          we need to change the pathToPartitionInfo & pathToAlias to include the dynamic
+   *          partition
+   *          directories.
+   *
+   */
+  public static void createMRWorkForMergingFiles (FileSinkOperator fsInput,
+   String finalName, DependencyCollectionTask dependencyTask,
+   List<Task<MoveWork>> mvTasks, HiveConf conf,
+   Task<? extends Serializable> currTask) throws SemanticException {
+
+    //
+    // 1. create the operator tree
+    //
+    FileSinkDesc fsInputDesc = fsInput.getConf();
+
+    // Create a TableScan operator
+    RowSchema inputRS = fsInput.getSchema();
+    Operator<? extends OperatorDesc> tsMerge =
+        GenMapRedUtils.createTemporaryTableScanOperator(inputRS);
+
+    // Create a FileSink operator
+    TableDesc ts = (TableDesc) fsInputDesc.getTableInfo().clone();
+    FileSinkDesc fsOutputDesc = new FileSinkDesc(finalName, ts,
+      conf.getBoolVar(ConfVars.COMPRESSRESULT));
+    FileSinkOperator fsOutput = (FileSinkOperator) OperatorFactory.getAndMakeChild(
+      fsOutputDesc, inputRS, tsMerge);
+
+    // If the input FileSinkOperator is a dynamic partition enabled, the tsMerge input schema
+    // needs to include the partition column, and the fsOutput should have
+    // a DynamicPartitionCtx to indicate that it needs to dynamically partitioned.
+    DynamicPartitionCtx dpCtx = fsInputDesc.getDynPartCtx();
+    if (dpCtx != null && dpCtx.getNumDPCols() > 0) {
+      // adding DP ColumnInfo to the RowSchema signature
+      ArrayList<ColumnInfo> signature = inputRS.getSignature();
+      String tblAlias = fsInputDesc.getTableInfo().getTableName();
+      LinkedHashMap<String, String> colMap = new LinkedHashMap<String, String>();
+      StringBuilder partCols = new StringBuilder();
+      for (String dpCol : dpCtx.getDPColNames()) {
+        ColumnInfo colInfo = new ColumnInfo(dpCol,
+            TypeInfoFactory.stringTypeInfo, // all partition column type should be string
+            tblAlias, true); // partition column is virtual column
+        signature.add(colInfo);
+        colMap.put(dpCol, dpCol); // input and output have the same column name
+        partCols.append(dpCol).append('/');
+      }
+      partCols.setLength(partCols.length() - 1); // remove the last '/'
+      inputRS.setSignature(signature);
+
+      // create another DynamicPartitionCtx, which has a different input-to-DP column mapping
+      DynamicPartitionCtx dpCtx2 = new DynamicPartitionCtx(dpCtx);
+      dpCtx2.setInputToDPCols(colMap);
+      fsOutputDesc.setDynPartCtx(dpCtx2);
+
+      // update the FileSinkOperator to include partition columns
+      fsInputDesc.getTableInfo().getProperties().setProperty(
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS,
+        partCols.toString()); // list of dynamic partition column names
+    } else {
+      // non-partitioned table
+      fsInputDesc.getTableInfo().getProperties().remove(
+        org.apache.hadoop.hive.metastore.api.hive_metastoreConstants.META_TABLE_PARTITION_COLUMNS);
+    }
+
+    //
+    // 2. Constructing a conditional task consisting of a move task and a map reduce task
+    //
+    MoveWork dummyMv = new MoveWork(null, null, null,
+        new LoadFileDesc(fsInputDesc.getFinalDirName(), finalName, true, null, null), false);
+    MapWork cplan;
+    Serializable work;
+
+    if (conf.getBoolVar(ConfVars.HIVEMERGERCFILEBLOCKLEVEL) &&
+        fsInputDesc.getTableInfo().getInputFileFormatClass().equals(RCFileInputFormat.class)) {
+
+      // Check if InputFormatClass is valid
+      String inputFormatClass = conf.getVar(ConfVars.HIVEMERGEINPUTFORMATBLOCKLEVEL);
+      try {
+        Class c = (Class<? extends InputFormat>) Class.forName(inputFormatClass);
+
+        LOG.info("RCFile format- Using block level merge");
+        cplan = GenMapRedUtils.createRCFileMergeTask(fsInputDesc, finalName,
+            dpCtx != null && dpCtx.getNumDPCols() > 0);
+        work = cplan;
+      } catch (ClassNotFoundException e) {
+        String msg = "Illegal input format class: " + inputFormatClass;
+        throw new SemanticException(msg);
+      }
+
+    } else {
+      cplan = createMRWorkForMergingFiles(conf, tsMerge, fsInputDesc);
+      work = new MapredWork();
+      ((MapredWork)work).setMapWork(cplan);
+      // use CombineHiveInputFormat for map-only merging
+    }
+    cplan.setInputformat("org.apache.hadoop.hive.ql.io.CombineHiveInputFormat");
+    // NOTE: we should gather stats in MR1 rather than MR2 at merge job since we don't
+    // know if merge MR2 will be triggered at execution time
+    ConditionalTask cndTsk = GenMapRedUtils.createCondTask(conf, currTask, dummyMv, work,
+        fsInputDesc.getFinalDirName());
+
+    // keep the dynamic partition context in conditional task resolver context
+    ConditionalResolverMergeFilesCtx mrCtx =
+        (ConditionalResolverMergeFilesCtx) cndTsk.getResolverCtx();
+    mrCtx.setDPCtx(fsInputDesc.getDynPartCtx());
+    mrCtx.setLbCtx(fsInputDesc.getLbCtx());
+
+    //
+    // 3. add the moveTask as the children of the conditional task
+    //
+    linkMoveTask(fsOutput, cndTsk, mvTasks, conf, dependencyTask);
+  }
+
+  /**
+   * Make the move task in the GenMRProcContext following the FileSinkOperator a dependent of all
+   * possible subtrees branching from the ConditionalTask.
+   *
+   * @param newOutput
+   * @param cndTsk
+   * @param mvTasks
+   * @param hconf
+   * @param dependencyTask
+   */
+  public static void linkMoveTask(FileSinkOperator newOutput,
+      ConditionalTask cndTsk, List<Task<MoveWork>> mvTasks, HiveConf hconf,
+      DependencyCollectionTask dependencyTask) {
+
+    Task<MoveWork> mvTask = GenMapRedUtils.findMoveTask(mvTasks, newOutput);
+
+    for (Task<? extends Serializable> tsk : cndTsk.getListTasks()) {
+      linkMoveTask(mvTask, tsk, hconf, dependencyTask);
+    }
+  }
+
+  /**
+   * Follows the task tree down from task and makes all leaves parents of mvTask
+   *
+   * @param mvTask
+   * @param task
+   * @param hconf
+   * @param dependencyTask
+   */
+  public static void linkMoveTask(Task<MoveWork> mvTask,
+      Task<? extends Serializable> task, HiveConf hconf,
+      DependencyCollectionTask dependencyTask) {
+
+    if (task.getDependentTasks() == null || task.getDependentTasks().isEmpty()) {
+      // If it's a leaf, add the move task as a child
+      addDependentMoveTasks(mvTask, hconf, task, dependencyTask);
+    } else {
+      // Otherwise, for each child run this method recursively
+      for (Task<? extends Serializable> childTask : task.getDependentTasks()) {
+        linkMoveTask(mvTask, childTask, hconf, dependencyTask);
+      }
+    }
+  }
+
+  /**
+   * Adds the dependencyTaskForMultiInsert in ctx as a dependent of parentTask. If mvTask is a
+   * load table, and HIVE_MULTI_INSERT_ATOMIC_OUTPUTS is set, adds mvTask as a dependent of
+   * dependencyTaskForMultiInsert in ctx, otherwise adds mvTask as a dependent of parentTask as
+   * well.
+   *
+   * @param mvTask
+   * @param hconf
+   * @param parentTask
+   * @param dependencyTask
+   */
+  public static void addDependentMoveTasks(Task<MoveWork> mvTask, HiveConf hconf,
+      Task<? extends Serializable> parentTask, DependencyCollectionTask dependencyTask) {
+
+    if (mvTask != null) {
+      if (hconf.getBoolVar(ConfVars.HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES)) {
+        parentTask.addDependentTask(dependencyTask);
+        if (mvTask.getWork().getLoadTableWork() != null) {
+          // Moving tables/partitions depend on the dependencyTask
+          dependencyTask.addDependentTask(mvTask);
+        } else {
+          // Moving files depends on the parentTask (we still want the dependencyTask to depend
+          // on the parentTask)
+          parentTask.addDependentTask(mvTask);
+        }
+      } else {
+        parentTask.addDependentTask(mvTask);
+      }
+    }
+  }
+
+
+  /**
+   * Add the StatsTask as a dependent task of the MoveTask
+   * because StatsTask will change the Table/Partition metadata. For atomicity, we
+   * should not change it before the data is actually there done by MoveTask.
+   *
+   * @param nd
+   *          the FileSinkOperator whose results are taken care of by the MoveTask.
+   * @param mvTask
+   *          The MoveTask that moves the FileSinkOperator's results.
+   * @param currTask
+   *          The MapRedTask that the FileSinkOperator belongs to.
+   * @param hconf
+   *          HiveConf
+   */
+  public static void addStatsTask(FileSinkOperator nd, MoveTask mvTask,
+      Task<? extends Serializable> currTask, HiveConf hconf) {
+
+    MoveWork mvWork = ((MoveTask) mvTask).getWork();
+    StatsWork statsWork = null;
+    if (mvWork.getLoadTableWork() != null) {
+      statsWork = new StatsWork(mvWork.getLoadTableWork());
+    } else if (mvWork.getLoadFileWork() != null) {
+      statsWork = new StatsWork(mvWork.getLoadFileWork());
+    }
+    assert statsWork != null : "Error when genereting StatsTask";
+    statsWork.setStatsReliable(hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE));
+
+    if (currTask.getWork() instanceof MapredWork) {
+      MapredWork mrWork = (MapredWork) currTask.getWork();
+      mrWork.getMapWork().setGatheringStats(true);
+      if (mrWork.getReduceWork() != null) {
+        mrWork.getReduceWork().setGatheringStats(true);
+      }
+    } else {
+      TezWork work = (TezWork) currTask.getWork();
+      for (BaseWork w: work.getAllWork()) {
+        w.setGatheringStats(true);
+      }
+    }
+
+    // AggKey in StatsWork is used for stats aggregation while StatsAggPrefix
+    // in FileSinkDesc is used for stats publishing. They should be consistent.
+    statsWork.setAggKey(((FileSinkOperator) nd).getConf().getStatsAggPrefix());
+    Task<? extends Serializable> statsTask = TaskFactory.get(statsWork, hconf);
+
+    // mark the MapredWork and FileSinkOperator for gathering stats
+    nd.getConf().setGatherStats(true);
+    nd.getConf().setStatsReliable(hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE));
+    nd.getConf().setMaxStatsKeyPrefixLength(
+        hconf.getIntVar(ConfVars.HIVE_STATS_KEY_PREFIX_MAX_LENGTH));
+    // mrWork.addDestinationTable(nd.getConf().getTableInfo().getTableName());
+
+    // subscribe feeds from the MoveTask so that MoveTask can forward the list
+    // of dynamic partition list to the StatsTask
+    mvTask.addDependentTask(statsTask);
+    statsTask.subscribeFeed(mvTask);
+  }
+
+  /**
+   * Returns true iff current query is an insert into for the given file sink
+   *
+   * @param parseCtx
+   * @param fsOp
+   * @return
+   */
+  public static boolean isInsertInto(ParseContext parseCtx, FileSinkOperator fsOp) {
+    return fsOp.getConf().getTableInfo().getTableName() != null &&
+        parseCtx.getQB().getParseInfo().isInsertToTable();
+  }
+
+  /**
+   * Create a MapredWork based on input path, the top operator and the input
+   * table descriptor.
+   *
+   * @param conf
+   * @param topOp
+   *          the table scan operator that is the root of the MapReduce task.
+   * @param fsDesc
+   *          the file sink descriptor that serves as the input to this merge task.
+   * @param parentMR
+   *          the parent MapReduce work
+   * @param parentFS
+   *          the last FileSinkOperator in the parent MapReduce work
+   * @return the MapredWork
+   */
+  private static MapWork createMRWorkForMergingFiles (HiveConf conf,
+    Operator<? extends OperatorDesc> topOp,  FileSinkDesc fsDesc) {
+
+    ArrayList<String> aliases = new ArrayList<String>();
+    String inputDir = fsDesc.getFinalDirName();
+    TableDesc tblDesc = fsDesc.getTableInfo();
+    aliases.add(inputDir); // dummy alias: just use the input path
+
+    // constructing the default MapredWork
+    MapredWork cMrPlan = GenMapRedUtils.getMapRedWorkFromConf(conf);
+    MapWork cplan = cMrPlan.getMapWork();
+    cplan.getPathToAliases().put(inputDir, aliases);
+    cplan.getPathToPartitionInfo().put(inputDir, new PartitionDesc(tblDesc, null));
+    cplan.getAliasToWork().put(inputDir, topOp);
+    cplan.setMapperCannotSpanPartns(true);
+
+    return cplan;
+  }
+
+  /**
+   * Create a block level merge task for RCFiles.
+   *
+   * @param fsInputDesc
+   * @param finalName
+   * @return MergeWork if table is stored as RCFile,
+   *         null otherwise
+   */
+  public static MapWork createRCFileMergeTask(FileSinkDesc fsInputDesc,
+      String finalName, boolean hasDynamicPartitions) throws SemanticException {
+
+    String inputDir = fsInputDesc.getFinalDirName();
+    TableDesc tblDesc = fsInputDesc.getTableInfo();
+
+    if (tblDesc.getInputFileFormatClass().equals(RCFileInputFormat.class)) {
+      ArrayList<String> inputDirs = new ArrayList<String>();
+      if (!hasDynamicPartitions
+          && !GenMapRedUtils.isSkewedStoredAsDirs(fsInputDesc)) {
+        inputDirs.add(inputDir);
+      }
+
+      MergeWork work = new MergeWork(inputDirs, finalName,
+          hasDynamicPartitions, fsInputDesc.getDynPartCtx());
+      LinkedHashMap<String, ArrayList<String>> pathToAliases =
+          new LinkedHashMap<String, ArrayList<String>>();
+      pathToAliases.put(inputDir, (ArrayList<String>) inputDirs.clone());
+      work.setMapperCannotSpanPartns(true);
+      work.setPathToAliases(pathToAliases);
+      work.setAliasToWork(
+          new LinkedHashMap<String, Operator<? extends OperatorDesc>>());
+      if (hasDynamicPartitions
+          || GenMapRedUtils.isSkewedStoredAsDirs(fsInputDesc)) {
+        work.getPathToPartitionInfo().put(inputDir,
+            new PartitionDesc(tblDesc, null));
+      }
+      work.setListBucketingCtx(fsInputDesc.getLbCtx());
+
+      return work;
+    }
+
+    throw new SemanticException("createRCFileMergeTask called on non-RCFile table");
+  }
+
+  /**
+   * Construct a conditional task given the current leaf task, the MoveWork and the MapredWork.
+   *
+   * @param conf
+   *          HiveConf
+   * @param currTask
+   *          current leaf task
+   * @param mvWork
+   *          MoveWork for the move task
+   * @param mergeWork
+   *          MapredWork for the merge task.
+   * @param inputPath
+   *          the input directory of the merge/move task
+   * @return The conditional task
+   */
+  @SuppressWarnings("unchecked")
+  public static ConditionalTask createCondTask(HiveConf conf,
+      Task<? extends Serializable> currTask, MoveWork mvWork,
+      Serializable mergeWork, String inputPath) {
+
+    // There are 3 options for this ConditionalTask:
+    // 1) Merge the partitions
+    // 2) Move the partitions (i.e. don't merge the partitions)
+    // 3) Merge some partitions and move other partitions (i.e. merge some partitions and don't
+    // merge others) in this case the merge is done first followed by the move to prevent
+    // conflicts.
+    Task<? extends Serializable> mergeOnlyMergeTask = TaskFactory.get(mergeWork, conf);
+    Task<? extends Serializable> moveOnlyMoveTask = TaskFactory.get(mvWork, conf);
+    Task<? extends Serializable> mergeAndMoveMergeTask = TaskFactory.get(mergeWork, conf);
+    Task<? extends Serializable> mergeAndMoveMoveTask = TaskFactory.get(mvWork, conf);
+
+    // NOTE! It is necessary merge task is the parent of the move task, and not
+    // the other way around, for the proper execution of the execute method of
+    // ConditionalTask
+    mergeAndMoveMergeTask.addDependentTask(mergeAndMoveMoveTask);
+
+    List<Serializable> listWorks = new ArrayList<Serializable>();
+    listWorks.add(mvWork);
+    listWorks.add(mergeWork);
+
+    ConditionalWork cndWork = new ConditionalWork(listWorks);
+
+    List<Task<? extends Serializable>> listTasks = new ArrayList<Task<? extends Serializable>>();
+    listTasks.add(moveOnlyMoveTask);
+    listTasks.add(mergeOnlyMergeTask);
+    listTasks.add(mergeAndMoveMergeTask);
+
+    ConditionalTask cndTsk = (ConditionalTask) TaskFactory.get(cndWork, conf);
+    cndTsk.setListTasks(listTasks);
+
+    // create resolver
+    cndTsk.setResolver(new ConditionalResolverMergeFiles());
+    ConditionalResolverMergeFilesCtx mrCtx =
+        new ConditionalResolverMergeFilesCtx(listTasks, inputPath);
+    cndTsk.setResolverCtx(mrCtx);
+
+    // make the conditional task as the child of the current leaf task
+    currTask.addDependentTask(cndTsk);
+
+    return cndTsk;
+  }
+
+  /**
+   * check if it is skewed table and stored as dirs.
+   *
+   * @param fsInputDesc
+   * @return
+   */
+  public static boolean isSkewedStoredAsDirs(FileSinkDesc fsInputDesc) {
+    return (fsInputDesc.getLbCtx() == null) ? false : fsInputDesc.getLbCtx()
+        .isSkewedStoredAsDir();
+  }
+
+  public static Task<MoveWork> findMoveTask(
+      List<Task<MoveWork>> mvTasks, FileSinkOperator fsOp) {
+    // find the move task
+    for (Task<MoveWork> mvTsk : mvTasks) {
+      MoveWork mvWork = mvTsk.getWork();
+      String srcDir = null;
+      if (mvWork.getLoadFileWork() != null) {
+        srcDir = mvWork.getLoadFileWork().getSourceDir();
+      } else if (mvWork.getLoadTableWork() != null) {
+        srcDir = mvWork.getLoadTableWork().getSourceDir();
+      }
+
+      String fsOpDirName = fsOp.getConf().getFinalDirName();
+      if ((srcDir != null)
+          && (srcDir.equalsIgnoreCase(fsOpDirName))) {
+        return mvTsk;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns true iff the fsOp requires a merge
+   * @param mvTasks
+   * @param hconf
+   * @param fsOp
+   * @param currTask
+   * @param isInsertTable
+   * @return
+   */
+  public static boolean isMergeRequired(List<Task<MoveWork>> mvTasks, HiveConf hconf, FileSinkOperator fsOp,
+      Task<? extends Serializable> currTask, boolean isInsertTable) {
+
+    // Has the user enabled merging of files for map-only jobs or for all jobs
+    if ((mvTasks != null) && (!mvTasks.isEmpty())) {
+
+      // no need of merging if the move is to a local file system
+      MoveTask mvTask = (MoveTask) GenMapRedUtils.findMoveTask(mvTasks, fsOp);
+
+      if (mvTask != null && isInsertTable && hconf.getBoolVar(ConfVars.HIVESTATSAUTOGATHER)) {
+        GenMapRedUtils.addStatsTask(fsOp, mvTask, currTask, hconf);
+      }
+
+      if ((mvTask != null) && !mvTask.isLocal() && fsOp.getConf().canBeMerged()) {
+        if (fsOp.getConf().isLinkedFileSink()) {
+          // If the user has HIVEMERGEMAPREDFILES set to false, the idea was the
+          // number of reducers are few, so the number of files anyway are small.
+          // However, with this optimization, we are increasing the number of files
+          // possibly by a big margin. So, merge aggresively.
+          if (hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) ||
+              hconf.getBoolVar(ConfVars.HIVEMERGEMAPREDFILES)) {
+            return true;
+          }
+        } else {
+          // There are separate configuration parameters to control whether to
+          // merge for a map-only job
+          // or for a map-reduce job
+          ReduceWork reduceWork = currTask.getWork() instanceof MapredWork
+              ? ((MapredWork) currTask.getWork()).getReduceWork() : null;
+          boolean mergeMapOnly =
+              hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) && reduceWork == null;
+          boolean mergeMapRed =
+              hconf.getBoolVar(ConfVars.HIVEMERGEMAPREDFILES) &&
+              reduceWork != null;
+          if (mergeMapOnly || mergeMapRed) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Create and add any dependent move tasks
+   *
+   * @param currTask
+   * @param chDir
+   * @param fsOp
+   * @param parseCtx
+   * @param mvTasks
+   * @param hconf
+   * @param dependencyTask
+   * @return
+   */
+  public static String createMoveTask(Task<? extends Serializable> currTask, boolean chDir,
+      FileSinkOperator fsOp, ParseContext parseCtx, List<Task<MoveWork>> mvTasks,
+      HiveConf hconf, DependencyCollectionTask dependencyTask) {
+
+    String dest = null;
+
+    if (chDir) {
+      dest = fsOp.getConf().getFinalDirName();
+
+      // generate the temporary file
+      // it must be on the same file system as the current destination
+      Context baseCtx = parseCtx.getContext();
+      String tmpDir = baseCtx.getExternalTmpFileURI((new Path(dest)).toUri());
+
+      FileSinkDesc fileSinkDesc = fsOp.getConf();
+      // Change all the linked file sink descriptors
+      if (fileSinkDesc.isLinkedFileSink()) {
+        for (FileSinkDesc fsConf:fileSinkDesc.getLinkedFileSinkDesc()) {
+          String fileName = Utilities.getFileNameFromDirName(fsConf.getDirName());
+          fsConf.setParentDir(tmpDir);
+          fsConf.setDirName(tmpDir + Path.SEPARATOR + fileName);
+        }
+      } else {
+        fileSinkDesc.setDirName(tmpDir);
+      }
+    }
+
+    Task<MoveWork> mvTask = null;
+
+    if (!chDir) {
+      mvTask = GenMapRedUtils.findMoveTask(mvTasks, fsOp);
+    }
+
+    // Set the move task to be dependent on the current task
+    if (mvTask != null) {
+      GenMapRedUtils.addDependentMoveTasks(mvTask, hconf, currTask, dependencyTask);
+    }
+
+    return dest;
   }
 
   private GenMapRedUtils() {

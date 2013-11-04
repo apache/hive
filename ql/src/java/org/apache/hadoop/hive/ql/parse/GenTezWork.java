@@ -71,6 +71,12 @@ public class GenTezWork implements NodeProcessor {
     // packing into a vertex, typically a table scan, union or join
     Operator<?> root = context.currentRootOperator;
     if (root == null) {
+      // if there are no more rootOperators we're dealing with multiple
+      // file sinks off of the same table scan. Bail.
+      if (context.rootOperators.isEmpty()) {
+        return null;
+      }
+
       // null means that we're starting with a new table scan
       // the graph walker walks the rootOperators in the same
       // order so we can just take the next

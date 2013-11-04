@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.io;
 
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.ql.session.SessionState;
 
 
 /**
@@ -37,12 +38,19 @@ public class IOContext {
     protected synchronized IOContext initialValue() { return new IOContext(); }
  };
 
+ private static IOContext ioContext = new IOContext();
+
   public static IOContext get() {
+    if (SessionState.get() == null) {
+      // this happens on the backend. only one io context needed.
+      return ioContext;
+    }
     return IOContext.threadLocal.get();
   }
 
   public static void clear() {
     IOContext.threadLocal.remove();
+    ioContext = new IOContext();
   }
 
   long currentBlockStart;

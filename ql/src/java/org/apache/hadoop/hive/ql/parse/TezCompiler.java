@@ -41,6 +41,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
+import org.apache.hadoop.hive.ql.lib.CompositeProcessor;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
 import org.apache.hadoop.hive.ql.lib.Dispatcher;
 import org.apache.hadoop.hive.ql.lib.GraphWalker;
@@ -126,16 +127,17 @@ public class TezCompiler extends TaskCompiler {
     // the operator stack.
     // The dispatcher generates the plan from the operator tree
     Map<Rule, NodeProcessor> opRules = new LinkedHashMap<Rule, NodeProcessor>();
-    opRules.put(new RuleRegExp(new String("Split Work - ReduceSink"),
+    opRules.put(new RuleRegExp("Split Work - ReduceSink",
         ReduceSinkOperator.getOperatorName() + "%"),
         genTezWork);
-    opRules.put(new RuleRegExp(new String("No more walking on ReduceSink-MapJoin"),
+
+    opRules.put(new RuleRegExp("No more walking on ReduceSink-MapJoin",
         ReduceSinkOperator.getOperatorName() + "%" +
         MapJoinOperator.getOperatorName() + "%"), new ReduceSinkMapJoinProc());
-    opRules.put(new RuleRegExp(new String("Split Work - FileSink"),
-        FileSinkOperator.getOperatorName() + "%"),
-        genTezWork);
 
+    opRules.put(new RuleRegExp("Split Work + Move/Merge - FileSink",
+        FileSinkOperator.getOperatorName() + "%"),
+        new CompositeProcessor(new FileSinkProcessor(), genTezWork));
 
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
