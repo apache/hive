@@ -40,7 +40,7 @@ set hive.default.fileformat=orc;
 CREATE TABLE orc_create (key INT, value STRING)
    PARTITIONED BY (ds string);
 
-set hive.default.fileformat=text;
+set hive.default.fileformat=TextFile;
 
 DESCRIBE FORMATTED orc_create;
 
