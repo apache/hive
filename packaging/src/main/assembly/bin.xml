@@ -1,0 +1,221 @@
+<!--
+ Licensed to the Apache Software Foundation (ASF) under one
+ or more contributor license agreements.  See the NOTICE file
+ distributed with this work for additional information
+ regarding copyright ownership.  The ASF licenses this file
+ to you under the Apache License, Version 2.0 (the
+ "License"); you may not use this file except in compliance
+ with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing,
+ software distributed under the License is distributed on an
+ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ KIND, either express or implied.  See the License for the
+ specific language governing permissions and limitations
+ under the License.
+-->
+
+<assembly
+  xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+
+  <id>bin</id>
+
+  <formats>
+    <format>dir</format>
+    <format>tar.gz</format>
+  </formats>
+
+  <dependencySets>
+    <dependencySet>
+    <outputDirectory>lib</outputDirectory>
+    <unpack>false</unpack>
+    <useProjectArtifact>false</useProjectArtifact>
+    </dependencySet>
+  </dependencySets>
+
+  <fileSets>
+    <fileSet>
+      <directory>${project.parent.basedir}</directory>
+      <excludes>
+        <exclude>**/target/**</exclude>
+        <exclude>**/.classpath</exclude>
+        <exclude>**/.project</exclude>
+        <exclude>**/.settings/**</exclude>
+        <exclude>lib/**</exclude>
+      </excludes>
+
+      <includes>
+        <include>DEVNOTES</include>
+        <include>README.txt</include>
+        <include>LICENSE</include>
+        <include>NOTICE</include>
+        <include>CHANGELOG</include>
+        <include>RELEASE_NOTES.txt</include>
+      </includes>
+      <outputDirectory>/</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/data/files</directory>
+      <includes>
+        <include>/*.*</include>
+      </includes>
+      <outputDirectory>examples/files</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/ql/src/test/queries/positive</directory>
+      <includes>
+        <include>*.q</include>
+      </includes>
+      <outputDirectory>examples/queries</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <fileMode>755</fileMode>
+      <directory>${project.parent.basedir}/bin</directory>
+      <includes>
+        <include>hive</include>
+        <include>metatool</include>
+        <include>schematool</include>
+        <include>beeline</include>
+        <include>hiveserver2</include>
+        <include>hive-config.sh</include>
+        <include>ext/**/*</include>
+      </includes>
+      <outputDirectory>bin</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/metastore/scripts/upgrade</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>scripts/metastore/upgrade</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/conf</directory>
+      <includes>
+        <include>*.template</include>
+      </includes>
+      <outputDirectory>conf</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/service/lib/php</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/php</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/serde/src/gen/thrift/gen-php</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/php/packages/serde</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/metastore/src/gen/thrift/gen-php</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/php/packages/hive_metastore</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/service/src/gen/thrift/gen-php</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/php/packages/hive_service</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/ql/src/gen/thrift/gen-php</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/php/packages/queryplan</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/service/lib/py</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/py</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/serde/src/gen/thrift/gen-py/org_apache_hadoop_hive_serde</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/py/hive_serde</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/metastore/src/gen/thrift/gen-py/hive_metastore</directory>
+      <fileMode>755</fileMode>
+       <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/py/hive_metastore</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/service/src/gen/thrift/gen-py/TCLIService</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/py/TCLIService</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/service/src/gen/thrift/gen-py/hive_service</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/py/hive_service</outputDirectory>
+    </fileSet>
+
+    <fileSet>
+      <directory>${project.parent.basedir}/ql/src/gen/thrift/gen-py/queryplan</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <outputDirectory>lib/py/queryplan</outputDirectory>
+    </fileSet>
+
+
+  </fileSets>
+
+  <files>
+    <file>
+      <source>${project.parent.basedir}/common/src/main/resources/hive-log4j.properties</source>
+      <outputDirectory>conf</outputDirectory>
+      <destName>hive-log4j.properties.template</destName>
+    </file>
+
+    <file>
+      <source>${project.parent.basedir}/ql/src/main/resources/hive-exec-log4j.properties</source>
+      <outputDirectory>conf</outputDirectory>
+      <destName>hive-exec-log4j.properties.template</destName>
+    </file>
+  </files>
+
+</assembly>
+
