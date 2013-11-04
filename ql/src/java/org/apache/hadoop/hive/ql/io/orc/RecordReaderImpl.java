@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.FloatWritable;
@@ -1022,8 +1023,13 @@ class RecordReaderImpl implements RecordReader {
     private InStream valueStream;
     private IntegerReader scaleStream = null;
 
-    DecimalTreeReader(Path path, int columnId) {
+    private final int precision;
+    private final int scale;
+
+    DecimalTreeReader(Path path, int columnId, int precision, int scale) {
       super(path, columnId);
+      this.precision = precision;
+      this.scale = scale;
     }
 
     @Override
@@ -1057,8 +1063,9 @@ class RecordReaderImpl implements RecordReader {
     Object next(Object previous) throws IOException {
       super.next(previous);
       if (valuePresent) {
-        return HiveDecimal.create(SerializationUtils.readBigInteger(valueStream),
+        HiveDecimal dec = HiveDecimal.create(SerializationUtils.readBigInteger(valueStream),
             (int) scaleStream.next());
+        return HiveDecimalUtils.enforcePrecisionScale(dec, precision, scale);
       }
       return null;
     }
@@ -1892,7 +1899,9 @@ class RecordReaderImpl implements RecordReader {
       case DATE:
         return new DateTreeReader(path, columnId);
       case DECIMAL:
-        return new DecimalTreeReader(path, columnId);
+        int precision = type.hasPrecision() ? type.getPrecision() : HiveDecimal.MAX_PRECISION;
+        int scale =  type.hasScale()? type.getScale() : HiveDecimal.MAX_SCALE;
+        return new DecimalTreeReader(path, columnId, precision, scale);
       case STRUCT:
         return new StructTreeReader(path, columnId, types, included);
       case LIST:

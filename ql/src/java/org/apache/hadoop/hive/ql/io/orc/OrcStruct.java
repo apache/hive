@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.MapObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -544,9 +545,10 @@ final class OrcStruct implements Writable {
       case DATE:
         return PrimitiveObjectInspectorFactory.javaDateObjectInspector;
       case DECIMAL:
-        // TODO: get precision/scale from TYPE
+        int precision = type.hasPrecision() ? type.getPrecision() : HiveDecimal.MAX_PRECISION;
+        int scale =  type.hasScale()? type.getScale() : HiveDecimal.MAX_SCALE;
         return PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
-            TypeInfoFactory.decimalTypeInfo);
+            TypeInfoFactory.getDecimalTypeInfo(precision, scale));
       case STRUCT:
         return new OrcStructInspector(columnId, types);
       case UNION:
