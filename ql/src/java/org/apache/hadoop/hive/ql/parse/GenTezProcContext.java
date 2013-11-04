@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.exec.DependencyCollectionTask;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -35,6 +36,7 @@ import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.hooks.WriteEntity;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
+import org.apache.hadoop.hive.ql.plan.DependencyCollectionWork;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TezWork;
@@ -97,6 +99,9 @@ public class GenTezProcContext implements NodeProcessorCtx{
   // remember the dummy ops we created
   public final Map<Operator<?>, List<Operator<?>>> linkChildOpWithDummyOp;
 
+  // used to group dependent tasks for multi table inserts
+  public final DependencyCollectionTask dependencyTask;
+
   @SuppressWarnings("unchecked")
   public GenTezProcContext(HiveConf conf, ParseContext parseContext,
       List<Task<MoveWork>> moveTask, List<Task<? extends Serializable>> rootTasks,
@@ -115,5 +120,7 @@ public class GenTezProcContext implements NodeProcessorCtx{
     this.operatorWorkMap = new HashMap<Operator<?>, BaseWork>();
     this.mapJoinParentMap = new HashMap<MapJoinOperator, List<Operator<?>>>();
     this.linkChildOpWithDummyOp = new HashMap<Operator<?>, List<Operator<?>>>();
+    this.dependencyTask = (DependencyCollectionTask)
+        TaskFactory.get(new DependencyCollectionWork(), conf);
   }
 }
