@@ -135,6 +135,8 @@ message Type {
   repeated uint32 subtypes = 2 [packed=true];
   repeated string fieldNames = 3;
   optional uint32 maximumLength = 4;
+  optional uint32 precision = 5;
+  optional uint32 scale = 6;
 }
 
 message StripeInformation {
