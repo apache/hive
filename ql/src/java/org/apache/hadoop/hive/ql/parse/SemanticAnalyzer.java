@@ -8670,7 +8670,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (!ctx.getExplainLogical()) {
       // At this point we have the complete operator tree
       // from which we want to create the map-reduce plan
-      TaskCompiler compiler = TaskCompilerFactory.getCompiler(conf);
+      TaskCompiler compiler = TaskCompilerFactory.getCompiler(conf, pCtx);
       compiler.init(conf, console, db);
       compiler.compile(pCtx, rootTasks, inputs, outputs);
       fetchTask = pCtx.getFetchTask();

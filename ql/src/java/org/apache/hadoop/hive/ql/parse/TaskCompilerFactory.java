@@ -34,8 +34,9 @@ public class TaskCompilerFactory {
    * Returns the appropriate compiler to translate the operator tree
    * into executable units.
    */
-  public static TaskCompiler getCompiler(HiveConf conf) {
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_OPTIMIZE_TEZ)) {
+  public static TaskCompiler getCompiler(HiveConf conf, ParseContext parseContext) {
+    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_OPTIMIZE_TEZ)
+        && !parseContext.getQB().getParseInfo().isAnalyzeCommand()) {
       return new TezCompiler();
     } else {
       return new MapReduceCompiler();
