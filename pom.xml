@@ -115,6 +115,7 @@
     <velocity.version>1.5</velocity.version>
     <xerces.version>2.9.1</xerces.version>
     <zookeeper.version>3.4.3</zookeeper.version>
+    <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
   </properties>
 
   <repositories>
