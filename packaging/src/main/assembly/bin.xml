@@ -29,6 +29,8 @@
     <format>tar.gz</format>
   </formats>
 
+  <baseDirectory>apache-hive-${project.version}-bin</baseDirectory>
+
   <dependencySets>
     <dependencySet>
     <outputDirectory>lib</outputDirectory>

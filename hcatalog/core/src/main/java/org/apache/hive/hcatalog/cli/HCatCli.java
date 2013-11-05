@@ -76,8 +76,6 @@ public class HCatCli {
 
     HiveConf.setVar(conf, ConfVars.SEMANTIC_ANALYZER_HOOK, HCatSemanticAnalyzer.class.getName());
 
-    SessionState.start(ss);
-
     Options options = new Options();
 
     // -e 'quoted-query-string'
@@ -126,19 +124,30 @@ public class HCatCli {
       cmdLine = parser.parse(options, args);
 
     } catch (ParseException e) {
-      printUsage(options, ss.err);
+      printUsage(options, System.err);
+      // Note, we print to System.err instead of ss.err, because if we can't parse our
+      // commandline, we haven't even begun, and therefore cannot be expected to have
+      // reasonably constructed or started the SessionState.
       System.exit(1);
     }
-    // -e
-    String execString = (String) cmdLine.getOptionValue('e');
-    // -f
-    String fileName = (String) cmdLine.getOptionValue('f');
+
+    // -D : process these first, so that we can instantiate SessionState appropriately.
+    setConfProperties(conf, cmdLine.getOptionProperties("D"));
+
+    // Now that the properties are in, we can instantiate SessionState.
+    SessionState.start(ss);
+
     // -h
     if (cmdLine.hasOption('h')) {
       printUsage(options, ss.out);
       System.exit(0);
     }
 
+    // -e
+    String execString = (String) cmdLine.getOptionValue('e');
+
+    // -f
+    String fileName = (String) cmdLine.getOptionValue('f');
     if (execString != null && fileName != null) {
       ss.err.println("The '-e' and '-f' options cannot be specified simultaneously");
       printUsage(options, ss.err);
@@ -157,8 +166,7 @@ public class HCatCli {
       conf.set(HCatConstants.HCAT_GROUP, grp);
     }
 
-    // -D
-    setConfProperties(conf, cmdLine.getOptionProperties("D"));
+    // all done parsing, let's run stuff!
 
     if (execString != null) {
       System.exit(processLine(execString));

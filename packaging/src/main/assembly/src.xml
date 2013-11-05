@@ -28,6 +28,8 @@
     <format>tar.gz</format>
   </formats>
 
+  <baseDirectory>apache-hive-${project.version}-src</baseDirectory>
+
   <fileSets>
     <fileSet>
       <directory>${project.parent.basedir}</directory>

@@ -59,6 +59,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
@@ -1625,8 +1626,10 @@ class WriterImpl implements Writer, MemoryManager.Callback {
             type.setKind(OrcProto.Type.Kind.DATE);
             break;
           case DECIMAL:
-            // TODO: save precision/scale
+            DecimalTypeInfo decTypeInfo = (DecimalTypeInfo)((PrimitiveObjectInspector)treeWriter.inspector).getTypeInfo();
             type.setKind(OrcProto.Type.Kind.DECIMAL);
+            type.setPrecision(decTypeInfo.precision());
+            type.setScale(decTypeInfo.scale());
             break;
           default:
             throw new IllegalArgumentException("Unknown primitive category: " +
