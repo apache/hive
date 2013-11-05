@@ -33,9 +33,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hdfs.DistributedFileSystem;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.ErrorMsg;
-import org.apache.hadoop.hive.ql.metadata.Hive;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.tez.client.AMConfiguration;
 import org.apache.tez.client.TezSession;
@@ -93,9 +90,6 @@ public class TezSessionState {
     // generate basic tez config
     TezConfiguration tezConfig = new TezConfiguration(conf);
 
-    tezConfig.set(TezConfiguration.TEZ_AM_JAVA_OPTS,
-        MRHelpers.getMRAMJavaOpts(conf));
-
     tezConfig.set(TezConfiguration.TEZ_AM_STAGING_DIR, tezScratchDir.toUri().toString());
 
     // unless already installed on all the cluster nodes, we'll have to
@@ -106,7 +100,7 @@ public class TezSessionState {
     Map<String, LocalResource> commonLocalResources = new HashMap<String, LocalResource>();
     commonLocalResources.put(DagUtils.getBaseName(appJarLr), appJarLr);
 
-    AMConfiguration amConfig = new AMConfiguration("default", null, commonLocalResources,
+    AMConfiguration amConfig = new AMConfiguration(null, commonLocalResources,
          tezConfig, null);
 
     // configuration for the session
