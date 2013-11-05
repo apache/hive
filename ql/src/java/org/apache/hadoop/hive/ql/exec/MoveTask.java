@@ -34,6 +34,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
@@ -194,11 +195,11 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     }
   }
 
-
   @Override
   public int execute(DriverContext driverContext) {
 
     try {
+
       // Do any hive related operations like moving tables and files
       // to appropriate locations
       LoadFileDesc lfd = work.getLoadFileWork();
@@ -460,7 +461,7 @@ public class MoveTask extends Task<MoveWork> implements Serializable {
     boolean updateBucketCols = false;
     if (bucketCols != null) {
       FileSystem fileSys = partn.getPartitionPath().getFileSystem(conf);
-      FileStatus[] fileStatus = Utilities.getFileStatusRecurse(
+      FileStatus[] fileStatus = HiveStatsUtils.getFileStatusRecurse(
           partn.getPartitionPath(), 1, fileSys);
       // Verify the number of buckets equals the number of files
       // This will not hold for dynamic partitions where not every reducer produced a file for

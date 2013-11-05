@@ -18,7 +18,7 @@ PREHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
 -- to be thrown during the LOAD step. This behavior is now tested in
 -- clientnegative/archive_corrupt.q
 
-load data local inpath '../data/files/archive_corrupt.rc' overwrite into table tstsrcpart partition (ds='2008-04-08', hr='11')
+load data local inpath '../../data/files/archive_corrupt.rc' overwrite into table tstsrcpart partition (ds='2008-04-08', hr='11')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@tstsrcpart
 POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
@@ -28,7 +28,7 @@ POSTHOOK: query: -- INCLUDE_HADOOP_MAJOR_VERSIONS(0.20)
 -- to be thrown during the LOAD step. This behavior is now tested in
 -- clientnegative/archive_corrupt.q
 
-load data local inpath '../data/files/archive_corrupt.rc' overwrite into table tstsrcpart partition (ds='2008-04-08', hr='11')
+load data local inpath '../../data/files/archive_corrupt.rc' overwrite into table tstsrcpart partition (ds='2008-04-08', hr='11')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@tstsrcpart
 POSTHOOK: Output: default@tstsrcpart@ds=2008-04-08/hr=11

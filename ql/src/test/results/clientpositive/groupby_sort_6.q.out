@@ -157,10 +157,10 @@ POSTHOOK: Input: default@outputtbl1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: outputtbl1.cnt EXPRESSION [(t1)t1.null, ]
 POSTHOOK: Lineage: outputtbl1.key EXPRESSION [(t1)t1.FieldSchema(name:key, type:string, comment:null), ]
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T1 PARTITION (ds='2')
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1 PARTITION (ds='2')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T1 PARTITION (ds='2')
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1 PARTITION (ds='2')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t1
 POSTHOOK: Output: default@t1@ds=2
@@ -259,7 +259,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.outputtbl1
                     numFiles 1
-                    numPartitions 0
                     numRows 0
                     rawDataSize 0
                     serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
@@ -288,7 +287,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.outputtbl1
                 numFiles 1
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
@@ -424,15 +422,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1
-                numFiles 1
-                numPartitions 1
-                numRows 0
                 partition_columns ds
-                rawDataSize 0
                 serialization.ddl struct t1 { string key, string val}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1
@@ -473,7 +466,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.outputtbl1
                     numFiles 1
-                    numPartitions 0
                     numRows 0
                     rawDataSize 0
                     serialization.ddl struct outputtbl1 { i32 key, i32 cnt}
@@ -502,7 +494,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.outputtbl1
                 numFiles 1
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct outputtbl1 { i32 key, i32 cnt}

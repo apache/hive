@@ -62,7 +62,9 @@ public class MiniCluster {
       Configuration config = new Configuration();
 
       // Builds and starts the mini dfs and mapreduce clusters
-      System.setProperty("hadoop.log.dir", ".");
+      if(System.getProperty("hadoop.log.dir") == null) {
+        System.setProperty("hadoop.log.dir", "target/tmp/logs/");
+      }
       m_dfs = new MiniDFSCluster(config, dataNodes, true, null);
 
       m_fileSys = m_dfs.getFileSystem();

@@ -28,7 +28,7 @@
 <!-- Hive Execution Parameters -->
 <property>
   <name>hadoop.tmp.dir</name>
-  <value>${build.dir.hive}/test/hadoop-${user.name}</value>
+  <value>${test.tmp.dir}/hadoop-tmp</value>
   <description>A base for other temporary directories.</description>
 </property>
 
@@ -42,21 +42,26 @@
 
 <property>
   <name>hive.exec.scratchdir</name>
-  <value>${build.dir}/scratchdir</value>
+  <value>${test.tmp.dir}/scratchdir</value>
   <description>Scratch space for Hive jobs</description>
 </property>
 
 <property>
   <name>hive.exec.local.scratchdir</name>
-  <value>${build.dir}/localscratchdir/</value>
+  <value>${test.tmp.dir}/localscratchdir/</value>
   <description>Local scratch space for Hive jobs</description>
 </property>
 
 <property>
   <name>javax.jdo.option.ConnectionURL</name>
-  <!-- note: variable substituion not working here because it's loaded by jdo, not Hive -->
-  <value>jdbc:derby:;databaseName=../build/test/junit_metastore_db;create=true</value>
+  <value>jdbc:derby:;databaseName=${test.tmp.dir}/junit_metastore_db;create=true</value>
 </property>
+
+<property>
+  <name>hive.stats.dbconnectionstring</name>
+  <value>jdbc:derby:;databaseName=${test.tmp.dir}/TempStatsStore;create=true</value>
+</property>
+
 
 <property>
   <name>javax.jdo.option.ConnectionDriverName</name>
@@ -82,7 +87,7 @@
 
 <property>
   <name>hive.metastore.metadb.dir</name>
-  <value>file://${build.dir}/test/data/metadb/</value>
+  <value>file://${test.tmp.dir}/metadb/</value>
   <description>
   Required by metastore server or if the uris argument below is not supplied
   </description>
@@ -90,32 +95,19 @@
 
 <property>
   <name>test.log.dir</name>
-  <value>${build.dir}/test/logs</value>
-  <description></description>
-</property>
-
-<property>
-  <name>test.src.dir</name>
-  <value>file://${build.dir}/src/test</value>
+  <value>${test.tmp.dir}/log/</value>
   <description></description>
 </property>
 
 <property>
   <name>test.data.files</name>
-  <value>${user.dir}/../data/files</value>
-  <description></description>
-</property>
-
-<property>
-  <name>test.query.file1</name>
-  <value>file://${user.dir}/../ql/src/test/org/apache/hadoop/hive/ql/input2.q</value>
-  <value></value>
+  <value>${hive.root}/data/files</value>
   <description></description>
 </property>
 
 <property>
   <name>hive.jar.path</name>
-  <value>${build.dir.hive}/ql/hive-exec-${version}.jar</value>
+  <value>${maven.local.repository}/org/apache/hive/hive-exec/${hive.version}/hive-exec-${hive.version}.jar</value>
   <description></description>
 </property>
 
@@ -127,7 +119,7 @@
 
 <property>
   <name>hive.querylog.location</name>
-  <value>${build.dir}/tmp</value>
+  <value>${test.tmp.dir}/tmp</value>
   <description>Location of the structured hive logs</description>
 </property>
 

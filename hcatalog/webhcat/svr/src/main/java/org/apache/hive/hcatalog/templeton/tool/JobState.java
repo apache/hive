@@ -126,19 +126,6 @@ public class JobState {
   }
 
   /**
-   * The child id of TempletonControllerJob
-   */
-  public String getChildId()
-    throws IOException {
-    return getField("childid");
-  }
-
-  public void setChildId(String childid)
-    throws IOException {
-    setField("childid", childid);
-  }
-
-  /**
    * Add a jobid to the list of children of this job.
    *
    * @param jobid
@@ -151,11 +138,26 @@ public class JobState {
     } catch (Exception e) {
       // There are none or they're not readable.
     }
+    if (jobids==null) {
+      jobids = "";
+    }
     if (!jobids.equals("")) {
       jobids += ",";
     }
     jobids += jobid;
     setField("children", jobids);
+  }
+
+  /**
+   * Set parent job of this job
+   * @param id
+   */
+  public void setParent(String id) throws IOException {
+    setField("parent", id);
+  }
+
+  public String getParent() throws IOException {
+    return getField("parent");
   }
 
   /**
@@ -168,31 +170,6 @@ public class JobState {
       children.add(new JobState(jobid, config));
     }
     return children;
-  }
-
-  /**
-   * Save a comma-separated list of jobids that are children
-   * of this job.
-   * @param jobids
-   * @throws IOException
-   */
-  public void setChildren(String jobids) throws IOException {
-    setField("children", jobids);
-  }
-
-  /**
-   * Set the list of child jobs of this job
-   * @param children
-   */
-  public void setChildren(List<JobState> children) throws IOException {
-    String val = "";
-    for (JobState jobstate : children) {
-      if (!val.equals("")) {
-        val += ",";
-      }
-      val += jobstate.getId();
-    }
-    setField("children", val);
   }
 
   /**

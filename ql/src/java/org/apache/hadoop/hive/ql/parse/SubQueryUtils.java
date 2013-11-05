@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.antlr.runtime.tree.TreeWizard;
-import org.antlr.runtime.tree.TreeWizard.ContextVisitor;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
@@ -173,31 +171,22 @@ public class SubQueryUtils {
 
   static List<ASTNode> findSubQueries(ASTNode node)
       throws SemanticException {
-    TreeWizard tw = new TreeWizard(ParseDriver.adaptor, HiveParser.tokenNames);
-    SubQueryVisitor visitor = new SubQueryVisitor();
-    tw.visit(node, HiveParser.TOK_SUBQUERY_EXPR, visitor);
-    return visitor.getSubQueries();
+    List<ASTNode> subQueries = new ArrayList<ASTNode>();
+    findSubQueries(node, subQueries);
+    return subQueries;
   }
 
-  static class SubQueryVisitor implements ContextVisitor {
-    String errMsg;
-    boolean throwError = false;
-    ASTNode errorNode;
-    List<ASTNode> subQueries;
-
-    @SuppressWarnings("rawtypes")
-    @Override
-    public void visit(Object t, Object parent, int childIndex, Map labels) {
-      if (subQueries == null ) {
-        subQueries = new ArrayList<ASTNode>();
+  private static void findSubQueries(ASTNode node, List<ASTNode> subQueries) {
+    switch(node.getType()) {
+    case HiveParser.TOK_SUBQUERY_EXPR:
+      subQueries.add(node);
+      break;
+    default:
+      int childCount = node.getChildCount();
+      for(int i=0; i < childCount; i++) {
+        findSubQueries((ASTNode) node.getChild(i), subQueries);
       }
-      subQueries.add((ASTNode)t);
     }
-
-    public List<ASTNode> getSubQueries() {
-      return subQueries;
-    }
-
   }
 
   static QBSubQuery buildSubQuery(String outerQueryId,
@@ -208,6 +197,16 @@ public class SubQueryUtils {
     ASTNode sqOp = (ASTNode) sqAST.getChild(0);
     ASTNode sq = (ASTNode) sqAST.getChild(1);
     ASTNode outerQueryExpr = (ASTNode) sqAST.getChild(2);
+
+    /*
+     * Restriction.8.m :: We allow only 1 SubQuery expression per Query.
+     */
+    if (outerQueryExpr != null && outerQueryExpr.getType() == HiveParser.TOK_SUBQUERY_EXPR ) {
+
+      throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+          originalSQAST.getChild(1), "Only 1 SubQuery expression is supported."));
+    }
+
    return new QBSubQuery(outerQueryId, sqIdx, sq, outerQueryExpr,
        buildSQOperator(sqOp),
        originalSQAST,

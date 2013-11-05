@@ -3,16 +3,16 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE srcbucket_mapjoin(key int, value string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin
 PREHOOK: type: LOAD
 PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcbucket_mapjoin
-PREHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin
+PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin
 PREHOOK: type: LOAD
 PREHOOK: Output: default@srcbucket_mapjoin
-POSTHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcbucket_mapjoin
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
@@ -20,29 +20,29 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 4 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@srcbucket_mapjoin_part
-PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@srcbucket_mapjoin_part
-POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcbucket_mapjoin_part
 POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-PREHOOK: query: load data local inpath '../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcbucket_mapjoin_part@ds=2008-04-08
 PREHOOK: query: CREATE TABLE srcbucket_mapjoin_part_2 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
@@ -50,17 +50,17 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE srcbucket_mapjoin_part_2 (key int, value string) partitioned by (ds string) CLUSTERED BY (key) INTO 2 BUCKETS STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2
-PREHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@srcbucket_mapjoin_part_2
-POSTHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2@ds=2008-04-08
-PREHOOK: query: load data local inpath '../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-08')
+PREHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@srcbucket_mapjoin_part_2@ds=2008-04-08
-POSTHOOK: query: load data local inpath '../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-08')
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket23.txt' INTO TABLE srcbucket_mapjoin_part_2 partition(ds='2008-04-08')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@srcbucket_mapjoin_part_2@ds=2008-04-08
 PREHOOK: query: create table bucketmapjoin_hash_result_1 (key bigint , value1 bigint, value2 bigint)
@@ -144,15 +144,10 @@ STAGE PLANS:
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.srcbucket_mapjoin_part
-                      numFiles 4
-                      numPartitions 1
-                      numRows 0
                       partition_columns ds
-                      rawDataSize 0
                       serialization.ddl struct srcbucket_mapjoin_part { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 5812
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.srcbucket_mapjoin_part
@@ -271,15 +266,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.srcbucket_mapjoin_part_2
-                numFiles 2
-                numPartitions 1
-                numRows 0
                 partition_columns ds
-                rawDataSize 0
                 serialization.ddl struct srcbucket_mapjoin_part_2 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 3062
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket_mapjoin_part_2
@@ -688,15 +678,10 @@ STAGE PLANS:
                       columns.types int:string
 #### A masked pattern was here ####
                       name default.srcbucket_mapjoin_part_2
-                      numFiles 2
-                      numPartitions 1
-                      numRows 0
                       partition_columns ds
-                      rawDataSize 0
                       serialization.ddl struct srcbucket_mapjoin_part_2 { i32 key, string value}
                       serialization.format 1
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                      totalSize 3062
 #### A masked pattern was here ####
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     name: default.srcbucket_mapjoin_part_2
@@ -768,7 +753,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                         name default.bucketmapjoin_tmp_result
                         numFiles 1
-                        numPartitions 0
                         numRows 564
                         rawDataSize 10503
                         serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
@@ -820,15 +804,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.srcbucket_mapjoin_part
-                numFiles 4
-                numPartitions 1
-                numRows 0
                 partition_columns ds
-                rawDataSize 0
                 serialization.ddl struct srcbucket_mapjoin_part { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 5812
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcbucket_mapjoin_part
@@ -860,7 +839,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
                 numFiles 1
-                numPartitions 0
                 numRows 564
                 rawDataSize 10503
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
@@ -897,7 +875,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.bucketmapjoin_tmp_result
                     numFiles 1
-                    numPartitions 0
                     numRows 564
                     rawDataSize 10503
                     serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
@@ -925,7 +902,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.bucketmapjoin_tmp_result
               numFiles 1
-              numPartitions 0
               numRows 564
               rawDataSize 10503
               serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
@@ -944,7 +920,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
                 numFiles 1
-                numPartitions 0
                 numRows 564
                 rawDataSize 10503
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
@@ -979,7 +954,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                     name default.bucketmapjoin_tmp_result
                     numFiles 1
-                    numPartitions 0
                     numRows 564
                     rawDataSize 10503
                     serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
@@ -1007,7 +981,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.bucketmapjoin_tmp_result
               numFiles 1
-              numPartitions 0
               numRows 564
               rawDataSize 10503
               serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}
@@ -1026,7 +999,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.bucketmapjoin_tmp_result
                 numFiles 1
-                numPartitions 0
                 numRows 564
                 rawDataSize 10503
                 serialization.ddl struct bucketmapjoin_tmp_result { string key, string value1, string value2}

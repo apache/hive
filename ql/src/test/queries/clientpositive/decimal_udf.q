@@ -1,3 +1,5 @@
+set hive.fetch.task.conversion=more;
+
 DROP TABLE IF EXISTS DECIMAL_UDF;
 
 CREATE TABLE DECIMAL_UDF (key decimal(65,30), value int) 
@@ -5,7 +7,7 @@ ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE;
 
-LOAD DATA LOCAL INPATH '../data/files/kv7.txt' INTO TABLE DECIMAL_UDF;
+LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_UDF;
 
 -- addition
 EXPLAIN SELECT key + key FROM DECIMAL_UDF;

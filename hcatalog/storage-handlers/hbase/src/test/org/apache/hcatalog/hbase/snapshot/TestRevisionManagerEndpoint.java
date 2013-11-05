@@ -31,17 +31,20 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.coprocessor.CoprocessorHost;
 import org.apache.hcatalog.hbase.SkeletonHBaseTest;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TestRevisionManagerEndpoint extends SkeletonHBaseTest {
 
-  static {
+  @BeforeClass
+  public static void setup() throws Throwable {
     // test case specific mini cluster settings
     testConf = new Configuration(false);
     testConf.setStrings(CoprocessorHost.REGION_COPROCESSOR_CONF_KEY,
       "org.apache.hcatalog.hbase.snapshot.RevisionManagerEndpoint",
       "org.apache.hadoop.hbase.coprocessor.GenericEndpoint");
     testConf.set(RMConstants.REVISION_MGR_ENDPOINT_IMPL_CLASS, MockRM.class.getName());
+    setupSkeletonHBaseTest();
   }
 
   /**

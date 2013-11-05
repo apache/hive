@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.parse.SplitSample;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 /**
  * FetchWork.
@@ -50,12 +51,28 @@ public class FetchWork implements Serializable {
 
   private SplitSample splitSample;
 
+  private transient List<List<Object>> rowsComputedFromStats;
+  private transient ObjectInspector statRowOI;
+
   /**
    * Serialization Null Format for the serde used to fetch data.
    */
   private String serializationNullFormat = "NULL";
 
   public FetchWork() {
+  }
+
+  public FetchWork(List<List<Object>> rowsComputedFromStats,ObjectInspector statRowOI) {
+    this.rowsComputedFromStats = rowsComputedFromStats;
+    this.statRowOI = statRowOI;
+  }
+
+  public ObjectInspector getStatRowOI() {
+    return statRowOI;
+  }
+
+  public List<List<Object>> getRowsComputedUsingStats() {
+    return rowsComputedFromStats;
   }
 
   public FetchWork(String tblDir, TableDesc tblDesc) {

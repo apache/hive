@@ -143,12 +143,21 @@ public class SetProcessor implements CommandProcessor {
     String value = new VariableSubstitution().substitute(conf, varvalue);
     if (conf.getBoolVar(HiveConf.ConfVars.HIVECONFVALIDATION)) {
       HiveConf.ConfVars confVars = HiveConf.getConfVars(key);
-      if (confVars != null && !confVars.isType(value)) {
-        StringBuilder message = new StringBuilder();
-        message.append("'SET ").append(varname).append('=').append(varvalue);
-        message.append("' FAILED because "); message.append(key).append(" expects an ");
-        message.append(confVars.typeString()).append(" value.");
-        throw new IllegalArgumentException(message.toString());
+      if (confVars != null) {
+        if (!confVars.isType(value)) {
+          StringBuilder message = new StringBuilder();
+          message.append("'SET ").append(varname).append('=').append(varvalue);
+          message.append("' FAILED because ").append(key).append(" expects an ");
+          message.append(confVars.typeString()).append(" value.");
+          throw new IllegalArgumentException(message.toString());
+        }
+        String fail = confVars.validate(value);
+        if (fail != null) {
+          StringBuilder message = new StringBuilder();
+          message.append("'SET ").append(varname).append('=').append(varvalue);
+          message.append("' FAILED in validation : ").append(fail).append('.');
+          throw new IllegalArgumentException(message.toString());
+        }
       }
     }
     conf.verifyAndSet(key, value);

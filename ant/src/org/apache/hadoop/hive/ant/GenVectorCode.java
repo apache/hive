@@ -215,6 +215,9 @@ public class GenVectorCode extends Task {
       {"FilterStringColumnCompareScalar", "Greater", ">"},
       {"FilterStringColumnCompareScalar", "GreaterEqual", ">="},
 
+      {"FilterStringColumnBetween", ""},
+      {"FilterStringColumnBetween", "!"},
+
       {"StringColumnCompareScalar", "Equal", "=="},
       {"StringColumnCompareScalar", "NotEqual", "!="},
       {"StringColumnCompareScalar", "Less", "<"},
@@ -275,6 +278,11 @@ public class GenVectorCode extends Task {
         {"FilterColumnCompareColumn", "Greater", "double", "long", ">"},
         {"FilterColumnCompareColumn", "GreaterEqual", "long", "long", ">="},
         {"FilterColumnCompareColumn", "GreaterEqual", "double", "long", ">="},
+
+      {"FilterColumnBetween", "long", ""},
+      {"FilterColumnBetween", "double", ""},
+      {"FilterColumnBetween", "long", "!"},
+      {"FilterColumnBetween", "double", "!"},
 
       {"ColumnCompareColumn", "Equal", "long", "double", "=="},
       {"ColumnCompareColumn", "Equal", "double", "double", "=="},
@@ -452,7 +460,7 @@ public class GenVectorCode extends Task {
   public void init(String templateBaseDir, String buildDir) {
     File generationDirectory = new File(templateBaseDir);
 
-    String buildPath = joinPath(buildDir, "ql", "gen", "vector");
+    String buildPath = joinPath(buildDir, "generated-sources", "java");
 
     File exprOutput = new File(joinPath(buildPath, "org", "apache", "hadoop",
         "hive", "ql", "exec", "vector", "expressions", "gen"));
@@ -470,7 +478,7 @@ public class GenVectorCode extends Task {
 
     File testCodeOutput =
         new File(
-            joinPath(buildDir, "ql", "test", "src", "org",
+            joinPath(buildDir, "generated-test-sources", "java", "org",
                 "apache", "hadoop", "hive", "ql", "exec", "vector",
                 "expressions", "gen"));
     testCodeGen = new GenVectorTestCode(testCodeOutput.getAbsolutePath(),
@@ -511,6 +519,8 @@ public class GenVectorCode extends Task {
         generateFilterColumnCompareScalar(tdesc);
       } else if (tdesc[0].equals("FilterScalarCompareColumn")) {
         generateFilterScalarCompareColumn(tdesc);
+      } else if (tdesc[0].equals("FilterColumnBetween")) {
+        generateFilterColumnBetween(tdesc);
       } else if (tdesc[0].equals("ScalarArithmeticColumn")) {
         generateScalarArithmeticColumn(tdesc);
       } else if (tdesc[0].equals("FilterColumnCompareColumn")) {
@@ -535,6 +545,8 @@ public class GenVectorCode extends Task {
         generateVectorUDAFVar(tdesc);
       } else if (tdesc[0].equals("FilterStringColumnCompareScalar")) {
         generateFilterStringColumnCompareScalar(tdesc);
+      } else if (tdesc[0].equals("FilterStringColumnBetween")) {
+        generateFilterStringColumnBetween(tdesc);
       } else if (tdesc[0].equals("StringColumnCompareScalar")) {
         generateStringColumnCompareScalar(tdesc);
       } else if (tdesc[0].equals("FilterStringScalarCompareColumn")) {
@@ -551,6 +563,40 @@ public class GenVectorCode extends Task {
     }
     System.out.println("Generating vector expression test code");
     testCodeGen.generateTestSuites();
+  }
+
+  private void generateFilterStringColumnBetween(String[] tdesc) throws IOException {
+    String optionalNot = tdesc[1];
+    String className = "FilterStringColumn" + (optionalNot.equals("!") ? "Not" : "")
+        + "Between";
+    String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
+
+    // Read the template into a string, expand it, and write it.
+    String templateFile = joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt");
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<OptionalNot>", optionalNot);
+    writeFile(outputFile, templateString);
+  }
+
+  private void generateFilterColumnBetween(String[] tdesc) throws IOException {
+    String operandType = tdesc[1];
+    String optionalNot = tdesc[2];
+
+    String className = "Filter" + getCamelCaseType(operandType) + "Column" +
+      (optionalNot.equals("!") ? "Not" : "") + "Between";
+    String inputColumnVectorType = getColumnVectorType(operandType);
+    String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
+
+    // Read the template into a string, expand it, and write it.
+    String templateFile = joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt");
+    String templateString = readFile(templateFile);
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
+    templateString = templateString.replaceAll("<OperandType>", operandType);
+    templateString = templateString.replaceAll("<OptionalNot>", optionalNot);
+
+    writeFile(outputFile, templateString);
   }
 
   private void generateColumnCompareColumn(String[] tdesc) throws IOException {

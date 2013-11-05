@@ -6,18 +6,18 @@ create table if not exists alter_part_invalidspec(key string, value string ) par
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@alter_part_invalidspec
 PREHOOK: query: -- Load data
-load data local inpath '../data/files/T1.txt' overwrite into table alter_part_invalidspec partition (year='1996', month='10')
+load data local inpath '../../data/files/T1.txt' overwrite into table alter_part_invalidspec partition (year='1996', month='10')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@alter_part_invalidspec
 POSTHOOK: query: -- Load data
-load data local inpath '../data/files/T1.txt' overwrite into table alter_part_invalidspec partition (year='1996', month='10')
+load data local inpath '../../data/files/T1.txt' overwrite into table alter_part_invalidspec partition (year='1996', month='10')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@alter_part_invalidspec
 POSTHOOK: Output: default@alter_part_invalidspec@year=1996/month=10
-PREHOOK: query: load data local inpath '../data/files/T1.txt' overwrite into table alter_part_invalidspec partition (year='1996', month='12')
+PREHOOK: query: load data local inpath '../../data/files/T1.txt' overwrite into table alter_part_invalidspec partition (year='1996', month='12')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@alter_part_invalidspec
-POSTHOOK: query: load data local inpath '../data/files/T1.txt' overwrite into table alter_part_invalidspec partition (year='1996', month='12')
+POSTHOOK: query: load data local inpath '../../data/files/T1.txt' overwrite into table alter_part_invalidspec partition (year='1996', month='12')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@alter_part_invalidspec
 POSTHOOK: Output: default@alter_part_invalidspec@year=1996/month=12

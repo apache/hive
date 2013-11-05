@@ -13,7 +13,7 @@ PREHOOK: query: SELECT
   field("x", "a", "b", "c", "d"),
   field(NULL, "a", "b", "c", "d"),
   field(0, 1, 2, 3, 4)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -21,7 +21,7 @@ POSTHOOK: query: SELECT
   field("x", "a", "b", "c", "d"),
   field(NULL, "a", "b", "c", "d"),
   field(0, 1, 2, 3, 4)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -32,7 +32,7 @@ PREHOOK: query: SELECT
   field("c", "a", "b", "c", "d"),
   field("d", "a", "b", "c", "d"),
   field("d", "a", "b", NULL, "d")
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -42,7 +42,7 @@ POSTHOOK: query: SELECT
   field("c", "a", "b", "c", "d"),
   field("d", "a", "b", "c", "d"),
   field("d", "a", "b", NULL, "d")
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -53,7 +53,7 @@ PREHOOK: query: SELECT
   field(3, 1, 2, 3, 4),
   field(4, 1, 2, 3, 4),
   field(4, 1, 2, NULL, 4)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -63,7 +63,7 @@ POSTHOOK: query: SELECT
   field(3, 1, 2, 3, 4),
   field(4, 1, 2, 3, 4),
   field(4, 1, 2, NULL, 4)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -73,10 +73,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE test_table(col1 STRING, col2 STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test_table
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE test_table
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE test_table
 PREHOOK: type: LOAD
 PREHOOK: Output: default@test_table
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE test_table
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE test_table
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@test_table
 PREHOOK: query: select col1,col2,
@@ -116,10 +116,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE test_table1(col1 int, col2 string) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test_table1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE test_table1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE test_table1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@test_table1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv1.txt' INTO TABLE test_table1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE test_table1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@test_table1
 PREHOOK: query: select col1,col2,

@@ -7,21 +7,21 @@ POSTHOOK: query: -- Tests truncating a column from a table with multiple files, 
 CREATE TABLE test_tab (key STRING, value STRING) STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test_tab
-PREHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src LIMIT 5
+PREHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src tablesample (5 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_tab
-POSTHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src LIMIT 5
+POSTHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src tablesample (5 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_tab
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: INSERT INTO TABLE test_tab SELECT * FROM src LIMIT 5
+PREHOOK: query: INSERT INTO TABLE test_tab SELECT * FROM src tablesample (5 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_tab
-POSTHOOK: query: INSERT INTO TABLE test_tab SELECT * FROM src LIMIT 5
+POSTHOOK: query: INSERT INTO TABLE test_tab SELECT * FROM src tablesample (5 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_tab

@@ -29,7 +29,7 @@ import junit.framework.Assert;
 public class TestJobIDParser {
   @Test
   public void testParsePig() throws IOException {
-    String errFileName = "../../src/test/data/status/pig";
+    String errFileName = "src/test/data/status/pig";
     PigJobIDParser pigJobIDParser = new PigJobIDParser(errFileName, new Configuration());
     List<String> jobs = pigJobIDParser.parseJobID();
     Assert.assertEquals(jobs.size(), 1);
@@ -37,7 +37,7 @@ public class TestJobIDParser {
 
   @Test
   public void testParseHive() throws IOException {
-    String errFileName = "../../src/test/data/status/hive";
+    String errFileName = "src/test/data/status/hive";
     HiveJobIDParser hiveJobIDParser = new HiveJobIDParser(errFileName, new Configuration());
     List<String> jobs = hiveJobIDParser.parseJobID();
     Assert.assertEquals(jobs.size(), 1);
@@ -45,7 +45,7 @@ public class TestJobIDParser {
 
   @Test
   public void testParseJar() throws IOException {
-    String errFileName = "../../src/test/data/status/jar";
+    String errFileName = "src/test/data/status/jar";
     JarJobIDParser jarJobIDParser = new JarJobIDParser(errFileName, new Configuration());
     List<String> jobs = jarJobIDParser.parseJobID();
     Assert.assertEquals(jobs.size(), 1);
@@ -53,7 +53,7 @@ public class TestJobIDParser {
 
   @Test
   public void testParseStreaming() throws IOException {
-    String errFileName = "../../src/test/data/status/streaming";
+    String errFileName = "src/test/data/status/streaming";
     JarJobIDParser jarJobIDParser = new JarJobIDParser(errFileName, new Configuration());
     List<String> jobs = jarJobIDParser.parseJobID();
     Assert.assertEquals(jobs.size(), 1);

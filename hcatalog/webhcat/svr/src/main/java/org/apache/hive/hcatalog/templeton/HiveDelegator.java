@@ -128,7 +128,7 @@ public class HiveDelegator extends LauncherDelegator {
 
     if (appConf.hiveArchive() != null && !appConf.hiveArchive().equals(""))
     {
-      args.add("-archives");
+      args.add(ARCHIVES);
       args.add(appConf.hiveArchive());
     }
 

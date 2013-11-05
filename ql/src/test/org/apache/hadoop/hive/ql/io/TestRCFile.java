@@ -105,7 +105,7 @@ public class TestRCFile {
     conf = new Configuration();
     ColumnProjectionUtils.setReadAllColumns(conf);
     fs = FileSystem.getLocal(conf);
-    dir = new Path(System.getProperty("test.data.dir", ".") + "/mapred");
+    dir = new Path(System.getProperty("test.tmp.dir", ".") + "/mapred");
     file = new Path(dir, "test_rcfile");
     cleanup();
     // the SerDe part is from TestLazySimpleSerDe
@@ -611,7 +611,7 @@ public class TestRCFile {
 
   @Test
   public void testSync() throws IOException {
-    Path testDir = new Path(System.getProperty("test.data.dir", ".")
+    Path testDir = new Path(System.getProperty("test.tmp.dir", ".")
         + "/mapred/testsync");
     Path testFile = new Path(testDir, "test_rcfile");
     fs.delete(testFile, true);
@@ -678,7 +678,7 @@ public class TestRCFile {
   private void writeThenReadByRecordReader(int intervalRecordCount,
       int writeCount, int splitNumber, long minSplitSize, CompressionCodec codec)
       throws IOException {
-    Path testDir = new Path(System.getProperty("test.data.dir", ".")
+    Path testDir = new Path(System.getProperty("test.tmp.dir", ".")
         + "/mapred/testsmallfirstsplit");
     Path testFile = new Path(testDir, "test_rcfile");
     fs.delete(testFile, true);
@@ -750,7 +750,7 @@ public class TestRCFile {
     Configuration conf = new Configuration();
     LocalFileSystem fs = FileSystem.getLocal(conf);
     // create an empty file (which is not a valid rcfile)
-    Path path = new Path(System.getProperty("test.build.data", ".")
+    Path path = new Path(System.getProperty("test.tmp.dir", ".")
         + "/broken.rcfile");
     fs.create(path).close();
     // try to create RCFile.Reader

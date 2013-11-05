@@ -32,9 +32,15 @@ import org.apache.hcatalog.hbase.snapshot.transaction.thrift.StoreFamilyRevision
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TestRevisionManager extends SkeletonHBaseTest {
+
+  @BeforeClass
+  public static void setup() throws Throwable {
+    setupSkeletonHBaseTest();
+  }
 
   @Test
   public void testBasicZNodeCreation() throws IOException, KeeperException, InterruptedException {

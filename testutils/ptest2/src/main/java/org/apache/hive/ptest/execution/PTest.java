@@ -77,6 +77,8 @@ public class PTest {
   private final Logger mLogger;
   private final List<HostExecutor> mHostExecutors;
   private final String mBuildTag;
+  private final SSHCommandExecutor mSshCommandExecutor;
+  private final RSyncCommandExecutor mRsyncCommandExecutor;
 
   public PTest(final TestConfiguration configuration, final ExecutionContext executionContext,
       final String buildTag, final File logDir, final LocalCommandFactory localCommandFactory,
@@ -88,6 +90,8 @@ public class PTest {
     mExecutedTests = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
     mFailedTests = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
     mExecutionContext = executionContext;
+    mSshCommandExecutor = sshCommandExecutor;
+    mRsyncCommandExecutor = rsyncCommandExecutor;
     mExecutor = MoreExecutors.listeningDecorator(Executors.newCachedThreadPool());
     final File failedLogDir = Dirs.create(new File(logDir, "failed"));
     final File succeededLogDir = Dirs.create(new File(logDir, "succeeded"));
@@ -171,10 +175,13 @@ public class PTest {
       error = true;
     } finally {
       for(HostExecutor hostExecutor : mHostExecutors) {
+        hostExecutor.shutdownNow();
         if(hostExecutor.isBad()) {
           mExecutionContext.addBadHost(hostExecutor.getHost());
         }
       }
+      mSshCommandExecutor.shutdownNow();
+      mRsyncCommandExecutor.shutdownNow();
       mExecutor.shutdownNow();
       SortedSet<String> failedTests = new TreeSet<String>(mFailedTests);
       if(failedTests.isEmpty()) {

@@ -81,7 +81,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src
               numFiles 1
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct src { string key, string value}
@@ -100,7 +99,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src
                 numFiles 1
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct src { string key, string value}
@@ -229,7 +227,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src
               numFiles 1
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct src { string key, string value}
@@ -248,7 +245,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src
                 numFiles 1
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct src { string key, string value}
@@ -424,7 +420,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src
               numFiles 1
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct src { string key, string value}
@@ -443,7 +438,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src
                 numFiles 1
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct src { string key, string value}
@@ -572,7 +566,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src
               numFiles 1
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct src { string key, string value}
@@ -591,7 +584,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src
                 numFiles 1
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct src { string key, string value}
@@ -767,7 +759,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src
               numFiles 1
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct src { string key, string value}
@@ -786,7 +777,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src
                 numFiles 1
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct src { string key, string value}
@@ -915,7 +905,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src
               numFiles 1
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct src { string key, string value}
@@ -934,7 +923,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src
                 numFiles 1
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct src { string key, string value}
@@ -1110,7 +1098,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src
               numFiles 1
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct src { string key, string value}
@@ -1129,7 +1116,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src
                 numFiles 1
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct src { string key, string value}
@@ -1258,7 +1244,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src
               numFiles 1
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct src { string key, string value}
@@ -1277,7 +1262,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src
                 numFiles 1
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct src { string key, string value}

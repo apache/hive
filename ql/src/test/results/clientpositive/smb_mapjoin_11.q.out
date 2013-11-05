@@ -155,15 +155,10 @@ STAGE PLANS:
                 columns.types int:string
 #### A masked pattern was here ####
                 name default.test_table1
-                numFiles 16
-                numPartitions 1
-                numRows 500
                 partition_columns ds
-                rawDataSize 5312
                 serialization.ddl struct test_table1 { i32 key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 5812
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.test_table1

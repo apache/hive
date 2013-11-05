@@ -63,12 +63,12 @@ POSTHOOK: query: create table transform1_t2(col array<int>)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@transform1_t2
 PREHOOK: query: insert overwrite table transform1_t2
-select array(1,2,3) from src limit 1
+select array(1,2,3) from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@transform1_t2
 POSTHOOK: query: insert overwrite table transform1_t2
-select array(1,2,3) from src limit 1
+select array(1,2,3) from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@transform1_t2

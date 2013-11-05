@@ -75,11 +75,11 @@ public class EximUtil {
       String scheme = uri.getScheme();
       String authority = uri.getAuthority();
       String path = uri.getPath();
-      LOG.debug("Path before norm :" + path);
+      LOG.info("Path before norm :" + path);
       // generate absolute path relative to home directory
       if (!path.startsWith("/")) {
         if (testMode) {
-          path = (new Path(System.getProperty("build.dir.hive"),
+          path = (new Path(System.getProperty("test.tmp.dir"),
               path)).toUri().getPath();
         } else {
           path = (new Path(new Path("/user/" + System.getProperty("user.name")),
@@ -102,7 +102,7 @@ public class EximUtil {
         authority = defaultURI.getAuthority();
       }
 
-      LOG.debug("Scheme:" + scheme + ", authority:" + authority + ", path:" + path);
+      LOG.info("Scheme:" + scheme + ", authority:" + authority + ", path:" + path);
       Collection<String> eximSchemes = conf.getStringCollection(
           HiveConf.ConfVars.HIVE_EXIM_URI_SCHEME_WL.varname);
       if (!eximSchemes.contains(scheme)) {
@@ -144,7 +144,7 @@ public class EximUtil {
       String authority = uri.getAuthority();
       String path = uri.getPath();
       if (!path.startsWith("/")) {
-          path = (new Path(System.getProperty("build.dir.hive"),
+          path = (new Path(System.getProperty("test.tmp.dir"),
               path)).toUri().getPath();
       }
       if (StringUtils.isEmpty(scheme)) {
@@ -293,12 +293,12 @@ public class EximUtil {
 
   /**
    * Return the partition specification from the specified keys and values
-   * 
+   *
    * @param partCols
    *          the names of the partition keys
    * @param partVals
    *          the values of the partition keys
-   * 
+   *
    * @return the partition specification as a map
    */
   public static Map<String, String> makePartSpec(List<FieldSchema> partCols, List<String> partVals) {
@@ -311,7 +311,7 @@ public class EximUtil {
 
   /**
    * Compares the schemas - names, types and order, but ignoring comments
-   * 
+   *
    * @param newSchema
    *          the new schema
    * @param oldSchema

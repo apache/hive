@@ -162,15 +162,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
-                numFiles 2
-                numPartitions 2
-                numRows 50
                 partition_columns dt/ts
-                rawDataSize 382
                 serialization.ddl struct alter_coltype { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 432
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.alter_coltype
@@ -362,15 +357,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
-                numFiles 3
-                numPartitions 3
-                numRows 75
                 partition_columns dt/ts
-                rawDataSize 573
                 serialization.ddl struct alter_coltype { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 648
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.alter_coltype
@@ -520,15 +510,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
-                numFiles 3
-                numPartitions 3
-                numRows 75
                 partition_columns dt/ts
-                rawDataSize 573
                 serialization.ddl struct alter_coltype { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 648
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.alter_coltype
@@ -566,15 +551,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
-                numFiles 3
-                numPartitions 3
-                numRows 75
                 partition_columns dt/ts
-                rawDataSize 573
                 serialization.ddl struct alter_coltype { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 648
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.alter_coltype
@@ -612,15 +592,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
-                numFiles 3
-                numPartitions 3
-                numRows 75
                 partition_columns dt/ts
-                rawDataSize 573
                 serialization.ddl struct alter_coltype { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 648
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.alter_coltype
@@ -857,15 +832,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
-                numFiles 3
-                numPartitions 3
-                numRows 75
                 partition_columns dt/ts
-                rawDataSize 573
                 serialization.ddl struct alter_coltype { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 648
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.alter_coltype
@@ -903,15 +873,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
-                numFiles 3
-                numPartitions 3
-                numRows 75
                 partition_columns dt/ts
-                rawDataSize 573
                 serialization.ddl struct alter_coltype { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 648
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.alter_coltype
@@ -949,15 +914,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
-                numFiles 3
-                numPartitions 3
-                numRows 75
                 partition_columns dt/ts
-                rawDataSize 573
                 serialization.ddl struct alter_coltype { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 648
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.alter_coltype
@@ -1090,15 +1050,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
-                numFiles 3
-                numPartitions 3
-                numRows 75
                 partition_columns dt/ts
-                rawDataSize 573
                 serialization.ddl struct alter_coltype { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 648
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.alter_coltype
@@ -1136,15 +1091,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
-                numFiles 3
-                numPartitions 3
-                numRows 75
                 partition_columns dt/ts
-                rawDataSize 573
                 serialization.ddl struct alter_coltype { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 648
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.alter_coltype
@@ -1182,15 +1132,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.alter_coltype
-                numFiles 3
-                numPartitions 3
-                numRows 75
                 partition_columns dt/ts
-                rawDataSize 573
                 serialization.ddl struct alter_coltype { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 648
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.alter_coltype

@@ -92,16 +92,16 @@ WITH SERDEPROPERTIES (
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@serde_regex
-PREHOOK: query: LOAD DATA LOCAL INPATH "../data/files/apache.access.log" INTO TABLE serde_regex
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/apache.access.log" INTO TABLE serde_regex
 PREHOOK: type: LOAD
 PREHOOK: Output: default@serde_regex
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../data/files/apache.access.log" INTO TABLE serde_regex
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/apache.access.log" INTO TABLE serde_regex
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@serde_regex
-PREHOOK: query: LOAD DATA LOCAL INPATH "../data/files/apache.access.2.log" INTO TABLE serde_regex
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/apache.access.2.log" INTO TABLE serde_regex
 PREHOOK: type: LOAD
 PREHOOK: Output: default@serde_regex
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../data/files/apache.access.2.log" INTO TABLE serde_regex
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/apache.access.2.log" INTO TABLE serde_regex
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@serde_regex
 PREHOOK: query: SELECT * FROM serde_regex ORDER BY time

@@ -1,7 +1,7 @@
 
 -- test analyze table compute statistiscs [noscan] on external table 
 -- 1 test table
-CREATE EXTERNAL TABLE anaylyze_external (a INT) LOCATION '${system:test.src.data.dir}/files/ext_test';
+CREATE EXTERNAL TABLE anaylyze_external (a INT) LOCATION '${system:hive.root}/data/files/ext_test';
 SELECT * FROM anaylyze_external;
 analyze table anaylyze_external compute statistics;
 describe formatted anaylyze_external;

@@ -7,10 +7,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE infertypes(ti TINYINT, si SMALLINT, i INT, bi BIGINT, fl FLOAT, db DOUBLE, str STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@infertypes
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/infer_const_type.txt' OVERWRITE INTO TABLE infertypes
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/infer_const_type.txt' OVERWRITE INTO TABLE infertypes
 PREHOOK: type: LOAD
 PREHOOK: Output: default@infertypes
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/infer_const_type.txt' OVERWRITE INTO TABLE infertypes
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/infer_const_type.txt' OVERWRITE INTO TABLE infertypes
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@infertypes
 PREHOOK: query: SELECT * FROM infertypes

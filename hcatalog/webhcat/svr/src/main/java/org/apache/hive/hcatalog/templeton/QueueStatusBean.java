@@ -57,12 +57,10 @@ public class QueueStatusBean {
     this.profile = profile;
 
     id = profile.getJobID().toString();
-    parentId = state.getId();
-    if (id.equals(parentId))
-      parentId = null;
+    parentId = state.getParent();
     percentComplete = state.getPercentComplete();
     exitValue = state.getExitValue();
-    user = state.getUser();
+    user = profile.getUser();
     callback = state.getCallback();
     completed = state.getCompleteStatus();
     userargs = state.getUserArgs();

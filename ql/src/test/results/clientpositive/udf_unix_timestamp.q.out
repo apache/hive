@@ -14,10 +14,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table oneline(key int, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@oneline
-PREHOOK: query: load data local inpath '../data/files/things.txt' into table oneline
+PREHOOK: query: load data local inpath '../../data/files/things.txt' into table oneline
 PREHOOK: type: LOAD
 PREHOOK: Output: default@oneline
-POSTHOOK: query: load data local inpath '../data/files/things.txt' into table oneline
+POSTHOOK: query: load data local inpath '../../data/files/things.txt' into table oneline
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@oneline
 PREHOOK: query: SELECT

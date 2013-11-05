@@ -41,11 +41,17 @@ import org.apache.hcatalog.common.HCatUtil;
 import org.apache.hcatalog.hbase.snapshot.TableSnapshot;
 import org.apache.hcatalog.mapreduce.HCatInputFormat;
 import org.apache.hcatalog.mapreduce.InputJobInfo;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class TestSnapshots extends SkeletonHBaseTest {
   private static HiveConf hcatConf;
   private static HCatDriver hcatDriver;
+
+  @BeforeClass
+  public static void setup() throws Throwable {
+    setupSkeletonHBaseTest();
+  }
 
   public void Initialize() throws Exception {
     hcatConf = getHiveConf();

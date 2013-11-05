@@ -71,7 +71,7 @@ import org.junit.rules.TestName;
 
 public class TestInputOutputFormat {
 
-  Path workDir = new Path(System.getProperty("test.tmp.dir","target/test/tmp"));
+  Path workDir = new Path(System.getProperty("test.tmp.dir","target/tmp"));
 
   public static class MyRow implements Writable {
     int x;

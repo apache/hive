@@ -9,11 +9,11 @@ CREATE TABLE test_tab (key STRING, value STRING)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe' STORED AS RCFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test_tab
-PREHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src LIMIT 10
+PREHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src tablesample (10 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_tab
-POSTHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src LIMIT 10
+POSTHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src tablesample (10 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_tab
@@ -39,7 +39,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	94                  
 	totalSize           	185                 
@@ -107,7 +106,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	94                  
 	totalSize           	150                 
@@ -146,12 +144,12 @@ NULL	val_484
 NULL	val_86
 NULL	val_98
 PREHOOK: query: -- Truncate multiple columns
-INSERT OVERWRITE TABLE test_tab SELECT * FROM src LIMIT 10
+INSERT OVERWRITE TABLE test_tab SELECT * FROM src tablesample (10 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_tab
 POSTHOOK: query: -- Truncate multiple columns
-INSERT OVERWRITE TABLE test_tab SELECT * FROM src LIMIT 10
+INSERT OVERWRITE TABLE test_tab SELECT * FROM src tablesample (10 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_tab
@@ -193,7 +191,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	94                  
 	totalSize           	75                  
@@ -269,7 +266,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	94                  
 	totalSize           	75                  
@@ -323,11 +319,11 @@ POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src LIMIT 10
+PREHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src tablesample (10 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_tab
-POSTHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src LIMIT 10
+POSTHOOK: query: INSERT OVERWRITE TABLE test_tab SELECT * FROM src tablesample (10 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_tab
@@ -362,7 +358,6 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 #### A masked pattern was here ####
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	94                  
 	totalSize           	185                 
@@ -443,7 +438,6 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 #### A masked pattern was here ####
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	94                  
 	totalSize           	150                 
@@ -526,7 +520,6 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 #### A masked pattern was here ####
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	94                  
 	totalSize           	75                  
@@ -581,11 +574,11 @@ POSTHOOK: Lineage: test_tab.key SIMPLE [(src)src.FieldSchema(name:key, type:stri
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_tab.value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: INSERT OVERWRITE TABLE test_tab_part PARTITION (part = '1') SELECT * FROM src LIMIT 10
+PREHOOK: query: INSERT OVERWRITE TABLE test_tab_part PARTITION (part = '1') SELECT * FROM src tablesample (10 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_tab_part@part=1
-POSTHOOK: query: INSERT OVERWRITE TABLE test_tab_part PARTITION (part = '1') SELECT * FROM src LIMIT 10
+POSTHOOK: query: INSERT OVERWRITE TABLE test_tab_part PARTITION (part = '1') SELECT * FROM src tablesample (10 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_tab_part@part=1

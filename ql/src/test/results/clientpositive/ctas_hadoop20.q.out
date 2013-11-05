@@ -161,7 +161,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	96                  
 	totalSize           	106                 
@@ -323,7 +322,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	96                  
 	totalSize           	106                 
@@ -486,7 +484,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	120                 
 	totalSize           	199                 
@@ -553,7 +550,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	120                 
 	totalSize           	199                 
@@ -716,7 +712,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	96                  
 	totalSize           	106                 
@@ -790,7 +785,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src
               numFiles 1
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct src { string key, string value}
@@ -809,7 +803,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src
                 numFiles 1
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct src { string key, string value}

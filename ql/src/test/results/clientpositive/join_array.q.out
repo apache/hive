@@ -8,16 +8,16 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table tinyB(a bigint, bList array<int>) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tinyB
-PREHOOK: query: load data local inpath '../data/files/tiny_a.txt' into table tinyA
+PREHOOK: query: load data local inpath '../../data/files/tiny_a.txt' into table tinyA
 PREHOOK: type: LOAD
 PREHOOK: Output: default@tinya
-POSTHOOK: query: load data local inpath '../data/files/tiny_a.txt' into table tinyA
+POSTHOOK: query: load data local inpath '../../data/files/tiny_a.txt' into table tinyA
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@tinya
-PREHOOK: query: load data local inpath '../data/files/tiny_b.txt' into table tinyB
+PREHOOK: query: load data local inpath '../../data/files/tiny_b.txt' into table tinyB
 PREHOOK: type: LOAD
 PREHOOK: Output: default@tinyb
-POSTHOOK: query: load data local inpath '../data/files/tiny_b.txt' into table tinyB
+POSTHOOK: query: load data local inpath '../../data/files/tiny_b.txt' into table tinyB
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@tinyb
 PREHOOK: query: select * from tinyA

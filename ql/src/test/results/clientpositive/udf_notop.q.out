@@ -7,7 +7,7 @@ PREHOOK: query: SELECT 1 NOT IN (1, 2, 3),
        "abc" NOT RLIKE "^bc",
        "abc" NOT REGEXP "^ab",
        "abc" NOT REGEXP "^bc",
-       1 IN (1, 2) AND "abc" NOT LIKE "bc%" FROM src LIMIT 1
+       1 IN (1, 2) AND "abc" NOT LIKE "bc%" FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -20,7 +20,7 @@ POSTHOOK: query: SELECT 1 NOT IN (1, 2, 3),
        "abc" NOT RLIKE "^bc",
        "abc" NOT REGEXP "^ab",
        "abc" NOT REGEXP "^bc",
-       1 IN (1, 2) AND "abc" NOT LIKE "bc%" FROM src LIMIT 1
+       1 IN (1, 2) AND "abc" NOT LIKE "bc%" FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

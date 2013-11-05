@@ -44,7 +44,7 @@ public class TestHiveLogging extends TestCase {
     process = null;
   }
 
-  private void configLog(String hiveLog4jTest, String hiveExecLog4jTest) 
+  private void configLog(String hiveLog4jTest, String hiveExecLog4jTest)
   throws Exception {
     String expectedLog4jTestPath = HiveTestUtils.getFileFromClasspath(hiveLog4jTest);
     String expectedLog4jExecPath = HiveTestUtils.getFileFromClasspath(hiveExecLog4jTest);

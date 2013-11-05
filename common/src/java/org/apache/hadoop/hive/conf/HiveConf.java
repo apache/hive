@@ -27,10 +27,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -440,8 +442,10 @@ public class HiveConf extends Configuration {
 
     // Default file format for CREATE TABLE statement
     // Options: TextFile, SequenceFile
-    HIVEDEFAULTFILEFORMAT("hive.default.fileformat", "TextFile"),
-    HIVEQUERYRESULTFILEFORMAT("hive.query.result.fileformat", "TextFile"),
+    HIVEDEFAULTFILEFORMAT("hive.default.fileformat", "TextFile",
+        new StringsValidator("TextFile", "SequenceFile", "RCfile", "ORC")),
+    HIVEQUERYRESULTFILEFORMAT("hive.query.result.fileformat", "TextFile",
+        new StringsValidator("TextFile", "SequenceFile", "RCfile")),
     HIVECHECKFILEFORMAT("hive.fileformat.check", true),
 
     // default serde for rcfile
@@ -658,9 +662,12 @@ public class HiveConf extends Configuration {
     HIVEOUTERJOINSUPPORTSFILTERS("hive.outerjoin.supports.filters", true),
 
     // 'minimal', 'more' (and 'all' later)
-    HIVEFETCHTASKCONVERSION("hive.fetch.task.conversion", "minimal"),
+    HIVEFETCHTASKCONVERSION("hive.fetch.task.conversion", "minimal",
+        new StringsValidator("minimal", "more")),
 
     HIVEFETCHTASKAGGR("hive.fetch.task.aggr", false),
+
+    HIVEOPTIMIZEMETADATAQUERIES("hive.compute.query.using.stats", false),
 
     // Serde for FetchTask
     HIVEFETCHOUTPUTSERDE("hive.fetch.output.serde", "org.apache.hadoop.hive.serde2.DelimitedJSONSerDe"),
@@ -734,7 +741,8 @@ public class HiveConf extends Configuration {
     HIVE_ENTITY_SEPARATOR("hive.entity.separator", "@"),
 
     // binary or http
-    HIVE_SERVER2_TRANSPORT_MODE("hive.server2.transport.mode", "binary"),
+    HIVE_SERVER2_TRANSPORT_MODE("hive.server2.transport.mode", "binary",
+        new StringsValidator("binary", "http")),
 
     // http (over thrift) transport settings
     HIVE_SERVER2_THRIFT_HTTP_PORT("hive.server2.thrift.http.port", 10001),
@@ -745,7 +753,8 @@ public class HiveConf extends Configuration {
     // binary transport settings
     HIVE_SERVER2_THRIFT_PORT("hive.server2.thrift.port", 10000),
     HIVE_SERVER2_THRIFT_BIND_HOST("hive.server2.thrift.bind.host", ""),
-    HIVE_SERVER2_THRIFT_SASL_QOP("hive.server2.thrift.sasl.qop", "auth"),
+    HIVE_SERVER2_THRIFT_SASL_QOP("hive.server2.thrift.sasl.qop", "auth",
+        new StringsValidator("auth", "auth-int", "auth-conf")),
     HIVE_SERVER2_THRIFT_MIN_WORKER_THREADS("hive.server2.thrift.min.worker.threads", 5),
     HIVE_SERVER2_THRIFT_MAX_WORKER_THREADS("hive.server2.thrift.max.worker.threads", 500),
 
@@ -757,7 +766,8 @@ public class HiveConf extends Configuration {
 
 
     // HiveServer2 auth configuration
-    HIVE_SERVER2_AUTHENTICATION("hive.server2.authentication", "NONE"),
+    HIVE_SERVER2_AUTHENTICATION("hive.server2.authentication", "NONE",
+        new StringsValidator("NOSASL", "NONE", "LDAP", "KERBEROS", "CUSTOM")),
     HIVE_SERVER2_KERBEROS_KEYTAB("hive.server2.authentication.kerberos.keytab", ""),
     HIVE_SERVER2_KERBEROS_PRINCIPAL("hive.server2.authentication.kerberos.principal", ""),
     HIVE_SERVER2_PLAIN_LDAP_URL("hive.server2.authentication.ldap.url", null),
@@ -765,7 +775,8 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_PLAIN_LDAP_DOMAIN("hive.server2.authentication.ldap.Domain", null),
     HIVE_SERVER2_CUSTOM_AUTHENTICATION_CLASS("hive.server2.custom.authentication.class", null),
     HIVE_SERVER2_ENABLE_DOAS("hive.server2.enable.doAs", true),
-    HIVE_SERVER2_TABLE_TYPE_MAPPING("hive.server2.table.type.mapping", "CLASSIC"),
+    HIVE_SERVER2_TABLE_TYPE_MAPPING("hive.server2.table.type.mapping", "CLASSIC",
+        new StringsValidator("CLASSIC", "HIVE")),
     HIVE_SERVER2_SESSION_HOOK("hive.server2.session.hook", ""),
 
     HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,delete,compile"),
@@ -836,7 +847,13 @@ public class HiveConf extends Configuration {
 
     private final VarType type;
 
+    private final Validator validator;
+
     ConfVars(String varname, String defaultVal) {
+      this(varname, defaultVal, null);
+    }
+
+    ConfVars(String varname, String defaultVal, Validator validator) {
       this.varname = varname;
       this.valClass = String.class;
       this.defaultVal = defaultVal;
@@ -845,9 +862,14 @@ public class HiveConf extends Configuration {
       this.defaultFloatVal = -1;
       this.defaultBoolVal = false;
       this.type = VarType.STRING;
+      this.validator = validator;
     }
 
-    ConfVars(String varname, int defaultIntVal) {
+    ConfVars(String varname, int defaultVal) {
+      this(varname, defaultVal, null);
+    }
+
+    ConfVars(String varname, int defaultIntVal, Validator validator) {
       this.varname = varname;
       this.valClass = Integer.class;
       this.defaultVal = Integer.toString(defaultIntVal);
@@ -856,9 +878,14 @@ public class HiveConf extends Configuration {
       this.defaultFloatVal = -1;
       this.defaultBoolVal = false;
       this.type = VarType.INT;
+      this.validator = validator;
     }
 
-    ConfVars(String varname, long defaultLongVal) {
+    ConfVars(String varname, long defaultVal) {
+      this(varname, defaultVal, null);
+    }
+
+    ConfVars(String varname, long defaultLongVal, Validator validator) {
       this.varname = varname;
       this.valClass = Long.class;
       this.defaultVal = Long.toString(defaultLongVal);
@@ -867,9 +894,14 @@ public class HiveConf extends Configuration {
       this.defaultFloatVal = -1;
       this.defaultBoolVal = false;
       this.type = VarType.LONG;
+      this.validator = validator;
     }
 
-    ConfVars(String varname, float defaultFloatVal) {
+    ConfVars(String varname, float defaultVal) {
+      this(varname, defaultVal, null);
+    }
+
+    ConfVars(String varname, float defaultFloatVal, Validator validator) {
       this.varname = varname;
       this.valClass = Float.class;
       this.defaultVal = Float.toString(defaultFloatVal);
@@ -878,6 +910,7 @@ public class HiveConf extends Configuration {
       this.defaultFloatVal = defaultFloatVal;
       this.defaultBoolVal = false;
       this.type = VarType.FLOAT;
+      this.validator = validator;
     }
 
     ConfVars(String varname, boolean defaultBoolVal) {
@@ -889,10 +922,15 @@ public class HiveConf extends Configuration {
       this.defaultFloatVal = -1;
       this.defaultBoolVal = defaultBoolVal;
       this.type = VarType.BOOLEAN;
+      this.validator = null;
     }
 
     public boolean isType(String value) {
       return type.isType(value);
+    }
+
+    public String validate(String value) {
+      return validator == null ? null : validator.validate(value);
     }
 
     public String typeString() {
@@ -1294,4 +1332,41 @@ public class HiveConf extends Configuration {
     }
   }
 
+  /**
+   * validate value for a ConfVar, return non-null string for fail message
+   */
+  public static interface Validator {
+    String validate(String value);
+  }
+
+  public static class StringsValidator implements Validator {
+    private final Set<String> expected = new LinkedHashSet<String>();
+    private StringsValidator(String... values) {
+      for (String value : values) {
+        expected.add(value.toLowerCase());
+      }
+    }
+    @Override
+    public String validate(String value) {
+      if (value == null || !expected.contains(value.toLowerCase())) {
+        return "Invalid value.. expects one of " + expected;
+      }
+      return null;
+    }
+  }
+
+  public static class RatioValidator implements Validator {
+    @Override
+    public String validate(String value) {
+      try {
+        float fvalue = Float.valueOf(value);
+        if (fvalue <= 0 || fvalue >= 1) {
+          return "Invalid ratio " + value + ", which should be in between 0 to 1";
+        }
+      } catch (NumberFormatException e) {
+        return e.toString();
+      }
+      return null;
+    }
+  }
 }

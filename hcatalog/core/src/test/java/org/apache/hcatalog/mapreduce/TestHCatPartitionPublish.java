@@ -51,6 +51,7 @@ import org.apache.hadoop.mapred.MiniMRCluster;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.TextInputFormat;
+import org.apache.hadoop.util.Shell;
 import org.apache.hcatalog.NoExitSecurityManager;
 import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hcatalog.data.DefaultHCatRecord;
@@ -74,10 +75,10 @@ public class TestHCatPartitionPublish {
   private static HiveConf hcatConf;
   private static HiveMetaStoreClient msc;
   private static SecurityManager securityManager;
+  private static Configuration conf = new Configuration(true);
 
   @BeforeClass
   public static void setup() throws Exception {
-    Configuration conf = new Configuration(true);
     conf.set("yarn.scheduler.capacity.root.queues", "default");
     conf.set("yarn.scheduler.capacity.root.default.capacity", "100");
 
@@ -150,10 +151,13 @@ public class TestHCatPartitionPublish {
     Assert.assertEquals(0, ptns.size());
     Table table = msc.getTable(dbName, tableName);
     Assert.assertTrue(table != null);
-    // Also make sure that the directory has been deleted in the table
-    // location.
-    Assert.assertFalse(fs.exists(new Path(table.getSd().getLocation()
-        + "/part1=p1value1/part0=p0value1")));
+    // In Windows, we cannot remove the output directory when job fail. See
+    // FileOutputCommitterContainer.abortJob
+    if (!Shell.WINDOWS) {
+      Path path = new Path(table.getSd().getLocation()
+          + "/part1=p1value1/part0=p0value1");
+      Assert.assertFalse(path.getFileSystem(conf).exists(path));
+    }
   }
 
   void runMRCreateFail(

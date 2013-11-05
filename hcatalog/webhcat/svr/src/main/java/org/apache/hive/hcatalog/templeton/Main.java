@@ -206,10 +206,13 @@ public class Main {
   public FilterHolder makeAuthFilter() {
     FilterHolder authFilter = new FilterHolder(AuthFilter.class);
     if (UserGroupInformation.isSecurityEnabled()) {
+      //http://hadoop.apache.org/docs/r1.1.1/api/org/apache/hadoop/security/authentication/server/AuthenticationFilter.html
       authFilter.setInitParameter("dfs.web.authentication.signature.secret",
         conf.kerberosSecret());
+      //https://svn.apache.org/repos/asf/hadoop/common/branches/branch-1.2/src/packages/templates/conf/hdfs-site.xml
       authFilter.setInitParameter("dfs.web.authentication.kerberos.principal",
         conf.kerberosPrincipal());
+      //http://https://svn.apache.org/repos/asf/hadoop/common/branches/branch-1.2/src/packages/templates/conf/hdfs-site.xml
       authFilter.setInitParameter("dfs.web.authentication.kerberos.keytab",
         conf.kerberosKeytab());
     }

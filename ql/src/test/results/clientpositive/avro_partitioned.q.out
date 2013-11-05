@@ -59,10 +59,10 @@ TBLPROPERTIES ('avro.schema.literal'='{
 }')
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@episodes
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/episodes.avro' INTO TABLE episodes
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes
 PREHOOK: type: LOAD
 PREHOOK: Output: default@episodes
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/episodes.avro' INTO TABLE episodes
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/episodes.avro' INTO TABLE episodes
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@episodes
 PREHOOK: query: CREATE TABLE episodes_partitioned

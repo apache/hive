@@ -20,16 +20,16 @@ POSTHOOK: query: create table table2(key string, value string) clustered by (val
 sorted by (value, key) into 1 BUCKETS stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@table2
-PREHOOK: query: load data local inpath '../data/files/SortCol1Col2.txt' overwrite into table table1
+PREHOOK: query: load data local inpath '../../data/files/SortCol1Col2.txt' overwrite into table table1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@table1
-POSTHOOK: query: load data local inpath '../data/files/SortCol1Col2.txt' overwrite into table table1
+POSTHOOK: query: load data local inpath '../../data/files/SortCol1Col2.txt' overwrite into table table1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@table1
-PREHOOK: query: load data local inpath '../data/files/SortCol2Col1.txt' overwrite into table table2
+PREHOOK: query: load data local inpath '../../data/files/SortCol2Col1.txt' overwrite into table table2
 PREHOOK: type: LOAD
 PREHOOK: Output: default@table2
-POSTHOOK: query: load data local inpath '../data/files/SortCol2Col1.txt' overwrite into table table2
+POSTHOOK: query: load data local inpath '../../data/files/SortCol2Col1.txt' overwrite into table table2
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@table2
 PREHOOK: query: -- The tables are bucketed in same columns in different order,
@@ -126,7 +126,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.table1
               numFiles 1
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct table1 { string key, string value}
@@ -147,7 +146,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.table1
                 numFiles 1
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct table1 { string key, string value}

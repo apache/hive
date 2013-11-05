@@ -31,7 +31,13 @@ import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hive.hcatalog.templeton.tool.JobState;
 
 /**
- * Fetch the status of a given job id in the queue.
+ * Fetch the status of a given job id in the queue. There are three sources of the info
+ * 1. Query result from JobTracker
+ * 2. JobState saved by TempletonControllerJob when monitoring the TempletonControllerJob
+ * 3. TempletonControllerJob put a JobState for every job it launches, so child job can
+ *    retrieve its parent job by its JobState
+ * 
+ * Currently there is no permission restriction, any user can query any job
  */
 public class StatusDelegator extends TempletonDelegator {
   private static final Log LOG = LogFactory.getLog(StatusDelegator.class);
@@ -63,38 +69,17 @@ public class StatusDelegator extends TempletonDelegator {
     }
   }
 
-  public static QueueStatusBean makeStatus(WebHCatJTShim tracker,
+  static QueueStatusBean makeStatus(WebHCatJTShim tracker,
                        JobID jobid,
-                       String childid,
                        JobState state)
     throws BadParam, IOException {
-    JobID bestid = jobid;
-    if (childid != null)
-      bestid = StatusDelegator.StringToJobID(childid);
 
-    JobStatus status = tracker.getJobStatus(bestid);
-    JobProfile profile = tracker.getJobProfile(bestid);
-
-    if (status == null || profile == null) {
-      if (bestid != jobid) { // Corrupt childid, retry.
-        LOG.error("Corrupt child id " + childid + " for " + jobid);
-        bestid = jobid;
-        status = tracker.getJobStatus(bestid);
-        profile = tracker.getJobProfile(bestid);
-      }
-    }
-
+    JobStatus status = tracker.getJobStatus(jobid);
+    JobProfile profile = tracker.getJobProfile(jobid);
     if (status == null || profile == null) // No such job.
-      throw new BadParam("Could not find job " + bestid);
+      throw new BadParam("Could not find job " + jobid);
 
     return new QueueStatusBean(state, status, profile);
-  }
-
-  public static QueueStatusBean makeStatus(WebHCatJTShim tracker,
-                       JobID jobid,
-                       JobState state)
-    throws BadParam, IOException {
-    return makeStatus(tracker, jobid, state.getChildId(), state);
   }
 
   /**

@@ -1,4 +1,4 @@
-ADD JAR ${system:build.dir}/hive-contrib-${system:hive.version}.jar;
+ADD JAR ${system:maven.local.repository}/org/apache/hive/hive-contrib/${system:hive.version}/hive-contrib-${system:hive.version}.jar;
 
 CREATE TEMPORARY FUNCTION dboutput AS 'org.apache.hadoop.hive.contrib.genericudf.example.GenericUDFDBOutput';
 
@@ -7,7 +7,7 @@ set mapred.reduce.tasks.speculative.execution=false;
 set mapred.map.tasks=1;
 set mapred.reduce.tasks=1;
 
-ADD JAR ${system:build.ivy.lib.dir}/default/derby-${system:derby.version}.jar;
+ADD JAR ${system:maven.local.repository}/org/apache/derby/derby/${system:derby.version}/derby-${system:derby.version}.jar;
 
 DESCRIBE FUNCTION dboutput;
 

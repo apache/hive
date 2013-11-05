@@ -34,76 +34,76 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table test4 (key string, value string) clustered by (value, key) sorted by (value, key) into 3 buckets
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test4
-PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE test1
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@test1
-POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE test1
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@test1
-PREHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE test1
+PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@test1
-POSTHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE test1
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@test1
-PREHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE test1
+PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@test1
-POSTHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE test1
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@test1
-PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE test2
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test2
 PREHOOK: type: LOAD
 PREHOOK: Output: default@test2
-POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE test2
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test2
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@test2
-PREHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE test2
+PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test2
 PREHOOK: type: LOAD
 PREHOOK: Output: default@test2
-POSTHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE test2
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test2
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@test2
-PREHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE test2
+PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test2
 PREHOOK: type: LOAD
 PREHOOK: Output: default@test2
-POSTHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE test2
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test2
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@test2
-PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE test3
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test3
 PREHOOK: type: LOAD
 PREHOOK: Output: default@test3
-POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE test3
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test3
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@test3
-PREHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE test3
+PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test3
 PREHOOK: type: LOAD
 PREHOOK: Output: default@test3
-POSTHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE test3
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test3
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@test3
-PREHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE test3
+PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test3
 PREHOOK: type: LOAD
 PREHOOK: Output: default@test3
-POSTHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE test3
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test3
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@test3
-PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE test4
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test4
 PREHOOK: type: LOAD
 PREHOOK: Output: default@test4
-POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE test4
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE test4
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@test4
-PREHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE test4
+PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test4
 PREHOOK: type: LOAD
 PREHOOK: Output: default@test4
-POSTHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE test4
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE test4
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@test4
-PREHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE test4
+PREHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test4
 PREHOOK: type: LOAD
 PREHOOK: Output: default@test4
-POSTHOOK: query: load data local inpath '../data/files/srcbucket22.txt' INTO TABLE test4
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket22.txt' INTO TABLE test4
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@test4
 PREHOOK: query: -- should be allowed
@@ -219,7 +219,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.test1
               numFiles 3
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct test1 { string key, string value}
@@ -240,7 +239,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.test1
                 numFiles 3
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct test1 { string key, string value}
@@ -370,7 +368,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.test2
               numFiles 3
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct test2 { string key, string value}
@@ -391,7 +388,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.test2
                 numFiles 3
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct test2 { string key, string value}
@@ -515,7 +511,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.test1
               numFiles 3
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct test1 { string key, string value}
@@ -536,7 +531,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.test1
                 numFiles 3
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct test1 { string key, string value}
@@ -658,7 +652,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.test1
               numFiles 3
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct test1 { string key, string value}
@@ -679,7 +672,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.test1
                 numFiles 3
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct test1 { string key, string value}
@@ -801,7 +793,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.test1
               numFiles 3
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct test1 { string key, string value}
@@ -822,7 +813,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.test1
                 numFiles 3
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct test1 { string key, string value}
@@ -944,7 +934,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.test1
               numFiles 3
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct test1 { string key, string value}
@@ -965,7 +954,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.test1
                 numFiles 3
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct test1 { string key, string value}
@@ -1087,7 +1075,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.test2
               numFiles 3
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct test2 { string key, string value}
@@ -1108,7 +1095,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.test2
                 numFiles 3
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct test2 { string key, string value}
@@ -1230,7 +1216,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.test2
               numFiles 3
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct test2 { string key, string value}
@@ -1251,7 +1236,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.test2
                 numFiles 3
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct test2 { string key, string value}
@@ -1373,7 +1357,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.test3
               numFiles 3
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct test3 { string key, string value}
@@ -1394,7 +1377,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.test3
                 numFiles 3
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct test3 { string key, string value}

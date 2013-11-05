@@ -336,10 +336,10 @@ POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSch
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), (test_table2)test_table2.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), (test_table2)test_table2.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from test_table3 tablesample (bucket 1 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table3
@@ -354,10 +354,10 @@ POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSch
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), (test_table2)test_table2.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), (test_table2)test_table2.FieldSchema(name:value, type:string, comment:null), ]
 0	val_0val_0	1
 0	val_0val_0	1
 0	val_0val_0	1
@@ -381,10 +381,10 @@ POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSch
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), (test_table2)test_table2.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), (test_table2)test_table2.FieldSchema(name:value, type:string, comment:null), ]
 5	val_5val_5	1
 5	val_5val_5	1
 5	val_5val_5	1
@@ -420,10 +420,10 @@ POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSch
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), (test_table2)test_table2.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), (test_table2)test_table2.FieldSchema(name:value, type:string, comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_JOIN (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME test_table1))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (and (= (TOK_TABLE_OR_COL ds) '1') (< (TOK_TABLE_OR_COL key) 8))))) a) (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME test_table2))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL key)) (TOK_SELEXPR (TOK_TABLE_OR_COL value))) (TOK_WHERE (and (= (TOK_TABLE_OR_COL ds) '1') (< (TOK_TABLE_OR_COL key) 8))))) b) (= (. (TOK_TABLE_OR_COL a) key) (. (TOK_TABLE_OR_COL b) key)))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME test_table3) (TOK_PARTSPEC (TOK_PARTVAL ds '1')))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL a) key)) (TOK_SELEXPR (TOK_FUNCTION concat (. (TOK_TABLE_OR_COL a) value) (. (TOK_TABLE_OR_COL b) value)))) (TOK_WHERE (or (= (. (TOK_TABLE_OR_COL a) key) 0) (= (. (TOK_TABLE_OR_COL a) key) 5)))))
 
@@ -526,12 +526,12 @@ POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSch
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), (test_table2)test_table2.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), (test_table2)test_table2.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), (test_table2)test_table2.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), (test_table2)test_table2.FieldSchema(name:value, type:string, comment:null), ]
 PREHOOK: query: select * from test_table3 tablesample (bucket 1 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table3
@@ -546,12 +546,12 @@ POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSch
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), (test_table2)test_table2.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), (test_table2)test_table2.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), (test_table2)test_table2.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), (test_table2)test_table2.FieldSchema(name:value, type:string, comment:null), ]
 0	val_0val_0	1
 0	val_0val_0	1
 0	val_0val_0	1
@@ -575,12 +575,12 @@ POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSch
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), (test_table2)test_table2.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
-POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), (test_table2)test_table2.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), (test_table2)b.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), (test_table2)test_table2.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).key SIMPLE [(test_table1)test_table1.FieldSchema(name:key, type:int, comment:null), ]
+POSTHOOK: Lineage: test_table3 PARTITION(ds=1).value EXPRESSION [(test_table1)test_table1.FieldSchema(name:value, type:string, comment:null), (test_table2)test_table2.FieldSchema(name:value, type:string, comment:null), ]
 5	val_5val_5	1
 5	val_5val_5	1
 5	val_5val_5	1

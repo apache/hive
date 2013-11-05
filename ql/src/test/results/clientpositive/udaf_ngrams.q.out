@@ -3,10 +3,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE kafka (contents STRING)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@kafka
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/text-en.txt' INTO TABLE kafka
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/text-en.txt' INTO TABLE kafka
 PREHOOK: type: LOAD
 PREHOOK: Output: default@kafka
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/text-en.txt' INTO TABLE kafka
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/text-en.txt' INTO TABLE kafka
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@kafka
 PREHOOK: query: SELECT ngrams(sentences(lower(contents)), 1, 100, 1000).estfrequency FROM kafka

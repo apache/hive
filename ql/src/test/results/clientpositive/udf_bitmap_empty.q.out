@@ -1,17 +1,17 @@
-PREHOOK: query: select ewah_bitmap_empty(array(13,2,4,8589934592,0,0)) from src limit 1
+PREHOOK: query: select ewah_bitmap_empty(array(13,2,4,8589934592,0,0)) from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select ewah_bitmap_empty(array(13,2,4,8589934592,0,0)) from src limit 1
+POSTHOOK: query: select ewah_bitmap_empty(array(13,2,4,8589934592,0,0)) from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 true
-PREHOOK: query: select ewah_bitmap_empty(array(13,2,4,8589934592,4096,0)) from src limit 1
+PREHOOK: query: select ewah_bitmap_empty(array(13,2,4,8589934592,4096,0)) from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: select ewah_bitmap_empty(array(13,2,4,8589934592,4096,0)) from src limit 1
+POSTHOOK: query: select ewah_bitmap_empty(array(13,2,4,8589934592,4096,0)) from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

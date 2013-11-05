@@ -1379,7 +1379,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private void parseJoinCondPopulateAlias(QBJoinTree joinTree, ASTNode condn,
+  void parseJoinCondPopulateAlias(QBJoinTree joinTree, ASTNode condn,
       ArrayList<String> leftAliases, ArrayList<String> rightAliases,
       ArrayList<String> fields) throws SemanticException {
     // String[] allAliases = joinTree.getAllAliases();
@@ -1501,6 +1501,160 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  /*
+   * refactored out of the Equality case of parseJoinCondition
+   * so that this can be recursively called on its left tree in the case when
+   * only left sources are referenced in a Predicate
+   */
+  void applyEqualityPredicateToQBJoinTree(QBJoinTree joinTree,
+      JoinType type,
+      List<String> leftSrc,
+      ASTNode joinCond,
+      ASTNode leftCondn,
+      ASTNode rightCondn,
+      List<String> leftCondAl1,
+      List<String> leftCondAl2,
+      List<String> rightCondAl1,
+      List<String> rightCondAl2) throws SemanticException {
+    if (leftCondAl1.size() != 0) {
+      if ((rightCondAl1.size() != 0)
+          || ((rightCondAl1.size() == 0) && (rightCondAl2.size() == 0))) {
+        if (type.equals(JoinType.LEFTOUTER) ||
+            type.equals(JoinType.FULLOUTER)) {
+          if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
+            joinTree.getFilters().get(0).add(joinCond);
+          } else {
+            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+            joinTree.getFiltersForPushing().get(0).add(joinCond);
+          }
+        } else {
+          /*
+           * If the rhs references table sources and this QBJoinTree has a leftTree;
+           * hand it to the leftTree and let it recursively handle it.
+           * There are 3 cases of passing a condition down:
+           * 1. The leftSide && rightSide don't contains references to the leftTree's rightAlias
+           *    => pass the lists down as is.
+           * 2. The leftSide contains refs to the leftTree's rightAlias, the rightSide doesn't
+           *    => switch the leftCondAl1 and leftConAl2 lists and pass down.
+           * 3. The rightSide contains refs to the leftTree's rightAlias, the leftSide doesn't
+           *    => switch the rightCondAl1 and rightConAl2 lists and pass down.
+           * 4. In case both contain references to the leftTree's rightAlias
+           *   => we cannot push the condition down.
+           * 5. If either contain references to both left & right
+           *    => we cannot push forward.
+           */
+          if (rightCondAl1.size() != 0) {
+            QBJoinTree leftTree = joinTree.getJoinSrc();
+            List<String> leftTreeLeftSrc = new ArrayList<String>();
+            if (leftTree != null) {
+              String leftTreeRightSource = leftTree.getRightAliases() != null &&
+                  leftTree.getRightAliases().length > 0 ?
+                  leftTree.getRightAliases()[0] : null;
+
+              boolean leftHasRightReference = false;
+              for (String r : leftCondAl1) {
+                if (r.equals(leftTreeRightSource)) {
+                  leftHasRightReference = true;
+                  break;
+                }
+              }
+              boolean rightHasRightReference = false;
+              for (String r : rightCondAl1) {
+                if (r.equals(leftTreeRightSource)) {
+                  rightHasRightReference = true;
+                  break;
+                }
+              }
+
+              boolean pushedDown = false;
+              if ( !leftHasRightReference && !rightHasRightReference ) {
+                applyEqualityPredicateToQBJoinTree(leftTree, type, leftTreeLeftSrc,
+                    joinCond, leftCondn, rightCondn,
+                    leftCondAl1, leftCondAl2,
+                    rightCondAl1, rightCondAl2);
+                pushedDown = true;
+              } else if ( !leftHasRightReference && rightHasRightReference && rightCondAl1.size() == 1 ) {
+                applyEqualityPredicateToQBJoinTree(leftTree, type, leftTreeLeftSrc,
+                    joinCond, leftCondn, rightCondn,
+                    leftCondAl1, leftCondAl2,
+                    rightCondAl2, rightCondAl1);
+                pushedDown = true;
+              } else if (leftHasRightReference && !rightHasRightReference && leftCondAl1.size() == 1 ) {
+                applyEqualityPredicateToQBJoinTree(leftTree, type, leftTreeLeftSrc,
+                    joinCond, leftCondn, rightCondn,
+                    leftCondAl2, leftCondAl1,
+                    rightCondAl1, rightCondAl2);
+                pushedDown = true;
+              }
+
+              if (leftTreeLeftSrc.size() == 1) {
+                leftTree.setLeftAlias(leftTreeLeftSrc.get(0));
+              }
+              if ( pushedDown) {
+                return;
+              }
+            } // leftTree != null
+          }
+          joinTree.getFiltersForPushing().get(0).add(joinCond);
+        }
+      } else if (rightCondAl2.size() != 0) {
+        populateAliases(leftCondAl1, leftCondAl2, leftCondn, joinTree,
+            leftSrc);
+        populateAliases(rightCondAl1, rightCondAl2, rightCondn, joinTree,
+            leftSrc);
+        boolean nullsafe = joinCond.getToken().getType() == HiveParser.EQUAL_NS;
+        joinTree.getNullSafes().add(nullsafe);
+      }
+    } else if (leftCondAl2.size() != 0) {
+      if ((rightCondAl2.size() != 0)
+          || ((rightCondAl1.size() == 0) && (rightCondAl2.size() == 0))) {
+        if (type.equals(JoinType.RIGHTOUTER)
+            || type.equals(JoinType.FULLOUTER)) {
+          if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
+            joinTree.getFilters().get(1).add(joinCond);
+          } else {
+            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+            joinTree.getFiltersForPushing().get(1).add(joinCond);
+          }
+        } else {
+          joinTree.getFiltersForPushing().get(1).add(joinCond);
+        }
+      } else if (rightCondAl1.size() != 0) {
+        populateAliases(leftCondAl1, leftCondAl2, leftCondn, joinTree,
+            leftSrc);
+        populateAliases(rightCondAl1, rightCondAl2, rightCondn, joinTree,
+            leftSrc);
+        boolean nullsafe = joinCond.getToken().getType() == HiveParser.EQUAL_NS;
+        joinTree.getNullSafes().add(nullsafe);
+      }
+    } else if (rightCondAl1.size() != 0) {
+      if (type.equals(JoinType.LEFTOUTER)
+          || type.equals(JoinType.FULLOUTER)) {
+        if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
+          joinTree.getFilters().get(0).add(joinCond);
+        } else {
+          LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+          joinTree.getFiltersForPushing().get(0).add(joinCond);
+        }
+      } else {
+        joinTree.getFiltersForPushing().get(0).add(joinCond);
+      }
+    } else {
+      if (type.equals(JoinType.RIGHTOUTER)
+          || type.equals(JoinType.FULLOUTER)) {
+        if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
+          joinTree.getFilters().get(1).add(joinCond);
+        } else {
+          LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
+          joinTree.getFiltersForPushing().get(1).add(joinCond);
+        }
+      } else {
+        joinTree.getFiltersForPushing().get(1).add(joinCond);
+      }
+    }
+
+  }
+
   private void parseJoinCondition(QBJoinTree joinTree, ASTNode joinCond, List<String> leftSrc)
       throws SemanticException {
     if (joinCond == null) {
@@ -1581,75 +1735,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             .getMsg(joinCond));
       }
 
-      if (leftCondAl1.size() != 0) {
-        if ((rightCondAl1.size() != 0)
-            || ((rightCondAl1.size() == 0) && (rightCondAl2.size() == 0))) {
-          if (type.equals(JoinType.LEFTOUTER) ||
-              type.equals(JoinType.FULLOUTER)) {
-            if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
-              joinTree.getFilters().get(0).add(joinCond);
-            } else {
-              LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
-              joinTree.getFiltersForPushing().get(0).add(joinCond);
-            }
-          } else {
-            joinTree.getFiltersForPushing().get(0).add(joinCond);
-          }
-        } else if (rightCondAl2.size() != 0) {
-          populateAliases(leftCondAl1, leftCondAl2, leftCondn, joinTree,
-              leftSrc);
-          populateAliases(rightCondAl1, rightCondAl2, rightCondn, joinTree,
-              leftSrc);
-          boolean nullsafe = joinCond.getToken().getType() == HiveParser.EQUAL_NS;
-          joinTree.getNullSafes().add(nullsafe);
-        }
-      } else if (leftCondAl2.size() != 0) {
-        if ((rightCondAl2.size() != 0)
-            || ((rightCondAl1.size() == 0) && (rightCondAl2.size() == 0))) {
-          if (type.equals(JoinType.RIGHTOUTER)
-              || type.equals(JoinType.FULLOUTER)) {
-            if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
-              joinTree.getFilters().get(1).add(joinCond);
-            } else {
-              LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
-              joinTree.getFiltersForPushing().get(1).add(joinCond);
-            }
-          } else {
-            joinTree.getFiltersForPushing().get(1).add(joinCond);
-          }
-        } else if (rightCondAl1.size() != 0) {
-          populateAliases(leftCondAl1, leftCondAl2, leftCondn, joinTree,
-              leftSrc);
-          populateAliases(rightCondAl1, rightCondAl2, rightCondn, joinTree,
-              leftSrc);
-          boolean nullsafe = joinCond.getToken().getType() == HiveParser.EQUAL_NS;
-          joinTree.getNullSafes().add(nullsafe);
-        }
-      } else if (rightCondAl1.size() != 0) {
-        if (type.equals(JoinType.LEFTOUTER)
-            || type.equals(JoinType.FULLOUTER)) {
-          if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
-            joinTree.getFilters().get(0).add(joinCond);
-          } else {
-            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
-            joinTree.getFiltersForPushing().get(0).add(joinCond);
-          }
-        } else {
-          joinTree.getFiltersForPushing().get(0).add(joinCond);
-        }
-      } else {
-        if (type.equals(JoinType.RIGHTOUTER)
-            || type.equals(JoinType.FULLOUTER)) {
-          if (conf.getBoolVar(HiveConf.ConfVars.HIVEOUTERJOINSUPPORTSFILTERS)) {
-            joinTree.getFilters().get(1).add(joinCond);
-          } else {
-            LOG.warn(ErrorMsg.OUTERJOIN_USES_FILTERS);
-            joinTree.getFiltersForPushing().get(1).add(joinCond);
-          }
-        } else {
-          joinTree.getFiltersForPushing().get(1).add(joinCond);
-        }
-      }
+      applyEqualityPredicateToQBJoinTree(joinTree, type, leftSrc,
+          joinCond, leftCondn, rightCondn,
+          leftCondAl1, leftCondAl2,
+          rightCondAl1, rightCondAl2);
 
       break;
 
@@ -1792,7 +1881,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     ASTNode searchCond = (ASTNode) whereExpr.getChild(0);
     List<ASTNode> subQueriesInOriginalTree = SubQueryUtils.findSubQueries(searchCond);
 
-    if ( subQueriesInOriginalTree != null ) {
+    if ( subQueriesInOriginalTree.size() > 0 ) {
+
+      /*
+       * Restriction.9.m :: disallow nested SubQuery expressions.
+       */
+      if (qb.getSubQueryPredicateDef() != null  ) {
+        throw new SemanticException(ErrorMsg.UNSUPPORTED_SUBQUERY_EXPRESSION.getMsg(
+            subQueriesInOriginalTree.get(0), "Nested SubQuery expressions are not supported."));
+      }
 
       /*
        * Restriction.8.m :: We allow only 1 SubQuery expression per Query.
@@ -1822,6 +1919,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         subQuery.validateAndRewriteAST(inputRR);
 
         QB qbSQ = new QB(subQuery.getOuterQueryId(), subQuery.getAlias(), true);
+        qbSQ.setSubQueryDef(subQuery);
         Phase1Ctx ctx_1 = initPhase1Ctx();
         doPhase1(subQuery.getSubQueryAST(), qbSQ, ctx_1);
         getMetaData(qbSQ);
@@ -6839,7 +6937,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   /**
    * Merges node to target
    */
-  private void mergeJoins(QB qb, QBJoinTree node, QBJoinTree target, int pos) {
+  private void mergeJoins(QB qb, QBJoinTree node, QBJoinTree target, int pos, int[] tgtToNodeExprMap) {
     String[] nodeRightAliases = node.getRightAliases();
     String[] trgtRightAliases = target.getRightAliases();
     String[] rightAliases = new String[nodeRightAliases.length
@@ -6868,7 +6966,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
 
     ArrayList<ArrayList<ASTNode>> expr = target.getExpressions();
     for (int i = 0; i < nodeRightAliases.length; i++) {
-      expr.add(node.getExpressions().get(i + 1));
+      List<ASTNode> nodeConds = node.getExpressions().get(i + 1);
+      ArrayList<ASTNode> reordereNodeConds = new ArrayList<ASTNode>();
+      for(int k=0; k < tgtToNodeExprMap.length; k++) {
+        reordereNodeConds.add(nodeConds.get(k));
+      }
+      expr.add(reordereNodeConds);
     }
 
     ArrayList<Boolean> nns = node.getNullSafes();
@@ -6985,11 +7088,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
-  private int findMergePos(QBJoinTree node, QBJoinTree target) {
+  private ObjectPair<Integer, int[]> findMergePos(QBJoinTree node, QBJoinTree target) {
     int res = -1;
     String leftAlias = node.getLeftAlias();
     if (leftAlias == null) {
-      return -1;
+      return new ObjectPair(-1, null);
     }
 
     ArrayList<ASTNode> nodeCondn = node.getExpressions().get(0);
@@ -7008,18 +7111,41 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     }
 
-    if ((targetCondn == null) || (nodeCondn.size() != targetCondn.size())) {
-      return -1;
+    if ( targetCondn == null ) {
+      return new ObjectPair(-1, null);
     }
 
-    for (int i = 0; i < nodeCondn.size(); i++) {
-      if (!nodeCondn.get(i).toStringTree().equals(
-          targetCondn.get(i).toStringTree())) {
-        return -1;
+    /*
+     * The order of the join condition expressions don't matter.
+     * A merge can happen:
+     * - if every target condition is present in some position of the node condition list.
+     * - there is no node condition, which is not equal to any target condition.
+     */
+
+    int[] tgtToNodeExprMap = new int[targetCondn.size()];
+    boolean[] nodeFiltersMapped = new boolean[nodeCondn.size()];
+    int i, j;
+    for(i=0; i<targetCondn.size(); i++) {
+      String tgtExprTree = targetCondn.get(i).toStringTree();
+      tgtToNodeExprMap[i] = -1;
+      for(j=0; j < nodeCondn.size(); j++) {
+        if ( nodeCondn.get(j).toStringTree().equals(tgtExprTree)) {
+          tgtToNodeExprMap[i] = j;
+          nodeFiltersMapped[j] = true;
+        }
+      }
+      if ( tgtToNodeExprMap[i] == -1) {
+        return new ObjectPair(-1, null);
       }
     }
 
-    return res;
+    for(j=0; j < nodeCondn.size(); j++) {
+      if ( !nodeFiltersMapped[j]) {
+        return new ObjectPair(-1, null);
+      }
+    }
+
+    return new ObjectPair(res, tgtToNodeExprMap);
   }
 
   // try merge join tree from inner most source
@@ -7054,7 +7180,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (prevType != null && prevType != currType) {
           break;
         }
-        int pos = findMergePos(node, target);
+        ObjectPair<Integer, int[]> mergeDetails = findMergePos(node, target);
+        int pos = mergeDetails.getFirst();
         if (pos >= 0) {
           // for outer joins, it should not exceed 16 aliases (short type)
           if (!node.getNoOuterJoin() || !target.getNoOuterJoin()) {
@@ -7063,7 +7190,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               continue;
             }
           }
-          mergeJoins(qb, node, target, pos);
+          mergeJoins(qb, node, target, pos, mergeDetails.getSecond());
           trees.set(j, null);
           continue; // continue merging with next alias
         }
@@ -7993,7 +8120,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   private String getAliasId(String alias, QB qb) {
-    return (qb.getId() == null ? alias : qb.getId() + ":" + alias);
+    return (qb.getId() == null ? alias : qb.getId() + ":" + alias).toLowerCase();
   }
 
   @SuppressWarnings("nls")

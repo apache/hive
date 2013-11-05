@@ -17,11 +17,11 @@ POSTHOOK: query: create table varchar1_1 (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@varchar1_1
 PREHOOK: query: -- load from file
-load data local inpath '../data/files/srcbucket0.txt' overwrite into table varchar1
+load data local inpath '../../data/files/srcbucket0.txt' overwrite into table varchar1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@varchar1
 POSTHOOK: query: -- load from file
-load data local inpath '../data/files/srcbucket0.txt' overwrite into table varchar1
+load data local inpath '../../data/files/srcbucket0.txt' overwrite into table varchar1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@varchar1
 PREHOOK: query: select * from varchar1 order by key, value limit 2

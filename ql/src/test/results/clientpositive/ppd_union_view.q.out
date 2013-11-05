@@ -12,24 +12,24 @@ POSTHOOK: query: create table t1_new (key string, value string) partitioned by (
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@t1_new
 PREHOOK: query: insert overwrite table t1_new partition (ds = '2011-10-15')
-select 'key1', 'value1' from src limit 1
+select 'key1', 'value1' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@t1_new@ds=2011-10-15
 POSTHOOK: query: insert overwrite table t1_new partition (ds = '2011-10-15')
-select 'key1', 'value1' from src limit 1
+select 'key1', 'value1' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t1_new@ds=2011-10-15
 POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-15).key SIMPLE []
 POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-15).value SIMPLE []
 PREHOOK: query: insert overwrite table t1_new partition (ds = '2011-10-16')
-select 'key2', 'value2' from src limit 1
+select 'key2', 'value2' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@t1_new@ds=2011-10-16
 POSTHOOK: query: insert overwrite table t1_new partition (ds = '2011-10-16')
-select 'key2', 'value2' from src limit 1
+select 'key2', 'value2' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t1_new@ds=2011-10-16
@@ -47,12 +47,12 @@ POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-15).value SIMPLE []
 POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-16).key SIMPLE []
 POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-16).value SIMPLE []
 PREHOOK: query: insert overwrite table t1_old partition (ds = '2011-10-13')
-select 'keymap3', 'value3' from src limit 1
+select 'keymap3', 'value3' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@t1_old@ds=2011-10-13
 POSTHOOK: query: insert overwrite table t1_old partition (ds = '2011-10-13')
-select 'keymap3', 'value3' from src limit 1
+select 'keymap3', 'value3' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t1_old@ds=2011-10-13
@@ -63,12 +63,12 @@ POSTHOOK: Lineage: t1_new PARTITION(ds=2011-10-16).value SIMPLE []
 POSTHOOK: Lineage: t1_old PARTITION(ds=2011-10-13).keymap SIMPLE []
 POSTHOOK: Lineage: t1_old PARTITION(ds=2011-10-13).value SIMPLE []
 PREHOOK: query: insert overwrite table t1_old partition (ds = '2011-10-14')
-select 'keymap4', 'value4' from src limit 1
+select 'keymap4', 'value4' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@t1_old@ds=2011-10-14
 POSTHOOK: query: insert overwrite table t1_old partition (ds = '2011-10-14')
-select 'keymap4', 'value4' from src limit 1
+select 'keymap4', 'value4' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t1_old@ds=2011-10-14
@@ -94,12 +94,12 @@ POSTHOOK: Lineage: t1_old PARTITION(ds=2011-10-13).value SIMPLE []
 POSTHOOK: Lineage: t1_old PARTITION(ds=2011-10-14).keymap SIMPLE []
 POSTHOOK: Lineage: t1_old PARTITION(ds=2011-10-14).value SIMPLE []
 PREHOOK: query: insert overwrite table t1_mapping partition (ds = '2011-10-13')
-select 'key3', 'keymap3' from src limit 1
+select 'key3', 'keymap3' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@t1_mapping@ds=2011-10-13
 POSTHOOK: query: insert overwrite table t1_mapping partition (ds = '2011-10-13')
-select 'key3', 'keymap3' from src limit 1
+select 'key3', 'keymap3' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t1_mapping@ds=2011-10-13
@@ -114,12 +114,12 @@ POSTHOOK: Lineage: t1_old PARTITION(ds=2011-10-13).value SIMPLE []
 POSTHOOK: Lineage: t1_old PARTITION(ds=2011-10-14).keymap SIMPLE []
 POSTHOOK: Lineage: t1_old PARTITION(ds=2011-10-14).value SIMPLE []
 PREHOOK: query: insert overwrite table t1_mapping partition (ds = '2011-10-14')
-select 'key4', 'keymap4' from src limit 1
+select 'key4', 'keymap4' from src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@t1_mapping@ds=2011-10-14
 POSTHOOK: query: insert overwrite table t1_mapping partition (ds = '2011-10-14')
-select 'key4', 'keymap4' from src limit 1
+select 'key4', 'keymap4' from src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@t1_mapping@ds=2011-10-14
@@ -275,15 +275,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1_mapping
-                numFiles 2
-                numPartitions 2
-                numRows 2
                 partition_columns ds
-                rawDataSize 24
                 serialization.ddl struct t1_mapping { string key, string keymap}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 26
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1_mapping
@@ -320,15 +315,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1_old
-                numFiles 2
-                numPartitions 2
-                numRows 2
                 partition_columns ds
-                rawDataSize 28
                 serialization.ddl struct t1_old { string keymap, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 30
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1_old
@@ -486,7 +476,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select * from t1 where ds = '2011-10-13'
 PREHOOK: type: QUERY
@@ -803,15 +792,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.t1_new
-                numFiles 2
-                numPartitions 2
-                numRows 2
                 partition_columns ds
-                rawDataSize 22
                 serialization.ddl struct t1_new { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 24
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.t1_new

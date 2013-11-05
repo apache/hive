@@ -115,10 +115,6 @@
              <string>default.srcpart</string> 
             </void> 
             <void method="put"> 
-             <string>numFiles</string> 
-             <string>4</string> 
-            </void> 
-            <void method="put"> 
              <string>columns.types</string> 
              <string>string:string</string> 
             </void> 
@@ -135,18 +131,6 @@
              <string>key,value</string> 
             </void> 
             <void method="put"> 
-             <string>rawDataSize</string> 
-             <string>0</string> 
-            </void> 
-            <void method="put"> 
-             <string>numRows</string> 
-             <string>0</string> 
-            </void> 
-            <void method="put"> 
-             <string>numPartitions</string> 
-             <string>4</string> 
-            </void> 
-            <void method="put"> 
              <string>partition_columns</string> 
              <string>ds/hr</string> 
             </void> 
@@ -161,10 +145,6 @@
             <void method="put"> 
              <string>file.inputformat</string> 
              <string>org.apache.hadoop.mapred.TextInputFormat</string> 
-            </void> 
-            <void method="put"> 
-             <string>totalSize</string> 
-             <string>23248</string> 
             </void> 
             <void method="put"> 
              <string>file.outputformat</string> 
@@ -1062,10 +1042,6 @@
              <string>default.srcpart</string> 
             </void> 
             <void method="put"> 
-             <string>numFiles</string> 
-             <string>4</string> 
-            </void> 
-            <void method="put"> 
              <string>columns.types</string> 
              <string>string:string</string> 
             </void> 
@@ -1082,18 +1058,6 @@
              <string>key,value</string> 
             </void> 
             <void method="put"> 
-             <string>rawDataSize</string> 
-             <string>0</string> 
-            </void> 
-            <void method="put"> 
-             <string>numRows</string> 
-             <string>0</string> 
-            </void> 
-            <void method="put"> 
-             <string>numPartitions</string> 
-             <string>4</string> 
-            </void> 
-            <void method="put"> 
              <string>partition_columns</string> 
              <string>ds/hr</string> 
             </void> 
@@ -1108,10 +1072,6 @@
             <void method="put"> 
              <string>file.inputformat</string> 
              <string>org.apache.hadoop.mapred.TextInputFormat</string> 
-            </void> 
-            <void method="put"> 
-             <string>totalSize</string> 
-             <string>23248</string> 
             </void> 
             <void method="put"> 
              <string>file.outputformat</string> 

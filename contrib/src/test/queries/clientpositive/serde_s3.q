@@ -1,4 +1,4 @@
-add jar ${system:build.dir}/hive-contrib-${system:hive.version}.jar;
+add jar ${system:maven.local.repository}/org/apache/hive/hive-contrib/${system:hive.version}/hive-contrib-${system:hive.version}.jar;
 
 DROP TABLE s3log;
 CREATE TABLE s3log
@@ -7,7 +7,7 @@ STORED AS TEXTFILE;
 
 DESCRIBE s3log;
 
-LOAD DATA LOCAL INPATH '../contrib/data/files/s3.log' INTO TABLE s3log;
+LOAD DATA LOCAL INPATH '../../contrib/data/files/s3.log' INTO TABLE s3log;
 
 SELECT a.* FROM s3log a;
 
