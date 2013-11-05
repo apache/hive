@@ -1742,7 +1742,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: round(key, 2)
-                  type: decimal(65,30)
+                  type: decimal(38,2)
             outputColumnNames: _col0
             ListSink
 

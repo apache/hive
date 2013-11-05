@@ -47,7 +47,7 @@
                   <goal>single</goal>
                 </goals>
                 <configuration>
-                  <finalName>hive-${project.version}</finalName>
+                  <finalName>apache-hive-${project.version}</finalName>
                   <descriptors>
                     <descriptor>src/main/assembly/bin.xml</descriptor>
                     <descriptor>src/main/assembly/src.xml</descriptor>

@@ -28,7 +28,27 @@ import java.util.Map;
 
 import junit.framework.Assert;
 
-import org.apache.hadoop.hive.ql.exec.vector.expressions.*;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.ColAndCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.ColOrCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprOrExpr;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncLogWithBaseDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncLogWithBaseLongToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncPowerDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IsNotNull;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IsNull;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.NotCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.RoundWithNumDigitsDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsFalse;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNotNull;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNull;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsTrue;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLTrim;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLower;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringUpper;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFUnixTimeStampLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFYearLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColUnaryMinus;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColLessDoubleScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColumnBetween;
@@ -59,7 +79,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.udf.UDFLTrim;
 import org.apache.hadoop.hive.ql.udf.UDFLog;
 import org.apache.hadoop.hive.ql.udf.UDFOPMinus;
@@ -68,7 +87,6 @@ import org.apache.hadoop.hive.ql.udf.UDFOPMultiply;
 import org.apache.hadoop.hive.ql.udf.UDFOPNegative;
 import org.apache.hadoop.hive.ql.udf.UDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.UDFPower;
-import org.apache.hadoop.hive.ql.udf.UDFRound;
 import org.apache.hadoop.hive.ql.udf.UDFSin;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -83,6 +101,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFRound;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Test;
@@ -766,15 +785,14 @@ public class TestVectorizationContext {
     Assert.assertEquals(FuncSinDoubleToDouble.class, ve.getClass());
 
     // Round without digits
-    gudfBridge = new GenericUDFBridge("round", false, UDFRound.class.getName());
-    mathFuncExpr.setGenericUDF(gudfBridge);
+    GenericUDFRound udfRound = new GenericUDFRound();
+    mathFuncExpr.setGenericUDF(udfRound);
     mathFuncExpr.setChildren(children2);
     ve = vc.getVectorExpression(mathFuncExpr);
     Assert.assertEquals(FuncRoundDoubleToDouble.class, ve.getClass());
 
     // Round with digits
-    gudfBridge = new GenericUDFBridge("round", false, UDFRound.class.getName());
-    mathFuncExpr.setGenericUDF(gudfBridge);
+    mathFuncExpr.setGenericUDF(udfRound);
     children2.add(new ExprNodeConstantDesc(4));
     mathFuncExpr.setChildren(children2);
     ve = vc.getVectorExpression(mathFuncExpr);
@@ -829,8 +847,7 @@ public class TestVectorizationContext {
     Assert.assertTrue(4.5 == ((FuncPowerDoubleToDouble) ve).getPower());
 
     //Round with default decimal places
-    gudfBridge = new GenericUDFBridge("round", false, UDFRound.class.getName());
-    mathFuncExpr.setGenericUDF(gudfBridge);
+    mathFuncExpr.setGenericUDF(udfRound);
     children2.clear();
     children2.add(colDesc2);
     mathFuncExpr.setChildren(children2);

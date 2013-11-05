@@ -105,7 +105,6 @@ import org.apache.hadoop.hive.ql.udf.UDFRegExpExtract;
 import org.apache.hadoop.hive.ql.udf.UDFRegExpReplace;
 import org.apache.hadoop.hive.ql.udf.UDFRepeat;
 import org.apache.hadoop.hive.ql.udf.UDFReverse;
-import org.apache.hadoop.hive.ql.udf.UDFRound;
 import org.apache.hadoop.hive.ql.udf.UDFRpad;
 import org.apache.hadoop.hive.ql.udf.UDFSecond;
 import org.apache.hadoop.hive.ql.udf.UDFSign;
@@ -203,7 +202,7 @@ public final class FunctionRegistry {
 
     registerGenericUDF("size", GenericUDFSize.class);
 
-    registerUDF("round", UDFRound.class, false);
+    registerGenericUDF("round", GenericUDFRound.class);
     registerUDF("floor", UDFFloor.class, false);
     registerUDF("sqrt", UDFSqrt.class, false);
     registerUDF("ceil", UDFCeil.class, false);
