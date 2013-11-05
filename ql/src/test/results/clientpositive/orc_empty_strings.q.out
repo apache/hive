@@ -9,11 +9,11 @@ STORED AS INPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat'
 OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test_orc
-PREHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT '' FROM src limit 10
+PREHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT '' FROM src tablesample (10 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_orc
-POSTHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT '' FROM src limit 10
+POSTHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT '' FROM src tablesample (10 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_orc
@@ -41,11 +41,11 @@ POSTHOOK: Lineage: test_orc.key SIMPLE []
 
 
 
-PREHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT IF (key % 3 = 0, key, '') FROM src limit 10
+PREHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT IF (key % 3 = 0, key, '') FROM src tablesample (10 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test_orc
-POSTHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT IF (key % 3 = 0, key, '') FROM src limit 10
+POSTHOOK: query: INSERT OVERWRITE TABLE test_orc SELECT IF (key % 3 = 0, key, '') FROM src tablesample (10 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test_orc

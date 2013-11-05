@@ -269,10 +269,10 @@ POSTHOOK: Input: default@test_table1@ds=1
 POSTHOOK: Output: default@test_table2@ds=1
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 PREHOOK: query: select count(*) from test_table2 where ds = '1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table2
@@ -285,10 +285,10 @@ POSTHOOK: Input: default@test_table2@ds=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 500
 PREHOOK: query: select count(*) from test_table2 tablesample (bucket 1 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
@@ -302,10 +302,10 @@ POSTHOOK: Input: default@test_table2@ds=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 500
 PREHOOK: query: select count(*) from test_table2 tablesample (bucket 2 out of 2) s where ds = '1'
 PREHOOK: type: QUERY
@@ -319,8 +319,8 @@ POSTHOOK: Input: default@test_table2@ds=1
 #### A masked pattern was here ####
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: test_table1 PARTITION(ds=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
-POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table2 PARTITION(ds=1).key EXPRESSION [(test_table1)a.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: test_table2 PARTITION(ds=1).value SIMPLE [(test_table1)a.FieldSchema(name:key, type:int, comment:null), ]
 0

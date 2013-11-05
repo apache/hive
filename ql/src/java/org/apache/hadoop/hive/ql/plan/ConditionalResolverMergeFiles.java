@@ -28,10 +28,10 @@ import java.util.Map;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.exec.Task;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 
 /**
  * Conditional task resolution interface. This is invoked at run time to get the
@@ -231,7 +231,7 @@ public class ConditionalResolverMergeFiles implements ConditionalResolver,
       throws IOException {
     DynamicPartitionCtx dpCtx = ctx.getDPCtx();
     // get list of dynamic partitions
-    FileStatus[] status = Utilities.getFileStatusRecurse(dirPath, dpLbLevel, inpFs);
+    FileStatus[] status = HiveStatsUtils.getFileStatusRecurse(dirPath, dpLbLevel, inpFs);
 
     // cleanup pathToPartitionInfo
     Map<String, PartitionDesc> ptpi = work.getPathToPartitionInfo();

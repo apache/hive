@@ -69,10 +69,9 @@ public class TestExecDriver extends TestCase {
 
   static HiveConf conf;
 
-  private static String tmpdir = System.getProperty("java.io.tmpdir") + File.separator + System.getProperty("user.name")
-      + File.separator;
-  private static Log LOG = LogFactory.getLog(TestExecDriver.class);
-  private static Path tmppath = new Path(tmpdir);
+  private static final String tmpdir = System.getProperty("test.tmp.dir");
+  private static final Log LOG = LogFactory.getLog(TestExecDriver.class);
+  private static final Path tmppath = new Path(tmpdir);
   private static Hive db;
   private static FileSystem fs;
 
@@ -80,7 +79,7 @@ public class TestExecDriver extends TestCase {
     try {
       conf = new HiveConf(ExecDriver.class);
       SessionState.start(conf);
-      
+
       fs = FileSystem.get(conf);
       if (fs.exists(tmppath) && !fs.getFileStatus(tmppath).isDir()) {
         throw new RuntimeException(tmpdir + " exists but is not a directory");
@@ -155,10 +154,10 @@ public class TestExecDriver extends TestCase {
     // inbuilt assumption that the testdir has only one output file.
     Path di_test = new Path(tmppath, testdir);
     if (!fs.exists(di_test)) {
-      throw new RuntimeException(tmpdir + testdir + " does not exist");
+      throw new RuntimeException(tmpdir + File.separator + testdir + " does not exist");
     }
     if (!fs.getFileStatus(di_test).isDir()) {
-      throw new RuntimeException(tmpdir + testdir + " is not a directory");
+      throw new RuntimeException(tmpdir + File.separator + testdir + " is not a directory");
     }
     FSDataInputStream fi_test = fs.open((fs.listStatus(di_test))[0].getPath());
 
@@ -197,7 +196,7 @@ public class TestExecDriver extends TestCase {
   @SuppressWarnings("unchecked")
   private void populateMapPlan1(Table src) {
 
-    Operator<FileSinkDesc> op2 = OperatorFactory.get(new FileSinkDesc(tmpdir
+    Operator<FileSinkDesc> op2 = OperatorFactory.get(new FileSinkDesc(tmpdir + File.separator
         + "mapplan1.out", Utilities.defaultTd, true));
     Operator<FilterDesc> op1 = OperatorFactory.get(getTestFilterDesc("key"),
         op2);
@@ -208,7 +207,7 @@ public class TestExecDriver extends TestCase {
   @SuppressWarnings("unchecked")
   private void populateMapPlan2(Table src) {
 
-    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(tmpdir
+    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(tmpdir + File.separator
         + "mapplan2.out", Utilities.defaultTd, false));
 
     Operator<ScriptDesc> op2 = OperatorFactory.get(new ScriptDesc("cat",
@@ -244,7 +243,7 @@ public class TestExecDriver extends TestCase {
     mr.setReduceWork(rWork);
 
     // reduce side work
-    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(tmpdir
+    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(tmpdir + File.separator
         + "mapredplan1.out", Utilities.defaultTd, false));
 
     Operator<ExtractDesc> op2 = OperatorFactory.get(new ExtractDesc(
@@ -274,7 +273,7 @@ public class TestExecDriver extends TestCase {
     mr.setReduceWork(rWork);
 
     // reduce side work
-    Operator<FileSinkDesc> op4 = OperatorFactory.get(new FileSinkDesc(tmpdir
+    Operator<FileSinkDesc> op4 = OperatorFactory.get(new FileSinkDesc(tmpdir + File.separator
         + "mapredplan2.out", Utilities.defaultTd, false));
 
     Operator<FilterDesc> op3 = OperatorFactory.get(getTestFilterDesc("0"), op4);
@@ -318,7 +317,7 @@ public class TestExecDriver extends TestCase {
     rWork.getTagToValueDesc().add(op2.getConf().getValueSerializeInfo());
 
     // reduce side work
-    Operator<FileSinkDesc> op4 = OperatorFactory.get(new FileSinkDesc(tmpdir
+    Operator<FileSinkDesc> op4 = OperatorFactory.get(new FileSinkDesc(tmpdir + File.separator
         + "mapredplan3.out", Utilities.defaultTd, false));
 
     Operator<SelectDesc> op5 = OperatorFactory.get(new SelectDesc(Utilities
@@ -361,7 +360,7 @@ public class TestExecDriver extends TestCase {
     mr.setReduceWork(rWork);
 
     // reduce side work
-    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(tmpdir
+    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(tmpdir + File.separator
         + "mapredplan4.out", Utilities.defaultTd, false));
 
     Operator<ExtractDesc> op2 = OperatorFactory.get(new ExtractDesc(
@@ -400,7 +399,7 @@ public class TestExecDriver extends TestCase {
     rWork.getTagToValueDesc().add(op0.getConf().getValueSerializeInfo());
 
     // reduce side work
-    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(tmpdir
+    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(tmpdir + File.separator
         + "mapredplan5.out", Utilities.defaultTd, false));
 
     Operator<ExtractDesc> op2 = OperatorFactory.get(new ExtractDesc(
@@ -441,7 +440,7 @@ public class TestExecDriver extends TestCase {
     rWork.getTagToValueDesc().add(op1.getConf().getValueSerializeInfo());
 
     // reduce side work
-    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(tmpdir
+    Operator<FileSinkDesc> op3 = OperatorFactory.get(new FileSinkDesc(tmpdir + File.separator
         + "mapredplan6.out", Utilities.defaultTd, false));
 
     Operator<FilterDesc> op2 = OperatorFactory.get(getTestFilterDesc("0"), op3);

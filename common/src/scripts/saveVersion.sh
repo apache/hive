@@ -33,7 +33,7 @@ dir=`pwd`
 cwd=`dirname $dir`
 if [ "$revision" = "" ]; then
     if git rev-parse HEAD 2>/dev/null > /dev/null ; then
-        revision=`git log -1 --pretty=format:"%H" ../`
+        revision=`git log -1 --pretty=format:"%H"`
         hostname=`hostname`
         branch=`git branch | sed -n -e 's/^* //p'`
         url="git://${hostname}${cwd}"
@@ -57,7 +57,13 @@ if [ "$url" = "" ]; then
     url="file://$cwd"
 fi
 
-srcChecksum=`find ../ -name '*.java' | grep -v generated-sources | LC_ALL=C sort | xargs md5sum | md5sum | cut -d ' ' -f 1`
+if [ -x /sbin/md5 ]; then
+  md5="/sbin/md5"
+else
+  md5="md5sum"
+fi
+
+srcChecksum=`find ../ -name '*.java' | grep -v generated-sources | LC_ALL=C sort | xargs $md5 | $md5 | cut -d ' ' -f 1`
 
 mkdir -p $src_dir/gen/org/apache/hive/common
 

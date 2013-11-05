@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.hive.ql.stats.StatsSetupConst;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 
 
 

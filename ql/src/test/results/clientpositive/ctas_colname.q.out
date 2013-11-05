@@ -126,7 +126,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	1                   
 	rawDataSize         	25                  
 	totalSize           	26                  
@@ -259,7 +258,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	25                  
 	rawDataSize         	242                 
 	totalSize           	267                 
@@ -442,7 +440,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	20                  
 	rawDataSize         	268                 
 	totalSize           	288                 
@@ -596,7 +593,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	1                   
 	rawDataSize         	5                   
 	totalSize           	6                   
@@ -731,7 +727,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	309                 
 	rawDataSize         	864                 
 	totalSize           	1173                
@@ -1178,7 +1173,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	5                   
 	rawDataSize         	5                   
 	totalSize           	10                  
@@ -1337,7 +1331,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	5                   
 	rawDataSize         	35                  
 	totalSize           	40                  

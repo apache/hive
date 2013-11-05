@@ -9,17 +9,17 @@ POSTHOOK: query: CREATE TABLE Employee_Part(employeeID int, employeeName String)
 row format delimited fields terminated by '|'  stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@Employee_Part
-PREHOOK: query: LOAD DATA LOCAL INPATH "../data/files/employee.dat" INTO TABLE Employee_Part partition(employeeSalary=2000.0)
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat" INTO TABLE Employee_Part partition(employeeSalary=2000.0)
 PREHOOK: type: LOAD
 PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../data/files/employee.dat" INTO TABLE Employee_Part partition(employeeSalary=2000.0)
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat" INTO TABLE Employee_Part partition(employeeSalary=2000.0)
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@employee_part
 POSTHOOK: Output: default@employee_part@employeesalary=2000.0
-PREHOOK: query: LOAD DATA LOCAL INPATH "../data/files/employee.dat" INTO TABLE Employee_Part partition(employeeSalary=4000.0)
+PREHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat" INTO TABLE Employee_Part partition(employeeSalary=4000.0)
 PREHOOK: type: LOAD
 PREHOOK: Output: default@employee_part
-POSTHOOK: query: LOAD DATA LOCAL INPATH "../data/files/employee.dat" INTO TABLE Employee_Part partition(employeeSalary=4000.0)
+POSTHOOK: query: LOAD DATA LOCAL INPATH "../../data/files/employee.dat" INTO TABLE Employee_Part partition(employeeSalary=4000.0)
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@employee_part
 POSTHOOK: Output: default@employee_part@employeesalary=4000.0
@@ -164,15 +164,10 @@ STAGE PLANS:
                 field.delim |
 #### A masked pattern was here ####
                 name default.employee_part
-                numFiles 2
-                numPartitions 2
-                numRows 0
                 partition_columns employeesalary
-                rawDataSize 0
                 serialization.ddl struct employee_part { i32 employeeid, string employeename}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 210
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.employee_part
@@ -374,15 +369,10 @@ STAGE PLANS:
                 field.delim |
 #### A masked pattern was here ####
                 name default.employee_part
-                numFiles 2
-                numPartitions 2
-                numRows 0
                 partition_columns employeesalary
-                rawDataSize 0
                 serialization.ddl struct employee_part { i32 employeeid, string employeename}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 210
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.employee_part

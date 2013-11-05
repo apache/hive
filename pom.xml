@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>org.apache.hive</groupId>
+  <artifactId>hive</artifactId>
+  <version>0.13.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <name>Hive</name>
+  <url>http://hive.apache.org</url>
+  <prerequisites>
+    <maven>2.2.1</maven>
+  </prerequisites>
+
+  <modules>
+    <module>ant</module>
+    <module>beeline</module>
+    <module>cli</module>
+    <module>common</module>
+    <module>contrib</module>
+    <module>hbase-handler</module>
+    <module>hcatalog</module>
+    <module>hwi</module>
+    <module>jdbc</module>
+    <module>metastore</module>
+    <module>odbc</module>
+    <module>ql</module>
+    <module>serde</module>
+    <module>service</module>
+    <module>shims</module>
+    <module>testutils</module>
+    <module>packaging</module>
+  </modules>
+
+  <properties>
+    <hive.version.shortname>0.13.0</hive.version.shortname>
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.repo.local>${user.home}/.m2/repository</maven.repo.local>
+    <hive.path.to.root>.</hive.path.to.root>
+    <test.tmp.dir>${project.build.directory}/tmp</test.tmp.dir>
+    <test.warehouse.dir>${project.build.directory}/warehouse</test.warehouse.dir>
+    <test.warehouse.scheme>pfile://</test.warehouse.scheme>
+
+    <!-- the versions of libraries that we use -->
+    <activemq.version>5.5.0</activemq.version>
+    <ant.version>1.9.1</ant.version>
+    <antlr.version>3.4</antlr.version>
+    <avro.version>1.7.1</avro.version>
+    <bonecp.version>0.7.1.RELEASE</bonecp.version>
+    <datanucleus-api-jdo.version>3.2.1</datanucleus-api-jdo.version>
+    <datanucleus-core.version>3.2.2</datanucleus-core.version>
+    <datanucleus-rdbms.version>3.2.1</datanucleus-rdbms.version>
+    <checkstyle.version>5.0</checkstyle.version>
+    <findbugs.version>1.3.9</findbugs.version>
+    <commons-cli.version>1.2</commons-cli.version>
+    <commons-codec.version>1.4</commons-codec.version>
+    <commons-collections.version>3.2.1</commons-collections.version>
+    <commons-compress.version>1.4.1</commons-compress.version>
+    <commons-configuration.version>1.6</commons-configuration.version>
+    <commons-exec.version>1.1</commons-exec.version>
+    <commons-httpclient.version>3.0.1</commons-httpclient.version>
+    <commons-io.version>2.4</commons-io.version>
+    <commons-lang.version>2.4</commons-lang.version>
+    <commons-lang3.version>3.1</commons-lang3.version>
+    <commons-logging.version>1.0.4</commons-logging.version>
+    <commons-pool.version>1.5.4</commons-pool.version>
+    <derby.version>10.4.2.0</derby.version>
+    <guava.version>11.0.2</guava.version>
+    <groovy.version>2.1.6</groovy.version>
+    <hadoop-20.version>0.20.2</hadoop-20.version>
+    <hadoop-20S.version>1.1.2</hadoop-20S.version>
+    <hadoop-23.version>2.2.0</hadoop-23.version>
+    <hbase.version>0.94.6.1</hbase.version>
+    <jackson.version>1.9.2</jackson.version>
+    <javaewah.version>0.3.2</javaewah.version>
+    <javolution.version>5.5.1</javolution.version>
+    <jersey.version>1.14</jersey.version>
+    <jetty.webhcat.version>7.6.0.v20120127</jetty.webhcat.version>
+    <jdo-api.version>3.0.1</jdo-api.version>
+    <jdom.version>1.1</jdom.version>
+    <jetty.version>6.1.26</jetty.version>
+    <jline.version>0.9.94</jline.version>
+    <jms.version>1.1</jms.version>
+    <json.version>20090211</json.version>
+    <junit.version>4.10</junit.version>
+    <kryo.version>2.22</kryo.version>
+    <libfb303.version>0.9.0</libfb303.version>
+    <libthrift.version>0.9.0</libthrift.version>
+    <log4j.version>1.2.16</log4j.version>
+    <maven-javadoc-plugin.version>2.4</maven-javadoc-plugin.version>
+    <mockito-all.version>1.8.2</mockito-all.version>
+    <mina.version>2.0.0-M5</mina.version>
+    <pig.version>0.10.1</pig.version>
+    <protobuf.version>2.5.0</protobuf.version>
+    <rat.version>0.8</rat.version>
+    <slf4j.version>1.6.1</slf4j.version>
+    <ST4.version>4.0.4</ST4.version>
+    <tez.version>0.2.0-SNAPSHOT</tez.version>
+    <tempus-fugit.version>1.1</tempus-fugit.version>
+    <snappy.version>0.2</snappy.version>
+    <wadl-resourcedoc-doclet.version>1.4</wadl-resourcedoc-doclet.version>
+    <velocity.version>1.5</velocity.version>
+    <xerces.version>2.9.1</xerces.version>
+    <zookeeper.version>3.4.3</zookeeper.version>
+    <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>datanucleus</id>
+      <name>datanucleus maven repository</name>
+      <url>http://www.datanucleus.org/downloads/maven2</url>
+      <layout>default</layout>
+      <releases>
+        <enabled>true</enabled>
+        <checksumPolicy>warn</checksumPolicy>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>glassfish-repository</id>
+      <url>http://maven.glassfish.org/content/groups/glassfish</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>glassfish-repo-archive</id>
+      <url>http://maven.glassfish.org/content/groups/glassfish</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+     <repository>
+       <id>sonatype-snapshot</id>
+       <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+       <releases>
+         <enabled>false</enabled>
+       </releases>
+       <snapshots>
+         <enabled>false</enabled>
+       </snapshots>
+     </repository>
+  </repositories>
+
+  <dependencies>
+    <!-- global dependencies -->
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>${slf4j.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.antlr</groupId>
+          <artifactId>antlr3-maven-plugin</artifactId>
+          <version>${antlr.version}</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.1</version>
+          <configuration>
+            <source>1.6</source>
+            <target>1.6</target>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-antrun-plugin</artifactId>
+          <version>1.7</version>
+          <dependencies>
+            <dependency>
+              <groupId>ant-contrib</groupId>
+              <artifactId>ant-contrib</artifactId>
+              <version>1.0b3</version>
+              <exclusions>
+                <exclusion>
+                  <groupId>ant</groupId>
+                  <artifactId>ant</artifactId>
+                </exclusion>
+              </exclusions>
+            </dependency>
+          </dependencies>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>2.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>1.3.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>2.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-shade-plugin</artifactId>
+          <version>2.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.16</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>2.2</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-war-plugin</artifactId>
+          <version>2.4</version>
+        </plugin>
+        <plugin>
+          <groupId>org.codehaus.mojo</groupId>
+          <artifactId>build-helper-maven-plugin</artifactId>
+          <version>1.8</version>
+        </plugin>
+        <plugin>
+          <groupId>org.datanucleus</groupId>
+          <artifactId>datanucleus-maven-plugin</artifactId>
+          <version>3.3.0-release</version>
+          <dependencies>
+            <dependency>
+              <groupId>org.datanucleus</groupId>
+              <artifactId>datanucleus-core</artifactId>
+              <version>${datanucleus-core.version}</version>
+            </dependency>
+          </dependencies>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>define-classpath</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <exportAntProperties>true</exportAntProperties>
+              <target>
+                <property name="maven.test.classpath" refid="maven.test.classpath"/>
+              </target>
+            </configuration>
+          </execution>
+          <execution>
+            <id>setup-test-dirs</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <delete dir="${test.tmp.dir}" />
+                <delete dir="${test.warehouse.dir}" />
+                <mkdir dir="${test.tmp.dir}" />
+                <mkdir dir="${test.warehouse.dir}" />
+                <mkdir dir="${test.tmp.dir}/conf" />
+                <!-- copies hive-site.xml so it can be modified -->
+                <copy todir="${test.tmp.dir}/conf/">
+                  <fileset dir="${basedir}/${hive.path.to.root}/data/conf/"/>
+                </copy>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>2.5</version>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>./</directory>
+              <includes>
+                <include>datanucleus.log</include>
+                <include>derby.log</include>
+              </includes>
+              <followSymlinks>false</followSymlinks>
+            </fileset>
+            <fileset>
+              <directory>build</directory>
+              <followSymlinks>false</followSymlinks>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <excludes>
+            <exclude>**/TestSerDe.java</exclude>
+            <exclude>**/TestHiveMetaStore.java</exclude>
+            <exclude>**/ql/exec/vector/util/*.java</exclude>
+            <exclude>**/ql/exec/vector/udf/legacy/*.java</exclude>
+            <exclude>**/ql/exec/vector/udf/generic/*.java</exclude>
+            <exclude>**/TestHiveServer2Concurrency.java</exclude>
+            <exclude>**/TestHiveMetaStore.java</exclude>
+          </excludes>
+          <redirectTestOutputToFile>true</redirectTestOutputToFile>
+          <reuseForks>false</reuseForks>
+          <failIfNoTests>false</failIfNoTests>
+          <argLine></argLine>
+          <additionalClasspathElements>
+            <additionalClasspathElement>${test.tmp.dir}/conf</additionalClasspathElement>
+            <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>
+          </additionalClasspathElements>
+          <environmentVariables>
+            <TZ>US/Pacific</TZ>
+            <LANG>en_US.UTF-8</LANG>
+            <HADOOP_CLASSPATH>${test.tmp.dir}/conf:${basedir}/${hive.path.to.root}/conf</HADOOP_CLASSPATH>
+            <HIVE_HADOOP_TEST_CLASSPATH>${maven.test.classpath}</HIVE_HADOOP_TEST_CLASSPATH>
+          </environmentVariables>
+          <systemPropertyVariables>
+            <build.dir>${project.build.directory}</build.dir>
+            <!-- required by zk test ClientBase -->
+            <build.test.dir>${test.tmp.dir}</build.test.dir>
+            <!-- required by a few tests to find the derby jar -->
+            <derby.version>${derby.version}</derby.version>
+            <derby.stream.error.file>${test.tmp.dir}/derby.log</derby.stream.error.file>
+            <hadoop.bin.path>${basedir}/${hive.path.to.root}/testutils/hadoop</hadoop.bin.path>
+            <!-- required by Hadoop's JobHistory -->
+            <hadoop.log.dir>${test.tmp.dir}</hadoop.log.dir>
+            <hive.root>${basedir}/${hive.path.to.root}/</hive.root>
+            <hive.version>${project.version}</hive.version>
+            <!-- required for hive-exec jar path and tests which reference a jar -->
+            <maven.local.repository>${maven.repo.local}</maven.local.repository>
+            <mapred.job.tracker>local</mapred.job.tracker>
+            <log4j.configuration>file://${test.tmp.dir}/conf/hive-log4j.properties</log4j.configuration>
+            <log4j.debug>true</log4j.debug>
+            <!-- don't diry up /tmp -->
+            <java.io.tmpdir>${test.tmp.dir}</java.io.tmpdir>
+            <!-- Hadoop's minidfs class uses this -->
+            <test.build.data>${test.tmp.dir}</test.build.data>
+            <!-- required by QTestUtil -->
+            <test.data.files>${basedir}/${hive.path.to.root}/data/files</test.data.files>
+            <test.data.dir>${basedir}/${hive.path.to.root}/data/files</test.data.dir>
+            <test.tmp.dir>${test.tmp.dir}</test.tmp.dir>
+            <test.dfs.mkdir>${test.dfs.mkdir}</test.dfs.mkdir>
+            <test.output.overwrite>${test.output.overwrite}</test.output.overwrite>
+            <test.warehouse.dir>${test.warehouse.scheme}${test.warehouse.dir}</test.warehouse.dir>
+            <!-- EnforceReadOnlyTables hook and QTestUtil -->
+            <test.src.tables>src,src1,srcbucket,srcbucket2,src_json,src_thrift,src_sequencefile,srcpart,alltypesorc</test.src.tables>
+          </systemPropertyVariables>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <profiles>
+    <profile>
+      <id>thriftif</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>generate-thrift-sources</id>
+                <phase>generate-sources</phase>
+                <configuration>
+                  <target>
+                    <taskdef name="for" classname="net.sf.antcontrib.logic.ForTask"
+                      classpathref="maven.plugin.classpath" />
+                    <property name="thrift.args" value="-I ${thrift.home} --gen java:beans,hashcode --gen cpp --gen php --gen py --gen rb"/>
+                    <property name="thrift.gen.dir" value="${basedir}/src/gen/thrift"/>
+                    <delete dir="${thrift.gen.dir}"/>
+                    <mkdir dir="${thrift.gen.dir}"/>
+                    <for param="thrift.file">
+                      <path>
+                        <fileset dir="." includes="if/*.thrift,if/test/*.thrift" />
+                      </path>
+                      <sequential>
+                        <echo message="Generating Thrift code for @{thrift.file}"/>
+                        <exec executable="${thrift.home}/bin/thrift"  failonerror="true" dir=".">
+                          <arg line="${thrift.args} -I ${basedir}/include -I ${basedir}/.. -o ${thrift.gen.dir} @{thrift.file} " />
+                        </exec>
+                      </sequential>
+                    </for>
+                  </target>
+                </configuration>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-enforcer-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>enforce-property</id>
+                <goals>
+                  <goal>enforce</goal>
+                </goals>
+                <configuration>
+                  <rules>
+                    <requireProperty>
+                      <property>thrift.home</property>
+                    </requireProperty>
+                  </rules>
+                  <fail>true</fail>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+</project>

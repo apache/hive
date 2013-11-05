@@ -105,7 +105,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.a
               numFiles 1
-              numPartitions 0
               numRows 3
               rawDataSize 18
               serialization.ddl struct a { i32 key, i32 value}
@@ -124,7 +123,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.a
                 numFiles 1
-                numPartitions 0
                 numRows 3
                 rawDataSize 18
                 serialization.ddl struct a { i32 key, i32 value}
@@ -314,7 +312,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.a
               numFiles 1
-              numPartitions 0
               numRows 3
               rawDataSize 18
               serialization.ddl struct a { i32 key, i32 value}
@@ -333,7 +330,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.a
                 numFiles 1
-                numPartitions 0
                 numRows 3
                 rawDataSize 18
                 serialization.ddl struct a { i32 key, i32 value}
@@ -523,7 +519,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.a
               numFiles 1
-              numPartitions 0
               numRows 3
               rawDataSize 18
               serialization.ddl struct a { i32 key, i32 value}
@@ -542,7 +537,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.a
                 numFiles 1
-                numPartitions 0
                 numRows 3
                 rawDataSize 18
                 serialization.ddl struct a { i32 key, i32 value}
@@ -750,7 +744,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.a
               numFiles 1
-              numPartitions 0
               numRows 3
               rawDataSize 18
               serialization.ddl struct a { i32 key, i32 value}
@@ -769,7 +762,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.a
                 numFiles 1
-                numPartitions 0
                 numRows 3
                 rawDataSize 18
                 serialization.ddl struct a { i32 key, i32 value}
@@ -981,7 +973,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.a
               numFiles 1
-              numPartitions 0
               numRows 3
               rawDataSize 18
               serialization.ddl struct a { i32 key, i32 value}
@@ -1000,7 +991,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.a
                 numFiles 1
-                numPartitions 0
                 numRows 3
                 rawDataSize 18
                 serialization.ddl struct a { i32 key, i32 value}

@@ -20,6 +20,7 @@ package org.apache.hive.ptest.api.client;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.TimeUnit;
@@ -45,10 +46,12 @@ import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -81,6 +84,7 @@ public class PTestClient {
   private static final String OUTPUT_DIR = "outputDir";
   private static final String TEST_HANDLE = "testHandle";
   private static final String CLEAR_LIBRARY_CACHE = "clearLibraryCache";
+  private static final int MAX_RETRIES = 10;
   private final String mApiEndPoint;
   private final String mLogsEndpoint;
   private final ObjectMapper mMapper;
@@ -113,7 +117,7 @@ public class PTestClient {
       }
     }
     TestStartRequest startRequest = new TestStartRequest(profile, testHandle, jira, patch, clearLibraryCache);
-    post(startRequest);
+    post(startRequest, false);
     boolean result = false;
     try {
       result = testTailLog(testHandle);
@@ -128,7 +132,7 @@ public class PTestClient {
   public boolean testList()
       throws Exception {
     TestListRequest testListRequest = new TestListRequest();
-    TestListResponse testListResponse = post(testListRequest);
+    TestListResponse testListResponse = post(testListRequest, true);
     for(TestStatus testStatus : testListResponse.getEntries()) {
       System.out.println(testStatus);
     }
@@ -144,7 +148,7 @@ public class PTestClient {
     TestStatusResponse statusResponse;
     do {
       TimeUnit.SECONDS.sleep(5);
-      statusResponse = post(statusRequest);
+      statusResponse = post(statusRequest, true);
     } while(Status.isPending(statusResponse.getTestStatus().getStatus()));
     long offset = 0;
     do {
@@ -154,7 +158,7 @@ public class PTestClient {
       } else {
         TimeUnit.SECONDS.sleep(5);
       }
-      statusResponse = post(statusRequest);
+      statusResponse = post(statusRequest, true);
     } while(Status.isInProgress(statusResponse.getTestStatus().getStatus()));
     while(offset < statusResponse.getTestStatus().getLogFileLength()) {
       offset = printLogs(testHandle, offset);
@@ -185,11 +189,11 @@ public class PTestClient {
   private long printLogs(String testHandle, long offset)
       throws Exception {
     TestLogRequest logsRequest = new TestLogRequest(testHandle, offset, 64 * 1024);
-    TestLogResponse logsResponse = post(logsRequest);
+    TestLogResponse logsResponse = post(logsRequest, true);
     System.out.print(logsResponse.getBody());
     return logsResponse.getOffset();
   }
-  private <S extends GenericResponse> S post(Object payload)
+  private <S extends GenericResponse> S post(Object payload, boolean agressiveRetry)
       throws Exception {
     EndPointResponsePair endPointResponse = Preconditions.
         checkNotNull(REQUEST_TO_ENDPOINT.get(payload.getClass()), payload.getClass().getName());
@@ -199,10 +203,13 @@ public class PTestClient {
       StringEntity params = new StringEntity(payloadString);
       request.addHeader("content-type", "application/json");
       request.setEntity(params);
+      if(agressiveRetry) {
+        mHttpClient.setHttpRequestRetryHandler(new PTestHttpRequestRetryHandler());          
+      }
       HttpResponse httpResponse = mHttpClient.execute(request);
       StatusLine statusLine = httpResponse.getStatusLine();
       if(statusLine.getStatusCode() != 200) {
-        throw new RuntimeException(statusLine.getStatusCode() + " " + statusLine.getReasonPhrase());
+        throw new IllegalStateException(statusLine.getStatusCode() + " " + statusLine.getReasonPhrase());
       }
       String response = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
       @SuppressWarnings("unchecked")
@@ -222,6 +229,24 @@ public class PTestClient {
     } finally {
       request.abort();
     }
+  }
+  private static class PTestHttpRequestRetryHandler implements HttpRequestRetryHandler {
+    @Override
+    public boolean retryRequest(IOException exception, int executionCount,
+        HttpContext context) {
+      System.err.println("LOCAL ERROR: " + exception.getMessage());
+      exception.printStackTrace();
+      if(executionCount > MAX_RETRIES) {
+        return false;
+      }
+      try {
+        Thread.sleep(30L * 1000L);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+      return true;
+    }
+    
   }
   private static class EndPointResponsePair {
     final String endpoint;

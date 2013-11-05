@@ -43,14 +43,14 @@ public class JarDelegator extends LauncherDelegator {
                String libjars, String files,
                List<String> jarArgs, List<String> defines,
                String statusdir, String callback, 
-               boolean usehcatalog, String completedUrl,
+               boolean usesHcatalog, String completedUrl,
                boolean enablelog, JobType jobType)
     throws NotAuthorizedException, BadParam, BusyException, QueueException,
     ExecuteException, IOException, InterruptedException {
     runAs = user;
     List<String> args = makeArgs(jar, mainClass,
       libjars, files, jarArgs, defines,
-      statusdir, usehcatalog, completedUrl, enablelog, jobType);
+      statusdir, usesHcatalog, completedUrl, enablelog, jobType);
 
     return enqueueController(user, userArgs, callback, args);
   }
@@ -58,7 +58,7 @@ public class JarDelegator extends LauncherDelegator {
   private List<String> makeArgs(String jar, String mainClass,
                   String libjars, String files,
                   List<String> jarArgs, List<String> defines,
-                  String statusdir, boolean usehcatalog, String completedUrl,
+                  String statusdir, boolean usesHcatalog, String completedUrl,
                   boolean enablelog, JobType jobType)
     throws BadParam, IOException, InterruptedException {
     ArrayList<String> args = new ArrayList<String>();
@@ -72,7 +72,7 @@ public class JarDelegator extends LauncherDelegator {
       TempletonUtils.addCmdForWindows(args);
 
       //check if the rest command specified explicitly to use hcatalog
-      if(usehcatalog){
+      if(usesHcatalog){
         addHiveMetaStoreTokenArg();
       }
 

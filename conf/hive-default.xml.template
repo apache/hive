@@ -2041,6 +2041,17 @@
 </property>
 
 <property>
+  <name>hive.compute.query.using.stats</name>
+  <value>false</value>
+  <description>
+  When set to true hive will answer few queries like count(1) purely using stats
+  stored in metastore. For basic stats collection turn on the config hive.stats.autogather to true.
+  For more advanced stats collection need to run analyze table queries.
+  </description>
+</property>
+
+
+<property>
   <name>hive.metastore.schema.verification</name>
   <value>false</value>
    <description>

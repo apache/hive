@@ -66,7 +66,8 @@ class HostExecutor {
   private final File mSuccessfulTestLogDir;
   private final File mFailedTestLogDir;
   private final long mNumPollSeconds;
-
+  private volatile boolean mShutdown;
+  
   HostExecutor(Host host, String privateKey, ListeningExecutorService executor,
       SSHCommandExecutor sshCommandExecutor,
       RSyncCommandExecutor rsyncCommandExecutor,
@@ -79,6 +80,7 @@ class HostExecutor {
       drones.add(new Drone(privateKey, host.getUser(), host.getName(),
           index, localDirs[index % localDirs.length]));
     }
+    mShutdown = false;
     mHost = host;
     mDrones = new CopyOnWriteArrayList<Drone>(drones);
     mExecutor = executor;
@@ -116,6 +118,12 @@ class HostExecutor {
   Host getHost() {
     return mHost;
   }
+  void shutdownNow() {
+    this.mShutdown = true;
+  }
+  boolean isShutdown() {
+    return mShutdown;
+  }
   /**
    * Executes parallel test until the parallel work queue is empty. Then
    * executes the isolated tests on the host. During each phase if a
@@ -126,6 +134,10 @@ class HostExecutor {
   private void executeTests(final BlockingQueue<TestBatch> parallelWorkQueue,
       final BlockingQueue<TestBatch> isolatedWorkQueue, final Set<TestBatch> failedTestResults)
           throws Exception {
+    if(mShutdown) {
+      mLogger.warn("Shutting down host " + mHost.getName());
+      return;
+    }
     mLogger.info("Starting parallel execution on " + mHost.getName());
     List<ListenableFuture<Void>> droneResults = Lists.newArrayList();
     for(final Drone drone : ImmutableList.copyOf(mDrones)) {
@@ -136,12 +148,16 @@ class HostExecutor {
           try {
             do {
               batch = parallelWorkQueue.poll(mNumPollSeconds, TimeUnit.SECONDS);
+              if(mShutdown) {
+                mLogger.warn("Shutting down host " + mHost.getName());
+                return null;
+              }
               if(batch != null) {
                 if(!executeTestBatch(drone, batch, failedTestResults)) {
                   failedTestResults.add(batch);
                 }
               }
-            } while(!parallelWorkQueue.isEmpty());
+            } while(!mShutdown && !parallelWorkQueue.isEmpty());
           } catch(AbortDroneException ex) {
             mDrones.remove(drone); // return value not checked due to concurrent access
             mLogger.error("Aborting drone during parallel execution", ex);
@@ -153,6 +169,10 @@ class HostExecutor {
           return null;
         }
       }));
+    }
+    if(mShutdown) {
+      mLogger.warn("Shutting down host " + mHost.getName());
+      return;
     }
     Futures.allAsList(droneResults).get();
     mLogger.info("Starting isolated execution on " + mHost.getName());
@@ -166,7 +186,7 @@ class HostExecutor {
               failedTestResults.add(batch);
             }
           }
-        } while(!isolatedWorkQueue.isEmpty());
+        } while(!mShutdown && !isolatedWorkQueue.isEmpty());
       } catch(AbortDroneException ex) {
         mDrones.remove(drone); // return value not checked due to concurrent access
         mLogger.error("Aborting drone during isolated execution", ex);
@@ -207,6 +227,10 @@ class HostExecutor {
     if(sshResult.getExitCode() == Constants.EXIT_CODE_UNKNOWN) {
       throw new AbortDroneException("Drone " + drone.toString() + " exited with " +
           Constants.EXIT_CODE_UNKNOWN + ": " + sshResult);
+    }
+    if(mShutdown) {
+      mLogger.warn("Shutting down host " + mHost.getName());
+      return false;
     }
     boolean result;
     if(sshResult.getExitCode() != 0 || sshResult.getException() != null) {

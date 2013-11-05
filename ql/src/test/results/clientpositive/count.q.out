@@ -3,10 +3,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table abcd (a int, b int, c int, d int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@abcd
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in4.txt' INTO TABLE abcd
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in4.txt' INTO TABLE abcd
 PREHOOK: type: LOAD
 PREHOOK: Output: default@abcd
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in4.txt' INTO TABLE abcd
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in4.txt' INTO TABLE abcd
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@abcd
 PREHOOK: query: select * from abcd

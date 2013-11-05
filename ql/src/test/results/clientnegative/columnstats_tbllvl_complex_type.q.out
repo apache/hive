@@ -17,10 +17,10 @@ POSTHOOK: query: CREATE TABLE table_complex_type (
        ) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@table_complex_type
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/create_nested_type.txt' OVERWRITE INTO TABLE table_complex_type
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/create_nested_type.txt' OVERWRITE INTO TABLE table_complex_type
 PREHOOK: type: LOAD
 PREHOOK: Output: default@table_complex_type
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/create_nested_type.txt' OVERWRITE INTO TABLE table_complex_type
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/create_nested_type.txt' OVERWRITE INTO TABLE table_complex_type
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@table_complex_type
 FAILED: UDFArgumentTypeException Only primitive type arguments are accepted but map<string,array<string>> is passed.

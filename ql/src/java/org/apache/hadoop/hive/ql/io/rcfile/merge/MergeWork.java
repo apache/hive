@@ -27,8 +27,8 @@ import java.util.List;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.CombineHiveInputFormat;
 import org.apache.hadoop.hive.ql.plan.DynamicPartitionCtx;
 import org.apache.hadoop.hive.ql.plan.Explain;
@@ -152,7 +152,7 @@ public class MergeWork extends MapWork implements Serializable {
       Path dirPath = new Path(dirName);
       try {
         FileSystem inpFs = dirPath.getFileSystem(conf);
-        FileStatus[] status = Utilities.getFileStatusRecurse(dirPath, listBucketingCtx
+        FileStatus[] status = HiveStatsUtils.getFileStatusRecurse(dirPath, listBucketingCtx
             .getSkewedColNames().size(), inpFs);
         List<String> newInputPath = new ArrayList<String>();
         boolean succeed = true;

@@ -2,7 +2,7 @@ PREHOOK: query: -- This test is used for testing the TableAccessAnalyzer
 
 CREATE TABLE T1(key STRING, val STRING) STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@t1
 PREHOOK: query: CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE

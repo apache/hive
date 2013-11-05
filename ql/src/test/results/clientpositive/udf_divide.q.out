@@ -11,11 +11,11 @@ a / b - Divide a by b
 Example:
   > SELECT 3 / 2 FROM src LIMIT 1;
   1.5
-PREHOOK: query: SELECT 3 / 2 FROM SRC LIMIT 1
+PREHOOK: query: SELECT 3 / 2 FROM SRC tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT 3 / 2 FROM SRC LIMIT 1
+POSTHOOK: query: SELECT 3 / 2 FROM SRC tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

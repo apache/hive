@@ -7,10 +7,10 @@ POSTHOOK: query: -- HIVE-5056 RS has expression list for values, but it's ignore
 create table testsrc ( `key` int,`val` string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@testsrc
-PREHOOK: query: load data local inpath '../data/files/kv1.txt' overwrite into table testsrc
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table testsrc
 PREHOOK: type: LOAD
 PREHOOK: Output: default@testsrc
-POSTHOOK: query: load data local inpath '../data/files/kv1.txt' overwrite into table testsrc
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' overwrite into table testsrc
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@testsrc
 PREHOOK: query: drop table if exists orderpayment_small
@@ -22,11 +22,11 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table orderpayment_small (`dealid` int,`date` string,`time` string, `cityid` int, `userid` int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@orderpayment_small
-PREHOOK: query: insert overwrite table orderpayment_small select 748, '2011-03-24', '2011-03-24', 55 ,5372613 from testsrc limit 1
+PREHOOK: query: insert overwrite table orderpayment_small select 748, '2011-03-24', '2011-03-24', 55 ,5372613 from testsrc tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testsrc
 PREHOOK: Output: default@orderpayment_small
-POSTHOOK: query: insert overwrite table orderpayment_small select 748, '2011-03-24', '2011-03-24', 55 ,5372613 from testsrc limit 1
+POSTHOOK: query: insert overwrite table orderpayment_small select 748, '2011-03-24', '2011-03-24', 55 ,5372613 from testsrc tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testsrc
 POSTHOOK: Output: default@orderpayment_small
@@ -54,11 +54,11 @@ POSTHOOK: Lineage: orderpayment_small.date SIMPLE []
 POSTHOOK: Lineage: orderpayment_small.dealid SIMPLE []
 POSTHOOK: Lineage: orderpayment_small.time SIMPLE []
 POSTHOOK: Lineage: orderpayment_small.userid SIMPLE []
-PREHOOK: query: insert overwrite table user_small select key from testsrc limit 100
+PREHOOK: query: insert overwrite table user_small select key from testsrc tablesample (100 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@testsrc
 PREHOOK: Output: default@user_small
-POSTHOOK: query: insert overwrite table user_small select key from testsrc limit 100
+POSTHOOK: query: insert overwrite table user_small select key from testsrc tablesample (100 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@testsrc
 POSTHOOK: Output: default@user_small
@@ -159,7 +159,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.orderpayment_small
               numFiles 1
-              numPartitions 0
               numRows 1
               rawDataSize 36
               serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
@@ -178,7 +177,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.orderpayment_small
                 numFiles 1
-                numPartitions 0
                 numRows 1
                 rawDataSize 36
                 serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
@@ -292,7 +290,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.orderpayment_small
               numFiles 1
-              numPartitions 0
               numRows 1
               rawDataSize 36
               serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
@@ -311,7 +308,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.orderpayment_small
                 numFiles 1
-                numPartitions 0
                 numRows 1
                 rawDataSize 36
                 serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
@@ -423,7 +419,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.orderpayment_small
               numFiles 1
-              numPartitions 0
               numRows 1
               rawDataSize 36
               serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
@@ -442,7 +437,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.orderpayment_small
                 numFiles 1
-                numPartitions 0
                 numRows 1
                 rawDataSize 36
                 serialization.ddl struct orderpayment_small { i32 dealid, string date, string time, i32 cityid, i32 userid}
@@ -552,7 +546,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.user_small
               numFiles 1
-              numPartitions 0
               numRows 100
               rawDataSize 288
               serialization.ddl struct user_small { i32 userid}
@@ -571,7 +564,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.user_small
                 numFiles 1
-                numPartitions 0
                 numRows 100
                 rawDataSize 288
                 serialization.ddl struct user_small { i32 userid}

@@ -3,10 +3,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE myinput1(key int, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@myinput1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in1.txt' INTO TABLE myinput1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in1.txt' INTO TABLE myinput1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@myinput1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in1.txt' INTO TABLE myinput1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in1.txt' INTO TABLE myinput1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@myinput1
 PREHOOK: query: SELECT sum(hash(a.key,a.value,b.key,b.value)) FROM myinput1 a JOIN myinput1 b

@@ -19,22 +19,22 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table gl_src1 (key int, value string) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@gl_src1
-PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src1
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@gl_src1
-POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src1
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@gl_src1
-PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src1
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@gl_src1
-POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src1
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@gl_src1
-PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src1
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@gl_src1
-POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src1
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@gl_src1
 PREHOOK: query: -- need one file
@@ -1134,33 +1134,33 @@ create table gl_src_part1 (key int, value string) partitioned by (p string) stor
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@gl_src_part1
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
-PREHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE gl_src_part1 partition(p='11')
+PREHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE gl_src_part1 partition(p='11')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@gl_src_part1
-POSTHOOK: query: load data local inpath '../data/files/srcbucket21.txt' INTO TABLE gl_src_part1 partition(p='11')
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket21.txt' INTO TABLE gl_src_part1 partition(p='11')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@gl_src_part1
 POSTHOOK: Output: default@gl_src_part1@p=11
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
-PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@gl_src_part1
-POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@gl_src_part1
 POSTHOOK: Output: default@gl_src_part1@p=12
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
-PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@gl_src_part1@p=12
-POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@gl_src_part1@p=12
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]
-PREHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
+PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@gl_src_part1@p=12
-POSTHOOK: query: load data local inpath '../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
+POSTHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE gl_src_part1 partition(p='12')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@gl_src_part1@p=12
 POSTHOOK: Lineage: gl_tgt.key EXPRESSION [(gl_src1)gl_src1.FieldSchema(name:key, type:int, comment:null), ]

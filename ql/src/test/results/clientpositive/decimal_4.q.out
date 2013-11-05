@@ -24,10 +24,10 @@ POSTHOOK: query: CREATE TABLE DECIMAL_4_2(key decimal(35,25), value decimal(35,2
 STORED AS ORC
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@DECIMAL_4_2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv7.txt' INTO TABLE DECIMAL_4_1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_4_1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@decimal_4_1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv7.txt' INTO TABLE DECIMAL_4_1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv7.txt' INTO TABLE DECIMAL_4_1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@decimal_4_1
 PREHOOK: query: INSERT OVERWRITE TABLE DECIMAL_4_2 SELECT key, key * 3 FROM DECIMAL_4_1

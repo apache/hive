@@ -111,7 +111,11 @@ public class QBJoinTree implements Serializable{
    *          String
    */
   public void setLeftAlias(String leftAlias) {
-    this.leftAlias = leftAlias;
+    if ( this.leftAlias != null && !this.leftAlias.equals(leftAlias) ) {
+      this.leftAlias = null;
+    } else {
+      this.leftAlias = leftAlias;
+    }
   }
 
   public String[] getRightAliases() {

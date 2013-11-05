@@ -7,10 +7,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table tst_src1 like src1
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tst_src1
-PREHOOK: query: load data local inpath '../data/files/kv1.txt' into table tst_src1
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table tst_src1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@tst_src1
-POSTHOOK: query: load data local inpath '../data/files/kv1.txt' into table tst_src1
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table tst_src1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@tst_src1
 PREHOOK: query: select count(1) from tst_src1
@@ -22,10 +22,10 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@tst_src1
 #### A masked pattern was here ####
 500
-PREHOOK: query: load data local inpath '../data/files/kv1.txt' into table tst_src1
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table tst_src1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@tst_src1
-POSTHOOK: query: load data local inpath '../data/files/kv1.txt' into table tst_src1
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table tst_src1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@tst_src1
 PREHOOK: query: select count(1) from tst_src1

@@ -12,23 +12,23 @@ Example:
    > SELECT atan(0) FROM src LIMIT 1;
   0
 PREHOOK: query: SELECT atan(null)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT atan(null)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 NULL
 PREHOOK: query: SELECT atan(1), atan(6), atan(-1.0)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT atan(1), atan(6), atan(-1.0)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
@@ -47,23 +47,23 @@ Example:
    > SELECT atan(0) FROM src LIMIT 1;
   0
 PREHOOK: query: SELECT atan(null)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT atan(null)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 NULL
 PREHOOK: query: SELECT atan(1), atan(6), atan(-1.0)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: query: SELECT atan(1), atan(6), atan(-1.0)
-FROM src LIMIT 1
+FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

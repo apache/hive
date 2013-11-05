@@ -34,6 +34,8 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
+import org.apache.hadoop.hive.common.HiveStatsUtils;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.FSRecordWriter;
 import org.apache.hadoop.hive.ql.io.FSRecordWriter.StatsProvidingRecordWriter;
@@ -51,7 +53,6 @@ import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.SkewedColumnPositionPair;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
-import org.apache.hadoop.hive.ql.stats.StatsSetupConst;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.Serializer;
@@ -836,7 +837,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       if (conf.isLinkedFileSink()) {
         level++;
       }
-      FileStatus[] status = Utilities.getFileStatusRecurse(tmpPath, level, fs);
+      FileStatus[] status = HiveStatsUtils.getFileStatusRecurse(tmpPath, level, fs);
       sb.append("Sample of ")
         .append(Math.min(status.length, 100))
         .append(" partitions created under ")

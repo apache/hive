@@ -88,7 +88,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.srcbucket
               numFiles 2
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct srcbucket { i32 key, string value}
@@ -108,7 +107,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.srcbucket
                 numFiles 2
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct srcbucket { i32 key, string value}

@@ -33,7 +33,7 @@ public class TestURLHook implements JDOConnectionURLHook {
   public String getJdoConnectionUrl(Configuration conf) throws Exception {
     if (originalUrl == null) {
       originalUrl = conf.get(HiveConf.ConfVars.METASTORECONNECTURLKEY.varname, "");
-      return "jdbc:derby:;databaseName=../build/test/junit_metastore_db_blank;create=true";
+      return "jdbc:derby:;databaseName=target/tmp/junit_metastore_db_blank;create=true";
     } else {
       return originalUrl;
     }

@@ -37,10 +37,10 @@ CREATE TABLE test_serializer(string1 STRING,
  STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test_serializer
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/csv.txt' INTO TABLE test_serializer
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/csv.txt' INTO TABLE test_serializer
 PREHOOK: type: LOAD
 PREHOOK: Output: default@test_serializer
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/csv.txt' INTO TABLE test_serializer
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/csv.txt' INTO TABLE test_serializer
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@test_serializer
 PREHOOK: query: CREATE TABLE as_avro

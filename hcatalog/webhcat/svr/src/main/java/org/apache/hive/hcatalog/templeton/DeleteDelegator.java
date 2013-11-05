@@ -19,7 +19,10 @@
 package org.apache.hive.hcatalog.templeton;
 
 import java.io.IOException;
+import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.shims.HadoopShims.WebHCatJTShim;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.mapred.JobID;
@@ -30,6 +33,7 @@ import org.apache.hive.hcatalog.templeton.tool.JobState;
  * Delete a job
  */
 public class DeleteDelegator extends TempletonDelegator {
+  private static final Log LOG = LogFactory.getLog(DeleteDelegator.class);
   public DeleteDelegator(AppConfig appConf) {
     super(appConf);
   }
@@ -47,9 +51,16 @@ public class DeleteDelegator extends TempletonDelegator {
         throw new BadParam("Invalid jobid: " + id);
       tracker.killJob(jobid);
       state = new JobState(id, Main.getAppConfigInstance());
-      String childid = state.getChildId();
-      if (childid != null)
-        tracker.killJob(StatusDelegator.StringToJobID(childid));
+      List<JobState> children = state.getChildren();
+      if (children != null) {
+        for (JobState child : children) {
+          try {
+            tracker.killJob(StatusDelegator.StringToJobID(child.getId()));
+          } catch (IOException e) {
+            LOG.warn("templeton: fail to kill job " + child.getId());
+          }
+        }
+      }
       return StatusDelegator.makeStatus(tracker, jobid, state);
     } catch (IllegalStateException e) {
       throw new BadParam(e.getMessage());

@@ -32,10 +32,10 @@ totaltime           	int                 	from deserializer
 turnaroundtime      	int                 	from deserializer   
 referer             	string              	from deserializer   
 useragent           	string              	from deserializer   
-PREHOOK: query: LOAD DATA LOCAL INPATH '../contrib/data/files/s3.log' INTO TABLE s3log
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../contrib/data/files/s3.log' INTO TABLE s3log
 PREHOOK: type: LOAD
 PREHOOK: Output: default@s3log
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../contrib/data/files/s3.log' INTO TABLE s3log
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../contrib/data/files/s3.log' INTO TABLE s3log
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@s3log
 PREHOOK: query: SELECT a.* FROM s3log a

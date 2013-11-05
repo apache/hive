@@ -15,10 +15,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE PW17(USER STRING, COMPLEXDT ARRAY<INT>) PARTITIONED BY (YEAR STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe1'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@PW17
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/pw17.txt' INTO TABLE PW17 PARTITION (YEAR='1')
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE PW17 PARTITION (YEAR='1')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@pw17
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/pw17.txt' INTO TABLE PW17 PARTITION (YEAR='1')
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE PW17 PARTITION (YEAR='1')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@pw17
 POSTHOOK: Output: default@pw17@year=1
@@ -66,10 +66,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE PW17_2(USER STRING, COMPLEXDT ARRAY<INT>) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe1'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@PW17_2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/pw17.txt' INTO TABLE PW17_2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE PW17_2
 PREHOOK: type: LOAD
 PREHOOK: Output: default@pw17_2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/pw17.txt' INTO TABLE PW17_2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE PW17_2
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@pw17_2
 PREHOOK: query: -- Without the fix HIVE-5199, will throw cast exception via MapOperator
@@ -92,10 +92,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE PW17_3(USER STRING, COMPLEXDT ARRAY<ARRAY<INT> >) PARTITIONED BY (YEAR STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe3'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@PW17_3
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/pw17.txt' INTO TABLE PW17_3 PARTITION (YEAR='1')
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE PW17_3 PARTITION (YEAR='1')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@pw17_3
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/pw17.txt' INTO TABLE PW17_3 PARTITION (YEAR='1')
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE PW17_3 PARTITION (YEAR='1')
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@pw17_3
 POSTHOOK: Output: default@pw17_3@year=1
@@ -141,10 +141,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE PW17_4(USER STRING, COMPLEXDT ARRAY<ARRAY<INT> >) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.CustomSerDe3'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@PW17_4
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/pw17.txt' INTO TABLE PW17_4
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE PW17_4
 PREHOOK: type: LOAD
 PREHOOK: Output: default@pw17_4
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/pw17.txt' INTO TABLE PW17_4
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/pw17.txt' INTO TABLE PW17_4
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@pw17_4
 PREHOOK: query: -- Without the fix HIVE-5285, will throw cast exception via MapOperator

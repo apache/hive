@@ -33,10 +33,10 @@ POSTHOOK: query: create table over10k(
        fields terminated by '|'
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@over10k
-PREHOOK: query: load data local inpath '../data/files/over10k' into table over10k
+PREHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
 PREHOOK: type: LOAD
 PREHOOK: Output: default@over10k
-POSTHOOK: query: load data local inpath '../data/files/over10k' into table over10k
+POSTHOOK: query: load data local inpath '../../data/files/over10k' into table over10k
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@over10k
 PREHOOK: query: select s, sum(b) over (partition by i order by s,b rows unbounded preceding) from over10k limit 100

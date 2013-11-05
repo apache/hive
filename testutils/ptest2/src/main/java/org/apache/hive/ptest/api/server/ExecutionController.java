@@ -150,7 +150,7 @@ public class ExecutionController {
     String testHandle = stopRequest.getTestHandle();
     Test test = mTests.get(testHandle);
     if(result.hasErrors() ||
-        Strings.emptyToNull(stopRequest.getTestHandle()).trim().isEmpty() ||
+        Strings.nullToEmpty(stopRequest.getTestHandle()).trim().isEmpty() ||
         test == null) {
       return new TestStopResponse(Status.illegalArgument());
     }
@@ -164,7 +164,7 @@ public class ExecutionController {
     String testHandle = stopRequest.getTestHandle();
     Test test = mTests.get(testHandle);
     if(result.hasErrors() ||
-        Strings.emptyToNull(stopRequest.getTestHandle()).trim().isEmpty() ||
+        Strings.nullToEmpty(stopRequest.getTestHandle()).trim().isEmpty() ||
         test == null) {
       return new TestStatusResponse(Status.illegalArgument());
     }
@@ -177,7 +177,7 @@ public class ExecutionController {
     String testHandle = logsRequest.getTestHandle();
     Test testExecution = mTests.get(testHandle);
     if(result.hasErrors() ||
-        Strings.emptyToNull(logsRequest.getTestHandle()).trim().isEmpty() ||
+        Strings.nullToEmpty(logsRequest.getTestHandle()).trim().isEmpty() ||
         testExecution == null ||
         logsRequest.getLength() > MAX_READ_SIZE) {
       return new TestLogResponse(Status.illegalArgument());

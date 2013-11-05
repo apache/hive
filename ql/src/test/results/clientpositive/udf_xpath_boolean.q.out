@@ -13,56 +13,56 @@ Example:
   true
   > SELECT xpath_boolean('<a><b>1</b></a>','a/b = 2') FROM src LIMIT 1;
   false
-PREHOOK: query: SELECT xpath_boolean ('<a><b>b</b></a>', 'a/b') FROM src LIMIT 1
+PREHOOK: query: SELECT xpath_boolean ('<a><b>b</b></a>', 'a/b') FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT xpath_boolean ('<a><b>b</b></a>', 'a/b') FROM src LIMIT 1
+POSTHOOK: query: SELECT xpath_boolean ('<a><b>b</b></a>', 'a/b') FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 true
-PREHOOK: query: SELECT xpath_boolean ('<a><b>b</b></a>', 'a/c') FROM src LIMIT 1
+PREHOOK: query: SELECT xpath_boolean ('<a><b>b</b></a>', 'a/c') FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT xpath_boolean ('<a><b>b</b></a>', 'a/c') FROM src LIMIT 1
+POSTHOOK: query: SELECT xpath_boolean ('<a><b>b</b></a>', 'a/c') FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 false
-PREHOOK: query: SELECT xpath_boolean ('<a><b>b</b></a>', 'a/b = "b"') FROM src LIMIT 1
+PREHOOK: query: SELECT xpath_boolean ('<a><b>b</b></a>', 'a/b = "b"') FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT xpath_boolean ('<a><b>b</b></a>', 'a/b = "b"') FROM src LIMIT 1
+POSTHOOK: query: SELECT xpath_boolean ('<a><b>b</b></a>', 'a/b = "b"') FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 true
-PREHOOK: query: SELECT xpath_boolean ('<a><b>b</b></a>', 'a/b = "c"') FROM src LIMIT 1
+PREHOOK: query: SELECT xpath_boolean ('<a><b>b</b></a>', 'a/b = "c"') FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT xpath_boolean ('<a><b>b</b></a>', 'a/b = "c"') FROM src LIMIT 1
+POSTHOOK: query: SELECT xpath_boolean ('<a><b>b</b></a>', 'a/b = "c"') FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 false
-PREHOOK: query: SELECT xpath_boolean ('<a><b>10</b></a>', 'a/b < 10') FROM src LIMIT 1
+PREHOOK: query: SELECT xpath_boolean ('<a><b>10</b></a>', 'a/b < 10') FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT xpath_boolean ('<a><b>10</b></a>', 'a/b < 10') FROM src LIMIT 1
+POSTHOOK: query: SELECT xpath_boolean ('<a><b>10</b></a>', 'a/b < 10') FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 false
-PREHOOK: query: SELECT xpath_boolean ('<a><b>10</b></a>', 'a/b = 10') FROM src LIMIT 1
+PREHOOK: query: SELECT xpath_boolean ('<a><b>10</b></a>', 'a/b = 10') FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT xpath_boolean ('<a><b>10</b></a>', 'a/b = 10') FROM src LIMIT 1
+POSTHOOK: query: SELECT xpath_boolean ('<a><b>10</b></a>', 'a/b = 10') FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####

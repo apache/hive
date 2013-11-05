@@ -95,7 +95,7 @@ import jline.SimpleCompletor;
  */
 public class BeeLine {
   private static final ResourceBundle resourceBundle =
-      ResourceBundle.getBundle(BeeLine.class.getName());
+      ResourceBundle.getBundle(BeeLine.class.getSimpleName());
   private final BeeLineSignalHandler signalHandler = null;
   private static final String separator = System.getProperty("line.separator");
   private boolean exit = false;

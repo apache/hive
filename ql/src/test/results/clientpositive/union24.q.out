@@ -112,7 +112,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src5
               numFiles 1
-              numPartitions 0
               numRows 309
               rawDataSize 1482
               serialization.ddl struct src5 { string key, i64 count}
@@ -131,7 +130,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src5
                 numFiles 1
-                numPartitions 0
                 numRows 309
                 rawDataSize 1482
                 serialization.ddl struct src5 { string key, i64 count}
@@ -353,7 +351,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src2
               numFiles 1
-              numPartitions 0
               numRows 309
               rawDataSize 1482
               serialization.ddl struct src2 { string key, i64 count}
@@ -372,7 +369,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src2
                 numFiles 1
-                numPartitions 0
                 numRows 309
                 rawDataSize 1482
                 serialization.ddl struct src2 { string key, i64 count}
@@ -395,7 +391,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src3
               numFiles 1
-              numPartitions 0
               numRows 309
               rawDataSize 1482
               serialization.ddl struct src3 { string key, i64 count}
@@ -414,7 +409,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src3
                 numFiles 1
-                numPartitions 0
                 numRows 309
                 rawDataSize 1482
                 serialization.ddl struct src3 { string key, i64 count}
@@ -437,7 +431,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src4
               numFiles 1
-              numPartitions 0
               numRows 309
               rawDataSize 1482
               serialization.ddl struct src4 { string key, i64 count}
@@ -456,7 +449,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src4
                 numFiles 1
-                numPartitions 0
                 numRows 309
                 rawDataSize 1482
                 serialization.ddl struct src4 { string key, i64 count}
@@ -646,7 +638,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src4
               numFiles 1
-              numPartitions 0
               numRows 309
               rawDataSize 1482
               serialization.ddl struct src4 { string key, i64 count}
@@ -665,7 +656,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src4
                 numFiles 1
-                numPartitions 0
                 numRows 309
                 rawDataSize 1482
                 serialization.ddl struct src4 { string key, i64 count}
@@ -688,7 +678,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src5
               numFiles 1
-              numPartitions 0
               numRows 309
               rawDataSize 1482
               serialization.ddl struct src5 { string key, i64 count}
@@ -707,7 +696,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src5
                 numFiles 1
-                numPartitions 0
                 numRows 309
                 rawDataSize 1482
                 serialization.ddl struct src5 { string key, i64 count}
@@ -892,7 +880,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src2
               numFiles 1
-              numPartitions 0
               numRows 309
               rawDataSize 1482
               serialization.ddl struct src2 { string key, i64 count}
@@ -911,7 +898,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src2
                 numFiles 1
-                numPartitions 0
                 numRows 309
                 rawDataSize 1482
                 serialization.ddl struct src2 { string key, i64 count}
@@ -934,7 +920,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src3
               numFiles 1
-              numPartitions 0
               numRows 309
               rawDataSize 1482
               serialization.ddl struct src3 { string key, i64 count}
@@ -953,7 +938,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src3
                 numFiles 1
-                numPartitions 0
                 numRows 309
                 rawDataSize 1482
                 serialization.ddl struct src3 { string key, i64 count}
@@ -1130,7 +1114,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src4
               numFiles 1
-              numPartitions 0
               numRows 309
               rawDataSize 1482
               serialization.ddl struct src4 { string key, i64 count}
@@ -1149,7 +1132,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src4
                 numFiles 1
-                numPartitions 0
                 numRows 309
                 rawDataSize 1482
                 serialization.ddl struct src4 { string key, i64 count}
@@ -1172,7 +1154,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src5
               numFiles 1
-              numPartitions 0
               numRows 309
               rawDataSize 1482
               serialization.ddl struct src5 { string key, i64 count}
@@ -1191,7 +1172,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src5
                 numFiles 1
-                numPartitions 0
                 numRows 309
                 rawDataSize 1482
                 serialization.ddl struct src5 { string key, i64 count}
@@ -1462,7 +1442,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src2
               numFiles 1
-              numPartitions 0
               numRows 309
               rawDataSize 1482
               serialization.ddl struct src2 { string key, i64 count}
@@ -1481,7 +1460,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src2
                 numFiles 1
-                numPartitions 0
                 numRows 309
                 rawDataSize 1482
                 serialization.ddl struct src2 { string key, i64 count}
@@ -1504,7 +1482,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.src3
               numFiles 1
-              numPartitions 0
               numRows 309
               rawDataSize 1482
               serialization.ddl struct src3 { string key, i64 count}
@@ -1523,7 +1500,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
                 name default.src3
                 numFiles 1
-                numPartitions 0
                 numRows 309
                 rawDataSize 1482
                 serialization.ddl struct src3 { string key, i64 count}

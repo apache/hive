@@ -30,11 +30,11 @@ POSTHOOK: query: create table abc(mydata uniontype<int,double,array<string>,stru
 strct struct<a:int, b:string, c:string>)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@abc
-PREHOOK: query: load data local inpath '../data/files/union_input.txt'
+PREHOOK: query: load data local inpath '../../data/files/union_input.txt'
 overwrite into table abc
 PREHOOK: type: LOAD
 PREHOOK: Output: default@abc
-POSTHOOK: query: load data local inpath '../data/files/union_input.txt'
+POSTHOOK: query: load data local inpath '../../data/files/union_input.txt'
 overwrite into table abc
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@abc

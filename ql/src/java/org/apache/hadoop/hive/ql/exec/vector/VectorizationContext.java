@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.exec.vector;
 
 import java.lang.reflect.Constructor;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -61,6 +62,12 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.aggregates.gen.VectorUD
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastLongToBooleanViaLongToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastLongToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.CastTimestampToDoubleViaLongToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColumnBetween;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColumnNotBetween;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColumnBetween;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterLongColumnNotBetween;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColumnBetween;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterStringColumnNotBetween;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFAdaptor;
 import org.apache.hadoop.hive.ql.exec.vector.udf.VectorUDFArgDesc;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -250,7 +257,7 @@ public class VectorizationContext {
       ve = getColumnVectorExpression((ExprNodeColumnDesc) exprDesc, mode);
     } else if (exprDesc instanceof ExprNodeGenericFuncDesc) {
       ExprNodeGenericFuncDesc expr = (ExprNodeGenericFuncDesc) exprDesc;
-      if (isCustomUDF(expr) || isLegacyPathUDF(expr)) {
+      if (isCustomUDF(expr) || isNonVectorizedPathUDF(expr)) {
         ve = getCustomUDFExpression(expr);
       } else {
         ve = getGenericUdfVectorExpression(expr.getGenericUDF(),
@@ -272,7 +279,7 @@ public class VectorizationContext {
    * Depending on performance requirements and frequency of use, these
    * may be implemented in the future with an optimized VectorExpression.
    */
-  public static boolean isLegacyPathUDF(ExprNodeGenericFuncDesc expr) {
+  public static boolean isNonVectorizedPathUDF(ExprNodeGenericFuncDesc expr) {
     GenericUDF gudf = expr.getGenericUDF();
     if (gudf instanceof GenericUDFBridge) {
       GenericUDFBridge bridge = (GenericUDFBridge) gudf;
@@ -362,6 +369,21 @@ public class VectorizationContext {
     } else {
       return exprDesc;
     }
+  }
+
+  /* Fold simple unary expressions in all members of the input list and return new list
+   * containing results.
+   */
+  private List<ExprNodeDesc> foldConstantsForUnaryExprs(List<ExprNodeDesc> childExpr)
+      throws HiveException {
+    List<ExprNodeDesc> constantFoldedChildren = new ArrayList<ExprNodeDesc>();
+    if (childExpr != null) {
+      for (ExprNodeDesc expr : childExpr) {
+        expr = this.foldConstantsForUnaryExpression(expr);
+        constantFoldedChildren.add(expr);
+      }
+    }
+    return constantFoldedChildren;
   }
 
   private VectorExpression getConstantVectorExpression(ExprNodeConstantDesc exprDesc, Mode mode)
@@ -533,7 +555,9 @@ public class VectorizationContext {
   private VectorExpression getGenericUdfVectorExpression(GenericUDF udf,
       List<ExprNodeDesc> childExpr, Mode mode) throws HiveException {
     //First handle special cases
-    if (udf instanceof GenericUDFBridge) {
+    if (udf instanceof GenericUDFBetween) {
+      return getBetweenFilterExpression(childExpr);
+    } else if (udf instanceof GenericUDFBridge) {
       VectorExpression v = getGenericUDFBridgeVectorExpression((GenericUDFBridge) udf, childExpr, mode);
       if (v != null) {
         return v;
@@ -546,13 +570,7 @@ public class VectorizationContext {
       udfClass = ((GenericUDFBridge) udf).getUdfClass();
     }
 
-    List<ExprNodeDesc> constantFoldedChildren = new ArrayList<ExprNodeDesc>();
-    if (childExpr != null) {
-      for (ExprNodeDesc expr : childExpr) {
-        expr = this.foldConstantsForUnaryExpression(expr);
-        constantFoldedChildren.add(expr);
-      }
-    }
+    List<ExprNodeDesc> constantFoldedChildren = foldConstantsForUnaryExprs(childExpr);
     VectorExpression ve = getVectorExpressionForUdf(udfClass, constantFoldedChildren, mode);
     if (ve == null) {
       throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
@@ -647,6 +665,60 @@ public class VectorizationContext {
     // string type is deliberately omitted -- it's handled elsewhere. See isLegacyPathUDF.
 
     return null;
+  }
+
+  /* Get a [NOT] BETWEEN filter expression. This is treated as a special case
+   * because the NOT is actually specified in the expression tree as the first argument,
+   * and we don't want any runtime cost for that. So creating the VectorExpression
+   * needs to be done differently than the standard way where all arguments are
+   * passed to the VectorExpression constructor.
+   */
+  private VectorExpression getBetweenFilterExpression(List<ExprNodeDesc> childExpr)
+      throws HiveException {
+
+    boolean notKeywordPresent = (Boolean) ((ExprNodeConstantDesc) childExpr.get(0)).getValue();
+    ExprNodeDesc colExpr = childExpr.get(1);
+
+    // To hold left and right boundaries as long value in nanos for timestamp type.
+    long left, right;
+    List<ExprNodeDesc> newChildren;
+
+    String colType = colExpr.getTypeString();
+
+    // prepare arguments for createVectorExpression
+    List<ExprNodeDesc> childrenAfterNot = foldConstantsForUnaryExprs(childExpr.subList(1, 4));
+
+    // determine class
+    Class<?> cl = null;
+    if (isIntFamily(colType) && !notKeywordPresent) {
+      cl = FilterLongColumnBetween.class;
+    } else if (isIntFamily(colType) && notKeywordPresent) {
+      cl = FilterLongColumnNotBetween.class;
+    } else if (isFloatFamily(colType) && !notKeywordPresent) {
+      cl = FilterDoubleColumnBetween.class;
+    } else if (isFloatFamily(colType) && notKeywordPresent) {
+      cl = FilterDoubleColumnNotBetween.class;
+    } else if (colType.equals("string") && !notKeywordPresent) {
+      cl = FilterStringColumnBetween.class;
+    } else if (colType.equals("string") && notKeywordPresent) {
+      cl = FilterStringColumnNotBetween.class;
+    } else if (colType.equals("timestamp")) {
+
+      // Get timestamp boundary values as longs instead of the expected strings
+      left = getTimestampScalar(childExpr.get(2));
+      right = getTimestampScalar(childExpr.get(3));
+      childrenAfterNot = new ArrayList<ExprNodeDesc>();
+      childrenAfterNot.add(colExpr);
+      childrenAfterNot.add(new ExprNodeConstantDesc(left));
+      childrenAfterNot.add(new ExprNodeConstantDesc(right));
+      if (notKeywordPresent) {
+        cl = FilterLongColumnNotBetween.class;
+      } else {
+        cl = FilterLongColumnBetween.class;
+      }
+    }
+
+    return createVectorExpression(cl, childrenAfterNot, Mode.PROJECTION);
   }
 
   /*
@@ -777,6 +849,44 @@ public class VectorizationContext {
       return constDesc.getValue();
     }
   }
+
+  // Get a timestamp as a long in number of nanos, from a string constant.
+  private long getTimestampScalar(ExprNodeDesc expr) throws HiveException {
+    if (!(expr instanceof ExprNodeConstantDesc)) {
+      throw new HiveException("Constant timestamp value expected for expression argument. " +
+          "Non-constant argument not supported for vectorization.");
+    }
+    ExprNodeConstantDesc constExpr = (ExprNodeConstantDesc) expr;
+    if (constExpr.getTypeString().equals("string")) {
+
+      // create expression tree with type cast from string to timestamp
+      ExprNodeGenericFuncDesc expr2 = new ExprNodeGenericFuncDesc();
+      GenericUDFTimestamp f = new GenericUDFTimestamp();
+      expr2.setGenericUDF(f);
+      ArrayList<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>();
+      children.add(expr);
+      expr2.setChildren(children);
+
+      // initialize and evaluate
+      ExprNodeEvaluator evaluator = ExprNodeEvaluatorFactory.get(expr2);
+      ObjectInspector output = evaluator.initialize(null);
+      Object constant = evaluator.evaluate(null);
+      Object java = ObjectInspectorUtils.copyToStandardJavaObject(constant, output);
+
+      if (!(java instanceof Timestamp)) {
+        throw new HiveException("Udf: failed to convert from string to timestamp");
+      }
+      Timestamp ts = (Timestamp) java;
+      long result = ts.getTime();
+      result *= 1000000;    // shift left 6 digits to make room for nanos below ms precision
+      result += ts.getNanos() % 1000000;     // add in nanos, after removing the ms portion
+      return result;
+    }
+
+    throw new HiveException("Udf: unhandled constant type for scalar argument. "
+        + "Expecting string.");
+  }
+
 
   private Constructor<?> getConstructor(Class<?> cl) throws HiveException {
     try {

@@ -4,11 +4,11 @@ POSTHOOK: query: create table tab_string(a string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@tab_string
 PREHOOK: query: -- insert some data
-LOAD DATA LOCAL INPATH "../data/files/string.txt" INTO TABLE tab_string
+LOAD DATA LOCAL INPATH "../../data/files/string.txt" INTO TABLE tab_string
 PREHOOK: type: LOAD
 PREHOOK: Output: default@tab_string
 POSTHOOK: query: -- insert some data
-LOAD DATA LOCAL INPATH "../data/files/string.txt" INTO TABLE tab_string
+LOAD DATA LOCAL INPATH "../../data/files/string.txt" INTO TABLE tab_string
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@tab_string
 PREHOOK: query: select count(*) from tab_string

@@ -7,25 +7,25 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table partition_date_1 (key string, value string) partitioned by (dt date, region int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@partition_date_1
-PREHOOK: query: insert overwrite table partition_date_1 partition(dt='2000-01-01', region=1) 
-  select * from src limit 10
+PREHOOK: query: insert overwrite table partition_date_1 partition(dt='2000-01-01', region=1)
+  select * from src tablesample (10 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@partition_date_1@dt=2000-01-01/region=1
-POSTHOOK: query: insert overwrite table partition_date_1 partition(dt='2000-01-01', region=1) 
-  select * from src limit 10
+POSTHOOK: query: insert overwrite table partition_date_1 partition(dt='2000-01-01', region=1)
+  select * from src tablesample (10 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@partition_date_1@dt=2000-01-01/region=1
 POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
-PREHOOK: query: insert overwrite table partition_date_1 partition(dt='2000-01-01', region=2) 
-  select * from src limit 5
+PREHOOK: query: insert overwrite table partition_date_1 partition(dt='2000-01-01', region=2)
+  select * from src tablesample (5 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@partition_date_1@dt=2000-01-01/region=2
-POSTHOOK: query: insert overwrite table partition_date_1 partition(dt='2000-01-01', region=2) 
-  select * from src limit 5
+POSTHOOK: query: insert overwrite table partition_date_1 partition(dt='2000-01-01', region=2)
+  select * from src tablesample (5 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@partition_date_1@dt=2000-01-01/region=2
@@ -34,12 +34,12 @@ POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=1).value SIMP
 POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table partition_date_1 partition(dt='2013-08-08', region=1) 
-  select * from src limit 20
+  select * from src tablesample (20 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@partition_date_1@dt=2013-08-08/region=1
 POSTHOOK: query: insert overwrite table partition_date_1 partition(dt='2013-08-08', region=1) 
-  select * from src limit 20
+  select * from src tablesample (20 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@partition_date_1@dt=2013-08-08/region=1
@@ -50,12 +50,12 @@ POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2000-01-01,region=2).value SIMP
 POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: partition_date_1 PARTITION(dt=2013-08-08,region=1).value SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
 PREHOOK: query: insert overwrite table partition_date_1 partition(dt='2013-08-08', region=10) 
-  select * from src limit 11
+  select * from src tablesample (11 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@partition_date_1@dt=2013-08-08/region=10
 POSTHOOK: query: insert overwrite table partition_date_1 partition(dt='2013-08-08', region=10) 
-  select * from src limit 11
+  select * from src tablesample (11 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@partition_date_1@dt=2013-08-08/region=10

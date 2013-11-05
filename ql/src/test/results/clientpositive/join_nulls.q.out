@@ -3,10 +3,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE myinput1(key int, value int)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@myinput1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in1.txt' INTO TABLE myinput1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in1.txt' INTO TABLE myinput1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@myinput1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in1.txt' INTO TABLE myinput1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in1.txt' INTO TABLE myinput1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@myinput1
 PREHOOK: query: SELECT * FROM myinput1 a JOIN myinput1 b ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC
@@ -429,28 +429,28 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE smb_input2(key int, value int) CLUSTERED BY (value) SORTED BY (value) INTO 2 BUCKETS
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@smb_input2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in1.txt' into table smb_input1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in1.txt' into table smb_input1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@smb_input1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in1.txt' into table smb_input1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in1.txt' into table smb_input1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@smb_input1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in2.txt' into table smb_input1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in2.txt' into table smb_input1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@smb_input1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in2.txt' into table smb_input1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in2.txt' into table smb_input1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@smb_input1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in1.txt' into table smb_input2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in1.txt' into table smb_input2
 PREHOOK: type: LOAD
 PREHOOK: Output: default@smb_input2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in1.txt' into table smb_input2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in1.txt' into table smb_input2
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@smb_input2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in2.txt' into table smb_input2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in2.txt' into table smb_input2
 PREHOOK: type: LOAD
 PREHOOK: Output: default@smb_input2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/in2.txt' into table smb_input2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/in2.txt' into table smb_input2
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@smb_input2
 PREHOOK: query: SELECT /*+ MAPJOIN(a) */ * FROM smb_input1 a JOIN smb_input1 b ON a.key = b.key ORDER BY a.key ASC, a.value ASC, b.key ASC, b.value ASC

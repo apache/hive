@@ -7,11 +7,11 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table timestamp_lazy (t timestamp, key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@timestamp_lazy
-PREHOOK: query: insert overwrite table timestamp_lazy select cast('2011-01-01 01:01:01' as timestamp), key, value from src limit 5
+PREHOOK: query: insert overwrite table timestamp_lazy select cast('2011-01-01 01:01:01' as timestamp), key, value from src tablesample (5 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@timestamp_lazy
-POSTHOOK: query: insert overwrite table timestamp_lazy select cast('2011-01-01 01:01:01' as timestamp), key, value from src limit 5
+POSTHOOK: query: insert overwrite table timestamp_lazy select cast('2011-01-01 01:01:01' as timestamp), key, value from src tablesample (5 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@timestamp_lazy

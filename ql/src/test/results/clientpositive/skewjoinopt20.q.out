@@ -7,10 +7,10 @@ CLUSTERED BY (key) SORTED BY (key) INTO 4 BUCKETS
 SKEWED BY (key) ON ((2)) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@T1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@t1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T1.txt' INTO TABLE T1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T1.txt' INTO TABLE T1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t1
 PREHOOK: query: CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE
@@ -18,10 +18,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE T2(key STRING, val STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@T2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T2.txt' INTO TABLE T2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
 PREHOOK: type: LOAD
 PREHOOK: Output: default@t2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/T2.txt' INTO TABLE T2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/T2.txt' INTO TABLE T2
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@t2
 PREHOOK: query: -- add a test where the skewed key is also the bucketized/sorted key

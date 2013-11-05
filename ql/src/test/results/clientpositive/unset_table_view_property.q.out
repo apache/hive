@@ -24,11 +24,13 @@ PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
 	 
+numFiles	0
 #### A masked pattern was here ####
 c	3
 #### A masked pattern was here ####
 a	1
 #### A masked pattern was here ####
+totalSize	0
 PREHOOK: query: -- UNSET all the properties
 ALTER TABLE testTable UNSET TBLPROPERTIES ('a', 'c')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -44,7 +46,9 @@ PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
 	 
+numFiles	0
 #### A masked pattern was here ####
+totalSize	0
 PREHOOK: query: ALTER TABLE testTable SET TBLPROPERTIES ('a'='1', 'c'='3', 'd'='4')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@testtable
@@ -59,11 +63,13 @@ POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
 	 
 d	4
+numFiles	0
 #### A masked pattern was here ####
 c	3
 #### A masked pattern was here ####
 a	1
 #### A masked pattern was here ####
+totalSize	0
 PREHOOK: query: -- UNSET a subset of the properties
 ALTER TABLE testTable UNSET TBLPROPERTIES ('a', 'd')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -79,9 +85,11 @@ PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
 	 
+numFiles	0
 #### A masked pattern was here ####
 c	3
 #### A masked pattern was here ####
+totalSize	0
 PREHOOK: query: -- the same property being UNSET multiple times
 ALTER TABLE testTable UNSET TBLPROPERTIES ('c', 'c', 'c')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -97,7 +105,9 @@ PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
 	 
+numFiles	0
 #### A masked pattern was here ####
+totalSize	0
 PREHOOK: query: ALTER TABLE testTable SET TBLPROPERTIES ('a'='1', 'b' = '2', 'c'='3', 'd'='4')
 PREHOOK: type: ALTERTABLE_PROPERTIES
 PREHOOK: Input: default@testtable
@@ -112,12 +122,14 @@ POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
 	 
 d	4
+numFiles	0
 #### A masked pattern was here ####
 b	2
 c	3
 #### A masked pattern was here ####
 a	1
 #### A masked pattern was here ####
+totalSize	0
 PREHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
 ALTER TABLE testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'b', 'f')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -133,11 +145,13 @@ PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
 	 
+numFiles	0
 #### A masked pattern was here ####
 c	3
 #### A masked pattern was here ####
 a	1
 #### A masked pattern was here ####
+totalSize	0
 PREHOOK: query: -- UNSET a subset of the properties and some non-existed properties using IF EXISTS
 ALTER TABLE testTable UNSET TBLPROPERTIES IF EXISTS ('b', 'd', 'c', 'f', 'x', 'y', 'z')
 PREHOOK: type: ALTERTABLE_PROPERTIES
@@ -153,9 +167,11 @@ PREHOOK: type: SHOW_TBLPROPERTIES
 POSTHOOK: query: SHOW TBLPROPERTIES testTable
 POSTHOOK: type: SHOW_TBLPROPERTIES
 	 
+numFiles	0
 #### A masked pattern was here ####
 a	1
 #### A masked pattern was here ####
+totalSize	0
 PREHOOK: query: -- UNSET VIEW PROPERTIES
 CREATE VIEW testView AS SELECT value FROM src WHERE key=86
 PREHOOK: type: CREATEVIEW

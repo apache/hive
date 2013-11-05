@@ -41,13 +41,17 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.InvalidOperationException;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
@@ -137,6 +141,166 @@ public class MetaStoreUtils {
     if (!f.delete()) {
       throw new IOException("could not delete: " + f.getPath());
     }
+  }
+
+  /**
+   * @param partParams
+   * @return True if the passed Parameters Map contains values for all "Fast Stats".
+   */
+  public static boolean containsAllFastStats(Map<String, String> partParams) {
+    List<String> fastStats = StatsSetupConst.getStatsFastCollection();
+    for (String stat : fastStats) {
+      if (!partParams.containsKey(stat)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  public static boolean updateUnpartitionedTableStatsFast(Database db, Table tbl, Warehouse wh)
+      throws MetaException {
+    return updateUnpartitionedTableStatsFast(db, tbl, wh, false, false);
+  }
+
+  public static boolean updateUnpartitionedTableStatsFast(Database db, Table tbl, Warehouse wh,
+      boolean madeDir) throws MetaException {
+    return updateUnpartitionedTableStatsFast(db, tbl, wh, madeDir, false);
+  }
+
+  /**
+   * Updates the numFiles and totalSize parameters for the passed unpartitioned Table by querying
+   * the warehouse if the passed Table does not already have values for these parameters.
+   * @param db
+   * @param tbl
+   * @param wh
+   * @param newDir if true, the directory was just created and can be assumed to be empty
+   * @param forceRecompute Recompute stats even if the passed Table already has
+   * these parameters set
+   * @return true if the stats were updated, false otherwise
+   */
+  public static boolean updateUnpartitionedTableStatsFast(Database db, Table tbl, Warehouse wh,
+      boolean newDir, boolean forceRecompute) throws MetaException {
+    Map<String,String> params = tbl.getParameters();
+    boolean updated = false;
+    if (forceRecompute ||
+        params == null ||
+        !containsAllFastStats(params)) {
+      if (params == null) {
+        params = new HashMap<String,String>();
+      }
+      if (!newDir) {
+        // The table location already exists and may contain data.
+        // Let's try to populate those stats that don't require full scan.
+        LOG.info("Updating table stats fast for " + tbl.getTableName());
+        FileStatus[] fileStatus = wh.getFileStatusesForUnpartitionedTable(db, tbl);
+        params.put(StatsSetupConst.NUM_FILES, Integer.toString(fileStatus.length));
+        long tableSize = 0L;
+        for (FileStatus status : fileStatus) {
+          tableSize += status.getLen();
+        }
+        params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(tableSize));
+        LOG.info("Updated size of table " + tbl.getTableName() +" to "+ Long.toString(tableSize));
+        if (params.containsKey(StatsSetupConst.ROW_COUNT) ||
+            params.containsKey(StatsSetupConst.RAW_DATA_SIZE)) {
+          // TODO: Add a MetaStore flag indicating accuracy of these stats and update it here.
+        }
+      }
+      tbl.setParameters(params);
+      updated = true;
+    }
+    return updated;
+  }
+
+  // check if stats need to be (re)calculated
+  public static boolean requireCalStats(Configuration hiveConf, Partition oldPart,
+    Partition newPart, Table tbl) {
+
+    if (!HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
+      return false;
+    }
+
+    if (MetaStoreUtils.isView(tbl)) {
+      return false;
+    }
+
+    if  (oldPart == null && newPart == null) {
+      return true;
+    }
+
+    // requires to calculate stats if new partition doesn't have it
+    if ((newPart == null) || (newPart.getParameters() == null)
+        || !containsAllFastStats(newPart.getParameters())) {
+      return true;
+    }
+
+    // requires to calculate stats if new and old have different fast stats
+    if ((oldPart != null) && (oldPart.getParameters() != null)) {
+      for (String stat : StatsSetupConst.getStatsFastCollection()) {
+        if (oldPart.getParameters().containsKey(stat)) {
+          Long oldStat = Long.parseLong(oldPart.getParameters().get(stat));
+          Long newStat = Long.parseLong(newPart.getParameters().get(stat));
+          if (oldStat != newStat) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }
+
+  public static boolean updatePartitionStatsFast(Partition part, Warehouse wh)
+      throws MetaException {
+    return updatePartitionStatsFast(part, wh, false, false);
+  }
+
+  public static boolean updatePartitionStatsFast(Partition part, Warehouse wh, boolean madeDir)
+      throws MetaException {
+    return updatePartitionStatsFast(part, wh, madeDir, false);
+  }
+
+  /**
+   * Updates the numFiles and totalSize parameters for the passed Partition by querying
+   *  the warehouse if the passed Partition does not already have values for these parameters.
+   * @param part
+   * @param wh
+   * @param madeDir if true, the directory was just created and can be assumed to be empty
+   * @param forceRecompute Recompute stats even if the passed Partition already has
+   * these parameters set
+   * @return true if the stats were updated, false otherwise
+   */
+  public static boolean updatePartitionStatsFast(Partition part, Warehouse wh,
+      boolean madeDir, boolean forceRecompute) throws MetaException {
+    Map<String,String> params = part.getParameters();
+    boolean updated = false;
+    if (forceRecompute ||
+        params == null ||
+        !containsAllFastStats(params)) {
+      if (params == null) {
+        params = new HashMap<String,String>();
+      }
+      if (!madeDir) {
+        // The partitition location already existed and may contain data. Lets try to
+        // populate those statistics that don't require a full scan of the data.
+        LOG.warn("Updating partition stats fast for: " + part.getTableName());
+        FileStatus[] fileStatus = wh.getFileStatusesForPartition(part);
+        params.put(StatsSetupConst.NUM_FILES, Integer.toString(fileStatus.length));
+        long partSize = 0L;
+        for (int i = 0; i < fileStatus.length; i++) {
+          partSize += fileStatus[i].getLen();
+        }
+        params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(partSize));
+        LOG.warn("Updated size to " + Long.toString(partSize));
+        if (params.containsKey(StatsSetupConst.ROW_COUNT) ||
+            params.containsKey(StatsSetupConst.RAW_DATA_SIZE)) {
+          // The accuracy of these "collectable" stats at this point is suspect unless we know that
+          // StatsTask was just run before this MetaStore call and populated them.
+          // TODO: Add a MetaStore flag indicating accuracy of these stats and update it here.
+        }
+      }
+      part.setParameters(params);
+      updated = true;
+    }
+    return updated;
   }
 
   /**
@@ -1120,6 +1284,13 @@ public class MetaStoreUtils {
       }
     }
     return filter.toString();
+  }
+
+  public static boolean isView(Table table) {
+    if (table == null) {
+      return false;
+    }
+    return TableType.VIRTUAL_VIEW.toString().equals(table.getTableType());
   }
 
   /**

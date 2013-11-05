@@ -8,22 +8,22 @@ PREHOOK: type: CREATETABLE
 #### A masked pattern was here ####
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@load_overwrite2
-PREHOOK: query: load data local inpath '../data/files/kv1.txt' into table load_overwrite
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table load_overwrite
 PREHOOK: type: LOAD
 PREHOOK: Output: default@load_overwrite
-POSTHOOK: query: load data local inpath '../data/files/kv1.txt' into table load_overwrite
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table load_overwrite
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@load_overwrite
-PREHOOK: query: load data local inpath '../data/files/kv2.txt' into table load_overwrite
+PREHOOK: query: load data local inpath '../../data/files/kv2.txt' into table load_overwrite
 PREHOOK: type: LOAD
 PREHOOK: Output: default@load_overwrite
-POSTHOOK: query: load data local inpath '../data/files/kv2.txt' into table load_overwrite
+POSTHOOK: query: load data local inpath '../../data/files/kv2.txt' into table load_overwrite
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@load_overwrite
-PREHOOK: query: load data local inpath '../data/files/kv3.txt' into table load_overwrite
+PREHOOK: query: load data local inpath '../../data/files/kv3.txt' into table load_overwrite
 PREHOOK: type: LOAD
 PREHOOK: Output: default@load_overwrite
-POSTHOOK: query: load data local inpath '../data/files/kv3.txt' into table load_overwrite
+POSTHOOK: query: load data local inpath '../../data/files/kv3.txt' into table load_overwrite
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@load_overwrite
 PREHOOK: query: show table extended like load_overwrite

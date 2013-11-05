@@ -4,12 +4,12 @@ POSTHOOK: query: create table test1(col1 string) partitioned by (partitionId int
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@test1
 PREHOOK: query: insert overwrite table test1 partition (partitionId=1)
-  select key from src limit 10
+  select key from src tablesample (10 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@test1@partitionid=1
 POSTHOOK: query: insert overwrite table test1 partition (partitionId=1)
-  select key from src limit 10
+  select key from src tablesample (10 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@test1@partitionid=1

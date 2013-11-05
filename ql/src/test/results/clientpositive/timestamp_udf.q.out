@@ -16,20 +16,20 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table timestamp_udf_string (t string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@timestamp_udf_string
-PREHOOK: query: from src
+PREHOOK: query: from (select * from src tablesample (1 rows)) s
   insert overwrite table timestamp_udf 
-    select '2011-05-06 07:08:09.1234567' limit 1
+    select '2011-05-06 07:08:09.1234567'
   insert overwrite table timestamp_udf_string
-    select '2011-05-06 07:08:09.1234567' limit 1
+    select '2011-05-06 07:08:09.1234567'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@timestamp_udf
 PREHOOK: Output: default@timestamp_udf_string
-POSTHOOK: query: from src
+POSTHOOK: query: from (select * from src tablesample (1 rows)) s
   insert overwrite table timestamp_udf 
-    select '2011-05-06 07:08:09.1234567' limit 1
+    select '2011-05-06 07:08:09.1234567'
   insert overwrite table timestamp_udf_string
-    select '2011-05-06 07:08:09.1234567' limit 1
+    select '2011-05-06 07:08:09.1234567'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@timestamp_udf

@@ -3,10 +3,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE PROGRESS_1(key int, value string) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@PROGRESS_1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv6.txt' INTO TABLE PROGRESS_1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv6.txt' INTO TABLE PROGRESS_1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@progress_1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/kv6.txt' INTO TABLE PROGRESS_1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv6.txt' INTO TABLE PROGRESS_1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@progress_1
 PREHOOK: query: select count(1) from PROGRESS_1 t1 join PROGRESS_1 t2 on t1.key=t2.key

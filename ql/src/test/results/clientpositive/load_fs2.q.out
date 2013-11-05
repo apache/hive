@@ -14,10 +14,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table loader (key string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@loader
-PREHOOK: query: load data local inpath '../data/files/kv1.txt' into table loader
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table loader
 PREHOOK: type: LOAD
 PREHOOK: Output: default@loader
-POSTHOOK: query: load data local inpath '../data/files/kv1.txt' into table loader
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table loader
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@loader
 PREHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result
@@ -43,10 +43,10 @@ maxFileSize:5812
 minFileSize:5812
 #### A masked pattern was here ####
 
-PREHOOK: query: load data local inpath '../data/files/kv1.txt' into table loader
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table loader
 PREHOOK: type: LOAD
 PREHOOK: Output: default@loader
-POSTHOOK: query: load data local inpath '../data/files/kv1.txt' into table loader
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table loader
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@loader
 PREHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result
@@ -72,10 +72,10 @@ maxFileSize:5812
 minFileSize:5812
 #### A masked pattern was here ####
 
-PREHOOK: query: load data local inpath '../data/files/kv1.txt' into table loader
+PREHOOK: query: load data local inpath '../../data/files/kv1.txt' into table loader
 PREHOOK: type: LOAD
 PREHOOK: Output: default@loader
-POSTHOOK: query: load data local inpath '../data/files/kv1.txt' into table loader
+POSTHOOK: query: load data local inpath '../../data/files/kv1.txt' into table loader
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@loader
 PREHOOK: query: load data inpath '/build/ql/test/data/warehouse/loader/kv1.txt' into table result

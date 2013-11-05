@@ -1,0 +1,9 @@
+PREHOOK: query: -- should fail: hive.fetch.task.conversion accepts minimal or more
+desc src
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: -- should fail: hive.fetch.task.conversion accepts minimal or more
+desc src
+POSTHOOK: type: DESCTABLE
+key                 	string              	default             
+value               	string              	default             
+Query returned non-zero code: 1, cause: 'SET hive.fetch.task.conversion=true' FAILED in validation : Invalid value.. expects one of [minimal, more].

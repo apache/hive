@@ -206,7 +206,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	2                   
-	numPartitions       	0                   
 	numRows             	26                  
 	rawDataSize         	199                 
 	totalSize           	225                 
@@ -225,13 +224,13 @@ Storage Desc Params:
 PREHOOK: query: -- Load a file into a existing table
 -- Some stats (numFiles, totalSize) should be updated correctly
 -- Some other stats (numRows, rawDataSize) should be cleared
-load data local inpath '../data/files/srcbucket20.txt' INTO TABLE tmptable
+load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE tmptable
 PREHOOK: type: LOAD
 PREHOOK: Output: default@tmptable
 POSTHOOK: query: -- Load a file into a existing table
 -- Some stats (numFiles, totalSize) should be updated correctly
 -- Some other stats (numRows, rawDataSize) should be cleared
-load data local inpath '../data/files/srcbucket20.txt' INTO TABLE tmptable
+load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE tmptable
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@tmptable
 POSTHOOK: Lineage: tmptable.key EXPRESSION [(src1)s2.FieldSchema(name:key, type:string, comment:default), ]
@@ -256,7 +255,6 @@ Retention:          	0
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
 	numFiles            	3                   
-	numPartitions       	0                   
 	numRows             	0                   
 	rawDataSize         	0                   
 	totalSize           	1583                

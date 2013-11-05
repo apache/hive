@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.security.PrivilegedExceptionAction;
+import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -182,6 +183,9 @@ public class TempletonControllerJob extends Configured implements Tool, JobSubmi
   @Override
   public int run(String[] args) throws IOException, InterruptedException, ClassNotFoundException, 
           TException {
+    if(LOG.isDebugEnabled()) {
+      LOG.debug("Preparing to submit job: " + Arrays.toString(args));
+    }
     Configuration conf = getConf();
 
     conf.set(JAR_ARGS_NAME, TempletonUtils.encodeArray(args));

@@ -1,4 +1,4 @@
-add jar ${system:build.dir}/hive-contrib-${system:hive.version}.jar;
+add jar ${system:maven.local.repository}/org/apache/hive/hive-contrib/${system:hive.version}/hive-contrib-${system:hive.version}.jar;
 CREATE TEMPORARY FUNCTION example_min_n AS 'org.apache.hadoop.hive.contrib.udaf.example.UDAFExampleMinN';
 
 EXPLAIN

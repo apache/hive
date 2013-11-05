@@ -19,10 +19,10 @@ POSTHOOK: query: create table date_2 (
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@date_2
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/flights_tiny.txt.1' OVERWRITE INTO TABLE date_2
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OVERWRITE INTO TABLE date_2
 PREHOOK: type: LOAD
 PREHOOK: Output: default@date_2
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/flights_tiny.txt.1' OVERWRITE INTO TABLE date_2
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_tiny.txt.1' OVERWRITE INTO TABLE date_2
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@date_2
 PREHOOK: query: select fl_date, fl_num from date_2 order by fl_date asc, fl_num desc

@@ -19,10 +19,10 @@ POSTHOOK: query: create table date_join1 (
 )
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@date_join1
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/flights_join.txt' OVERWRITE INTO TABLE date_join1
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_join.txt' OVERWRITE INTO TABLE date_join1
 PREHOOK: type: LOAD
 PREHOOK: Output: default@date_join1
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/flights_join.txt' OVERWRITE INTO TABLE date_join1
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/flights_join.txt' OVERWRITE INTO TABLE date_join1
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@date_join1
 PREHOOK: query: -- Note that there are 2 rows with date 2000-11-28, so we should expect 4 rows with that date in the join results

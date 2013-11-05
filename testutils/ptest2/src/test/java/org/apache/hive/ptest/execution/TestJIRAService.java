@@ -18,9 +18,10 @@
  */
 package org.apache.hive.ptest.execution;
 
+import java.util.List;
 import junit.framework.Assert;
-
 import org.junit.Test;
+import com.google.common.collect.Lists;
 
 public class TestJIRAService  {
 
@@ -40,5 +41,31 @@ public class TestJIRAService  {
   @Test(expected=IllegalArgumentException.class)
   public void testFormatBuildTagNoDashNone() throws Throwable {
     JIRAService.formatBuildTag("abc123");
+  }
+  @Test
+  public void testTrimMesssagesBoundry() {
+    List<String> messages = Lists.newArrayList();
+    Assert.assertEquals(messages, JIRAService.trimMessages(messages));
+    messages.clear();
+    for (int i = 0; i < JIRAService.MAX_MESSAGES; i++) {
+      messages.add(String.valueOf(i));
+    }
+    Assert.assertEquals(messages, JIRAService.trimMessages(messages));
+  }
+  @Test
+  public void testTrimMesssagesNotTrimmed() {
+    List<String> messages = Lists.newArrayList("a", "b", "c");
+    Assert.assertEquals(messages, JIRAService.trimMessages(messages));
+  }
+  @Test
+  public void testTrimMesssagesTrimmed() {
+    List<String> messages = Lists.newArrayList();
+    for (int i = 0; i < JIRAService.MAX_MESSAGES + 1; i++) {
+      messages.add(String.valueOf(i));
+    }
+    List<String> expected = Lists.newArrayList(messages);
+    expected.remove(0);
+    expected.add(0, JIRAService.TRIMMED_MESSAGE);
+    Assert.assertEquals(expected, JIRAService.trimMessages(messages));
   }
 }

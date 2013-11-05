@@ -268,15 +268,10 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name default.combine2
-                numFiles 8
-                numPartitions 8
-                numRows 12
                 partition_columns value
-                rawDataSize 14
                 serialization.ddl struct combine2 { string key}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 26
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.combine2
@@ -313,15 +308,10 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name default.combine2
-                numFiles 8
-                numPartitions 8
-                numRows 12
                 partition_columns value
-                rawDataSize 14
                 serialization.ddl struct combine2 { string key}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 26
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.combine2
@@ -358,15 +348,10 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name default.combine2
-                numFiles 8
-                numPartitions 8
-                numRows 12
                 partition_columns value
-                rawDataSize 14
                 serialization.ddl struct combine2 { string key}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 26
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.combine2
@@ -403,15 +388,10 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name default.combine2
-                numFiles 8
-                numPartitions 8
-                numRows 12
                 partition_columns value
-                rawDataSize 14
                 serialization.ddl struct combine2 { string key}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 26
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.combine2
@@ -448,15 +428,10 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name default.combine2
-                numFiles 8
-                numPartitions 8
-                numRows 12
                 partition_columns value
-                rawDataSize 14
                 serialization.ddl struct combine2 { string key}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 26
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.combine2
@@ -493,15 +468,10 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name default.combine2
-                numFiles 8
-                numPartitions 8
-                numRows 12
                 partition_columns value
-                rawDataSize 14
                 serialization.ddl struct combine2 { string key}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 26
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.combine2
@@ -538,15 +508,10 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name default.combine2
-                numFiles 8
-                numPartitions 8
-                numRows 12
                 partition_columns value
-                rawDataSize 14
                 serialization.ddl struct combine2 { string key}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 26
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.combine2
@@ -583,15 +548,10 @@ STAGE PLANS:
                 columns.types string
 #### A masked pattern was here ####
                 name default.combine2
-                numFiles 8
-                numPartitions 8
-                numRows 12
                 partition_columns value
-                rawDataSize 14
                 serialization.ddl struct combine2 { string key}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 26
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.combine2

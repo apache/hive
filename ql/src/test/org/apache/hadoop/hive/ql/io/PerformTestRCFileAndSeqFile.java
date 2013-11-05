@@ -63,7 +63,7 @@ public class PerformTestRCFileAndSeqFile {
     }
     conf.setInt(RCFile.Writer.COLUMNS_BUFFER_SIZE_CONF_STR, 1 * 1024 * 1024);
     if (file == null) {
-      Path dir = new Path(System.getProperty("test.data.dir", ".") + "/mapred");
+      Path dir = new Path(System.getProperty("test.tmp.dir", ".") + "/mapred");
       testRCFile = new Path(dir, "test_rcfile");
       testSeqFile = new Path(dir, "test_seqfile");
     } else {

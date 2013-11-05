@@ -38,6 +38,7 @@ import org.apache.hcatalog.cli.SemanticAnalysis.HCatSemanticAnalyzer;
 import org.apache.hcatalog.hbase.SkeletonHBaseTest;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.data.Stat;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 
@@ -45,6 +46,11 @@ public class TestZNodeSetUp extends SkeletonHBaseTest {
 
   private static HiveConf hcatConf;
   private static HCatDriver hcatDriver;
+
+  @BeforeClass
+  public static void setup() throws Throwable {
+    setupSkeletonHBaseTest();
+  }
 
   public void Initialize() throws Exception {
 

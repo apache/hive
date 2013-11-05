@@ -766,8 +766,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       if (hadoopLocalMode && (oneProp.equals(hadoopSysDir) || oneProp.equals(hadoopWorkDir))) {
         continue;
       }
-
-      tempConf.set(oneProp, deltaP.getProperty(oneProp));
+      tempConf.set(oneProp, hconf.get(oneProp));
     }
 
     // Multiple concurrent local mode job submissions can cause collisions in

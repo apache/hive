@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.hive.ptest.api.server.TestLogger;
 import org.apache.hive.ptest.execution.conf.Context;
 import org.apache.hive.ptest.execution.conf.TestConfiguration;
@@ -58,6 +59,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
 class JIRAService {
+  static final int MAX_MESSAGES = 200;
+  static final String TRIMMED_MESSAGE = "**** This message was trimmed, see log for full details ****";
   private final Logger mLogger;
   private final String mName;
   private final String mBuildTag;
@@ -78,7 +81,7 @@ class JIRAService {
     mJenkinsURL = configuration.getJenkinsURL();
   }
 
-  void postComment(boolean error, int numExecutesTests, SortedSet<String> failedTests,
+  void postComment(boolean error, int numTestsExecuted, SortedSet<String> failedTests,
       List<String> messages) {
     DefaultHttpClient httpClient = new DefaultHttpClient();
     try {
@@ -88,7 +91,7 @@ class JIRAService {
       comments.add("");
       if(!failedTests.isEmpty()) {
         comments.add("{color:red}Overall{color}: -1 at least one tests failed");
-      } else if(numExecutesTests == 0) {
+      } else if(numTestsExecuted == 0) {
         comments.add("{color:red}Overall{color}: -1 no tests executed");
       } else if (error) {
         comments.add("{color:red}Overall{color}: -1 build exited with an error");
@@ -101,12 +104,12 @@ class JIRAService {
         comments.add(mPatch);
       }
       comments.add("");
-      if(numExecutesTests > 0) {
+      if(numTestsExecuted > 0) {
         if (failedTests.isEmpty()) {
-          comments.add(formatSuccess("+1 "+ numExecutesTests + " tests passed"));
+          comments.add(formatSuccess("+1 "+ numTestsExecuted + " tests passed"));
         } else {
           comments.add(formatError("-1 due to " + failedTests.size()
-              + " failed/errored test(s), " + numExecutesTests + " tests executed"));
+              + " failed/errored test(s), " + numTestsExecuted + " tests executed"));
           comments.add("*Failed tests:*");
           comments.add("{noformat}");
           comments.addAll(failedTests);
@@ -120,11 +123,16 @@ class JIRAService {
       if(!messages.isEmpty()) {
         comments.add("Messages:");
         comments.add("{noformat}");
-        comments.addAll(messages);
+        comments.addAll(trimMessages(messages));
         comments.add("{noformat}");
         comments.add("");
       }
       comments.add("This message is automatically generated.");
+      String attachmentId = parseAttachementId(mPatch);
+      if(!attachmentId.isEmpty()) {
+        comments.add("");
+        comments.add("ATTACHMENT ID: " + attachmentId);
+      }
       mLogger.info("Comment: " + Joiner.on("\n").join(comments));
       String body = Joiner.on("\n").join(comments);
       String url = String.format("%s/rest/api/2/issue/%s/comment", mUrl, mName);
@@ -156,7 +164,14 @@ class JIRAService {
       httpClient.getConnectionManager().shutdown();
     }
   }
-
+  static List<String> trimMessages(List<String> messages) {
+    int size = messages.size();
+    if(size > MAX_MESSAGES) {
+      messages = messages.subList(size - MAX_MESSAGES, size);
+      messages.add(0, TRIMMED_MESSAGE);
+    }
+    return messages;
+  }
   @SuppressWarnings("unused")
   private static class Body {
     private String body;
@@ -216,7 +231,20 @@ class JIRAService {
       }
     }
   }
-
+  private static String parseAttachementId(String patch) {
+    if(patch == null) {
+      return "";
+    }
+    String result = FilenameUtils.getPathNoEndSeparator(patch.trim());
+    if(result == null) {
+      return "";
+    }
+    result = FilenameUtils.getName(result.trim());
+    if(result == null) {
+      return "";
+    }
+    return result.trim();
+  }
   public static void main(String[] args) throws Exception {
     TestLogger logger = new TestLogger(System.err, TestLogger.LEVEL.TRACE);
     Map<String, String> context = Maps.newHashMap();

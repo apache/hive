@@ -195,6 +195,8 @@ Table:              	analyze_srcpart
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	numFiles            	1                   
+	totalSize           	5812                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -238,6 +240,8 @@ Table:              	analyze_srcpart
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	numFiles            	1                   
+	totalSize           	5812                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -281,11 +285,6 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
-	numFiles            	2                   
-	numPartitions       	2                   
-	numRows             	1000                
-	rawDataSize         	10624               
-	totalSize           	11624               
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

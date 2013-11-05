@@ -33,6 +33,7 @@ import org.apache.hive.hcatalog.templeton.BadParam;
 import org.apache.hive.hcatalog.templeton.LauncherDelegator;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -65,8 +66,25 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
    * it will end up in 'syslog' of this Map task.  For example, look for KeepAlive heartbeat msgs.
    */
   private static final Log LOG = LogFactory.getLog(LaunchMapper.class);
-
-
+  /**
+   * When a Pig job is submitted and it uses HCat, WebHCat may be configured to ship hive tar
+   * to the target node.  Pig on the target node needs some env vars configured.
+   */
+  private static void handlePigEnvVars(Configuration conf, Map<String, String> env) {
+    if(conf.get(PigConstants.HIVE_HOME) != null) {
+      env.put(PigConstants.HIVE_HOME, new File(conf.get(PigConstants.HIVE_HOME)).getAbsolutePath());
+    }
+    if(conf.get(PigConstants.HCAT_HOME) != null) {
+      env.put(PigConstants.HCAT_HOME, new File(conf.get(PigConstants.HCAT_HOME)).getAbsolutePath());
+    }
+    if(conf.get(PigConstants.PIG_OPTS) != null) {
+      StringBuilder pigOpts = new StringBuilder();
+      for(String prop : conf.get(PigConstants.PIG_OPTS).split(",")) {
+        pigOpts.append("-D").append(prop).append(" ");
+      }
+      env.put(PigConstants.PIG_OPTS, pigOpts.toString());
+    }
+  }
   protected Process startJob(Context context, String user, String overrideClasspath)
     throws IOException, InterruptedException {
     Configuration conf = context.getConfiguration();
@@ -79,8 +97,8 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
     removeEnv.add("hadoop-command");
     removeEnv.add("CLASS");
     removeEnv.add("mapredcommand");
-    Map<String, String> env = TempletonUtils.hadoopUserEnv(user,
-            overrideClasspath);
+    Map<String, String> env = TempletonUtils.hadoopUserEnv(user, overrideClasspath);
+    handlePigEnvVars(conf, env);
     List<String> jarArgsList = new LinkedList<String>(Arrays.asList(jarArgs));
     String tokenFile = System.getenv("HADOOP_TOKEN_FILE_LOCATION");
 
@@ -261,8 +279,15 @@ public class LaunchMapper extends Mapper<NullWritable, NullWritable, Text, Text>
 
             if (percent != null || childid != null) {
               state = new JobState(jobid.toString(), conf);
-              state.setPercentComplete(percent);
-              state.setChildId(childid);
+              if (percent != null) {
+                state.setPercentComplete(percent);
+              }
+              if (childid != null) {
+                JobState childState = new JobState(childid, conf);
+                childState.setParent(jobid.toString());
+                state.addChild(childid);
+                state.close();
+              }
             }
           } catch (IOException e) {
             LOG.error("templeton: state error: ", e);

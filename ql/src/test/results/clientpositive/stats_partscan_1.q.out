@@ -81,6 +81,8 @@ Table:              	analyze_srcpart_partial_scan
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	numFiles            	1                   
+	totalSize           	5293                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -224,6 +226,8 @@ Table:              	analyze_srcpart_partial_scan
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	numFiles            	1                   
+	totalSize           	5293                
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

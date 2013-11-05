@@ -3,10 +3,10 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE src_null(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@src_null
-PREHOOK: query: LOAD DATA LOCAL INPATH '../data/files/null.txt' INTO TABLE src_null
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE src_null
 PREHOOK: type: LOAD
 PREHOOK: Output: default@src_null
-POSTHOOK: query: LOAD DATA LOCAL INPATH '../data/files/null.txt' INTO TABLE src_null
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE src_null
 POSTHOOK: type: LOAD
 POSTHOOK: Output: default@src_null
 PREHOOK: query: EXPLAIN SELECT * FROM src_null DISTRIBUTE BY c SORT BY d
