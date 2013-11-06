@@ -400,34 +400,34 @@ public class TestJdbcDriver2 {
     for (int i = 1; i < meta.getColumnCount(); i++) {
       assertNull(res.getObject(i));
     }
-
   }
 
   @Test
   public void testErrorDiag() throws SQLException {
     Statement stmt = con.createStatement();
-
     // verify syntax error
     try {
-      ResultSet res = stmt.executeQuery("select from " + dataTypeTableName);
+      stmt.executeQuery("select from " + dataTypeTableName);
+      fail("SQLException is expected");
     } catch (SQLException e) {
       assertEquals("42000", e.getSQLState());
     }
 
     // verify table not fuond error
     try {
-      ResultSet res = stmt.executeQuery("select * from nonTable");
+      stmt.executeQuery("select * from nonTable");
+      fail("SQLException is expected");
     } catch (SQLException e) {
       assertEquals("42S02", e.getSQLState());
     }
 
     // verify invalid column error
     try {
-      ResultSet res = stmt.executeQuery("select zzzz from " + dataTypeTableName);
+      stmt.executeQuery("select zzzz from " + dataTypeTableName);
+      fail("SQLException is expected");
     } catch (SQLException e) {
       assertEquals("42000", e.getSQLState());
     }
-
   }
 
   /**
@@ -1523,9 +1523,9 @@ public class TestJdbcDriver2 {
     assertEquals("c18", meta.getColumnName(16));
     assertEquals(Types.DECIMAL, meta.getColumnType(16));
     assertEquals("decimal", meta.getColumnTypeName(16));
-    assertEquals(Integer.MAX_VALUE, meta.getColumnDisplaySize(16));
-    assertEquals(Integer.MAX_VALUE, meta.getPrecision(16));
-    assertEquals(Integer.MAX_VALUE, meta.getScale(16));
+    assertEquals(18, meta.getColumnDisplaySize(16));
+    assertEquals(16, meta.getPrecision(16));
+    assertEquals(7, meta.getScale(16));
 
     assertEquals("c20", meta.getColumnName(17));
     assertEquals(Types.DATE, meta.getColumnType(17));
@@ -1589,7 +1589,7 @@ public class TestJdbcDriver2 {
 
   @Test
   public void testParseUrlHttpMode() throws SQLException {
-    HiveDriver driver = new HiveDriver();
+    new HiveDriver();
     for (String[] testValues : HTTP_URL_PROPERTIES) {
       JdbcConnectionParams params = Utils.parseURL(testValues[0]);
       assertEquals(params.getHost(), testValues[1]);
