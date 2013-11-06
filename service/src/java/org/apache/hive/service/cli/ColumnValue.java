@@ -146,7 +146,7 @@ public class ColumnValue {
   public static ColumnValue stringValue(HiveDecimal value) {
     TStringValue tStrValue = new TStringValue();
     if (value != null) {
-      tStrValue.setValue(((HiveDecimal)value).toString());
+      tStrValue.setValue(value.toString());
     }
     return new ColumnValue(TColumnValue.stringVal(tStrValue));
   }

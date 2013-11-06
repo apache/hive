@@ -168,6 +168,10 @@ typedef i32 TTypeEntryPtr
 // Valid TTypeQualifiers key names
 const string CHARACTER_MAXIMUM_LENGTH = "characterMaximumLength"
 
+// Type qualifier key name for decimal
+const string PRECISION = "precision"
+const string SCALE = "scale"
+
 union TTypeQualifierValue {
   1: optional i32 i32Value
   2: optional string stringValue
@@ -497,7 +501,7 @@ struct TOpenSessionResp {
   1: required TStatus status
 
   // The protocol version that the server is using.
-  2: required TProtocolVersion serverProtocolVersion = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V3
+  2: required TProtocolVersion serverProtocolVersion = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V4
 
   // Session Handle
   3: optional TSessionHandle sessionHandle
