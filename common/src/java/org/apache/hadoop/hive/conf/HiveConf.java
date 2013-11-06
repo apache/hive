@@ -507,6 +507,9 @@ public class HiveConf extends Configuration {
     HIVE_ORC_FILE_MEMORY_POOL("hive.exec.orc.memory.pool", 0.5f), // 50%
     // Define the version of the file to write
     HIVE_ORC_WRITE_FORMAT("hive.exec.orc.write.format", null),
+    // Define the default ORC stripe size
+    HIVE_ORC_DEFAULT_STRIPE_SIZE("hive.exec.orc.default.stripe.size",
+        256L * 1024 * 1024),
 
     HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD("hive.exec.orc.dictionary.key.size.threshold", 0.8f),
 
