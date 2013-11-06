@@ -543,4 +543,189 @@ public class TestVectorFilterExpressions {
     assertTrue(vrb.selectedInUse);
     assertEquals(0, vrb.selected[0]);
   }
+
+  /**
+   * Test the IN filter VectorExpression classes.
+   */
+
+  @Test
+  public void testFilterLongIn() {
+    int seed = 17;
+    VectorizedRowBatch vrb = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        5, 2, seed);
+    LongColumnVector lcv0 = (LongColumnVector) vrb.cols[0];
+    long[] inList = {5, 20};
+    FilterLongColumnInList f = new FilterLongColumnInList(0);
+    f.setInListValues(inList);
+    VectorExpression expr1 = f;
+
+    // Basic case
+    lcv0.vector[0] = 5;
+    lcv0.vector[1] = 20;
+    lcv0.vector[2] = 17;
+    lcv0.vector[3] = 15;
+    lcv0.vector[4] = 10;
+
+    expr1.evaluate(vrb);
+
+    assertEquals(2, vrb.size);
+    assertTrue(vrb.selectedInUse);
+    assertEquals(0, vrb.selected[0]);
+    assertEquals(1, vrb.selected[1]);
+
+    // With nulls
+    VectorizedRowBatch vrb1 = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        5, 2, seed);
+
+    lcv0 = (LongColumnVector) vrb1.cols[0];
+
+    lcv0.vector[0] = 5;
+    lcv0.vector[1] = 20;
+    lcv0.vector[2] = 17;
+    lcv0.vector[3] = 15;
+    lcv0.vector[4] = 10;
+
+    lcv0.noNulls = false;
+    lcv0.isNull[0] = true;
+    lcv0.isNull[2] = true;
+
+    expr1.evaluate(vrb1);
+    assertEquals(1, vrb1.size);
+    assertTrue(vrb1.selectedInUse);
+    assertEquals(1, vrb1.selected[0]);
+
+    // With nulls and selected
+    VectorizedRowBatch vrb2 = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        7, 2, seed);
+    vrb2.selectedInUse = true;
+    vrb2.selected[0] = 1;
+    vrb2.selected[1] = 2;
+    vrb2.selected[2] = 4;
+    vrb2.size = 3;
+
+    lcv0 = (LongColumnVector) vrb2.cols[0];
+
+    lcv0.vector[0] = 5;
+    lcv0.vector[1] = 20;
+    lcv0.vector[2] = 17;
+    lcv0.vector[3] = 15;
+    lcv0.vector[4] = 10;
+    lcv0.vector[5] = 19;
+    lcv0.vector[6] = 21;
+
+    lcv0.noNulls = false;
+    lcv0.isNull[0] = true;
+    lcv0.isNull[2] = true;
+    lcv0.isNull[5] = true;
+
+    expr1.evaluate(vrb2);
+    assertEquals(1, vrb2.size);
+    assertEquals(1, vrb2.selected[0]);
+
+    // Repeating non null
+    VectorizedRowBatch vrb3 = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        7, 2, seed);
+    lcv0 = (LongColumnVector) vrb3.cols[0];
+
+    lcv0.isRepeating = true;
+    lcv0.vector[0] = 5;
+    lcv0.vector[1] = 20;
+    lcv0.vector[2] = 17;
+    lcv0.vector[3] = 15;
+    lcv0.vector[4] = 10;
+
+    expr1.evaluate(vrb3);
+    assertEquals(7, vrb3.size);
+    assertFalse(vrb3.selectedInUse);
+    assertTrue(lcv0.isRepeating);
+
+    // Repeating null
+    lcv0.noNulls = false;
+    lcv0.vector[0] = 5;
+    lcv0.isNull[0] = true;
+
+    expr1.evaluate(vrb3);
+    assertEquals(0, vrb3.size);
+  }
+
+  @Test
+  public void testFilterDoubleIn() {
+    int seed = 17;
+    VectorizedRowBatch vrb = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        5, 2, seed);
+    DoubleColumnVector dcv0 = new DoubleColumnVector();
+    vrb.cols[0] = dcv0;
+    double[] inList = {5.0, 20.2};
+    FilterDoubleColumnInList f = new FilterDoubleColumnInList(0);
+    f.setInListValues(inList);
+    VectorExpression expr1 = f;
+
+    // Basic sanity check. Other cases are not skipped because it is similar to the case for Long.
+    dcv0.vector[0] = 5.0;
+    dcv0.vector[1] = 20.2;
+    dcv0.vector[2] = 17.0;
+    dcv0.vector[3] = 15.0;
+    dcv0.vector[4] = 10.0;
+
+    expr1.evaluate(vrb);
+
+    assertEquals(2, vrb.size);
+    assertTrue(vrb.selectedInUse);
+    assertEquals(0, vrb.selected[0]);
+    assertEquals(1, vrb.selected[1]);
+  }
+
+  @Test
+  public void testFilterStringIn() {
+    int seed = 17;
+    VectorizedRowBatch vrb = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        3, 2, seed);
+    vrb.cols[0] = new BytesColumnVector();
+    BytesColumnVector bcv = (BytesColumnVector) vrb.cols[0];
+
+    bcv.initBuffer();
+    bcv.setVal(0, a, 0, 1);
+    bcv.setVal(1, b, 0, 1);
+    bcv.setVal(2, c, 0, 1);
+
+    VectorExpression expr = new FilterStringColumnInList(0);
+    byte[][] inList = {b, c};
+    ((FilterStringColumnInList) expr).setInListValues(inList);
+
+    // basic test
+    expr.evaluate(vrb);
+
+    assertEquals(2, vrb.size);
+    assertTrue(vrb.selectedInUse);
+    assertEquals(1, vrb.selected[0]);
+    assertEquals(2, vrb.selected[1]);
+
+    // nulls
+    vrb.selectedInUse = false;
+    vrb.size = 3;
+    bcv.noNulls = false;
+    bcv.isNull[2] = true;
+    expr.evaluate(vrb);
+    assertEquals(1, vrb.size);
+    assertEquals(1, vrb.selected[0]);
+    assertTrue(vrb.selectedInUse);
+
+    // repeating
+    vrb.selectedInUse = false;
+    vrb.size = 3;
+    bcv.noNulls = true;
+    bcv.isRepeating = true;
+    expr.evaluate(vrb);
+    assertEquals(0, vrb.size);
+
+    // nulls and repeating
+    vrb.selectedInUse = false;
+    vrb.size = 3;
+    bcv.noNulls = false;
+    bcv.isRepeating = true;
+    bcv.isNull[0] = true;
+    bcv.setVal(0, b, 0, 1);
+    expr.evaluate(vrb);
+    assertEquals(0, vrb.size);
+  }
 }
