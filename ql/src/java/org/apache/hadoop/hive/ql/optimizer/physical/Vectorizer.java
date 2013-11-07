@@ -61,6 +61,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFAbs;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLower;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
@@ -172,6 +173,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(GenericUDFConcat.class);
     supportedGenericUDFs.add(GenericUDFAbs.class);
     supportedGenericUDFs.add(GenericUDFBetween.class);
+    supportedGenericUDFs.add(GenericUDFIn.class);
 
     // For type casts
     supportedGenericUDFs.add(UDFToLong.class);
