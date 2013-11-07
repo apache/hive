@@ -1245,10 +1245,16 @@ public final class GenMapRedUtils {
 
     } else {
       cplan = createMRWorkForMergingFiles(conf, tsMerge, fsInputDesc);
-      work = new MapredWork();
-      ((MapredWork)work).setMapWork(cplan);
-      // use CombineHiveInputFormat for map-only merging
+      if (conf.getBoolVar(ConfVars.HIVE_OPTIMIZE_TEZ)) {
+        work = new TezWork();
+        cplan.setName("Merge");
+        ((TezWork)work).add(cplan);
+      } else {
+        work = new MapredWork();
+        ((MapredWork)work).setMapWork(cplan);
+      }
     }
+    // use CombineHiveInputFormat for map-only merging
     cplan.setInputformat("org.apache.hadoop.hive.ql.io.CombineHiveInputFormat");
     // NOTE: we should gather stats in MR1 rather than MR2 at merge job since we don't
     // know if merge MR2 will be triggered at execution time
