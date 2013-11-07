@@ -24,6 +24,7 @@ import java.sql.CallableStatement;
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.DriverManager;
 import java.sql.NClob;
 import java.sql.PreparedStatement;
 import java.sql.SQLClientInfoException;
@@ -46,6 +47,7 @@ import javax.security.sasl.SaslException;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.session.SessionState;
+import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.KerberosSaslHelper;
 import org.apache.hive.service.auth.PlainSaslHelper;
 import org.apache.hive.service.auth.SaslQOP;
@@ -61,7 +63,6 @@ import org.apache.thrift.TException;
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.protocol.TProtocol;
 import org.apache.thrift.transport.THttpClient;
-import org.apache.thrift.transport.TSocket;
 import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 
@@ -78,6 +79,10 @@ public class HiveConnection implements java.sql.Connection {
   private static final String HIVE_AUTH_PASSWD = "password";
   private static final String HIVE_ANONYMOUS_USER = "anonymous";
   private static final String HIVE_ANONYMOUS_PASSWD = "anonymous";
+  private static final String HIVE_USE_SSL = "ssl";
+  private static final String HIVE_SSL_TRUST_STORE = "sslTrustStore";
+  private static final String HIVE_SSL_TRUST_STORE_PASSWORD = "trustStorePassword";
+
   private final String jdbcURI;
   private final String host;
   private final int port;
@@ -91,8 +96,10 @@ public class HiveConnection implements java.sql.Connection {
   private SQLWarning warningChain = null;
   private TSessionHandle sessHandle = null;
   private final List<TProtocolVersion> supportedProtocols = new LinkedList<TProtocolVersion>();
+  private int loginTimeout = 0;
 
   public HiveConnection(String uri, Properties info) throws SQLException {
+    loginTimeout = DriverManager.getLoginTimeout();
     jdbcURI = uri;
     // parse the connection uri
     Utils.JdbcConnectionParams connParams = Utils.parseURL(jdbcURI);
@@ -178,26 +185,26 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   private TTransport createBinaryTransport() throws SQLException {
-    transport = new TSocket(host, port);
-    // handle secure connection if specified
-    if (!sessConfMap.containsKey(HIVE_AUTH_TYPE)
-        || !sessConfMap.get(HIVE_AUTH_TYPE).equals(HIVE_AUTH_SIMPLE)) {
-      try {
+    try {
+      // handle secure connection if specified
+      if (!HIVE_AUTH_SIMPLE.equals(sessConfMap.get(HIVE_AUTH_TYPE))) {
         // If Kerberos
         if (sessConfMap.containsKey(HIVE_AUTH_PRINCIPAL)) {
           Map<String, String> saslProps = new HashMap<String, String>();
           SaslQOP saslQOP = SaslQOP.AUTH;
-          if(sessConfMap.containsKey(HIVE_AUTH_QOP)) {
+          if (sessConfMap.containsKey(HIVE_AUTH_QOP)) {
             try {
               saslQOP = SaslQOP.fromString(sessConfMap.get(HIVE_AUTH_QOP));
             } catch (IllegalArgumentException e) {
-              throw new SQLException("Invalid " + HIVE_AUTH_QOP + " parameter. " + e.getMessage(), "42000", e);
+              throw new SQLException("Invalid " + HIVE_AUTH_QOP + " parameter. " + e.getMessage(),
+                  "42000", e);
             }
           }
           saslProps.put(Sasl.QOP, saslQOP.toString());
           saslProps.put(Sasl.SERVER_AUTH, "true");
           transport = KerberosSaslHelper.getKerberosTransport(
-              sessConfMap.get(HIVE_AUTH_PRINCIPAL), host, transport, saslProps);
+              sessConfMap.get(HIVE_AUTH_PRINCIPAL), host,
+              HiveAuthFactory.getSocketTransport(host, port, loginTimeout), saslProps);
         } else {
           String userName = sessConfMap.get(HIVE_AUTH_USER);
           if ((userName == null) || userName.isEmpty()) {
@@ -207,12 +214,30 @@ public class HiveConnection implements java.sql.Connection {
           if ((passwd == null) || passwd.isEmpty()) {
             passwd = HIVE_ANONYMOUS_PASSWD;
           }
+          String useSslStr = sessConfMap.get(HIVE_USE_SSL);
+          if ("true".equalsIgnoreCase(useSslStr)) {
+            String sslTrustStore = sessConfMap.get(HIVE_SSL_TRUST_STORE);
+            String sslTrustStorePassword = sessConfMap.get(HIVE_SSL_TRUST_STORE_PASSWORD);
+            if (sslTrustStore == null || sslTrustStore.isEmpty()) {
+              transport = HiveAuthFactory.getSSLSocket(host, port, loginTimeout);
+            } else {
+              transport = HiveAuthFactory.getSSLSocket(host, port, loginTimeout,
+                  sslTrustStore, sslTrustStorePassword);
+            }
+          } else {
+            transport = HiveAuthFactory.getSocketTransport(host, port, loginTimeout);
+          }
           transport = PlainSaslHelper.getPlainTransport(userName, passwd, transport);
         }
-      } catch (SaslException e) {
-        throw new SQLException("Could not create secure connection to "
-            + jdbcURI + ": " + e.getMessage(), " 08S01", e);
+      } else {
+        transport = HiveAuthFactory.getSocketTransport(host, port, loginTimeout);
       }
+    } catch (SaslException e) {
+      throw new SQLException("Could not create secure connection to "
+          + jdbcURI + ": " + e.getMessage(), " 08S01", e);
+    } catch (TTransportException e) {
+      throw new SQLException("Could not create connection to "
+          + jdbcURI + ": " + e.getMessage(), " 08S01", e);
     }
     return transport;
   }
