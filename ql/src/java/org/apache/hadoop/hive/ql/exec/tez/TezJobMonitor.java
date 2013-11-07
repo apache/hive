@@ -35,6 +35,7 @@ import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.client.DAGClient;
 import org.apache.tez.dag.api.client.DAGStatus;
 import org.apache.tez.dag.api.client.Progress;
+import org.apache.tez.dag.api.client.StatusGetOpts;
 
 /**
  * TezJobMonitor keeps track of a tez job while it's being executed. It will
@@ -76,6 +77,7 @@ public class TezJobMonitor {
     int rc = 0;
     DAGStatus.State lastState = null;
     String lastReport = null;
+    Set<StatusGetOpts> opts = new HashSet<StatusGetOpts>();
 
     console.printInfo("\n");
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_DAG);
@@ -84,7 +86,7 @@ public class TezJobMonitor {
     while(true) {
 
       try {
-        status = dagClient.getDAGStatus();
+        status = dagClient.getDAGStatus(opts);
         Map<String, Progress> progressMap = status.getVertexProgress();
         DAGStatus.State state = status.getState();
 
