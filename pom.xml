@@ -76,15 +76,16 @@
     <commons-httpclient.version>3.0.1</commons-httpclient.version>
     <commons-io.version>2.4</commons-io.version>
     <commons-lang.version>2.4</commons-lang.version>
-    <commons-logging.version>1.0.4</commons-logging.version>
+    <commons-logging.version>1.1.3</commons-logging.version>
     <commons-pool.version>1.5.4</commons-pool.version>
     <derby.version>10.4.2.0</derby.version>
     <guava.version>11.0.2</guava.version>
     <groovy.version>2.1.6</groovy.version>
     <hadoop-20.version>0.20.2</hadoop-20.version>
-    <hadoop-20S.version>1.1.2</hadoop-20S.version>
-    <hadoop-23.version>2.0.5-alpha</hadoop-23.version>
+    <hadoop-20S.version>1.2.1</hadoop-20S.version>
+    <hadoop-23.version>2.2.0</hadoop-23.version>
     <hbase.version>0.94.6.1</hbase.version>
+    <httpcomponents.version>4.1.3</httpcomponents.version>
     <jackson.version>1.9.2</jackson.version>
     <javaewah.version>0.3.2</javaewah.version>
     <javolution.version>5.5.1</javolution.version>
@@ -107,6 +108,7 @@
     <pig.version>0.10.1</pig.version>
     <protobuf.version>2.5.0</protobuf.version>
     <rat.version>0.8</rat.version>
+    <stax.version>1.0.1</stax.version>
     <slf4j.version>1.6.1</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
     <tempus-fugit.version>1.1</tempus-fugit.version>
