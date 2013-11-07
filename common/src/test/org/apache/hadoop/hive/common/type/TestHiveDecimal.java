@@ -54,7 +54,14 @@ public class TestHiveDecimal {
     dec = HiveDecimal.create("178613588865784752580332404014434337809799306448796128931113691624");
     Assert.assertNull(dec);
   }
-
+  
+  @Test
+  public void testTrailingZeroRemovalAfterEnforcement() {
+    String decStr = "8.0900000000000000000000000000000123456";
+    HiveDecimal dec = HiveDecimal.create(decStr);
+    Assert.assertEquals("8.09", dec.toString());
+  }
+  
   @Test
   public void testMultiply() {
     HiveDecimal dec1 = HiveDecimal.create("0.1786135888657847525803");

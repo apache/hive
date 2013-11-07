@@ -965,3 +965,29 @@ POSTHOOK: Input: default@nzhang_ctas6
 POSTHOOK: Output: default@nzhang_ctas7
 POSTHOOK: Lineage: nzhang_ctas6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_ctas6.to SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table nzhang_ctas8 as select 3.14BD from nzhang_ctas6 limit 1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@nzhang_ctas6
+POSTHOOK: query: create table nzhang_ctas8 as select 3.14BD from nzhang_ctas6 limit 1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@nzhang_ctas6
+POSTHOOK: Output: default@nzhang_ctas8
+POSTHOOK: Lineage: nzhang_ctas6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_ctas6.to SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc nzhang_ctas8
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc nzhang_ctas8
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: nzhang_ctas6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_ctas6.to SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+_c0                 	decimal(3,2)        	None                
+PREHOOK: query: drop table nzhang_ctas8
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@nzhang_ctas8
+PREHOOK: Output: default@nzhang_ctas8
+POSTHOOK: query: drop table nzhang_ctas8
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@nzhang_ctas8
+POSTHOOK: Output: default@nzhang_ctas8
+POSTHOOK: Lineage: nzhang_ctas6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_ctas6.to SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
