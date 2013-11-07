@@ -27,7 +27,6 @@ import java.util.Arrays;
 
 import junit.framework.Assert;
 
-import org.apache.hadoop.hbase.client.coprocessor.Batch;
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
