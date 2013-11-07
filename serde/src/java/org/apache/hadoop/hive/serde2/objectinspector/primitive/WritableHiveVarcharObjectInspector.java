@@ -22,7 +22,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils;
 
 public class WritableHiveVarcharObjectInspector extends AbstractPrimitiveWritableObjectInspector
 implements SettableHiveVarcharObjectInspector {
@@ -78,7 +78,7 @@ implements SettableHiveVarcharObjectInspector {
   }
 
   private boolean doesWritableMatchTypeParams(HiveVarcharWritable writable) {
-    return VarcharUtils.doesWritableMatchTypeParams(
+    return BaseCharUtils.doesWritableMatchTypeParams(
         writable, (VarcharTypeInfo)typeInfo);
   }
 

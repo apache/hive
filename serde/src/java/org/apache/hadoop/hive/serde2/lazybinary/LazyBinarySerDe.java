@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveCharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
@@ -366,6 +367,12 @@ public class LazyBinarySerDe extends AbstractSerDe {
       case STRING: {
         StringObjectInspector soi = (StringObjectInspector) poi;
         Text t = soi.getPrimitiveWritableObject(obj);
+        serializeText(byteStream, t, skipLengthPrefix);
+        return warnedOnceNullMapKey;
+      }
+      case CHAR: {
+        HiveCharObjectInspector hcoi = (HiveCharObjectInspector) poi;
+        Text t = hcoi.getPrimitiveWritableObject(obj).getTextValue();
         serializeText(byteStream, t, skipLengthPrefix);
         return warnedOnceNullMapKey;
       }

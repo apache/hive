@@ -62,6 +62,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
@@ -573,6 +575,8 @@ public final class TypeCheckProcFactory {
           serdeConstants.DOUBLE_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_STRING,
           serdeConstants.STRING_TYPE_NAME);
+      conversionFunctionTextHashMap.put(HiveParser.TOK_CHAR,
+          serdeConstants.CHAR_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_VARCHAR,
           serdeConstants.VARCHAR_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_BINARY,
@@ -796,6 +800,13 @@ public final class TypeCheckProcFactory {
         if (isFunction) {
           ASTNode funcNameNode = (ASTNode)expr.getChild(0);
           switch (funcNameNode.getType()) {
+            case HiveParser.TOK_CHAR:
+              // Add type params
+              CharTypeInfo charTypeInfo = ParseUtils.getCharTypeInfo(funcNameNode);
+              if (genericUDF != null) {
+                ((SettableUDF)genericUDF).setTypeInfo(charTypeInfo);
+              }
+              break;
             case HiveParser.TOK_VARCHAR:
               VarcharTypeInfo varcharTypeInfo = ParseUtils.getVarcharTypeInfo(funcNameNode);
               if (genericUDF != null) {

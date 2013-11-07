@@ -31,6 +31,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
@@ -43,6 +44,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveCharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
@@ -55,6 +57,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableByteObjec
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableDateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableDoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableFloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveCharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableHiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableIntObjectInspector;
@@ -503,6 +506,8 @@ public final class ObjectInspectorUtils {
         }
         return r;
       }
+      case CHAR:
+        return ((HiveCharObjectInspector) poi).getPrimitiveWritableObject(o).hashCode();
       case VARCHAR:
         return ((HiveVarcharObjectInspector)poi).getPrimitiveWritableObject(o).hashCode();
       case BINARY:
@@ -699,6 +704,11 @@ public final class ObjectInspectorUtils {
           return s1 == null ? (s2 == null ? 0 : -1) : (s2 == null ? 1 : s1
               .compareTo(s2));
         }
+      }
+      case CHAR: {
+        HiveCharWritable t1 = ((HiveCharObjectInspector)poi1).getPrimitiveWritableObject(o1);
+        HiveCharWritable t2 = ((HiveCharObjectInspector)poi2).getPrimitiveWritableObject(o2);
+        return t1.compareTo(t2);
       }
       case VARCHAR: {
         HiveVarcharWritable t1 = ((HiveVarcharObjectInspector)poi1).getPrimitiveWritableObject(o1);
@@ -1048,6 +1058,8 @@ public final class ObjectInspectorUtils {
     case STRING:
       return oi instanceof WritableStringObjectInspector ||
           oi instanceof JavaStringObjectInspector;
+    case CHAR:
+      return oi instanceof SettableHiveCharObjectInspector;
     case VARCHAR:
       return oi instanceof SettableHiveVarcharObjectInspector;
     case DATE:

@@ -1,0 +1,343 @@
+PREHOOK: query: drop table char_nested_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table char_nested_1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table char_nested_array
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table char_nested_array
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table char_nested_map
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table char_nested_map
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table char_nested_struct
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table char_nested_struct
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table char_nested_cta
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table char_nested_cta
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table char_nested_view
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table char_nested_view
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table char_nested_1 (key int, value char(20))
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table char_nested_1 (key int, value char(20))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@char_nested_1
+PREHOOK: query: insert overwrite table char_nested_1
+  select key, value from src order by key limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@char_nested_1
+POSTHOOK: query: insert overwrite table char_nested_1
+  select key, value from src order by key limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@char_nested_1
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: -- arrays
+create table char_nested_array (c1 array<char(20)>)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- arrays
+create table char_nested_array (c1 array<char(20)>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@char_nested_array
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table char_nested_array
+  select array(value, value) from char_nested_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_nested_1
+PREHOOK: Output: default@char_nested_array
+POSTHOOK: query: insert overwrite table char_nested_array
+  select array(value, value) from char_nested_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_nested_1
+POSTHOOK: Output: default@char_nested_array
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+PREHOOK: query: describe char_nested_array
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe char_nested_array
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+c1                  	array<char(20)>     	None                
+PREHOOK: query: select * from char_nested_array
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_nested_array
+#### A masked pattern was here ####
+POSTHOOK: query: select * from char_nested_array
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_nested_array
+#### A masked pattern was here ####
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+["val_0               ","val_0               "]
+PREHOOK: query: -- maps
+create table char_nested_map (c1 map<int, char(20)>)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- maps
+create table char_nested_map (c1 map<int, char(20)>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@char_nested_map
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+PREHOOK: query: insert overwrite table char_nested_map
+  select map(key, value) from char_nested_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_nested_1
+PREHOOK: Output: default@char_nested_map
+POSTHOOK: query: insert overwrite table char_nested_map
+  select map(key, value) from char_nested_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_nested_1
+POSTHOOK: Output: default@char_nested_map
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+PREHOOK: query: describe char_nested_map
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe char_nested_map
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+c1                  	map<int,char(20)>   	None                
+PREHOOK: query: select * from char_nested_map
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_nested_map
+#### A masked pattern was here ####
+POSTHOOK: query: select * from char_nested_map
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_nested_map
+#### A masked pattern was here ####
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+{0:"val_0               "}
+PREHOOK: query: -- structs
+create table char_nested_struct (c1 struct<a:int, b:char(20), c:string>)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- structs
+create table char_nested_struct (c1 struct<a:int, b:char(20), c:string>)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@char_nested_struct
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+PREHOOK: query: insert overwrite table char_nested_struct
+  select named_struct('a', key,
+                      'b', value,
+                      'c', cast(value as string))
+  from char_nested_1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_nested_1
+PREHOOK: Output: default@char_nested_struct
+POSTHOOK: query: insert overwrite table char_nested_struct
+  select named_struct('a', key,
+                      'b', value,
+                      'c', cast(value as string))
+  from char_nested_1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_nested_1
+POSTHOOK: Output: default@char_nested_struct
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_struct.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+PREHOOK: query: describe char_nested_struct
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe char_nested_struct
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_struct.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+c1                  	struct<a:int,b:char(20),c:string>	None                
+PREHOOK: query: select * from char_nested_struct
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_nested_struct
+#### A masked pattern was here ####
+POSTHOOK: query: select * from char_nested_struct
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_nested_struct
+#### A masked pattern was here ####
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_struct.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+{"a":0,"b":"val_0               ","c":"val_0"}
+PREHOOK: query: -- nested type with create table as
+create table char_nested_cta as 
+  select * from char_nested_struct
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@char_nested_struct
+POSTHOOK: query: -- nested type with create table as
+create table char_nested_cta as 
+  select * from char_nested_struct
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@char_nested_struct
+POSTHOOK: Output: default@char_nested_cta
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_struct.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+PREHOOK: query: describe char_nested_cta
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe char_nested_cta
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_struct.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+c1                  	struct<a:int,b:char(20),c:string>	None                
+PREHOOK: query: select * from char_nested_cta
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_nested_cta
+#### A masked pattern was here ####
+POSTHOOK: query: select * from char_nested_cta
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_nested_cta
+#### A masked pattern was here ####
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_struct.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+{"a":0,"b":"val_0               ","c":"val_0"}
+PREHOOK: query: -- nested type with view
+create table char_nested_view as 
+  select * from char_nested_struct
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@char_nested_struct
+POSTHOOK: query: -- nested type with view
+create table char_nested_view as 
+  select * from char_nested_struct
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@char_nested_struct
+POSTHOOK: Output: default@char_nested_view
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_struct.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+PREHOOK: query: describe char_nested_view
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe char_nested_view
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_struct.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+c1                  	struct<a:int,b:char(20),c:string>	None                
+PREHOOK: query: select * from char_nested_view
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_nested_view
+#### A masked pattern was here ####
+POSTHOOK: query: select * from char_nested_view
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_nested_view
+#### A masked pattern was here ####
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_struct.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+{"a":0,"b":"val_0               ","c":"val_0"}
+PREHOOK: query: drop table char_nested_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@char_nested_1
+PREHOOK: Output: default@char_nested_1
+POSTHOOK: query: drop table char_nested_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@char_nested_1
+POSTHOOK: Output: default@char_nested_1
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_struct.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+PREHOOK: query: drop table char_nested_array
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@char_nested_array
+PREHOOK: Output: default@char_nested_array
+POSTHOOK: query: drop table char_nested_array
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@char_nested_array
+POSTHOOK: Output: default@char_nested_array
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_struct.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+PREHOOK: query: drop table char_nested_map
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@char_nested_map
+PREHOOK: Output: default@char_nested_map
+POSTHOOK: query: drop table char_nested_map
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@char_nested_map
+POSTHOOK: Output: default@char_nested_map
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_struct.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+PREHOOK: query: drop table char_nested_struct
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@char_nested_struct
+PREHOOK: Output: default@char_nested_struct
+POSTHOOK: query: drop table char_nested_struct
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@char_nested_struct
+POSTHOOK: Output: default@char_nested_struct
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_struct.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+PREHOOK: query: drop table char_nested_cta
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@char_nested_cta
+PREHOOK: Output: default@char_nested_cta
+POSTHOOK: query: drop table char_nested_cta
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@char_nested_cta
+POSTHOOK: Output: default@char_nested_cta
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_struct.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+PREHOOK: query: drop table char_nested_view
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@char_nested_view
+PREHOOK: Output: default@char_nested_view
+POSTHOOK: query: drop table char_nested_view
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@char_nested_view
+POSTHOOK: Output: default@char_nested_view
+POSTHOOK: Lineage: char_nested_1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char_nested_array.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_map.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]
+POSTHOOK: Lineage: char_nested_struct.c1 EXPRESSION [(char_nested_1)char_nested_1.FieldSchema(name:key, type:int, comment:null), (char_nested_1)char_nested_1.FieldSchema(name:value, type:char(20), comment:null), ]

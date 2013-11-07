@@ -359,6 +359,8 @@ public final class FunctionRegistry {
         GenericUDFToDecimal.class);
     registerGenericUDF(serdeConstants.VARCHAR_TYPE_NAME,
         GenericUDFToVarchar.class);
+    registerGenericUDF(serdeConstants.CHAR_TYPE_NAME,
+        GenericUDFToChar.class);
 
     // Aggregate functions
     registerGenericUDAF("max", new GenericUDAFMax());
@@ -656,9 +658,15 @@ public final class FunctionRegistry {
       PrimitiveTypeInfo a, PrimitiveTypeInfo b, PrimitiveCategory typeCategory) {
     // For types with parameters (like varchar), we need to determine the type parameters
     // that should be added to this type, based on the original 2 TypeInfos.
+    int maxLength;
     switch (typeCategory) {
+      case CHAR:
+        maxLength = getCommonLength(
+            TypeInfoUtils.getCharacterLengthForType(a),
+            TypeInfoUtils.getCharacterLengthForType(b));
+        return TypeInfoFactory.getCharTypeInfo(maxLength);
       case VARCHAR:
-        int maxLength = getCommonLength(
+        maxLength = getCommonLength(
             TypeInfoUtils.getCharacterLengthForType(a),
             TypeInfoUtils.getCharacterLengthForType(b));
         return TypeInfoFactory.getVarcharTypeInfo(maxLength);
@@ -1499,7 +1507,7 @@ public final class FunctionRegistry {
         udfClass == UDFToDouble.class || udfClass == UDFToFloat.class ||
         udfClass == UDFToInteger.class || udfClass == UDFToLong.class ||
         udfClass == UDFToShort.class || udfClass == UDFToString.class ||
-        udfClass == GenericUDFToVarchar.class ||
+        udfClass == GenericUDFToVarchar.class || udfClass == GenericUDFToChar.class ||
         udfClass == GenericUDFTimestamp.class || udfClass == GenericUDFToBinary.class ||
         udfClass == GenericUDFToDate.class  || udfClass == GenericUDFToDecimal.class;
   }

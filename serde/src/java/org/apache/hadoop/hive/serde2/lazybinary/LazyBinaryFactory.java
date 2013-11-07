@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveCharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableHiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableBinaryObjectInspector;
@@ -72,6 +73,8 @@ public final class LazyBinaryFactory {
       return new LazyBinaryDouble((WritableDoubleObjectInspector) oi);
     case STRING:
       return new LazyBinaryString((WritableStringObjectInspector) oi);
+    case CHAR:
+      return new LazyBinaryHiveChar((WritableHiveCharObjectInspector) oi);
     case VARCHAR:
       return new LazyBinaryHiveVarchar((WritableHiveVarcharObjectInspector) oi);
     case VOID: // for NULL

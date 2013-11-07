@@ -1,0 +1,196 @@
+PREHOOK: query: drop table char1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table char1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table char1_1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table char1_1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table char1 (key char(10), value char(20))
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table char1 (key char(10), value char(20))
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@char1
+PREHOOK: query: create table char1_1 (key string, value string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table char1_1 (key string, value string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@char1_1
+PREHOOK: query: -- load from file
+load data local inpath '../../data/files/srcbucket0.txt' overwrite into table char1
+PREHOOK: type: LOAD
+PREHOOK: Output: default@char1
+POSTHOOK: query: -- load from file
+load data local inpath '../../data/files/srcbucket0.txt' overwrite into table char1
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@char1
+PREHOOK: query: select * from char1 order by key, value limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char1
+#### A masked pattern was here ####
+POSTHOOK: query: select * from char1 order by key, value limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char1
+#### A masked pattern was here ####
+0         	val_0               
+0         	val_0               
+PREHOOK: query: -- insert overwrite, from same/different length char
+insert overwrite table char1
+  select cast(key as char(10)), cast(value as char(15)) from src order by key, value limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@char1
+POSTHOOK: query: -- insert overwrite, from same/different length char
+insert overwrite table char1
+  select cast(key as char(10)), cast(value as char(15)) from src order by key, value limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@char1
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select key, value from char1 order by key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char1
+#### A masked pattern was here ####
+POSTHOOK: query: select key, value from char1 order by key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0         	val_0               
+0         	val_0               
+PREHOOK: query: -- insert overwrite, from string
+insert overwrite table char1
+  select key, value from src order by key, value limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@char1
+POSTHOOK: query: -- insert overwrite, from string
+insert overwrite table char1
+  select key, value from src order by key, value limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@char1
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: select key, value from char1 order by key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char1
+#### A masked pattern was here ####
+POSTHOOK: query: select key, value from char1 order by key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+0         	val_0               
+0         	val_0               
+PREHOOK: query: -- insert string from char
+insert overwrite table char1_1
+  select key, value from char1 order by key, value limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char1
+PREHOOK: Output: default@char1_1
+POSTHOOK: query: -- insert string from char
+insert overwrite table char1_1
+  select key, value from char1 order by key, value limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char1
+POSTHOOK: Output: default@char1_1
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char1_1.key SIMPLE [(char1)char1.FieldSchema(name:key, type:char(10), comment:null), ]
+POSTHOOK: Lineage: char1_1.value SIMPLE [(char1)char1.FieldSchema(name:value, type:char(20), comment:null), ]
+PREHOOK: query: select key, value from char1_1 order by key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char1_1
+#### A masked pattern was here ####
+POSTHOOK: query: select key, value from char1_1 order by key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char1_1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char1_1.key SIMPLE [(char1)char1.FieldSchema(name:key, type:char(10), comment:null), ]
+POSTHOOK: Lineage: char1_1.value SIMPLE [(char1)char1.FieldSchema(name:value, type:char(20), comment:null), ]
+0         	val_0               
+0         	val_0               
+PREHOOK: query: -- respect string length
+insert overwrite table char1 
+  select key, cast(value as char(3)) from src order by key, value limit 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@char1
+POSTHOOK: query: -- respect string length
+insert overwrite table char1 
+  select key, cast(value as char(3)) from src order by key, value limit 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@char1
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char1_1.key SIMPLE [(char1)char1.FieldSchema(name:key, type:char(10), comment:null), ]
+POSTHOOK: Lineage: char1_1.value SIMPLE [(char1)char1.FieldSchema(name:value, type:char(20), comment:null), ]
+PREHOOK: query: select key, value from char1 order by key, value
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char1
+#### A masked pattern was here ####
+POSTHOOK: query: select key, value from char1 order by key, value
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char1_1.key SIMPLE [(char1)char1.FieldSchema(name:key, type:char(10), comment:null), ]
+POSTHOOK: Lineage: char1_1.value SIMPLE [(char1)char1.FieldSchema(name:value, type:char(20), comment:null), ]
+0         	val                 
+0         	val                 
+PREHOOK: query: drop table char1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@char1
+PREHOOK: Output: default@char1
+POSTHOOK: query: drop table char1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@char1
+POSTHOOK: Output: default@char1
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char1_1.key SIMPLE [(char1)char1.FieldSchema(name:key, type:char(10), comment:null), ]
+POSTHOOK: Lineage: char1_1.value SIMPLE [(char1)char1.FieldSchema(name:value, type:char(20), comment:null), ]
+PREHOOK: query: drop table char1_1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@char1_1
+PREHOOK: Output: default@char1_1
+POSTHOOK: query: drop table char1_1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@char1_1
+POSTHOOK: Output: default@char1_1
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.key EXPRESSION [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char1.value EXPRESSION [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: char1_1.key SIMPLE [(char1)char1.FieldSchema(name:key, type:char(10), comment:null), ]
+POSTHOOK: Lineage: char1_1.value SIMPLE [(char1)char1.FieldSchema(name:value, type:char(20), comment:null), ]

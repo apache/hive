@@ -26,6 +26,9 @@ import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -129,6 +132,16 @@ public final class ParseUtils {
 
     String lengthStr = node.getChild(0).getText();
     return TypeInfoFactory.getVarcharTypeInfo(Integer.valueOf(lengthStr));
+  }
+
+  public static CharTypeInfo getCharTypeInfo(ASTNode node)
+      throws SemanticException {
+    if (node.getChildCount() != 1) {
+      throw new SemanticException("Bad params for type char");
+    }
+
+    String lengthStr = node.getChild(0).getText();
+    return TypeInfoFactory.getCharTypeInfo(Integer.valueOf(lengthStr));
   }
 
   static int getIndex(String[] list, String elem) {
