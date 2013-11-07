@@ -76,6 +76,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
+import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.udf.UDFConv;
 import org.apache.hadoop.hive.ql.udf.UDFHex;
 import org.apache.hadoop.hive.ql.udf.UDFOPNegative;
@@ -557,6 +558,8 @@ public class VectorizationContext {
     //First handle special cases
     if (udf instanceof GenericUDFBetween) {
       return getBetweenFilterExpression(childExpr);
+    } else if (udf instanceof GenericUDFIn) {
+      return getInFilterExpression(childExpr);
     } else if (udf instanceof GenericUDFBridge) {
       VectorExpression v = getGenericUDFBridgeVectorExpression((GenericUDFBridge) udf, childExpr, mode);
       if (v != null) {
@@ -576,6 +579,87 @@ public class VectorizationContext {
       throw new HiveException("Udf: "+udf.getClass().getSimpleName()+", is not supported");
     }
     return ve;
+  }
+
+  /**
+   * Create a filter expression for column IN ( <list-of-constants> )
+   * @param childExpr
+   * @return
+   */
+  private VectorExpression getInFilterExpression(List<ExprNodeDesc> childExpr)
+      throws HiveException {
+    ExprNodeDesc colExpr = childExpr.get(0);
+    String colType = colExpr.getTypeString();
+
+    // prepare arguments for createVectorExpression
+    List<ExprNodeDesc> childrenForInList =
+        foldConstantsForUnaryExprs(childExpr.subList(1, childExpr.size()));
+
+    /* This method assumes that the IN list has no NULL entries. That is enforced elsewhere,
+     * in the Vectorizer class. If NULL is passed in as a list entry, behavior is not defined.
+     * If in the future, NULL values are allowed in the IN list, be sure to handle 3-valued
+     * logic correctly. E.g. NOT (col IN (null)) should be considered UNKNOWN, so that would
+     * become FALSE in the WHERE clause, and cause the row in question to be filtered out.
+     * See the discussion in Jira HIVE-5583.
+     */
+
+    VectorExpression expr = null;
+
+    // determine class
+    Class<?> cl = null;
+    if (isIntFamily(colType)) {
+      cl = FilterLongColumnInList.class;
+      long[] inVals = new long[childrenForInList.size()];
+      for (int i = 0; i != inVals.length; i++) {
+        inVals[i] = getIntFamilyScalarAsLong((ExprNodeConstantDesc) childrenForInList.get(i));
+      }
+      FilterLongColumnInList f = (FilterLongColumnInList)
+          createVectorExpression(cl, childExpr.subList(0, 1), Mode.PROJECTION);
+      f.setInListValues(inVals);
+      expr = f;
+    } else if (colType.equals("timestamp")) {
+      cl = FilterLongColumnInList.class;
+      long[] inVals = new long[childrenForInList.size()];
+      for (int i = 0; i != inVals.length; i++) {
+        inVals[i] = getTimestampScalar(childrenForInList.get(i));
+      }
+      FilterLongColumnInList f = (FilterLongColumnInList)
+          createVectorExpression(cl, childExpr.subList(0, 1), Mode.PROJECTION);
+      f.setInListValues(inVals);
+      expr = f;
+    } else if (colType.equals("string")) {
+      cl = FilterStringColumnInList.class;
+      byte[][] inVals = new byte[childrenForInList.size()][];
+      for (int i = 0; i != inVals.length; i++) {
+        inVals[i] = getStringScalarAsByteArray((ExprNodeConstantDesc) childrenForInList.get(i));
+      }
+      FilterStringColumnInList f =(FilterStringColumnInList)
+          createVectorExpression(cl, childExpr.subList(0, 1), Mode.PROJECTION);
+      f.setInListValues(inVals);
+      expr = f;
+    } else if (isFloatFamily(colType)) {
+      cl = FilterDoubleColumnInList.class;
+      double[] inValsD = new double[childrenForInList.size()];
+      for (int i = 0; i != inValsD.length; i++) {
+        inValsD[i] = getNumericScalarAsDouble(childrenForInList.get(i));
+      }
+      FilterDoubleColumnInList f = (FilterDoubleColumnInList)
+          createVectorExpression(cl, childExpr.subList(0, 1), Mode.PROJECTION);
+      f.setInListValues(inValsD);
+      expr = f;
+    } else {
+      throw new HiveException("Type " + colType + " not supported for IN in vectorized mode");
+    }
+    return expr;
+  }
+
+  private byte[] getStringScalarAsByteArray(ExprNodeConstantDesc exprNodeConstantDesc)
+      throws HiveException {
+    Object o = getScalarValue(exprNodeConstantDesc);
+    if (!(o instanceof byte[])) {
+      throw new HiveException("Expected constant argument of type string");
+    }
+    return (byte[]) o;
   }
 
   /**
@@ -850,8 +934,38 @@ public class VectorizationContext {
     }
   }
 
-  // Get a timestamp as a long in number of nanos, from a string constant.
+  private long getIntFamilyScalarAsLong(ExprNodeConstantDesc constDesc)
+      throws HiveException {
+    Object o = getScalarValue(constDesc);
+    if (o instanceof Integer) {
+      return (Integer) o;
+    } else if (o instanceof Long) {
+      return (Long) o;
+    }
+    throw new HiveException("Unexpected type when converting to long");
+  }
+
+  private double getNumericScalarAsDouble(ExprNodeDesc constDesc)
+      throws HiveException {
+    Object o = getScalarValue((ExprNodeConstantDesc) constDesc);
+    if (o instanceof Double) {
+      return (Double) o;
+    } else if (o instanceof Float) {
+      return (Float) o;
+    } else if (o instanceof Integer) {
+      return (Integer) o;
+    } else if (o instanceof Long) {
+      return (Long) o;
+    }
+    throw new HiveException("Unexpected type when converting to double");
+  }
+
+  // Get a timestamp as a long in number of nanos, from a string constant or cast
   private long getTimestampScalar(ExprNodeDesc expr) throws HiveException {
+    if (expr instanceof ExprNodeGenericFuncDesc &&
+        ((ExprNodeGenericFuncDesc) expr).getGenericUDF() instanceof GenericUDFTimestamp) {
+      return evaluateCastToTimestamp(expr);
+    }
     if (!(expr instanceof ExprNodeConstantDesc)) {
       throw new HiveException("Constant timestamp value expected for expression argument. " +
           "Non-constant argument not supported for vectorization.");
@@ -868,25 +982,29 @@ public class VectorizationContext {
       expr2.setChildren(children);
 
       // initialize and evaluate
-      ExprNodeEvaluator evaluator = ExprNodeEvaluatorFactory.get(expr2);
-      ObjectInspector output = evaluator.initialize(null);
-      Object constant = evaluator.evaluate(null);
-      Object java = ObjectInspectorUtils.copyToStandardJavaObject(constant, output);
-
-      if (!(java instanceof Timestamp)) {
-        throw new HiveException("Udf: failed to convert from string to timestamp");
-      }
-      Timestamp ts = (Timestamp) java;
-      long result = ts.getTime();
-      result *= 1000000;    // shift left 6 digits to make room for nanos below ms precision
-      result += ts.getNanos() % 1000000;     // add in nanos, after removing the ms portion
-      return result;
+      return evaluateCastToTimestamp(expr2);
     }
 
     throw new HiveException("Udf: unhandled constant type for scalar argument. "
         + "Expecting string.");
   }
 
+  private long evaluateCastToTimestamp(ExprNodeDesc expr) throws HiveException {
+    ExprNodeGenericFuncDesc expr2 = (ExprNodeGenericFuncDesc) expr;
+    ExprNodeEvaluator evaluator = ExprNodeEvaluatorFactory.get(expr2);
+    ObjectInspector output = evaluator.initialize(null);
+    Object constant = evaluator.evaluate(null);
+    Object java = ObjectInspectorUtils.copyToStandardJavaObject(constant, output);
+
+    if (!(java instanceof Timestamp)) {
+      throw new HiveException("Udf: failed to convert to timestamp");
+    }
+    Timestamp ts = (Timestamp) java;
+    long result = ts.getTime();
+    result *= 1000000;    // shift left 6 digits to make room for nanos below ms precision
+    result += ts.getNanos() % 1000000;     // add in nanos, after removing the ms portion
+    return result;
+  }
 
   private Constructor<?> getConstructor(Class<?> cl) throws HiveException {
     try {
