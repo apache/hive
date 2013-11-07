@@ -611,6 +611,10 @@ public class Hadoop20Shims implements HadoopShims {
 
   @Override
   public UserGroupInformation createRemoteUser(String userName, List<String> groupNames) {
+    if (groupNames.isEmpty()) {
+      groupNames = new ArrayList<String>();
+      groupNames.add(userName);
+    }
     return new UnixUserGroupInformation(userName, groupNames.toArray(new String[0]));
   }
 

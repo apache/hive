@@ -545,7 +545,6 @@ public abstract class HadoopShimsSecure implements HadoopShims {
     return tokenPath;
   }
 
-
   @Override
   public UserGroupInformation createProxyUser(String userName) throws IOException {
     return UserGroupInformation.createProxyUser(
