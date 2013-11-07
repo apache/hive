@@ -62,6 +62,8 @@ public class TestFunctionRegistry extends TestCase {
   TypeInfo varchar5;
   TypeInfo varchar10;
   TypeInfo maxVarchar;
+  TypeInfo char5;
+  TypeInfo char10;
 
   @Override
   protected void setUp() {
@@ -69,6 +71,8 @@ public class TestFunctionRegistry extends TestCase {
     maxVarchar = TypeInfoFactory.getPrimitiveTypeInfo(maxVarcharTypeName);
     varchar10 = TypeInfoFactory.getPrimitiveTypeInfo("varchar(10)");
     varchar5 = TypeInfoFactory.getPrimitiveTypeInfo("varchar(5)");
+    char10 = TypeInfoFactory.getPrimitiveTypeInfo("char(10)");
+    char5 = TypeInfoFactory.getPrimitiveTypeInfo("char(5)");
   }
 
   private void implicit(TypeInfo a, TypeInfo b, boolean convertible) {
@@ -95,6 +99,13 @@ public class TestFunctionRegistry extends TestCase {
     implicit(TypeInfoFactory.stringTypeInfo, varchar20, true);
     implicit(varchar20, varchar10, true);
 
+    implicit(char10, TypeInfoFactory.stringTypeInfo, true);
+    implicit(TypeInfoFactory.stringTypeInfo, char10, true);
+    implicit(char5, char10, true);
+    implicit(char5, varchar10, true);
+    implicit(varchar5, char10, true);
+
+    implicit(TypeInfoFactory.intTypeInfo, char10, true);
     implicit(TypeInfoFactory.intTypeInfo, varchar10, true);
     implicit(TypeInfoFactory.intTypeInfo, TypeInfoFactory.stringTypeInfo, true);
   }
@@ -137,6 +148,8 @@ public class TestFunctionRegistry extends TestCase {
 
     // String type affinity
     typeAffinity("typeaffinity1", TypeInfoFactory.stringTypeInfo, 1, Text.class);
+    typeAffinity("typeaffinity1", char5, 1, Text.class);
+    typeAffinity("typeaffinity1", varchar5, 1, Text.class);
 
     // Type affinity does not help when multiple methods have the same type affinity.
     typeAffinity("typeaffinity2", TypeInfoFactory.shortTypeInfo, 2, null);
@@ -191,8 +204,9 @@ public class TestFunctionRegistry extends TestCase {
     verify(TestUDF.class, "one", TypeInfoFactory.intTypeInfo, TypeInfoFactory.intTypeInfo,
            IntWritable.class, IntWritable.class, false);
 
-    // Passing varchar arguments should prefer the version of evaluate() with Text args.
+    // Passing char/varchar arguments should prefer the version of evaluate() with Text args.
     verify(TestUDF.class, "same", varchar5, varchar10, Text.class, Text.class, false);
+    verify(TestUDF.class, "same", char5, char10, Text.class, Text.class, false);
 
     verify(TestUDF.class, "mismatch", TypeInfoFactory.voidTypeInfo, TypeInfoFactory.intTypeInfo,
            null, null, true);
@@ -214,6 +228,10 @@ public class TestFunctionRegistry extends TestCase {
 
     common(TypeInfoFactory.stringTypeInfo, varchar10, TypeInfoFactory.stringTypeInfo);
     common(varchar10, TypeInfoFactory.stringTypeInfo, TypeInfoFactory.stringTypeInfo);
+    common(TypeInfoFactory.stringTypeInfo, char10, TypeInfoFactory.stringTypeInfo);
+    common(char10, TypeInfoFactory.stringTypeInfo, TypeInfoFactory.stringTypeInfo);
+    // common class between char/varchar is string?
+    common(char5, varchar10, TypeInfoFactory.stringTypeInfo);
   }
 
   private void comparison(TypeInfo a, TypeInfo b, TypeInfo result) {
@@ -238,6 +256,11 @@ public class TestFunctionRegistry extends TestCase {
     comparison(TypeInfoFactory.stringTypeInfo, varchar10, TypeInfoFactory.stringTypeInfo);
     comparison(varchar10, TypeInfoFactory.stringTypeInfo, TypeInfoFactory.stringTypeInfo);
     comparison(varchar5, varchar10, varchar10);
+    comparison(TypeInfoFactory.stringTypeInfo, char10, TypeInfoFactory.stringTypeInfo);
+    comparison(char10, TypeInfoFactory.stringTypeInfo, TypeInfoFactory.stringTypeInfo);
+    comparison(char5, char10, char10);
+    // common comparison class for char/varchar is string?
+    comparison(char10, varchar5, TypeInfoFactory.stringTypeInfo);
   }
 
   /**
@@ -304,6 +327,14 @@ public class TestFunctionRegistry extends TestCase {
     unionAll(varchar10, varchar5, varchar10);
     unionAll(varchar10, TypeInfoFactory.stringTypeInfo, TypeInfoFactory.stringTypeInfo);
     unionAll(TypeInfoFactory.stringTypeInfo, varchar10, TypeInfoFactory.stringTypeInfo);
+
+    unionAll(char5, char10, char10);
+    unionAll(char10, char5, char10);
+    unionAll(char10, TypeInfoFactory.stringTypeInfo, TypeInfoFactory.stringTypeInfo);
+    unionAll(TypeInfoFactory.stringTypeInfo, char10, TypeInfoFactory.stringTypeInfo);
+
+    // common class for char/varchar is string?
+    comparison(char10, varchar5, TypeInfoFactory.stringTypeInfo);
   }
 
   public void testGetTypeInfoForPrimitiveCategory() {
@@ -313,6 +344,14 @@ public class TestFunctionRegistry extends TestCase {
         (PrimitiveTypeInfo) varchar5, (PrimitiveTypeInfo) varchar10, PrimitiveCategory.VARCHAR));
     assertEquals(varchar10, FunctionRegistry.getTypeInfoForPrimitiveCategory(
         (PrimitiveTypeInfo) varchar10, (PrimitiveTypeInfo) varchar5, PrimitiveCategory.VARCHAR));
+
+    assertEquals(char10, FunctionRegistry.getTypeInfoForPrimitiveCategory(
+        (PrimitiveTypeInfo) char5, (PrimitiveTypeInfo) char10, PrimitiveCategory.CHAR));
+    assertEquals(char10, FunctionRegistry.getTypeInfoForPrimitiveCategory(
+        (PrimitiveTypeInfo) char10, (PrimitiveTypeInfo) char5, PrimitiveCategory.CHAR));
+
+    assertEquals(varchar10, FunctionRegistry.getTypeInfoForPrimitiveCategory(
+        (PrimitiveTypeInfo) varchar5, (PrimitiveTypeInfo) char10, PrimitiveCategory.VARCHAR));
 
     // non-qualified types should simply return the TypeInfo associated with that type
     assertEquals(TypeInfoFactory.stringTypeInfo, FunctionRegistry.getTypeInfoForPrimitiveCategory(

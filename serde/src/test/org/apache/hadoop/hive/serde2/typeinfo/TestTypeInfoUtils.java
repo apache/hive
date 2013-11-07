@@ -40,6 +40,7 @@ public class TestTypeInfoUtils extends TestCase {
         "int",
         "string",
         "varchar(10)",
+        "char(15)",
         "array<int>"
     };
 
@@ -48,7 +49,11 @@ public class TestTypeInfoUtils extends TestCase {
         "varchar(123",
         "varchar(123,",
         "varchar()",
-        "varchar("
+        "varchar(",
+        "char(123",
+        "char(123,)",
+        "char()",
+        "char("
     };
 
     for (String typeString : validTypeStrings) {
@@ -59,7 +64,7 @@ public class TestTypeInfoUtils extends TestCase {
     }
   }
 
-  public void testVarcharNoParams() {
+  public void testQualifiedTypeNoParams() {
     boolean caughtException = false;
     try {
       TypeInfoUtils.getTypeInfoFromTypeString("varchar");
@@ -67,5 +72,12 @@ public class TestTypeInfoUtils extends TestCase {
       caughtException = true;
     }
     assertEquals("varchar TypeInfo with no params should fail", true, caughtException);
+
+    try {
+      TypeInfoUtils.getTypeInfoFromTypeString("char");
+    } catch (Exception err) {
+      caughtException = true;
+    }
+    assertEquals("char TypeInfo with no params should fail", true, caughtException);
   }
 }

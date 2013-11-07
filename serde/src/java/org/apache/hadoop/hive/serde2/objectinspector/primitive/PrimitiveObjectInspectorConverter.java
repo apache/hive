@@ -21,9 +21,11 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 import java.sql.Date;
 import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde2.ByteStream;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyInteger;
 import org.apache.hadoop.hive.serde2.lazy.LazyLong;
@@ -391,6 +393,16 @@ public class PrimitiveObjectInspectorConverter {
           t.set(((StringObjectInspector) inputOI).getPrimitiveJavaObject(input));
         }
         return t;
+      case CHAR:
+        // when converting from char, the value should be stripped of any trailing spaces.
+        if (inputOI.preferWritable()) {
+          // char text value is already stripped of trailing space
+          t.set(((HiveCharObjectInspector) inputOI).getPrimitiveWritableObject(input)
+              .getStrippedValue());
+        } else {
+          t.set(((HiveCharObjectInspector) inputOI).getPrimitiveJavaObject(input).getStrippedValue());
+        }
+        return t;
       case VARCHAR:
         if (inputOI.preferWritable()) {
           t.set(((HiveVarcharObjectInspector) inputOI).getPrimitiveWritableObject(input)
@@ -469,5 +481,30 @@ public class PrimitiveObjectInspectorConverter {
       }
     }
 
+  }
+
+  public static class HiveCharConverter implements Converter {
+    PrimitiveObjectInspector inputOI;
+    SettableHiveCharObjectInspector outputOI;
+    HiveCharWritable hc;
+
+    public HiveCharConverter(PrimitiveObjectInspector inputOI,
+        SettableHiveCharObjectInspector outputOI) {
+      this.inputOI = inputOI;
+      this.outputOI = outputOI;
+      hc = new HiveCharWritable();
+    }
+
+    @Override
+    public Object convert(Object input) {
+      switch (inputOI.getPrimitiveCategory()) {
+      case BOOLEAN:
+        return outputOI.set(hc,
+            ((BooleanObjectInspector) inputOI).get(input) ?
+                new HiveChar("TRUE", -1) : new HiveChar("FALSE", -1));
+      default:
+        return outputOI.set(hc, PrimitiveObjectInspectorUtils.getHiveChar(input, inputOI));
+      }
+    }
   }
 }

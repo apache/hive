@@ -23,7 +23,7 @@ import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.lazy.LazyHiveVarchar;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils;
 
 public class LazyHiveVarcharObjectInspector
     extends AbstractPrimitiveLazyObjectInspector<HiveVarcharWritable>
@@ -55,7 +55,7 @@ public class LazyHiveVarcharObjectInspector
     }
 
     HiveVarchar ret = ((LazyHiveVarchar) o).getWritableObject().getHiveVarchar();
-    if (!VarcharUtils.doesPrimitiveMatchTypeParams(
+    if (!BaseCharUtils.doesPrimitiveMatchTypeParams(
         ret, (VarcharTypeInfo)typeInfo)) {
       HiveVarchar newValue = new HiveVarchar(ret, ((VarcharTypeInfo)typeInfo).getLength());
       return newValue;

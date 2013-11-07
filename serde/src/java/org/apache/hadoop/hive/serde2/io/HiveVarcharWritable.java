@@ -27,9 +27,8 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparable;
 
-public class HiveVarcharWritable implements WritableComparable<HiveVarcharWritable>{
-  protected Text value = new Text();
-  transient protected int characterLength = -1;
+public class HiveVarcharWritable extends HiveBaseCharWritable
+    implements WritableComparable<HiveVarcharWritable>{
 
   public HiveVarcharWritable() {
   }
@@ -52,15 +51,10 @@ public class HiveVarcharWritable implements WritableComparable<HiveVarcharWritab
 
   public void set(HiveVarcharWritable val) {
     value.set(val.value);
-    characterLength = val.characterLength;
   }
 
   public void set(HiveVarcharWritable val, int maxLength) {
-    if (val.characterLength > 0 && val.characterLength >= maxLength) {
-      set(val);
-    } else {
-      set(val.getHiveVarchar(), maxLength);
-    }
+    set(val.getHiveVarchar(), maxLength);
   }
 
   public void set(HiveVarchar val, int len) {
@@ -68,7 +62,6 @@ public class HiveVarcharWritable implements WritableComparable<HiveVarcharWritab
   }
 
   public void set(String val, int maxLength) {
-    characterLength = -1;
     value.set(HiveBaseChar.enforceMaxLength(val, maxLength));
   }
 
@@ -76,52 +69,17 @@ public class HiveVarcharWritable implements WritableComparable<HiveVarcharWritab
     return new HiveVarchar(value.toString(), -1);
   }
 
-  public int getCharacterLength() {
-    if (characterLength < 0) {
-      characterLength = getHiveVarchar().getCharacterLength();
-    }
-    return characterLength;
-  }
-
   public void enforceMaxLength(int maxLength) {
     // Might be possible to truncate the existing Text value, for now just do something simple.
     set(getHiveVarchar(), maxLength);
-  }
-
-  public void readFields(DataInput in) throws IOException {
-    characterLength = -1;
-    value.readFields(in);
-  }
-
-  public void write(DataOutput out) throws IOException {
-    value.write(out);
   }
 
   public int compareTo(HiveVarcharWritable rhs) {
     return ShimLoader.getHadoopShims().compareText(value, rhs.value);
   }
 
-  public boolean equals(Object obj) {
-    if (obj == null || !(obj instanceof HiveVarcharWritable)) {
-      return false;
-    }
-    return value.equals(((HiveVarcharWritable)obj).value);
-  }
-
   @Override
   public String toString() {
     return value.toString();
-  }
-
-  public int hashCode() {
-    return value.hashCode();
-  }
-
-  /**
-   * Access to the internal Text member. Use with care.
-   * @return
-   */
-  public Text getTextValue() {
-    return value;
   }
 }

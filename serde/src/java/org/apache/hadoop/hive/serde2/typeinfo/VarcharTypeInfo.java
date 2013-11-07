@@ -29,7 +29,7 @@ public class VarcharTypeInfo extends BaseCharTypeInfo {
 
   public VarcharTypeInfo(int length) {
     super(serdeConstants.VARCHAR_TYPE_NAME, length);
-    VarcharUtils.validateParameter(length);
+    BaseCharUtils.validateVarcharParameter(length);
   }
 
   @Override
