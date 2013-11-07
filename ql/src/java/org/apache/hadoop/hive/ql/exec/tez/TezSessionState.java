@@ -115,7 +115,7 @@ public class TezSessionState {
     // In case we need to run some MR jobs, we'll run them under tez MR emulation. The session
     // id is used for tez to reuse the current session rather than start a new one.
     conf.set("mapreduce.framework.name", "yarn-tez");
-    conf.set("tez.session.id", session.getApplicationId().toString());
+    conf.set("mapreduce.tez.session.tokill-application-id", session.getApplicationId().toString());
   }
 
   /**
