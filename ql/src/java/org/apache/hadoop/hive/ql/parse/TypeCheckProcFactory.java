@@ -32,6 +32,7 @@ import java.util.Stack;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
@@ -272,8 +273,16 @@ public final class TypeCheckProcFactory {
                 0, expr.getText().length() - 1));
         } else if (expr.getText().endsWith("BD")) {
           // Literal decimal
-          return new ExprNodeConstantDesc(TypeInfoFactory.decimalTypeInfo,
-                expr.getText().substring(0, expr.getText().length() - 2));
+          String strVal = expr.getText().substring(0, expr.getText().length() - 2);
+          HiveDecimal hd = HiveDecimal.create(strVal);
+          int prec = 1;
+          int scale = 0;
+          if (hd != null) {
+            prec = hd.precision();
+            scale = hd.scale();
+          }
+          DecimalTypeInfo typeInfo = TypeInfoFactory.getDecimalTypeInfo(prec, scale);
+          return new ExprNodeConstantDesc(typeInfo, strVal);
         } else {
           v = Double.valueOf(expr.getText());
           v = Long.valueOf(expr.getText());

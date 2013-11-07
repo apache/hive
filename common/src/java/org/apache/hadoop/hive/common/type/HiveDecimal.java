@@ -222,7 +222,13 @@ public class HiveDecimal implements Comparable<HiveDecimal> {
 
     int maxScale = Math.min(MAX_SCALE, Math.min(MAX_PRECISION - intDigits, bd.scale()));
     if (bd.scale() > maxScale ) {
-      bd = allowRounding ? bd.setScale(maxScale, RoundingMode.HALF_UP) : null;
+      if (allowRounding) {
+        bd = bd.setScale(maxScale, RoundingMode.HALF_UP);
+        // Trimming is again necessary, because rounding may introduce new trailing 0's.
+        bd = trim(bd);
+      } else {
+        bd = null;
+      }
     }
 
     return bd;
