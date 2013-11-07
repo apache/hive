@@ -258,6 +258,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       }
     } finally {
       MapredContext.close();
+      Utilities.clearWorkMap();
     }
   }
 
