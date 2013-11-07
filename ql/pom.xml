@@ -364,7 +364,7 @@
                   <include>commons-lang:commons-lang</include>
                   <include>org.json:json</include>
                   <include>org.apache.avro:arvro-mapred</include>
-                  <include>org.apache.hive:hive-shims:*:uberjar</include>
+                  <include>org.apache.hive:hive-shims</include>
                   <include>com.googlecode.javaewah:JavaEWAH</include>
                   <include>javolution:javolution</include>
                   <include>com.google.protobuf:protobuf-java</include>
