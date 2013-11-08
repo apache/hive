@@ -4,7 +4,34 @@ Compression: ZLIB
 Compression size: 10000
 Type: struct<i:int,l:bigint,s:string>
 
-Statistics:
+Stripe Statistics:
+  Stripe 1:
+    Column 0: count: 5000
+    Column 1: count: 5000 min: -2146021688 max: 2147223299 sum: 515792826
+    Column 2: count: 5000 min: -9218592812243954469 max: 9221614132680747961
+    Column 3: count: 5000 min: Darkness, max: worst sum: 19280
+  Stripe 2:
+    Column 0: count: 5000
+    Column 1: count: 5000 min: -2146733128 max: 2147001622 sum: 7673427
+    Column 2: count: 5000 min: -9220818777591257749 max: 9222259462014003839
+    Column 3: count: 5000 min: Darkness, max: worst sum: 19504
+  Stripe 3:
+    Column 0: count: 5000
+    Column 1: count: 5000 min: -2146993718 max: 2147378179 sum: 132660742551
+    Column 2: count: 5000 min: -9218342074710552826 max: 9222303228623055266
+    Column 3: count: 5000 min: Darkness, max: worst sum: 19641
+  Stripe 4:
+    Column 0: count: 5000
+    Column 1: count: 5000 min: -2146658006 max: 2145520931 sum: 8533549236
+    Column 2: count: 5000 min: -9222758097219661129 max: 9221043130193737406
+    Column 3: count: 5000 min: Darkness, max: worst sum: 19470
+  Stripe 5:
+    Column 0: count: 1000
+    Column 1: count: 1000 min: -2146245500 max: 2146378640 sum: 51299706363
+    Column 2: count: 1000 min: -9208193203370316142 max: 9218567213558056476
+    Column 3: count: 1000 min: Darkness, max: worst sum: 3866
+
+File Statistics:
   Column 0: count: 21000
   Column 1: count: 21000 min: -2146993718 max: 2147378179 sum: 193017464403
   Column 2: count: 21000 min: -9222758097219661129 max: 9222303228623055266

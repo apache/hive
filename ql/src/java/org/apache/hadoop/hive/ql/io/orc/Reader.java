@@ -18,12 +18,12 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
+
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 
 /**
  * The interface for reading ORC files.
@@ -108,6 +108,13 @@ public interface Reader {
   ColumnStatistics[] getStatistics();
 
   /**
+   * Get the metadata information like stripe level column statistics etc.
+   * @return the information about the column
+   * @throws IOException
+   */
+  Metadata getMetadata() throws IOException;
+
+  /**
    * Get the list of types contained in the file. The root type is the first
    * type in the list.
    * @return the list of flattened types
@@ -134,6 +141,7 @@ public interface Reader {
    * @throws IOException
    * @deprecated
    */
+  @Deprecated
   RecordReader rows(long offset, long length,
                     boolean[] include) throws IOException;
 
