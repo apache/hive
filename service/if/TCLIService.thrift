@@ -45,6 +45,9 @@ enum TProtocolVersion {
 
   // V3 add varchar type, primitive type qualifiers
   HIVE_CLI_SERVICE_PROTOCOL_V3
+
+  // V4 add support for decimial datatype
+  HIVE_CLI_SERVICE_PROTOCOL_V4
 }
 
 enum TTypeId {
