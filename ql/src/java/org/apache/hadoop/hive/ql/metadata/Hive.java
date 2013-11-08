@@ -1567,8 +1567,8 @@ private void constructOneLBLocationMap(FileStatus fSta,
     if (tpartParams == null) {
       return;
     }
-    List<String> statTypes = StatsSetupConst.getSupportedStats();
-    for (String statType : statTypes) {
+
+    for (String statType : StatsSetupConst.supportedStats) {
       tpartParams.remove(statType);
     }
   }

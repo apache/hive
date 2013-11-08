@@ -166,6 +166,7 @@ Table:              	test_table_out
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	619                 
 	rawDataSize         	6309                
@@ -234,6 +235,7 @@ Table:              	test_table_out_2
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	619                 
 	rawDataSize         	7547                
@@ -421,6 +423,7 @@ Table:              	test_table_out
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	928                 
 	rawDataSize         	9954                
@@ -503,6 +506,7 @@ Table:              	test_table_out_2
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	928                 
 	rawDataSize         	11810               
@@ -711,6 +715,7 @@ Table:              	test_table_out
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	618                 
 	rawDataSize         	6054                
@@ -807,6 +812,7 @@ Table:              	test_table_out_2
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	618                 
 	rawDataSize         	7290                

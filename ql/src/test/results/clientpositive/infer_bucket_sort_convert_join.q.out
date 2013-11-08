@@ -49,6 +49,7 @@ Table:              	test_table
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	1028                
 	rawDataSize         	10968               
@@ -123,6 +124,7 @@ Table:              	test_table
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	1028                
 	rawDataSize         	10968               

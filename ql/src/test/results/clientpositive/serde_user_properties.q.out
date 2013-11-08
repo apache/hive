@@ -55,6 +55,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -73,6 +74,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value
                 columns.types string:string
@@ -150,6 +152,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -168,6 +171,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value
                 columns.types string:string
@@ -249,6 +253,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -267,6 +272,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value
                 columns.types string:string
@@ -289,7 +295,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: explain extended select key from src ('user.defined.key'='some.value')
 PREHOOK: type: QUERY
@@ -344,6 +349,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -363,6 +369,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value
                 columns.types string:string
@@ -445,6 +452,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -464,6 +472,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value
                 columns.types string:string
@@ -487,6 +496,7 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+
 
 PREHOOK: query: explain extended select a.key from src ('user.defined.key'='some.value') a
 PREHOOK: type: QUERY
@@ -541,6 +551,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -560,6 +571,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value
                 columns.types string:string
@@ -642,6 +654,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -661,6 +674,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value
                 columns.types string:string
@@ -684,4 +698,5 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+
 

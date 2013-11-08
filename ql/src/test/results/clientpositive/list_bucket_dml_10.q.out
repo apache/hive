@@ -111,6 +111,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -129,6 +130,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value
                 columns.types string:string
@@ -317,6 +319,7 @@ Table:              	list_bucketing_static_part
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	4                   
 	numRows             	0                   
 	rawDataSize         	0                   

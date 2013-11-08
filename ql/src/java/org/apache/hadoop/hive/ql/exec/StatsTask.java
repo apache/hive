@@ -66,9 +66,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
   private Table table;
   private List<LinkedHashMap<String, String>> dpPartSpecs;
 
-  private static final List<String> collectableStats = StatsSetupConst.getStatsToBeCollected();
-  private static final List<String> supportedStats = StatsSetupConst.getSupportedStats();
-
   public StatsTask() {
     super();
     dpPartSpecs = null;
@@ -84,7 +81,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
     public Statistics() {
       stats = new HashMap<String, LongWritable>();
-      for (String statType : supportedStats) {
+      for (String statType : StatsSetupConst.supportedStats) {
         stats.put(statType, new LongWritable(0L));
       }
     }
@@ -108,7 +105,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
     @Override
     public String toString() {
-      return org.apache.commons.lang.StringUtils.join(supportedStats, ", ");
+      return org.apache.commons.lang.StringUtils.join(StatsSetupConst.supportedStats, ", ");
     }
   }
 
@@ -207,7 +204,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
       boolean tableStatsExist = this.existStats(parameters);
 
-      for (String statType : supportedStats) {
+      for (String statType : StatsSetupConst.supportedStats) {
         if (parameters.containsKey(statType)) {
           tblStats.setStat(statType, Long.parseLong(parameters.get(statType)));
         }
@@ -226,14 +223,14 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         // In case of a non-partitioned table, the key for stats temporary store is "rootDir"
         if (statsAggregator != null) {
           String aggKey = Utilities.getHashedStatsPrefix(work.getAggKey(), maxPrefixLength);
-          updateStats(collectableStats, tblStats, statsAggregator, parameters,
+          updateStats(StatsSetupConst.statsRequireCompute, tblStats, statsAggregator, parameters,
               aggKey, atomic);
           statsAggregator.cleanUp(aggKey);
         }
         // The collectable stats for the aggregator needs to be cleared.
         // For eg. if a file is being loaded, the old number of rows are not valid
         else if (work.isClearAggregatorStats()) {
-          for (String statType : collectableStats) {
+          for (String statType : StatsSetupConst.statsRequireCompute) {
             if (parameters.containsKey(statType)) {
               tblStats.setStat(statType, 0L);
             }
@@ -242,9 +239,10 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
         // write table stats to metastore
         parameters = tTable.getParameters();
-        for (String statType : collectableStats) {
+        for (String statType : StatsSetupConst.statsRequireCompute) {
           parameters.put(statType, Long.toString(tblStats.getStat(statType)));
         }
+        parameters.put(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK, StatsSetupConst.TRUE);
         tTable.setParameters(parameters);
 
         String tableFullName = table.getDbName() + "." + table.getTableName();
@@ -269,7 +267,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
           }
 
           Map<String, Long> currentValues = new HashMap<String, Long>();
-          for (String statType : supportedStats) {
+          for (String statType : StatsSetupConst.supportedStats) {
             Long val = parameters.containsKey(statType) ? Long.parseLong(parameters.get(statType))
                 : 0L;
             currentValues.put(statType, val);
@@ -288,11 +286,11 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
           LOG.info("Stats aggregator : " + partitionID);
 
           if (statsAggregator != null) {
-            updateStats(collectableStats, newPartStats, statsAggregator,
+            updateStats(StatsSetupConst.statsRequireCompute, newPartStats, statsAggregator,
                 parameters, partitionID, atomic);
             statsAggregator.cleanUp(partitionID);
           } else {
-            for (String statType : collectableStats) {
+            for (String statType : StatsSetupConst.statsRequireCompute) {
               // The collectable stats for the aggregator needs to be cleared.
               // For eg. if a file is being loaded, the old number of rows are not valid
               if (work.isClearAggregatorStats()) {
@@ -320,13 +318,14 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
           //
           // update the metastore
           //
-          for (String statType : supportedStats) {
+          for (String statType : StatsSetupConst.supportedStats) {
             long statValue = newPartStats.getStat(statType);
             if (statValue >= 0) {
               parameters.put(statType, Long.toString(newPartStats.getStat(statType)));
             }
           }
 
+          parameters.put(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK, StatsSetupConst.TRUE);
           tPart.setParameters(parameters);
           String tableFullName = table.getDbName() + "." + table.getTableName();
           db.alterPartition(tableFullName, new Partition(table, tPart));
@@ -364,7 +363,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         || parameters.containsKey(StatsSetupConst.NUM_PARTITIONS);
   }
 
-  private void updateStats(List<String> statsList, Statistics stats,
+  private void updateStats(String[] statsList, Statistics stats,
       StatsAggregator statsAggregator, Map<String, String> parameters,
       String aggKey, boolean atomic) throws HiveException {
 
