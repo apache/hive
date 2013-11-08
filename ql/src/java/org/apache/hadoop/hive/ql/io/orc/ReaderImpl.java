@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -362,6 +363,13 @@ final class ReaderImpl implements Reader {
   public RecordReader rows(long offset, long length, boolean[] include,
                            SearchArgument sarg, String[] columnNames
                            ) throws IOException {
+
+    // if included columns is null, then include all columns
+    if (include == null) {
+      include = new boolean[footer.getTypesCount()];
+      Arrays.fill(include, true);
+    }
+
     return new RecordReaderImpl(this.getStripes(), fileSystem,  path, offset,
         length, footer.getTypesList(), codec, bufferSize,
         include, footer.getRowIndexStride(), sarg, columnNames);

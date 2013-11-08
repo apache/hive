@@ -49,6 +49,16 @@ SET hive.optimize.index.filter=false;
 -- hive.optimize.index.filter is set to true. the explain plan should show filter expression
 -- in table scan operator.
 
+SELECT * FROM orc_pred WHERE t<2 limit 1;
+SET hive.optimize.index.filter=true;
+SELECT * FROM orc_pred WHERE t<2 limit 1;
+SET hive.optimize.index.filter=false;
+
+SELECT * FROM orc_pred WHERE t>2 limit 1;
+SET hive.optimize.index.filter=true;
+SELECT * FROM orc_pred WHERE t>2 limit 1;
+SET hive.optimize.index.filter=false;
+
 SELECT SUM(HASH(t)) FROM orc_pred
   WHERE t IS NOT NULL
   AND t < 0
