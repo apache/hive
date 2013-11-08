@@ -53,6 +53,9 @@ final class ReaderImpl implements Reader {
   private final CompressionKind compressionKind;
   private final CompressionCodec codec;
   private final int bufferSize;
+  private OrcProto.Metadata metadata = null;
+  private final int metadataSize;
+  private final int footerOffset;
   private final OrcProto.Footer footer;
   private final ObjectInspector inspector;
   private long deserializedSize = -1;
@@ -290,6 +293,8 @@ final class ReaderImpl implements Reader {
     OrcProto.PostScript ps = OrcProto.PostScript.parseFrom(in);
     checkOrcVersion(LOG, path, ps.getVersionList());
     int footerSize = (int) ps.getFooterLength();
+    metadataSize = (int) ps.getMetadataLength();
+    footerOffset = (int) (size - ( psLen + 1 + footerSize));
     bufferSize = (int) ps.getCompressionBlockSize();
     switch (ps.getCompression()) {
       case NONE:
@@ -323,10 +328,22 @@ final class ReaderImpl implements Reader {
       buffer.position(psOffset - footerSize);
       buffer.limit(psOffset);
     }
+    // read footer
     InputStream instream = InStream.create("footer", new ByteBuffer[]{buffer},
         new long[]{0L}, footerSize, codec, bufferSize);
     footer = OrcProto.Footer.parseFrom(instream);
     inspector = OrcStruct.createObjectInspector(0, footer.getTypesList());
+
+    // if metadata is already contained in first 16K file read then parse it
+    // else do it lazily
+    if(extra == 0) {
+      buffer.position(psOffset - (footerSize + metadataSize));
+      buffer.limit(psOffset - footerSize);
+      instream = InStream.create("metadata", new ByteBuffer[]{buffer},
+          new long[]{0L}, metadataSize, codec, bufferSize);
+      metadata = OrcProto.Metadata.parseFrom(instream);
+    }
+
     file.close();
   }
 
@@ -468,6 +485,25 @@ final class ReaderImpl implements Reader {
       indices.addAll(type.getSubtypesList());
     }
     return Collections.max(indices);
+  }
+
+  @Override
+  public Metadata getMetadata() throws IOException {
+    // if metadata is not parsed already then read and parse it
+    if (metadata == null && metadataSize > 0) {
+      FSDataInputStream file = this.fileSystem.open(path);
+      file.seek(footerOffset - metadataSize);
+      ByteBuffer buffer = ByteBuffer.allocate(metadataSize);
+      file.readFully(buffer.array(), buffer.arrayOffset() + buffer.position(),
+          buffer.remaining());
+      buffer.position(0);
+      buffer.limit(metadataSize);
+      InputStream instream = InStream.create("metadata", new ByteBuffer[] {buffer},
+          new long[] {0L}, metadataSize, codec, bufferSize);
+      metadata = OrcProto.Metadata.parseFrom(instream);
+      file.close();
+    }
+    return new Metadata(metadata);
   }
 
 }
