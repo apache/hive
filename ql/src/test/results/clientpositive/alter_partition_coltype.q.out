@@ -138,6 +138,7 @@ STAGE PLANS:
               dt 100x
               ts 6:30pm
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -333,6 +334,7 @@ STAGE PLANS:
               dt 100x
               ts 6:30pm
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -486,6 +488,7 @@ STAGE PLANS:
               dt 10
               ts 3.0
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -527,6 +530,7 @@ STAGE PLANS:
               dt 100x
               ts 3.0
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -568,6 +572,7 @@ STAGE PLANS:
               dt 100x
               ts 6:30pm
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -808,6 +813,7 @@ STAGE PLANS:
               dt 10
               ts 3.0
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -849,6 +855,7 @@ STAGE PLANS:
               dt 100x
               ts 3.0
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -890,6 +897,7 @@ STAGE PLANS:
               dt 100x
               ts 6:30pm
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -1026,6 +1034,7 @@ STAGE PLANS:
               dt 10
               ts 3.0
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -1067,6 +1076,7 @@ STAGE PLANS:
               dt 100x
               ts 3.0
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -1108,6 +1118,7 @@ STAGE PLANS:
               dt 100x
               ts 6:30pm
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string

@@ -251,6 +251,7 @@ STAGE PLANS:
             partition values:
               ds 2011-10-13
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,keymap
               columns.types string:string
@@ -291,6 +292,7 @@ STAGE PLANS:
             partition values:
               ds 2011-10-13
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns keymap,value
               columns.types string:string
@@ -476,6 +478,7 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
+
 
 PREHOOK: query: select * from t1 where ds = '2011-10-13'
 PREHOOK: type: QUERY
@@ -768,6 +771,7 @@ STAGE PLANS:
             partition values:
               ds 2011-10-15
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string

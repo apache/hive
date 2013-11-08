@@ -21,8 +21,11 @@ numFiles	0
 c	3
 #### A masked pattern was here ####
 a	1
+COLUMN_STATS_ACCURATE	false
 #### A masked pattern was here ####
+numRows	-1
 totalSize	0
+rawDataSize	-1
 FAILED: SemanticException [Error 10215]: Please use the following syntax if not sure whether the property existed or not:
 ALTER TABLE tableName UNSET TBLPROPERTIES IF EXISTS (key1, key2, ...)
  The following property z does not exist in testtable

@@ -128,6 +128,7 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count 16
               bucket_field_name key
               columns key,value

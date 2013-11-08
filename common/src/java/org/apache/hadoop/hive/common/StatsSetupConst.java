@@ -17,8 +17,8 @@
  */
 package org.apache.hadoop.hive.common;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+
 
 
 /**
@@ -66,33 +66,34 @@ public class StatsSetupConst {
   /**
    * @return List of all supported statistics
    */
-  public static List<String> getSupportedStats() {
-    List<String> supportedStats = new ArrayList<String>();
-    supportedStats.add(NUM_FILES);
-    supportedStats.add(ROW_COUNT);
-    supportedStats.add(TOTAL_SIZE);
-    supportedStats.add(RAW_DATA_SIZE);
-    return supportedStats;
-  }
+  public static final String[] supportedStats = new String[] 
+	{NUM_FILES,ROW_COUNT,TOTAL_SIZE,RAW_DATA_SIZE};
 
   /**
    * @return List of all statistics that need to be collected during query execution. These are
    * statistics that inherently require a scan of the data.
    */
-  public static List<String> getStatsToBeCollected() {
-    List<String> collectableStats = new ArrayList<String>();
-    collectableStats.add(ROW_COUNT);
-    collectableStats.add(RAW_DATA_SIZE);
-    return collectableStats;
-  }
+  public static final String[] statsRequireCompute = new String[] {ROW_COUNT,RAW_DATA_SIZE};
 
   /**
    * @return List of statistics that can be collected quickly without requiring a scan of the data.
    */
-  public static List<String> getStatsFastCollection() {
-    List<String> fastStats = new ArrayList<String>();
-    fastStats.add(NUM_FILES);
-    fastStats.add(TOTAL_SIZE);
-    return fastStats;
+  public static final String[] fastStats = new String[] {NUM_FILES,TOTAL_SIZE};
+  
+  // This string constant is used by stats task to indicate to AlterHandler that
+  // alterPartition/alterTable is happening via statsTask.
+  public static final String STATS_GENERATED_VIA_STATS_TASK = "STATS_GENERATED_VIA_STATS_TASK";
+
+  // This string constant will be persisted in metastore to indicate whether corresponding
+  // table or partition's statistics are accurate or not.
+  public static final String COLUMN_STATS_ACCURATE = "COLUMN_STATS_ACCURATE";
+  
+  public static final String TRUE = "true";
+  
+  public static final String FALSE = "false";
+  
+  public static boolean areStatsUptoDate(Map<String,String> params) {
+	String statsAcc = params.get(COLUMN_STATS_ACCURATE);
+	return statsAcc == null ? false : statsAcc.equals(TRUE);
   }
 }

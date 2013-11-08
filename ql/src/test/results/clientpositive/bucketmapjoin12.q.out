@@ -110,6 +110,7 @@ STAGE PLANS:
                   partition values:
                     part 1
                   properties:
+                    COLUMN_STATS_ACCURATE true
                     bucket_count 2
                     bucket_field_name key
                     columns key,value
@@ -210,6 +211,7 @@ STAGE PLANS:
             partition values:
               part 1
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count 2
               bucket_field_name key
               columns key,value
@@ -340,6 +342,7 @@ STAGE PLANS:
                   partition values:
                     part 1
                   properties:
+                    COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns key,value
                     columns.types int:string
@@ -432,6 +435,7 @@ STAGE PLANS:
             partition values:
               part 1
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count 2
               bucket_field_name key
               columns key,value
@@ -505,7 +509,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_3 b

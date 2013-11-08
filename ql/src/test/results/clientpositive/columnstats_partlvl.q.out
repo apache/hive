@@ -138,6 +138,7 @@ STAGE PLANS:
             partition values:
               employeesalary 2000.0
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns employeeid,employeename
               columns.types int:string
@@ -343,6 +344,7 @@ STAGE PLANS:
             partition values:
               employeesalary 4000.0
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns employeeid,employeename
               columns.types int:string

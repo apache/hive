@@ -84,6 +84,7 @@ Table:              	srcbucket_mapjoin_part
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -128,6 +129,7 @@ Table:              	srcbucket_mapjoin_part
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -172,6 +174,7 @@ Table:              	srcbucket_mapjoin_part
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	3                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -216,6 +219,7 @@ Table:              	srcbucket_mapjoin_part
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	4                   
 	numRows             	0                   
 	rawDataSize         	0                   
@@ -305,6 +309,7 @@ STAGE PLANS:
                   partition values:
                     ds 2008-04-08
                   properties:
+                    COLUMN_STATS_ACCURATE true
                     bucket_count 4
                     bucket_field_name key
                     columns key,value
@@ -425,6 +430,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count 2
               bucket_field_name key
               columns key,value
@@ -444,6 +450,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count 2
                 bucket_field_name key
                 columns key,value
@@ -889,6 +896,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       properties:
+                        COLUMN_STATS_ACCURATE true
                         bucket_count -1
                         columns key,value1,value2
                         columns.types string:string:string
@@ -920,6 +928,7 @@ STAGE PLANS:
             partition values:
               ds 2008-04-08
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count 4
               bucket_field_name key
               columns key,value
@@ -975,6 +984,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value1,value2
                 columns.types string:string:string
@@ -1011,6 +1021,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
+                    COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns key,value1,value2
                     columns.types string:string:string
@@ -1038,6 +1049,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value1,value2
               columns.types string:string:string
@@ -1056,6 +1068,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value1,value2
                 columns.types string:string:string
@@ -1090,6 +1103,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
+                    COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns key,value1,value2
                     columns.types string:string:string
@@ -1117,6 +1131,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value1,value2
               columns.types string:string:string
@@ -1135,6 +1150,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value1,value2
                 columns.types string:string:string
