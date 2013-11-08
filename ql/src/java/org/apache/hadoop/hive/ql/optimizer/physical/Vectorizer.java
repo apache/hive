@@ -355,13 +355,15 @@ public class Vectorizer implements PhysicalPlanResolver {
             Operator<? extends OperatorDesc> op = mWork.getAliasToWork().get(alias);
             if (op == tsOp) {
               fileKey = onefile;
+              if (vContext == null) {
+                vContext = getVectorizationContext(tsOp, physicalContext);
+              }
+              vContext.setFileKey(fileKey);
+              vectorizationContexts.put(fileKey, vContext);
               break;
             }
           }
         }
-        vContext = getVectorizationContext(tsOp, physicalContext);
-        vContext.setFileKey(fileKey);
-        vectorizationContexts.put(fileKey, vContext);
         vContextsByTSOp.put(tsOp, vContext);
       }
 
