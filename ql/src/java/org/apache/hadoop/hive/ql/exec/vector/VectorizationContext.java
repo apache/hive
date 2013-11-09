@@ -35,6 +35,7 @@ import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluatorFactory;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDF;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.InputExpressionType;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Mode;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.*;
@@ -557,7 +558,7 @@ public class VectorizationContext {
       List<ExprNodeDesc> childExpr, Mode mode) throws HiveException {
     //First handle special cases
     if (udf instanceof GenericUDFBetween) {
-      return getBetweenFilterExpression(childExpr);
+      return getBetweenFilterExpression(childExpr, mode);
     } else if (udf instanceof GenericUDFIn) {
       return getInFilterExpression(childExpr);
     } else if (udf instanceof GenericUDFBridge) {
@@ -757,8 +758,15 @@ public class VectorizationContext {
    * needs to be done differently than the standard way where all arguments are
    * passed to the VectorExpression constructor.
    */
-  private VectorExpression getBetweenFilterExpression(List<ExprNodeDesc> childExpr)
+  private VectorExpression getBetweenFilterExpression(List<ExprNodeDesc> childExpr, Mode mode)
       throws HiveException {
+
+    if (mode == Mode.PROJECTION) {
+
+      // Projection mode is not yet supported for [NOT] BETWEEN. Return null so Vectorizer
+      // knows to revert to row-at-a-time execution.
+      return null;
+    }
 
     boolean notKeywordPresent = (Boolean) ((ExprNodeConstantDesc) childExpr.get(0)).getValue();
     ExprNodeDesc colExpr = childExpr.get(1);
@@ -1000,10 +1008,7 @@ public class VectorizationContext {
       throw new HiveException("Udf: failed to convert to timestamp");
     }
     Timestamp ts = (Timestamp) java;
-    long result = ts.getTime();
-    result *= 1000000;    // shift left 6 digits to make room for nanos below ms precision
-    result += ts.getNanos() % 1000000;     // add in nanos, after removing the ms portion
-    return result;
+    return TimestampUtils.getTimeNanoSec(ts);
   }
 
   private Constructor<?> getConstructor(Class<?> cl) throws HiveException {

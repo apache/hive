@@ -22,9 +22,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.sql.Timestamp;
+
 import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.TimestampUtils;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColumnBetween;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColumnNotBetween;
@@ -542,6 +545,59 @@ public class TestVectorFilterExpressions {
     assertEquals(1, vrb.size);
     assertTrue(vrb.selectedInUse);
     assertEquals(0, vrb.selected[0]);
+  }
+
+  @Test
+  public void testFilterTimestampBetween() {
+    int seed = 17;
+    VectorizedRowBatch vrb = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        5, 2, seed);
+    LongColumnVector lcv0 = (LongColumnVector) vrb.cols[0];
+    long startTS = 0; // the epoch
+    long endTS = TimestampUtils.getTimeNanoSec(
+        Timestamp.valueOf("2013-11-05 00:00:00.000000000"));
+
+    Timestamp ts0 = Timestamp.valueOf("1963-11-06 00:00:00.000");
+    lcv0.vector[0] = TimestampUtils.getTimeNanoSec(ts0);
+    Timestamp ts1 = Timestamp.valueOf("1983-11-06 00:00:00.000");
+    lcv0.vector[1] = TimestampUtils.getTimeNanoSec(ts1);
+    Timestamp ts2 = Timestamp.valueOf("2099-11-06 00:00:00.000");
+    lcv0.vector[2] = TimestampUtils.getTimeNanoSec(ts2);
+    vrb.size = 3;
+
+    VectorExpression expr1 = new FilterLongColumnBetween(0, startTS, endTS);
+    expr1.evaluate(vrb);
+    assertEquals(1, vrb.size);
+    assertEquals(true, vrb.selectedInUse);
+    assertEquals(1, vrb.selected[0]);
+  }
+
+  @Test
+  public void testFilterTimestampNotBetween() {
+    int seed = 17;
+    VectorizedRowBatch vrb = VectorizedRowGroupGenUtil.getVectorizedRowBatch(
+        5, 2, seed);
+    LongColumnVector lcv0 = (LongColumnVector) vrb.cols[0];
+    long startTS = TimestampUtils.getTimeNanoSec(
+        Timestamp.valueOf("2013-11-05 00:00:00.000000000"));
+    long endTS = TimestampUtils.getTimeNanoSec(
+        Timestamp.valueOf("2013-11-05 00:00:00.000000010"));
+
+    Timestamp ts0 = Timestamp.valueOf("2013-11-04 00:00:00.000000000");
+    lcv0.vector[0] = TimestampUtils.getTimeNanoSec(ts0);
+    Timestamp ts1 = Timestamp.valueOf("2013-11-05 00:00:00.000000002");
+    lcv0.vector[1] = TimestampUtils.getTimeNanoSec(ts1);
+    Timestamp ts2 = Timestamp.valueOf("2099-11-06 00:00:00.000");
+    lcv0.vector[2] = TimestampUtils.getTimeNanoSec(ts2);
+    vrb.size = 3;
+
+    VectorExpression expr1 = new FilterLongColumnNotBetween(0, startTS, endTS);
+    expr1.evaluate(vrb);
+    assertEquals(2, vrb.size);
+    assertEquals(true, vrb.selectedInUse);
+    assertEquals(0, vrb.selected[0]);
+    assertEquals(2, vrb.selected[1]);
+
   }
 
   /**
