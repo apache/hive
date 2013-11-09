@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDescUtils;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
@@ -46,6 +47,7 @@ import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.Text;
+// import org.apache.hadoop.util.StringUtils;
 
 /**
  * Reduce Sink Operator sends output to the reduce stage.
@@ -153,8 +155,8 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
   transient InspectableObject tempInspectableObject = new InspectableObject();
   protected transient HiveKey keyWritable = new HiveKey();
 
-  transient StructObjectInspector keyObjectInspector;
-  transient StructObjectInspector valueObjectInspector;
+  protected transient ObjectInspector keyObjectInspector;
+  protected transient ObjectInspector valueObjectInspector;
   transient ObjectInspector[] partitionObjectInspectors;
 
   protected transient Object[] cachedValues;
@@ -173,6 +175,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
    * in this case, child GBY evaluates distict values with expression like KEY.col2:0.dist1
    * see {@link ExprNodeColumnEvaluator}
    */
+  // TODO: we only ever use one row of these at a time. Why do we need to cache multiple?
   protected transient Object[][] cachedKeys;
   boolean firstRow;
   protected transient Random random;
@@ -237,51 +240,41 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
             .getOutputValueColumnNames(), rowInspector);
         partitionObjectInspectors = initEvaluators(partitionEval, rowInspector);
         int numKeys = numDistinctExprs > 0 ? numDistinctExprs : 1;
-        int keyLen = numDistinctExprs > 0 ? numDistributionKeys + 1 :
-          numDistributionKeys;
+        int keyLen = numDistinctExprs > 0 ? numDistributionKeys + 1 : numDistributionKeys;
         cachedKeys = new Object[numKeys][keyLen];
         cachedValues = new Object[valueEval.length];
       }
 
-      // Evaluate the keys
-      for (int i = 0; i < numDistributionKeys; i++) {
-        cachedKeys[0][i] = keyEval[i].evaluate(row);
-      }
+      // Determine distKeyLength (w/o distincts), and then add the first if present.
+      populateCachedDistributionKeys(row, 0);
+      HiveKey firstKey = toHiveKey(cachedKeys[0], tag, null);
+      int distKeyLength = firstKey.getDistKeyLength();
       if (numDistinctExprs > 0) {
-        // with distinct key(s)
-        for (int i = 0; i < numDistinctExprs; i++) {
-          if (i > 0) {
-            System.arraycopy(cachedKeys[0], 0, cachedKeys[i], 0, numDistributionKeys);
-          }
-          StandardUnion union = (StandardUnion) cachedKeys[i][numDistributionKeys];
-          if (union == null) {
-            cachedKeys[i][numDistributionKeys] =
-              union = new StandardUnion((byte)i, new Object[distinctColIndices.get(i).size()]);
-          }
-          Object[] distinctParameters = (Object[]) union.getObject();
-          for (int j = 0; j < distinctParameters.length; j++) {
-            distinctParameters[j] =
-              keyEval[distinctColIndices.get(i).get(j)].evaluate(row);
-          }
-          union.setTag((byte) i);
-        }
+        populateCachedDistinctKeys(row, 0);
+        firstKey = toHiveKey(cachedKeys[0], tag, distKeyLength);
       }
 
-      for (int i = 0; i < cachedKeys.length; i++) {
-        // Serialize the keys and append the tag
-        Object keyObj = keySerializer.serialize(cachedKeys[i], keyObjectInspector);
-        setKeyWritable(keyIsText ? (Text)keyObj : (BytesWritable)keyObj, tag);
-        int topNIndex = reducerHash.tryStoreKey(keyWritable);
-        if (TopNHash.EXCLUDED == topNIndex) continue;
-        int keyHashCode = computeHashCode(row);
-        BytesWritable valueWritable = getValue(row);
-        if (TopNHash.FORWARD == topNIndex) {
-          keyWritable.setHashCode(keyHashCode);
-          collect(keyWritable, valueWritable);
-          continue;
-        }
-        assert topNIndex >= 0;
-        reducerHash.storeValue(topNIndex, valueWritable, keyHashCode, false);
+      // Try to store the first key. If it's not excluded, we will proceed.
+      int firstIndex = reducerHash.tryStoreKey(firstKey);
+      if (firstIndex == TopNHash.EXCLUDE) return; // Nothing to do.
+      // Compute value and hashcode - we'd either store or forward them.
+      BytesWritable value = makeValueWritable(row);
+      int hashCode = computeHashCode(row);
+      if (firstIndex == TopNHash.FORWARD) {
+        firstKey.setHashCode(hashCode);
+        collect(firstKey, value);
+      } else {
+        assert firstIndex >= 0;
+        reducerHash.storeValue(firstIndex, value, hashCode, false);
+      }
+
+      // All other distinct keys will just be forwarded. This could be optimized...
+      for (int i = 1; i < numDistinctExprs; i++) {
+        System.arraycopy(cachedKeys[0], 0, cachedKeys[i], 0, numDistributionKeys);
+        populateCachedDistinctKeys(row, i);
+        HiveKey hiveKey = toHiveKey(cachedKeys[i], tag, distKeyLength);
+        hiveKey.setHashCode(hashCode);
+        collect(hiveKey, value);
       }
     } catch (HiveException e) {
       throw e;
@@ -290,14 +283,38 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     }
   }
 
+  private void populateCachedDistributionKeys(Object row, int index) throws HiveException {
+    for (int i = 0; i < numDistributionKeys; i++) {
+      cachedKeys[index][i] = keyEval[i].evaluate(row);
+    }
+    if (cachedKeys[0].length > numDistributionKeys) {
+      cachedKeys[index][numDistributionKeys] = null;
+    }
+  }
+
+  /**
+   * Populate distinct keys part of cachedKeys for a particular row.
+   * @param row the row
+   * @param index the cachedKeys index to write to
+   */
+  private void populateCachedDistinctKeys(Object row, int index) throws HiveException {
+    StandardUnion union;
+    cachedKeys[index][numDistributionKeys] = union = new StandardUnion(
+          (byte)index, new Object[distinctColIndices.get(index).size()]);
+    Object[] distinctParameters = (Object[]) union.getObject();
+    for (int distinctParamI = 0; distinctParamI < distinctParameters.length; distinctParamI++) {
+      distinctParameters[distinctParamI] =
+          keyEval[distinctColIndices.get(index).get(distinctParamI)].evaluate(row);
+    }
+    union.setTag((byte) index);
+  }
+
   private int computeHashCode(Object row) throws HiveException {
     // Evaluate the HashCode
     int keyHashCode = 0;
     if (partitionEval.length == 0) {
-      // If no partition cols, just distribute the data uniformly to provide
-      // better
-      // load balance. If the requirement is to have a single reducer, we
-      // should set
+      // If no partition cols, just distribute the data uniformly to provide better
+      // load balance. If the requirement is to have a single reducer, we should set
       // the number of reducers to 1.
       // Use a constant seed to make the code deterministic.
       if (random == null) {
@@ -314,25 +331,24 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     return keyHashCode;
   }
 
-  protected void setKeyWritable(BinaryComparable key, int tag) {
+  // Serialize the keys and append the tag
+  protected HiveKey toHiveKey(Object obj, int tag, Integer distLength) throws SerDeException {
+    BinaryComparable key = (BinaryComparable)keySerializer.serialize(obj, keyObjectInspector);
+    int keyLength = key.getLength();
     if (tag == -1) {
-      keyWritable.set(key.getBytes(), 0, key.getLength());
+      keyWritable.set(key.getBytes(), 0, keyLength);
     } else {
-      int keyLength = key.getLength();
       keyWritable.setSize(keyLength + 1);
       System.arraycopy(key.getBytes(), 0, keyWritable.get(), 0, keyLength);
       keyWritable.get()[keyLength] = tagByte[0];
     }
+    keyWritable.setDistKeyLength((distLength == null) ? keyLength : distLength);
+    return keyWritable;
   }
 
   public void collect(byte[] key, byte[] value, int hash) throws IOException {
     HiveKey keyWritable = new HiveKey(key, hash);
     BytesWritable valueWritable = new BytesWritable(value);
-    collect(keyWritable, valueWritable);
-  }
-
-  protected void collect(byte[] key, Writable valueWritable, int hash) throws IOException {
-    HiveKey keyWritable = new HiveKey(key, hash);
     collect(keyWritable, valueWritable);
   }
 
@@ -351,7 +367,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     }
   }
 
-  private BytesWritable getValue(Object row) throws Exception {
+  private BytesWritable makeValueWritable(Object row) throws Exception {
     // Evaluate the value
     for (int i = 0; i < valueEval.length; i++) {
       cachedValues[i] = valueEval[i].evaluate(row);

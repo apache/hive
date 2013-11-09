@@ -30,6 +30,7 @@ import org.apache.hadoop.hive.ql.exec.TopNHash;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriter;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpressionWriterFactory;
+import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceSinkDesc;
@@ -39,9 +40,11 @@ import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.Serializer;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector.StandardUnion;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+// import org.apache.hadoop.util.StringUtils;
 
 public class VectorReduceSinkOperator extends ReduceSinkOperator {
 
@@ -87,12 +90,6 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
    */
   private transient VectorExpressionWriter[] partitionWriters;
 
-  private transient ObjectInspector keyObjectInspector;
-  private transient ObjectInspector valueObjectInspector;
-  private transient int [] keyHashCode = new int [VectorizedRowBatch.DEFAULT_SIZE];
-
-  private transient int[] hashResult; // the pre-created array for reducerHash results
-
   public VectorReduceSinkOperator(VectorizationContext vContext, OperatorDesc conf)
       throws HiveException {
     this();
@@ -110,7 +107,6 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
     try {
-
       numDistributionKeys = conf.getNumDistributionKeys();
       distinctColIndices = conf.getDistinctColumnIndices();
       numDistinctExprs = distinctColIndices.size();
@@ -183,7 +179,7 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
         numDistributionKeys;
       cachedKeys = new Object[numKeys][keyLen];
       cachedValues = new Object[valueEval.length];
-      
+
       int tag = conf.getTag();
       tagByte[0] = (byte) tag;
       LOG.info("Using tag = " + tag);
@@ -209,81 +205,84 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
         partitionEval.length));
 
     try {
-
-      for (int i = 0; i < partitionEval.length; i++) {
-        partitionEval[i].evaluate(vrg);
-      }
-
-      // run the vector evaluations
-      for (int i = 0; i < valueEval.length; i++) {
-         valueEval[i].evaluate(vrg);
-      }
       // Evaluate the keys
       for (int i = 0; i < keyEval.length; i++) {
         keyEval[i].evaluate(vrg);
       }
 
-      Object[] distributionKeys = new Object[numDistributionKeys];
-
       // Determine which rows we need to emit based on topN optimization
-      int startResult = reducerHash.startVectorizedBatch();
-      if (startResult == TopNHash.EXCLUDED) {
+      int startResult = reducerHash.startVectorizedBatch(vrg.size);
+      if (startResult == TopNHash.EXCLUDE) {
         return; // TopN wants us to exclude all rows.
       }
-      boolean useTopN = startResult != TopNHash.FORWARD;
-      if (useTopN && (hashResult == null || hashResult.length < vrg.size)) {
-        hashResult = new int[Math.max(vrg.size, VectorizedRowBatch.DEFAULT_SIZE)];
+      // TODO: can we do this later/only for the keys that are needed? E.g. update vrg.selected.
+      for (int i = 0; i < partitionEval.length; i++) {
+        partitionEval[i].evaluate(vrg);
+      }
+      // run the vector evaluations
+      for (int i = 0; i < valueEval.length; i++) {
+         valueEval[i].evaluate(vrg);
       }
 
-      for (int j = 0 ; j < vrg.size; ++j) {
-        int rowIndex = j;
+      boolean useTopN = startResult != TopNHash.FORWARD;
+      // Go thru the batch once. If we are not using TopN, we will forward all things and be done.
+      // If we are using topN, we will make the first key for each row and store/forward it.
+      // Values, hashes and additional distinct rows will be handled in the 2nd pass in that case.
+      for (int batchIndex = 0 ; batchIndex < vrg.size; ++batchIndex) {
+        int rowIndex = batchIndex;
         if (vrg.selectedInUse) {
-          rowIndex = vrg.selected[j];
+          rowIndex = vrg.selected[batchIndex];
         }
-        // First, evaluate the key - the way things stand we'd need it regardless.
-        for (int i = 0; i < keyEval.length; i++) {
-          int batchColumn = keyEval[i].getOutputColumn();
-          ColumnVector vectorColumn = vrg.cols[batchColumn];
-          distributionKeys[i] = keyWriters[i].writeValue(vectorColumn, rowIndex);
+        // First, make distrib key components for this row and determine distKeyLength.
+        populatedCachedDistributionKeys(vrg, rowIndex, 0);
+        HiveKey firstKey = toHiveKey(cachedKeys[0], tag, null);
+        int distKeyLength = firstKey.getDistKeyLength();
+        // Add first distinct expression, if any.
+        if (numDistinctExprs > 0) {
+          populateCachedDistinctKeys(vrg, rowIndex, 0);
+          firstKey = toHiveKey(cachedKeys[0], tag, distKeyLength);
         }
-        // no distinct key
-        System.arraycopy(distributionKeys, 0, cachedKeys[0], 0, numDistributionKeys);
-        // TopN is not supported for multi-distinct currently. If we have more cachedKeys
-        // than one for every input key horrible things will happen (OOB error on array likely).
-        assert !useTopN || cachedKeys.length <= 1;
-        for (int i = 0; i < cachedKeys.length; i++) {
-          // Serialize the keys and append the tag.
-          Object keyObj = keySerializer.serialize(cachedKeys[i], keyObjectInspector);
-          setKeyWritable(keyIsText ? (Text)keyObj : (BytesWritable)keyObj, tag);
-          if (useTopN) {
-            reducerHash.tryStoreVectorizedKey(keyWritable, j, hashResult);
-          } else {
-            // No TopN, just forward the key
-            keyWritable.setHashCode(computeHashCode(vrg, rowIndex));
-            collect(keyWritable, makeValueWritable(vrg, rowIndex));
-           }
+
+        if (useTopN) {
+          reducerHash.tryStoreVectorizedKey(firstKey, batchIndex);
+        } else {
+        // No TopN, just forward the first key and all others.
+          int hashCode = computeHashCode(vrg, rowIndex);
+          firstKey.setHashCode(hashCode);
+          BytesWritable value = makeValueWritable(vrg, rowIndex);
+          collect(firstKey, value);
+          forwardExtraDistinctRows(vrg, rowIndex, hashCode, value, distKeyLength, tag, 0);
         }
       }
 
       if (!useTopN) return; // All done.
 
       // If we use topN, we have called tryStore on every key now. We can process the results.
-      for (int j = 0 ; j < vrg.size; ++j) {
-        int index = hashResult[j];
-        if (index == TopNHash.EXCLUDED) continue;
-        int rowIndex = j;
+      for (int batchIndex = 0 ; batchIndex < vrg.size; ++batchIndex) {
+        int result = reducerHash.getVectorizedBatchResult(batchIndex);
+        if (result == TopNHash.EXCLUDE) continue;
+        int rowIndex = batchIndex;
         if (vrg.selectedInUse) {
-          rowIndex = vrg.selected[j];
+          rowIndex = vrg.selected[batchIndex];
         }
-        // Compute everything now - we'd either store it, or forward it.
+        // Compute value and hashcode - we'd either store or forward them.
         int hashCode = computeHashCode(vrg, rowIndex);
         BytesWritable value = makeValueWritable(vrg, rowIndex);
-        if (index < 0) {
-          // Kinda hacky; see getVectorizedKeyToForward javadoc.
-          byte[] key = reducerHash.getVectorizedKeyToForward(index);
-          collect(key, value, hashCode);
+        int distKeyLength = -1;
+        if (result == TopNHash.FORWARD) {
+          HiveKey firstKey = reducerHash.getVectorizedKeyToForward(batchIndex);
+          firstKey.setHashCode(hashCode);
+          distKeyLength = firstKey.getDistKeyLength();
+          collect(firstKey, value);
         } else {
-          reducerHash.storeValue(index, value, hashCode, true);
+          reducerHash.storeValue(result, value, hashCode, true);
+          distKeyLength = reducerHash.getVectorizedKeyDistLength(batchIndex);
+        }
+        // Now forward other the rows if there's multi-distinct (but see TODO in forward...).
+        // Unfortunately, that means we will have to rebuild the cachedKeys. Start at 1.
+        if (numDistinctExprs > 1) {
+          populatedCachedDistributionKeys(vrg, rowIndex, 1);
+          forwardExtraDistinctRows(vrg, rowIndex, hashCode, value, distKeyLength, tag, 1);
         }
       }
     } catch (SerDeException e) {
@@ -291,6 +290,74 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
     } catch (IOException e) {
       throw new HiveException(e);
     }
+  }
+
+  /**
+   * This function creates and forwards all the additional KVs for the multi-distinct case,
+   * after the first (0th) KV pertaining to the row has already been stored or forwarded.
+   * @param vrg the batch
+   * @param rowIndex the row index in the batch
+   * @param hashCode the partitioning hash code to use; same as for the first KV
+   * @param value the value to use; same as for the first KV
+   * @param distKeyLength the distribution key length of the first key; TODO probably extraneous
+   * @param tag the tag
+   * @param baseIndex the index in cachedKeys where the pre-evaluated distribution keys are stored
+   */
+  private void forwardExtraDistinctRows(VectorizedRowBatch vrg, int rowIndex,int hashCode,
+      BytesWritable value, int distKeyLength, int tag, int baseIndex)
+          throws HiveException, SerDeException, IOException {
+    // TODO: We don't have to forward extra distinct rows immediately (same in non-vector) if
+    //       the first key has already been stored. There's few bytes difference between keys
+    //       for different distincts, and the value/etc. are all the same.
+    //       We could store deltas to re-gen extra rows when flushing TopN.
+    for (int i = 1; i < numDistinctExprs; i++) {
+      if (i != baseIndex) {
+        System.arraycopy(cachedKeys[baseIndex], 0, cachedKeys[i], 0, numDistributionKeys);
+      }
+      populateCachedDistinctKeys(vrg, rowIndex, i);
+      HiveKey hiveKey = toHiveKey(cachedKeys[i], tag, distKeyLength);
+      hiveKey.setHashCode(hashCode);
+      collect(hiveKey, value);
+    }
+  }
+
+  /**
+   * Populate distribution keys part of cachedKeys for a particular row from the batch.
+   * @param vrg the batch
+   * @param rowIndex the row index in the batch
+   * @param index the cachedKeys index to write to
+   */
+  private void populatedCachedDistributionKeys(
+      VectorizedRowBatch vrg, int rowIndex, int index) throws HiveException {
+    for (int i = 0; i < numDistributionKeys; i++) {
+      int batchColumn = keyEval[i].getOutputColumn();
+      ColumnVector vectorColumn = vrg.cols[batchColumn];
+      cachedKeys[index][i] = keyWriters[i].writeValue(vectorColumn, rowIndex);
+    }
+    if (cachedKeys[index].length > numDistributionKeys) {
+      cachedKeys[index][numDistributionKeys] = null;
+    }
+  }
+
+  /**
+   * Populate distinct keys part of cachedKeys for a particular row from the batch.
+   * @param vrg the batch
+   * @param rowIndex the row index in the batch
+   * @param index the cachedKeys index to write to
+   */
+  private void populateCachedDistinctKeys(
+      VectorizedRowBatch vrg, int rowIndex, int index) throws HiveException {
+    StandardUnion union;
+    cachedKeys[index][numDistributionKeys] = union = new StandardUnion(
+        (byte)index, new Object[distinctColIndices.get(index).size()]);
+    Object[] distinctParameters = (Object[]) union.getObject();
+    for (int distinctParamI = 0; distinctParamI < distinctParameters.length; distinctParamI++) {
+      int distinctColIndex = distinctColIndices.get(index).get(distinctParamI);
+      int batchColumn = keyEval[distinctColIndex].getOutputColumn();
+      distinctParameters[distinctParamI] =
+          keyWriters[distinctColIndex].writeValue(vrg.cols[batchColumn], rowIndex);
+    }
+    union.setTag((byte) index);
   }
 
   private BytesWritable makeValueWritable(VectorizedRowBatch vrg, int rowIndex)
@@ -308,10 +375,8 @@ public class VectorReduceSinkOperator extends ReduceSinkOperator {
     // Evaluate the HashCode
     int keyHashCode = 0;
     if (partitionEval.length == 0) {
-      // If no partition cols, just distribute the data uniformly to provide
-      // better
-      // load balance. If the requirement is to have a single reducer, we
-      // should set
+      // If no partition cols, just distribute the data uniformly to provide better
+      // load balance. If the requirement is to have a single reducer, we should set
       // the number of reducers to 1.
       // Use a constant seed to make the code deterministic.
       if (random == null) {
