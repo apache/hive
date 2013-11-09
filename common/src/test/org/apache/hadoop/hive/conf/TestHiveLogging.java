@@ -69,6 +69,7 @@ public class TestHiveLogging extends TestCase {
       new InputStreamReader(process.getInputStream()));
     String line = "";
     while((line = buf.readLine()) != null) {
+      line = line.replace("//", "/");
       if (line.equals(logFile)) {
         logCreated = true;
       }
