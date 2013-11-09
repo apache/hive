@@ -165,7 +165,8 @@ public class SQLOperation extends ExecuteStatementOperation {
           getParentSession().getSessionManager().submitBackgroundOperation(backgroundOperation);
       } catch (RejectedExecutionException rejected) {
         setState(OperationState.ERROR);
-        throw new HiveSQLException(rejected);
+        throw new HiveSQLException("All the asynchronous threads are currently busy, " +
+            "please retry the operation", rejected);
       }
     }
   }

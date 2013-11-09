@@ -1897,15 +1897,29 @@
 
 <property>
   <name>hive.server2.async.exec.threads</name>
-  <value>50</value>
+  <value>100</value>
   <description>Number of threads in the async thread pool for HiveServer2</description>
 </property>
 
 <property>
   <name>hive.server2.async.exec.shutdown.timeout</name>
   <value>10</value>
-  <description>Time (in seconds) for which HiveServer2 shutdown will wait for async 
+  <description>Time (in seconds) for which HiveServer2 shutdown will wait for async
   threads to terminate</description>
+</property>
+
+<property>
+  <name>hive.server2.async.exec.keepalive.time</name>
+  <value>10</value>
+  <description>Time (in seconds) that an idle HiveServer2 async thread (from the thread pool) will wait
+  for a new task to arrive before terminating</description>
+</property>
+
+<property>
+  <name>hive.server2.async.exec.wait.queue.size</name>
+  <value>100</value>
+  <description>Size of the wait queue for async thread pool in HiveServer2.
+  After hitting this limit, the async thread pool will reject new requests.</description>
 </property>
 
 <property>
