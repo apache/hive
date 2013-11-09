@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -942,6 +943,19 @@ public class TestVectorizationContext {
     children1.set(0, new ExprNodeConstantDesc(new Boolean(true)));
     ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
     assertTrue(ve instanceof FilterDoubleColumnNotBetween);
+
+    // timestamp BETWEEN
+    children1.set(0, new ExprNodeConstantDesc(new Boolean(false)));
+    children1.set(1, new ExprNodeColumnDesc(Timestamp.class, "col1", "table", false));
+    children1.set(2, new ExprNodeConstantDesc("2013-11-05 00:00:00.000"));
+    children1.set(3, new ExprNodeConstantDesc("2013-11-06 00:00:00.000"));
+    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    assertTrue(ve instanceof FilterLongColumnBetween);
+
+    // timestamp NOT BETWEEN
+    children1.set(0, new ExprNodeConstantDesc(new Boolean(true)));
+    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    assertTrue(ve instanceof FilterLongColumnNotBetween);
   }
 
   @Test
