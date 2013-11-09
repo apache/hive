@@ -91,7 +91,7 @@ public class HiveCharWritable extends HiveBaseCharWritable
   }
 
   public int compareTo(HiveCharWritable rhs) {
-    return ShimLoader.getHadoopShims().compareText(getStrippedValue(), rhs.getStrippedValue());
+    return getStrippedValue().compareTo(rhs.getStrippedValue());
   }
 
   public boolean equals(Object rhs) {

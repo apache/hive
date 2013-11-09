@@ -297,30 +297,6 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
     return result.toArray(new HiveInputSplit[result.size()]);
   }
 
-  public void validateInput(JobConf job) throws IOException {
-
-    init(job);
-
-    Path[] dirs = FileInputFormat.getInputPaths(job);
-    if (dirs.length == 0) {
-      throw new IOException("No input paths specified in job");
-    }
-    JobConf newjob = new JobConf(job);
-
-    // for each dir, get the InputFormat, and do validateInput.
-    for (Path dir : dirs) {
-      PartitionDesc part = getPartitionDescFromPath(pathToPartitionInfo, dir);
-      // create a new InputFormat instance if this is the first time to see this
-      // class
-      InputFormat inputFormat = getInputFormatFromCache(part
-          .getInputFileFormatClass(), job);
-
-      FileInputFormat.setInputPaths(newjob, dir);
-      newjob.setInputFormat(inputFormat.getClass());
-      ShimLoader.getHadoopShims().inputFormatValidateInput(inputFormat, newjob);
-    }
-  }
-
   protected static PartitionDesc getPartitionDescFromPath(
       Map<String, PartitionDesc> pathToPartitionInfo, Path dir)
       throws IOException {

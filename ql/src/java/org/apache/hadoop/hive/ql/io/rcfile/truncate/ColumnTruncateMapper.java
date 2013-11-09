@@ -84,8 +84,7 @@ public class ColumnTruncateMapper extends MapReduceBase implements
     updatePaths(tmpPath, taskTmpPath);
     try {
       fs = (new Path(specPath)).getFileSystem(job);
-      autoDelete = ShimLoader.getHadoopShims().fileSystemDeleteOnExit(fs,
-          outPath);
+      autoDelete = fs.deleteOnExit(outPath);
     } catch (IOException e) {
       this.exception = true;
       throw new RuntimeException(e);

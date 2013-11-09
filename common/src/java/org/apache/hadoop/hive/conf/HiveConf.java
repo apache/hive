@@ -1064,7 +1064,7 @@ public class HiveConf extends Configuration {
 
   public static void setFloatVar(Configuration conf, ConfVars var, float val) {
     assert (var.valClass == Float.class) : var.varname;
-    ShimLoader.getHadoopShims().setFloatConf(conf, var.varname, val);
+    conf.setFloat(var.varname, val);
   }
 
   public float getFloatVar(ConfVars var) {

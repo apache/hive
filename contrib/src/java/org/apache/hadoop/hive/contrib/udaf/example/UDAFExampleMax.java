@@ -246,7 +246,7 @@ public class UDAFExampleMax extends UDAF {
         if (mEmpty) {
           mMax = new Text(o);
           mEmpty = false;
-        } else if (ShimLoader.getHadoopShims().compareText(mMax, o) < 0) {
+        } else if (mMax.compareTo(o) < 0) {
           mMax.set(o);
         }
       }

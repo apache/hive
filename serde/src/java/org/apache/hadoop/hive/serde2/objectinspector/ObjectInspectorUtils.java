@@ -697,7 +697,7 @@ public final class ObjectInspectorUtils {
           Text t1 = (Text) poi1.getPrimitiveWritableObject(o1);
           Text t2 = (Text) poi2.getPrimitiveWritableObject(o2);
           return t1 == null ? (t2 == null ? 0 : -1) : (t2 == null ? 1
-              : ShimLoader.getHadoopShims().compareText(t1, t2));
+              : t1.compareTo(t2));
         } else {
           String s1 = (String) poi1.getPrimitiveJavaObject(o1);
           String s2 = (String) poi2.getPrimitiveJavaObject(o2);
