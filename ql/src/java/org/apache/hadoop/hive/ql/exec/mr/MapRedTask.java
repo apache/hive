@@ -178,12 +178,7 @@ public class MapRedTask extends ExecDriver implements Serializable {
       String isSilent = "true".equalsIgnoreCase(System
           .getProperty("test.silent")) ? "-nolog" : "";
 
-      String jarCmd;
-      if (ShimLoader.getHadoopShims().usesJobShell()) {
-        jarCmd = libJarsOption + hiveJar + " " + ExecDriver.class.getName();
-      } else {
-        jarCmd = hiveJar + " " + ExecDriver.class.getName() + libJarsOption;
-      }
+      String jarCmd = hiveJar + " " + ExecDriver.class.getName() + libJarsOption;
 
       String cmdLine = hadoopExec + " jar " + jarCmd + " -plan "
           + planPath.toString() + " " + isSilent + " " + hiveConfArgs;

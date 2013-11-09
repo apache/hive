@@ -714,7 +714,7 @@ public class CliDriver {
     }
 
     // CLI remote mode is a thin client: only load auxJars in local mode
-    if (!ss.isRemoteMode() && !ShimLoader.getHadoopShims().usesJobShell()) {
+    if (!ss.isRemoteMode()) {
       // hadoop-20 and above - we need to augment classpath using hiveconf
       // components
       // see also: code in ExecDriver.java

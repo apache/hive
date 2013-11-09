@@ -75,7 +75,7 @@ public class HiveVarcharWritable extends HiveBaseCharWritable
   }
 
   public int compareTo(HiveVarcharWritable rhs) {
-    return ShimLoader.getHadoopShims().compareText(value, rhs.value);
+    return value.compareTo(rhs.value);
   }
 
   @Override

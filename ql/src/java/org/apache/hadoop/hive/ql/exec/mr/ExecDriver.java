@@ -128,7 +128,6 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   private void initializeFiles(String prop, String files) {
     if (files != null && files.length() > 0) {
       job.set(prop, files);
-      ShimLoader.getHadoopShims().setTmpFiles(prop, files);
     }
   }
 

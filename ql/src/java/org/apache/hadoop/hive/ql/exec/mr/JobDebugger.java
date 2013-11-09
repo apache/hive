@@ -157,20 +157,10 @@ public class JobDebugger implements Runnable {
         boolean more = true;
         boolean firstError = true;
         for (TaskCompletionEvent t : taskCompletions) {
-          // getTaskJobIDs returns Strings for compatibility with Hadoop versions
-          // without TaskID or TaskAttemptID
-          String[] taskJobIds = ShimLoader.getHadoopShims().getTaskJobIDs(t);
-
-          if (taskJobIds == null) {
-            console.printError("Task attempt info is unavailable in this Hadoop version");
-            more = false;
-            break;
-          }
-
           // For each task completion event, get the associated task id, job id
           // and the logs
-          String taskId = taskJobIds[0];
-          String jobId = taskJobIds[1];
+          String taskId = t.getTaskAttemptId().getTaskID().toString();
+          String jobId = t.getTaskAttemptId().getJobID().toString();
           if (firstError) {
             console.printError("Examining task ID: " + taskId + " (and more) from job " + jobId);
             firstError = false;

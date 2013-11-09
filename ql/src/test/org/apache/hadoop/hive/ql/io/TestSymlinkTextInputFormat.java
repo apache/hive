@@ -175,8 +175,6 @@ public class TestSymlinkTextInputFormat extends TestCase {
       CombineHiveInputFormat combineInputFormat = ReflectionUtils.newInstance(
           CombineHiveInputFormat.class, newJob);
 
-      combineInputFormat.validateInput(newJob);
-
       InputSplit[] retSplits = combineInputFormat.getSplits(newJob, 1);
       assertEquals(1, retSplits.length);
     } catch (Exception e) {
