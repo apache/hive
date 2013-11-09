@@ -122,11 +122,6 @@ public class LimitPushdownOptimizer implements Transform {
         }
       }
       if (rs != null) {
-        List<List<Integer>> distincts = rs.getConf().getDistinctColumnIndices();
-        if (distincts != null && distincts.size() > 1) {
-          // multi distinct case. can not sure that it's safe just by multiplying limit value
-          return false;
-        }
         LimitOperator limit = (LimitOperator) nd;
         rs.getConf().setTopN(limit.getConf().getLimit());
         rs.getConf().setTopNMemoryUsage(((LimitPushdownContext) procCtx).threshold);
