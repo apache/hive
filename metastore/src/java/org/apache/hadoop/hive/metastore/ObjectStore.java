@@ -1420,41 +1420,30 @@ public class ObjectStore implements RawStore, Configurable {
     return getPartitionsInternal(dbName, tableName, maxParts, true, true);
   }
 
-  protected List<Partition> getPartitionsInternal(String dbName, String tableName,
+  protected List<Partition> getPartitionsInternal(String dbName, String tblName,
       int maxParts, boolean allowSql, boolean allowJdo) throws MetaException {
-    assert allowSql || allowJdo;
-    boolean doTrace = LOG.isDebugEnabled();
-    boolean doUseDirectSql = canUseDirectSql(allowSql, allowJdo);
-
-    boolean success = false;
-    List<Partition> parts = null;
+    dbName = dbName.toLowerCase();
+    tblName = tblName.toLowerCase();
+    GetPartsHelper ctx = new GetPartsHelper(dbName, tblName, allowSql, allowJdo);
     try {
-      long start = doTrace ? System.nanoTime() : 0;
-      openTransaction();
-      if (doUseDirectSql) {
+      ctx.start(false);
+      if (ctx.canUseDirectSql()) {
         try {
           Integer max = (maxParts < 0) ? null : maxParts;
-          parts = directSql.getPartitions(dbName, tableName, max);
+          ctx.setResult(directSql.getPartitions(dbName, tblName, max));
         } catch (Exception ex) {
-          handleDirectSqlError(allowJdo, ex);
-          doUseDirectSql = false;
-          start = doTrace ? System.nanoTime() : 0;
+          ctx.handleDirectSqlError(ex);
         }
       }
 
-      if (!doUseDirectSql) {
-        parts = convertToParts(listMPartitions(dbName, tableName, maxParts));
+      if (!ctx.canUseDirectSql()) {
+        ctx.setResult(convertToParts(listMPartitions(dbName, tblName, maxParts)));
       }
-      success = commitTransaction();
-      if (doTrace) {
-        LOG.debug(parts.size() + " partition retrieved using " + (doUseDirectSql ? "SQL" : "ORM")
-            + " in " + ((System.nanoTime() - start) / 1000000.0) + "ms");
-      }
-      return parts;
+      return ctx.commit();
+    } catch (NoSuchObjectException ex) {
+      throw new MetaException(ex.getMessage());
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      ctx.close();
     }
   }
 
@@ -1750,41 +1739,26 @@ public class ObjectStore implements RawStore, Configurable {
   protected List<Partition> getPartitionsByNamesInternal(String dbName, String tblName,
       List<String> partNames, boolean allowSql, boolean allowJdo)
           throws MetaException, NoSuchObjectException {
-    assert allowSql || allowJdo;
     dbName = dbName.toLowerCase();
     tblName = tblName.toLowerCase();
-    boolean doTrace = LOG.isDebugEnabled();
-    boolean doUseDirectSql = canUseDirectSql(allowSql, allowJdo);
-
-    boolean success = false;
-    List<Partition> results = null;
+    GetPartsHelper ctx = new GetPartsHelper(dbName, tblName, allowSql, allowJdo);
     try {
-      long start = doTrace ? System.nanoTime() : 0;
-      openTransaction();
-      if (doUseDirectSql) {
+      ctx.start(false);
+      if (ctx.canUseDirectSql()) {
         try {
-          results = directSql.getPartitionsViaSqlFilter(dbName, tblName, partNames, null);
+          ctx.setResult(directSql.getPartitionsViaSqlFilter(dbName, tblName, partNames, null));
         } catch (Exception ex) {
-          handleDirectSqlError(allowJdo, ex);
-          doUseDirectSql = false;
-          start = doTrace ? System.nanoTime() : 0;
+          ctx.handleDirectSqlError(ex);
         }
       }
 
-      if (!doUseDirectSql) {
-        results = getPartitionsViaOrmFilter(dbName, tblName, partNames);
+      if (!ctx.canUseDirectSql()) {
+        ctx.setResult(getPartitionsViaOrmFilter(dbName, tblName, partNames));
       }
-      success = commitTransaction();
-      if (doTrace) {
-        LOG.debug(results.size() + " partition retrieved using " + (doUseDirectSql ? "SQL" : "ORM")
-            + " in " + ((System.nanoTime() - start) / 1000000.0) + "ms");
-      }
+      return ctx.commit();
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      ctx.close();
     }
-    return results;
   }
 
   @Override
@@ -1797,10 +1771,7 @@ public class ObjectStore implements RawStore, Configurable {
   protected boolean getPartitionsByExprInternal(String dbName, String tblName,
       byte[] expr, String defaultPartitionName, short maxParts, Set<Partition> result,
       boolean allowSql, boolean allowJdo) throws TException {
-    assert allowSql || allowJdo;
     assert result != null;
-    dbName = dbName.toLowerCase();
-    tblName = tblName.toLowerCase();
 
     // We will try pushdown first, so make the filter. This will also validate the expression,
     // if serialization fails we will throw incompatible metastore error to the client.
@@ -1819,61 +1790,45 @@ public class ObjectStore implements RawStore, Configurable {
     //       Filter.g stuff. That way this method and ...ByFilter would just be merged.
     ExpressionTree exprTree = makeExpressionTree(filter);
 
-    boolean doUseDirectSql = canUseDirectSql(allowSql, allowJdo);
-    boolean doTrace = LOG.isDebugEnabled();
-    List<Partition> partitions = null;
+    dbName = dbName.toLowerCase();
+    tblName = tblName.toLowerCase();
+    GetPartsHelper ctx = new GetPartsHelper(dbName, tblName, allowSql, allowJdo);
     boolean hasUnknownPartitions = false;
-    boolean success = false;
     try {
-      long start = doTrace ? System.nanoTime() : 0;
-      openTransaction();
-      Table table = ensureGetTable(dbName, tblName);
-      if (doUseDirectSql) {
+      ctx.start(true);
+      if (ctx.canUseDirectSql()) {
         try {
-          if (exprTree != null) {
-            // We have some sort of expression tree, try SQL filter pushdown.
-            partitions = directSql.getPartitionsViaSqlFilter(table, exprTree, null);
-          }
-          if (partitions == null) {
+          // If we have some sort of expression tree, try SQL filter pushdown.
+          boolean haveResult = (exprTree != null) && ctx.setResult(
+              directSql.getPartitionsViaSqlFilter(ctx.getTable(), exprTree, null));
+          if (!haveResult) {
             // We couldn't do SQL filter pushdown. Get names via normal means.
             List<String> partNames = new LinkedList<String>();
             hasUnknownPartitions = getPartitionNamesPrunedByExprNoTxn(
-                table, expr, defaultPartitionName, maxParts, partNames);
-            partitions = directSql.getPartitionsViaSqlFilter(dbName, tblName, partNames, null);
+                ctx.getTable(), expr, defaultPartitionName, maxParts, partNames);
+            ctx.setResult(directSql.getPartitionsViaSqlFilter(dbName, tblName, partNames, null));
           }
         } catch (Exception ex) {
-          handleDirectSqlError(allowJdo, ex);
-          doUseDirectSql = false;
-          table = ensureGetTable(dbName, tblName); // Get again, detached on rollback.
+          ctx.handleDirectSqlError(ex);
         }
       }
 
-      if (!doUseDirectSql) {
-        assert partitions == null;
-        if (exprTree != null) {
-          // We have some sort of expression tree, try JDOQL filter pushdown.
-          partitions = getPartitionsViaOrmFilter(table, exprTree, maxParts, false);
-        }
-        if (partitions == null) {
+      if (!ctx.canUseDirectSql()) {
+        // If we have some sort of expression tree, try JDOQL filter pushdown.
+        boolean haveResult = (exprTree != null) && ctx.setResult(
+            getPartitionsViaOrmFilter(ctx.getTable(), exprTree, maxParts, false));
+        if (!haveResult) {
           // We couldn't do JDOQL filter pushdown. Get names via normal means.
           List<String> partNames = new ArrayList<String>();
           hasUnknownPartitions = getPartitionNamesPrunedByExprNoTxn(
-              table, expr, defaultPartitionName, maxParts, partNames);
-          partitions = getPartitionsViaOrmFilter(dbName, tblName, partNames);
+              ctx.getTable(), expr, defaultPartitionName, maxParts, partNames);
+          ctx.setResult(getPartitionsViaOrmFilter(dbName, tblName, partNames));
         }
       }
-      success = commitTransaction();
-      if (doTrace) {
-        double time = ((System.nanoTime() - start) / 1000000.0);
-        LOG.debug(partitions.size() + " partition retrieved using "
-          + (doUseDirectSql ? "SQL" : "ORM") + " in " + time + "ms");
-      }
+      result.addAll(ctx.commit());
     } finally {
-      if (!success) {
-        rollbackTransaction();
-      }
+      ctx.close();
     }
-    result.addAll(partitions);
     return hasUnknownPartitions;
   }
 
@@ -1986,18 +1941,6 @@ public class ObjectStore implements RawStore, Configurable {
     return results;
   }
 
-  private void handleDirectSqlError(boolean allowJdo, Exception ex) throws MetaException {
-    LOG.error("Direct SQL failed" + (allowJdo ? ", falling back to ORM" : ""), ex);
-    if (!allowJdo) {
-      if (ex instanceof MetaException) {
-        throw (MetaException)ex;
-      }
-      throw new MetaException(ex.getMessage());
-    }
-    rollbackTransaction();
-    openTransaction();
-  }
-
   /**
    * Gets partition names from the table via ORM (JDOQL) name filter.
    * @param dbName Database name.
@@ -2051,73 +1994,130 @@ public class ObjectStore implements RawStore, Configurable {
     return getPartitionsByFilterInternal(dbName, tblName, filter, maxParts, true, true);
   }
 
-  protected List<Partition> getPartitionsByFilterInternal(String dbName, String tblName,
-      String filter, short maxParts, boolean allowSql, boolean allowJdo)
-      throws MetaException, NoSuchObjectException {
-    assert allowSql || allowJdo;
-    boolean doTrace = LOG.isDebugEnabled();
-    boolean doUseDirectSql = canUseDirectSql(allowSql, allowJdo);
-
-    dbName = dbName.toLowerCase();
-    tblName = tblName.toLowerCase();
-    ExpressionTree tree = (filter != null && !filter.isEmpty())
-        ? getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
-
-    List<Partition> results = null;
+  /** Helper class for getting partitions w/transaction, direct SQL, perf logging, etc. */
+  private class GetPartsHelper {
+    private final boolean isInTxn, doTrace, allowSql, allowJdo;
+    private boolean doUseDirectSql;
+    private long start;
+    private Table table;
+    private String dbName = null, tblName = null;
     boolean success = false;
-    try {
-      long start = doTrace ? System.nanoTime() : 0;
-      openTransaction();
-      Table table = ensureGetTable(dbName, tblName);
-      if (doUseDirectSql) {
-        try {
-          Integer max = (maxParts < 0) ? null : (int)maxParts;
-          results = directSql.getPartitionsViaSqlFilter(table, tree, max);
-          if (results == null) {
-            // Cannot push down SQL filter. The message has been logged internally.
-            // This is not an error so don't roll back, just go to JDO.
-            doUseDirectSql = false;
-          }
-        } catch (Exception ex) {
-          handleDirectSqlError(allowJdo, ex);
-          doUseDirectSql = false;
-          start = doTrace ? System.nanoTime() : 0;
-          table = ensureGetTable(dbName, tblName); // detached on rollback, get again
-        }
-      }
+    private List<Partition> results = null;
 
-      if (!doUseDirectSql) {
-        results = getPartitionsViaOrmFilter(table, tree, maxParts, true);
+    public GetPartsHelper(String dbName, String tblName, boolean allowSql, boolean allowJdo)
+        throws MetaException {
+      assert allowSql || allowJdo;
+      this.allowSql = allowSql;
+      this.allowJdo = allowJdo;
+      this.dbName = dbName;
+      this.tblName = tblName;
+      this.doTrace = LOG.isDebugEnabled();
+      this.isInTxn = isActiveTransaction();
+
+      // SQL usage inside a larger transaction (e.g. droptable) may not be desirable because
+      // some databases (e.g. Postgres) abort the entire transaction when any query fails, so
+      // the fallback from failed SQL to JDO is not possible.
+      boolean isConfigEnabled = HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL)
+          && (HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL_DDL) || !isInTxn);
+      if (!allowJdo && isConfigEnabled && !directSql.isCompatibleDatastore()) {
+        throw new MetaException("SQL is not operational"); // test path; SQL is enabled and broken.
       }
+      this.doUseDirectSql = allowSql && isConfigEnabled && directSql.isCompatibleDatastore();
+    }
+
+    public void start(boolean initTable) throws MetaException, NoSuchObjectException {
+      start = doTrace ? System.nanoTime() : 0;
+      openTransaction();
+      if (initTable) {
+        table = ensureGetTable(dbName, tblName);
+      }
+    }
+
+    public boolean setResult(List<Partition> results) {
+      this.results = results;
+      return this.results != null;
+    }
+
+    public void handleDirectSqlError(Exception ex) throws MetaException, NoSuchObjectException {
+      LOG.error("Direct SQL failed" + (allowJdo ? ", falling back to ORM" : ""), ex);
+      if (!allowJdo) {
+        if (ex instanceof MetaException) {
+          throw (MetaException)ex;
+        }
+        throw new MetaException(ex.getMessage());
+      }
+      if (!isInTxn) {
+        rollbackTransaction();
+        start = doTrace ? System.nanoTime() : 0;
+        openTransaction();
+        if (table != null) {
+          table = ensureGetTable(dbName, tblName);
+        }
+      } else {
+        start = doTrace ? System.nanoTime() : 0;
+      }
+      doUseDirectSql = false;
+    }
+
+    public void disableDirectSql() {
+      this.doUseDirectSql = false;
+    }
+
+    public List<Partition> commit() {
       success = commitTransaction();
       if (doTrace) {
         LOG.debug(results.size() + " partition retrieved using " + (doUseDirectSql ? "SQL" : "ORM")
             + " in " + ((System.nanoTime() - start) / 1000000.0) + "ms");
       }
       return results;
-    } finally {
+    }
+
+    public void close() {
       if (!success) {
         rollbackTransaction();
       }
     }
+
+    public boolean canUseDirectSql() {
+      return doUseDirectSql;
+    }
+
+    public Table getTable() {
+      return table;
+    }
   }
 
-  /**
-   * @param allowSql Whether SQL usage is allowed (always true outside test).
-   * @param allowJdo Whether JDO usage is allowed (always true outside test).
-   * @return Whether we can use direct SQL.
-   */
-  private boolean canUseDirectSql(boolean allowSql, boolean allowJdo) throws MetaException {
-    // We don't allow direct SQL usage if we are inside a larger transaction (e.g. droptable).
-    // That is because some databases (e.g. Postgres) abort the entire transaction when
-    // any query fails, so the fallback from failed SQL to JDO is not possible.
-    // TODO: Drop table can be very slow on large tables, we might want to address this.
-    boolean isEnabled = !isActiveTransaction()
-        && HiveConf.getBoolVar(getConf(), ConfVars.METASTORE_TRY_DIRECT_SQL);
-    if (!allowJdo && isEnabled && !directSql.isCompatibleDatastore()) {
-      throw new MetaException("SQL is not operational"); // test path; SQL is enabled and broken.
+  protected List<Partition> getPartitionsByFilterInternal(String dbName, String tblName,
+      String filter, short maxParts, boolean allowSql, boolean allowJdo)
+      throws MetaException, NoSuchObjectException {
+    ExpressionTree tree = (filter != null && !filter.isEmpty())
+        ? getFilterParser(filter).tree : ExpressionTree.EMPTY_TREE;
+
+    dbName = dbName.toLowerCase();
+    tblName = tblName.toLowerCase();
+    GetPartsHelper ctx = new GetPartsHelper(dbName, tblName, allowSql, allowJdo);
+    try {
+      ctx.start(true);
+      if (ctx.canUseDirectSql()) {
+        try {
+          if (!ctx.setResult(directSql.getPartitionsViaSqlFilter(
+              ctx.getTable(), tree, (maxParts < 0) ? null : (int)maxParts))) {
+            // Cannot push down SQL filter. The message has been logged internally.
+            // This is not an error so don't roll back, just go to JDO.
+            ctx.disableDirectSql();
+          }
+        } catch (Exception ex) {
+          ctx.handleDirectSqlError(ex);
+        }
+      }
+
+      if (!ctx.canUseDirectSql()) {
+        ctx.setResult(getPartitionsViaOrmFilter(ctx.getTable(), tree, maxParts, true));
+      }
+      return ctx.commit();
+    } finally {
+      ctx.close();
     }
-    return allowSql && isEnabled && directSql.isCompatibleDatastore();
   }
 
   /**
