@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -166,6 +167,8 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -5708,7 +5711,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       colNames.add(inputCols.get(i).getInternalName());
       colOIs[i] = inputCols.get(i).getObjectInspector();
     }
-    StructObjectInspector outputOI = genericUDTF.initialize(colOIs);
+    StandardStructObjectInspector rowOI =
+        ObjectInspectorFactory.getStandardStructObjectInspector(colNames, Arrays.asList(colOIs));
+    StructObjectInspector outputOI = genericUDTF.initialize(rowOI);
 
     int numUdtfCols = outputOI.getAllStructFieldRefs().size();
     if (colAliases.isEmpty()) {
