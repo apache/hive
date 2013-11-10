@@ -834,6 +834,10 @@ public class HiveConf extends Configuration {
     HIVE_VECTORIZATION_ENABLED("hive.vectorized.execution.enabled", false),
 
     HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true),
+
+    // none, idonly, traverse, execution
+    HIVESTAGEIDREARRANGE("hive.stageid.rearrange", "none"),
+    HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES("hive.explain.dependency.append.tasktype", false),
     ;
 
     public final String varname;
