@@ -95,6 +95,8 @@ public class HiveResultSetMetaData implements java.sql.ResultSetMetaData {
       return serdeConstants.STRING_TYPE_NAME;
     } else if ("varchar".equalsIgnoreCase(type)) {
       return serdeConstants.VARCHAR_TYPE_NAME;
+    } else if ("char".equalsIgnoreCase(type)) {
+      return serdeConstants.CHAR_TYPE_NAME;
     } else if ("float".equalsIgnoreCase(type)) {
       return serdeConstants.FLOAT_TYPE_NAME;
     } else if ("double".equalsIgnoreCase(type)) {

@@ -181,6 +181,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     if (primitiveTypeEntry.isSetTypeQualifiers()) {
       TTypeQualifiers tq = primitiveTypeEntry.getTypeQualifiers();
       switch (primitiveTypeEntry.getType()) {
+        case CHAR_TYPE:
         case VARCHAR_TYPE:
           TTypeQualifierValue val =
               tq.getQualifiers().get(TCLIServiceConstants.CHARACTER_MAXIMUM_LENGTH);

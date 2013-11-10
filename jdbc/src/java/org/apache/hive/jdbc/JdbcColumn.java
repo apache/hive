@@ -69,6 +69,7 @@ public class JdbcColumn {
     switch(columnType) {
     case Types.BOOLEAN:
       return columnPrecision(columnType, columnAttributes);
+    case Types.CHAR:
     case Types.VARCHAR:
       return columnPrecision(columnType, columnAttributes);
     case Types.TINYINT:
@@ -100,6 +101,7 @@ public class JdbcColumn {
     switch(columnType) {
     case Types.BOOLEAN:
       return 1;
+    case Types.CHAR:
     case Types.VARCHAR:
       if (columnAttributes != null) {
         return columnAttributes.precision;
@@ -133,6 +135,7 @@ public class JdbcColumn {
     // according to hiveTypeToSqlType possible options are:
     switch(columnType) {
     case Types.BOOLEAN:
+    case Types.CHAR:
     case Types.VARCHAR:
     case Types.TINYINT:
     case Types.SMALLINT:

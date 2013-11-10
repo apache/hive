@@ -21,6 +21,7 @@ package org.apache.hive.service.cli;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
@@ -102,7 +103,9 @@ public class TypeQualifiers {
     if (pti instanceof VarcharTypeInfo) {
       result = new TypeQualifiers();
       result.setCharacterMaximumLength(((VarcharTypeInfo)pti).getLength());
-
+    }  else if (pti instanceof CharTypeInfo) {
+      result = new TypeQualifiers();
+      result.setCharacterMaximumLength(((CharTypeInfo)pti).getLength());
     } else if (pti instanceof DecimalTypeInfo) {
       result = new TypeQualifiers();
       result.setPrecision(((DecimalTypeInfo)pti).precision());

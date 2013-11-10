@@ -46,7 +46,7 @@ enum TProtocolVersion {
   // V3 add varchar type, primitive type qualifiers
   HIVE_CLI_SERVICE_PROTOCOL_V3
 
-  // V4 add support for decimial datatype
+  // V4 add decimal precision/scale, char type
   HIVE_CLI_SERVICE_PROTOCOL_V4
 }
 
@@ -69,7 +69,8 @@ enum TTypeId {
   DECIMAL_TYPE,
   NULL_TYPE,
   DATE_TYPE,
-  VARCHAR_TYPE
+  VARCHAR_TYPE,
+  CHAR_TYPE
 }
   
 const set<TTypeId> PRIMITIVE_TYPES = [
@@ -87,6 +88,7 @@ const set<TTypeId> PRIMITIVE_TYPES = [
   TTypeId.NULL_TYPE
   TTypeId.DATE_TYPE
   TTypeId.VARCHAR_TYPE
+  TTypeId.CHAR_TYPE
 ]
 
 const set<TTypeId> COMPLEX_TYPES = [
@@ -121,6 +123,7 @@ const map<TTypeId,string> TYPE_NAMES = {
   TTypeId.NULL_TYPE: "NULL"
   TTypeId.DATE_TYPE: "DATE"
   TTypeId.VARCHAR_TYPE: "VARCHAR"
+  TTypeId.CHAR_TYPE: "CHAR"
 }
 
 // Thrift does not support recursively defined types or forward declarations,
