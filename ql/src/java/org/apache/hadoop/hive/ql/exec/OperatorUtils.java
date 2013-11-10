@@ -20,7 +20,11 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.mapred.OutputCollector;
 
 public class OperatorUtils {
 
@@ -52,5 +56,18 @@ public class OperatorUtils {
       }
     }
     return found;
+  }
+
+  public static void setChildrenCollector(List<Operator<? extends OperatorDesc>> childOperators, OutputCollector out) {
+    if (childOperators == null) {
+      return;
+    }
+    for (Operator<? extends OperatorDesc> op : childOperators) {
+      if(op.getName().equals(ReduceSinkOperator.getOperatorName())) { //TODO:
+        ((ReduceSinkOperator)op).setOutputCollector(out);
+      } else {
+        setChildrenCollector(op.getChildOperators(), out);
+      }
+    }
   }
 }

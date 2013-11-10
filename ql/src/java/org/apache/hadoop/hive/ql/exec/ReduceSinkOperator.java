@@ -47,7 +47,7 @@ import org.apache.hadoop.io.BinaryComparable;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.Text;
-// import org.apache.hadoop.util.StringUtils;
+import org.apache.hadoop.mapred.OutputCollector;
 
 /**
  * Reduce Sink Operator sends output to the reduce stage.
@@ -56,6 +56,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     implements Serializable, TopNHash.BinaryCollector {
 
   private static final long serialVersionUID = 1L;
+  protected transient OutputCollector out;
 
   /**
    * The evaluators for the key columns. Key columns decide the sort order on
@@ -91,6 +92,10 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
 
   public String getInputAlias() {
     return inputAlias;
+  }
+
+  public void setOutputCollector(OutputCollector _out) {
+    this.out = _out;
   }
 
   // picks topN K:V pairs from input.
@@ -382,6 +387,7 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
       reducerHash.flush();
     }
     super.closeOp(abort);
+    out = null;
   }
 
   /**
