@@ -36,6 +36,7 @@ public class ExplainWork implements Serializable {
 
   private String resFile;
   private ArrayList<Task<? extends Serializable>> rootTasks;
+  private Task<? extends Serializable> fetchTask;
   private String astStringTree;
   private HashSet<ReadEntity> inputs;
   private ParseContext pCtx;
@@ -45,6 +46,8 @@ public class ExplainWork implements Serializable {
   boolean dependency;
   boolean logical;
 
+  boolean appendTaskType;
+
 
   public ExplainWork() {
   }
@@ -52,6 +55,7 @@ public class ExplainWork implements Serializable {
   public ExplainWork(String resFile,
       ParseContext pCtx,
       List<Task<? extends Serializable>> rootTasks,
+      Task<? extends Serializable> fetchTask,
       String astStringTree,
       HashSet<ReadEntity> inputs,
       boolean extended,
@@ -60,6 +64,7 @@ public class ExplainWork implements Serializable {
       boolean logical) {
     this.resFile = resFile;
     this.rootTasks = new ArrayList<Task<? extends Serializable>>(rootTasks);
+    this.fetchTask = fetchTask;
     this.astStringTree = astStringTree;
     this.inputs = inputs;
     this.extended = extended;
@@ -83,6 +88,14 @@ public class ExplainWork implements Serializable {
 
   public void setRootTasks(ArrayList<Task<? extends Serializable>> rootTasks) {
     this.rootTasks = rootTasks;
+  }
+
+  public Task<? extends Serializable> getFetchTask() {
+    return fetchTask;
+  }
+
+  public void setFetchTask(Task<? extends Serializable> fetchTask) {
+    this.fetchTask = fetchTask;
   }
 
   public String getAstStringTree() {
@@ -141,4 +154,11 @@ public class ExplainWork implements Serializable {
     this.logical = logical;
   }
 
+  public boolean isAppendTaskType() {
+    return appendTaskType;
+  }
+
+  public void setAppendTaskType(boolean appendTaskType) {
+    this.appendTaskType = appendTaskType;
+  }
 }

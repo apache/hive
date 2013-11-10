@@ -74,4 +74,8 @@ public class ObjectPair<F, S> {
     return this.getFirst().equals(that.getFirst()) &&
         this.getSecond().equals(that.getSecond());
   }
+
+  public String toString() {
+    return first + ":" + second;
+  }
 }
