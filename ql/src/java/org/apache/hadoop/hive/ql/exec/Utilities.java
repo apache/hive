@@ -100,6 +100,7 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Order;
+import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
@@ -125,6 +126,9 @@ import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateMapper;
 import org.apache.hadoop.hive.ql.io.rcfile.truncate.ColumnTruncateWork;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
+import org.apache.hadoop.hive.ql.metadata.HiveUtils;
+import org.apache.hadoop.hive.ql.metadata.InputEstimator;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
@@ -2001,7 +2005,7 @@ public final class Utilities {
     }
   }
 
-  public static Object INPUT_SUMMARY_LOCK = new Object();
+  private static final Object INPUT_SUMMARY_LOCK = new Object();
 
   /**
    * Calculate the total size of input files.
@@ -2084,26 +2088,47 @@ public final class Utilities {
           // is not correct.
           final Configuration myConf = conf;
           final JobConf myJobConf = jobConf;
+          final Map<String, Operator<?>> aliasToWork = work.getAliasToWork();
+          final Map<String, ArrayList<String>> pathToAlias = work.getPathToAliases();
           final PartitionDesc partDesc = work.getPathToPartitionInfo().get(
               p.toString());
           Runnable r = new Runnable() {
             public void run() {
               try {
-                ContentSummary resultCs;
-
                 Class<? extends InputFormat> inputFormatCls = partDesc
                     .getInputFileFormatClass();
                 InputFormat inputFormatObj = HiveInputFormat.getInputFormatFromCache(
                     inputFormatCls, myJobConf);
                 if (inputFormatObj instanceof ContentSummaryInputFormat) {
-                  resultCs = ((ContentSummaryInputFormat) inputFormatObj).getContentSummary(p,
-                      myJobConf);
-                } else {
-                  FileSystem fs = p.getFileSystem(myConf);
-                  resultCs = fs.getContentSummary(p);
+                  ContentSummaryInputFormat cs = (ContentSummaryInputFormat) inputFormatObj;
+                  resultMap.put(pathStr, cs.getContentSummary(p, myJobConf));
+                  return;
                 }
-                resultMap.put(pathStr, resultCs);
-              } catch (IOException e) {
+                HiveStorageHandler handler = HiveUtils.getStorageHandler(myConf,
+                    partDesc.getOverlayedProperties().getProperty(
+                    hive_metastoreConstants.META_TABLE_STORAGE));
+                if (handler == null) {
+                  // native table
+                  FileSystem fs = p.getFileSystem(myConf);
+                  resultMap.put(pathStr, fs.getContentSummary(p));
+                  return;
+                }
+                if (handler instanceof InputEstimator) {
+                  long total = 0;
+                  TableDesc tableDesc = partDesc.getTableDesc();
+                  InputEstimator estimator = (InputEstimator) handler;
+                  for (String alias : HiveFileFormatUtils.doGetAliasesFromPath(pathToAlias, p)) {
+                    JobConf jobConf = new JobConf(myJobConf);
+                    TableScanOperator scanOp = (TableScanOperator) aliasToWork.get(alias);
+                    Utilities.setColumnNameList(jobConf, scanOp, true);
+                    Utilities.setColumnTypeList(jobConf, scanOp, true);
+                    PlanUtils.configureInputJobPropertiesForStorageHandler(tableDesc);
+                    Utilities.copyTableJobPropertiesToConf(tableDesc, jobConf);
+                    total += estimator.estimate(myJobConf, scanOp, -1).getTotalLength();
+                  }
+                  resultMap.put(pathStr, new ContentSummary(total, -1, -1));
+                }
+              } catch (Exception e) {
                 // We safely ignore this exception for summary data.
                 // We don't update the cache to protect it from polluting other
                 // usages. The worst case is that IOException will always be
@@ -2290,12 +2315,19 @@ public final class Utilities {
   }
 
   public static void setColumnNameList(JobConf jobConf, Operator op) {
+    setColumnNameList(jobConf, op, false);
+  }
+
+  public static void setColumnNameList(JobConf jobConf, Operator op, boolean excludeVCs) {
     RowSchema rowSchema = op.getSchema();
     if (rowSchema == null) {
       return;
     }
     StringBuilder columnNames = new StringBuilder();
     for (ColumnInfo colInfo : rowSchema.getSignature()) {
+      if (excludeVCs && colInfo.getIsVirtualCol()) {
+        continue;
+      }
       if (columnNames.length() > 0) {
         columnNames.append(",");
       }
@@ -2306,12 +2338,19 @@ public final class Utilities {
   }
 
   public static void setColumnTypeList(JobConf jobConf, Operator op) {
+    setColumnTypeList(jobConf, op, false);
+  }
+
+  public static void setColumnTypeList(JobConf jobConf, Operator op, boolean excludeVCs) {
     RowSchema rowSchema = op.getSchema();
     if (rowSchema == null) {
       return;
     }
     StringBuilder columnTypes = new StringBuilder();
     for (ColumnInfo colInfo : rowSchema.getSignature()) {
+      if (excludeVCs && colInfo.getIsVirtualCol()) {
+        continue;
+      }
       if (columnTypes.length() > 0) {
         columnTypes.append(",");
       }

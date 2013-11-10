@@ -1799,6 +1799,16 @@
 
 
 <property>
+  <name>hive.fetch.task.conversion.threshold</name>
+  <value>-1</value>
+  <description>
+    Input threshold for applying hive.fetch.task.conversion. If target table is native, input length
+    is calculated by summation of file lengths. If it's not native, storage handler for the table
+    can optionally implement org.apache.hadoop.hive.ql.metadata.InputEstimator interface.
+  </description>
+</property>
+
+<property>
   <name>hive.hmshandler.retry.attempts</name>
   <value>1</value>
   <description>The number of times to retry a HMSHandler call if there were a connection error</description>
