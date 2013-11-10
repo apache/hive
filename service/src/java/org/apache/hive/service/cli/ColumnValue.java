@@ -21,6 +21,7 @@ package org.apache.hive.service.cli;
 import java.sql.Date;
 import java.sql.Timestamp;
 
+import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hive.service.cli.thrift.TBoolValue;
@@ -119,6 +120,14 @@ public class ColumnValue {
     return new ColumnValue(TColumnValue.stringVal(tStringValue));
   }
 
+  public static ColumnValue stringValue(HiveChar value) {
+    TStringValue tStringValue = new TStringValue();
+    if (value != null) {
+      tStringValue.setValue(value.toString());
+    }
+    return new ColumnValue(TColumnValue.stringVal(tStringValue));
+  }
+
   public static ColumnValue stringValue(HiveVarchar value) {
     TStringValue tStringValue = new TStringValue();
     if (value != null) {
@@ -169,6 +178,8 @@ public class ColumnValue {
       return doubleValue((Double)value);
     case STRING_TYPE:
       return stringValue((String)value);
+    case CHAR_TYPE:
+      return stringValue((HiveChar)value);
     case VARCHAR_TYPE:
       return stringValue((HiveVarchar)value);
     case DATE_TYPE:

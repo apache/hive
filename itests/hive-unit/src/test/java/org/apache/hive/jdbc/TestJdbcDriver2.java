@@ -184,7 +184,8 @@ public class TestJdbcDriver2 {
         + " c18 decimal(16,7), "
         + " c19 binary, "
         + " c20 date,"
-        + " c21 varchar(20)"
+        + " c21 varchar(20),"
+        + " c22 char(15)"
         + ") comment'" + dataTypeTableComment
         +"' partitioned by (dt STRING)");
 
@@ -790,6 +791,7 @@ public class TestJdbcDriver2 {
     assertEquals(null, res.getString(20));
     assertEquals(null, res.getDate(20));
     assertEquals(null, res.getString(21));
+    assertEquals(null, res.getString(22));
 
     // row 2
     assertTrue(res.next());
@@ -816,6 +818,7 @@ public class TestJdbcDriver2 {
     assertEquals(null, res.getString(20));
     assertEquals(null, res.getDate(20));
     assertEquals(null, res.getString(21));
+    assertEquals(null, res.getString(22));
 
     // row 3
     assertTrue(res.next());
@@ -842,6 +845,7 @@ public class TestJdbcDriver2 {
     assertEquals("2013-01-01", res.getString(20));
     assertEquals("2013-01-01", res.getDate(20).toString());
     assertEquals("abc123", res.getString(21));
+    assertEquals("abc123         ", res.getString(22));
 
     // test getBoolean rules on non-boolean columns
     assertEquals(true, res.getBoolean(1));
@@ -1319,14 +1323,14 @@ public class TestJdbcDriver2 {
 
     ResultSet res = stmt.executeQuery(
         "select c1, c2, c3, c4, c5 as a, c6, c7, c8, c9, c10, c11, c12, " +
-            "c1*2, sentences(null, null, null) as b, c17, c18, c20, c21 from " + dataTypeTableName +
+            "c1*2, sentences(null, null, null) as b, c17, c18, c20, c21, c22 from " + dataTypeTableName +
         " limit 1");
     ResultSetMetaData meta = res.getMetaData();
 
     ResultSet colRS = con.getMetaData().getColumns(null, null,
         dataTypeTableName.toLowerCase(), null);
 
-    assertEquals(18, meta.getColumnCount());
+    assertEquals(19, meta.getColumnCount());
 
     assertTrue(colRS.next());
 
@@ -1541,6 +1545,14 @@ public class TestJdbcDriver2 {
     assertEquals(20, meta.getColumnDisplaySize(18));
     assertEquals(20, meta.getPrecision(18));
     assertEquals(0, meta.getScale(18));
+
+    assertEquals("c22", meta.getColumnName(19));
+    assertEquals(Types.CHAR, meta.getColumnType(19));
+    assertEquals("char", meta.getColumnTypeName(19));
+    // char columns should have correct display size/precision
+    assertEquals(15, meta.getColumnDisplaySize(19));
+    assertEquals(15, meta.getPrecision(19));
+    assertEquals(0, meta.getScale(19));
 
     for (int i = 1; i <= meta.getColumnCount(); i++) {
       assertFalse(meta.isAutoIncrement(i));

@@ -116,6 +116,8 @@ public class Utils {
       return Types.VARCHAR;
     } else if ("varchar".equalsIgnoreCase(type)) {
       return Types.VARCHAR;
+    } else if ("char".equalsIgnoreCase(type)) {
+      return Types.CHAR;
     } else if ("float".equalsIgnoreCase(type)) {
       return Types.FLOAT;
     } else if ("double".equalsIgnoreCase(type)) {

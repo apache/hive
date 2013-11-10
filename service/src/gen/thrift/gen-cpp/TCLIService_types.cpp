@@ -13,14 +13,16 @@ namespace apache { namespace hive { namespace service { namespace cli { namespac
 int _kTProtocolVersionValues[] = {
   TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V1,
   TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V2,
-  TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V3
+  TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V3,
+  TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V4
 };
 const char* _kTProtocolVersionNames[] = {
   "HIVE_CLI_SERVICE_PROTOCOL_V1",
   "HIVE_CLI_SERVICE_PROTOCOL_V2",
-  "HIVE_CLI_SERVICE_PROTOCOL_V3"
+  "HIVE_CLI_SERVICE_PROTOCOL_V3",
+  "HIVE_CLI_SERVICE_PROTOCOL_V4"
 };
-const std::map<int, const char*> _TProtocolVersion_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(3, _kTProtocolVersionValues, _kTProtocolVersionNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _TProtocolVersion_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(4, _kTProtocolVersionValues, _kTProtocolVersionNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 int _kTTypeIdValues[] = {
   TTypeId::BOOLEAN_TYPE,
@@ -41,7 +43,8 @@ int _kTTypeIdValues[] = {
   TTypeId::DECIMAL_TYPE,
   TTypeId::NULL_TYPE,
   TTypeId::DATE_TYPE,
-  TTypeId::VARCHAR_TYPE
+  TTypeId::VARCHAR_TYPE,
+  TTypeId::CHAR_TYPE
 };
 const char* _kTTypeIdNames[] = {
   "BOOLEAN_TYPE",
@@ -62,9 +65,10 @@ const char* _kTTypeIdNames[] = {
   "DECIMAL_TYPE",
   "NULL_TYPE",
   "DATE_TYPE",
-  "VARCHAR_TYPE"
+  "VARCHAR_TYPE",
+  "CHAR_TYPE"
 };
-const std::map<int, const char*> _TTypeId_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(19, _kTTypeIdValues, _kTTypeIdNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _TTypeId_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(20, _kTTypeIdValues, _kTTypeIdNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 int _kTStatusCodeValues[] = {
   TStatusCode::SUCCESS_STATUS,

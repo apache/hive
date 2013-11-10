@@ -6,10 +6,30 @@
  */
 package org.apache.hive.service.cli.thrift;
 
-import java.util.HashMap;
-import java.util.HashSet;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.thrift.scheme.IScheme;
+import org.apache.thrift.scheme.SchemeFactory;
+import org.apache.thrift.scheme.StandardScheme;
+
+import org.apache.thrift.scheme.TupleScheme;
+import org.apache.thrift.protocol.TTupleProtocol;
+import org.apache.thrift.protocol.TProtocolException;
+import org.apache.thrift.EncodingUtils;
+import org.apache.thrift.TException;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Set;
+import java.util.HashSet;
+import java.util.EnumSet;
+import java.util.Collections;
+import java.util.BitSet;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TCLIServiceConstants {
 
@@ -29,6 +49,7 @@ public class TCLIServiceConstants {
     PRIMITIVE_TYPES.add(org.apache.hive.service.cli.thrift.TTypeId.NULL_TYPE);
     PRIMITIVE_TYPES.add(org.apache.hive.service.cli.thrift.TTypeId.DATE_TYPE);
     PRIMITIVE_TYPES.add(org.apache.hive.service.cli.thrift.TTypeId.VARCHAR_TYPE);
+    PRIMITIVE_TYPES.add(org.apache.hive.service.cli.thrift.TTypeId.CHAR_TYPE);
   }
 
   public static final Set<TTypeId> COMPLEX_TYPES = new HashSet<TTypeId>();
@@ -66,11 +87,13 @@ public class TCLIServiceConstants {
     TYPE_NAMES.put(org.apache.hive.service.cli.thrift.TTypeId.NULL_TYPE, "NULL");
     TYPE_NAMES.put(org.apache.hive.service.cli.thrift.TTypeId.DATE_TYPE, "DATE");
     TYPE_NAMES.put(org.apache.hive.service.cli.thrift.TTypeId.VARCHAR_TYPE, "VARCHAR");
+    TYPE_NAMES.put(org.apache.hive.service.cli.thrift.TTypeId.CHAR_TYPE, "CHAR");
   }
 
-  // Constants for column type attributes.
   public static final String CHARACTER_MAXIMUM_LENGTH = "characterMaximumLength";
+
   public static final String PRECISION = "precision";
+
   public static final String SCALE = "scale";
 
 }
