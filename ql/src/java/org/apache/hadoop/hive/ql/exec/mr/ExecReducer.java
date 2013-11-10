@@ -177,7 +177,6 @@ public class ExecReducer extends MapReduceBase implements Reducer {
       // propagate reporter and output collector to all operators
       oc = output;
       rp = reporter;
-      reducer.setOutputCollector(oc);
       reducer.setReporter(rp);
       MapredContext.get().setReporter(reporter);
     }
