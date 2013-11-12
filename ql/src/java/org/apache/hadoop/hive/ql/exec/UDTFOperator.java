@@ -44,7 +44,7 @@ public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
 
   protected final Log LOG = LogFactory.getLog(this.getClass().getName());
 
-  ObjectInspector[] udtfInputOIs = null;
+  StructObjectInspector udtfInputOI = null;
   Object[] objToSendToUDTF = null;
 
   GenericUDTF genericUDTF;
@@ -63,22 +63,16 @@ public class UDTFOperator extends Operator<UDTFDesc> implements Serializable {
 
     genericUDTF.setCollector(collector);
 
-    // Make an object inspector [] of the arguments to the UDTF
-    List<? extends StructField> inputFields =
-        ((StructObjectInspector) inputObjInspectors[0]).getAllStructFieldRefs();
+    udtfInputOI = (StructObjectInspector) inputObjInspectors[0];
 
-    udtfInputOIs = new ObjectInspector[inputFields.size()];
-    for (int i = 0; i < inputFields.size(); i++) {
-      udtfInputOIs[i] = inputFields.get(i).getFieldObjectInspector();
-    }
-    objToSendToUDTF = new Object[inputFields.size()];
+    objToSendToUDTF = new Object[udtfInputOI.getAllStructFieldRefs().size()];
 
     MapredContext context = MapredContext.get();
     if (context != null) {
       context.setup(genericUDTF);
     }
-    StructObjectInspector udtfOutputOI = genericUDTF.initialize(
-        udtfInputOIs);
+    StructObjectInspector udtfOutputOI = genericUDTF.initialize(udtfInputOI);
+
     if (conf.isOuterLV()) {
       outerObj = Arrays.asList(new Object[udtfOutputOI.getAllStructFieldRefs().size()]);
     }

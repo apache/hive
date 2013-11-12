@@ -32,7 +32,7 @@ import org.apache.hadoop.hive.ql.lib.Node;
 public class ASTNode extends CommonTree implements Node,Serializable {
   private static final long serialVersionUID = 1L;
 
-  private ASTNodeOrigin origin;
+  private transient ASTNodeOrigin origin;
 
   public ASTNode() {
   }

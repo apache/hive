@@ -49,6 +49,7 @@ import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.Counters.Counter;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.JobStatus;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.hadoop.mapred.TaskCompletionEvent;
 import org.apache.hadoop.mapred.TaskReport;
@@ -240,7 +241,7 @@ public class HadoopJobExecHelper {
       } catch (InterruptedException e) {
       }
 
-      if (initializing && ShimLoader.getHadoopShims().isJobPreparing(rj)) {
+      if (initializing && rj.getJobState() == JobStatus.PREP) {
         // No reason to poll untill the job is initialized
         continue;
       } else {
@@ -590,12 +591,6 @@ public class HadoopJobExecHelper {
     List<Integer> reducersRunTimes = new ArrayList<Integer>();
 
     for (TaskCompletionEvent taskCompletion : taskCompletions) {
-      String[] taskJobIds = ShimLoader.getHadoopShims().getTaskJobIDs(taskCompletion);
-      if (taskJobIds == null) {
-        // Task attempt info is unavailable in this Hadoop version");
-        continue;
-      }
-      String taskId = taskJobIds[0];
       if (!taskCompletion.isMapTask()) {
         reducersRunTimes.add(new Integer(taskCompletion.getTaskRunTime()));
       }

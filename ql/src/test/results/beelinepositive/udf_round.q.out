@@ -16,7 +16,7 @@ Saving all output to "!!{outputDirectory}!!/udf_round.q.raw". Enter "record" wit
 round(1.0/0.0, 0), round(power(-1.0,0.5), 0) 
 FROM src LIMIT 1;
 '_c0','_c1','_c2','_c3','_c4'
-'','','','Infinity','NaN'
+'','','','','NaN'
 1 row selected 
 >>>  
 >>>  SELECT 

@@ -674,7 +674,10 @@ public class Commands {
 
     // use multiple lines for statements not terminated by ";"
     try {
-      while (!(line.trim().endsWith(";")) && beeLine.getOpts().isAllowMultiLineCommand()) {
+      //When using -e, console reader is not initialized and command is a single line
+      while (beeLine.getConsoleReader() != null && !(line.trim().endsWith(";"))
+        && beeLine.getOpts().isAllowMultiLineCommand()) {
+
         StringBuilder prompt = new StringBuilder(beeLine.getPrompt());
         for (int i = 0; i < prompt.length() - 1; i++) {
           if (prompt.charAt(i) != '>') {
@@ -690,6 +693,7 @@ public class Commands {
     } catch (Exception e) {
       beeLine.handleException(e);
     }
+
 
     if (line.endsWith(";")) {
       line = line.substring(0, line.length() - 1);

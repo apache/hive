@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +31,7 @@ import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.ObjectCache;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.reportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
@@ -154,6 +156,17 @@ public class ReduceRecordProcessor  extends RecordProcessor{
         }
       }
 
+      // set output collector for any reduce sink operators in the pipeline.
+      List<Operator<? extends OperatorDesc>> children = new LinkedList<Operator<? extends OperatorDesc>>();
+      children.add(reducer);
+      if (dummyOps != null) {
+        children.addAll(dummyOps);
+      }
+      OperatorUtils.setChildrenCollector(children, out);
+      
+      reducer.setReporter(reporter);
+      MapredContext.get().setReporter(reporter);
+
     } catch (Throwable e) {
       abort = true;
       if (e instanceof OutOfMemoryError) {
@@ -163,10 +176,6 @@ public class ReduceRecordProcessor  extends RecordProcessor{
         throw new RuntimeException("Reduce operator initialization failed", e);
       }
     }
-
-    reducer.setOutputCollector(out);
-    reducer.setReporter(reporter);
-    MapredContext.get().setReporter(reporter);
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
   }

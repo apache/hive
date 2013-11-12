@@ -62,7 +62,7 @@ public class UDFOPDivide extends UDF {
   public DoubleWritable evaluate(DoubleWritable a, DoubleWritable b) {
     // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
     // + b);
-    if ((a == null) || (b == null)) {
+    if (a == null || b == null || b.get() == 0.0) {
       return null;
     }
 

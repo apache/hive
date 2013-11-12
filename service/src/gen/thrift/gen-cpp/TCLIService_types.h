@@ -20,7 +20,8 @@ struct TProtocolVersion {
   enum type {
     HIVE_CLI_SERVICE_PROTOCOL_V1 = 0,
     HIVE_CLI_SERVICE_PROTOCOL_V2 = 1,
-    HIVE_CLI_SERVICE_PROTOCOL_V3 = 2
+    HIVE_CLI_SERVICE_PROTOCOL_V3 = 2,
+    HIVE_CLI_SERVICE_PROTOCOL_V4 = 3
   };
 };
 
@@ -46,7 +47,8 @@ struct TTypeId {
     DECIMAL_TYPE = 15,
     NULL_TYPE = 16,
     DATE_TYPE = 17,
-    VARCHAR_TYPE = 18
+    VARCHAR_TYPE = 18,
+    CHAR_TYPE = 19
   };
 };
 
@@ -1657,8 +1659,8 @@ class TOpenSessionResp {
   static const char* ascii_fingerprint; // = "CFE7D7F4E9EC671F2518ED74FEE9F163";
   static const uint8_t binary_fingerprint[16]; // = {0xCF,0xE7,0xD7,0xF4,0xE9,0xEC,0x67,0x1F,0x25,0x18,0xED,0x74,0xFE,0xE9,0xF1,0x63};
 
-  TOpenSessionResp() : serverProtocolVersion((TProtocolVersion::type)2) {
-    serverProtocolVersion = (TProtocolVersion::type)2;
+  TOpenSessionResp() : serverProtocolVersion((TProtocolVersion::type)3) {
+    serverProtocolVersion = (TProtocolVersion::type)3;
 
   }
 

@@ -1,0 +1,167 @@
+PREHOOK: query: CREATE TABLE alltypesorc_part(ctinyint tinyint, csmallint smallint, cint int, cbigint bigint, cfloat float, cdouble double, cstring1 string, cstring2 string, ctimestamp1 timestamp, ctimestamp2 timestamp, cboolean1 boolean, cboolean2 boolean) partitioned by (ds string) STORED AS ORC
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE alltypesorc_part(ctinyint tinyint, csmallint smallint, cint int, cbigint bigint, cfloat float, cdouble double, cstring1 string, cstring2 string, ctimestamp1 timestamp, ctimestamp2 timestamp, cboolean1 boolean, cboolean2 boolean) partitioned by (ds string) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@alltypesorc_part
+PREHOOK: query: insert overwrite table alltypesorc_part partition (ds='2011') select * from alltypesorc limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@alltypesorc_part@ds=2011
+POSTHOOK: query: insert overwrite table alltypesorc_part partition (ds='2011') select * from alltypesorc limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@alltypesorc_part@ds=2011
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:from deserializer), ]
+PREHOOK: query: insert overwrite table alltypesorc_part partition (ds='2012') select * from alltypesorc limit 100
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@alltypesorc_part@ds=2012
+POSTHOOK: query: insert overwrite table alltypesorc_part partition (ds='2012') select * from alltypesorc limit 100
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@alltypesorc_part@ds=2012
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:from deserializer), ]
+PREHOOK: query: explain select (cdouble+2) from alltypesorc_part limit 10
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select (cdouble+2) from alltypesorc_part limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:from deserializer), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypesorc_part))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (+ (TOK_TABLE_OR_COL cdouble) 2))) (TOK_LIMIT 10)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        alltypesorc_part 
+          TableScan
+            alias: alltypesorc_part
+            Select Operator
+              expressions:
+                    expr: (cdouble + 2)
+                    type: double
+              outputColumnNames: _col0
+              Vectorized execution: true
+              Limit
+                Vectorized execution: true
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  Vectorized execution: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: 10
+
+
+PREHOOK: query: select (cdouble+2) from alltypesorc_part limit 10
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_part
+PREHOOK: Input: default@alltypesorc_part@ds=2011
+PREHOOK: Input: default@alltypesorc_part@ds=2012
+#### A masked pattern was here ####
+POSTHOOK: query: select (cdouble+2) from alltypesorc_part limit 10
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_part
+POSTHOOK: Input: default@alltypesorc_part@ds=2011
+POSTHOOK: Input: default@alltypesorc_part@ds=2012
+#### A masked pattern was here ####
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2011).ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cbigint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cbigint, type:bigint, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cboolean1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean1, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cboolean2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cboolean2, type:boolean, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cdouble SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cdouble, type:double, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cfloat SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cfloat, type:float, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cint, type:int, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).csmallint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:csmallint, type:smallint, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cstring1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring1, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).cstring2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:cstring2, type:string, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctimestamp1 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctimestamp2 SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp2, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_part PARTITION(ds=2012).ctinyint SIMPLE [(alltypesorc)alltypesorc.FieldSchema(name:ctinyint, type:tinyint, comment:from deserializer), ]
+-13324.0
+-4211.0
+-15811.0
+-9564.0
+15009.0
+7023.0
+4965.0
+-7822.0
+-15429.0
+-15547.0

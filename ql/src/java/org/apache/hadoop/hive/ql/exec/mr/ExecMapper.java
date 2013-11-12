@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.ObjectCache;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorMapOperator;
 import org.apache.hadoop.hive.ql.plan.MapWork;
@@ -158,7 +159,7 @@ public class ExecMapper extends MapReduceBase implements Mapper {
     if (oc == null) {
       oc = output;
       rp = reporter;
-      mo.setOutputCollector(oc);
+      OperatorUtils.setChildrenCollector(mo.getChildOperators(), output);
       mo.setReporter(rp);
       MapredContext.get().setReporter(reporter);
     }

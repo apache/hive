@@ -444,8 +444,10 @@ public class GenVectorCode extends Task {
   private String buildDir;
 
   private String expressionOutputDirectory;
+  private String expressionClassesDirectory;
   private String expressionTemplateDirectory;
   private String udafOutputDirectory;
+  private String udafClassesDirectory;
   private String udafTemplateDirectory;
   private GenVectorTestCode testCodeGen;
 
@@ -461,17 +463,24 @@ public class GenVectorCode extends Task {
     File generationDirectory = new File(templateBaseDir);
 
     String buildPath = joinPath(buildDir, "generated-sources", "java");
+    String compiledPath = joinPath(buildDir, "classes");
 
-    File exprOutput = new File(joinPath(buildPath, "org", "apache", "hadoop",
-        "hive", "ql", "exec", "vector", "expressions", "gen"));
+    String expression = joinPath("org", "apache", "hadoop",
+        "hive", "ql", "exec", "vector", "expressions", "gen");
+    File exprOutput = new File(joinPath(buildPath, expression));
+    File exprClasses = new File(joinPath(compiledPath, expression));
     expressionOutputDirectory = exprOutput.getAbsolutePath();
+    expressionClassesDirectory = exprClasses.getAbsolutePath();
 
     expressionTemplateDirectory =
         joinPath(generationDirectory.getAbsolutePath(), "ExpressionTemplates");
 
-    File udafOutput = new File(joinPath(buildPath, "org", "apache", "hadoop",
-        "hive", "ql", "exec", "vector", "expressions", "aggregates", "gen"));
+    String udaf = joinPath("org", "apache", "hadoop",
+        "hive", "ql", "exec", "vector", "expressions", "aggregates", "gen");
+    File udafOutput = new File(joinPath(buildPath, udaf));
+    File udafClasses = new File(joinPath(compiledPath, udaf));
     udafOutputDirectory = udafOutput.getAbsolutePath();
+    udafClassesDirectory = udafClasses.getAbsolutePath();
 
     udafTemplateDirectory =
         joinPath(generationDirectory.getAbsolutePath(), "UDAFTemplates");
@@ -502,7 +511,7 @@ public class GenVectorCode extends Task {
     try {
       this.generate();
     } catch (Exception e) {
-      new BuildException(e);
+      throw new BuildException(e);
     }
   }
 
@@ -569,14 +578,14 @@ public class GenVectorCode extends Task {
     String optionalNot = tdesc[1];
     String className = "FilterStringColumn" + (optionalNot.equals("!") ? "Not" : "")
         + "Between";
-    String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
-
-    // Read the template into a string, expand it, and write it.
-    String templateFile = joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt");
+        // Read the template into a string, expand it, and write it.
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<OptionalNot>", optionalNot);
-    writeFile(outputFile, templateString);
+
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
   }
 
   private void generateFilterColumnBetween(String[] tdesc) throws IOException {
@@ -586,17 +595,17 @@ public class GenVectorCode extends Task {
     String className = "Filter" + getCamelCaseType(operandType) + "Column" +
       (optionalNot.equals("!") ? "Not" : "") + "Between";
     String inputColumnVectorType = getColumnVectorType(operandType);
-    String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
 
     // Read the template into a string, expand it, and write it.
-    String templateFile = joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt");
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
     templateString = templateString.replaceAll("<OperandType>", operandType);
     templateString = templateString.replaceAll("<OptionalNot>", optionalNot);
 
-    writeFile(outputFile, templateString);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
   }
 
   private void generateColumnCompareColumn(String[] tdesc) throws IOException {
@@ -620,8 +629,7 @@ public class GenVectorCode extends Task {
     String writableType = getOutputWritableType(valueType);
     String inspectorType = getOutputObjectInspector(valueType);
 
-    String outputFile = joinPath(this.udafOutputDirectory, className + ".java");
-    String templateFile = joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt");
+    File templateFile = new File(joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt"));
 
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
@@ -632,8 +640,8 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<DescriptionValue>", descValue);
     templateString = templateString.replaceAll("<OutputType>", writableType);
     templateString = templateString.replaceAll("<OutputTypeInspector>", inspectorType);
-    writeFile(outputFile, templateString);
-
+    writeFile(templateFile.lastModified(), udafOutputDirectory, udafClassesDirectory,
+        className, templateString);
   }
 
   private void generateVectorUDAFMinMaxString(String[] tdesc) throws Exception {
@@ -642,16 +650,15 @@ public class GenVectorCode extends Task {
     String descName = tdesc[3];
     String descValue = tdesc[4];
 
-    String outputFile = joinPath(this.udafOutputDirectory, className + ".java");
-    String templateFile = joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt");
+    File templateFile = new File(joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt"));
 
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
     templateString = templateString.replaceAll("<DescriptionName>", descName);
     templateString = templateString.replaceAll("<DescriptionValue>", descValue);
-    writeFile(outputFile, templateString);
-
+    writeFile(templateFile.lastModified(), udafOutputDirectory, udafClassesDirectory,
+        className, templateString);
   }
 
   private void generateVectorUDAFSum(String[] tdesc) throws Exception {
@@ -662,8 +669,7 @@ public class GenVectorCode extends Task {
     String writableType = getOutputWritableType(valueType);
     String inspectorType = getOutputObjectInspector(valueType);
 
-    String outputFile = joinPath(this.udafOutputDirectory, className + ".java");
-    String templateFile = joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt");
+    File templateFile = new File(joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt"));
 
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
@@ -671,7 +677,8 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<InputColumnVectorType>", columnType);
     templateString = templateString.replaceAll("<OutputType>", writableType);
     templateString = templateString.replaceAll("<OutputTypeInspector>", inspectorType);
-    writeFile(outputFile, templateString);
+    writeFile(templateFile.lastModified(), udafOutputDirectory, udafClassesDirectory,
+        className, templateString);
   }
 
   private void generateVectorUDAFAvg(String[] tdesc) throws IOException {
@@ -679,14 +686,14 @@ public class GenVectorCode extends Task {
     String valueType = tdesc[2];
     String columnType = getColumnVectorType(valueType);
 
-    String outputFile = joinPath(this.udafOutputDirectory, className + ".java");
-    String templateFile = joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt");
+    File templateFile = new File(joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt"));
 
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<ValueType>", valueType);
     templateString = templateString.replaceAll("<InputColumnVectorType>", columnType);
-    writeFile(outputFile, templateString);
+    writeFile(templateFile.lastModified(), udafOutputDirectory, udafClassesDirectory,
+        className, templateString);
   }
 
   private void generateVectorUDAFVar(String[] tdesc) throws IOException {
@@ -697,8 +704,7 @@ public class GenVectorCode extends Task {
     String descriptionValue = tdesc[5];
     String columnType = getColumnVectorType(valueType);
 
-    String outputFile = joinPath(this.udafOutputDirectory, className + ".java");
-    String templateFile = joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt");
+    File templateFile = new File(joinPath(this.udafTemplateDirectory, tdesc[0] + ".txt"));
 
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
@@ -707,7 +713,8 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<VarianceFormula>", varianceFormula);
     templateString = templateString.replaceAll("<DescriptionName>", descriptionName);
     templateString = templateString.replaceAll("<DescriptionValue>", descriptionValue);
-    writeFile(outputFile, templateString);
+    writeFile(templateFile.lastModified(), udafOutputDirectory, udafClassesDirectory,
+        className, templateString);
   }
 
   private void generateFilterStringScalarCompareColumn(String[] tdesc) throws IOException {
@@ -752,15 +759,15 @@ public class GenVectorCode extends Task {
 
   private void generateStringColumnCompareScalar(String[] tdesc, String className)
       throws IOException {
-   String operatorSymbol = tdesc[2];
-   String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
-   // Read the template into a string;
-   String templateFile = joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt");
-   String templateString = readFile(templateFile);
-   // Expand, and write result
-   templateString = templateString.replaceAll("<ClassName>", className);
-   templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
-   writeFile(outputFile, templateString);
+    String operatorSymbol = tdesc[2];
+    // Read the template into a string;
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    // Expand, and write result
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<OperatorSymbol>", operatorSymbol);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
   }
 
   private void generateFilterColumnCompareColumn(String[] tdesc) throws IOException {
@@ -780,8 +787,7 @@ public class GenVectorCode extends Task {
     String outputColumnVectorType = inputColumnVectorType;
     String returnType = operandType;
     String className = getCamelCaseType(operandType) + "ColUnaryMinus";
-    String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
-    String templateFile = joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt");
+        File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     // Expand, and write result
     templateString = templateString.replaceAll("<ClassName>", className);
@@ -789,7 +795,8 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
     templateString = templateString.replaceAll("<OperandType>", operandType);
     templateString = templateString.replaceAll("<ReturnType>", returnType);
-    writeFile(outputFile, templateString);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
   }
 
   // template, <ClassNamePrefix>, <ReturnType>, <OperandType>, <FuncName>, <OperandCast>, <ResultCast>
@@ -801,8 +808,7 @@ public class GenVectorCode extends Task {
     String outputColumnVectorType = this.getColumnVectorType(returnType);
     String className = classNamePrefix + getCamelCaseType(operandType) + "To"
       + getCamelCaseType(returnType);
-    String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
-    String templateFile = joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt");
+        File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     String funcName = tdesc[4];
     String operandCast = tdesc[5];
@@ -818,7 +824,8 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OperandCast>", operandCast);
     templateString = templateString.replaceAll("<ResultCast>", resultCast);
     templateString = templateString.replaceAll("<Cleanup>", cleanup);
-    writeFile(outputFile, templateString);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
   }
 
   private void generateColumnArithmeticColumn(String [] tdesc) throws IOException {
@@ -880,10 +887,9 @@ public class GenVectorCode extends Task {
     String inputColumnVectorType1 = this.getColumnVectorType(operandType1);
     String inputColumnVectorType2 = this.getColumnVectorType(operandType2);
     String operatorSymbol = tdesc[4];
-    String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
 
     //Read the template into a string;
-    String templateFile = joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt");
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<InputColumnVectorType1>", inputColumnVectorType1);
@@ -894,7 +900,8 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
     templateString = templateString.replaceAll("<ReturnType>", returnType);
     templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(returnType));
-    writeFile(outputFile, templateString);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
 
     if(returnType==null){
       testCodeGen.addColumnColumnFilterTestCases(
@@ -918,10 +925,9 @@ public class GenVectorCode extends Task {
     String outputColumnVectorType = this.getColumnVectorType(returnType);
     String inputColumnVectorType = this.getColumnVectorType(operandType1);
     String operatorSymbol = tdesc[4];
-    String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
 
     //Read the template into a string;
-    String templateFile = joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt");
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
     String templateString = readFile(templateFile);
     templateString = templateString.replaceAll("<ClassName>", className);
     templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
@@ -930,7 +936,8 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OperandType1>", operandType1);
     templateString = templateString.replaceAll("<OperandType2>", operandType2);
     templateString = templateString.replaceAll("<ReturnType>", returnType);
-    writeFile(outputFile, templateString);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
 
     if(returnType==null) {
       testCodeGen.addColumnScalarFilterTestCases(
@@ -956,10 +963,9 @@ public class GenVectorCode extends Task {
      String outputColumnVectorType = this.getColumnVectorType(returnType);
      String inputColumnVectorType = this.getColumnVectorType(operandType2);
      String operatorSymbol = tdesc[4];
-     String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
 
      //Read the template into a string;
-     String templateFile = joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt");
+     File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
      String templateString = readFile(templateFile);
      templateString = templateString.replaceAll("<ClassName>", className);
      templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
@@ -968,7 +974,8 @@ public class GenVectorCode extends Task {
      templateString = templateString.replaceAll("<OperandType1>", operandType1);
      templateString = templateString.replaceAll("<OperandType2>", operandType2);
      templateString = templateString.replaceAll("<ReturnType>", returnType);
-     writeFile(outputFile, templateString);
+     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
 
      if(returnType==null) {
        testCodeGen.addColumnScalarFilterTestCases(
@@ -1008,14 +1015,29 @@ public class GenVectorCode extends Task {
     generateScalarBinaryOperatorColumn(tdesc, returnType, className);
   }
 
+  static void writeFile(long templateTime, String outputDir, String classesDir,
+       String className, String str) throws IOException {
+    File outputFile = new File(outputDir, className + ".java");
+    File outputClass = new File(classesDir, className + ".class");
+    if (outputFile.lastModified() > templateTime && outputFile.length() == str.length() &&
+        outputClass.lastModified() > templateTime) {
+      // best effort
+      return;
+    }
+    writeFile(outputFile, str);
+  }
 
-   static void writeFile(String outputFile, String str) throws IOException {
+  static void writeFile(File outputFile, String str) throws IOException {
     BufferedWriter w = new BufferedWriter(new FileWriter(outputFile));
     w.write(str);
     w.close();
   }
 
-   static String readFile(String templateFile) throws IOException {
+  static String readFile(String templateFile) throws IOException {
+    return readFile(new File(templateFile));
+  }
+
+  static String readFile(File templateFile) throws IOException {
     BufferedReader r = new BufferedReader(new FileReader(templateFile));
     String line = r.readLine();
     StringBuilder b = new StringBuilder();

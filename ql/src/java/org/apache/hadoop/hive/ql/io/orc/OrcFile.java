@@ -104,7 +104,8 @@ public final class OrcFile {
   public static final String ENABLE_INDEXES = "orc.create.index";
   public static final String BLOCK_PADDING = "orc.block.padding";
 
-  static final long DEFAULT_STRIPE_SIZE = 256 * 1024 * 1024;
+  static final long DEFAULT_STRIPE_SIZE =
+      HiveConf.ConfVars.HIVE_ORC_DEFAULT_STRIPE_SIZE.defaultLongVal;
   static final CompressionKind DEFAULT_COMPRESSION_KIND =
     CompressionKind.ZLIB;
   static final int DEFAULT_BUFFER_SIZE = 256 * 1024;
@@ -138,7 +139,7 @@ public final class OrcFile {
     private final Configuration configuration;
     private FileSystem fileSystemValue = null;
     private ObjectInspector inspectorValue = null;
-    private long stripeSizeValue = DEFAULT_STRIPE_SIZE;
+    private long stripeSizeValue;
     private int rowIndexStrideValue = DEFAULT_ROW_INDEX_STRIDE;
     private int bufferSizeValue = DEFAULT_BUFFER_SIZE;
     private boolean blockPaddingValue = DEFAULT_BLOCK_PADDING;
@@ -149,6 +150,9 @@ public final class OrcFile {
     WriterOptions(Configuration conf) {
       configuration = conf;
       memoryManagerValue = getMemoryManager(conf);
+      stripeSizeValue =
+          conf.getLong(HiveConf.ConfVars.HIVE_ORC_DEFAULT_STRIPE_SIZE.varname,
+             DEFAULT_STRIPE_SIZE);
       String versionName =
         conf.get(HiveConf.ConfVars.HIVE_ORC_WRITE_FORMAT.varname);
       if (versionName == null) {

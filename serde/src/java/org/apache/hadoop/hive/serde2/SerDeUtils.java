@@ -37,6 +37,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveCharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
@@ -252,6 +253,13 @@ public final class SerDeUtils {
           sb.append('"');
           sb.append(escapeString(((StringObjectInspector) poi)
               .getPrimitiveJavaObject(o)));
+          sb.append('"');
+          break;
+        }
+        case CHAR: {
+          sb.append('"');
+          sb.append(escapeString(((HiveCharObjectInspector) poi)
+              .getPrimitiveJavaObject(o).toString()));
           sb.append('"');
           break;
         }

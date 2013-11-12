@@ -42,6 +42,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.hooks.ReadEntity;
 import org.apache.hadoop.hive.ql.metadata.Table;
+import org.apache.hadoop.hive.ql.optimizer.physical.StageIDsRearranger;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExplainWork;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -59,7 +60,7 @@ import org.json.JSONObject;
 public class ExplainTask extends Task<ExplainWork> implements Serializable {
   private static final long serialVersionUID = 1L;
   public static final String EXPL_COLUMN_NAME = "Explain";
-  private Set<Operator<? extends OperatorDesc>> visitedOps = new HashSet<Operator<?>>();
+  private Set<Operator<?>> visitedOps = new HashSet<Operator<?>>();
   private boolean isLogical = false;
 
   public ExplainTask() {
@@ -158,9 +159,16 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         outJSONObject.put("ABSTRACT SYNTAX TREE", jsonAST);
       }
     }
+    List<Task<?>> tasks = work.getRootTasks();
 
-    JSONObject jsonDependencies = outputDependencies(out, jsonOutput,
-        work.getRootTasks(), 0);
+    List<Task> ordered = StageIDsRearranger.getExplainOrder(conf, tasks);
+    Task<? extends Serializable> fetchTask = work.getFetchTask();
+    if (fetchTask != null) {
+      fetchTask.setRootTask(true);  // todo HIVE-3925
+      ordered.add(fetchTask);
+    }
+
+    JSONObject jsonDependencies = outputDependencies(out, work, ordered);
 
     if (out != null) {
       out.println();
@@ -171,7 +179,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
 
     // Go over all the tasks and dump out the plans
-    JSONObject jsonPlan = outputStagePlans(out, work, work.getRootTasks(), 0);
+    JSONObject jsonPlan = outputStagePlans(out, work, ordered);
 
     if (jsonOutput) {
       outJSONObject.put("STAGE PLANS", jsonPlan);
@@ -558,13 +566,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
 
   private JSONObject outputPlan(Task<? extends Serializable> task,
       PrintStream out, JSONObject parentJSON, boolean extended,
-      boolean jsonOutput, HashSet<Task<? extends Serializable>> displayedSet,
-      int indent) throws Exception {
-
-    if (displayedSet.contains(task)) {
-      return null;
-    }
-    displayedSet.add(task);
+      boolean jsonOutput, int indent) throws Exception {
 
     if (out != null) {
       out.print(indentString(indent));
@@ -583,32 +585,13 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     if (jsonOutput) {
       parentJSON.put(task.getId(), jsonOutputPlan);
     }
-
-    if (task instanceof ConditionalTask
-        && ((ConditionalTask) task).getListTasks() != null) {
-      for (Task<? extends Serializable> con : ((ConditionalTask) task).getListTasks()) {
-        outputPlan(con, out, parentJSON, extended, jsonOutput, displayedSet,
-            jsonOutput ? 0 : indent);
-      }
-    }
-    if (task.getChildTasks() != null) {
-      for (Task<? extends Serializable> child : task.getChildTasks()) {
-        outputPlan(child, out, parentJSON, extended, jsonOutput, displayedSet,
-            jsonOutput ? 0 : indent);
-      }
-    }
     return null;
   }
 
   private JSONObject outputDependencies(Task<? extends Serializable> task,
-      Set<Task<? extends Serializable>> dependeciesTaskSet, PrintStream out,
-      JSONObject parentJson, boolean jsonOutput, int indent,
-      boolean rootTskCandidate) throws Exception {
+      PrintStream out, JSONObject parentJson, boolean jsonOutput, boolean taskType, int indent)
+      throws Exception {
 
-    if (dependeciesTaskSet.contains(task)) {
-      return null;
-    }
-    dependeciesTaskSet.add(task);
     boolean first = true;
     JSONObject json = jsonOutput ? new JSONObject() : null;
     if (out != null) {
@@ -617,7 +600,7 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     }
 
     if ((task.getParentTasks() == null || task.getParentTasks().isEmpty())) {
-      if (rootTskCandidate) {
+      if (task.isRootTask()) {
         if (out != null) {
           out.print(" is a root stage");
         }
@@ -678,30 +661,17 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
         json.put("CONDITIONAL CHILD TASKS", s.toString());
       }
     }
+    if (taskType) {
+      if (out != null) {
+        out.printf(" [%s]", task.getType());
+      }
+      if (jsonOutput) {
+        json.put("TASK TYPE", task.getType().name());
+      }
+    }
 
     if (out != null) {
       out.println();
-    }
-
-    if (task instanceof ConditionalTask
-        && ((ConditionalTask) task).getListTasks() != null) {
-      for (Task<? extends Serializable> con : ((ConditionalTask) task).getListTasks()) {
-        JSONObject jsonOut = outputDependencies(con, dependeciesTaskSet, out,
-            parentJson, jsonOutput, jsonOutput ? 0 : indent, false);
-        if (jsonOutput && (jsonOut != null)) {
-          parentJson.put(con.getId(), jsonOut);
-        }
-      }
-    }
-
-    if (task.getChildTasks() != null) {
-      for (Task<? extends Serializable> child : task.getChildTasks()) {
-        JSONObject jsonOut = outputDependencies(child, dependeciesTaskSet, out,
-            parentJson, jsonOutput, jsonOutput ? 0 : indent, true);
-        if (jsonOutput && (jsonOut != null)) {
-          parentJson.put(child.getId(), jsonOut);
-        }
-      }
     }
     return jsonOutput ? json : null;
   }
@@ -718,44 +688,35 @@ public class ExplainTask extends Task<ExplainWork> implements Serializable {
     return jsonOutput ? treeString : null;
   }
 
-  public JSONObject outputDependencies(PrintStream out, boolean jsonOutput,
-      List<Task<? extends Serializable>> rootTasks, int indent)
+  public JSONObject outputDependencies(PrintStream out, ExplainWork work, List<Task> tasks)
       throws Exception {
+    boolean jsonOutput = work.isFormatted();
+    boolean appendTaskType = work.isAppendTaskType();
     if (out != null) {
-      out.print(indentString(indent));
       out.println("STAGE DEPENDENCIES:");
     }
 
     JSONObject json = jsonOutput ? new JSONObject() : null;
-    Set<Task<? extends Serializable>> dependenciesTaskSet =
-      new HashSet<Task<? extends Serializable>>();
-
-    for (Task<? extends Serializable> rootTask : rootTasks) {
-      JSONObject jsonOut = outputDependencies(rootTask,
-          dependenciesTaskSet, out, json, jsonOutput,
-          jsonOutput ? 0 : indent + 2, true);
-      if (jsonOutput && (jsonOut != null)) {
-        json.put(rootTask.getId(), jsonOut);
+    for (Task task : tasks) {
+      JSONObject jsonOut = outputDependencies(task, out, json, jsonOutput, appendTaskType, 2);
+      if (jsonOutput && jsonOut != null) {
+        json.put(task.getId(), jsonOut);
       }
     }
 
     return jsonOutput ? json : null;
   }
 
-  public JSONObject outputStagePlans(PrintStream out, ExplainWork work,
-      List<Task<? extends Serializable>> rootTasks, int indent)
+  public JSONObject outputStagePlans(PrintStream out, ExplainWork work, List<Task> tasks)
       throws Exception {
     boolean jsonOutput = work.isFormatted();
     if (out != null) {
-      out.print(indentString(indent));
       out.println("STAGE PLANS:");
     }
 
     JSONObject json = jsonOutput ? new JSONObject() : null;
-    HashSet<Task<? extends Serializable>> displayedSet = new HashSet<Task<? extends Serializable>>();
-    for (Task<? extends Serializable> rootTask : rootTasks) {
-      outputPlan(rootTask, out, json, work.getExtended(), jsonOutput,
-          displayedSet, jsonOutput ? 0 : indent + 2);
+    for (Task task : tasks) {
+      outputPlan(task, out, json, work.getExtended(), jsonOutput, 2);
     }
     return jsonOutput ? json : null;
   }

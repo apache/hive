@@ -108,6 +108,13 @@ public interface Reader {
   ColumnStatistics[] getStatistics();
 
   /**
+   * Get the metadata information like stripe level column statistics etc.
+   * @return the information about the column
+   * @throws IOException
+   */
+  Metadata getMetadata() throws IOException;
+
+  /**
    * Get the list of types contained in the file. The root type is the first
    * type in the list.
    * @return the list of flattened types
@@ -122,10 +129,12 @@ public interface Reader {
   class FileMetaInfo{
     final String compressionType;
     final int bufferSize;
+    final int metadataSize;
     final ByteBuffer footerBuffer;
-    FileMetaInfo(String compressionType, int bufferSize, ByteBuffer footerBuffer){
+    FileMetaInfo(String compressionType, int bufferSize, int metadataSize, ByteBuffer footerBuffer){
       this.compressionType = compressionType;
       this.bufferSize = bufferSize;
+      this.metadataSize = metadataSize;
       this.footerBuffer = footerBuffer;
     }
   }

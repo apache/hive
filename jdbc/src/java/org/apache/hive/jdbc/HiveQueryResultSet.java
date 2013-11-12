@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.thrift.TCLIService;
 import org.apache.hive.service.cli.thrift.TCLIServiceConstants;
@@ -180,6 +181,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     if (primitiveTypeEntry.isSetTypeQualifiers()) {
       TTypeQualifiers tq = primitiveTypeEntry.getTypeQualifiers();
       switch (primitiveTypeEntry.getType()) {
+        case CHAR_TYPE:
         case VARCHAR_TYPE:
           TTypeQualifierValue val =
               tq.getQualifiers().get(TCLIServiceConstants.CHARACTER_MAXIMUM_LENGTH);
@@ -187,6 +189,12 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
             // precision is char length
             ret = new JdbcColumnAttributes(val.getI32Value(), 0);
           }
+          break;
+        case DECIMAL_TYPE:
+          TTypeQualifierValue prec = tq.getQualifiers().get(TCLIServiceConstants.PRECISION);
+          TTypeQualifierValue scale = tq.getQualifiers().get(TCLIServiceConstants.SCALE);
+          ret = new JdbcColumnAttributes(prec == null ? HiveDecimal.DEFAULT_PRECISION : prec.getI32Value(),
+              scale == null ? HiveDecimal.DEFAULT_SCALE : scale.getI32Value());
           break;
         default:
           break;

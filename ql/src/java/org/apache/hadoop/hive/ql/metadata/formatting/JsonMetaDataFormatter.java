@@ -260,7 +260,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
       // in case all files in locations do not exist
       try {
         FileStatus tmpStatus = fs.getFileStatus(tblPath);
-        lastAccessTime = ShimLoader.getHadoopShims().getAccessTime(tmpStatus);
+        lastAccessTime = tmpStatus.getAccessTime();
         lastUpdateTime = tmpStatus.getModificationTime();
       } catch (IOException e) {
         LOG.warn(
@@ -273,7 +273,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
           try {
             FileStatus status = fs.getFileStatus(tblPath);
             FileStatus[] files = fs.listStatus(loc);
-            long accessTime = ShimLoader.getHadoopShims().getAccessTime(status);
+            long accessTime = status.getAccessTime();
             long updateTime = status.getModificationTime();
             // no matter loc is the table location or part location, it must be a
             // directory.
@@ -299,8 +299,7 @@ public class JsonMetaDataFormatter implements MetaDataFormatter {
               if (fileLen < minFileSize) {
                 minFileSize = fileLen;
               }
-              accessTime = ShimLoader.getHadoopShims().getAccessTime(
-                  currentStatus);
+              accessTime = currentStatus.getAccessTime();
               updateTime = currentStatus.getModificationTime();
               if (accessTime > lastAccessTime) {
                 lastAccessTime = accessTime;

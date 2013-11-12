@@ -30,6 +30,11 @@ public class TestPrimitiveObjectInspectorFactory extends TestCase {
     PrimitiveObjectInspector poi = PrimitiveObjectInspectorFactory
         .getPrimitiveWritableObjectInspector(PrimitiveCategory.VARCHAR);
     assertEquals(poi, PrimitiveObjectInspectorFactory.writableHiveVarcharObjectInspector);
+
+    // Same for char
+    poi = PrimitiveObjectInspectorFactory
+        .getPrimitiveWritableObjectInspector(PrimitiveCategory.CHAR);
+    assertEquals(poi, PrimitiveObjectInspectorFactory.writableHiveCharObjectInspector);
   }
 
   public void testGetPrimitiveJavaObjectInspector() {
@@ -37,5 +42,10 @@ public class TestPrimitiveObjectInspectorFactory extends TestCase {
     PrimitiveObjectInspector poi = PrimitiveObjectInspectorFactory
         .getPrimitiveJavaObjectInspector(PrimitiveCategory.VARCHAR);
     assertEquals(poi, PrimitiveObjectInspectorFactory.javaHiveVarcharObjectInspector);
+
+    // same for char
+    poi = PrimitiveObjectInspectorFactory
+        .getPrimitiveJavaObjectInspector(PrimitiveCategory.CHAR);
+    assertEquals(poi, PrimitiveObjectInspectorFactory.javaHiveCharObjectInspector);
   }
 }

@@ -246,7 +246,7 @@ public class UDAFExampleMin extends UDAF {
         if (mEmpty) {
           mMin = new Text(o);
           mEmpty = false;
-        } else if (ShimLoader.getHadoopShims().compareText(mMin, o) > 0) {
+        } else if (mMin.compareTo(o) > 0) {
           mMin.set(o);
         }
       }

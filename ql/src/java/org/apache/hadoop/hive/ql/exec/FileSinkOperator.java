@@ -503,8 +503,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         if (isNativeTable) {
           try {
             // in recent hadoop versions, use deleteOnExit to clean tmp files.
-            autoDelete = ShimLoader.getHadoopShims().fileSystemDeleteOnExit(
-                fs, fsp.outPaths[filesIdx]);
+            autoDelete = fs.deleteOnExit(fsp.outPaths[filesIdx]);
           } catch (IOException e) {
             throw new HiveException(e);
           }
@@ -528,7 +527,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
       // in recent hadoop versions, use deleteOnExit to clean tmp files.
       if (isNativeTable) {
-        autoDelete = ShimLoader.getHadoopShims().fileSystemDeleteOnExit(fs, fsp.outPaths[0]);
+        autoDelete = fs.deleteOnExit(fsp.outPaths[0]);
       }
     } catch (HiveException e) {
       throw e;

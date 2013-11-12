@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -54,6 +55,8 @@ final class ReaderImpl implements Reader {
   private final CompressionKind compressionKind;
   private final CompressionCodec codec;
   private final int bufferSize;
+  private OrcProto.Metadata metadata = null;
+  private final int metadataSize;
   private final OrcProto.Footer footer;
   private final ObjectInspector inspector;
   private long deserializedSize = -1;
@@ -294,12 +297,14 @@ final class ReaderImpl implements Reader {
     FileMetaInfo footerMetaData = extractMetaInfoFromFooter(fs, path);
 
     MetaInfoObjExtractor rInfo = new MetaInfoObjExtractor(footerMetaData.compressionType,
-        footerMetaData.bufferSize, footerMetaData.footerBuffer);
+        footerMetaData.bufferSize, footerMetaData.metadataSize, footerMetaData.footerBuffer);
 
     this.footerByteBuffer = footerMetaData.footerBuffer;
     this.compressionKind = rInfo.compressionKind;
     this.codec = rInfo.codec;
     this.bufferSize = rInfo.bufferSize;
+    this.metadataSize = rInfo.metadataSize;
+    this.metadata = rInfo.metadata;
     this.footer = rInfo.footer;
     this.inspector = rInfo.inspector;
   }
@@ -321,12 +326,15 @@ final class ReaderImpl implements Reader {
     MetaInfoObjExtractor rInfo = new MetaInfoObjExtractor(
             fMetaInfo.compressionType,
             fMetaInfo.bufferSize,
+            fMetaInfo.metadataSize,
             fMetaInfo.footerBuffer
             );
     this.footerByteBuffer = fMetaInfo.footerBuffer;
     this.compressionKind = rInfo.compressionKind;
     this.codec = rInfo.codec;
     this.bufferSize = rInfo.bufferSize;
+    this.metadataSize = rInfo.metadataSize;
+    this.metadata = rInfo.metadata;
     this.footer = rInfo.footer;
     this.inspector = rInfo.inspector;
   }
@@ -354,6 +362,9 @@ final class ReaderImpl implements Reader {
 
     checkOrcVersion(LOG, path, ps.getVersionList());
 
+    int footerSize = (int) ps.getFooterLength();
+    int metadataSize = (int) ps.getMetadataLength();
+
     //check compression codec
     switch (ps.getCompression()) {
       case NONE:
@@ -368,11 +379,8 @@ final class ReaderImpl implements Reader {
         throw new IllegalArgumentException("Unknown compression");
     }
 
-    //get footer size
-    int footerSize = (int) ps.getFooterLength();
-
     //check if extra bytes need to be read
-    int extra = Math.max(0, psLen + 1 + footerSize - readSize);
+    int extra = Math.max(0, psLen + 1 + footerSize + metadataSize - readSize);
     if (extra > 0) {
       //more bytes need to be read, seek back to the right place and read extra bytes
       file.seek(size - readSize - extra);
@@ -384,22 +392,24 @@ final class ReaderImpl implements Reader {
       extraBuf.put(buffer);
       buffer = extraBuf;
       buffer.position(0);
-      buffer.limit(footerSize);
+      buffer.limit(footerSize + metadataSize);
     } else {
       //footer is already in the bytes in buffer, just adjust position, length
-      buffer.position(psOffset - footerSize);
+      buffer.position(psOffset - footerSize - metadataSize);
       buffer.limit(psOffset);
     }
-    file.close();
-    //mark this position so that we can call reset() to get back to it
+
+    // remember position for later
     buffer.mark();
+
+    file.close();
 
     return new FileMetaInfo(
         ps.getCompression().toString(),
         (int) ps.getCompressionBlockSize(),
+        (int) ps.getMetadataLength(),
         buffer
         );
-
   }
 
 
@@ -415,23 +425,40 @@ final class ReaderImpl implements Reader {
     final CompressionKind compressionKind;
     final CompressionCodec codec;
     final int bufferSize;
+    final int metadataSize;
+    final OrcProto.Metadata metadata;
     final OrcProto.Footer footer;
     final ObjectInspector inspector;
 
-    MetaInfoObjExtractor(String codecStr, int bufferSize, ByteBuffer footerBuffer) throws IOException {
+    MetaInfoObjExtractor(String codecStr, int bufferSize, int metadataSize, 
+        ByteBuffer footerBuffer) throws IOException {
+
       this.compressionKind = CompressionKind.valueOf(codecStr);
       this.bufferSize = bufferSize;
       this.codec = WriterImpl.createCodec(compressionKind);
-      int footerBufferSize = footerBuffer.limit() - footerBuffer.position();
-      InputStream instream = InStream.create("footer", new ByteBuffer[]{footerBuffer},
+      this.metadataSize = metadataSize;
+
+      int position = footerBuffer.position();
+      int footerBufferSize = footerBuffer.limit() - footerBuffer.position() - metadataSize;
+      footerBuffer.limit(position + metadataSize);
+
+      InputStream instream = InStream.create("metadata", new ByteBuffer[]{footerBuffer},
+          new long[]{0L}, metadataSize, codec, bufferSize);
+      this.metadata = OrcProto.Metadata.parseFrom(instream);
+
+      footerBuffer.position(position + metadataSize);
+      footerBuffer.limit(position + metadataSize + footerBufferSize);
+      instream = InStream.create("footer", new ByteBuffer[]{footerBuffer},
           new long[]{0L}, footerBufferSize, codec, bufferSize);
       this.footer = OrcProto.Footer.parseFrom(instream);
+
+      footerBuffer.position(position);
       this.inspector = OrcStruct.createObjectInspector(0, footer.getTypesList());
     }
   }
 
   public FileMetaInfo getFileMetaInfo(){
-    return new FileMetaInfo(compressionKind.toString(), bufferSize, footerByteBuffer);
+    return new FileMetaInfo(compressionKind.toString(), bufferSize, metadataSize, footerByteBuffer);
   }
 
 
@@ -451,6 +478,13 @@ final class ReaderImpl implements Reader {
   public RecordReader rows(long offset, long length, boolean[] include,
                            SearchArgument sarg, String[] columnNames
                            ) throws IOException {
+
+    // if included columns is null, then include all columns
+    if (include == null) {
+      include = new boolean[footer.getTypesCount()];
+      Arrays.fill(include, true);
+    }
+
     return new RecordReaderImpl(this.getStripes(), fileSystem,  path, offset,
         length, footer.getTypesList(), codec, bufferSize,
         include, footer.getRowIndexStride(), sarg, columnNames);
@@ -574,6 +608,11 @@ final class ReaderImpl implements Reader {
       indices.addAll(type.getSubtypesList());
     }
     return Collections.max(indices);
+  }
+
+  @Override
+  public Metadata getMetadata() throws IOException {
+    return new Metadata(metadata);
   }
 
 }

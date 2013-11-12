@@ -45,8 +45,11 @@ Table:              	alter_table_partition_clusterby_sortby
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
 #### A masked pattern was here ####
 	numFiles            	0                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
 	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
@@ -95,8 +98,11 @@ Table:              	alter_table_partition_clusterby_sortby
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
 #### A masked pattern was here ####
 	numFiles            	0                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
 	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 
@@ -145,8 +151,11 @@ Table:              	alter_table_partition_clusterby_sortby
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
 #### A masked pattern was here ####
 	numFiles            	0                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
 	totalSize           	0                   
 #### A masked pattern was here ####
 	 	 

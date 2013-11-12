@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 
 import org.apache.commons.logging.Log;
@@ -216,13 +217,15 @@ public class StatsOptimizer implements Transform {
               String colName = desc.getColumn();
               StatType type = getType(desc.getTypeString());
               if(!tbl.isPartitioned()) {
-                rowCnt = Long.parseLong(tbl.getProperty(StatsSetupConst.ROW_COUNT));
+                if (!StatsSetupConst.areStatsUptoDate(tbl.getParameters())) {
+                  Log.debug("Stats for table : " + tbl.getTableName() + " are not upto date.");
+                  return null;
+                  }
+            	rowCnt = Long.parseLong(tbl.getProperty(StatsSetupConst.ROW_COUNT));
                 if (rowCnt < 1) {
                   Log.debug("Table doesn't have upto date stats " + tbl.getTableName());
                   return null;
                 }
-                //TODO: After HIVE-3777 use the property to figure out if following
-                // stats is fresh or not.
                 ColumnStatisticsData statData = hive.getMSC().getTableColumnStatistics(
                     tbl.getDbName(),tbl.getTableName(),colName).
                     getStatsObjIterator().next().getStatsData();
@@ -236,18 +239,20 @@ public class StatsOptimizer implements Transform {
                 }
               } else {
                 for (Partition part : hive.getAllPartitionsOf(tbl)) {
-                  Long partRowCnt = Long.parseLong(part.getParameters()
+                  if (!StatsSetupConst.areStatsUptoDate(part.getParameters())) {
+                    Log.debug("Stats for part : " + part.getSpec() + " are not upto date.");
+                    return null;
+                    }
+                	Long partRowCnt = Long.parseLong(part.getParameters()
                     .get(StatsSetupConst.ROW_COUNT));
                   if (partRowCnt < 1) {
                     Log.debug("Partition doesn't have upto date stats " + part.getSpec());
                     return null;
                   }
                   rowCnt += partRowCnt;
-                  //TODO: After HIVE-3777 use the property to figure out if following
-                  // stats is fresh or not.
                   ColumnStatisticsData statData = hive.getMSC().getPartitionColumnStatistics(
-                      tbl.getDbName(), tbl.getTableName(),part.getName(), colName)
-                      .getStatsObjIterator().next().getStatsData();
+                    tbl.getDbName(), tbl.getTableName(),part.getName(), colName)
+                    .getStatsObjIterator().next().getStatsData();
                   Long nullCnt = getNullcountFor(type, statData);
                   if(nullCnt == null) {
                     Log.debug("Unsupported type: " + desc.getTypeString() + " encountered in " +
@@ -268,11 +273,13 @@ public class StatsOptimizer implements Transform {
             String colName = colDesc.getColumn();
             StatType type = getType(colDesc.getTypeString());
             if(!tbl.isPartitioned()) {
-              //TODO: After HIVE-3777 use the property to figure out if following
-              // stats is fresh or not.
+              if (!StatsSetupConst.areStatsUptoDate(tbl.getParameters())) {
+                  Log.debug("Stats for table : " + tbl.getTableName() + " are not upto date.");
+                  return null;
+                  }
               ColumnStatisticsData statData = hive.getMSC().getTableColumnStatistics(
-                  tbl.getDbName(),tbl.getTableName(),colName).
-                  getStatsObjIterator().next().getStatsData();
+                tbl.getDbName(),tbl.getTableName(),colName).
+                getStatsObjIterator().next().getStatsData();
               switch (type) {
               case Integeral:
                 oneRow.add(statData.getLongStats().getHighValue());
@@ -291,16 +298,17 @@ public class StatsOptimizer implements Transform {
                 return null;
               }
             } else {
-              List<String> parts = hive.getMSC().listPartitionNames(tbl.getDbName(),
-                  tbl.getTableName(), (short)-1);
+              Set<Partition> parts = hive.getAllPartitionsOf(tbl);
               switch(type) {
               case Integeral: {
                 long maxVal = Long.MIN_VALUE;
-                for (String part : parts) {
-                  //TODO: After HIVE-3777 use the property to figure out if following
-                  // stats is fresh or not.
-                  ColumnStatisticsData statData = hive.getMSC().getPartitionColumnStatistics(
-                      tbl.getDbName(),tbl.getTableName(), part, colName).
+                for (Partition part : parts) {
+                  if (!StatsSetupConst.areStatsUptoDate(part.getParameters())) {
+                    Log.debug("Stats for part : " + part.getSpec() + " are not upto date.");
+                    return null;
+                    }
+                	ColumnStatisticsData statData = hive.getMSC().getPartitionColumnStatistics(
+                      tbl.getDbName(),tbl.getTableName(), part.getName(), colName).
                       getStatsObjIterator().next().getStatsData();
                   maxVal = Math.max(maxVal,statData.getLongStats().getHighValue());
                 }
@@ -311,12 +319,14 @@ public class StatsOptimizer implements Transform {
               }
               case Double: {
                 double maxVal = Double.MIN_VALUE;
-                for (String part : parts) {
-                  //TODO: After HIVE-3777 use the property to figure out if following
-                  // stats is fresh or not.
+                for (Partition part : parts) {
+                  if (!StatsSetupConst.areStatsUptoDate(part.getParameters())) {
+                    Log.debug("Stats for part : " + part.getSpec() + " are not upto date.");
+                    return null;
+                    }
                   ColumnStatisticsData statData = hive.getMSC().getPartitionColumnStatistics(
-                      tbl.getDbName(),tbl.getTableName(), part, colName).
-                      getStatsObjIterator().next().getStatsData();
+                    tbl.getDbName(),tbl.getTableName(), part.getName(), colName).
+                    getStatsObjIterator().next().getStatsData();
                   maxVal = Math.max(maxVal,statData.getDoubleStats().getHighValue());
                 }
                 oneRow.add(maxVal);
@@ -336,11 +346,13 @@ public class StatsOptimizer implements Transform {
             String colName = colDesc.getColumn();
             StatType type = getType(colDesc.getTypeString());
             if (!tbl.isPartitioned()) {
-              //TODO: After HIVE-3777 use the property to figure out if following
-              // stats is fresh or not.
+              if (!StatsSetupConst.areStatsUptoDate(tbl.getParameters())) {
+                Log.debug("Stats for table : " + tbl.getTableName() + " are not upto date.");
+                return null;
+                }
               ColumnStatisticsData statData = hive.getMSC().getTableColumnStatistics(
-                  tbl.getDbName(),tbl.getTableName(),colName).
-                  getStatsObjIterator().next().getStatsData();
+                tbl.getDbName(),tbl.getTableName(),colName).
+                getStatsObjIterator().next().getStatsData();
               switch (type) {
               case Integeral:
                 oneRow.add(statData.getLongStats().getLowValue());
@@ -358,17 +370,18 @@ public class StatsOptimizer implements Transform {
                 return null;
               }
             } else {
-              List<String> parts = hive.getMSC().listPartitionNames(tbl.getDbName(),
-                  tbl.getTableName(), (short)-1);
+              Set<Partition> parts = hive.getAllPartitionsOf(tbl);
               switch(type) {
               case Integeral: {
                 long minVal = Long.MAX_VALUE;
-                for (String part : parts) {
-                  //TODO: After HIVE-3777 use the property to figure out if following
-                  // stats is fresh or not.
+                for (Partition part : parts) {
+                  if (!StatsSetupConst.areStatsUptoDate(part.getParameters())) {
+                    Log.debug("Stats for part : " + part.getSpec() + " are not upto date.");
+                    return null;
+                    }
                   ColumnStatisticsData statData = hive.getMSC().getPartitionColumnStatistics(
-                      tbl.getDbName(),tbl.getTableName(), part, colName).
-                      getStatsObjIterator().next().getStatsData();
+                    tbl.getDbName(),tbl.getTableName(), part.getName(), colName).
+                    getStatsObjIterator().next().getStatsData();
                   minVal = Math.min(minVal,statData.getLongStats().getLowValue());
                 }
                 oneRow.add(minVal);
@@ -378,12 +391,14 @@ public class StatsOptimizer implements Transform {
               }
               case Double: {
                 double minVal = Double.MAX_VALUE;
-                for (String part : parts) {
-                  //TODO: After HIVE-3777 use the property to figure out if following
-                  // stats is fresh or not.
+                for (Partition part : parts) {
+                  if (!StatsSetupConst.areStatsUptoDate(part.getParameters())) {
+                    Log.debug("Stats for part : " + part.getSpec() + " are not upto date.");
+                    return null;
+                    }
                   ColumnStatisticsData statData = hive.getMSC().getPartitionColumnStatistics(
-                      tbl.getDbName(),tbl.getTableName(), part, colName).
-                      getStatsObjIterator().next().getStatsData();
+                    tbl.getDbName(),tbl.getTableName(), part.getName(), colName).
+                    getStatsObjIterator().next().getStatsData();
                   minVal = Math.min(minVal,statData.getDoubleStats().getLowValue());
                 }
                 oneRow.add(minVal);

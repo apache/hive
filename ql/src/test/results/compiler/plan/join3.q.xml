@@ -265,6 +265,10 @@
              <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
             </void> 
             <void method="put"> 
+             <string>COLUMN_STATS_ACCURATE</string> 
+             <string>true</string> 
+            </void> 
+            <void method="put"> 
              <string>file.inputformat</string> 
              <string>org.apache.hadoop.mapred.TextInputFormat</string> 
             </void> 
@@ -397,6 +401,10 @@
              <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
             </void> 
             <void method="put"> 
+             <string>COLUMN_STATS_ACCURATE</string> 
+             <string>true</string> 
+            </void> 
+            <void method="put"> 
              <string>file.inputformat</string> 
              <string>org.apache.hadoop.mapred.TextInputFormat</string> 
             </void> 
@@ -527,6 +535,10 @@
             <void method="put"> 
              <string>serialization.lib</string> 
              <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
+            </void> 
+            <void method="put"> 
+             <string>COLUMN_STATS_ACCURATE</string> 
+             <string>true</string> 
             </void> 
             <void method="put"> 
              <string>file.inputformat</string> 
@@ -1634,6 +1646,10 @@
            <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
           </void> 
           <void method="put"> 
+           <string>COLUMN_STATS_ACCURATE</string> 
+           <string>true</string> 
+          </void> 
+          <void method="put"> 
            <string>file.inputformat</string> 
            <string>org.apache.hadoop.mapred.TextInputFormat</string> 
           </void> 
@@ -1704,6 +1720,10 @@
             <void method="put"> 
              <string>serialization.lib</string> 
              <string>org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe</string> 
+            </void> 
+            <void method="put"> 
+             <string>COLUMN_STATS_ACCURATE</string> 
+             <string>true</string> 
             </void> 
             <void method="put"> 
              <string>file.inputformat</string> 

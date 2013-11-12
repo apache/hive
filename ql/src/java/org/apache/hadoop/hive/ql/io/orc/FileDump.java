@@ -41,8 +41,17 @@ public final class FileDump {
         System.out.println("Compression size: " + reader.getCompressionSize());
       }
       System.out.println("Type: " + reader.getObjectInspector().getTypeName());
+      System.out.println("\nStripe Statistics:");
+      Metadata metadata = reader.getMetadata();
+      for (int n = 0; n < metadata.getStripeStatistics().size(); n++) {
+        System.out.println("  Stripe " + (n + 1) + ":");
+        StripeStatistics ss = metadata.getStripeStatistics().get(n);
+        for (int i = 0; i < ss.getColumnStatistics().length; ++i) {
+          System.out.println("    Column " + i + ": " + ss.getColumnStatistics()[i].toString());
+        }
+      }
       ColumnStatistics[] stats = reader.getStatistics();
-      System.out.println("\nStatistics:");
+      System.out.println("\nFile Statistics:");
       for(int i=0; i < stats.length; ++i) {
         System.out.println("  Column " + i + ": " + stats[i].toString());
       }

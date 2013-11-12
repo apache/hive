@@ -25,6 +25,7 @@ TCLIServiceConstants::TCLIServiceConstants() {
   PRIMITIVE_TYPES.insert((TTypeId::type)16);
   PRIMITIVE_TYPES.insert((TTypeId::type)17);
   PRIMITIVE_TYPES.insert((TTypeId::type)18);
+  PRIMITIVE_TYPES.insert((TTypeId::type)19);
 
   COMPLEX_TYPES.insert((TTypeId::type)10);
   COMPLEX_TYPES.insert((TTypeId::type)11);
@@ -53,8 +54,13 @@ TCLIServiceConstants::TCLIServiceConstants() {
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)16, "NULL"));
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)17, "DATE"));
   TYPE_NAMES.insert(std::make_pair((TTypeId::type)18, "VARCHAR"));
+  TYPE_NAMES.insert(std::make_pair((TTypeId::type)19, "CHAR"));
 
   CHARACTER_MAXIMUM_LENGTH = "characterMaximumLength";
+
+  PRECISION = "precision";
+
+  SCALE = "scale";
 
 }
 

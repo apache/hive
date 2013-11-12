@@ -51,11 +51,6 @@ public class HiveVarchar extends HiveBaseChar
     super.setValue(hc.getValue(), -1);
   }
 
-  @Override
-  public String toString() {
-    return getValue();
-  }
-
   public int compareTo(HiveVarchar rhs) {
     if (rhs == this) {
       return 0;
@@ -68,10 +63,5 @@ public class HiveVarchar extends HiveBaseChar
       return true;
     }
     return this.getValue().equals(rhs.getValue());
-  }
-
-  @Override
-  public int hashCode() {
-    return getValue().hashCode();
   }
 }

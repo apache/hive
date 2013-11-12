@@ -125,6 +125,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	25                  
@@ -257,6 +258,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	25                  
 	rawDataSize         	242                 
@@ -439,6 +441,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	20                  
 	rawDataSize         	268                 
@@ -592,6 +595,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	1                   
 	rawDataSize         	5                   
@@ -726,6 +730,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	309                 
 	rawDataSize         	864                 
@@ -1172,6 +1177,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	5                   
@@ -1330,6 +1336,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	5                   
 	rawDataSize         	35                  

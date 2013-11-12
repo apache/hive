@@ -63,6 +63,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFAbs;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLower;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
@@ -174,6 +175,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(GenericUDFConcat.class);
     supportedGenericUDFs.add(GenericUDFAbs.class);
     supportedGenericUDFs.add(GenericUDFBetween.class);
+    supportedGenericUDFs.add(GenericUDFIn.class);
 
     // For type casts
     supportedGenericUDFs.add(UDFToLong.class);
@@ -364,13 +366,15 @@ public class Vectorizer implements PhysicalPlanResolver {
             Operator<? extends OperatorDesc> op = mWork.getAliasToWork().get(alias);
             if (op == tsOp) {
               fileKey = onefile;
+              if (vContext == null) {
+                vContext = getVectorizationContext(tsOp, physicalContext);
+              }
+              vContext.setFileKey(fileKey);
+              vectorizationContexts.put(fileKey, vContext);
               break;
             }
           }
         }
-        vContext = getVectorizationContext(tsOp, physicalContext);
-        vContext.setFileKey(fileKey);
-        vectorizationContexts.put(fileKey, vContext);
         vContextsByTSOp.put(tsOp, vContext);
       }
 

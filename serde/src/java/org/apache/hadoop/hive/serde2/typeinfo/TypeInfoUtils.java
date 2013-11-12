@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.hadoop.hive.common.type.HiveChar;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -397,17 +398,24 @@ public final class TypeInfoUtils {
         String qualifiedTypeName = typeEntry.typeName;
         String[] params = parseParams();
         switch (typeEntry.primitiveCategory) {
+        case CHAR:
         case VARCHAR:
           if (params == null || params.length == 0) {
-            throw new IllegalArgumentException( "Varchar type is specified without length: " + typeInfoString);
+            throw new IllegalArgumentException(typeEntry.typeName
+                + " type is specified without length: " + typeInfoString);
           }
 
           if (params.length == 1) {
             int length = Integer.valueOf(params[0]);
-            VarcharUtils.validateParameter(length);
+            if (typeEntry.primitiveCategory == PrimitiveCategory.VARCHAR) {
+              BaseCharUtils.validateVarcharParameter(length);
+            } else {
+              BaseCharUtils.validateCharParameter(length);
+            }
             qualifiedTypeName = BaseCharTypeInfo.getQualifiedName(typeEntry.typeName, length);
           } else if (params.length > 1) {
-            throw new IllegalArgumentException("Type varchar only takes one parameter, but " +
+            throw new IllegalArgumentException(
+                "Type " + typeEntry.typeName+ " only takes one parameter, but " +
                 params.length + " is seen");
           }
 
@@ -778,9 +786,10 @@ public final class TypeInfoUtils {
     switch (typeInfo.getPrimitiveCategory()) {
       case STRING:
         return HiveVarchar.MAX_VARCHAR_LENGTH;
+      case CHAR:
       case VARCHAR:
-        VarcharTypeInfo varcharTypeInfo = (VarcharTypeInfo) typeInfo;
-        return varcharTypeInfo.getLength();
+        BaseCharTypeInfo baseCharTypeInfo = (BaseCharTypeInfo) typeInfo;
+        return baseCharTypeInfo.getLength();
       default:
         return 0;
     }

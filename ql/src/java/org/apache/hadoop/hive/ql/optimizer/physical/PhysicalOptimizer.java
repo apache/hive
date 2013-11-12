@@ -84,6 +84,9 @@ public class PhysicalOptimizer {
     if (hiveConf.getBoolVar(HiveConf.ConfVars.HIVE_VECTORIZATION_ENABLED)) {
       resolvers.add(new Vectorizer());
     }
+    if (!"none".equalsIgnoreCase(hiveConf.getVar(HiveConf.ConfVars.HIVESTAGEIDREARRANGE))) {
+      resolvers.add(new StageIDsRearranger());
+    }
   }
 
   /**
@@ -98,5 +101,4 @@ public class PhysicalOptimizer {
     }
     return pctx;
   }
-
 }

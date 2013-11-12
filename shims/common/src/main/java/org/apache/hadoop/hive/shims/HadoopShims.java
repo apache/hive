@@ -72,12 +72,6 @@ public interface HadoopShims {
   static final Log LOG = LogFactory.getLog(HadoopShims.class);
 
   /**
-   * Return true if the current version of Hadoop uses the JobShell for
-   * command line interpretation.
-   */
-  boolean usesJobShell();
-
-  /**
    * Constructs and Returns TaskAttempt Log Url
    * or null if the TaskLogServlet is not available
    *
@@ -87,39 +81,6 @@ public interface HadoopShims {
     String taskTrackerHttpAddress,
     String taskAttemptId)
     throws MalformedURLException;
-
-  /**
-   * Return true if the job has not switched to RUNNING state yet
-   * and is still in PREP state
-   */
-  boolean isJobPreparing(RunningJob job) throws IOException;
-
-  /**
-   * Calls fs.deleteOnExit(path) if such a function exists.
-   *
-   * @return true if the call was successful
-   */
-  boolean fileSystemDeleteOnExit(FileSystem fs, Path path) throws IOException;
-
-  /**
-   * Calls fmt.validateInput(conf) if such a function exists.
-   */
-  void inputFormatValidateInput(InputFormat fmt, JobConf conf) throws IOException;
-
-  /**
-   * If JobClient.getCommandLineConfig exists, sets the given
-   * property/value pair in that Configuration object.
-   *
-   * This applies for Hadoop 0.17 through 0.19
-   */
-  void setTmpFiles(String prop, String files);
-
-  /**
-   * return the last access time of the given file.
-   * @param file
-   * @return last access time. -1 if not supported.
-   */
-  long getAccessTime(FileStatus file);
 
   /**
    * Returns a shim to wrap MiniMrCluster
@@ -154,34 +115,9 @@ public interface HadoopShims {
     void shutdown() throws IOException;
   }
 
-  /**
-   * We define this function here to make the code compatible between
-   * hadoop 0.17 and hadoop 0.20.
-   *
-   * Hive binary that compiled Text.compareTo(Text) with hadoop 0.20 won't
-   * work with hadoop 0.17 because in hadoop 0.20, Text.compareTo(Text) is
-   * implemented in org.apache.hadoop.io.BinaryComparable, and Java compiler
-   * references that class, which is not available in hadoop 0.17.
-   */
-  int compareText(Text a, Text b);
-
   CombineFileInputFormatShim getCombineFileInputFormat();
 
   String getInputFormatClassName();
-
-  /**
-   * Wrapper for Configuration.setFloat, which was not introduced
-   * until 0.20.
-   */
-  void setFloatConf(Configuration conf, String varName, float val);
-
-  /**
-   * getTaskJobIDs returns an array of String with two elements. The first
-   * element is a string representing the task id and the second is a string
-   * representing the job id. This is necessary as TaskID and TaskAttemptID
-   * are not supported in Haddop 0.17
-   */
-  String[] getTaskJobIDs(TaskCompletionEvent t);
 
   int createHadoopArchive(Configuration conf, Path parentDir, Path destDir,
       String archiveName) throws Exception;

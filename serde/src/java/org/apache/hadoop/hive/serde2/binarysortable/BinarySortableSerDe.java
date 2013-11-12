@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.serde2.SerDeStats;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -57,6 +58,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveCharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
@@ -64,6 +66,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -282,6 +285,15 @@ public class BinarySortableSerDe extends AbstractSerDe {
         return deserializeText(buffer, invert, r);
       }
 
+      case CHAR: {
+        HiveCharWritable r =
+            reuse == null ? new HiveCharWritable() : (HiveCharWritable) reuse;
+        // Use internal text member to read value
+        deserializeText(buffer, invert, r.getTextValue());
+        r.enforceMaxLength(getCharacterMaxLength(type));
+        return r;
+      }
+
       case VARCHAR: {
         HiveVarcharWritable r =
             reuse == null ? new HiveVarcharWritable() : (HiveVarcharWritable) reuse;
@@ -289,7 +301,7 @@ public class BinarySortableSerDe extends AbstractSerDe {
             deserializeText(buffer, invert, r.getTextValue());
             // If we cache helper data for deserialization we could avoid having
             // to call getVarcharMaxLength() on every deserialize call.
-            r.enforceMaxLength(getVarcharMaxLength(type));
+            r.enforceMaxLength(getCharacterMaxLength(type));
             return r;
       }
 
@@ -525,8 +537,8 @@ public class BinarySortableSerDe extends AbstractSerDe {
     return v;
   }
 
-  static int getVarcharMaxLength(TypeInfo type) {
-    return ((VarcharTypeInfo)type).getLength();
+  static int getCharacterMaxLength(TypeInfo type) {
+    return ((BaseCharTypeInfo)type).getLength();
   }
 
   static Text deserializeText(InputByteBuffer buffer, boolean invert, Text r)
@@ -689,8 +701,17 @@ public class BinarySortableSerDe extends AbstractSerDe {
         Text t = soi.getPrimitiveWritableObject(o);
         serializeBytes(buffer, t.getBytes(), t.getLength(), invert);
         return;
-          }
+      }
 
+      case CHAR: {
+        HiveCharObjectInspector hcoi = (HiveCharObjectInspector) poi;
+        HiveCharWritable hc = hcoi.getPrimitiveWritableObject(o);
+        // Trailing space should ignored for char comparisons.
+        // So write stripped values for this SerDe.
+        Text t = hc.getStrippedValue();
+        serializeBytes(buffer, t.getBytes(), t.getLength(), invert);
+        return;
+      }
       case VARCHAR: {
         HiveVarcharObjectInspector hcoi = (HiveVarcharObjectInspector)poi;
         HiveVarcharWritable hc = hcoi.getPrimitiveWritableObject(o);

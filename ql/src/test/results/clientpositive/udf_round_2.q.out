@@ -57,4 +57,4 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 POSTHOOK: Lineage: tsttbl1.n EXPRESSION []
-Infinity	Infinity	Infinity	Infinity
+NULL	NULL	NULL	NULL

@@ -21,7 +21,6 @@ import org.apache.commons.lang.StringUtils;
 
 public abstract class HiveBaseChar {
   protected String value;
-  protected int characterLength = -1;
 
   protected HiveBaseChar() {
   }
@@ -31,20 +30,11 @@ public abstract class HiveBaseChar {
    * @param val new value
    */
   public void setValue(String val, int maxLength) {
-    characterLength = -1;
     value = HiveBaseChar.enforceMaxLength(val, maxLength);
   }
 
   public void setValue(HiveBaseChar val, int maxLength) {
-    if ((maxLength < 0)
-        || (val.characterLength > 0 && val.characterLength <= maxLength)) {
-      // No length enforcement required, or source length is less than max length.
-      // We can copy the source value as-is.
-      value = val.value;
-      this.characterLength = val.characterLength;
-    } else {
-      setValue(val.value, maxLength);
-    }
+    setValue(val.value, maxLength);
   }
 
   public static String enforceMaxLength(String val, int maxLength) {
@@ -53,7 +43,7 @@ public abstract class HiveBaseChar {
     if (maxLength > 0) {
       int valLength = val.codePointCount(0, val.length());
       if (valLength > maxLength) {
-        // Truncate the excess trailing spaces to fit the character length.
+        // Truncate the excess chars to fit the character length.
         // Also make sure we take supplementary chars into account.
         value = val.substring(0, val.offsetByCodePoints(0, maxLength));
       }
@@ -61,14 +51,40 @@ public abstract class HiveBaseChar {
     return value;
   }
 
+  public static String getPaddedValue(String val, int maxLength) {
+    if (maxLength < 0) {
+      return val;
+    }
+
+    int valLength = val.codePointCount(0, val.length());
+    if (valLength > maxLength) {
+      return enforceMaxLength(val, maxLength);
+    }
+
+    if (maxLength > valLength) {
+      // Make sure we pad the right amount of spaces; valLength is in terms of code points,
+      // while StringUtils.rpad() is based on the number of java chars.
+      int padLength = val.length() + (maxLength - valLength);
+      val = StringUtils.rightPad(val, padLength);
+    }
+    return val;
+  }
+
   public String getValue() {
     return value;
   }
 
   public int getCharacterLength() {
-    if (characterLength < 0) {
-      characterLength = value.codePointCount(0, value.length());
-    }
-    return characterLength;
+    return value.codePointCount(0, value.length());
+  }
+
+  @Override
+  public int hashCode() {
+    return getValue().hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return getValue();
   }
 }

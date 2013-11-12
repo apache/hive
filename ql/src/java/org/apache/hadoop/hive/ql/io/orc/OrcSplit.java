@@ -47,10 +47,12 @@ public class OrcSplit extends FileSplit {
       // serialize FileMetaInfo fields
       Text.writeString(out, fileMetaInfo.compressionType);
       WritableUtils.writeVInt(out, fileMetaInfo.bufferSize);
+      WritableUtils.writeVInt(out, fileMetaInfo.metadataSize);
 
       // serialize FileMetaInfo field footer
       ByteBuffer footerBuff = fileMetaInfo.footerBuffer;
       footerBuff.reset();
+
       // write length of buffer
       WritableUtils.writeVInt(out, footerBuff.limit() - footerBuff.position());
       out.write(footerBuff.array(), footerBuff.position(),
@@ -69,13 +71,14 @@ public class OrcSplit extends FileSplit {
       // deserialize FileMetaInfo fields
       String compressionType = Text.readString(in);
       int bufferSize = WritableUtils.readVInt(in);
+      int metadataSize = WritableUtils.readVInt(in);
 
       // deserialize FileMetaInfo field footer
       int footerBuffSize = WritableUtils.readVInt(in);
       ByteBuffer footerBuff = ByteBuffer.allocate(footerBuffSize);
       in.readFully(footerBuff.array(), 0, footerBuffSize);
 
-      fileMetaInfo = new FileMetaInfo(compressionType, bufferSize, footerBuff);
+      fileMetaInfo = new FileMetaInfo(compressionType, bufferSize, metadataSize, footerBuff);
     }
   }
 

@@ -23,7 +23,7 @@ FROM src tablesample (1 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
-NULL	NULL	NULL	Infinity	NaN
+NULL	NULL	NULL	NULL	NaN
 PREHOOK: query: SELECT
   round(55555), round(55555, 0), round(55555, 1), round(55555, 2), round(55555, 3),
   round(55555, -1), round(55555, -2), round(55555, -3), round(55555, -4),

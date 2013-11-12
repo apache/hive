@@ -172,11 +172,6 @@ public class Base64TextInputFormat implements
     return format.getSplits(job, numSplits);
   }
 
-  // Cannot put @Override here because hadoop 0.18+ removed this method.
-  public void validateInput(JobConf job) throws IOException {
-    ShimLoader.getHadoopShims().inputFormatValidateInput(format, job);
-  }
-
   /**
    * Workaround an incompatible change from commons-codec 1.3 to 1.4.
    * Since Hadoop has this jar on its classpath, we have no way of knowing

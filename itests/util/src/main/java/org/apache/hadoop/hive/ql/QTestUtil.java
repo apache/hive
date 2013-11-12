@@ -1564,8 +1564,8 @@ public class QTestUtil {
   }
 
   public static void outputTestFailureHelpMessage() {
-    System.err.println("See build/ql/tmp/hive.log, "
-        + "or try \"ant test ... -Dtest.silent=false\" to get more logs.");
+    System.err.println("See ./ql/target/tmp/log/hive.log or ./itests/qtest/target/tmp/log/hive.log, "
+        + "or check ./ql/target/surefire-reports or ./itests/qtest/target/surefire-reports/ for specific test cases logs.");
     System.err.flush();
   }
 

@@ -49,14 +49,33 @@
   <properties>
     <hive.version.shortname>0.13.0</hive.version.shortname>
 
+    <!-- Build Properties -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
     <maven.repo.local>${user.home}/.m2/repository</maven.repo.local>
     <hive.path.to.root>.</hive.path.to.root>
+
+    <!-- Test Properties -->
     <test.tmp.dir>${project.build.directory}/tmp</test.tmp.dir>
     <test.warehouse.dir>${project.build.directory}/warehouse</test.warehouse.dir>
     <test.warehouse.scheme>pfile://</test.warehouse.scheme>
 
-    <!-- the versions of libraries that we use -->
+    <!-- Plugin and Plugin Dependency Versions -->
+    <ant.contrib.version>1.0b3</ant.contrib.version>
+    <build.helper.maven.plugin.version>1.8</build.helper.maven.plugin.version>
+    <datanucleus.maven.plugin.version>3.3.0-release</datanucleus.maven.plugin.version>
+    <maven.antrun.plugin.version>1.7</maven.antrun.plugin.version>
+    <maven.assembly.plugin.version>2.3</maven.assembly.plugin.version>
+    <maven.compiler.plugin.version>3.1</maven.compiler.plugin.version>
+    <maven.enforcer.plugin.version>1.3.1</maven.enforcer.plugin.version>
+    <maven.install.plugin.version>2.4</maven.install.plugin.version>
+    <maven.jar.plugin.version>2.2</maven.jar.plugin.version>
+    <maven.javadoc.plugin.version>2.4</maven.javadoc.plugin.version>
+    <maven.shade.plugin.version>2.1</maven.shade.plugin.version>
+    <maven.surefire.plugin.version>2.16</maven.surefire.plugin.version>
+    <maven.war.plugin.version>2.4</maven.war.plugin.version>
+
+    <!-- Library Dependency Versions -->
     <activemq.version>5.5.0</activemq.version>
     <ant.version>1.9.1</ant.version>
     <antlr.version>3.4</antlr.version>
@@ -77,15 +96,16 @@
     <commons-io.version>2.4</commons-io.version>
     <commons-lang.version>2.4</commons-lang.version>
     <commons-lang3.version>3.1</commons-lang3.version>
-    <commons-logging.version>1.0.4</commons-logging.version>
+    <commons-logging.version>1.1.3</commons-logging.version>
     <commons-pool.version>1.5.4</commons-pool.version>
     <derby.version>10.4.2.0</derby.version>
     <guava.version>11.0.2</guava.version>
     <groovy.version>2.1.6</groovy.version>
     <hadoop-20.version>0.20.2</hadoop-20.version>
-    <hadoop-20S.version>1.1.2</hadoop-20S.version>
+    <hadoop-20S.version>1.2.1</hadoop-20S.version>
     <hadoop-23.version>2.2.0</hadoop-23.version>
     <hbase.version>0.94.6.1</hbase.version>
+    <httpcomponents.version>4.1.3</httpcomponents.version>
     <jackson.version>1.9.2</jackson.version>
     <javaewah.version>0.3.2</javaewah.version>
     <javolution.version>5.5.1</javolution.version>
@@ -102,12 +122,12 @@
     <libfb303.version>0.9.0</libfb303.version>
     <libthrift.version>0.9.0</libthrift.version>
     <log4j.version>1.2.16</log4j.version>
-    <maven-javadoc-plugin.version>2.4</maven-javadoc-plugin.version>
     <mockito-all.version>1.8.2</mockito-all.version>
     <mina.version>2.0.0-M5</mina.version>
     <pig.version>0.10.1</pig.version>
     <protobuf.version>2.5.0</protobuf.version>
     <rat.version>0.8</rat.version>
+    <stax.version>1.0.1</stax.version>
     <slf4j.version>1.6.1</slf4j.version>
     <ST4.version>4.0.4</ST4.version>
     <tez.version>0.2.0-SNAPSHOT</tez.version>
@@ -117,7 +137,6 @@
     <velocity.version>1.5</velocity.version>
     <xerces.version>2.9.1</xerces.version>
     <zookeeper.version>3.4.3</zookeeper.version>
-    <maven.compiler.useIncrementalCompilation>false</maven.compiler.useIncrementalCompilation>
   </properties>
 
   <repositories>
@@ -191,7 +210,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.1</version>
+          <version>${maven.compiler.plugin.version}</version>
           <configuration>
             <source>1.6</source>
             <target>1.6</target>
@@ -200,12 +219,12 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-antrun-plugin</artifactId>
-          <version>1.7</version>
+          <version>${maven.antrun.plugin.version}</version>
           <dependencies>
             <dependency>
               <groupId>ant-contrib</groupId>
               <artifactId>ant-contrib</artifactId>
-              <version>1.0b3</version>
+              <version>${ant.contrib.version}</version>
               <exclusions>
                 <exclusion>
                   <groupId>ant</groupId>
@@ -218,47 +237,47 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-assembly-plugin</artifactId>
-          <version>2.4</version>
+          <version>${maven.assembly.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-enforcer-plugin</artifactId>
-          <version>1.3.1</version>
+          <version>${maven.enforcer.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-install-plugin</artifactId>
-          <version>2.4</version>
+          <version>${maven.install.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
-          <version>2.1</version>
+          <version>${maven.shade.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
-          <version>2.16</version>
+          <version>${maven.surefire.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
-          <version>2.2</version>
+          <version>${maven.jar.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-war-plugin</artifactId>
-          <version>2.4</version>
+          <version>${maven.war.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>build-helper-maven-plugin</artifactId>
-          <version>1.8</version>
+          <version>${build.helper.maven.plugin.version}</version>
         </plugin>
         <plugin>
           <groupId>org.datanucleus</groupId>
           <artifactId>datanucleus-maven-plugin</artifactId>
-          <version>3.3.0-release</version>
+          <version>${datanucleus.maven.plugin.version}</version>
           <dependencies>
             <dependency>
               <groupId>org.datanucleus</groupId>

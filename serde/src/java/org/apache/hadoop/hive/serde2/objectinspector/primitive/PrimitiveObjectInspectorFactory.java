@@ -26,6 +26,7 @@ import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
@@ -34,6 +35,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils.PrimitiveTypeEntry;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -73,6 +75,8 @@ public final class PrimitiveObjectInspectorFactory {
       new WritableDoubleObjectInspector();
   public static final WritableStringObjectInspector writableStringObjectInspector =
       new WritableStringObjectInspector();
+  public static final WritableHiveCharObjectInspector writableHiveCharObjectInspector =
+      new WritableHiveCharObjectInspector((CharTypeInfo) TypeInfoFactory.charTypeInfo);
   public static final WritableHiveVarcharObjectInspector writableHiveVarcharObjectInspector =
       new WritableHiveVarcharObjectInspector((VarcharTypeInfo) TypeInfoFactory.varcharTypeInfo);
   public static final WritableVoidObjectInspector writableVoidObjectInspector =
@@ -106,6 +110,7 @@ public final class PrimitiveObjectInspectorFactory {
         writableDoubleObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME),
         writableStringObjectInspector);
+    cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.charTypeInfo, writableHiveCharObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.varcharTypeInfo, writableHiveVarcharObjectInspector);
     cachedPrimitiveWritableInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.VOID_TYPE_NAME),
         writableVoidObjectInspector);
@@ -129,6 +134,7 @@ public final class PrimitiveObjectInspectorFactory {
     primitiveCategoryToWritableOI.put(PrimitiveCategory.FLOAT, writableFloatObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.DOUBLE, writableDoubleObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.STRING, writableStringObjectInspector);
+    primitiveCategoryToWritableOI.put(PrimitiveCategory.CHAR, writableHiveCharObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.VARCHAR, writableHiveVarcharObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.VOID, writableVoidObjectInspector);
     primitiveCategoryToWritableOI.put(PrimitiveCategory.DATE, writableDateObjectInspector);
@@ -153,6 +159,8 @@ public final class PrimitiveObjectInspectorFactory {
       new JavaDoubleObjectInspector();
   public static final JavaStringObjectInspector javaStringObjectInspector =
       new JavaStringObjectInspector();
+  public static final JavaHiveCharObjectInspector javaHiveCharObjectInspector =
+      new JavaHiveCharObjectInspector((CharTypeInfo) TypeInfoFactory.charTypeInfo);
   public static final JavaHiveVarcharObjectInspector javaHiveVarcharObjectInspector =
       new JavaHiveVarcharObjectInspector((VarcharTypeInfo) TypeInfoFactory.varcharTypeInfo);
   public static final JavaVoidObjectInspector javaVoidObjectInspector =
@@ -186,6 +194,7 @@ public final class PrimitiveObjectInspectorFactory {
         javaDoubleObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.STRING_TYPE_NAME),
         javaStringObjectInspector);
+    cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.charTypeInfo, javaHiveCharObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.varcharTypeInfo, javaHiveVarcharObjectInspector);
     cachedPrimitiveJavaInspectorCache.put(TypeInfoFactory.getPrimitiveTypeInfo(serdeConstants.VOID_TYPE_NAME),
         javaVoidObjectInspector);
@@ -209,6 +218,7 @@ public final class PrimitiveObjectInspectorFactory {
     primitiveCategoryToJavaOI.put(PrimitiveCategory.FLOAT, javaFloatObjectInspector);
     primitiveCategoryToJavaOI.put(PrimitiveCategory.DOUBLE, javaDoubleObjectInspector);
     primitiveCategoryToJavaOI.put(PrimitiveCategory.STRING, javaStringObjectInspector);
+    primitiveCategoryToJavaOI.put(PrimitiveCategory.CHAR, javaHiveCharObjectInspector);
     primitiveCategoryToJavaOI.put(PrimitiveCategory.VARCHAR, javaHiveVarcharObjectInspector);
     primitiveCategoryToJavaOI.put(PrimitiveCategory.VOID, javaVoidObjectInspector);
     primitiveCategoryToJavaOI.put(PrimitiveCategory.DATE, javaDateObjectInspector);
@@ -247,6 +257,9 @@ public final class PrimitiveObjectInspectorFactory {
     }
 
     switch (typeInfo.getPrimitiveCategory()) {
+    case CHAR:
+      result = new WritableHiveCharObjectInspector((CharTypeInfo) typeInfo);
+      break;
     case VARCHAR:
       result = new WritableHiveVarcharObjectInspector((VarcharTypeInfo)typeInfo);
       break;
@@ -287,6 +300,9 @@ public final class PrimitiveObjectInspectorFactory {
       return new WritableConstantDoubleObjectInspector((DoubleWritable)value);
     case STRING:
       return new WritableConstantStringObjectInspector((Text)value);
+    case CHAR:
+      return new WritableConstantHiveCharObjectInspector((CharTypeInfo) typeInfo,
+          (HiveCharWritable) value);
     case VARCHAR:
       return new WritableConstantHiveVarcharObjectInspector((VarcharTypeInfo)typeInfo,
           (HiveVarcharWritable)value);
@@ -336,6 +352,9 @@ public final class PrimitiveObjectInspectorFactory {
     }
 
     switch (typeInfo.getPrimitiveCategory()) {
+    case CHAR:
+      result = new JavaHiveCharObjectInspector((CharTypeInfo) typeInfo);
+      break;
     case VARCHAR:
       result = new JavaHiveVarcharObjectInspector((VarcharTypeInfo)typeInfo);
       break;

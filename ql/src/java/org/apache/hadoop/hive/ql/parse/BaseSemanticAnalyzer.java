@@ -20,6 +20,9 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
+import java.sql.Date;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -66,6 +69,7 @@ import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.session.SessionState.LogHelper;
 import org.apache.hadoop.hive.serde.serdeConstants;
+import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -73,6 +77,9 @@ import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
 import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
+import org.apache.hadoop.util.StringUtils;
+
+import com.google.common.annotations.VisibleForTesting;
 
 /**
  * BaseSemanticAnalyzer.
@@ -80,6 +87,7 @@ import org.apache.hadoop.mapred.TextInputFormat;
  */
 @SuppressWarnings("deprecation")
 public abstract class BaseSemanticAnalyzer {
+  private static final Log STATIC_LOG = LogFactory.getLog(BaseSemanticAnalyzer.class.getName());
   protected final Hive db;
   protected final HiveConf conf;
   protected List<Task<? extends Serializable>> rootTasks;
@@ -707,10 +715,8 @@ public abstract class BaseSemanticAnalyzer {
       this(db, conf, ast, true, false);
     }
 
-    public tableSpec(Hive db, HiveConf conf, ASTNode ast,
-        boolean allowDynamicPartitionsSpec, boolean allowPartialPartitionsSpec)
-        throws SemanticException {
-
+    public tableSpec(Hive db, HiveConf conf, ASTNode ast, boolean allowDynamicPartitionsSpec,
+        boolean allowPartialPartitionsSpec) throws SemanticException {
       assert (ast.getToken().getType() == HiveParser.TOK_TAB
           || ast.getToken().getType() == HiveParser.TOK_TABLE_PARTITION
           || ast.getToken().getType() == HiveParser.TOK_TABTYPE
@@ -761,7 +767,7 @@ public abstract class BaseSemanticAnalyzer {
           partSpec.put(colName, val);
         }
 
-        // check if the columns specified in the partition() clause are actually partition columns
+        // check if the columns, as well as value types in the partition() clause are valid
         validatePartSpec(tableHandle, partSpec, ast, conf);
 
         // check if the partition spec is valid
@@ -840,7 +846,6 @@ public abstract class BaseSemanticAnalyzer {
         return tableHandle.toString();
       }
     }
-
   }
 
   /**
@@ -1156,52 +1161,86 @@ public abstract class BaseSemanticAnalyzer {
     }
   }
 
-  public static void validatePartSpec(Table tbl,
-      Map<String, String> partSpec, ASTNode astNode, HiveConf conf) throws SemanticException {
-
+  public static void validatePartSpec(Table tbl, Map<String, String> partSpec,
+      ASTNode astNode, HiveConf conf) throws SemanticException {
     Map<ASTNode, ExprNodeDesc> astExprNodeMap = new HashMap<ASTNode, ExprNodeDesc>();
 
     Utilities.validatePartSpec(tbl, partSpec);
 
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_TYPE_CHECK_ON_INSERT)) {
-      try {
-        getPartExprNodeDesc(astNode, astExprNodeMap);
-      } catch (HiveException e) {
-        return;
-      }
-      List<FieldSchema> parts = tbl.getPartitionKeys();
-      Map<String, String> partCols = new HashMap<String, String>(parts.size());
-      for (FieldSchema col : parts) {
-        partCols.put(col.getName(), col.getType().toLowerCase());
-      }
-      for (Entry<ASTNode, ExprNodeDesc> astExprNodePair : astExprNodeMap.entrySet()) {
-
-        String astKeyName = astExprNodePair.getKey().toString().toLowerCase();
-        if (astExprNodePair.getKey().getType() == HiveParser.Identifier) {
-          astKeyName = stripIdentifierQuotes(astKeyName);
-        }
-        String colType = partCols.get(astKeyName);
-        ObjectInspector inputOI = astExprNodePair.getValue().getWritableObjectInspector();
-
-        TypeInfo expectedType =
-            TypeInfoUtils.getTypeInfoFromTypeString(colType);
-        ObjectInspector outputOI =
-            TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(expectedType);
-        Object value = null;
-        try {
-          value =
-              ExprNodeEvaluatorFactory.get(astExprNodePair.getValue()).
-              evaluate(partSpec.get(astKeyName));
-        } catch (HiveException e) {
-          throw new SemanticException(e);
-        }
-        Object convertedValue =
-          ObjectInspectorConverters.getConverter(inputOI, outputOI).convert(value);
-        if (convertedValue == null) {
-          throw new SemanticException(ErrorMsg.PARTITION_SPEC_TYPE_MISMATCH.format(astKeyName,
-              inputOI.getTypeName(), outputOI.getTypeName()));
-        }
-      }
+    if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_TYPE_CHECK_ON_INSERT)) {
+      return;
     }
+
+    try {
+      getPartExprNodeDesc(astNode, astExprNodeMap);
+    } catch (HiveException e) {
+      return;
+    }
+    List<FieldSchema> parts = tbl.getPartitionKeys();
+    Map<String, String> partCols = new HashMap<String, String>(parts.size());
+    for (FieldSchema col : parts) {
+      partCols.put(col.getName(), col.getType().toLowerCase());
+    }
+    for (Entry<ASTNode, ExprNodeDesc> astExprNodePair : astExprNodeMap.entrySet()) {
+      String astKeyName = astExprNodePair.getKey().toString().toLowerCase();
+      if (astExprNodePair.getKey().getType() == HiveParser.Identifier) {
+        astKeyName = stripIdentifierQuotes(astKeyName);
+      }
+      String colType = partCols.get(astKeyName);
+      ObjectInspector inputOI = astExprNodePair.getValue().getWritableObjectInspector();
+
+      TypeInfo expectedType =
+          TypeInfoUtils.getTypeInfoFromTypeString(colType);
+      ObjectInspector outputOI =
+          TypeInfoUtils.getStandardWritableObjectInspectorFromTypeInfo(expectedType);
+      Object value = null;
+      String colSpec = partSpec.get(astKeyName);
+      try {
+        value =
+            ExprNodeEvaluatorFactory.get(astExprNodePair.getValue()).
+            evaluate(colSpec);
+      } catch (HiveException e) {
+        throw new SemanticException(e);
+      }
+      Object convertedValue =
+        ObjectInspectorConverters.getConverter(inputOI, outputOI).convert(value);
+      if (convertedValue == null) {
+        throw new SemanticException(ErrorMsg.PARTITION_SPEC_TYPE_MISMATCH.format(astKeyName,
+            inputOI.getTypeName(), outputOI.getTypeName()));
+      }
+
+      normalizeColSpec(partSpec, astKeyName, colType, colSpec, convertedValue);
+    }
+  }
+
+  @VisibleForTesting
+  static void normalizeColSpec(Map<String, String> partSpec, String colName,
+      String colType, String originalColSpec, Object colValue) throws SemanticException {
+    if (colValue == null) return; // nothing to do with nulls
+    String normalizedColSpec = originalColSpec;
+    if (colType.equals(serdeConstants.DATE_TYPE_NAME)) {
+      normalizedColSpec = normalizeDateCol(colValue, originalColSpec);
+    }
+    if (!normalizedColSpec.equals(originalColSpec)) {
+      STATIC_LOG.warn("Normalizing partition spec - " + colName + " from "
+          + originalColSpec + " to " + normalizedColSpec);
+      partSpec.put(colName, normalizedColSpec);
+    }
+  }
+
+  /** A fixed date format to be used for hive partition column values. */
+  private static final DateFormat partitionDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+  private static String normalizeDateCol(
+      Object colValue, String originalColSpec) throws SemanticException {
+    Date value;
+    if (colValue instanceof DateWritable) {
+      value = ((DateWritable) colValue).get();
+    } else if (colValue instanceof Date) {
+      value = (Date) colValue;
+    } else {
+      throw new SemanticException("Unexpected date type " + colValue.getClass());
+    }
+    return partitionDateFormat.format(value);
   }
 }

@@ -77,52 +77,9 @@ public abstract class HadoopShimsSecure implements HadoopShims {
 
   static final Log LOG = LogFactory.getLog(HadoopShimsSecure.class);
 
-  public boolean usesJobShell() {
-    return false;
-  }
-
-  public boolean fileSystemDeleteOnExit(FileSystem fs, Path path)
-      throws IOException {
-
-    return fs.deleteOnExit(path);
-  }
-
-  public void inputFormatValidateInput(InputFormat fmt, JobConf conf)
-      throws IOException {
-    // gone in 0.18+
-  }
-
   @Override
   public String unquoteHtmlChars(String item) {
     return HtmlQuoting.unquoteHtmlChars(item);
-  }
-
-  public boolean isJobPreparing(RunningJob job) throws IOException {
-    return job.getJobState() == JobStatus.PREP;
-  }
-  /**
-   * Workaround for hadoop-17 - jobclient only looks at commandlineconfig.
-   */
-  public void setTmpFiles(String prop, String files) {
-    // gone in 20+
-  }
-
-  /**
-   * We define this function here to make the code compatible between
-   * hadoop 0.17 and hadoop 0.20.
-   *
-   * Hive binary that compiled Text.compareTo(Text) with hadoop 0.20 won't
-   * work with hadoop 0.17 because in hadoop 0.20, Text.compareTo(Text) is
-   * implemented in org.apache.hadoop.io.BinaryComparable, and Java compiler
-   * references that class, which is not available in hadoop 0.17.
-   */
-  public int compareText(Text a, Text b) {
-    return a.compareTo(b);
-  }
-
-  @Override
-  public long getAccessTime(FileStatus file) {
-    return file.getAccessTime();
   }
 
   public HadoopShims.CombineFileInputFormatShim getCombineFileInputFormat() {
@@ -413,18 +370,6 @@ public abstract class HadoopShimsSecure implements HadoopShims {
   String[] ret = new String[2];
 
   @Override
-  public String[] getTaskJobIDs(TaskCompletionEvent t) {
-    TaskID tid = t.getTaskAttemptId().getTaskID();
-    ret[0] = tid.toString();
-    ret[1] = tid.getJobID().toString();
-    return ret;
-  }
-
-  public void setFloatConf(Configuration conf, String varName, float val) {
-    conf.setFloat(varName, val);
-  }
-
-  @Override
   public int createHadoopArchive(Configuration conf, Path sourceDir, Path destDir,
       String archiveName) throws Exception {
 
@@ -544,7 +489,6 @@ public abstract class HadoopShimsSecure implements HadoopShims {
 
     return tokenPath;
   }
-
 
   @Override
   public UserGroupInformation createProxyUser(String userName) throws IOException {

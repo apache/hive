@@ -39,6 +39,7 @@ import java.util.StringTokenizer;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.classification.InterfaceAudience;
 import org.apache.hadoop.hive.common.classification.InterfaceStability;
+import org.apache.hadoop.io.Text;
 
 /**
  * HiveStringUtils
@@ -807,4 +808,22 @@ public class HiveStringUtils {
     return sb.toString();
   }
 
+  /**
+   * Checks if b is the first byte of a UTF-8 character.
+   *
+   */
+  public static boolean isUtfStartByte(byte b) {
+    return (b & 0xC0) != 0x80;
+  }
+
+  public static int getTextUtfLength(Text t) {
+    byte[] data = t.getBytes();
+    int len = 0;
+    for (int i = 0; i < t.getLength(); i++) {
+      if (isUtfStartByte(data[i])) {
+        len++;
+      }
+    }
+    return len;
+  }
 }

@@ -45,7 +45,7 @@ class SQLCompletor extends SimpleCompletor {
     // add the default SQL completions
     String keywords = new BufferedReader(new InputStreamReader(
         SQLCompletor.class.getResourceAsStream(
-            "sql-keywords.properties"))).readLine();
+            "/sql-keywords.properties"))).readLine();
 
     // now add the keywords from the current connection
     try {
