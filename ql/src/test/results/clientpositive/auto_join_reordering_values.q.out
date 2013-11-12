@@ -153,6 +153,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns dealid,date,time,cityid,userid
               columns.types int:string:string:int:int
@@ -171,6 +172,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns dealid,date,time,cityid,userid
                 columns.types int:string:string:int:int
@@ -284,6 +286,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns dealid,date,time,cityid,userid
               columns.types int:string:string:int:int
@@ -302,6 +305,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns dealid,date,time,cityid,userid
                 columns.types int:string:string:int:int
@@ -413,6 +417,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns dealid,date,time,cityid,userid
               columns.types int:string:string:int:int
@@ -431,6 +436,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns dealid,date,time,cityid,userid
                 columns.types int:string:string:int:int
@@ -540,6 +546,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns userid
               columns.types int
@@ -558,6 +565,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns userid
                 columns.types int

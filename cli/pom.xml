@@ -57,7 +57,6 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-shims</artifactId>
       <version>${project.version}</version>
-      <classifier>uberjar</classifier>
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>

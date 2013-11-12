@@ -341,6 +341,7 @@ public class HiveConf extends Configuration {
     METASTORE_PARTITION_NAME_WHITELIST_PATTERN(
         "hive.metastore.partition.name.whitelist.pattern", ""),
     METASTORE_TRY_DIRECT_SQL("hive.metastore.try.direct.sql", true),
+    METASTORE_TRY_DIRECT_SQL_DDL("hive.metastore.try.direct.sql.ddl", true),
     METASTORE_DISALLOW_INCOMPATIBLE_COL_TYPE_CHANGES(
         "hive.metastore.disallow.incompatible.col.type.changes", false),
 
@@ -507,6 +508,9 @@ public class HiveConf extends Configuration {
     HIVE_ORC_FILE_MEMORY_POOL("hive.exec.orc.memory.pool", 0.5f), // 50%
     // Define the version of the file to write
     HIVE_ORC_WRITE_FORMAT("hive.exec.orc.write.format", null),
+    // Define the default ORC stripe size
+    HIVE_ORC_DEFAULT_STRIPE_SIZE("hive.exec.orc.default.stripe.size",
+        256L * 1024 * 1024),
 
     HIVE_ORC_DICTIONARY_KEY_SIZE_THRESHOLD("hive.exec.orc.dictionary.key.size.threshold", 0.8f),
 
@@ -664,6 +668,7 @@ public class HiveConf extends Configuration {
     // 'minimal', 'more' (and 'all' later)
     HIVEFETCHTASKCONVERSION("hive.fetch.task.conversion", "minimal",
         new StringsValidator("minimal", "more")),
+    HIVEFETCHTASKCONVERSIONTHRESHOLD("hive.fetch.task.conversion.threshold", -1l),
 
     HIVEFETCHTASKAGGR("hive.fetch.task.aggr", false),
 
@@ -760,9 +765,15 @@ public class HiveConf extends Configuration {
 
     // Configuration for async thread pool in SessionManager
     // Number of async threads
-    HIVE_SERVER2_ASYNC_EXEC_THREADS("hive.server2.async.exec.threads", 50),
+    HIVE_SERVER2_ASYNC_EXEC_THREADS("hive.server2.async.exec.threads", 100),
     // Number of seconds HiveServer2 shutdown will wait for async threads to terminate
     HIVE_SERVER2_ASYNC_EXEC_SHUTDOWN_TIMEOUT("hive.server2.async.exec.shutdown.timeout", 10L),
+    // Size of the wait queue for async thread pool in HiveServer2.
+    // After hitting this limit, the async thread pool will reject new requests.
+    HIVE_SERVER2_ASYNC_EXEC_WAIT_QUEUE_SIZE("hive.server2.async.exec.wait.queue.size", 100),
+    // Number of seconds that an idle HiveServer2 async thread (from the thread pool)
+    // will wait for a new task to arrive before terminating
+    HIVE_SERVER2_ASYNC_EXEC_KEEPALIVE_TIME("hive.server2.async.exec.keepalive.time", 10),
 
 
     // HiveServer2 auth configuration
@@ -778,6 +789,9 @@ public class HiveConf extends Configuration {
     HIVE_SERVER2_TABLE_TYPE_MAPPING("hive.server2.table.type.mapping", "CLASSIC",
         new StringsValidator("CLASSIC", "HIVE")),
     HIVE_SERVER2_SESSION_HOOK("hive.server2.session.hook", ""),
+    HIVE_SERVER2_USE_SSL("hive.server2.use.SSL", false),
+    HIVE_SERVER2_SSL_KEYSTORE_PATH("hive.server2.keystore.path", ""),
+    HIVE_SERVER2_SSL_KEYSTORE_PASSWORD("hive.server2.keystore.password", ""),
 
     HIVE_SECURITY_COMMAND_WHITELIST("hive.security.command.whitelist", "set,reset,dfs,add,delete,compile"),
 
@@ -834,7 +848,11 @@ public class HiveConf extends Configuration {
     HIVE_RPC_QUERY_PLAN("hive.rpc.query.plan", false),
 
     // Whether to generate the splits locally or in the AM (tez only)
-    HIVE_AM_SPLIT_GENERATION("hive.compute.splits.in.am", true);
+      HIVE_AM_SPLIT_GENERATION("hive.compute.splits.in.am", true),
+
+    // none, idonly, traverse, execution
+    HIVESTAGEIDREARRANGE("hive.stageid.rearrange", "none"),
+    HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES("hive.explain.dependency.append.tasktype", false),
     ;
 
     public final String varname;
@@ -1066,7 +1084,7 @@ public class HiveConf extends Configuration {
 
   public static void setFloatVar(Configuration conf, ConfVars var, float val) {
     assert (var.valClass == Float.class) : var.varname;
-    ShimLoader.getHadoopShims().setFloatConf(conf, var.varname, val);
+    conf.setFloat(var.varname, val);
   }
 
   public float getFloatVar(ConfVars var) {

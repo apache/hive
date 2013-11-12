@@ -72,13 +72,16 @@ STAGE PLANS:
               ds 2008-04-08
               hr 11
             properties:
+              COLUMN_STATS_ACCURATE false
               bucket_count -1
               columns key,value
               columns.types string:string
 #### A masked pattern was here ####
               name default.analyze_srcpart
               numFiles 1
+              numRows -1
               partition_columns ds/hr
+              rawDataSize -1
               serialization.ddl struct analyze_srcpart { string key, string value}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -204,6 +207,7 @@ Table:              	analyze_srcpart
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
@@ -251,7 +255,10 @@ Table:              	analyze_srcpart
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
 	numFiles            	1                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
 	totalSize           	5812                
 #### A masked pattern was here ####
 	 	 
@@ -296,7 +303,10 @@ Table:              	analyze_srcpart
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
 	numFiles            	1                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
 	totalSize           	5812                
 #### A masked pattern was here ####
 	 	 
@@ -341,7 +351,10 @@ Table:              	analyze_srcpart
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
 	numFiles            	1                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
 	totalSize           	5812                
 #### A masked pattern was here ####
 	 	 

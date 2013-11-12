@@ -160,6 +160,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	96                  
@@ -321,6 +322,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	96                  
@@ -483,6 +485,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	120                 
@@ -549,6 +552,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	120                 
@@ -711,6 +715,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	10                  
 	rawDataSize         	96                  
@@ -779,6 +784,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -797,6 +803,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value
                 columns.types string:string
@@ -963,5 +970,31 @@ POSTHOOK: query: create table nzhang_ctas7 as select key, `to` from nzhang_ctas6
 POSTHOOK: type: CREATETABLE_AS_SELECT
 POSTHOOK: Input: default@nzhang_ctas6
 POSTHOOK: Output: default@nzhang_ctas7
+POSTHOOK: Lineage: nzhang_ctas6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_ctas6.to SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: create table nzhang_ctas8 as select 3.14BD from nzhang_ctas6 limit 1
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@nzhang_ctas6
+POSTHOOK: query: create table nzhang_ctas8 as select 3.14BD from nzhang_ctas6 limit 1
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@nzhang_ctas6
+POSTHOOK: Output: default@nzhang_ctas8
+POSTHOOK: Lineage: nzhang_ctas6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_ctas6.to SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: desc nzhang_ctas8
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: desc nzhang_ctas8
+POSTHOOK: type: DESCTABLE
+POSTHOOK: Lineage: nzhang_ctas6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: nzhang_ctas6.to SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+_c0                 	decimal(3,2)        	None                
+PREHOOK: query: drop table nzhang_ctas8
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@nzhang_ctas8
+PREHOOK: Output: default@nzhang_ctas8
+POSTHOOK: query: drop table nzhang_ctas8
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@nzhang_ctas8
+POSTHOOK: Output: default@nzhang_ctas8
 POSTHOOK: Lineage: nzhang_ctas6.key SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
 POSTHOOK: Lineage: nzhang_ctas6.to SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]

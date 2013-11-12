@@ -92,6 +92,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -132,6 +133,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-09
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string

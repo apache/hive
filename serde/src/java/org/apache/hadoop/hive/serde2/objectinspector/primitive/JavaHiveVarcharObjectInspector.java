@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils;
 
 public class JavaHiveVarcharObjectInspector extends AbstractPrimitiveJavaObjectInspector
 implements SettableHiveVarcharObjectInspector {
@@ -39,7 +39,7 @@ implements SettableHiveVarcharObjectInspector {
       return null;
     }
     HiveVarchar value = (HiveVarchar)o;
-    if (VarcharUtils.doesPrimitiveMatchTypeParams(
+    if (BaseCharUtils.doesPrimitiveMatchTypeParams(
         value, (VarcharTypeInfo)typeInfo)) {
       return value;
     }
@@ -69,7 +69,7 @@ implements SettableHiveVarcharObjectInspector {
   @Override
   public Object set(Object o, HiveVarchar value) {
     HiveVarchar setValue = (HiveVarchar)o;
-    if (VarcharUtils.doesPrimitiveMatchTypeParams(
+    if (BaseCharUtils.doesPrimitiveMatchTypeParams(
         value, (VarcharTypeInfo)typeInfo)) {
       setValue.setValue(value);
     } else {

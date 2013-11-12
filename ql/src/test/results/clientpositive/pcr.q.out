@@ -116,6 +116,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -156,6 +157,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-09
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -307,6 +309,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -347,6 +350,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-09
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -387,6 +391,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-10
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -582,6 +587,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -622,6 +628,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-09
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -781,6 +788,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -821,6 +829,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-10
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -982,6 +991,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -1022,6 +1032,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-09
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -1062,6 +1073,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-10
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -1234,6 +1246,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -1274,6 +1287,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-09
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -1314,6 +1328,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-10
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -1490,6 +1505,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -1530,6 +1546,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-09
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -1668,6 +1685,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -1708,6 +1726,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-09
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -1886,6 +1905,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -1926,6 +1946,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-09
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -1966,6 +1987,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-10
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -2178,6 +2200,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -2218,6 +2241,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-09
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -2374,6 +2398,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -2657,6 +2682,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -2697,6 +2723,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-09
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -2995,6 +3022,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -3035,6 +3063,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-09
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -3075,6 +3104,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-10
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -3115,6 +3145,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-11
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -3316,6 +3347,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -3356,6 +3388,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-09
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -3396,6 +3429,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-10
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -3669,6 +3703,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -4155,6 +4190,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       properties:
+                        COLUMN_STATS_ACCURATE true
                         bucket_count -1
                         columns key,value
                         columns.types int:string
@@ -4195,6 +4231,7 @@ STAGE PLANS:
                       input format: org.apache.hadoop.mapred.TextInputFormat
                       output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                       properties:
+                        COLUMN_STATS_ACCURATE true
                         bucket_count -1
                         columns key,value
                         columns.types int:string
@@ -4224,6 +4261,7 @@ STAGE PLANS:
             partition values:
               ds 2000-04-08
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -4277,6 +4315,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value
                 columns.types int:string
@@ -4313,6 +4352,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
+                    COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns key,value
                     columns.types int:string
@@ -4340,6 +4380,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -4358,6 +4399,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value
                 columns.types int:string
@@ -4392,6 +4434,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
+                    COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns key,value
                     columns.types int:string
@@ -4419,6 +4462,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -4437,6 +4481,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value
                 columns.types int:string
@@ -4480,6 +4525,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value
                 columns.types int:string
@@ -4516,6 +4562,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
+                    COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns key,value
                     columns.types int:string
@@ -4543,6 +4590,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -4561,6 +4609,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value
                 columns.types int:string
@@ -4595,6 +4644,7 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.TextInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                   properties:
+                    COLUMN_STATS_ACCURATE true
                     bucket_count -1
                     columns key,value
                     columns.types int:string
@@ -4622,6 +4672,7 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types int:string
@@ -4640,6 +4691,7 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value
                 columns.types int:string
@@ -4664,6 +4716,7 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
+
 
 PREHOOK: query: from pcr_t1
 insert overwrite table pcr_t2 select key, value where ds='2000-04-08' and key=2
@@ -4762,6 +4815,7 @@ STAGE PLANS:
               ds 2008-04-08
               hr 11
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -4932,6 +4986,7 @@ STAGE PLANS:
               ds 2008-04-08
               hr 11
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -4973,6 +5028,7 @@ STAGE PLANS:
               ds 2008-04-08
               hr 12
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -5149,6 +5205,7 @@ STAGE PLANS:
               ds 2008-04-08
               hr 11
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -5190,6 +5247,7 @@ STAGE PLANS:
               ds 2008-04-09
               hr 11
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string

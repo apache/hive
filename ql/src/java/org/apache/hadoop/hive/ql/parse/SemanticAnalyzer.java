@@ -20,6 +20,7 @@ package org.apache.hadoop.hive.ql.parse;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -166,6 +167,8 @@ import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.StandardStructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
@@ -806,6 +809,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         String currentDatabase = SessionState.get().getCurrentDatabase();
         String tab_name = getUnescapedName((ASTNode) ast.getChild(0).getChild(0), currentDatabase);
         qbp.addInsertIntoTable(tab_name);
+        // TODO: is this supposed to fall thru?
 
       case HiveParser.TOK_DESTINATION:
         ctx_1.dest = "insclause-" + ctx_1.nextNum;
@@ -967,17 +971,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           throw new SemanticException(generateErrorMessage(ast,
               ErrorMsg.UNION_NOTIN_SUBQ.getMsg()));
         }
+        skipRecursion = false;
+        break;
 
       case HiveParser.TOK_INSERT:
         ASTNode destination = (ASTNode) ast.getChild(0);
         Tree tab = destination.getChild(0);
-
         // Proceed if AST contains partition & If Not Exists
         if (destination.getChildCount() == 2 &&
             tab.getChildCount() == 2 &&
             destination.getChild(1).getType() == HiveParser.TOK_IFNOTEXISTS) {
           String tableName = tab.getChild(0).getChild(0).getText();
-
           Tree partitions = tab.getChild(1);
           int childCount = partitions.getChildCount();
           HashMap<String, String> partition = new HashMap<String, String>();
@@ -991,25 +995,30 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             partition.put(partitionName, partitionVal);
           }
           // if it is a dynamic partition throw the exception
-          if (childCount == partition.size()) {
-            try {
-              Table table = db.getTable(tableName);
-              Partition parMetaData = db.getPartition(table, partition, false);
-              // Check partition exists if it exists skip the overwrite
-              if (parMetaData != null) {
-                phase1Result = false;
-                skipRecursion = true;
-                LOG.info("Partition already exists so insert into overwrite " +
-                    "skipped for partition : " + parMetaData.toString());
-                break;
-              }
-            } catch (HiveException e) {
-              LOG.info("Error while getting metadata : ", e);
-            }
-          } else {
+          if (childCount != partition.size()) {
             throw new SemanticException(ErrorMsg.INSERT_INTO_DYNAMICPARTITION_IFNOTEXISTS
                 .getMsg(partition.toString()));
           }
+          Table table = null;
+          try {
+            table = db.getTable(tableName);
+          } catch (HiveException ex) {
+            throw new SemanticException(ex);
+          }
+          try {
+            Partition parMetaData = db.getPartition(table, partition, false);
+            // Check partition exists if it exists skip the overwrite
+            if (parMetaData != null) {
+              phase1Result = false;
+              skipRecursion = true;
+              LOG.info("Partition already exists so insert into overwrite " +
+                  "skipped for partition : " + parMetaData.toString());
+              break;
+            }
+          } catch (HiveException e) {
+            LOG.info("Error while getting metadata : ", e);
+          }
+          validatePartSpec(table, partition, (ASTNode)tab, conf);
         }
         skipRecursion = false;
         break;
@@ -5705,7 +5714,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       colNames.add(inputCols.get(i).getInternalName());
       colOIs[i] = inputCols.get(i).getObjectInspector();
     }
-    StructObjectInspector outputOI = genericUDTF.initialize(colOIs);
+    StandardStructObjectInspector rowOI =
+        ObjectInspectorFactory.getStandardStructObjectInspector(colNames, Arrays.asList(colOIs));
+    StructObjectInspector outputOI = genericUDTF.initialize(rowOI);
 
     int numUdtfCols = outputOI.getAllStructFieldRefs().size();
     if (colAliases.isEmpty()) {

@@ -205,6 +205,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
 	numRows             	26                  
 	rawDataSize         	199                 
@@ -254,6 +255,7 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	3                   
 	numRows             	0                   
 	rawDataSize         	0                   

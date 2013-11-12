@@ -83,6 +83,7 @@ public class GenericUDAFComputeStats extends AbstractGenericUDAFResolver {
     case DOUBLE:
       return new GenericUDAFDoubleStatsEvaluator();
     case STRING:
+    case CHAR:
     case VARCHAR:
       return new GenericUDAFStringStatsEvaluator();
     case BINARY:

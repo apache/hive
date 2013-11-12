@@ -1,0 +1,134 @@
+PREHOOK: query: drop table char_join1_ch1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table char_join1_ch1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table char_join1_ch2
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table char_join1_ch2
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: drop table char_join1_str
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table char_join1_str
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: create table  char_join1_ch1 (
+  c1 int,
+  c2 char(10)
+)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table  char_join1_ch1 (
+  c1 int,
+  c2 char(10)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@char_join1_ch1
+PREHOOK: query: create table  char_join1_ch2 (
+  c1 int,
+  c2 char(20)
+)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table  char_join1_ch2 (
+  c1 int,
+  c2 char(20)
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@char_join1_ch2
+PREHOOK: query: create table  char_join1_str (
+  c1 int,
+  c2 string
+)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table  char_join1_str (
+  c1 int,
+  c2 string
+)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@char_join1_str
+PREHOOK: query: load data local inpath '../../data/files/vc1.txt' into table char_join1_ch1
+PREHOOK: type: LOAD
+PREHOOK: Output: default@char_join1_ch1
+POSTHOOK: query: load data local inpath '../../data/files/vc1.txt' into table char_join1_ch1
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@char_join1_ch1
+PREHOOK: query: load data local inpath '../../data/files/vc1.txt' into table char_join1_ch2
+PREHOOK: type: LOAD
+PREHOOK: Output: default@char_join1_ch2
+POSTHOOK: query: load data local inpath '../../data/files/vc1.txt' into table char_join1_ch2
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@char_join1_ch2
+PREHOOK: query: load data local inpath '../../data/files/vc1.txt' into table char_join1_str
+PREHOOK: type: LOAD
+PREHOOK: Output: default@char_join1_str
+POSTHOOK: query: load data local inpath '../../data/files/vc1.txt' into table char_join1_str
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@char_join1_str
+PREHOOK: query: -- Join char with same length char
+select * from char_join1_ch1 a join char_join1_ch1 b on (a.c2 = b.c2) order by a.c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_join1_ch1
+#### A masked pattern was here ####
+POSTHOOK: query: -- Join char with same length char
+select * from char_join1_ch1 a join char_join1_ch1 b on (a.c2 = b.c2) order by a.c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_join1_ch1
+#### A masked pattern was here ####
+1	abc       	1	abc       
+1	abc       	2	abc       
+2	abc       	1	abc       
+2	abc       	2	abc       
+3	 abc      	3	 abc      
+PREHOOK: query: -- Join char with different length char
+select * from char_join1_ch1 a join char_join1_ch2 b on (a.c2 = b.c2) order by a.c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_join1_ch1
+PREHOOK: Input: default@char_join1_ch2
+#### A masked pattern was here ####
+POSTHOOK: query: -- Join char with different length char
+select * from char_join1_ch1 a join char_join1_ch2 b on (a.c2 = b.c2) order by a.c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_join1_ch1
+POSTHOOK: Input: default@char_join1_ch2
+#### A masked pattern was here ####
+1	abc       	1	abc                 
+1	abc       	2	abc                 
+2	abc       	1	abc                 
+2	abc       	2	abc                 
+3	 abc      	3	 abc                
+PREHOOK: query: -- Join char with string
+select * from char_join1_ch1 a join char_join1_str b on (a.c2 = b.c2) order by a.c1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@char_join1_ch1
+PREHOOK: Input: default@char_join1_str
+#### A masked pattern was here ####
+POSTHOOK: query: -- Join char with string
+select * from char_join1_ch1 a join char_join1_str b on (a.c2 = b.c2) order by a.c1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@char_join1_ch1
+POSTHOOK: Input: default@char_join1_str
+#### A masked pattern was here ####
+1	abc       	1	abc
+2	abc       	1	abc
+3	 abc      	3	 abc
+PREHOOK: query: drop table char_join1_ch1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@char_join1_ch1
+PREHOOK: Output: default@char_join1_ch1
+POSTHOOK: query: drop table char_join1_ch1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@char_join1_ch1
+POSTHOOK: Output: default@char_join1_ch1
+PREHOOK: query: drop table char_join1_ch2
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@char_join1_ch2
+PREHOOK: Output: default@char_join1_ch2
+POSTHOOK: query: drop table char_join1_ch2
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@char_join1_ch2
+POSTHOOK: Output: default@char_join1_ch2
+PREHOOK: query: drop table char_join1_str
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@char_join1_str
+PREHOOK: Output: default@char_join1_str
+POSTHOOK: query: drop table char_join1_str
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@char_join1_str
+POSTHOOK: Output: default@char_join1_str

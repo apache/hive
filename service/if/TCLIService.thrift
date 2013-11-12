@@ -45,6 +45,9 @@ enum TProtocolVersion {
 
   // V3 add varchar type, primitive type qualifiers
   HIVE_CLI_SERVICE_PROTOCOL_V3
+
+  // V4 add decimal precision/scale, char type
+  HIVE_CLI_SERVICE_PROTOCOL_V4
 }
 
 enum TTypeId {
@@ -66,7 +69,8 @@ enum TTypeId {
   DECIMAL_TYPE,
   NULL_TYPE,
   DATE_TYPE,
-  VARCHAR_TYPE
+  VARCHAR_TYPE,
+  CHAR_TYPE
 }
   
 const set<TTypeId> PRIMITIVE_TYPES = [
@@ -84,6 +88,7 @@ const set<TTypeId> PRIMITIVE_TYPES = [
   TTypeId.NULL_TYPE
   TTypeId.DATE_TYPE
   TTypeId.VARCHAR_TYPE
+  TTypeId.CHAR_TYPE
 ]
 
 const set<TTypeId> COMPLEX_TYPES = [
@@ -118,6 +123,7 @@ const map<TTypeId,string> TYPE_NAMES = {
   TTypeId.NULL_TYPE: "NULL"
   TTypeId.DATE_TYPE: "DATE"
   TTypeId.VARCHAR_TYPE: "VARCHAR"
+  TTypeId.CHAR_TYPE: "CHAR"
 }
 
 // Thrift does not support recursively defined types or forward declarations,
@@ -167,6 +173,10 @@ typedef i32 TTypeEntryPtr
 
 // Valid TTypeQualifiers key names
 const string CHARACTER_MAXIMUM_LENGTH = "characterMaximumLength"
+
+// Type qualifier key name for decimal
+const string PRECISION = "precision"
+const string SCALE = "scale"
 
 union TTypeQualifierValue {
   1: optional i32 i32Value
@@ -497,7 +507,7 @@ struct TOpenSessionResp {
   1: required TStatus status
 
   // The protocol version that the server is using.
-  2: required TProtocolVersion serverProtocolVersion = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V3
+  2: required TProtocolVersion serverProtocolVersion = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V4
 
   // Session Handle
   3: optional TSessionHandle sessionHandle

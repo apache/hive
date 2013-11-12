@@ -1,0 +1,5 @@
+PREHOOK: query: drop table invalid_char_length_3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: drop table invalid_char_length_3
+POSTHOOK: type: DROPTABLE
+FAILED: RuntimeException Char length 0 out of allowed range [1, 255]

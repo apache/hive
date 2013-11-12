@@ -24,6 +24,7 @@ import java.util.Map;
 
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
@@ -122,6 +123,9 @@ public final class LazyPrimitiveObjectInspectorFactory {
 
     // Object inspector hasn't been cached for this type/params yet, create now
     switch (typeInfo.getPrimitiveCategory()) {
+    case CHAR:
+      poi = new LazyHiveCharObjectInspector((CharTypeInfo) typeInfo);
+      break;
     case VARCHAR:
       poi = new LazyHiveVarcharObjectInspector((VarcharTypeInfo)typeInfo);
       break;

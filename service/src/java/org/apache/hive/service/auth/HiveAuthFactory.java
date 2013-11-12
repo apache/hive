@@ -18,6 +18,12 @@
 package org.apache.hive.service.auth;
 
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
+import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.security.auth.login.LoginException;
 import javax.security.sasl.Sasl;
@@ -28,14 +34,14 @@ import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.hive.thrift.HadoopThriftAuthBridge;
 import org.apache.hive.service.cli.thrift.ThriftCLIService;
 import org.apache.thrift.TProcessorFactory;
+import org.apache.thrift.transport.TSSLTransportFactory;
+import org.apache.thrift.transport.TServerSocket;
+import org.apache.thrift.transport.TSocket;
+import org.apache.thrift.transport.TTransport;
 import org.apache.thrift.transport.TTransportException;
 import org.apache.thrift.transport.TTransportFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.text.MessageFormat;
-import java.util.HashMap;
-import java.util.Map;
 
 public class HiveAuthFactory {
   private static final Logger LOG = LoggerFactory.getLogger(HiveAuthFactory.class);
@@ -151,6 +157,46 @@ public class HiveAuthFactory {
     } else {
       throw new IOException ("HiveServer2 kerberos principal or keytab is not correctly configured");
     }
+  }
+
+  public static TTransport getSocketTransport(String host, int port, int loginTimeout)
+      throws TTransportException {
+    return new TSocket(host, port, loginTimeout);
+  }
+
+  public static TTransport getSSLSocket(String host, int port, int loginTimeout)
+      throws TTransportException {
+    return TSSLTransportFactory.getClientSocket(host, port, loginTimeout);
+  }
+
+  public static TTransport getSSLSocket(String host, int port, int loginTimeout,
+      String trustStorePath, String trustStorePassWord) throws TTransportException {
+    TSSLTransportFactory.TSSLTransportParameters params =
+        new TSSLTransportFactory.TSSLTransportParameters();
+    params.setTrustStore(trustStorePath, trustStorePassWord);
+    params.requireClientAuth(true);
+    return TSSLTransportFactory.getClientSocket(host, port, loginTimeout, params);
+  }
+
+  public static TServerSocket getServerSocket(String hiveHost, int portNum)
+      throws TTransportException {
+    InetSocketAddress serverAddress = null;
+    if (hiveHost != null && !hiveHost.isEmpty()) {
+      serverAddress = new InetSocketAddress(hiveHost, portNum);
+    } else {
+      serverAddress = new  InetSocketAddress(portNum);
+    }
+    return new TServerSocket(serverAddress );
+  }
+
+  public static TServerSocket getServerSSLSocket(String hiveHost, int portNum,
+      String keyStorePath, String keyStorePassWord) throws TTransportException, UnknownHostException {
+    TSSLTransportFactory.TSSLTransportParameters params =
+        new TSSLTransportFactory.TSSLTransportParameters();
+    params.setKeyStore(keyStorePath, keyStorePassWord);
+
+    return TSSLTransportFactory.getServerSocket(portNum, 10000,
+        InetAddress.getByName(hiveHost), params);
   }
 
 }

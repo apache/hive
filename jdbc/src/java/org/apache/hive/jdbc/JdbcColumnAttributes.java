@@ -29,4 +29,10 @@ class JdbcColumnAttributes {
     this.precision = precision;
     this.scale = scale;
   }
+
+  @Override
+  public String toString() {
+    return "(" + precision + "," + scale + ")";
+  }
+
 }

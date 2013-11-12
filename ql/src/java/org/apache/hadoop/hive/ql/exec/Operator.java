@@ -47,7 +47,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapred.Counters;
-import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Reporter;
 
 /**
@@ -219,7 +218,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   // non-bean ..
 
   protected transient HashMap<Enum<?>, LongWritable> statsMap = new HashMap<Enum<?>, LongWritable>();
-  protected transient OutputCollector out;
   protected transient Log LOG = LogFactory.getLog(this.getClass().getName());
   protected transient boolean isLogInfoEnabled = LOG.isInfoEnabled();
   protected transient String alias;
@@ -262,19 +260,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
 
     for (Operator<? extends OperatorDesc> op : childOperators) {
       op.setReporter(rep);
-    }
-  }
-
-  public void setOutputCollector(OutputCollector out) {
-    this.out = out;
-
-    // the collector is same across all operators
-    if (childOperators == null) {
-      return;
-    }
-
-    for (Operator<? extends OperatorDesc> op : childOperators) {
-      op.setOutputCollector(out);
     }
   }
 
@@ -340,7 +325,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     }
 
     this.configuration = hconf;
-    this.out = null;
     if (!areAllParentsInitialized()) {
       return;
     }
@@ -638,8 +622,6 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       for (Operator<? extends OperatorDesc> op : childOperators) {
         op.close(abort);
       }
-
-      out = null;
 
       LOG.info(id + " Close done");
     } catch (HiveException e) {

@@ -148,18 +148,12 @@ public class MetaStoreUtils {
    * @return True if the passed Parameters Map contains values for all "Fast Stats".
    */
   public static boolean containsAllFastStats(Map<String, String> partParams) {
-    List<String> fastStats = StatsSetupConst.getStatsFastCollection();
-    for (String stat : fastStats) {
+    for (String stat : StatsSetupConst.fastStats) {
       if (!partParams.containsKey(stat)) {
         return false;
       }
     }
     return true;
-  }
-
-  public static boolean updateUnpartitionedTableStatsFast(Database db, Table tbl, Warehouse wh)
-      throws MetaException {
-    return updateUnpartitionedTableStatsFast(db, tbl, wh, false, false);
   }
 
   public static boolean updateUnpartitionedTableStatsFast(Database db, Table tbl, Warehouse wh,
@@ -200,9 +194,15 @@ public class MetaStoreUtils {
         }
         params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(tableSize));
         LOG.info("Updated size of table " + tbl.getTableName() +" to "+ Long.toString(tableSize));
-        if (params.containsKey(StatsSetupConst.ROW_COUNT) ||
-            params.containsKey(StatsSetupConst.RAW_DATA_SIZE)) {
-          // TODO: Add a MetaStore flag indicating accuracy of these stats and update it here.
+        if(!params.containsKey(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK)) {
+          // invalidate stats requiring scan since this is a regular ddl alter case
+          for (String stat : StatsSetupConst.statsRequireCompute) {
+            params.put(stat, "-1");
+          }
+          params.put(StatsSetupConst.COLUMN_STATS_ACCURATE, StatsSetupConst.FALSE);
+        } else {
+          params.remove(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK);	
+          params.put(StatsSetupConst.COLUMN_STATS_ACCURATE, StatsSetupConst.TRUE);
         }
       }
       tbl.setParameters(params);
@@ -214,10 +214,6 @@ public class MetaStoreUtils {
   // check if stats need to be (re)calculated
   public static boolean requireCalStats(Configuration hiveConf, Partition oldPart,
     Partition newPart, Table tbl) {
-
-    if (!HiveConf.getBoolVar(hiveConf, HiveConf.ConfVars.HIVESTATSAUTOGATHER)) {
-      return false;
-    }
 
     if (MetaStoreUtils.isView(tbl)) {
       return false;
@@ -233,9 +229,13 @@ public class MetaStoreUtils {
       return true;
     }
 
+    if(newPart.getParameters().containsKey(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK)) {
+      return true;
+    }
+    
     // requires to calculate stats if new and old have different fast stats
     if ((oldPart != null) && (oldPart.getParameters() != null)) {
-      for (String stat : StatsSetupConst.getStatsFastCollection()) {
+      for (String stat : StatsSetupConst.fastStats) {
         if (oldPart.getParameters().containsKey(stat)) {
           Long oldStat = Long.parseLong(oldPart.getParameters().get(stat));
           Long newStat = Long.parseLong(newPart.getParameters().get(stat));
@@ -290,11 +290,15 @@ public class MetaStoreUtils {
         }
         params.put(StatsSetupConst.TOTAL_SIZE, Long.toString(partSize));
         LOG.warn("Updated size to " + Long.toString(partSize));
-        if (params.containsKey(StatsSetupConst.ROW_COUNT) ||
-            params.containsKey(StatsSetupConst.RAW_DATA_SIZE)) {
-          // The accuracy of these "collectable" stats at this point is suspect unless we know that
-          // StatsTask was just run before this MetaStore call and populated them.
-          // TODO: Add a MetaStore flag indicating accuracy of these stats and update it here.
+        if(!params.containsKey(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK)) {
+          // invalidate stats requiring scan since this is a regular ddl alter case
+          for (String stat : StatsSetupConst.statsRequireCompute) {
+            params.put(stat, "-1");
+          }
+          params.put(StatsSetupConst.COLUMN_STATS_ACCURATE, StatsSetupConst.FALSE);
+        } else {
+          params.remove(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK);
+          params.put(StatsSetupConst.COLUMN_STATS_ACCURATE, StatsSetupConst.TRUE);
         }
       }
       part.setParameters(params);

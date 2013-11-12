@@ -31,7 +31,7 @@ public interface PrimitiveObjectInspector extends ObjectInspector {
    */
   public static enum PrimitiveCategory {
     VOID, BOOLEAN, BYTE, SHORT, INT, LONG, FLOAT, DOUBLE, STRING,
-    DATE, TIMESTAMP, BINARY, DECIMAL, VARCHAR, UNKNOWN
+    DATE, TIMESTAMP, BINARY, DECIMAL, VARCHAR, CHAR, UNKNOWN
   };
 
   public PrimitiveTypeInfo getTypeInfo();

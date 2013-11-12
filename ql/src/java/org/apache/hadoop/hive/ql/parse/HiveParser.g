@@ -110,6 +110,7 @@ TOK_DATELITERAL;
 TOK_DATETIME;
 TOK_TIMESTAMP;
 TOK_STRING;
+TOK_CHAR;
 TOK_VARCHAR;
 TOK_BINARY;
 TOK_DECIMAL;
@@ -1781,6 +1782,7 @@ primitiveType
     | KW_BINARY        ->    TOK_BINARY
     | KW_DECIMAL (LPAREN prec=Number (COMMA scale=Number)? RPAREN)? -> ^(TOK_DECIMAL $prec? $scale?)
     | KW_VARCHAR LPAREN length=Number RPAREN      ->    ^(TOK_VARCHAR $length)
+    | KW_CHAR LPAREN length=Number RPAREN      ->    ^(TOK_CHAR $length)
     ;
 
 listType

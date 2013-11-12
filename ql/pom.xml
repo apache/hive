@@ -33,6 +33,17 @@
 
   <dependencies>
     <!-- intra-project -->
+    <!-- used for vector code-gen -->
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-ant</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-common</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-metastore</artifactId>
@@ -40,7 +51,12 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive</groupId>
-      <artifactId>hive-ant</artifactId>
+      <artifactId>hive-serde</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.hive</groupId>
+      <artifactId>hive-shims</artifactId>
       <version>${project.version}</version>
     </dependency>
     <!-- inter-project -->
@@ -55,14 +71,9 @@
       <version>${commons-codec.version}</version>
     </dependency>
     <dependency>
-      <groupId>commons-collections</groupId>
-      <artifactId>commons-collections</artifactId>
-      <version>${commons-collections.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>commons-configuration</groupId>
-      <artifactId>commons-configuration</artifactId>
-      <version>${commons-configuration.version}</version>
+      <groupId>commons-httpclient</groupId>
+      <artifactId>commons-httpclient</artifactId>
+      <version>${commons-httpclient.version}</version>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
@@ -73,7 +84,12 @@
        <groupId>org.apache.commons</groupId>
        <artifactId>commons-lang3</artifactId>
        <version>${commons-lang3.version}</version>
-  </dependency>
+    </dependency>
+    <dependency>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
+      <version>${commons-lang.version}</version>
+    </dependency>
     <dependency>
       <groupId>commons-logging</groupId>
       <artifactId>commons-logging</artifactId>
@@ -101,6 +117,11 @@
     </dependency>
     <dependency>
       <groupId>org.apache.avro</groupId>
+      <artifactId>avro</artifactId>
+      <version>${avro.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.avro</groupId>
       <artifactId>avro-mapred</artifactId>
       <version>${avro.version}</version>
     </dependency>
@@ -108,6 +129,11 @@
       <groupId>org.apache.ant</groupId>
       <artifactId>ant</artifactId>
       <version>${ant.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <version>${commons-compress.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.thrift</groupId>
@@ -128,6 +154,16 @@
       <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
       <version>${groovy.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.jackson</groupId>
+      <artifactId>jackson-core-asl</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.jackson</groupId>
+      <artifactId>jackson-mapper-asl</artifactId>
+      <version>${jackson.version}</version>
     </dependency>
     <dependency>
       <groupId>org.datanucleus</groupId>
@@ -159,24 +195,17 @@
       <artifactId>json</artifactId>
       <version>${json.version}</version>
     </dependency>
-    <!-- test intra-project -->
     <dependency>
-      <groupId>org.apache.hive</groupId>
-      <artifactId>hive-testutils</artifactId>
-      <version>${project.version}</version>
-      <scope>test</scope>
+      <groupId>stax</groupId>
+      <artifactId>stax-api</artifactId>
+      <version>${stax.version}</version>
     </dependency>
+    <!-- test intra-project -->
     <!-- test inter-project -->
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hbase</groupId>
-      <artifactId>hbase</artifactId>
-      <version>${hbase.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -392,7 +421,7 @@
                   <include>commons-lang:commons-lang</include>
                   <include>org.json:json</include>
                   <include>org.apache.avro:arvro-mapred</include>
-                  <include>org.apache.hive:hive-shims:*:uberjar</include>
+                  <include>org.apache.hive:hive-shims</include>
                   <include>com.googlecode.javaewah:JavaEWAH</include>
                   <include>javolution:javolution</include>
                   <include>com.google.protobuf:protobuf-java</include>

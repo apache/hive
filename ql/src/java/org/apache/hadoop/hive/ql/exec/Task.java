@@ -93,6 +93,8 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
 
   // Bean methods
 
+  protected boolean rootTask;
+
   protected List<Task<? extends Serializable>> childTasks;
   protected List<Task<? extends Serializable>> parentTasks;
   /**
@@ -170,6 +172,14 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   public boolean fetch(ArrayList<String> res) throws IOException, CommandNeedRetryException {
     assert false;
     return false;
+  }
+
+  public boolean isRootTask() {
+    return rootTask;
+  }
+
+  public void setRootTask(boolean rootTask) {
+    this.rootTask = rootTask;
   }
 
   public void setChildTasks(List<Task<? extends Serializable>> childTasks) {
@@ -505,5 +515,9 @@ public abstract class Task<T extends Serializable> implements Serializable, Node
   }
   void setException(Throwable ex) {
     exception = ex;
+  }
+
+  public String toString() {
+    return getId() + ":" + getType();
   }
 }

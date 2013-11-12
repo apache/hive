@@ -511,6 +511,8 @@ public abstract class HiveBaseResultSet implements ResultSet {
       return getDoubleValue(tColumnValue.getDoubleVal());
     case STRING_TYPE:
       return getStringValue(tColumnValue.getStringVal());
+    case CHAR_TYPE:
+      return getStringValue(tColumnValue.getStringVal());
     case VARCHAR_TYPE:
       return getStringValue(tColumnValue.getStringVal());
     case BINARY_TYPE:

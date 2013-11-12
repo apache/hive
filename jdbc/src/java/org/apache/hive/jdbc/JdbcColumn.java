@@ -69,11 +69,9 @@ public class JdbcColumn {
     switch(columnType) {
     case Types.BOOLEAN:
       return columnPrecision(columnType, columnAttributes);
+    case Types.CHAR:
     case Types.VARCHAR:
-      if (columnAttributes != null) {
-        return columnAttributes.precision;
-      }
-      return Integer.MAX_VALUE; // hive has no max limit for strings
+      return columnPrecision(columnType, columnAttributes);
     case Types.TINYINT:
     case Types.SMALLINT:
     case Types.INTEGER:
@@ -91,10 +89,7 @@ public class JdbcColumn {
     case Types.DOUBLE:
       return 25; // e.g. -(17#).e-####
     case Types.DECIMAL:
-      if (columnAttributes != null) {
-        return columnAttributes.precision + 2;  // '-' sign and '.'
-      }
-      return Integer.MAX_VALUE;
+      return columnPrecision(columnType, columnAttributes) + 2;  // '-' sign and '.'
     default:
       throw new SQLException("Invalid column type: " + columnType);
     }
@@ -106,6 +101,7 @@ public class JdbcColumn {
     switch(columnType) {
     case Types.BOOLEAN:
       return 1;
+    case Types.CHAR:
     case Types.VARCHAR:
       if (columnAttributes != null) {
         return columnAttributes.precision;
@@ -128,10 +124,7 @@ public class JdbcColumn {
     case Types.TIMESTAMP:
       return 29;
     case Types.DECIMAL:
-      if (columnAttributes != null) {
-        return columnAttributes.precision;
-      }
-      return Integer.MAX_VALUE;
+      return columnAttributes.precision;
     default:
       throw new SQLException("Invalid column type: " + columnType);
     }
@@ -142,6 +135,7 @@ public class JdbcColumn {
     // according to hiveTypeToSqlType possible options are:
     switch(columnType) {
     case Types.BOOLEAN:
+    case Types.CHAR:
     case Types.VARCHAR:
     case Types.TINYINT:
     case Types.SMALLINT:
@@ -156,10 +150,7 @@ public class JdbcColumn {
     case  Types.TIMESTAMP:
       return 9;
     case Types.DECIMAL:
-      if (columnAttributes != null) {
-        return columnAttributes.scale;
-      }
-      return Integer.MAX_VALUE;
+      return columnAttributes.scale;
     default:
       throw new SQLException("Invalid column type: " + columnType);
     }

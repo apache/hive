@@ -32,6 +32,7 @@ import java.util.Stack;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.FunctionInfo;
@@ -62,6 +63,8 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector.Category;
+import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.ListTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.MapTypeInfo;
@@ -270,8 +273,16 @@ public final class TypeCheckProcFactory {
                 0, expr.getText().length() - 1));
         } else if (expr.getText().endsWith("BD")) {
           // Literal decimal
-          return new ExprNodeConstantDesc(TypeInfoFactory.decimalTypeInfo,
-                expr.getText().substring(0, expr.getText().length() - 2));
+          String strVal = expr.getText().substring(0, expr.getText().length() - 2);
+          HiveDecimal hd = HiveDecimal.create(strVal);
+          int prec = 1;
+          int scale = 0;
+          if (hd != null) {
+            prec = hd.precision();
+            scale = hd.scale();
+          }
+          DecimalTypeInfo typeInfo = TypeInfoFactory.getDecimalTypeInfo(prec, scale);
+          return new ExprNodeConstantDesc(typeInfo, strVal);
         } else {
           v = Double.valueOf(expr.getText());
           v = Long.valueOf(expr.getText());
@@ -573,6 +584,8 @@ public final class TypeCheckProcFactory {
           serdeConstants.DOUBLE_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_STRING,
           serdeConstants.STRING_TYPE_NAME);
+      conversionFunctionTextHashMap.put(HiveParser.TOK_CHAR,
+          serdeConstants.CHAR_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_VARCHAR,
           serdeConstants.VARCHAR_TYPE_NAME);
       conversionFunctionTextHashMap.put(HiveParser.TOK_BINARY,
@@ -796,6 +809,13 @@ public final class TypeCheckProcFactory {
         if (isFunction) {
           ASTNode funcNameNode = (ASTNode)expr.getChild(0);
           switch (funcNameNode.getType()) {
+            case HiveParser.TOK_CHAR:
+              // Add type params
+              CharTypeInfo charTypeInfo = ParseUtils.getCharTypeInfo(funcNameNode);
+              if (genericUDF != null) {
+                ((SettableUDF)genericUDF).setTypeInfo(charTypeInfo);
+              }
+              break;
             case HiveParser.TOK_VARCHAR:
               VarcharTypeInfo varcharTypeInfo = ParseUtils.getVarcharTypeInfo(funcNameNode);
               if (genericUDF != null) {

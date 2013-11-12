@@ -42,9 +42,13 @@
       <groupId>org.apache.hive</groupId>
       <artifactId>hive-shims</artifactId>
       <version>${project.version}</version>
-      <classifier>uberjar</classifier>
     </dependency>
     <!-- inter-project -->
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${guava.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.jolbox</groupId>
       <artifactId>bonecp</artifactId>

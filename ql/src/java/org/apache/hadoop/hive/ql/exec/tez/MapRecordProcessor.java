@@ -31,6 +31,7 @@ import org.apache.hadoop.hive.ql.exec.MapredContext;
 import org.apache.hadoop.hive.ql.exec.ObjectCache;
 import org.apache.hadoop.hive.ql.exec.ObjectCacheFactory;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapper.reportStats;
 import org.apache.hadoop.hive.ql.exec.mr.ExecMapperContext;
@@ -123,7 +124,7 @@ public class MapRecordProcessor  extends RecordProcessor{
         }
       }
 
-      mapOp.setOutputCollector(out);
+      OperatorUtils.setChildrenCollector(mapOp.getChildOperators(), out);
       mapOp.setReporter(reporter);
       MapredContext.get().setReporter(reporter);
 

@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ant;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 
@@ -235,7 +236,7 @@ public class GenVectorTestCode {
 
       String outputFile = GenVectorCode.joinPath(this.testOutputDir, testClass + ".java");
 
-      GenVectorCode.writeFile(outputFile, templateString);
+      GenVectorCode.writeFile(new File(outputFile), templateString);
     }
   }
 

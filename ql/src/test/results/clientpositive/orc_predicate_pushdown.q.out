@@ -277,10 +277,7 @@ PREHOOK: query: -- all the following queries have predicates which are pushed do
 -- hive.optimize.index.filter is set to true. the explain plan should show filter expression
 -- in table scan operator.
 
-SELECT SUM(HASH(t)) FROM orc_pred
-  WHERE t IS NOT NULL
-  AND t < 0
-  AND t > -2
+SELECT * FROM orc_pred WHERE t<2 limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@orc_pred
 #### A masked pattern was here ####
@@ -288,7 +285,90 @@ POSTHOOK: query: -- all the following queries have predicates which are pushed d
 -- hive.optimize.index.filter is set to true. the explain plan should show filter expression
 -- in table scan operator.
 
-SELECT SUM(HASH(t)) FROM orc_pred
+SELECT * FROM orc_pred WHERE t<2 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+-3	467	65575	4294967437	81.64	23.53	true	tom hernandez	2013-03-01 09:11:58.703188	32.85	study skills
+PREHOOK: query: SELECT * FROM orc_pred WHERE t<2 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM orc_pred WHERE t<2 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+-3	467	65575	4294967437	81.64	23.53	true	tom hernandez	2013-03-01 09:11:58.703188	32.85	study skills
+PREHOOK: query: SELECT * FROM orc_pred WHERE t>2 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM orc_pred WHERE t>2 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+124	336	65664	4294967435	74.72	42.47	true	bob davidson	2013-03-01 09:11:58.703302	45.4	yard duty
+PREHOOK: query: SELECT * FROM orc_pred WHERE t>2 limit 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM orc_pred WHERE t>2 limit 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: Lineage: orc_pred.b SIMPLE [(staging)staging.FieldSchema(name:b, type:bigint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bin SIMPLE [(staging)staging.FieldSchema(name:bin, type:binary, comment:null), ]
+POSTHOOK: Lineage: orc_pred.bo SIMPLE [(staging)staging.FieldSchema(name:bo, type:boolean, comment:null), ]
+POSTHOOK: Lineage: orc_pred.d SIMPLE [(staging)staging.FieldSchema(name:d, type:double, comment:null), ]
+POSTHOOK: Lineage: orc_pred.dec SIMPLE [(staging)staging.FieldSchema(name:dec, type:decimal(4,2), comment:null), ]
+POSTHOOK: Lineage: orc_pred.f SIMPLE [(staging)staging.FieldSchema(name:f, type:float, comment:null), ]
+POSTHOOK: Lineage: orc_pred.i SIMPLE [(staging)staging.FieldSchema(name:i, type:int, comment:null), ]
+POSTHOOK: Lineage: orc_pred.s SIMPLE [(staging)staging.FieldSchema(name:s, type:string, comment:null), ]
+POSTHOOK: Lineage: orc_pred.si SIMPLE [(staging)staging.FieldSchema(name:si, type:smallint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.t SIMPLE [(staging)staging.FieldSchema(name:t, type:tinyint, comment:null), ]
+POSTHOOK: Lineage: orc_pred.ts SIMPLE [(staging)staging.FieldSchema(name:ts, type:timestamp, comment:null), ]
+124	336	65664	4294967435	74.72	42.47	true	bob davidson	2013-03-01 09:11:58.703302	45.4	yard duty
+PREHOOK: query: SELECT SUM(HASH(t)) FROM orc_pred
+  WHERE t IS NOT NULL
+  AND t < 0
+  AND t > -2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@orc_pred
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT SUM(HASH(t)) FROM orc_pred
   WHERE t IS NOT NULL
   AND t < 0
   AND t > -2

@@ -23,9 +23,9 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>hive-shims</artifactId>
+  <artifactId>hive-shims-aggregator</artifactId>
   <packaging>pom</packaging>
-  <name>Hive Shims</name>
+  <name>Hive Shims Aggregator</name>
 
   <properties>
     <hive.path.to.root>..</hive.path.to.root>
@@ -37,76 +37,6 @@
     <module>common-secure</module>
     <module>0.20S</module>
     <module>0.23</module>
+    <module>assembly</module>
   </modules>
-
-  <dependencies>
-    <dependency>
-      <groupId>org.apache.hive.shims</groupId>
-      <artifactId>hive-shims-common</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive.shims</groupId>
-      <artifactId>hive-shims-0.20</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive.shims</groupId>
-      <artifactId>hive-shims-common-secure</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive.shims</groupId>
-      <artifactId>hive-shims-0.20S</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hive.shims</groupId>
-      <artifactId>hive-shims-0.23</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-  </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <configuration>
-          <descriptors>
-            <descriptor>src/assembly/uberjar.xml</descriptor>
-          </descriptors>
-        </configuration>
-        <executions>
-          <execution>
-            <phase>compile</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>attach-artifacts</id>
-            <phase>package</phase>
-            <goals>
-              <goal>attach-artifact</goal>
-            </goals>
-            <configuration>
-              <artifacts>
-                <artifact>
-                  <file>target/hive-shims-${project.version}-uberjar.jar</file>
-                  <type>jar</type>
-                </artifact>
-              </artifacts>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
 </project>

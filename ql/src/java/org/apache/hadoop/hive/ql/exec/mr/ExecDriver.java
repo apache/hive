@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.exec.HiveTotalOrderPartitioner;
 import org.apache.hadoop.hive.ql.exec.JobCloseFeedBack;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.PartitionKeySampler;
 import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
@@ -81,6 +82,7 @@ import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.log4j.Appender;
@@ -128,7 +130,6 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   private void initializeFiles(String prop, String files) {
     if (files != null && files.length() > 0) {
       job.set(prop, files);
-      ShimLoader.getHadoopShims().setTmpFiles(prop, files);
     }
   }
 
@@ -543,7 +544,7 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       FetchOperator fetcher = PartitionKeySampler.createSampler(fetchWork, conf, job, ts);
       try {
         ts.initialize(conf, new ObjectInspector[]{fetcher.getOutputObjectInspector()});
-        ts.setOutputCollector(sampler);
+        OperatorUtils.setChildrenCollector(ts.getChildOperators(), sampler);
         while (fetcher.pushRow()) { }
       } finally {
         fetcher.clearFetchContext();

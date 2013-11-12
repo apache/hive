@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,6 +50,9 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.StringUpper;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFUnixTimeStampLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFYearLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterStringColumnInList;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterLongColumnInList;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterDoubleColumnInList;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColUnaryMinus;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColLessDoubleScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColumnBetween;
@@ -92,6 +96,7 @@ import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLower;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
@@ -938,5 +943,56 @@ public class TestVectorizationContext {
     children1.set(0, new ExprNodeConstantDesc(new Boolean(true)));
     ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
     assertTrue(ve instanceof FilterDoubleColumnNotBetween);
+
+    // timestamp BETWEEN
+    children1.set(0, new ExprNodeConstantDesc(new Boolean(false)));
+    children1.set(1, new ExprNodeColumnDesc(Timestamp.class, "col1", "table", false));
+    children1.set(2, new ExprNodeConstantDesc("2013-11-05 00:00:00.000"));
+    children1.set(3, new ExprNodeConstantDesc("2013-11-06 00:00:00.000"));
+    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    assertTrue(ve instanceof FilterLongColumnBetween);
+
+    // timestamp NOT BETWEEN
+    children1.set(0, new ExprNodeConstantDesc(new Boolean(true)));
+    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    assertTrue(ve instanceof FilterLongColumnNotBetween);
+  }
+
+  @Test
+  public void testInFilters() throws HiveException {
+    ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(String.class, "col1", "table", false);
+    ExprNodeConstantDesc constDesc = new ExprNodeConstantDesc("Alpha");
+    ExprNodeConstantDesc constDesc2 = new ExprNodeConstantDesc("Bravo");
+
+    // string IN
+    GenericUDFIn udf = new GenericUDFIn();
+    ExprNodeGenericFuncDesc exprDesc = new ExprNodeGenericFuncDesc();
+    exprDesc.setGenericUDF(udf);
+    List<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>();
+    children1.add(col1Expr);
+    children1.add(constDesc);
+    children1.add(constDesc2);
+    exprDesc.setChildren(children1);
+
+    Map<String, Integer> columnMap = new HashMap<String, Integer>();
+    columnMap.put("col1", 1);
+    columnMap.put("col2", 2);
+    VectorizationContext vc = new VectorizationContext(columnMap, 2);
+    VectorExpression ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    assertTrue(ve instanceof FilterStringColumnInList);
+
+    // long IN
+    children1.set(0, new ExprNodeColumnDesc(Long.class, "col1", "table", false));
+    children1.set(1, new ExprNodeConstantDesc(10));
+    children1.set(2, new ExprNodeConstantDesc(20));
+    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    assertTrue(ve instanceof FilterLongColumnInList);
+
+    // double IN
+    children1.set(0, new ExprNodeColumnDesc(Double.class, "col1", "table", false));
+    children1.set(1, new ExprNodeConstantDesc(10d));
+    children1.set(2, new ExprNodeConstantDesc(20d));
+    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
+    assertTrue(ve instanceof FilterDoubleColumnInList);
   }
 }

@@ -29,6 +29,7 @@ import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentLengthException;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters;
@@ -41,9 +42,9 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.Object
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
-import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.Text;
 
 /**
@@ -367,6 +368,9 @@ public final class GenericUDFUtils {
         case STRING:
           returnValue = new Text();
           break;
+        case CHAR:
+          returnValue = new HiveCharWritable();
+          break;
         case VARCHAR:
           returnValue = new HiveVarcharWritable();
           break;
@@ -382,6 +386,9 @@ public final class GenericUDFUtils {
       switch (type) {
         case STRING:
           ((Text)returnValue).set(val);
+          return returnValue;
+        case CHAR:
+          ((HiveCharWritable) returnValue).set(val);
           return returnValue;
         case VARCHAR:
           ((HiveVarcharWritable)returnValue).set(val);
@@ -402,8 +409,9 @@ public final class GenericUDFUtils {
         throws UDFArgumentException {
       // TODO: we can support date, int, .. any types which would have a fixed length value
       switch (poi.getPrimitiveCategory()) {
+        case CHAR:
         case VARCHAR:
-          VarcharTypeInfo typeInfo = (VarcharTypeInfo) poi.getTypeInfo();
+          BaseCharTypeInfo typeInfo = (BaseCharTypeInfo) poi.getTypeInfo();
           return typeInfo.getLength();
         default:
           throw new UDFArgumentException("No fixed size for type " + poi.getTypeName());

@@ -152,6 +152,14 @@ message UserMetadataItem {
   required bytes value = 2;
 }
 
+message StripeStatistics {
+  repeated ColumnStatistics colStats = 1;
+}
+
+message Metadata {
+  repeated StripeStatistics stripeStats = 1;
+}
+
 message Footer {
   optional uint64 headerLength = 1;
   optional uint64 contentLength = 2;
@@ -176,6 +184,7 @@ message PostScript {
   optional CompressionKind compression = 2;
   optional uint64 compressionBlockSize = 3;
   repeated uint32 version = 4 [packed = true];
+  optional uint64 metadataLength = 5;
   // Leave this last in the record
   optional string magic = 8000;
 }

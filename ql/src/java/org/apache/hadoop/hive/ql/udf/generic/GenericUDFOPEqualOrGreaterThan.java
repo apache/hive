@@ -97,7 +97,7 @@ public class GenericUDFOPEqualOrGreaterThan extends GenericUDFBaseCompare {
       Text t0, t1;
       t0 = soi0.getPrimitiveWritableObject(o0);
       t1 = soi1.getPrimitiveWritableObject(o1);
-      result.set(ShimLoader.getHadoopShims().compareText(t0, t1) >= 0);
+      result.set(t0.compareTo(t1) >= 0);
       break;
     case COMPARE_INT:
       result.set(ioi0.get(o0) >= ioi1.get(o1));
