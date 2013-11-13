@@ -24,6 +24,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileUtil;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HConstants;
+import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.MiniHBaseCluster;
 import org.apache.hadoop.hbase.client.HConnectionManager;
 import org.apache.hadoop.hbase.client.HTable;
@@ -121,7 +122,7 @@ public class ManyMiniCluster {
 
   protected synchronized void stop() {
     if (hbaseCluster != null) {
-      HConnectionManager.deleteAllConnections(true);
+      HConnectionManager.deleteAllConnections();
       try {
         hbaseCluster.shutdown();
       } catch (Exception e) {
@@ -266,7 +267,7 @@ public class ManyMiniCluster {
       hbaseCluster = new MiniHBaseCluster(hbaseConf, numRegionServers);
       hbaseConf.set("hbase.master", hbaseCluster.getMaster().getServerName().getHostAndPort());
       //opening the META table ensures that cluster is running
-      new HTable(hbaseConf, HConstants.META_TABLE_NAME);
+      new HTable(hbaseConf, TableName.META_TABLE_NAME.getNameAsString());
     } catch (Exception e) {
       throw new IllegalStateException("Failed to setup HBase Cluster", e);
     }

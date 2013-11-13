@@ -19,13 +19,35 @@
 package org.apache.hcatalog.hbase.snapshot;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hbase.Coprocessor;
 import org.apache.hadoop.hbase.CoprocessorEnvironment;
-import org.apache.hadoop.hbase.coprocessor.BaseEndpointCoprocessor;
+import org.apache.hadoop.hbase.coprocessor.CoprocessorService;
+import org.apache.hadoop.hbase.protobuf.ResponseConverter;
+import org.apache.hcatalog.hbase.snapshot.RevisionManagerEndpointProtos.AbortWriteTransactionRequest;
+import org.apache.hcatalog.hbase.snapshot.RevisionManagerEndpointProtos.AbortWriteTransactionResponse;
+import org.apache.hcatalog.hbase.snapshot.RevisionManagerEndpointProtos.BeginWriteTransactionRequest;
+import org.apache.hcatalog.hbase.snapshot.RevisionManagerEndpointProtos.BeginWriteTransactionResponse;
+import org.apache.hcatalog.hbase.snapshot.RevisionManagerEndpointProtos.CommitWriteTransactionRequest;
+import org.apache.hcatalog.hbase.snapshot.RevisionManagerEndpointProtos.CommitWriteTransactionResponse;
+import org.apache.hcatalog.hbase.snapshot.RevisionManagerEndpointProtos.CreateSnapshotRequest;
+import org.apache.hcatalog.hbase.snapshot.RevisionManagerEndpointProtos.CreateSnapshotResponse;
+import org.apache.hcatalog.hbase.snapshot.RevisionManagerEndpointProtos.CreateTableRequest;
+import org.apache.hcatalog.hbase.snapshot.RevisionManagerEndpointProtos.CreateTableResponse;
+import org.apache.hcatalog.hbase.snapshot.RevisionManagerEndpointProtos.DropTableRequest;
+import org.apache.hcatalog.hbase.snapshot.RevisionManagerEndpointProtos.DropTableResponse;
+import org.apache.hcatalog.hbase.snapshot.RevisionManagerEndpointProtos.GetAbortedWriteTransactionsRequest;
+import org.apache.hcatalog.hbase.snapshot.RevisionManagerEndpointProtos.GetAbortedWriteTransactionsResponse;
+import org.apache.hcatalog.hbase.snapshot.RevisionManagerEndpointProtos.KeepAliveTransactionRequest;
+import org.apache.hcatalog.hbase.snapshot.RevisionManagerEndpointProtos.KeepAliveTransactionResponse;
+import org.apache.hcatalog.hbase.snapshot.RevisionManagerEndpointProtos.RevisionManagerEndpointService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.protobuf.RpcCallback;
+import com.google.protobuf.RpcController;
+import com.google.protobuf.Service;
 
 /**
  * Implementation of RevisionManager as HBase RPC endpoint. This class will control the lifecycle of
@@ -34,21 +56,21 @@ import org.slf4j.LoggerFactory;
  * In the case of {@link ZKBasedRevisionManager} now only the region servers need write access to
  * manage revision data.
  */
-public class RevisionManagerEndpoint extends BaseEndpointCoprocessor implements RevisionManagerProtocol {
+public class RevisionManagerEndpoint extends RevisionManagerEndpointService implements Coprocessor, CoprocessorService {
 
   private static final Logger LOGGER =
     LoggerFactory.getLogger(RevisionManagerEndpoint.class.getName());
 
+  private final RPCConverter rpcConverter = new RPCConverter();
   private RevisionManager rmImpl = null;
 
   @Override
   public void start(CoprocessorEnvironment env) {
-    super.start(env);
     try {
       Configuration conf = RevisionManagerConfiguration.create(env.getConfiguration());
       String className = conf.get(RMConstants.REVISION_MGR_ENDPOINT_IMPL_CLASS,
         ZKBasedRevisionManager.class.getName());
-      LOGGER.debug("Using Revision Manager implementation: {}", className);
+      LOGGER.info("Using Revision Manager implementation: {}", className);
       rmImpl = RevisionManagerFactory.getOpenedRevisionManager(className, conf);
     } catch (IOException e) {
       LOGGER.error("Failed to initialize revision manager", e);
@@ -57,85 +79,140 @@ public class RevisionManagerEndpoint extends BaseEndpointCoprocessor implements 
 
   @Override
   public void stop(CoprocessorEnvironment env) {
-    if (rmImpl != null) {
-      try {
+    try {
+      if (rmImpl != null) {
         rmImpl.close();
-      } catch (IOException e) {
-        LOGGER.warn("Error closing revision manager.", e);
+      }
+    } catch (IOException e) {
+      LOGGER.warn("Error closing revision manager.", e);
+    }
+  }
+
+  @Override
+  public Service getService() {
+    return this;
+  }
+
+  @Override
+  public void createTable(RpcController controller,
+      CreateTableRequest request, RpcCallback<CreateTableResponse> done) {
+    if(rmImpl != null) {
+      try {
+        rmImpl.createTable(request.getTableName(), request.getColumnFamiliesList());
+        done.run(CreateTableResponse.newBuilder().build());
+      } catch(IOException e) {
+        ResponseConverter.setControllerException(controller, e);
       }
     }
-    super.stop(env);
   }
 
   @Override
-  public void initialize(Configuration conf) {
-    // do nothing, HBase controls life cycle
+  public void dropTable(RpcController controller, DropTableRequest request,
+      RpcCallback<DropTableResponse> done) {
+    if(rmImpl != null) {
+      try {
+        rmImpl.dropTable(request.getTableName());
+        done.run(DropTableResponse.newBuilder().build());
+      } catch(IOException e) {
+        ResponseConverter.setControllerException(controller, e);
+      }
+    }
   }
 
   @Override
-  public void open() throws IOException {
-    // do nothing, HBase controls life cycle
+  public void beginWriteTransaction(RpcController controller,
+      BeginWriteTransactionRequest request,
+      RpcCallback<BeginWriteTransactionResponse> done) {
+    if(rmImpl != null) {
+      try {
+        Transaction transaction;
+        if(request.hasKeepAlive()) {
+          transaction = rmImpl.beginWriteTransaction(request.getTableName(), request.getColumnFamiliesList(),
+              request.getKeepAlive());
+        } else {
+          transaction = rmImpl.beginWriteTransaction(request.getTableName(), request.getColumnFamiliesList());
+        }
+        done.run(BeginWriteTransactionResponse.newBuilder()
+                .setTransaction(rpcConverter.convertTransaction(transaction)).build());
+      } catch(IOException e) {
+        ResponseConverter.setControllerException(controller, e);
+      }
+    }
   }
 
   @Override
-  public void close() throws IOException {
-    // do nothing, HBase controls life cycle
+  public void commitWriteTransaction(RpcController controller,
+      CommitWriteTransactionRequest request,
+      RpcCallback<CommitWriteTransactionResponse> done) {
+    if(rmImpl != null) {
+      try {
+        rmImpl.commitWriteTransaction(rpcConverter.convertTransaction(request.getTransaction()));
+        done.run(CommitWriteTransactionResponse.newBuilder().build());
+      } catch(IOException e) {
+        ResponseConverter.setControllerException(controller, e);
+      }
+    }
   }
 
   @Override
-  public void createTable(String table, List<String> columnFamilies) throws IOException {
-    rmImpl.createTable(table, columnFamilies);
+  public void abortWriteTransaction(RpcController controller,
+      AbortWriteTransactionRequest request,
+      RpcCallback<AbortWriteTransactionResponse> done) {
+    if(rmImpl != null) {
+      try {
+        rmImpl.abortWriteTransaction(rpcConverter.convertTransaction(request.getTransaction()));
+        done.run(AbortWriteTransactionResponse.newBuilder().build());
+      } catch(IOException e) {
+        ResponseConverter.setControllerException(controller, e);
+      }
+    }
   }
 
   @Override
-  public void dropTable(String table) throws IOException {
-    rmImpl.dropTable(table);
+  public void getAbortedWriteTransactions(RpcController controller,
+      GetAbortedWriteTransactionsRequest request,
+      RpcCallback<GetAbortedWriteTransactionsResponse> done) {
+    if(rmImpl != null) {
+      try {
+        rmImpl.getAbortedWriteTransactions(request.getTableName(), request.getColumnFamily());
+        done.run(GetAbortedWriteTransactionsResponse.newBuilder().build());
+      } catch(IOException e) {
+        ResponseConverter.setControllerException(controller, e);
+      }
+    }
   }
 
   @Override
-  public Transaction beginWriteTransaction(String table, List<String> families)
-    throws IOException {
-    return rmImpl.beginWriteTransaction(table, families);
+  public void createSnapshot(RpcController controller,
+      CreateSnapshotRequest request, RpcCallback<CreateSnapshotResponse> done) {
+    if(rmImpl != null) {
+      try {
+        TableSnapshot snapshot;
+        if(request.hasRevision()) {
+          snapshot = rmImpl.createSnapshot(request.getTableName(), request.getRevision());
+        } else {
+          snapshot = rmImpl.createSnapshot(request.getTableName());
+        }
+        done.run(CreateSnapshotResponse.newBuilder()
+                .setTableSnapshot(rpcConverter.convertTableSnapshot(snapshot)).build());
+      } catch(IOException e) {
+        ResponseConverter.setControllerException(controller, e);
+      }
+    }
   }
 
   @Override
-  public Transaction beginWriteTransaction(String table,
-                       List<String> families, long keepAlive) throws IOException {
-    return rmImpl.beginWriteTransaction(table, families, keepAlive);
-  }
-
-  @Override
-  public void commitWriteTransaction(Transaction transaction)
-    throws IOException {
-    rmImpl.commitWriteTransaction(transaction);
-  }
-
-  @Override
-  public void abortWriteTransaction(Transaction transaction)
-    throws IOException {
-    rmImpl.abortWriteTransaction(transaction);
-  }
-
-  @Override
-  public TableSnapshot createSnapshot(String tableName) throws IOException {
-    return rmImpl.createSnapshot(tableName);
-  }
-
-  @Override
-  public TableSnapshot createSnapshot(String tableName, long revision)
-    throws IOException {
-    return rmImpl.createSnapshot(tableName, revision);
-  }
-
-  @Override
-  public void keepAlive(Transaction transaction) throws IOException {
-    rmImpl.keepAlive(transaction);
-  }
-
-  @Override
-  public List<FamilyRevision> getAbortedWriteTransactions(String table,
-                              String columnFamily) throws IOException {
-    return rmImpl.getAbortedWriteTransactions(table, columnFamily);
+  public void keepAliveTransaction(RpcController controller,
+      KeepAliveTransactionRequest request,
+      RpcCallback<KeepAliveTransactionResponse> done) {
+    if(rmImpl != null) {
+      try {
+        rmImpl.keepAlive(rpcConverter.convertTransaction(request.getTransaction()));
+        done.run(KeepAliveTransactionResponse.newBuilder().build());
+      } catch(IOException e) {
+        ResponseConverter.setControllerException(controller, e);
+      }
+    }
   }
 
 }

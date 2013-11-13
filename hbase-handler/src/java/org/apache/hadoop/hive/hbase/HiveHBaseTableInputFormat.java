@@ -35,7 +35,6 @@ import org.apache.hadoop.hbase.mapred.TableMapReduceUtil;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormatBase;
 import org.apache.hadoop.hbase.mapreduce.TableSplit;
 import org.apache.hadoop.hbase.util.Bytes;
-import org.apache.hadoop.hbase.util.Writables;
 import org.apache.hadoop.hive.hbase.HBaseSerDe.ColumnMapping;
 import org.apache.hadoop.hive.ql.exec.ExprNodeConstantEvaluator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -77,12 +76,12 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
  * such as column pruning and filter pushdown.
  */
 public class HiveHBaseTableInputFormat extends TableInputFormatBase
-    implements InputFormat<ImmutableBytesWritable, Result> {
+    implements InputFormat<ImmutableBytesWritable, ResultWritable> {
 
   static final Log LOG = LogFactory.getLog(HiveHBaseTableInputFormat.class);
 
   @Override
-  public RecordReader<ImmutableBytesWritable, Result> getRecordReader(
+  public RecordReader<ImmutableBytesWritable, ResultWritable> getRecordReader(
     InputSplit split,
     JobConf jobConf,
     final Reporter reporter) throws IOException {
@@ -179,7 +178,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
     final org.apache.hadoop.mapreduce.RecordReader<ImmutableBytesWritable, Result>
     recordReader = createRecordReader(tableSplit, tac);
 
-    return new RecordReader<ImmutableBytesWritable, Result>() {
+    return new RecordReader<ImmutableBytesWritable, ResultWritable>() {
 
       @Override
       public void close() throws IOException {
@@ -192,8 +191,8 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
       }
 
       @Override
-      public Result createValue() {
-        return new Result();
+      public ResultWritable createValue() {
+        return new ResultWritable(new Result());
       }
 
       @Override
@@ -215,7 +214,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
       }
 
       @Override
-      public boolean next(ImmutableBytesWritable rowKey, Result value) throws IOException {
+      public boolean next(ImmutableBytesWritable rowKey, ResultWritable value) throws IOException {
 
         boolean next = false;
 
@@ -224,7 +223,7 @@ public class HiveHBaseTableInputFormat extends TableInputFormatBase
 
           if (next) {
             rowKey.set(recordReader.getCurrentValue().getRow());
-            Writables.copyWritable(recordReader.getCurrentValue(), value);
+            value.setResult(recordReader.getCurrentValue());
           }
         } catch (InterruptedException e) {
           throw new IOException(e);

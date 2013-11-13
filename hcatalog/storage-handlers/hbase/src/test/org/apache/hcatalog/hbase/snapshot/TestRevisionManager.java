@@ -210,7 +210,7 @@ public class TestRevisionManager extends SkeletonHBaseTest {
     String tableName = newTableName("testTable");
     List<String> columnFamilies = Arrays.asList("cf1", "cf2");
     Transaction txn = manager.beginWriteTransaction(tableName,
-      columnFamilies, 40);
+      columnFamilies, 40L);
     Thread.sleep(100);
     try {
       manager.commitWriteTransaction(txn);

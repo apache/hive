@@ -28,7 +28,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.client.Put;
-import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.AbstractSerDe;
@@ -539,11 +538,11 @@ public class HBaseSerDe extends AbstractSerDe {
   @Override
   public Object deserialize(Writable result) throws SerDeException {
 
-    if (!(result instanceof Result)) {
-      throw new SerDeException(getClass().getName() + ": expects Result!");
+    if (!(result instanceof ResultWritable)) {
+      throw new SerDeException(getClass().getName() + ": expects ResultWritable!");
     }
 
-    cachedHBaseRow.init((Result) result, columnsMapping);
+    cachedHBaseRow.init(((ResultWritable) result).getResult(), columnsMapping);
 
     return cachedHBaseRow;
   }
@@ -555,7 +554,7 @@ public class HBaseSerDe extends AbstractSerDe {
 
   @Override
   public Class<? extends Writable> getSerializedClass() {
-    return Put.class;
+    return PutWritable.class;
   }
 
   @Override
@@ -605,7 +604,7 @@ public class HBaseSerDe extends AbstractSerDe {
       throw new SerDeException(e);
     }
 
-    return put;
+    return new PutWritable(put);
   }
 
   private byte [] serializeField(
