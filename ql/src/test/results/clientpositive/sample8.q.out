@@ -35,10 +35,20 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: true
               predicate:
-                  expr: (((hash(key) & 2147483647) % 1) = 0)
+                  expr: ((((hash(key) & 2147483647) % 10) = 0) and (((hash(key) & 2147483647) % 1) = 0))
                   type: boolean
               Reduce Output Operator
-                sort order: 
+                key expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                sort order: ++
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
                 tag: 0
                 value expressions:
                       expr: key
@@ -56,10 +66,20 @@ STAGE PLANS:
             Filter Operator
               isSamplingPred: true
               predicate:
-                  expr: (((hash(key) & 2147483647) % 10) = 0)
+                  expr: ((((hash(key) & 2147483647) % 1) = 0) and (((hash(key) & 2147483647) % 10) = 0))
                   type: boolean
               Reduce Output Operator
-                sort order: 
+                key expressions:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
+                sort order: ++
+                Map-reduce partition columns:
+                      expr: key
+                      type: string
+                      expr: value
+                      type: string
                 tag: 1
                 value expressions:
                       expr: key

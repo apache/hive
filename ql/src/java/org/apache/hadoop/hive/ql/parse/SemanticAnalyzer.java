@@ -1824,6 +1824,69 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
   }
 
+  private void extractJoinCondsFromWhereClause(QBJoinTree joinTree, QB qb, String dest, ASTNode predicate) throws SemanticException {
+
+    switch (predicate.getType()) {
+    case HiveParser.KW_AND:
+      extractJoinCondsFromWhereClause(joinTree, qb, dest, (ASTNode) predicate.getChild(0));
+      extractJoinCondsFromWhereClause(joinTree, qb, dest, (ASTNode) predicate.getChild(1));
+      break;
+    case HiveParser.EQUAL_NS:
+    case HiveParser.EQUAL:
+
+      ASTNode leftCondn = (ASTNode) predicate.getChild(0);
+      ArrayList<String> leftCondAl1 = new ArrayList<String>();
+      ArrayList<String> leftCondAl2 = new ArrayList<String>();
+      try {
+        parseJoinCondPopulateAlias(joinTree, leftCondn, leftCondAl1, leftCondAl2,
+          null);
+      } catch(SemanticException se) {
+        // suppress here; if it is a real issue will get caught in where clause handling.
+        return;
+      }
+
+      ASTNode rightCondn = (ASTNode) predicate.getChild(1);
+      ArrayList<String> rightCondAl1 = new ArrayList<String>();
+      ArrayList<String> rightCondAl2 = new ArrayList<String>();
+      try {
+        parseJoinCondPopulateAlias(joinTree, rightCondn, rightCondAl1,
+            rightCondAl2, null);
+      } catch(SemanticException se) {
+        // suppress here; if it is a real issue will get caught in where clause handling.
+        return;
+      }
+
+      if (((leftCondAl1.size() != 0) && (leftCondAl2.size() != 0))
+          || ((rightCondAl1.size() != 0) && (rightCondAl2.size() != 0))) {
+        // this is not a join condition.
+        return;
+      }
+
+      if (((leftCondAl1.size() == 0) && (leftCondAl2.size() == 0))
+          || ((rightCondAl1.size() == 0) && (rightCondAl2.size() == 0))) {
+        // this is not a join condition. Will get handled by predicate pushdown.
+        return;
+      }
+
+      List<String> leftSrc = new ArrayList<String>();
+      JoinCond cond = joinTree.getJoinCond()[0];
+      JoinType type = cond.getJoinType();
+      applyEqualityPredicateToQBJoinTree(joinTree, type, leftSrc,
+          predicate, leftCondn, rightCondn,
+          leftCondAl1, leftCondAl2,
+          rightCondAl1, rightCondAl2);
+      if (leftSrc.size() == 1) {
+        joinTree.setLeftAlias(leftSrc.get(0));
+      }
+
+      // todo: hold onto this predicate, so that we don't add it to the Filter Operator.
+
+      break;
+    default:
+      return;
+    }
+  }
+
   @SuppressWarnings("nls")
   public <T extends OperatorDesc> Operator<T> putOpInsertMap(Operator<T> op,
       RowResolver rr) {
@@ -8503,6 +8566,18 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       } else {
         QBJoinTree joinTree = genJoinTree(qb, joinExpr, aliasToOpInfo);
         qb.setQbJoinTree(joinTree);
+        /*
+         * if there is only one destintaion in Query try to push where predicates
+         * as Join conditions
+         */
+        Set<String> dests = qb.getParseInfo().getClauseNames();
+        if ( dests.size() == 1 ) {
+          String dest = dests.iterator().next();
+          ASTNode whereClause = qb.getParseInfo().getWhrForClause(dest);
+          if ( whereClause != null ) {
+            extractJoinCondsFromWhereClause(joinTree, qb, dest, (ASTNode) whereClause.getChild(0) );
+          }
+        }
         mergeJoinTree(qb);
       }
 
