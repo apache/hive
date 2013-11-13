@@ -133,7 +133,7 @@ class RecordReaderImpl implements RecordReader {
     advanceToNextRow(0L);
   }
 
-  private static int findColumns(String[] columnNames,
+  static int findColumns(String[] columnNames,
                                  String columnName) {
     for(int i=0; i < columnNames.length; ++i) {
       if (columnName.equals(columnNames[i])) {
@@ -2034,6 +2034,11 @@ class RecordReaderImpl implements RecordReader {
       }
     }
     Object maxValue = getMax(index);
+    return evaluatePredicateRange(predicate, minValue, maxValue);
+  }
+
+  static TruthValue evaluatePredicateRange(PredicateLeaf predicate, Object minValue,
+      Object maxValue) {
     Location loc;
     switch (predicate.getOperator()) {
       case NULL_SAFE_EQUALS:
@@ -2154,7 +2159,7 @@ class RecordReaderImpl implements RecordReader {
           leafValues[pred] = TruthValue.YES_NO_NULL;
         }
       }
-      result[rowGroup] = sarg.evaluate(leafValues).isNotNeeded();
+      result[rowGroup] = sarg.evaluate(leafValues).isNeeded();
       if (LOG.isDebugEnabled()) {
         LOG.debug("Row group " + (rowIndexStride * rowGroup) + " to " +
             (rowIndexStride * (rowGroup+1) - 1) + " is " +

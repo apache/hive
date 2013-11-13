@@ -139,7 +139,7 @@ public interface SearchArgument {
      * Does the RecordReader need to include this set of records?
      * @return true unless none of the rows qualify
      */
-    public boolean isNotNeeded() {
+    public boolean isNeeded() {
       switch (this) {
         case NO:
         case NULL:
