@@ -103,7 +103,8 @@
     <hadoop-20.version>0.20.2</hadoop-20.version>
     <hadoop-20S.version>1.2.1</hadoop-20S.version>
     <hadoop-23.version>2.2.0</hadoop-23.version>
-    <hbase.version>0.94.6.1</hbase.version>
+    <hbase.hadoop1.version>0.96.0-hadoop1</hbase.hadoop1.version>
+    <hbase.hadoop2.version>0.96.0-hadoop2</hbase.hadoop2.version>
     <httpcomponents.version>4.1.3</httpcomponents.version>
     <jackson.version>1.9.2</jackson.version>
     <javaewah.version>0.3.2</javaewah.version>

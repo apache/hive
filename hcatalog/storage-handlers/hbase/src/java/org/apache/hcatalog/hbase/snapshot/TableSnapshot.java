@@ -59,7 +59,14 @@ public class TableSnapshot implements Serializable {
    * @return List<String> A list of column families associated with the snapshot.
    */
   public List<String> getColumnFamilies(){
-    return  new ArrayList<String>(this.cfRevisionMap.keySet());
+    return new ArrayList<String>(this.cfRevisionMap.keySet());
+  }
+
+  /**
+   * For wire serialization only
+   */
+  Map<String, Long> getColumnFamilyRevisionMap() {
+    return cfRevisionMap;
   }
 
   /**

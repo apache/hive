@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.Cell;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
@@ -53,10 +54,10 @@ class HBaseBulkOutputFormat extends HBaseBaseOutputFormat {
 
   private final static ImmutableBytesWritable EMPTY_LIST = new ImmutableBytesWritable(
     new byte[0]);
-  private SequenceFileOutputFormat<WritableComparable<?>, Put> baseOutputFormat;
+  private SequenceFileOutputFormat<WritableComparable<?>, Object> baseOutputFormat;
 
   public HBaseBulkOutputFormat() {
-    baseOutputFormat = new SequenceFileOutputFormat<WritableComparable<?>, Put>();
+    baseOutputFormat = new SequenceFileOutputFormat<WritableComparable<?>, Object>();
   }
 
   @Override
@@ -68,9 +69,10 @@ class HBaseBulkOutputFormat extends HBaseBaseOutputFormat {
   }
 
   @Override
-  public RecordWriter<WritableComparable<?>, Put> getRecordWriter(
+  public RecordWriter<WritableComparable<?>, Object> getRecordWriter(
     FileSystem ignored, JobConf job, String name, Progressable progress)
     throws IOException {
+    HBaseHCatStorageHandler.setHBaseSerializers(job);
     job.setOutputKeyClass(ImmutableBytesWritable.class);
     job.setOutputValueClass(Put.class);
     long version = HBaseRevisionManagerUtil.getOutputRevision(job);
@@ -93,26 +95,28 @@ class HBaseBulkOutputFormat extends HBaseBaseOutputFormat {
   }
 
   private static class HBaseBulkRecordWriter implements
-    RecordWriter<WritableComparable<?>, Put> {
+    RecordWriter<WritableComparable<?>, Object> {
 
-    private RecordWriter<WritableComparable<?>, Put> baseWriter;
+    private RecordWriter<WritableComparable<?>, Object> baseWriter;
     private final Long outputVersion;
 
     public HBaseBulkRecordWriter(
-      RecordWriter<WritableComparable<?>, Put> baseWriter,
+      RecordWriter<WritableComparable<?>, Object> baseWriter,
       Long outputVersion) {
       this.baseWriter = baseWriter;
       this.outputVersion = outputVersion;
     }
 
     @Override
-    public void write(WritableComparable<?> key, Put value)
+    public void write(WritableComparable<?> key, Object value)
       throws IOException {
-      Put put = value;
+      Put original = toPut(value);
+      Put put = original;
       if (outputVersion != null) {
-        put = new Put(value.getRow(), outputVersion.longValue());
-        for (List<KeyValue> row : value.getFamilyMap().values()) {
-          for (KeyValue el : row) {
+        put = new Put(original.getRow(), outputVersion.longValue());
+        for (List<? extends Cell> row : original.getFamilyMap().values()) {
+          for (Cell cell : row) {
+            KeyValue el = (KeyValue)cell;
             put.add(el.getFamily(), el.getQualifier(), el.getValue());
           }
         }
