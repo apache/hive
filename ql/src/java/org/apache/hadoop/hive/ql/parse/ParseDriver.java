@@ -201,7 +201,9 @@ public class ParseDriver {
       throw new ParseException(parser.errors);
     }
 
-    return (ASTNode) r.getTree();
+    ASTNode tree = (ASTNode) r.getTree();
+    tree.setUnknownTokenBoundaries();
+    return tree;
   }
 
 

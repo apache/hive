@@ -1,0 +1,104 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+option java_package = "org.apache.hcatalog.hbase.snapshot";
+option java_outer_classname = "RevisionManagerEndpointProtos";
+option java_generic_services = true;
+option java_generate_equals_and_hash = true;
+
+message CreateTableRequest {
+  required string table_name = 1;
+  repeated string column_families = 2;
+}
+message CreateTableResponse {}
+
+message DropTableRequest {
+  required string table_name = 1;
+}
+message DropTableResponse {}
+
+message BeginWriteTransactionRequest {
+  required string table_name = 1;
+  optional int64 keep_alive = 2;
+  repeated string column_families = 3;
+}
+message BeginWriteTransactionResponse {
+  required Transaction transaction = 1;
+}
+
+message CommitWriteTransactionRequest {
+  required Transaction transaction = 1;
+}
+message CommitWriteTransactionResponse {}
+
+message AbortWriteTransactionRequest {
+  required Transaction transaction = 1;
+}
+message AbortWriteTransactionResponse {}
+
+message GetAbortedWriteTransactionsRequest {
+  required string table_name = 1;
+  required string column_family = 2;
+}
+message GetAbortedWriteTransactionsResponse {
+  repeated FamilyRevision family_revisions = 1;
+}
+
+message CreateSnapshotRequest {
+ required string table_name = 1;
+ optional int64 revision = 2;
+}
+message CreateSnapshotResponse {
+ required TableSnapshot table_snapshot = 1;
+}
+
+message KeepAliveTransactionRequest {
+  required Transaction transaction = 1;
+}
+message KeepAliveTransactionResponse{}
+
+message FamilyRevision {
+  required int64 revision = 1;
+  required int64 timestamp = 2;
+}
+message Transaction {
+  required string table_name = 1;
+  required int64 time_stamp = 2;
+  required int64 keep_alive = 3;
+  required int64 revision = 4;
+  repeated string column_families = 5;
+}
+message TableSnapshot {
+  required string table_name = 1;
+  required int64 latest_revision = 2;
+  message ColumnFamilyRevision {
+    required string key = 1;
+    required int64 value = 2;
+  }
+  repeated ColumnFamilyRevision column_family_revision = 3;
+}
+
+service RevisionManagerEndpointService {
+  rpc createTable(CreateTableRequest) returns(CreateTableResponse);
+  rpc dropTable(DropTableRequest) returns(DropTableResponse);
+  rpc beginWriteTransaction(BeginWriteTransactionRequest) returns(BeginWriteTransactionResponse);
+  rpc commitWriteTransaction(CommitWriteTransactionRequest) returns(CommitWriteTransactionResponse);
+  rpc abortWriteTransaction(AbortWriteTransactionRequest) returns(AbortWriteTransactionResponse);
+  rpc getAbortedWriteTransactions(GetAbortedWriteTransactionsRequest) returns(GetAbortedWriteTransactionsResponse);
+  rpc createSnapshot(CreateSnapshotRequest) returns(CreateSnapshotResponse);
+  rpc keepAliveTransaction(KeepAliveTransactionRequest) returns (KeepAliveTransactionResponse);
+}

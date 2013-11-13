@@ -43,12 +43,16 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.apache.hadoop.hive.ql.io.InputFormatChecker;
+import org.apache.hadoop.hive.ql.io.orc.Metadata;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.FileGenerator;
 import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat.SplitGenerator;
 import org.apache.hadoop.hive.ql.io.orc.Reader.FileMetaInfo;
+import org.apache.hadoop.hive.ql.io.sarg.PredicateLeaf;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
+import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
+import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.ColumnProjectionUtils;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
@@ -179,7 +183,8 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   public static SearchArgument createSarg(List<OrcProto.Type> types, Configuration conf) {
     String serializedPushdown = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
     if (serializedPushdown == null
-        || conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR) == null) {
+        || (conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR) == null
+        && conf.get(serdeConstants.LIST_COLUMNS) == null)) {
       LOG.info("No ORC pushdown predicate");
       return null;
     }
@@ -324,6 +329,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
    * the different worker threads.
    */
   static class Context {
+    private final Configuration conf;
     private static Cache<Path, FileInfo> footerCache;
     private final ExecutorService threadPool;
     private final List<OrcSplit> splits = new ArrayList<OrcSplit>(10000);
@@ -344,6 +350,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private int schedulers = 0;
 
     Context(Configuration conf) {
+      this.conf = conf;
       minSize = conf.getLong(MIN_SPLIT_SIZE, DEFAULT_MIN_SPLIT_SIZE);
       maxSize = conf.getLong(MAX_SPLIT_SIZE, DEFAULT_MAX_SPLIT_SIZE);
       footerInSplits = HiveConf.getBoolVar(conf, ConfVars.HIVE_ORC_INCLUDE_FILE_FOOTER_IN_SPLITS);
@@ -528,6 +535,8 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     private final FileInfo fileInfo;
     private Iterable<StripeInformation> stripes;
     private FileMetaInfo fileMetaInfo;
+    private Metadata metadata;
+    private List<OrcProto.Type> types;
 
 
     SplitGenerator(Context context, FileSystem fs,
@@ -635,9 +644,49 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     public void run() {
       try {
         populateAndCacheStripeDetails();
+        Configuration conf = context.conf;
+        SearchArgument sarg = createSarg(types, conf);
+        List<StripeStatistics> stripeStats = null;
+        int[] filterColumns = null;
+        if (sarg != null) {
+          List<PredicateLeaf> sargLeaves = null;
+          String[] columnNames = conf.get(serdeConstants.LIST_COLUMNS).split(",");
+          if (columnNames == null) {
+            columnNames = conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR).split(",");
+          }
+          sargLeaves = sarg.getLeaves();
+          filterColumns = new int[sargLeaves.size()];
+          for (int i = 0; i < filterColumns.length; ++i) {
+            String colName = sargLeaves.get(i).getColumnName();
+            filterColumns[i] = RecordReaderImpl.findColumns(columnNames, colName);
+          }
+
+          stripeStats = metadata.getStripeStatistics();
+        }
+
         long currentOffset = -1;
         long currentLength = 0;
+        int idx = -1;
         for(StripeInformation stripe: stripes) {
+          idx++;
+
+          // eliminate stripes that doesn't satisfy the predicate condition
+          if (sarg != null && !isStripeSatisfyPredicate(stripeStats.get(idx), sarg, filterColumns)) {
+
+            // if a stripe doesn't satisfy predicate condition then skip it
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("Eliminating ORC stripe-" + idx + " of file '" + file.getPath()
+                  + "'  as it did not satisfy predicate condition.");
+            }
+
+            // create split for the previous unfinished stripe
+            if (currentOffset != -1) {
+              createSplit(currentOffset, currentLength, fileMetaInfo);
+              currentOffset = -1;
+            }
+            continue;
+          }
+
           // if we are working on a stripe, over the min stripe size, and
           // crossed a block boundary, cut the input split here.
           if (currentOffset != -1 && currentLength > context.minSize &&
@@ -675,9 +724,6 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       }
     }
 
-
-
-
     private void populateAndCacheStripeDetails() {
       try {
         Reader orcReader;
@@ -686,20 +732,27 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
           found = true;
           stripes = fileInfo.stripeInfos;
           fileMetaInfo = fileInfo.fileMetaInfo;
+          metadata = fileInfo.metadata;
+          types = fileInfo.types;
           // For multiple runs, in case sendSplitsInFooter changes
           if (fileMetaInfo == null && context.footerInSplits) {
             orcReader = OrcFile.createReader(fs, file.getPath());
             fileInfo.fileMetaInfo = orcReader.getFileMetaInfo();
+            fileInfo.metadata = orcReader.getMetadata();
+            fileInfo.types = orcReader.getTypes();
           }
         }
         if (!found) {
           orcReader = OrcFile.createReader(fs, file.getPath());
           stripes = orcReader.getStripes();
+          metadata = orcReader.getMetadata();
+          types = orcReader.getTypes();
           fileMetaInfo = context.footerInSplits ? orcReader.getFileMetaInfo() : null;
           if (context.cacheStripeDetails) {
             // Populate into cache.
             Context.footerCache.put(file.getPath(),
-                new FileInfo(file.getModificationTime(), file.getLen(), stripes, fileMetaInfo));
+                new FileInfo(file.getModificationTime(), file.getLen(), stripes, metadata, 
+                             types, fileMetaInfo));
           }
         }
       } catch (Throwable th) {
@@ -715,6 +768,54 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       }
     }
 
+    private boolean isStripeSatisfyPredicate(StripeStatistics stripeStatistics,
+        SearchArgument sarg, int[] filterColumns) {
+      if (sarg != null && filterColumns != null) {
+        List<PredicateLeaf> predLeaves = sarg.getLeaves();
+        TruthValue[] truthValues = new TruthValue[predLeaves.size()];
+        for (int pred = 0; pred < truthValues.length; pred++) {
+          if (filterColumns[pred] != -1) {
+
+            // column statistics at index 0 contains only the number of rows
+            ColumnStatistics stats = stripeStatistics.getColumnStatistics()[filterColumns[pred] + 1];
+            Object minValue = getMin(stats);
+            Object maxValue = getMax(stats);
+            truthValues[pred] = RecordReaderImpl.evaluatePredicateRange(predLeaves.get(pred),
+                minValue, maxValue);
+          }
+        }
+        return sarg.evaluate(truthValues).isNeeded();
+      }
+      return true;
+    }
+
+    private Object getMax(ColumnStatistics index) {
+      if (index instanceof IntegerColumnStatistics) {
+        return ((IntegerColumnStatistics) index).getMaximum();
+      } else if (index instanceof DoubleColumnStatistics) {
+        return ((DoubleColumnStatistics) index).getMaximum();
+      } else if (index instanceof StringColumnStatistics) {
+        return ((StringColumnStatistics) index).getMaximum();
+      } else if (index instanceof DateColumnStatistics) {
+        return ((DateColumnStatistics) index).getMaximum();
+      } else {
+        return null;
+      }
+    }
+
+    private Object getMin(ColumnStatistics index) {
+      if (index instanceof IntegerColumnStatistics) {
+        return ((IntegerColumnStatistics) index).getMinimum();
+      } else if (index instanceof DoubleColumnStatistics) {
+        return ((DoubleColumnStatistics) index).getMinimum();
+      } else if (index instanceof StringColumnStatistics) {
+        return ((StringColumnStatistics) index).getMinimum();
+      } else if (index instanceof DateColumnStatistics) {
+        return ((DateColumnStatistics) index).getMinimum();
+      } else {
+        return null;
+      }
+    }
   }
 
   @Override
@@ -762,13 +863,18 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     long size;
     Iterable<StripeInformation> stripeInfos;
     FileMetaInfo fileMetaInfo;
+    Metadata metadata;
+    List<OrcProto.Type> types;
 
-    FileInfo(long modificationTime, long size, Iterable<StripeInformation> stripeInfos,
-        FileMetaInfo fileMetaInfo) {
+
+    FileInfo(long modificationTime, long size, Iterable<StripeInformation> stripeInfos, 
+        Metadata metadata, List<OrcProto.Type> types, FileMetaInfo fileMetaInfo) {
       this.modificationTime = modificationTime;
       this.size = size;
       this.stripeInfos = stripeInfos;
       this.fileMetaInfo = fileMetaInfo;
+      this.metadata = metadata;
+      this.types = types;
     }
   }
 }

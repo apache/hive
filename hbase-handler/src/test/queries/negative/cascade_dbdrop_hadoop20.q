@@ -16,11 +16,11 @@ STORED BY 'org.apache.hadoop.hive.hbase.HBaseStorageHandler'
 WITH SERDEPROPERTIES ("hbase.columns.mapping" = ":key,cf:string")
 TBLPROPERTIES ("hbase.table.name" = "hbase_table_0");
 
-dfs -ls target/tmp/hbase/hbase_table_0;
+dfs -ls target/tmp/hbase/data/default/hbase_table_0;
 
 DROP DATABASE IF EXISTS hbaseDB CASCADE;
 
-dfs -ls target/tmp/hbase/hbase/hbase_table_0;
+dfs -ls target/tmp/hbase/data/hbase/default/hbase_table_0;
 
 
 

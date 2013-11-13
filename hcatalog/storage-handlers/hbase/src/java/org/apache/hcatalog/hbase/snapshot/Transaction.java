@@ -64,6 +64,13 @@ public class Transaction implements Serializable {
   }
 
   /**
+   * For wire serialization only
+   */
+  long getTimeStamp() {
+    return timeStamp;
+  }
+
+  /**
    * @return The expire timestamp associated with a transaction.
    */
   long getTransactionExpireTimeStamp() {

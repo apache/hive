@@ -33,11 +33,12 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.MasterNotRunningException;
-import org.apache.hadoop.hbase.ZooKeeperConnectionException;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.mapred.TableOutputFormat;
+import org.apache.hadoop.hbase.mapreduce.KeyValueSerialization;
+import org.apache.hadoop.hbase.mapreduce.MutationSerialization;
+import org.apache.hadoop.hbase.mapreduce.ResultSerialization;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
 import org.apache.hadoop.hbase.mapreduce.TableMapReduceUtil;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -50,6 +51,7 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.HiveAuthorizationProvider;
 import org.apache.hadoop.hive.serde2.SerDe;
+import org.apache.hadoop.io.serializer.WritableSerialization;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputFormat;
@@ -87,6 +89,7 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
 
   public final static String DEFAULT_PREFIX = "default.";
   private final static String PROPERTY_INT_OUTPUT_LOCATION = "hcat.hbase.mapreduce.intermediateOutputLocation";
+  private final static String IO_SERIALIZATIONS = "io.serializations";
 
   private Configuration hbaseConf;
   private Configuration jobConf;
@@ -135,7 +138,7 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
       //TODO: Remove when HCAT-308 is fixed
       addOutputDependencyJars(jobConf);
       jobProperties.put("tmpjars", jobConf.get("tmpjars"));
-
+      setHBaseSerializers(jobProperties);
     } catch (IOException e) {
       throw new IllegalStateException("Error while configuring job properties", e);
     }
@@ -191,7 +194,7 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
       jobProperties.put(HCatConstants.HCAT_KEY_OUTPUT_INFO, HCatUtil.serialize(outputJobInfo));
       addOutputDependencyJars(jobConf);
       jobProperties.put("tmpjars", jobConf.get("tmpjars"));
-
+      setHBaseSerializers(jobProperties);
     } catch (IOException e) {
       throw new IllegalStateException("Error while configuring job properties", e);
     }
@@ -339,12 +342,8 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
       RevisionManager rm = HBaseRevisionManagerUtil.getOpenedRevisionManager(hbaseConf);
       rm.createTable(tableName, new ArrayList<String>(uniqueColumnFamilies));
 
-    } catch (MasterNotRunningException mnre) {
-      throw new MetaException(StringUtils.stringifyException(mnre));
-    } catch (IOException ie) {
-      throw new MetaException(StringUtils.stringifyException(ie));
-    } catch (IllegalArgumentException iae) {
-      throw new MetaException(StringUtils.stringifyException(iae));
+    } catch (Exception e) {
+      throw new MetaException(StringUtils.stringifyException(e));
     }
 
   }
@@ -406,10 +405,8 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
         admin = new HBaseAdmin(this.getConf());
       }
       return admin;
-    } catch (MasterNotRunningException mnre) {
-      throw new MetaException(StringUtils.stringifyException(mnre));
-    } catch (ZooKeeperConnectionException zkce) {
-      throw new MetaException(StringUtils.stringifyException(zkce));
+    } catch (Exception e) {
+      throw new MetaException(StringUtils.stringifyException(e));
     }
   }
 
@@ -544,8 +541,10 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
     TableMapReduceUtil.addDependencyJars(conf,
       //ZK
       ZooKeeper.class,
-      //HBase
+      //HBase Client
       HTable.class,
+      //HBase MapReduce
+      MutationSerialization.class,
       //Hive
       HiveException.class,
       //HCatalog jar
@@ -634,4 +633,20 @@ public class HBaseHCatStorageHandler extends HCatStorageHandler implements HiveM
     return builder.toString();
   }
 
+  static void setHBaseSerializers(Configuration configuration) {
+    configuration.setStrings(IO_SERIALIZATIONS, configuration.get(IO_SERIALIZATIONS),
+        MutationSerialization.class.getName(), ResultSerialization.class.getName(),
+        KeyValueSerialization.class.getName());
+  }
+  static void setHBaseSerializers(Map<String, String> configuration) {
+    String value = "";
+    if(configuration.containsKey(IO_SERIALIZATIONS)) {
+      value = configuration.get(IO_SERIALIZATIONS) + ",";
+    } else {
+      value = new Configuration().get(IO_SERIALIZATIONS, WritableSerialization.class.getName()) + ",";
+    }
+    value += MutationSerialization.class.getName() + "," + ResultSerialization.class.getName()
+        + "," + KeyValueSerialization.class.getName();
+    configuration.put(IO_SERIALIZATIONS, value);
+  }
 }
