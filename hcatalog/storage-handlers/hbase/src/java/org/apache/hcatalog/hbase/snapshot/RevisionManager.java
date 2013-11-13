@@ -93,7 +93,7 @@ public interface RevisionManager {
    */
   @Deprecated
   public Transaction beginWriteTransaction(String table,
-                       List<String> families, long keepAlive) throws IOException;
+                       List<String> families, Long keepAlive) throws IOException;
 
   /**
    * Commit the write transaction.
@@ -146,7 +146,7 @@ public interface RevisionManager {
    * @throws IOException
    */
   @Deprecated
-  public TableSnapshot createSnapshot(String tableName, long revision)
+  public TableSnapshot createSnapshot(String tableName, Long revision)
     throws IOException;
 
   /**

@@ -119,7 +119,7 @@ public class ZKBasedRevisionManager implements RevisionManager {
    * @see org.apache.hcatalog.hbase.snapshot.RevisionManager#beginWriteTransaction(java.lang.String, java.util.List, long)
    */
   public Transaction beginWriteTransaction(String table,
-                       List<String> families, long keepAlive) throws IOException {
+                       List<String> families, Long keepAlive) throws IOException {
 
     checkInputParams(table, families);
     zkUtil.setUpZnodesForTable(table, families);
@@ -175,7 +175,7 @@ public class ZKBasedRevisionManager implements RevisionManager {
    */
   public Transaction beginWriteTransaction(String table, List<String> families)
     throws IOException {
-    return beginWriteTransaction(table, families, -1);
+    return beginWriteTransaction(table, families, -1L);
   }
 
   /**
@@ -352,7 +352,7 @@ public class ZKBasedRevisionManager implements RevisionManager {
   /* @throws IOException
    * @see org.apache.hcatalog.hbase.snapshot.RevsionManager#createSnapshot(java.lang.String, long)
    */
-  public TableSnapshot createSnapshot(String tableName, long revision) throws IOException {
+  public TableSnapshot createSnapshot(String tableName, Long revision) throws IOException {
 
     long currentID = zkUtil.currentID(tableName);
     if (revision > currentID) {

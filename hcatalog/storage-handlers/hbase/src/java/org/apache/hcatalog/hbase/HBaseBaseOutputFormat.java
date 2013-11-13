@@ -25,6 +25,7 @@ import java.util.Properties;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.client.Put;
+import org.apache.hadoop.hive.hbase.PutWritable;
 import org.apache.hadoop.hive.ql.io.FSRecordWriter;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
 import org.apache.hadoop.io.Writable;
@@ -37,9 +38,12 @@ import org.apache.hcatalog.common.HCatConstants;
 import org.apache.hcatalog.common.HCatUtil;
 import org.apache.hcatalog.mapreduce.OutputJobInfo;
 
-public class HBaseBaseOutputFormat implements OutputFormat<WritableComparable<?>, Put>,
-  HiveOutputFormat<WritableComparable<?>, Put> {
-
+/**
+ * Children of this output format can be passed either Put's (typical) or
+ * PutWritable. PutWritables will come from Hive's HBase SerDe.
+ */
+public class HBaseBaseOutputFormat implements OutputFormat<WritableComparable<?>, Object>,
+  HiveOutputFormat<WritableComparable<?>, Object> {
   @Override
   public FSRecordWriter getHiveRecordWriter(
     JobConf jc, Path finalOutPath,
@@ -51,22 +55,34 @@ public class HBaseBaseOutputFormat implements OutputFormat<WritableComparable<?>
 
   @Override
   public void checkOutputSpecs(FileSystem ignored, JobConf job) throws IOException {
-    OutputFormat<WritableComparable<?>, Put> outputFormat = getOutputFormat(job);
+    OutputFormat<WritableComparable<?>, Object> outputFormat = getOutputFormat(job);
     outputFormat.checkOutputSpecs(ignored, job);
   }
 
   @Override
-  public RecordWriter<WritableComparable<?>, Put> getRecordWriter(FileSystem ignored,
+  public RecordWriter<WritableComparable<?>, Object> getRecordWriter(FileSystem ignored,
                                   JobConf job, String name, Progressable progress) throws IOException {
-    OutputFormat<WritableComparable<?>, Put> outputFormat = getOutputFormat(job);
+    HBaseHCatStorageHandler.setHBaseSerializers(job);
+    OutputFormat<WritableComparable<?>, Object> outputFormat = getOutputFormat(job);
     return outputFormat.getRecordWriter(ignored, job, name, progress);
   }
 
-  private OutputFormat<WritableComparable<?>, Put> getOutputFormat(JobConf job)
+  protected static Put toPut(Object o) {
+    if(o != null) {
+      if(o instanceof Put) {
+        return (Put)o;
+      } else if(o instanceof PutWritable) {
+        return ((PutWritable)o).getPut();
+      }
+    }
+    throw new IllegalArgumentException("Illegal Argument " + (o == null ? "null" : o.getClass().getName()));
+  }
+
+  private OutputFormat<WritableComparable<?>, Object> getOutputFormat(JobConf job)
     throws IOException {
     String outputInfo = job.get(HCatConstants.HCAT_KEY_OUTPUT_INFO);
     OutputJobInfo outputJobInfo = (OutputJobInfo) HCatUtil.deserialize(outputInfo);
-    OutputFormat<WritableComparable<?>, Put> outputFormat = null;
+    OutputFormat<WritableComparable<?>, Object> outputFormat = null;
     if (HBaseHCatStorageHandler.isBulkMode(outputJobInfo)) {
       outputFormat = new HBaseBulkOutputFormat();
     } else {

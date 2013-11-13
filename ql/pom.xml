@@ -232,7 +232,7 @@
         </dependency>
       </dependencies>
     </profile>
-   <profile>
+    <profile>
       <id>hadoop-2</id>
       <dependencies>
         <dependency>

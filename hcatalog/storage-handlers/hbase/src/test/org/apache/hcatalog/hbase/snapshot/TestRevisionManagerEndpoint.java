@@ -20,6 +20,7 @@ package org.apache.hcatalog.hbase.snapshot;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -135,13 +136,13 @@ public class TestRevisionManagerEndpoint extends SkeletonHBaseTest {
     @Override
     public Transaction beginWriteTransaction(String table,
                          List<String> families) throws IOException {
-      return recordCall(null, table, families);
+      return recordCall(new Transaction(table, families, 0L, 0L), table, families);
     }
 
     @Override
     public Transaction beginWriteTransaction(String table,
-                         List<String> families, long keepAlive) throws IOException {
-      return recordCall(null, table, families, keepAlive);
+                         List<String> families, Long keepAlive) throws IOException {
+      return recordCall(new Transaction(table, families, 0L, 0L), table, families, keepAlive);
     }
 
     @Override
@@ -157,17 +158,17 @@ public class TestRevisionManagerEndpoint extends SkeletonHBaseTest {
     @Override
     public List<FamilyRevision> getAbortedWriteTransactions(String table,
                                 String columnFamily) throws IOException {
-      return null;
+      return Collections.singletonList(new FamilyRevision(0L, 0L));
     }
 
     @Override
     public TableSnapshot createSnapshot(String tableName)
       throws IOException {
-      return null;
+      return createSnapshot(tableName, 0L);
     }
 
     @Override
-    public TableSnapshot createSnapshot(String tableName, long revision)
+    public TableSnapshot createSnapshot(String tableName, Long revision)
       throws IOException {
       TableSnapshot ret = new TableSnapshot(tableName, new HashMap<String, Long>(), revision);
       return recordCall(ret, tableName, revision);
@@ -201,7 +202,7 @@ public class TestRevisionManagerEndpoint extends SkeletonHBaseTest {
     Assert.assertEquals(call.methodName, call, mockImpl.lastCall);
 
     call = new MockRM.Invocation("createSnapshot", null, "t3", 1L);
-    call.ret = rm.createSnapshot("t3", 1);
+    call.ret = rm.createSnapshot("t3", 1L);
     Assert.assertEquals(call.methodName, call, mockImpl.lastCall);
 
   }

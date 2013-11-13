@@ -23,11 +23,11 @@ import java.io.IOException;
 import java.util.List;
 
 import org.apache.hadoop.hbase.client.HTable;
-import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
 import org.apache.hadoop.hbase.mapred.TableSplit;
 import org.apache.hadoop.hbase.mapreduce.TableInputFormat;
+import org.apache.hadoop.hive.hbase.ResultWritable;
 import org.apache.hive.hcatalog.mapreduce.HCatMapRedUtil;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.InputSplit;
@@ -41,7 +41,7 @@ import org.apache.hcatalog.mapreduce.InputJobInfo;
 /**
  * This class HBaseInputFormat is a wrapper class of TableInputFormat in HBase.
  */
-class HBaseInputFormat implements InputFormat<ImmutableBytesWritable, Result> {
+class HBaseInputFormat implements InputFormat<ImmutableBytesWritable, ResultWritable> {
 
   private final TableInputFormat inputFormat;
 
@@ -66,7 +66,7 @@ class HBaseInputFormat implements InputFormat<ImmutableBytesWritable, Result> {
    * org.apache.hadoop.mapreduce.TaskAttemptContext)
    */
   @Override
-  public RecordReader<ImmutableBytesWritable, Result> getRecordReader(
+  public RecordReader<ImmutableBytesWritable, ResultWritable> getRecordReader(
     InputSplit split, JobConf job, Reporter reporter)
     throws IOException {
     String jobString = job.get(HCatConstants.HCAT_KEY_JOB_INFO);

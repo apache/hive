@@ -32,7 +32,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.HColumnDescriptor;
 import org.apache.hadoop.hbase.HTableDescriptor;
-import org.apache.hadoop.hbase.MasterNotRunningException;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.mapred.TableOutputFormat;
@@ -209,11 +208,7 @@ public class HBaseStorageHandler extends DefaultStorageHandler
 
       // ensure the table is online
       new HTable(hbaseConf, tableDesc.getName());
-    } catch (MasterNotRunningException mnre) {
-      throw new MetaException(StringUtils.stringifyException(mnre));
-    } catch (IOException ie) {
-      throw new MetaException(StringUtils.stringifyException(ie));
-    } catch (SerDeException se) {
+    } catch (Exception se) {
       throw new MetaException(StringUtils.stringifyException(se));
     }
   }

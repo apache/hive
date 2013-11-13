@@ -45,6 +45,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hive.cli.CliSessionState;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
+import org.apache.hadoop.hive.hbase.ResultWritable;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.ql.processors.CommandProcessorResponse;
 import org.apache.hadoop.hive.ql.session.SessionState;
@@ -546,7 +547,7 @@ public class TestHCatHBaseInputFormat extends SkeletonHBaseTest {
   }
 
   static class MapReadProjectionHTable
-    implements org.apache.hadoop.mapred.Mapper<ImmutableBytesWritable, Result, WritableComparable<?>, Text> {
+    implements org.apache.hadoop.mapred.Mapper<ImmutableBytesWritable, Object, WritableComparable<?>, Text> {
 
     static boolean error = false;
     static int count = 0;
@@ -560,9 +561,17 @@ public class TestHCatHBaseInputFormat extends SkeletonHBaseTest {
     }
 
     @Override
-    public void map(ImmutableBytesWritable key, Result result,
+    public void map(ImmutableBytesWritable key, Object resultObj,
         OutputCollector<WritableComparable<?>, Text> output, Reporter reporter)
       throws IOException {
+      Result result;
+      if (resultObj instanceof Result){
+        result = (Result) resultObj;
+      } else if (resultObj instanceof ResultWritable) {
+        result = ((ResultWritable)resultObj).getResult();
+      } else {
+        throw new IllegalArgumentException("Illegal Argument " + (resultObj == null ? "null" : resultObj.getClass().getName()));
+      }
       System.out.println("Result " + result.toString());
       List<KeyValue> list = result.list();
       boolean correctValues = (list.size() == 1)
