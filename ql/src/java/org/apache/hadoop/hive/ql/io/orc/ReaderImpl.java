@@ -18,7 +18,14 @@
 
 package org.apache.hadoop.hive.ql.io.orc;
 
-import com.google.protobuf.CodedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
@@ -28,12 +35,7 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.io.Text;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import com.google.protobuf.CodedInputStream;
 
 final class ReaderImpl implements Reader {
 
@@ -332,6 +334,13 @@ final class ReaderImpl implements Reader {
   public RecordReader rows(long offset, long length, boolean[] include,
                            SearchArgument sarg, String[] columnNames
                            ) throws IOException {
+
+    // if included columns is null, then include all columns
+    if (include == null) {
+      include = new boolean[footer.getTypesCount()];
+      Arrays.fill(include, true);
+    }
+
     return new RecordReaderImpl(this.getStripes(), fileSystem,  path, offset,
         length, footer.getTypesList(), codec, bufferSize,
         include, footer.getRowIndexStride(), sarg, columnNames);
