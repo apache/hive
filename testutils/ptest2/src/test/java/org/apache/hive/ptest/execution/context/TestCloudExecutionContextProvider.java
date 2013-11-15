@@ -92,7 +92,7 @@ public class TestCloudExecutionContextProvider {
   }
 
   @org.junit.Test
-  public void testRetrySucceeds() throws Exception {
+  public void testRetry() throws Exception {
     when(cloudComputeService.createNodes(anyInt())).then(new Answer<Set<NodeMetadata>>() {
       int count = 0;
       @Override
@@ -105,19 +105,12 @@ public class TestCloudExecutionContextProvider {
       }
     });
     CloudExecutionContextProvider provider = new CloudExecutionContextProvider(dataDir, NUM_NODES,
-        cloudComputeService, sshCommandExecutor, workingDir, PRIVATE_KEY, USER, SLAVE_DIRS, 1, 1, 0);
+        cloudComputeService, sshCommandExecutor, workingDir, PRIVATE_KEY, USER, SLAVE_DIRS, 1, 0);
     ExecutionContext executionContext = provider.createExecutionContext();
     Set<String> hosts = Sets.newHashSet();
     for(Host host : executionContext.getHosts()) {
       hosts.add(host.getName());
     }
     Assert.assertEquals(Sets.newHashSet("node1", "node3"), hosts);
-  }
-  @org.junit.Test(expected=CreateHostsFailedException.class)
-  public void testRetryFails() throws Exception {
-    when(cloudComputeService.createNodes(anyInt())).thenThrow(runNodesException);
-    CloudExecutionContextProvider provider = new CloudExecutionContextProvider(dataDir, NUM_NODES,
-        cloudComputeService, sshCommandExecutor, workingDir, PRIVATE_KEY, USER, SLAVE_DIRS, 1, 1, 0);
-    provider.createExecutionContext();
   }
 }
