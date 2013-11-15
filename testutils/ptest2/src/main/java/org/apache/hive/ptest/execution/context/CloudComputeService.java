@@ -35,6 +35,7 @@ import org.jclouds.compute.domain.Template;
 import org.jclouds.logging.log4j.config.Log4JLoggingModule;
 
 import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
@@ -77,18 +78,32 @@ public class CloudComputeService {
     result.addAll(mComputeService.createNodesInGroup(mGroupName, count, template));
     return result;
   }
+  static Predicate<ComputeMetadata> createFilterPTestPredicate(final String groupName,
+      final String groupTag) {
+    return new Predicate<ComputeMetadata>() {
+      @Override
+      public boolean apply(ComputeMetadata computeMetadata) {
+        NodeMetadata nodeMetadata = (NodeMetadata) computeMetadata;
+        return nodeMetadata.getStatus() == Status.RUNNING && isPTestHost(nodeMetadata);
+      }
+      private boolean isPTestHost(NodeMetadata node) {
+        if(groupName.equalsIgnoreCase(node.getGroup())) {
+          return true;
+        }
+        if(Strings.nullToEmpty(node.getName()).startsWith(groupName)) {
+          return true;
+        }
+        if(node.getTags().contains(groupTag)) {
+          return true;
+        }
+        return false;
+      }
+    };
+  }
   public Set<NodeMetadata> listRunningNodes(){
     Set<NodeMetadata> result = Sets.newHashSet();
-    result.addAll(mComputeService
-        .listNodesDetailsMatching(new Predicate<ComputeMetadata>() {
-          @Override
-          public boolean apply(ComputeMetadata computeMetadata) {
-            NodeMetadata nodeMetadata = (NodeMetadata) computeMetadata;
-            return nodeMetadata.getStatus() == Status.RUNNING
-                && (mGroupName.equalsIgnoreCase(nodeMetadata.getGroup()) ||
-                    nodeMetadata.getTags().contains(mGroupTag));
-          }
-        }));
+    result.addAll(mComputeService.listNodesDetailsMatching(
+        createFilterPTestPredicate(mGroupName, mGroupTag)));
     return result;
   }
   public void destroyNode(String nodeId) {
