@@ -20,7 +20,10 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import javax.security.auth.login.LoginException;
@@ -56,6 +59,9 @@ public class TezSessionState {
   private TezSession session;
   private String sessionId;
 
+  private static List<TezSessionState> openSessions
+    = Collections.synchronizedList(new LinkedList<TezSessionState>());
+
   /**
    * Constructor. We do not automatically connect, because we only want to
    * load tez classes when the user has tez installed.
@@ -68,6 +74,14 @@ public class TezSessionState {
    */
   public boolean isOpen() {
     return session != null;
+  }
+
+  /**
+   * Get all open sessions. Only used to clean up at shutdown.
+   * @return List<TezSessionState>
+   */
+  public static List<TezSessionState> getOpenSessions() {
+    return openSessions;
   }
 
   /**
@@ -116,6 +130,8 @@ public class TezSessionState {
     // id is used for tez to reuse the current session rather than start a new one.
     conf.set("mapreduce.framework.name", "yarn-tez");
     conf.set("mapreduce.tez.session.tokill-application-id", session.getApplicationId().toString());
+
+    openSessions.add(this);
   }
 
   /**
@@ -132,6 +148,7 @@ public class TezSessionState {
     LOG.info("Closing Tez Session");
     try {
       session.stop();
+      openSessions.remove(this);
     } catch (SessionNotRunning nr) {
       // ignore
     }

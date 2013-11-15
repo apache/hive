@@ -21,7 +21,10 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import static org.apache.tez.dag.api.client.DAGStatus.State.RUNNING;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -54,7 +57,32 @@ public class TezJobMonitor {
   private final int printInterval = 3000;
   private long lastPrintTime;
   private Set<String> completed;
+  private static final List<DAGClient> shutdownList;
 
+  static {
+    shutdownList = Collections.synchronizedList(new LinkedList<DAGClient>());
+    Runtime.getRuntime().addShutdownHook(new Thread() {
+      @Override
+      public void run() {
+        for (DAGClient c: shutdownList) {
+          try {
+            System.err.println("Trying to shutdown DAG");
+            c.tryKillDAG();
+          } catch (Exception e) {
+            // ignore
+          }
+        }
+        try {
+          for (TezSessionState s: TezSessionState.getOpenSessions()) {
+            System.err.println("Shutting down tez session.");
+            s.close(false);
+          }
+        } catch (Exception e) {
+          // ignore
+        }
+      }
+    });
+  }
 
   public TezJobMonitor() {
     console = new LogHelper(LOG);
@@ -67,7 +95,7 @@ public class TezJobMonitor {
    * @param dagClient client that was used to kick off the job
    * @return int 0 - success, 1 - killed, 2 - failed
    */
-  public int monitorExecution(DAGClient dagClient) throws InterruptedException {
+  public int monitorExecution(final DAGClient dagClient) throws InterruptedException {
     DAGStatus status = null;
     completed = new HashSet<String>();
 
@@ -78,6 +106,8 @@ public class TezJobMonitor {
     DAGStatus.State lastState = null;
     String lastReport = null;
     Set<StatusGetOpts> opts = new HashSet<StatusGetOpts>();
+
+    shutdownList.add(dagClient);
 
     console.printInfo("\n");
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_RUN_DAG);
@@ -163,6 +193,7 @@ public class TezJobMonitor {
               console.printError(diag);
             }
           }
+          shutdownList.remove(dagClient);
           break;
         }
       }
