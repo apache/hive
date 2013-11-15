@@ -475,7 +475,8 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
             if (context.cacheStripeDetails) {
               fileInfo = verifyCachedFileInfo(file);
             }
-            context.schedule(new SplitGenerator(context, fs, file, fileInfo));
+            SplitGenerator spgen = new SplitGenerator(context, fs, file, fileInfo);
+            spgen.schedule();
           }
         }
       } catch (Throwable th) {
@@ -551,6 +552,19 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
 
     Path getPath() {
       return file.getPath();
+    }
+
+    void schedule() throws IOException {
+      if(locations.length == 1 && file.getLen() < context.maxSize) {
+        String[] hosts = locations[0].getHosts();
+        synchronized (context.splits) {
+          context.splits.add(new OrcSplit(file.getPath(), 0, file.getLen(),
+                hosts, fileMetaInfo));
+        }
+      } else {
+        // if it requires a compute task
+        context.schedule(this);
+      }
     }
 
     @Override
