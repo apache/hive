@@ -18,6 +18,7 @@
  */
 package org.apache.hive.hcatalog.cli;
 
+import java.io.File;
 import java.io.IOException;
 
 import junit.framework.TestCase;
@@ -61,7 +62,9 @@ public class TestUseDatabase extends TestCase {
 
     CommandProcessorResponse response;
 
-    response = hcatDriver.run("alter table " + tblName + " add partition (b='2') location '/tmp'");
+    String tmpDir = System.getProperty("test.tmp.dir");
+    File dir = new File(tmpDir + "/hive-junit-" + System.nanoTime());
+    response = hcatDriver.run("alter table " + tblName + " add partition (b='2') location '" + dir.getAbsolutePath() + "'");
     assertEquals(0, response.getResponseCode());
     assertNull(response.getErrorMessage());
 
