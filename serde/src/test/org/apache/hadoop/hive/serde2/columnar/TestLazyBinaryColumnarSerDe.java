@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.TreeMap;
 
+import junit.framework.Assert;
 import junit.framework.TestCase;
 
 import org.apache.hadoop.conf.Configuration;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory.Obje
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.objectinspector.SimpleMapEqualComparer;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
+import org.apache.hadoop.io.LongWritable;
 
 public class TestLazyBinaryColumnarSerDe extends TestCase {
 
@@ -238,5 +240,86 @@ public class TestLazyBinaryColumnarSerDe extends TestCase {
     }
   }
 
+  private static class BeforeStruct {
+    Long l1;
+    Long l2;
+  }
 
+  private static class AfterStruct {
+    Long l1;
+    Long l2;
+    Long l3;
+  }
+
+  /**
+   * HIVE-5788
+   * <p>
+   * Background: in cases of "add column", table metadata changes but data does not.  Columns
+   * missing from the data but which are required by metadata are interpreted as null.
+   * <p>
+   * This tests the use-case of altering columns of a table with already some data, then adding more data
+   * in the new schema, and seeing if this serde can to read both types of data from the resultant table.
+   * @throws SerDeException
+   */
+  public void testHandlingAlteredSchemas() throws SerDeException {
+    StructObjectInspector oi = (StructObjectInspector) ObjectInspectorFactory
+        .getReflectionObjectInspector(BeforeStruct.class,
+            ObjectInspectorOptions.JAVA);
+    String cols = ObjectInspectorUtils.getFieldNames(oi);
+    Properties props = new Properties();
+    props.setProperty(serdeConstants.LIST_COLUMNS, cols);
+    props.setProperty(serdeConstants.LIST_COLUMN_TYPES,
+        ObjectInspectorUtils.getFieldTypes(oi));
+
+    // serialize some data in the schema before it is altered.
+    LazyBinaryColumnarSerDe serde = new LazyBinaryColumnarSerDe();
+    serde.initialize(new Configuration(), props);
+
+    BeforeStruct bs1 = new BeforeStruct();
+    bs1.l1 = 1L;
+    bs1.l2 = 2L;
+    BytesRefArrayWritable braw1 = (BytesRefArrayWritable) serde.serialize(bs1,
+        oi);
+
+    // alter table add column: change the metadata
+    oi = (StructObjectInspector) ObjectInspectorFactory
+        .getReflectionObjectInspector(AfterStruct.class,
+            ObjectInspectorOptions.JAVA);
+    cols = ObjectInspectorUtils.getFieldNames(oi);
+    props = new Properties();
+    props.setProperty(serdeConstants.LIST_COLUMNS, cols);
+    props.setProperty(serdeConstants.LIST_COLUMN_TYPES,
+        ObjectInspectorUtils.getFieldTypes(oi));
+    serde = new LazyBinaryColumnarSerDe();
+    serde.initialize(new Configuration(), props);
+
+    // serialize some data in the schema after it is altered.
+    AfterStruct as = new AfterStruct();
+    as.l1 = 11L;
+    as.l2 = 12L;
+    as.l3 = 13L;
+    BytesRefArrayWritable braw2 = (BytesRefArrayWritable) serde.serialize(as,
+        oi);
+
+    // fetch operator
+    serde = new LazyBinaryColumnarSerDe();
+    serde.initialize(new Configuration(), props);
+
+    //fetch the row inserted before schema is altered and verify
+    LazyBinaryColumnarStruct struct1 = (LazyBinaryColumnarStruct) serde
+        .deserialize(braw1);
+    oi = (StructObjectInspector) serde.getObjectInspector();
+    List<Object> objs1 = oi.getStructFieldsDataAsList(struct1);
+    Assert.assertEquals(((LongWritable) objs1.get(0)).get(), 1L);
+    Assert.assertEquals(((LongWritable) objs1.get(1)).get(), 2L);
+    Assert.assertNull(objs1.get(2));
+
+    //fetch the row inserted after schema is altered and verify
+    LazyBinaryColumnarStruct struct2 = (LazyBinaryColumnarStruct) serde
+        .deserialize(braw2);
+    List<Object> objs2 = struct2.getFieldsAsList();
+    Assert.assertEquals(((LongWritable) objs2.get(0)).get(), 11L);
+    Assert.assertEquals(((LongWritable) objs2.get(1)).get(), 12L);
+    Assert.assertEquals(((LongWritable) objs2.get(2)).get(), 13L);
+  }
 }
