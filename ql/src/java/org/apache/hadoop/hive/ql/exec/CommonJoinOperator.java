@@ -434,7 +434,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       }
     }
     if (forward) {
-      internalForward(forwardCache, null);
+      internalForward(forwardCache, outputObjInspector);
       countAfterReport = 0;
     }
   }
