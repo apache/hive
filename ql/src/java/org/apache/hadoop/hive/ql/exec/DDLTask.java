@@ -54,6 +54,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FsShell;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -161,6 +162,7 @@ import org.apache.hadoop.hive.serde2.MetadataTypedColumnsetSerDe;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.hive.serde2.dynamic_type.DynamicSerDe;
 import org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.shims.HadoopShims;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.IOUtils;
@@ -2840,6 +2842,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
         cols = Hive.getFieldsFromDeserializer(colPath, tbl.getDeserializer());
       }
 
+      fixDecimalColumnTypeName(cols);
+
       formatter.describeTable(outStream, colPath, tableName, tbl, part, cols,
                               descTbl.isFormatted(), descTbl.isExt(), descTbl.isPretty());
 
@@ -2854,6 +2858,22 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     }
 
     return 0;
+  }
+
+  /**
+   * Fix the type name of a column of type decimal w/o precision/scale specified. This makes
+   * the describe table show "decimal(10,0)" instead of "decimal" even if the type stored
+   * in metastore is "decimal", which is possible with previous hive.
+   *
+   * @param cols columns that to be fixed as such
+   */
+  private static void fixDecimalColumnTypeName(List<FieldSchema> cols) {
+    for (FieldSchema col : cols) {
+      if (serdeConstants.DECIMAL_TYPE_NAME.equals(col.getType())) {
+        col.setType(DecimalTypeInfo.getQualifiedName(HiveDecimal.DEFAULT_PRECISION,
+            HiveDecimal.DEFAULT_SCALE));
+      }
+    }
   }
 
   public static void writeGrantInfo(DataOutput outStream,

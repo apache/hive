@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.hadoop.hive.common.type.HiveChar;
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.common.type.HiveVarchar;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ListObjectInspector;
@@ -395,7 +395,6 @@ public final class TypeInfoUtils {
       PrimitiveTypeEntry typeEntry =
           PrimitiveObjectInspectorUtils.getTypeEntryFromTypeName(t.text);
       if (typeEntry != null && typeEntry.primitiveCategory != PrimitiveCategory.UNKNOWN ) {
-        String qualifiedTypeName = typeEntry.typeName;
         String[] params = parseParams();
         switch (typeEntry.primitiveCategory) {
         case CHAR:
@@ -405,40 +404,41 @@ public final class TypeInfoUtils {
                 + " type is specified without length: " + typeInfoString);
           }
 
+          int length = 1;
           if (params.length == 1) {
-            int length = Integer.valueOf(params[0]);
+            length = Integer.valueOf(params[0]);
             if (typeEntry.primitiveCategory == PrimitiveCategory.VARCHAR) {
               BaseCharUtils.validateVarcharParameter(length);
+              return TypeInfoFactory.getVarcharTypeInfo(length);
             } else {
               BaseCharUtils.validateCharParameter(length);
+              return TypeInfoFactory.getCharTypeInfo(length);
             }
-            qualifiedTypeName = BaseCharTypeInfo.getQualifiedName(typeEntry.typeName, length);
           } else if (params.length > 1) {
             throw new IllegalArgumentException(
                 "Type " + typeEntry.typeName+ " only takes one parameter, but " +
                 params.length + " is seen");
           }
-
-          break;
         case DECIMAL:
+          int precision = HiveDecimal.DEFAULT_PRECISION;
+          int scale = HiveDecimal.DEFAULT_SCALE;
           if (params == null || params.length == 0) {
-            throw new IllegalArgumentException( "Decimal type is specified without length: " + typeInfoString);
-          }
-
-          if (params.length == 2) {
-            int precision = Integer.valueOf(params[0]);
-            int scale = Integer.valueOf(params[1]);
+            // It's possible that old metadata still refers to "decimal" as a column type w/o
+            // precision/scale. In this case, the default (10,0) is assumed. Thus, do nothing here.
+          } else if (params.length == 2) {
+            // New metadata always have two parameters.
+            precision = Integer.valueOf(params[0]);
+            scale = Integer.valueOf(params[1]);
             HiveDecimalUtils.validateParameter(precision, scale);
-            qualifiedTypeName = DecimalTypeInfo.getQualifiedName(precision, scale);
-          } else if (params.length > 1) {
-            throw new IllegalArgumentException("Type varchar only takes one parameter, but " +
+          } else if (params.length > 2) {
+            throw new IllegalArgumentException("Type decimal only takes two parameter, but " +
                 params.length + " is seen");
           }
 
-          break;
+          return TypeInfoFactory.getDecimalTypeInfo(precision, scale);
+        default:
+          return TypeInfoFactory.getPrimitiveTypeInfo(typeEntry.typeName);
         }
-
-        return TypeInfoFactory.getPrimitiveTypeInfo(qualifiedTypeName);
       }
 
       // Is this a list type?
