@@ -172,3 +172,42 @@ POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 #### A masked pattern was here ####
 yo
+PREHOOK: query: -- Allow compatible types in when/return type
+SELECT CASE 1
+        WHEN 1 THEN 123.0BD
+        ELSE 0.0BD
+       END,
+       CASE 1
+        WHEN 1.0 THEN 123
+        WHEN 2 THEN 1.0
+        ELSE 0.0BD
+       END,
+       CASE 'abc'
+        WHEN cast('abc' as varchar(3)) THEN 'abcd'
+        WHEN 'efg' THEN cast('efgh' as varchar(10))
+        ELSE cast('ijkl' as char(4))
+       END
+FROM src tablesample (1 rows)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+#### A masked pattern was here ####
+POSTHOOK: query: -- Allow compatible types in when/return type
+SELECT CASE 1
+        WHEN 1 THEN 123.0BD
+        ELSE 0.0BD
+       END,
+       CASE 1
+        WHEN 1.0 THEN 123
+        WHEN 2 THEN 1.0
+        ELSE 0.0BD
+       END,
+       CASE 'abc'
+        WHEN cast('abc' as varchar(3)) THEN 'abcd'
+        WHEN 'efg' THEN cast('efgh' as varchar(10))
+        ELSE cast('ijkl' as char(4))
+       END
+FROM src tablesample (1 rows)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+#### A masked pattern was here ####
+123	123	abcd

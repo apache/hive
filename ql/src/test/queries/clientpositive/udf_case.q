@@ -63,3 +63,20 @@ FROM src tablesample (1 rows);
 SELECT CASE 1 WHEN 1 THEN 'yo'
 ELSE reflect('java.lang.String', 'bogus', 1) END
 FROM src tablesample (1 rows);
+
+-- Allow compatible types in when/return type
+SELECT CASE 1
+        WHEN 1 THEN 123.0BD
+        ELSE 0.0BD
+       END,
+       CASE 1
+        WHEN 1.0 THEN 123
+        WHEN 2 THEN 1.0
+        ELSE 0.0BD
+       END,
+       CASE 'abc'
+        WHEN cast('abc' as varchar(3)) THEN 'abcd'
+        WHEN 'efg' THEN cast('efgh' as varchar(10))
+        ELSE cast('ijkl' as char(4))
+       END
+FROM src tablesample (1 rows);
