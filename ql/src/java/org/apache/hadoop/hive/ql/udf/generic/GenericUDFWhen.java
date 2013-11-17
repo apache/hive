@@ -25,11 +25,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector;
 
 /**
- * GenericUDF Class for SQL construct "CASE a WHEN b THEN c [ELSE f] END".
+ * GenericUDF Class for SQL construct
+ * "CASE WHEN a THEN b WHEN c THEN d [ELSE f] END".
  * 
- * NOTES: 1. a and b should have the same TypeInfo, or an exception will be
- * thrown. 2. c and f should have the same TypeInfo, or an exception will be
- * thrown.
+ * NOTES: 1. a and c should be boolean, or an exception will be thrown. 2. b, d
+ * and f should be common types, or an exception will be thrown.
  */
 public class GenericUDFWhen extends GenericUDF {
   private transient ObjectInspector[] argumentOIs;
@@ -39,7 +39,7 @@ public class GenericUDFWhen extends GenericUDF {
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentTypeException {
 
     argumentOIs = arguments;
-    returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver();
+    returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver(true);
 
     for (int i = 0; i + 1 < arguments.length; i += 2) {
       if (!arguments[i].getTypeName().equals(serdeConstants.BOOLEAN_TYPE_NAME)) {
