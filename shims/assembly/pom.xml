@@ -32,30 +32,36 @@
   </properties>
 
   <dependencies>
+    <!-- dependencies are always listed in sorted order by groupId, artifectId -->
     <dependency>
       <groupId>org.apache.hive.shims</groupId>
       <artifactId>hive-shims-common</artifactId>
       <version>${project.version}</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.hive.shims</groupId>
       <artifactId>hive-shims-0.20</artifactId>
       <version>${project.version}</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.hive.shims</groupId>
       <artifactId>hive-shims-common-secure</artifactId>
       <version>${project.version}</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.hive.shims</groupId>
       <artifactId>hive-shims-0.20S</artifactId>
       <version>${project.version}</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.apache.hive.shims</groupId>
       <artifactId>hive-shims-0.23</artifactId>
       <version>${project.version}</version>
+      <optional>true</optional>
     </dependency>
   </dependencies>
 

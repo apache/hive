@@ -42,6 +42,7 @@
   </properties>
 
   <dependencies>
+    <!-- dependencies are always listed in sorted order by groupId, artifectId -->
     <!-- test intra-project -->
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -197,7 +198,7 @@
         </dependency>
       </dependencies>
     </profile>
-   <profile>
+    <profile>
       <id>hadoop-2</id>
       <properties>
         <active.hadoop.version>${hadoop-23.version}</active.hadoop.version>

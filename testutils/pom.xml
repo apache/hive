@@ -32,6 +32,7 @@
   </properties>
 
   <dependencies>
+    <!-- dependencies are always listed in sorted order by groupId, artifectId -->
     <!-- inter-project -->
     <dependency>
       <groupId>com.google.code.tempus-fugit</groupId>

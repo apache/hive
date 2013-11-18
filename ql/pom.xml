@@ -32,6 +32,7 @@
   </properties>
 
   <dependencies>
+    <!-- dependencies are always listed in sorted order by groupId, artifectId -->
     <!-- intra-project -->
     <!-- used for vector code-gen -->
     <dependency>
@@ -288,6 +289,7 @@
     <sourceDirectory>${basedir}/src/java</sourceDirectory>
     <testSourceDirectory>${basedir}/src/test</testSourceDirectory>
     <plugins>
+      <!-- plugins are always listed in sorted order by groupId, artifectId -->
       <plugin>
         <groupId>org.antlr</groupId>
         <artifactId>antlr3-maven-plugin</artifactId>

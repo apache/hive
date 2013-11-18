@@ -33,6 +33,7 @@
   </properties>
 
   <dependencies>
+    <!-- dependencies are always listed in sorted order by groupId, artifectId -->
     <!-- intra-project -->
     <dependency>
       <groupId>org.apache.hive.shims</groupId>

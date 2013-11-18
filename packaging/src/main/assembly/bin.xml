@@ -33,9 +33,58 @@
 
   <dependencySets>
     <dependencySet>
-    <outputDirectory>lib</outputDirectory>
-    <unpack>false</unpack>
-    <useProjectArtifact>false</useProjectArtifact>
+      <outputDirectory>lib</outputDirectory>
+      <unpack>false</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+      <useStrictFiltering>true</useStrictFiltering>
+      <useTransitiveFiltering>true</useTransitiveFiltering>
+      <excludes>
+        <exclude>org.apache.hadoop:*</exclude>
+        <exclude>org.apache.hbase:*</exclude>
+        <exclude>org.apache.hive.hcatalog:*</exclude>
+      </excludes>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>hcatalog/share/hcatalog</outputDirectory>
+      <unpack>false</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+      <useStrictFiltering>true</useStrictFiltering>
+      <includes>
+        <include>org.apache.hive.hcatalog:hive-hcatalog-core</include>
+        <include>org.apache.hive.hcatalog:hive-hcatalog-pig-adapter</include>
+        <include>org.apache.hive.hcatalog:hive-hcatalog-server-extensions</include>
+      </includes>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>hcatalog/share/hcatalog/storage-handlers/hbase/lib</outputDirectory>
+      <unpack>false</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+      <useStrictFiltering>true</useStrictFiltering>
+      <includes>
+        <include>org.apache.hive.hcatalog:hive-hbase-storage-handler</include>
+      </includes>
+    </dependencySet>
+    <!-- TODO 0.12 release the webhcat server lib directory had all transitive jars
+         while this lib directory only has explicit dependencies
+    -->
+    <dependencySet>
+      <outputDirectory>hcatalog/share/webhcat/svr/lib</outputDirectory>
+      <unpack>false</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+      <useStrictFiltering>true</useStrictFiltering>
+      <useTransitiveFiltering>true</useTransitiveFiltering>
+      <includes>
+        <include>org.apache.hive.hcatalog:hive-webhcat:*</include>
+      </includes>
+    </dependencySet>
+    <dependencySet>
+      <outputDirectory>hcatalog/share/webhcat/java-client</outputDirectory>
+      <unpack>false</unpack>
+      <useProjectArtifact>false</useProjectArtifact>
+      <useStrictFiltering>true</useStrictFiltering>
+      <includes>
+        <include>org.apache.hive.hcatalog:hive-webhcat-java-client</include>
+      </includes>
     </dependencySet>
   </dependencySets>
 
@@ -202,7 +251,77 @@
       <outputDirectory>lib/py/queryplan</outputDirectory>
     </fileSet>
 
+    <!-- hcatalog bin -->
+    <fileSet>
+      <directory>${project.parent.basedir}/hcatalog/bin</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>hcat</include>
+        <include>hcatcfg.py</include>
+        <include>hcat.py</include>
+        <include>templeton.cmd</include>
+      </includes>
+      <outputDirectory>hcatalog/bin</outputDirectory>
+    </fileSet>
 
+    <!-- hcatalog etc -->
+    <fileSet>
+      <directory>${project.parent.basedir}/hcatalog/conf</directory>
+      <fileMode>644</fileMode>
+      <includes>
+        <include>jndi.properties</include>
+        <include>proto-hive-site.xml</include>
+      </includes>
+      <outputDirectory>hcatalog/etc/hcatalog</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.parent.basedir}/hcatalog/webhcat/svr/src/main/config</directory>
+      <fileMode>644</fileMode>
+      <includes>
+        <include>webhcat-default.xml</include>
+        <include>webhcat-log4j.properties</include>
+      </includes>
+      <outputDirectory>hcatalog/etc/webhcat</outputDirectory>
+    </fileSet>
+
+    <!-- hcatalog libexec -->
+    <fileSet>
+      <directory>${project.parent.basedir}/hcatalog/bin</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>hcat-config.sh</include>
+      </includes>
+      <outputDirectory>hcatalog/libexec</outputDirectory>
+    </fileSet>
+
+    <!-- hcatalog sbin -->
+    <fileSet>
+      <directory>${project.parent.basedir}/hcatalog/bin</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>hcatcfg.py</include>
+        <include>hcat_server.py</include>
+        <include>hcat_server.sh</include>
+      </includes>
+      <outputDirectory>hcatalog/sbin</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.parent.basedir}/hcatalog/src/packages</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>update-hcatalog-env.sh</include>
+      </includes>
+      <outputDirectory>hcatalog/sbin</outputDirectory>
+    </fileSet>
+    <fileSet>
+      <directory>${project.parent.basedir}/hcatalog/webhcat/svr/src/main/bin</directory>
+      <fileMode>755</fileMode>
+      <includes>
+        <include>webhcat_config.sh</include>
+        <include>webhcat_server.sh</include>
+      </includes>
+      <outputDirectory>hcatalog/sbin</outputDirectory>
+    </fileSet>
   </fileSets>
 
   <files>
@@ -211,11 +330,18 @@
       <outputDirectory>conf</outputDirectory>
       <destName>hive-log4j.properties.template</destName>
     </file>
-
     <file>
       <source>${project.parent.basedir}/ql/src/main/resources/hive-exec-log4j.properties</source>
       <outputDirectory>conf</outputDirectory>
       <destName>hive-exec-log4j.properties.template</destName>
+    </file>
+    <file>
+      <source>${project.parent.basedir}/hcatalog/README.txt</source>
+      <outputDirectory>hcatalog/share/doc/hcatalog</outputDirectory>
+    </file>
+    <file>
+      <source>${project.parent.basedir}/hcatalog/storage-handlers/hbase/conf/revision-manager-site.xml</source>
+      <outputDirectory>hcatalog/share/hcatalog/storage-handlers/hbase/conf</outputDirectory>
     </file>
   </files>
 
