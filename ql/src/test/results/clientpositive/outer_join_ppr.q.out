@@ -30,6 +30,8 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Reduce Output Operator
               key expressions:
@@ -39,6 +41,8 @@ STAGE PLANS:
               Map-reduce partition columns:
                     expr: key
                     type: string
+              Statistics:
+                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
               tag: 0
               value expressions:
                     expr: key
@@ -48,6 +52,8 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics:
+                numRows: 0 dataSize: 23248 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Reduce Output Operator
               key expressions:
@@ -57,6 +63,8 @@ STAGE PLANS:
               Map-reduce partition columns:
                     expr: key
                     type: string
+              Statistics:
+                  numRows: 0 dataSize: 23248 basicStatsState: PARTIAL colStatsState: NONE
               tag: 1
               value expressions:
                     expr: key
@@ -415,6 +423,8 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Reduce Output Operator
               key expressions:
@@ -424,6 +434,8 @@ STAGE PLANS:
               Map-reduce partition columns:
                     expr: key
                     type: string
+              Statistics:
+                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
               tag: 0
               value expressions:
                     expr: key
@@ -433,6 +445,8 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics:
+                numRows: 0 dataSize: 23248 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Reduce Output Operator
               key expressions:
@@ -442,6 +456,8 @@ STAGE PLANS:
               Map-reduce partition columns:
                     expr: key
                     type: string
+              Statistics:
+                  numRows: 0 dataSize: 23248 basicStatsState: PARTIAL colStatsState: NONE
               tag: 1
               value expressions:
                     expr: key

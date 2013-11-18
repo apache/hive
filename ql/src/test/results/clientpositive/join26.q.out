@@ -43,6 +43,8 @@ STAGE PLANS:
         x 
           TableScan
             alias: x
+            Statistics:
+                numRows: 0 dataSize: 216 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -58,6 +60,8 @@ STAGE PLANS:
         y 
           TableScan
             alias: y
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -77,6 +81,8 @@ STAGE PLANS:
         z 
           TableScan
             alias: z
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:

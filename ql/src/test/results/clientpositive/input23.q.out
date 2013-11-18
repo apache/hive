@@ -18,9 +18,13 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Reduce Output Operator
               sort order: 
+              Statistics:
+                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
               tag: 0
               value expressions:
                     expr: key
@@ -34,14 +38,20 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics:
+                numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
                   expr: ((ds = '2008-04-08') and (hr = '14'))
                   type: boolean
+              Statistics:
+                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
               Reduce Output Operator
                 sort order: 
+                Statistics:
+                    numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
                 tag: 1
                 value expressions:
                       expr: key

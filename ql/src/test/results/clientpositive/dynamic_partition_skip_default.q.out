@@ -67,17 +67,23 @@ STAGE PLANS:
         dynamic_part_table 
           TableScan
             alias: dynamic_part_table
+            Statistics:
+                numRows: 0 dataSize: 2 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
                     expr: intcol
                     type: int
               outputColumnNames: _col0
+              Statistics:
+                  numRows: 0 dataSize: 2 basicStatsState: PARTIAL colStatsState: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
+                Statistics:
+                    numRows: 0 dataSize: 2 basicStatsState: PARTIAL colStatsState: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -168,17 +174,23 @@ STAGE PLANS:
         dynamic_part_table 
           TableScan
             alias: dynamic_part_table
+            Statistics:
+                numRows: 0 dataSize: 2 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
                     expr: intcol
                     type: int
               outputColumnNames: _col0
+              Statistics:
+                  numRows: 0 dataSize: 2 basicStatsState: PARTIAL colStatsState: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
+                Statistics:
+                    numRows: 0 dataSize: 2 basicStatsState: PARTIAL colStatsState: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -269,17 +281,23 @@ STAGE PLANS:
         dynamic_part_table 
           TableScan
             alias: dynamic_part_table
+            Statistics:
+                numRows: 0 dataSize: 4 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
                     expr: intcol
                     type: int
               outputColumnNames: _col0
+              Statistics:
+                  numRows: 0 dataSize: 4 basicStatsState: PARTIAL colStatsState: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
+                Statistics:
+                    numRows: 0 dataSize: 4 basicStatsState: PARTIAL colStatsState: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat

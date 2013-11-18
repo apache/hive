@@ -131,6 +131,8 @@ STAGE PLANS:
         r 
           TableScan
             alias: r
+            Statistics:
+                numRows: 0 dataSize: 4200 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -155,6 +157,8 @@ STAGE PLANS:
         l 
           TableScan
             alias: l
+            Statistics:
+                numRows: 0 dataSize: 4200 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -282,6 +286,8 @@ STAGE PLANS:
         r 
           TableScan
             alias: r
+            Statistics:
+                numRows: 0 dataSize: 4200 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -306,6 +312,8 @@ STAGE PLANS:
         l 
           TableScan
             alias: l
+            Statistics:
+                numRows: 0 dataSize: 4200 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -435,6 +443,8 @@ STAGE PLANS:
         r 
           TableScan
             alias: r
+            Statistics:
+                numRows: 0 dataSize: 4200 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -452,6 +462,8 @@ STAGE PLANS:
         l 
           TableScan
             alias: l
+            Statistics:
+                numRows: 0 dataSize: 4200 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -578,6 +590,8 @@ STAGE PLANS:
         r 
           TableScan
             alias: r
+            Statistics:
+                numRows: 0 dataSize: 4200 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -595,6 +609,8 @@ STAGE PLANS:
         l 
           TableScan
             alias: l
+            Statistics:
+                numRows: 0 dataSize: 4200 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -721,6 +737,8 @@ STAGE PLANS:
         r 
           TableScan
             alias: r
+            Statistics:
+                numRows: 0 dataSize: 4200 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -738,6 +756,8 @@ STAGE PLANS:
         l 
           TableScan
             alias: l
+            Statistics:
+                numRows: 0 dataSize: 4200 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -864,6 +884,8 @@ STAGE PLANS:
         r 
           TableScan
             alias: r
+            Statistics:
+                numRows: 0 dataSize: 4200 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -881,6 +903,8 @@ STAGE PLANS:
         l 
           TableScan
             alias: l
+            Statistics:
+                numRows: 0 dataSize: 4200 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -1007,6 +1031,8 @@ STAGE PLANS:
         r 
           TableScan
             alias: r
+            Statistics:
+                numRows: 0 dataSize: 4200 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -1024,6 +1050,8 @@ STAGE PLANS:
         l 
           TableScan
             alias: l
+            Statistics:
+                numRows: 0 dataSize: 4200 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -1150,6 +1178,8 @@ STAGE PLANS:
         r 
           TableScan
             alias: r
+            Statistics:
+                numRows: 0 dataSize: 4200 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -1167,6 +1197,8 @@ STAGE PLANS:
         l 
           TableScan
             alias: l
+            Statistics:
+                numRows: 0 dataSize: 4200 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -1293,6 +1325,8 @@ STAGE PLANS:
         r 
           TableScan
             alias: r
+            Statistics:
+                numRows: 0 dataSize: 4200 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -1310,6 +1344,8 @@ STAGE PLANS:
         l 
           TableScan
             alias: l
+            Statistics:
+                numRows: 0 dataSize: 4200 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:

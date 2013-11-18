@@ -30,12 +30,16 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
                   expr: ((key > 10) and (key < 20))
                   type: boolean
+              Statistics:
+                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -44,6 +48,8 @@ STAGE PLANS:
                 Map-reduce partition columns:
                       expr: key
                       type: string
+                Statistics:
+                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
                 tag: 0
                 value expressions:
                       expr: key
@@ -53,12 +59,16 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics:
+                numRows: 0 dataSize: 11624 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
                   expr: ((key > 10) and (key < 20))
                   type: boolean
+              Statistics:
+                  numRows: 0 dataSize: 11624 basicStatsState: PARTIAL colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -67,6 +77,8 @@ STAGE PLANS:
                 Map-reduce partition columns:
                       expr: key
                       type: string
+                Statistics:
+                    numRows: 0 dataSize: 11624 basicStatsState: PARTIAL colStatsState: NONE
                 tag: 1
                 value expressions:
                       expr: key
@@ -328,12 +340,16 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics:
+                numRows: 0 dataSize: 23248 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
                   expr: ((key > 10) and (key < 20))
                   type: boolean
+              Statistics:
+                  numRows: 0 dataSize: 23248 basicStatsState: PARTIAL colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -342,6 +358,8 @@ STAGE PLANS:
                 Map-reduce partition columns:
                       expr: key
                       type: string
+                Statistics:
+                    numRows: 0 dataSize: 23248 basicStatsState: PARTIAL colStatsState: NONE
                 tag: 0
                 value expressions:
                       expr: key
@@ -353,12 +371,16 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
                   expr: ((key > 10) and (key < 20))
                   type: boolean
+              Statistics:
+                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -367,6 +389,8 @@ STAGE PLANS:
                 Map-reduce partition columns:
                       expr: key
                       type: string
+                Statistics:
+                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
                 tag: 1
                 value expressions:
                       expr: key
@@ -723,12 +747,16 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
                   expr: ((key > 10) and (key < 20))
                   type: boolean
+              Statistics:
+                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -737,6 +765,8 @@ STAGE PLANS:
                 Map-reduce partition columns:
                       expr: key
                       type: string
+                Statistics:
+                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
                 tag: 0
                 value expressions:
                       expr: key
@@ -746,12 +776,16 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics:
+                numRows: 0 dataSize: 23248 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
                   expr: ((key > 10) and (key < 20))
                   type: boolean
+              Statistics:
+                  numRows: 0 dataSize: 23248 basicStatsState: PARTIAL colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -760,6 +794,8 @@ STAGE PLANS:
                 Map-reduce partition columns:
                       expr: key
                       type: string
+                Statistics:
+                    numRows: 0 dataSize: 23248 basicStatsState: PARTIAL colStatsState: NONE
                 tag: 1
                 value expressions:
                       expr: key
@@ -1113,12 +1149,16 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics:
+                numRows: 0 dataSize: 11624 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
                   expr: ((key > 10) and (key < 20))
                   type: boolean
+              Statistics:
+                  numRows: 0 dataSize: 11624 basicStatsState: PARTIAL colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -1127,6 +1167,8 @@ STAGE PLANS:
                 Map-reduce partition columns:
                       expr: key
                       type: string
+                Statistics:
+                    numRows: 0 dataSize: 11624 basicStatsState: PARTIAL colStatsState: NONE
                 tag: 0
                 value expressions:
                       expr: key
@@ -1136,12 +1178,16 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
                   expr: ((key > 10) and (key < 20))
                   type: boolean
+              Statistics:
+                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -1150,6 +1196,8 @@ STAGE PLANS:
                 Map-reduce partition columns:
                       expr: key
                       type: string
+                Statistics:
+                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
                 tag: 1
                 value expressions:
                       expr: key

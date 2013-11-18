@@ -111,6 +111,8 @@ STAGE PLANS:
         dim_pay_date 
           TableScan
             alias: dim_pay_date
+            Statistics:
+                numRows: 1 dataSize: 36 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Reduce Output Operator
               key expressions:
@@ -120,6 +122,8 @@ STAGE PLANS:
               Map-reduce partition columns:
                     expr: date
                     type: string
+              Statistics:
+                  numRows: 1 dataSize: 36 basicStatsState: COMPLETE colStatsState: NONE
               tag: 1
               value expressions:
                     expr: date
@@ -127,6 +131,8 @@ STAGE PLANS:
         orderpayment 
           TableScan
             alias: orderpayment
+            Statistics:
+                numRows: 1 dataSize: 36 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Reduce Output Operator
               key expressions:
@@ -136,6 +142,8 @@ STAGE PLANS:
               Map-reduce partition columns:
                     expr: date
                     type: string
+              Statistics:
+                  numRows: 1 dataSize: 36 basicStatsState: COMPLETE colStatsState: NONE
               tag: 0
               value expressions:
                     expr: dealid
@@ -244,6 +252,8 @@ STAGE PLANS:
         deal 
           TableScan
             alias: deal
+            Statistics:
+                numRows: 1 dataSize: 36 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Reduce Output Operator
               key expressions:
@@ -253,6 +263,8 @@ STAGE PLANS:
               Map-reduce partition columns:
                     expr: dealid
                     type: int
+              Statistics:
+                  numRows: 1 dataSize: 36 basicStatsState: COMPLETE colStatsState: NONE
               tag: 1
               value expressions:
                     expr: dealid
@@ -378,6 +390,8 @@ STAGE PLANS:
         order_city 
           TableScan
             alias: order_city
+            Statistics:
+                numRows: 1 dataSize: 36 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Reduce Output Operator
               key expressions:
@@ -387,6 +401,8 @@ STAGE PLANS:
               Map-reduce partition columns:
                     expr: cityid
                     type: int
+              Statistics:
+                  numRows: 1 dataSize: 36 basicStatsState: COMPLETE colStatsState: NONE
               tag: 1
       Path -> Alias:
 #### A masked pattern was here ####
@@ -507,6 +523,8 @@ STAGE PLANS:
         user 
           TableScan
             alias: user
+            Statistics:
+                numRows: 100 dataSize: 288 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Reduce Output Operator
               key expressions:
@@ -516,6 +534,8 @@ STAGE PLANS:
               Map-reduce partition columns:
                     expr: userid
                     type: int
+              Statistics:
+                  numRows: 100 dataSize: 288 basicStatsState: COMPLETE colStatsState: NONE
               tag: 1
       Path -> Alias:
 #### A masked pattern was here ####

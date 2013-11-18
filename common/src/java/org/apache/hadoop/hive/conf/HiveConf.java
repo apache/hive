@@ -635,6 +635,14 @@ public class HiveConf extends Configuration {
     HIVE_STATS_NDV_ERROR("hive.stats.ndv.error", (float)20.0),
     HIVE_STATS_KEY_PREFIX_MAX_LENGTH("hive.stats.key.prefix.max.length", 150),
     HIVE_STATS_KEY_PREFIX("hive.stats.key.prefix", ""), // internal usage only
+    // if length of variable length data type cannot be determined this length will be used.
+    HIVE_STATS_MAX_VARIABLE_LENGTH("hive.stats.max.variable.length", 100),
+    // if number of elements in list cannot be determined, this value will be used
+    HIVE_STATS_LIST_NUM_ENTRIES("hive.stats.list.num.entries", 10),
+    // if number of elements in map cannot be determined, this value will be used
+    HIVE_STATS_MAP_NUM_ENTRIES("hive.stats.map.num.entries", 10),
+    // to accurately compute statistics for GROUPBY map side parallelism needs to be known
+    HIVE_STATS_MAP_SIDE_PARALLELISM("hive.stats.map.parallelism", 1),
 
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false),

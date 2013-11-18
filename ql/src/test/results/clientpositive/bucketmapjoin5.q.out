@@ -153,6 +153,8 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics:
+                numRows: 0 dataSize: 2750 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -177,6 +179,8 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics:
+                numRows: 0 dataSize: 11624 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -494,6 +498,7 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
+
 PREHOOK: query: insert overwrite table bucketmapjoin_tmp_result 
 select /*+mapjoin(a)*/ a.key, a.value, b.value 
 from srcbucket_mapjoin a join srcbucket_mapjoin_part b 
@@ -690,6 +695,8 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics:
+                numRows: 0 dataSize: 2750 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -714,6 +721,8 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics:
+                numRows: 0 dataSize: 6124 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:

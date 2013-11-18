@@ -1,0 +1,237 @@
+PREHOOK: query: create table if not exists loc_staging (
+  state string,
+  locid int,
+  zip bigint,
+  year int
+) row format delimited fields terminated by '|' stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table if not exists loc_staging (
+  state string,
+  locid int,
+  zip bigint,
+  year int
+) row format delimited fields terminated by '|' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@loc_staging
+PREHOOK: query: create table loc_orc like loc_staging
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table loc_orc like loc_staging
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@loc_orc
+PREHOOK: query: alter table loc_orc set fileformat orc
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@loc_orc
+PREHOOK: Output: default@loc_orc
+POSTHOOK: query: alter table loc_orc set fileformat orc
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@loc_orc
+POSTHOOK: Output: default@loc_orc
+PREHOOK: query: load data local inpath '../../data/files/loc.txt' overwrite into table loc_staging
+PREHOOK: type: LOAD
+PREHOOK: Output: default@loc_staging
+POSTHOOK: query: load data local inpath '../../data/files/loc.txt' overwrite into table loc_staging
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@loc_staging
+PREHOOK: query: insert overwrite table loc_orc select * from loc_staging
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_staging
+PREHOOK: Output: default@loc_orc
+POSTHOOK: query: insert overwrite table loc_orc select * from loc_staging
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_staging
+POSTHOOK: Output: default@loc_orc
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+PREHOOK: query: analyze table loc_orc compute statistics for columns state, locid, zip, year
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table loc_orc compute statistics for columns state, locid, zip, year
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc
+#### A masked pattern was here ####
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+PREHOOK: query: -- numRows: 8 rawDataSize: 796
+explain extended select * from loc_orc
+PREHOOK: type: QUERY
+POSTHOOK: query: -- numRows: 8 rawDataSize: 796
+explain extended select * from loc_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: loc_orc
+          Statistics:
+              numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+          GatherStats: false
+          Select Operator
+            expressions:
+                  expr: state
+                  type: string
+                  expr: locid
+                  type: int
+                  expr: zip
+                  type: bigint
+                  expr: year
+                  type: int
+            outputColumnNames: _col0, _col1, _col2, _col3
+            Statistics:
+                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            ListSink
+
+
+PREHOOK: query: -- numRows: 4 rawDataSize: 396
+explain extended select * from loc_orc limit 4
+PREHOOK: type: QUERY
+POSTHOOK: query: -- numRows: 4 rawDataSize: 396
+explain extended select * from loc_orc limit 4
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 4)))
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 4
+      Processor Tree:
+        TableScan
+          alias: loc_orc
+          Statistics:
+              numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+          GatherStats: false
+          Select Operator
+            expressions:
+                  expr: state
+                  type: string
+                  expr: locid
+                  type: int
+                  expr: zip
+                  type: bigint
+                  expr: year
+                  type: int
+            outputColumnNames: _col0, _col1, _col2, _col3
+            Statistics:
+                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Limit
+              Statistics:
+                  numRows: 4 dataSize: 396 basicStatsState: COMPLETE colStatsState: COMPLETE
+              ListSink
+
+
+PREHOOK: query: -- greater than the available number of rows
+-- numRows: 8 rawDataSize: 796
+explain extended select * from loc_orc limit 16
+PREHOOK: type: QUERY
+POSTHOOK: query: -- greater than the available number of rows
+-- numRows: 8 rawDataSize: 796
+explain extended select * from loc_orc limit 16
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 16)))
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 16
+      Processor Tree:
+        TableScan
+          alias: loc_orc
+          Statistics:
+              numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+          GatherStats: false
+          Select Operator
+            expressions:
+                  expr: state
+                  type: string
+                  expr: locid
+                  type: int
+                  expr: zip
+                  type: bigint
+                  expr: year
+                  type: int
+            outputColumnNames: _col0, _col1, _col2, _col3
+            Statistics:
+                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Limit
+              Statistics:
+                  numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+              ListSink
+
+
+PREHOOK: query: -- numRows: 0 rawDataSize: 0
+explain extended select * from loc_orc limit 0
+PREHOOK: type: QUERY
+POSTHOOK: query: -- numRows: 0 rawDataSize: 0
+explain extended select * from loc_orc limit 0
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_LIMIT 0)))
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: 0
+      Processor Tree:
+        TableScan
+          alias: loc_orc
+          Statistics:
+              numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+          GatherStats: false
+          Select Operator
+            expressions:
+                  expr: state
+                  type: string
+                  expr: locid
+                  type: int
+                  expr: zip
+                  type: bigint
+                  expr: year
+                  type: int
+            outputColumnNames: _col0, _col1, _col2, _col3
+            Statistics:
+                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            Limit
+              Statistics:
+                  numRows: 0 dataSize: 0 basicStatsState: COMPLETE colStatsState: COMPLETE
+              ListSink
+
+

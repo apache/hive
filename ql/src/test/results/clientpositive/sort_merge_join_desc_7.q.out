@@ -232,6 +232,8 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics:
+                numRows: 1000 dataSize: 10624 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -249,6 +251,8 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics:
+                numRows: 1000 dataSize: 10624 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:
