@@ -986,7 +986,7 @@ POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).s SIMPLE [(over10k)over10k.
 POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).si SIMPLE [(over10k)over10k.FieldSchema(name:si, type:smallint, comment:null), ]
 POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).t SIMPLE [(over10k)over10k.FieldSchema(name:t, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: stats_tbl_part PARTITION(dt=2012).ts SIMPLE [(over10k)over10k.FieldSchema(name:ts, type:timestamp, comment:null), ]
-9486	9486	9486	9486	9486	9486	65791	0	99.9800033569336	0.0
+9489	9489	9489	9489	9489	9489	65791	0	99.9800033569336	0.0
 PREHOOK: query: explain select count(ts) from stats_tbl_part
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select count(ts) from stats_tbl_part

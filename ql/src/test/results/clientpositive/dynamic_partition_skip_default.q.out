@@ -112,9 +112,9 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.dynamic_part_table
               numFiles 1
-              numRows 0
+              numRows 1
               partition_columns partcol1/partcol2
-              rawDataSize 0
+              rawDataSize 1
               serialization.ddl struct dynamic_part_table { i32 intcol}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -213,9 +213,9 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.dynamic_part_table
               numFiles 1
-              numRows 0
+              numRows 1
               partition_columns partcol1/partcol2
-              rawDataSize 0
+              rawDataSize 1
               serialization.ddl struct dynamic_part_table { i32 intcol}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -314,9 +314,9 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.dynamic_part_table
               numFiles 1
-              numRows 0
+              numRows 1
               partition_columns partcol1/partcol2
-              rawDataSize 0
+              rawDataSize 1
               serialization.ddl struct dynamic_part_table { i32 intcol}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -356,9 +356,9 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.dynamic_part_table
               numFiles 1
-              numRows 0
+              numRows 1
               partition_columns partcol1/partcol2
-              rawDataSize 0
+              rawDataSize 1
               serialization.ddl struct dynamic_part_table { i32 intcol}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
