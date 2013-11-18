@@ -58,6 +58,8 @@ STAGE PLANS:
         analyze_srcpart 
           TableScan
             alias: analyze_srcpart
+            Statistics:
+                numRows: 0 dataSize: 23248 basicStatsState: PARTIAL colStatsState: COMPLETE
             Statistics Aggregation Key Prefix: analyze_srcpart/
             GatherStats: true
       Path -> Alias:

@@ -39,6 +39,7 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.Explain;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
+import org.apache.hadoop.hive.ql.plan.Statistics;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory;
@@ -1593,5 +1594,18 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
       return true;
     }
     return false;
+  }
+
+  public Statistics getStatistics() {
+    if (conf != null) {
+      return conf.getStatistics();
+    }
+    return null;
+  }
+
+  public void setStatistics(Statistics stats) {
+    if (conf != null) {
+      conf.setStatistics(stats);
+    }
   }
 }

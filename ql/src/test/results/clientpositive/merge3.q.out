@@ -74,6 +74,8 @@ STAGE PLANS:
         merge_src 
           TableScan
             alias: merge_src
+            Statistics:
+                numRows: 2000 dataSize: 21248 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
@@ -82,11 +84,15 @@ STAGE PLANS:
                     expr: value
                     type: string
               outputColumnNames: _col0, _col1
+              Statistics:
+                  numRows: 2000 dataSize: 21248 basicStatsState: COMPLETE colStatsState: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
+                Statistics:
+                    numRows: 2000 dataSize: 21248 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2403,6 +2409,8 @@ STAGE PLANS:
         merge_src_part 
           TableScan
             alias: merge_src_part
+            Statistics:
+                numRows: 2000 dataSize: 21248 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
@@ -2413,11 +2421,15 @@ STAGE PLANS:
                     expr: ds
                     type: string
               outputColumnNames: _col0, _col1, _col2
+              Statistics:
+                  numRows: 2000 dataSize: 21248 basicStatsState: COMPLETE colStatsState: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
+                Statistics:
+                    numRows: 2000 dataSize: 21248 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4838,6 +4850,8 @@ STAGE PLANS:
         s:merge_src_part 
           TableScan
             alias: merge_src_part
+            Statistics:
+                numRows: 2000 dataSize: 21248 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
@@ -4848,11 +4862,15 @@ STAGE PLANS:
                     expr: ds
                     type: string
               outputColumnNames: _col0, _col1, _col2
+              Statistics:
+                  numRows: 2000 dataSize: 21248 basicStatsState: COMPLETE colStatsState: NONE
               Reduce Output Operator
                 sort order: 
                 Map-reduce partition columns:
                       expr: _col2
                       type: string
+                Statistics:
+                    numRows: 2000 dataSize: 21248 basicStatsState: COMPLETE colStatsState: NONE
                 tag: -1
                 value expressions:
                       expr: _col0
@@ -4952,6 +4970,8 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Extract
+          Statistics:
+              numRows: 2000 dataSize: 21248 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col0
@@ -4961,11 +4981,15 @@ STAGE PLANS:
                   expr: _col2
                   type: string
             outputColumnNames: _col0, _col1, _col2
+            Statistics:
+                numRows: 2000 dataSize: 21248 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 1
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 2000 dataSize: 21248 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat

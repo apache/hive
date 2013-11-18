@@ -267,6 +267,15 @@ public enum JavaDataModel {
   public int lengthForBooleanArrayOfSize(int length) {
     return lengthForPrimitiveArrayOfSize(PRIMITIVE_BYTE, length);
   }
+  public int lengthForTimestampArrayOfSize(int length) {
+    return lengthForPrimitiveArrayOfSize(lengthOfTimestamp(), length);
+  }
+  public int lengthForDateArrayOfSize(int length) {
+    return lengthForPrimitiveArrayOfSize(lengthOfDate(), length);
+  }
+  public int lengthForDecimalArrayOfSize(int length) {
+    return lengthForPrimitiveArrayOfSize(lengthOfDecimal(), length);
+  }
 
   public int lengthOfDecimal() {
     // object overhead + 8 bytes for intCompact + 4 bytes for precision

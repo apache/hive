@@ -26,6 +26,8 @@ STAGE PLANS:
         src1 
           TableScan
             alias: src1
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Reduce Output Operator
               key expressions:
@@ -35,6 +37,8 @@ STAGE PLANS:
               Map-reduce partition columns:
                     expr: key
                     type: string
+              Statistics:
+                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
               tag: 0
               value expressions:
                     expr: key
@@ -44,6 +48,8 @@ STAGE PLANS:
         src2 
           TableScan
             alias: src2
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Reduce Output Operator
               key expressions:
@@ -53,6 +59,8 @@ STAGE PLANS:
               Map-reduce partition columns:
                     expr: key
                     type: string
+              Statistics:
+                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
               tag: 1
               value expressions:
                     expr: key

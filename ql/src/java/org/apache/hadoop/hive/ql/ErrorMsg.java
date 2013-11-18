@@ -408,6 +408,8 @@ public enum ErrorMsg {
   DROP_COMMAND_NOT_ALLOWED_FOR_PARTITION(30011, "Partition protected from being dropped"),
   COLUMNSTATSCOLLECTOR_INVALID_COLUMN(30012, "Column statistics are not supported "
       + "for partition columns"),
+
+  STATISTICS_CLONING_FAILED(30013, "Cloning of statistics failed"),
     ;
 
   private int errorCode;

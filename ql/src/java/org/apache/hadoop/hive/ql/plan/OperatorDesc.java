@@ -22,4 +22,6 @@ import java.io.Serializable;
 
 public interface OperatorDesc extends Serializable, Cloneable {
   public Object clone() throws CloneNotSupportedException;
+  public Statistics getStatistics();
+  public void setStatistics(Statistics statistics);
 }

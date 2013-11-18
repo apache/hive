@@ -30,6 +30,8 @@ STAGE PLANS:
         tmap:src 
           TableScan
             alias: src
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
@@ -42,6 +44,8 @@ STAGE PLANS:
                     expr: (3 + 4)
                     type: int
               outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics:
+                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
               Transform Operator
                 command: cat
                 output info:
@@ -55,11 +59,15 @@ STAGE PLANS:
                       serialization.last.column.takes.rest true
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                Statistics:
+                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
                 Filter Operator
                   isSamplingPred: false
                   predicate:
                       expr: (_col0 < 100)
                       type: boolean
+                  Statistics:
+                      numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
                   Reduce Output Operator
                     key expressions:
                           expr: _col0
@@ -68,6 +76,8 @@ STAGE PLANS:
                     Map-reduce partition columns:
                           expr: _col0
                           type: string
+                    Statistics:
+                        numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
                     tag: -1
                     value expressions:
                           expr: _col0
@@ -124,6 +134,8 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Extract
+          Statistics:
+              numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col0
@@ -131,11 +143,15 @@ STAGE PLANS:
                   expr: regexp_extract(_col1, 'val_(\d+\t\d+)', 1)
                   type: string
             outputColumnNames: _col0, _col1
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -293,6 +309,8 @@ STAGE PLANS:
         tmap:src 
           TableScan
             alias: src
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
@@ -305,6 +323,8 @@ STAGE PLANS:
                     expr: (3 + 4)
                     type: int
               outputColumnNames: _col0, _col1, _col2, _col3
+              Statistics:
+                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
               Transform Operator
                 command: cat
                 output info:
@@ -318,11 +338,15 @@ STAGE PLANS:
                       serialization.last.column.takes.rest true
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                Statistics:
+                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
                 Filter Operator
                   isSamplingPred: false
                   predicate:
                       expr: (_col0 < 100)
                       type: boolean
+                  Statistics:
+                      numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
                   Reduce Output Operator
                     key expressions:
                           expr: _col0
@@ -331,6 +355,8 @@ STAGE PLANS:
                     Map-reduce partition columns:
                           expr: _col0
                           type: string
+                    Statistics:
+                        numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
                     tag: -1
                     value expressions:
                           expr: _col0
@@ -387,6 +413,8 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Extract
+          Statistics:
+              numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col0
@@ -394,11 +422,15 @@ STAGE PLANS:
                   expr: regexp_extract(_col1, 'val_(\d+\t\d+)')
                   type: string
             outputColumnNames: _col0, _col1
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
