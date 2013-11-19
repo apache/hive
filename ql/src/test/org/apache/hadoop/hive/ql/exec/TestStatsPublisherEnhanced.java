@@ -41,12 +41,14 @@ public class TestStatsPublisherEnhanced extends TestCase {
   protected String statsImplementationClass;
   protected Map<String, String> stats;
 
+  protected StatsFactory factory;
+
   public TestStatsPublisherEnhanced(String name) {
     super(name);
     conf = new JobConf(TestStatsPublisherEnhanced.class);
     conf.set("hive.stats.dbclass", "jdbc:derby");
-    statsImplementationClass = HiveConf.getVar(conf, HiveConf.ConfVars.HIVESTATSDBCLASS);
-    StatsFactory.setImplementation(statsImplementationClass, conf);
+    factory = StatsFactory.newFactory(conf);
+    assert factory != null;
   }
 
   @Override
@@ -56,9 +58,9 @@ public class TestStatsPublisherEnhanced extends TestCase {
 
   @Override
   protected void tearDown() {
-    StatsAggregator sa = StatsFactory.getStatsAggregator();
+    StatsAggregator sa = factory.getStatsAggregator();
     assertNotNull(sa);
-    assertTrue(sa.connect(conf));
+    assertTrue(sa.connect(conf, null));
     assertTrue(sa.cleanUp("file_0"));
     assertTrue(sa.closeConnection());
   }
@@ -82,9 +84,9 @@ public class TestStatsPublisherEnhanced extends TestCase {
       assertTrue(statsPublisher.connect(conf));
 
       // instantiate stats aggregator
-      StatsAggregator statsAggregator = StatsFactory.getStatsAggregator();
+      StatsAggregator statsAggregator = factory.getStatsAggregator();
       assertNotNull(statsAggregator);
-      assertTrue(statsAggregator.connect(conf));
+      assertTrue(statsAggregator.connect(conf, null));
 
       // publish stats
       fillStatMap("200", "1000");
@@ -130,9 +132,9 @@ public class TestStatsPublisherEnhanced extends TestCase {
       assertTrue(statsPublisher.connect(conf));
 
       // instantiate stats aggregator
-      StatsAggregator statsAggregator = StatsFactory.getStatsAggregator();
+      StatsAggregator statsAggregator = factory.getStatsAggregator();
       assertNotNull(statsAggregator);
-      assertTrue(statsAggregator.connect(conf));
+      assertTrue(statsAggregator.connect(conf, null));
       // statsAggregator.cleanUp("file_0000");
       // assertTrue(statsAggregator.connect(conf));
 
@@ -191,9 +193,9 @@ public class TestStatsPublisherEnhanced extends TestCase {
       assertTrue(statsPublisher.connect(conf));
 
       // instantiate stats aggregator
-      StatsAggregator statsAggregator = StatsFactory.getStatsAggregator();
+      StatsAggregator statsAggregator = factory.getStatsAggregator();
       assertNotNull(statsAggregator);
-      assertTrue(statsAggregator.connect(conf));
+      assertTrue(statsAggregator.connect(conf, null));
 
       // publish stats
       fillStatMap("200", "1000");
@@ -256,9 +258,9 @@ public class TestStatsPublisherEnhanced extends TestCase {
       assertTrue(statsPublisher.connect(conf));
 
       // instantiate stats aggregator
-      StatsAggregator statsAggregator = StatsFactory.getStatsAggregator();
+      StatsAggregator statsAggregator = factory.getStatsAggregator();
       assertNotNull(statsAggregator);
-      assertTrue(statsAggregator.connect(conf));
+      assertTrue(statsAggregator.connect(conf, null));
 
       // publish stats
       fillStatMap("200", "");
@@ -327,9 +329,9 @@ public class TestStatsPublisherEnhanced extends TestCase {
       assertTrue(statsPublisher.connect(conf));
 
       // instantiate stats aggregator
-      StatsAggregator statsAggregator = StatsFactory.getStatsAggregator();
+      StatsAggregator statsAggregator = factory.getStatsAggregator();
       assertNotNull(statsAggregator);
-      assertTrue(statsAggregator.connect(conf));
+      assertTrue(statsAggregator.connect(conf, null));
 
       // publish stats
       fillStatMap("200", "1000");

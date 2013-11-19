@@ -82,7 +82,6 @@ import org.apache.hadoop.mapred.Counters;
 import org.apache.hadoop.mapred.InputFormat;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.mapred.OutputCollector;
 import org.apache.hadoop.mapred.Partitioner;
 import org.apache.hadoop.mapred.RunningJob;
 import org.apache.log4j.Appender;
@@ -414,9 +413,9 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
       if (mWork.isGatheringStats() || (rWork != null && rWork.isGatheringStats())) {
         // initialize stats publishing table
         StatsPublisher statsPublisher;
-        String statsImplementationClass = HiveConf.getVar(job, HiveConf.ConfVars.HIVESTATSDBCLASS);
-        if (StatsFactory.setImplementation(statsImplementationClass, job)) {
-          statsPublisher = StatsFactory.getStatsPublisher();
+        StatsFactory factory = StatsFactory.newFactory(job);
+        if (factory != null) {
+          statsPublisher = factory.getStatsPublisher();
           if (!statsPublisher.init(job)) { // creating stats table if not exists
             if (HiveConf.getBoolVar(job, HiveConf.ConfVars.HIVE_STATS_RELIABLE)) {
               throw
