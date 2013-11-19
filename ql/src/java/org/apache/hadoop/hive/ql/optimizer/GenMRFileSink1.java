@@ -44,6 +44,7 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
+import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.MergeWork;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -221,7 +222,7 @@ public class GenMRFileSink1 implements NodeProcessor {
   private void addStatsTask(FileSinkOperator nd, MoveTask mvTask,
       Task<? extends Serializable> currTask, HiveConf hconf) {
 
-    MoveWork mvWork = ((MoveTask) mvTask).getWork();
+    MoveWork mvWork = mvTask.getWork();
     StatsWork statsWork = null;
     if (mvWork.getLoadTableWork() != null) {
       statsWork = new StatsWork(mvWork.getLoadTableWork());
@@ -229,12 +230,14 @@ public class GenMRFileSink1 implements NodeProcessor {
       statsWork = new StatsWork(mvWork.getLoadFileWork());
     }
     assert statsWork != null : "Error when genereting StatsTask";
+
+    statsWork.setSourceTask((MapRedTask)currTask);
     statsWork.setStatsReliable(hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE));
     MapredWork mrWork = (MapredWork) currTask.getWork();
 
     // AggKey in StatsWork is used for stats aggregation while StatsAggPrefix
     // in FileSinkDesc is used for stats publishing. They should be consistent.
-    statsWork.setAggKey(((FileSinkOperator) nd).getConf().getStatsAggPrefix());
+    statsWork.setAggKey(nd.getConf().getStatsAggPrefix());
     Task<? extends Serializable> statsTask = TaskFactory.get(statsWork, hconf);
 
     // mark the MapredWork and FileSinkOperator for gathering stats

@@ -1203,8 +1203,8 @@
 
 <property>
   <name>hive.stats.dbclass</name>
-  <value>jdbc:derby</value>
-  <description>The default database that stores temporary hive statistics.</description>
+  <value>counter</value>
+  <description>The storage that stores temporary hive statistics. Currently, jdbc, hbase, counter and custom type is supported</description>
 </property>
 
 <property>
@@ -1228,13 +1228,13 @@
 <property>
   <name>hive.stats.default.publisher</name>
   <value></value>
-  <description>The Java class (implementing the StatsPublisher interface) that is used by default if hive.stats.dbclass is not JDBC or HBase.</description>
+  <description>The Java class (implementing the StatsPublisher interface) that is used by default if hive.stats.dbclass is custom type.</description>
 </property>
 
 <property>
   <name>hive.stats.default.aggregator</name>
   <value></value>
-  <description>The Java class (implementing the StatsAggregator interface) that is used by default if hive.stats.dbclass is not JDBC or HBase.</description>
+  <description>The Java class (implementing the StatsAggregator interface) that is used by default if hive.stats.dbclass is custom type.</description>
 </property>
 
 <property>

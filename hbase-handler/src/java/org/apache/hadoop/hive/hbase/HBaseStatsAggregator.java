@@ -32,6 +32,7 @@ import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.filter.PrefixFilter;
 import org.apache.hadoop.hbase.util.Bytes;
+import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.stats.StatsAggregator;
 
 
@@ -46,7 +47,7 @@ public class HBaseStatsAggregator implements StatsAggregator {
   /**
    * Does the necessary HBase initializations.
    */
-  public boolean connect(Configuration hiveconf) {
+  public boolean connect(Configuration hiveconf, MapRedTask sourceTask) {
 
     try {
       htable = new HTable(HBaseConfiguration.create(hiveconf),

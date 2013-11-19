@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.stats;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.session.SessionState;
 
 /**
@@ -29,7 +30,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class KeyVerifyingStatsAggregator implements StatsAggregator {
 
-  public boolean connect(Configuration hconf) {
+  public boolean connect(Configuration hconf, MapRedTask sourceTask) {
     return true;
   }
 

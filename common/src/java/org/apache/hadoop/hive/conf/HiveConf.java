@@ -603,8 +603,8 @@ public class HiveConf extends Configuration {
 
     // Statistics
     HIVESTATSAUTOGATHER("hive.stats.autogather", true),
-    HIVESTATSDBCLASS("hive.stats.dbclass",
-        "jdbc:derby"), // other options are jdbc:mysql and hbase as defined in StatsSetupConst.java
+    HIVESTATSDBCLASS("hive.stats.dbclass", "counter",
+        new PatternValidator("jdbc(:.*)", "hbase", "counter", "custom")), // StatsSetupConst.StatDB
     HIVESTATSJDBCDRIVER("hive.stats.jdbcdriver",
         "org.apache.derby.jdbc.EmbeddedDriver"), // JDBC driver specific to the dbclass
     HIVESTATSDBCONNECTIONSTRING("hive.stats.dbconnectionstring",
@@ -1364,6 +1364,27 @@ public class HiveConf extends Configuration {
         return "Invalid value.. expects one of " + expected;
       }
       return null;
+    }
+  }
+
+  public static class PatternValidator implements Validator {
+    private final List<Pattern> expected = new ArrayList<Pattern>();
+    private PatternValidator(String... values) {
+      for (String value : values) {
+        expected.add(Pattern.compile(value));
+      }
+    }
+    @Override
+    public String validate(String value) {
+      if (value == null) {
+        return "Invalid value.. expects one of patterns " + expected;
+      }
+      for (Pattern pattern : expected) {
+        if (pattern.matcher(value).matches()) {
+          return null;
+        }
+      }
+      return "Invalid value.. expects one of patterns " + expected;
     }
   }
 

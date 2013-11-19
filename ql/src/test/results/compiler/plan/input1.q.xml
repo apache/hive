@@ -35,6 +35,9 @@
                     <void property="aggKey"> 
                      #### A masked pattern was here #### 
                     </void> 
+                    <void property="sourceTask"> 
+                     <object idref="MapRedTask0"/> 
+                    </void> 
                    </object> 
                   </void> 
                  </object> 

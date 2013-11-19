@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.stats;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 
 /**
  * An test implementation for StatsAggregator.
@@ -32,7 +33,7 @@ public class DummyStatsAggregator implements StatsAggregator {
 
   // This is a test. The parameter hive.test.dummystats.aggregator's value
   // denotes the method which needs to throw an error.
-  public boolean connect(Configuration hconf) {
+  public boolean connect(Configuration hconf, MapRedTask sourceTask) {
     errorMethod = hconf.get("hive.test.dummystats.aggregator", "");
     if (errorMethod.equalsIgnoreCase("connect")) {
       return false;

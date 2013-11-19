@@ -2276,12 +2276,8 @@ public final class Utilities {
   }
 
   public static StatsPublisher getStatsPublisher(JobConf jc) {
-    String statsImplementationClass = HiveConf.getVar(jc, HiveConf.ConfVars.HIVESTATSDBCLASS);
-    if (StatsFactory.setImplementation(statsImplementationClass, jc)) {
-      return StatsFactory.getStatsPublisher();
-    } else {
-      return null;
-    }
+    StatsFactory factory = StatsFactory.newFactory(jc);
+    return factory == null ? null : factory.getStatsPublisher();
   }
 
   /**
