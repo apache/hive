@@ -43,6 +43,13 @@ public class RowResolver implements Serializable{
   private  HashMap<String, LinkedHashMap<String, ColumnInfo>> rslvMap;
 
   private  HashMap<String, String[]> invRslvMap;
+  /*
+   * now a Column can have an alternate mapping.
+   * This captures the alternate mapping.
+   * The primary(first) mapping is still only held in
+   * invRslvMap.
+   */
+  private Map<String, String[]> altInvRslvMap;
   private  Map<String, ASTNode> expressionMap;
 
   // TODO: Refactor this and do in a more object oriented manner
@@ -55,6 +62,7 @@ public class RowResolver implements Serializable{
     rowSchema = new RowSchema();
     rslvMap = new HashMap<String, LinkedHashMap<String, ColumnInfo>>();
     invRslvMap = new HashMap<String, String[]>();
+    altInvRslvMap = new HashMap<String, String[]>();
     expressionMap = new HashMap<String, ASTNode>();
     isExprResolver = false;
   }
@@ -96,8 +104,17 @@ public class RowResolver implements Serializable{
     if (rowSchema.getSignature() == null) {
       rowSchema.setSignature(new ArrayList<ColumnInfo>());
     }
-
-    rowSchema.getSignature().add(colInfo);
+    
+    /*
+     * allow multiple mappings to the same ColumnInfo.
+     * When a ColumnInfo is mapped multiple times, only the 
+     * first inverse mapping is captured.
+     */
+    boolean colPresent = invRslvMap.containsKey(colInfo.getInternalName());
+    
+    if ( !colPresent ) {
+    	rowSchema.getSignature().add(colInfo);
+    }
 
     LinkedHashMap<String, ColumnInfo> f_map = rslvMap.get(tab_alias);
     if (f_map == null) {
@@ -109,7 +126,11 @@ public class RowResolver implements Serializable{
     String[] qualifiedAlias = new String[2];
     qualifiedAlias[0] = tab_alias;
     qualifiedAlias[1] = col_alias;
-    invRslvMap.put(colInfo.getInternalName(), qualifiedAlias);
+    if ( !colPresent ) {
+	    invRslvMap.put(colInfo.getInternalName(), qualifiedAlias);
+    } else {
+      altInvRslvMap.put(colInfo.getInternalName(), qualifiedAlias);
+    }
   }
 
   public boolean hasTableAlias(String tab_alias) {
@@ -149,14 +170,21 @@ public class RowResolver implements Serializable{
       ret = f_map.get(col_alias);
     } else {
       boolean found = false;
-      for (LinkedHashMap<String, ColumnInfo> cmap : rslvMap.values()) {
+      String foundTbl = null;
+      for (Map.Entry<String, LinkedHashMap<String, ColumnInfo>> rslvEntry: rslvMap.entrySet()) {
+        String rslvKey = rslvEntry.getKey();
+        LinkedHashMap<String, ColumnInfo> cmap = rslvEntry.getValue();
         for (Map.Entry<String, ColumnInfo> cmapEnt : cmap.entrySet()) {
           if (col_alias.equalsIgnoreCase(cmapEnt.getKey())) {
-            if (found) {
+            /*
+             * We can have an unaliased and one aliased mapping to a Column.
+             */
+            if (found && foundTbl != null && rslvKey != null) {
               throw new SemanticException("Column " + col_alias
                   + " Found in more than One Tables/Subqueries");
             }
             found = true;
+            foundTbl = rslvKey == null ? foundTbl : rslvKey;
             ret = cmapEnt.getValue();
           }
         }
@@ -259,6 +287,10 @@ public class RowResolver implements Serializable{
 
   public boolean getIsExprResolver() {
     return isExprResolver;
+  }
+  
+  public String[] getAlternateMappings(String internalName) {
+    return altInvRslvMap.get(internalName);
   }
 
   @Override

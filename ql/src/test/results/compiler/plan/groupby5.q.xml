@@ -1281,6 +1281,9 @@
                   <void property="internalName"> 
                    <string>_col0</string> 
                   </void> 
+                  <void property="tabAlias"> 
+                   <string>src</string> 
+                  </void> 
                   <void property="type"> 
                    <object idref="PrimitiveTypeInfo0"/> 
                   </void> 
