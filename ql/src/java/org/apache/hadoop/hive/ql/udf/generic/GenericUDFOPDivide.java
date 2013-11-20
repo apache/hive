@@ -16,11 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf;
+package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColDivideLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColDivideLongScalar;
@@ -36,10 +35,14 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColDivideDouble
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongScalarDivideDoubleColumn;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
 /**
- * UDFOPDivide.
- *
+ * Note that in SQL, the return type of divide is not necessarily the same
+ * as the parameters. For example, 3 / 2 = 1.5, not 1. To follow SQL, we always
+ * return a decimal for divide.
  */
 @Description(name = "/", value = "a _FUNC_ b - Divide a by b", extended = "Example:\n"
     + "  > SELECT 3 _FUNC_ 2 FROM src LIMIT 1;\n" + "  1.5")
@@ -49,42 +52,45 @@ import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
   DoubleColDivideLongScalar.class, DoubleColDivideDoubleScalar.class,
   LongScalarDivideLongColumn.class, LongScalarDivideDoubleColumn.class,
   DoubleScalarDivideLongColumn.class, DoubleScalarDivideDoubleColumn.class})
-/**
- * Note that in SQL, the return type of divide is not necessarily the same
- * as the parameters. For example, 3 / 2 = 1.5, not 1. To follow SQL, we always
- * return a double for divide.
- */
-public class UDFOPDivide extends UDF {
+public class GenericUDFOPDivide extends GenericUDFBaseNumeric {
 
-  private final DoubleWritable doubleWritable = new DoubleWritable();
-  private final HiveDecimalWritable decimalWritable = new HiveDecimalWritable();
+  public GenericUDFOPDivide() {
+    super();
+    this.opDisplayName = "/";
+  }
 
-  public DoubleWritable evaluate(DoubleWritable a, DoubleWritable b) {
-    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
-    // + b);
-    if (a == null || b == null || b.get() == 0.0) {
+  @Override
+  protected PrimitiveTypeInfo deriveResultExactTypeInfo() {
+    // No type promotion. Everything goes to decimal.
+    return deriveResultDecimalTypeInfo();
+  }
+
+  @Override
+  protected DoubleWritable evaluate(DoubleWritable left, DoubleWritable right) {
+    if (right.get() == 0.0) {
       return null;
     }
-
-    doubleWritable.set(a.get() / b.get());
+    doubleWritable.set(left.get() / right.get());
     return doubleWritable;
   }
 
-  public HiveDecimalWritable evaluate(HiveDecimalWritable a, HiveDecimalWritable b) {
-    if ((a == null) || (b == null)) {
+  @Override
+  protected HiveDecimalWritable evaluate(HiveDecimalWritable left, HiveDecimalWritable right) {
+    HiveDecimal hd1 = left.getHiveDecimal();
+    HiveDecimal hd2 = right.getHiveDecimal();
+    if (hd2.compareTo(HiveDecimal.ZERO) == 0) {
       return null;
     }
-
-    if (b.getHiveDecimal().compareTo(HiveDecimal.ZERO) == 0) {
-      return null;
-    }
-
-    HiveDecimal dec = a.getHiveDecimal().divide(b.getHiveDecimal());
-    if (dec == null) {
-      return null;
-    }
-
+    HiveDecimal dec = hd1.divide(hd2);
     decimalWritable.set(dec);
     return decimalWritable;
   }
+
+  @Override
+  protected DecimalTypeInfo deriveResultDecimalTypeInfo(int prec1, int scale1, int prec2, int scale2) {
+    int scale = Math.min(HiveDecimal.MAX_SCALE, Math.max(6, scale1 + prec2 + 1));
+    int prec = Math.min(HiveDecimal.MAX_PRECISION, prec1 - scale1 + scale2 + scale);
+    return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
+  }
+
 }

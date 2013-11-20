@@ -23,7 +23,7 @@ STAGE PLANS:
                   Select Operator
                     expressions:
                           expr: (1 + assert_true((_col4 < 2)))
-                          type: int
+                          type: double
                     outputColumnNames: _col0
                     Limit
                       File Output Operator
@@ -45,7 +45,7 @@ STAGE PLANS:
                     Select Operator
                       expressions:
                             expr: (1 + assert_true((_col4 < 2)))
-                            type: int
+                            type: double
                       outputColumnNames: _col0
                       Limit
                         File Output Operator

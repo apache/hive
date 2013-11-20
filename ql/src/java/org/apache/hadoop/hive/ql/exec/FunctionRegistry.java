@@ -85,17 +85,11 @@ import org.apache.hadoop.hive.ql.udf.UDFOPBitAnd;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitNot;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitOr;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitXor;
-import org.apache.hadoop.hive.ql.udf.UDFOPDivide;
 import org.apache.hadoop.hive.ql.udf.UDFOPLongDivide;
-import org.apache.hadoop.hive.ql.udf.UDFOPMinus;
-import org.apache.hadoop.hive.ql.udf.UDFOPMod;
-import org.apache.hadoop.hive.ql.udf.UDFOPMultiply;
 import org.apache.hadoop.hive.ql.udf.UDFOPNegative;
-import org.apache.hadoop.hive.ql.udf.UDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
 import org.apache.hadoop.hive.ql.udf.UDFPI;
 import org.apache.hadoop.hive.ql.udf.UDFParseUrl;
-import org.apache.hadoop.hive.ql.udf.UDFPosMod;
 import org.apache.hadoop.hive.ql.udf.UDFPower;
 import org.apache.hadoop.hive.ql.udf.UDFRTrim;
 import org.apache.hadoop.hive.ql.udf.UDFRadians;
@@ -209,7 +203,7 @@ public final class FunctionRegistry {
     registerUDF("ceiling", UDFCeil.class, false);
     registerUDF("rand", UDFRand.class, false);
     registerGenericUDF("abs", GenericUDFAbs.class);
-    registerUDF("pmod", UDFPosMod.class, false);
+    registerGenericUDF("pmod", GenericUDFPosMod.class);
 
     registerUDF("ln", UDFLn.class, false);
     registerUDF("log2", UDFLog2.class, false);
@@ -293,11 +287,11 @@ public final class FunctionRegistry {
     registerUDF("xpath_short", UDFXPathShort.class, false);
     registerGenericUDF("xpath", GenericUDFXPath.class);
 
-    registerUDF("+", UDFOPPlus.class, true);
-    registerUDF("-", UDFOPMinus.class, true);
-    registerUDF("*", UDFOPMultiply.class, true);
-    registerUDF("/", UDFOPDivide.class, true);
-    registerUDF("%", UDFOPMod.class, true);
+    registerGenericUDF("+", GenericUDFOPPlus.class);
+    registerGenericUDF("-", GenericUDFOPMinus.class);
+    registerGenericUDF("*", GenericUDFOPMultiply.class);
+    registerGenericUDF("/", GenericUDFOPDivide.class);
+    registerGenericUDF("%", GenericUDFOPMod.class);
     registerUDF("div", UDFOPLongDivide.class, true);
 
     registerUDF("&", UDFOPBitAnd.class, true);
@@ -631,6 +625,52 @@ public final class FunctionRegistry {
     registerNumericType(PrimitiveCategory.STRING, 8);
   }
 
+  /**
+   * Check if the given type is numeric. String is considered numeric when used in
+   * numeric operators.
+   *
+   * @param typeInfo
+   * @return
+   */
+  public static boolean isNumericType(PrimitiveTypeInfo typeInfo) {
+    switch (typeInfo.getPrimitiveCategory()) {
+    case BYTE:
+    case SHORT:
+    case INT:
+    case LONG:
+    case DECIMAL:
+    case FLOAT:
+    case DOUBLE:
+    case STRING: // String or string equivalent is considered numeric when used in arithmetic operator.
+    case VARCHAR:
+    case CHAR:
+    case VOID: // NULL is considered numeric type for arithmetic operators.
+      return true;
+    default:
+      return false;
+    }
+  }
+
+  /**
+   * Check if a type is exact (not approximate such as float and double). String is considered as
+   * double, thus not exact.
+   *
+   * @param typeInfo
+   * @return
+   */
+  public static boolean isExactNumericType(PrimitiveTypeInfo typeInfo) {
+    switch (typeInfo.getPrimitiveCategory()) {
+    case BYTE:
+    case SHORT:
+    case INT:
+    case LONG:
+    case DECIMAL:
+      return true;
+    default:
+      return false;
+    }
+  }
+
   static int getCommonLength(int aLen, int bLen) {
     int maxLength;
     if (aLen < 0 || bLen < 0) {
@@ -774,6 +814,30 @@ public final class FunctionRegistry {
     return null;
   }
 
+  public static PrimitiveCategory getCommonCategory(TypeInfo a, TypeInfo b) {
+    if (a.getCategory() != Category.PRIMITIVE || b.getCategory() != Category.PRIMITIVE) {
+      return null;
+    }
+    PrimitiveCategory pcA = ((PrimitiveTypeInfo)a).getPrimitiveCategory();
+    PrimitiveCategory pcB = ((PrimitiveTypeInfo)b).getPrimitiveCategory();
+
+    PrimitiveGrouping pgA = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcA);
+    PrimitiveGrouping pgB = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcB);
+    // handle string types properly
+    if (pgA == PrimitiveGrouping.STRING_GROUP && pgB == PrimitiveGrouping.STRING_GROUP) {
+      return PrimitiveCategory.STRING;
+    }
+
+    Integer ai = numericTypes.get(pcA);
+    Integer bi = numericTypes.get(pcB);
+    if (ai == null || bi == null) {
+      // If either is not a numeric type, return null.
+      return null;
+    }
+    
+    return (ai > bi) ? pcA : pcB;
+  }
+
   /**
    * Find a common class that objects of both TypeInfo a and TypeInfo b can
    * convert to. This is used for places other than comparison.
@@ -786,28 +850,11 @@ public final class FunctionRegistry {
     if (a.equals(b)) {
       return a;
     }
-    if (a.getCategory() != Category.PRIMITIVE || b.getCategory() != Category.PRIMITIVE) {
-      return null;
-    }
-    PrimitiveCategory pcA = ((PrimitiveTypeInfo)a).getPrimitiveCategory();
-    PrimitiveCategory pcB = ((PrimitiveTypeInfo)b).getPrimitiveCategory();
 
-    PrimitiveGrouping pgA = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcA);
-    PrimitiveGrouping pgB = PrimitiveObjectInspectorUtils.getPrimitiveGrouping(pcB);
-    // handle string types properly
-    if (pgA == PrimitiveGrouping.STRING_GROUP && pgB == PrimitiveGrouping.STRING_GROUP) {
-      return getTypeInfoForPrimitiveCategory(
-          (PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b,PrimitiveCategory.STRING);
-    }
-
-    Integer ai = numericTypes.get(pcA);
-    Integer bi = numericTypes.get(pcB);
-    if (ai == null || bi == null) {
-      // If either is not a numeric type, return null.
+    PrimitiveCategory commonCat = getCommonCategory(a, b);
+    if (commonCat == null)
       return null;
-    }
-    PrimitiveCategory pcCommon = (ai > bi) ? pcA : pcB;
-    return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, pcCommon);
+    return getTypeInfoForPrimitiveCategory((PrimitiveTypeInfo)a, (PrimitiveTypeInfo)b, commonCat);
   }
 
   public static boolean implicitConvertable(PrimitiveCategory from, PrimitiveCategory to) {
@@ -830,6 +877,7 @@ public final class FunctionRegistry {
     if (from == PrimitiveCategory.VOID) {
       return true;
     }
+
     // Allow implicit String to Date conversion
     if (fromPg == PrimitiveGrouping.DATE_GROUP && toPg == PrimitiveGrouping.STRING_GROUP) {
       return true;

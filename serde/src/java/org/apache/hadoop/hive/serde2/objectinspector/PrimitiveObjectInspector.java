@@ -80,4 +80,14 @@ public interface PrimitiveObjectInspector extends ObjectInspector {
    */
   boolean preferWritable();
 
+  /**
+   * The precision of the underlying data.
+   */
+  int precision();
+
+  /**
+   * The scale of the underlying data.
+   */
+  int scale();
+
 }

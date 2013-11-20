@@ -43,7 +43,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.VoidObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoUtils;
 import org.apache.hadoop.io.Text;
 
@@ -138,6 +141,18 @@ public final class GenericUDFUtils {
           rTypeInfo);
       if (commonTypeInfo == null) {
         return false;
+      }
+
+      /**
+       * TODO: Hack fix until HIVE-5848 is addressed. non-exact type shouldn't be promoted
+       * to exact type, as FunctionRegistry.getCommonClass() might do. This corrects
+       * that.
+       */
+      if (commonTypeInfo instanceof DecimalTypeInfo) {
+        if ((!FunctionRegistry.isExactNumericType((PrimitiveTypeInfo) oiTypeInfo)) || 
+            (!FunctionRegistry.isExactNumericType((PrimitiveTypeInfo) rTypeInfo))) {
+          commonTypeInfo = TypeInfoFactory.doubleTypeInfo;
+        }
       }
 
       returnObjectInspector = TypeInfoUtils

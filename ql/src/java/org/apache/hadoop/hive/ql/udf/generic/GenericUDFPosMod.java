@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf;
+package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
@@ -27,113 +27,100 @@ import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
 /**
  * class for computing positive modulo. Used for positive_mod command in Cli See
- * {org.apache.hadoop.hive.ql.udf.UDFOPMod} See
+ * {org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMod} See
  * {org.apache.hadoop.hive.ql.exec.FunctionRegistry}
  */
 @Description(name = "pmod", value = "a _FUNC_ b - Compute the positive modulo")
 @VectorizedExpressions({PosModLongToLong.class, PosModDoubleToDouble.class})
-public class UDFPosMod extends UDFBaseNumericOp {
+public class GenericUDFPosMod extends GenericUDFBaseNumeric {
 
-  public UDFPosMod() {
+  public GenericUDFPosMod() {
+    super();
+    this.opDisplayName = "pmod";
   }
 
   @Override
-  public ByteWritable evaluate(ByteWritable a, ByteWritable b) {
-    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
-    // + b);
-    if (a == null || b == null || b.get() == 0) {
+  protected ByteWritable evaluate(ByteWritable left, ByteWritable right) {
+    if (right.get() == 0) {
       return null;
     }
-
-    byteWritable.set((byte) (((a.get() % b.get()) + b.get()) % b.get()));
+    byteWritable.set((byte) (((left.get() % right.get()) + right.get()) % right.get()));
     return byteWritable;
   }
 
   @Override
-  public ShortWritable evaluate(ShortWritable a, ShortWritable b) {
-    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
-    // + b);
-    if (a == null || b == null || b.get() == 0) {
+  protected ShortWritable evaluate(ShortWritable left, ShortWritable right) {
+    if (right.get() == 0) {
       return null;
     }
-
-    shortWritable.set((short) (((a.get() % b.get()) + b.get()) % b.get()));
+    shortWritable.set((short) (((left.get() % right.get()) + right.get()) % right.get()));
     return shortWritable;
   }
 
   @Override
-  public IntWritable evaluate(IntWritable a, IntWritable b) {
-    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
-    // + b);
-    if (a == null || b == null || b.get() == 0) {
+  protected IntWritable evaluate(IntWritable left, IntWritable right) {
+    if (right.get() == 0) {
       return null;
     }
-
-    intWritable.set((((a.get() % b.get()) + b.get()) % b.get()));
+    intWritable.set((((left.get() % right.get()) + right.get()) % right.get()));
     return intWritable;
   }
 
   @Override
-  public LongWritable evaluate(LongWritable a, LongWritable b) {
-    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
-    // + b);
-    if (a == null || b == null || b.get() == 0L) {
+  protected LongWritable evaluate(LongWritable left, LongWritable right) {
+    if (right.get() == 0) {
       return null;
     }
-
-    longWritable.set(((a.get() % b.get()) + b.get()) % b.get());
+    longWritable.set(((left.get() % right.get()) + right.get()) % right.get());
     return longWritable;
   }
 
   @Override
-  public FloatWritable evaluate(FloatWritable a, FloatWritable b) {
-    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
-    // + b);
-    if (a == null || b == null || b.get() == 0.0f) {
+  protected FloatWritable evaluate(FloatWritable left, FloatWritable right) {
+    if (right.get() == 0) {
       return null;
     }
-
-    floatWritable.set(((a.get() % b.get()) + b.get()) % b.get());
+    floatWritable.set(((left.get() % right.get()) + right.get()) % right.get());
     return floatWritable;
   }
 
   @Override
-  public DoubleWritable evaluate(DoubleWritable a, DoubleWritable b) {
-    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
-    // + b);
-    if (a == null || b == null || b.get() == 0.0) {
+  protected DoubleWritable evaluate(DoubleWritable left, DoubleWritable right) {
+    if (right.get() == 0) {
       return null;
     }
-
-    doubleWritable.set(((a.get() % b.get()) + b.get()) % b.get());
+    doubleWritable.set(((left.get() % right.get()) + right.get()) % right.get());
     return doubleWritable;
   }
 
   @Override
-  public HiveDecimalWritable evaluate(HiveDecimalWritable a, HiveDecimalWritable b) {
-    if ((a == null) || (b == null)) {
+  protected HiveDecimalWritable evaluate(HiveDecimalWritable left, HiveDecimalWritable right) {
+    HiveDecimal hd1 = left.getHiveDecimal();
+    HiveDecimal hd2 = right.getHiveDecimal();
+    if (hd2.compareTo(HiveDecimal.ZERO) == 0) {
       return null;
     }
-
-    HiveDecimal av = a.getHiveDecimal();
-    HiveDecimal bv = b.getHiveDecimal();
-
-    if (bv.compareTo(HiveDecimal.ZERO) == 0) {
-      return null;
-    }
-
-    HiveDecimal dec = av.remainder(bv).add(bv).remainder(bv);
+    HiveDecimal dec = hd1.remainder(hd2).add(hd2).remainder(hd2);
     if (dec == null) {
       return null;
     }
-
     decimalWritable.set(dec);
     return decimalWritable;
   }
+
+  @Override
+  protected DecimalTypeInfo deriveResultDecimalTypeInfo(int prec1, int scale1, int prec2, int scale2) {
+    int scale = Math.max(scale1, scale2);
+    int prec = Math.min(HiveDecimal.MAX_PRECISION, Math.max(prec1 - scale1, prec2 - scale2) + scale);
+    return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
+  }
+
 }
