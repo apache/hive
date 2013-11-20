@@ -129,7 +129,7 @@ POSTHOOK: Input: default@serde_regex
 POSTHOOK: Output: default@serde_regex
 PREHOOK: query: EXPLAIN
 CREATE TABLE serde_regex1(
-  key decimal(65,30),
+  key decimal(38,18),
   value int)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.RegexSerDe'
 WITH SERDEPROPERTIES (
@@ -139,7 +139,7 @@ STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: EXPLAIN
 CREATE TABLE serde_regex1(
-  key decimal(65,30),
+  key decimal(38,18),
   value int)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.RegexSerDe'
 WITH SERDEPROPERTIES (
@@ -148,7 +148,7 @@ WITH SERDEPROPERTIES (
 STORED AS TEXTFILE
 POSTHOOK: type: CREATETABLE
 ABSTRACT SYNTAX TREE:
-  (TOK_CREATETABLE (TOK_TABNAME serde_regex1) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL key (TOK_DECIMAL 65 30)) (TOK_TABCOL value TOK_INT)) (TOK_TABLESERIALIZER (TOK_SERDENAME 'org.apache.hadoop.hive.serde2.RegexSerDe' (TOK_TABLEPROPERTIES (TOK_TABLEPROPLIST (TOK_TABLEPROPERTY "input.regex" "([^ ]*) ([^ ]*)"))))) TOK_TBLTEXTFILE)
+  (TOK_CREATETABLE (TOK_TABNAME serde_regex1) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL key (TOK_DECIMAL 38 18)) (TOK_TABCOL value TOK_INT)) (TOK_TABLESERIALIZER (TOK_SERDENAME 'org.apache.hadoop.hive.serde2.RegexSerDe' (TOK_TABLEPROPERTIES (TOK_TABLEPROPLIST (TOK_TABLEPROPERTY "input.regex" "([^ ]*) ([^ ]*)"))))) TOK_TBLTEXTFILE)
 
 STAGE DEPENDENCIES:
   Stage-0 is a root stage
@@ -157,7 +157,7 @@ STAGE PLANS:
   Stage: Stage-0
       Create Table Operator:
         Create Table
-          columns: key decimal(65,30), value int
+          columns: key decimal(38,18), value int
           if not exists: false
           input format: org.apache.hadoop.mapred.TextInputFormat
           # buckets: -1
@@ -170,7 +170,7 @@ STAGE PLANS:
 
 
 PREHOOK: query: CREATE TABLE serde_regex1(
-  key decimal(65,30),
+  key decimal(38,18),
   value int)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.RegexSerDe'
 WITH SERDEPROPERTIES (
@@ -179,7 +179,7 @@ WITH SERDEPROPERTIES (
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE serde_regex1(
-  key decimal(65,30),
+  key decimal(38,18),
   value int)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.RegexSerDe'
 WITH SERDEPROPERTIES (
@@ -222,7 +222,7 @@ NULL	0
 0.3	0
 0.33	0
 0.333	0
-0.9999999999999999999999999	1
+1	1
 1	1
 1	1
 1.12	1

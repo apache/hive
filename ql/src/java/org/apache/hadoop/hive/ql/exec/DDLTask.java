@@ -2870,8 +2870,8 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
   private static void fixDecimalColumnTypeName(List<FieldSchema> cols) {
     for (FieldSchema col : cols) {
       if (serdeConstants.DECIMAL_TYPE_NAME.equals(col.getType())) {
-        col.setType(DecimalTypeInfo.getQualifiedName(HiveDecimal.DEFAULT_PRECISION,
-            HiveDecimal.DEFAULT_SCALE));
+        col.setType(DecimalTypeInfo.getQualifiedName(HiveDecimal.USER_DEFAULT_PRECISION,
+            HiveDecimal.USER_DEFAULT_SCALE));
       }
     }
   }

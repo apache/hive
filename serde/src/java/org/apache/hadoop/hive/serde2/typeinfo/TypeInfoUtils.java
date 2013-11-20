@@ -420,8 +420,8 @@ public final class TypeInfoUtils {
                 params.length + " is seen");
           }
         case DECIMAL:
-          int precision = HiveDecimal.DEFAULT_PRECISION;
-          int scale = HiveDecimal.DEFAULT_SCALE;
+          int precision = HiveDecimal.USER_DEFAULT_PRECISION;
+          int scale = HiveDecimal.USER_DEFAULT_SCALE;
           if (params == null || params.length == 0) {
             // It's possible that old metadata still refers to "decimal" as a column type w/o
             // precision/scale. In this case, the default (10,0) is assumed. Thus, do nothing here.

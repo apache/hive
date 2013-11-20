@@ -200,8 +200,8 @@ public final class ParseUtils {
         throw new SemanticException("Bad params for type decimal");
       }
 
-      int precision = HiveDecimal.DEFAULT_PRECISION;
-      int scale = HiveDecimal.DEFAULT_SCALE;
+      int precision = HiveDecimal.USER_DEFAULT_PRECISION;
+      int scale = HiveDecimal.USER_DEFAULT_SCALE;
 
       if (node.getChildCount() >= 1) {
         String precStr = node.getChild(0).getText();
