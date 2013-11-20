@@ -254,7 +254,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: (key + '1.0')
-                  type: decimal(65,30)
+                  type: double
             outputColumnNames: _col0
             ListSink
 
@@ -267,44 +267,44 @@ POSTHOOK: query: SELECT key + '1.0' FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--4399
+-4399.0
 NULL
-1
-1
-101
-11
-2
+1.0
+1.0
+101.0
+11.0
+2.0
 1.1
 1.01
-201
-21
-3
-1
+201.0
+21.0
+3.0
+1.0
 1.2
 1.02
 1.3
 1.33
 1.333
 0.7
-0.67
+0.6699999999999999
 0.667
-2
-3
-4.14
--0.12
--0.12
--0.122
+2.0
+3.0
+4.140000000000001
+-0.1200000000000001
+-0.1200000000000001
+-0.12200000000000011
 2.12
 2.122
-125
+125.0
 126.2
 -1254.49
-4.14
-4.14
-4.14
-1.9999999999999999999999999
--1234567889.123456789
-1234567891.12345678
+4.140000000000001
+4.140000000000001
+4.140000000000001
+2.0
+-1.2345678891234567E9
+1.2345678911234567E9
 PREHOOK: query: -- substraction
 EXPLAIN SELECT key - key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -540,7 +540,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: (key - '1.0')
-                  type: decimal(65,30)
+                  type: double
             outputColumnNames: _col0
             ListSink
 
@@ -553,44 +553,44 @@ POSTHOOK: query: SELECT key - '1.0' FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--4401
+-4401.0
 NULL
--1
--1
-99
-9
-0
+-1.0
+-1.0
+99.0
+9.0
+0.0
 -0.9
 -0.99
-199
-19
-1
--1
+199.0
+19.0
+1.0
+-1.0
 -0.8
 -0.98
 -0.7
--0.67
+-0.6699999999999999
 -0.667
 -1.3
 -1.33
 -1.333
-0
-1
+0.0
+1.0
 2.14
 -2.12
 -2.12
 -2.122
-0.12
-0.122
-123
+0.1200000000000001
+0.12200000000000011
+123.0
 124.2
 -1256.49
 2.14
 2.14
 2.14
--0.0000000000000000000000001
--1234567891.123456789
-1234567889.12345678
+0.0
+-1.2345678911234567E9
+1.2345678891234567E9
 PREHOOK: query: -- multiplication
 EXPLAIN SELECT key * key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -826,7 +826,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: (key * '2.0')
-                  type: decimal(65,30)
+                  type: double
             outputColumnNames: _col0
             ListSink
 
@@ -839,19 +839,19 @@ POSTHOOK: query: SELECT key * '2.0' FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--8800
+-8800.0
 NULL
-0
-0
-200
-20
-2
+0.0
+0.0
+200.0
+20.0
+2.0
 0.2
 0.02
-400
-40
-4
-0
+400.0
+40.0
+4.0
+0.0
 0.4
 0.04
 0.6
@@ -860,23 +860,23 @@ NULL
 -0.6
 -0.66
 -0.666
-2
-4
+2.0
+4.0
 6.28
 -2.24
 -2.24
 -2.244
 2.24
 2.244
-248
+248.0
 250.4
 -2510.98
 6.28
 6.28
 6.28
-1.9999999999999999999999998
--2469135780.246913578
-2469135780.24691356
+2.0
+-2.4691357802469134E9
+2.4691357802469134E9
 PREHOOK: query: -- division
 EXPLAIN SELECT key / 0 FROM DECIMAL_UDF limit 1
 PREHOOK: type: QUERY
@@ -934,7 +934,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: (key / null)
-                  type: decimal(65,30)
+                  type: double
             outputColumnNames: _col0
             Limit
               ListSink
@@ -1162,7 +1162,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: (key / '2.0')
-                  type: decimal(65,30)
+                  type: double
             outputColumnNames: _col0
             ListSink
 
@@ -1175,19 +1175,19 @@ POSTHOOK: query: SELECT key / '2.0' FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--2200
+-2200.0
 NULL
-0
-0
-50
-5
+0.0
+0.0
+50.0
+5.0
 0.5
 0.05
-0.005
-100
-10
-1
-0
+0.0050
+100.0
+10.0
+1.0
+0.0
 0.1
 0.01
 0.15
@@ -1197,22 +1197,22 @@ NULL
 -0.165
 -0.1665
 0.5
-1
+1.0
 1.57
 -0.56
 -0.56
 -0.561
 0.56
 0.561
-62
+62.0
 62.6
 -627.745
 1.57
 1.57
 1.57
-0.49999999999999999999999995
--617283945.0617283945
-617283945.06172839
+0.5
+-6.172839450617284E8
+6.172839450617284E8
 PREHOOK: query: -- abs
 EXPLAIN SELECT abs(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY

@@ -379,17 +379,7 @@
                        </object> 
                       </void> 
                       <void property="genericUDF"> 
-                       <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
-                        <void property="operator"> 
-                         <boolean>true</boolean> 
-                        </void> 
-                        <void property="udfClassName"> 
-                         <string>org.apache.hadoop.hive.ql.udf.UDFOPPlus</string> 
-                        </void> 
-                        <void property="udfName"> 
-                         <string>+</string> 
-                        </void> 
-                       </object> 
+                       <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus"/> 
                       </void> 
                       <void property="typeInfo"> 
                        <object id="PrimitiveTypeInfo1" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 

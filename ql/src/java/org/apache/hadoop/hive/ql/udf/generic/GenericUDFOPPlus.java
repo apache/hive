@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf;
+package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
@@ -37,6 +37,8 @@ import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
@@ -56,96 +58,65 @@ import org.apache.hadoop.io.LongWritable;
   LongColAddDoubleScalar.class, DoubleColAddLongScalar.class, DoubleColAddDoubleScalar.class,
   LongScalarAddLongColumn.class, LongScalarAddDoubleColumn.class, DoubleScalarAddLongColumn.class,
   DoubleScalarAddDoubleColumn.class})
-public class UDFOPPlus extends UDFBaseNumericOp {
+public class GenericUDFOPPlus extends GenericUDFBaseNumeric {
 
-  public UDFOPPlus() {
+  public GenericUDFOPPlus() {
+    super();
+    this.opDisplayName = "+";
   }
 
   @Override
-  public ByteWritable evaluate(ByteWritable a, ByteWritable b) {
-    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
-    // + b);
-    if ((a == null) || (b == null)) {
-      return null;
-    }
-
-    byteWritable.set((byte) (a.get() + b.get()));
+  protected ByteWritable evaluate(ByteWritable left, ByteWritable right) {
+    byteWritable.set((byte)(left.get() + right.get()));
     return byteWritable;
   }
 
   @Override
-  public ShortWritable evaluate(ShortWritable a, ShortWritable b) {
-    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
-    // + b);
-    if ((a == null) || (b == null)) {
-      return null;
-    }
-
-    shortWritable.set((short) (a.get() + b.get()));
+  protected ShortWritable evaluate(ShortWritable left, ShortWritable right) {
+    shortWritable.set((short)(left.get() + right.get()));
     return shortWritable;
   }
 
   @Override
-  public IntWritable evaluate(IntWritable a, IntWritable b) {
-    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
-    // + b);
-    if ((a == null) || (b == null)) {
-      return null;
-    }
-
-    intWritable.set((a.get() + b.get()));
+  protected IntWritable evaluate(IntWritable left, IntWritable right) {
+    intWritable.set(left.get() + right.get());
     return intWritable;
   }
 
   @Override
-  public LongWritable evaluate(LongWritable a, LongWritable b) {
-    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
-    // + b);
-    if ((a == null) || (b == null)) {
-      return null;
-    }
-
-    longWritable.set(a.get() + b.get());
+  protected LongWritable evaluate(LongWritable left, LongWritable right) {
+    longWritable.set(left.get() + right.get());
     return longWritable;
   }
 
   @Override
-  public FloatWritable evaluate(FloatWritable a, FloatWritable b) {
-    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
-    // + b);
-    if ((a == null) || (b == null)) {
-      return null;
-    }
-
-    floatWritable.set(a.get() + b.get());
+  protected FloatWritable evaluate(FloatWritable left, FloatWritable right) {
+    floatWritable.set(left.get() + right.get());
     return floatWritable;
   }
 
   @Override
-  public DoubleWritable evaluate(DoubleWritable a, DoubleWritable b) {
-    // LOG.info("Get input " + a.getClass() + ":" + a + " " + b.getClass() + ":"
-    // + b);
-    if ((a == null) || (b == null)) {
-      return null;
-    }
-
-    doubleWritable.set(a.get() + b.get());
+  protected DoubleWritable evaluate(DoubleWritable left, DoubleWritable right) {
+    doubleWritable.set(left.get() + right.get());
     return doubleWritable;
   }
 
   @Override
-  public HiveDecimalWritable evaluate(HiveDecimalWritable a, HiveDecimalWritable b) {
-    if ((a == null) || (b == null)) {
-      return null;
-    }
-
-    HiveDecimal dec = a.getHiveDecimal().add(b.getHiveDecimal());
+  protected HiveDecimalWritable evaluate(HiveDecimalWritable left, HiveDecimalWritable right) {
+    HiveDecimal dec = left.getHiveDecimal().add(right.getHiveDecimal());
     if (dec == null) {
       return null;
     }
-
     decimalWritable.set(dec);
     return decimalWritable;
+  }
+
+  @Override
+  protected DecimalTypeInfo deriveResultDecimalTypeInfo(int prec1, int scale1, int prec2, int scale2) {
+    int intPart = Math.max(prec1 - scale1, prec2 - scale2);
+    int scale = Math.max(scale1, scale2);
+    int prec =  Math.min(intPart + scale + 1, HiveDecimal.MAX_PRECISION);
+    return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
   }
 
 }

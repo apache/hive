@@ -102,6 +102,14 @@ public class TestHiveDecimal {
   }
 
   @Test
+  public void testPosMod() {
+    HiveDecimal hd1 = HiveDecimal.create("-100.91");
+    HiveDecimal hd2 = HiveDecimal.create("9.8");
+    HiveDecimal dec = hd1.remainder(hd2).add(hd2).remainder(hd2);
+    Assert.assertEquals("6.89", dec.toString());
+  }
+
+  @Test
   public void testException() {
     HiveDecimal dec = HiveDecimal.create("3.1415.926");
     Assert.assertNull(dec);

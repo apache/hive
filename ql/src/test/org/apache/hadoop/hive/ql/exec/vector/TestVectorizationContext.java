@@ -85,11 +85,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.UDFLTrim;
 import org.apache.hadoop.hive.ql.udf.UDFLog;
-import org.apache.hadoop.hive.ql.udf.UDFOPMinus;
-import org.apache.hadoop.hive.ql.udf.UDFOPMod;
-import org.apache.hadoop.hive.ql.udf.UDFOPMultiply;
 import org.apache.hadoop.hive.ql.udf.UDFOPNegative;
-import org.apache.hadoop.hive.ql.udf.UDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.UDFPower;
 import org.apache.hadoop.hive.ql.udf.UDFSin;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
@@ -102,11 +98,15 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPGreaterThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMinus;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMod;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMultiply;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFRound;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Test;
@@ -159,11 +159,11 @@ public class TestVectorizationContext {
      * Create original expression tree for following
      * (plus (minus (plus col1 col2) col3) (multiply col4 (mod col5 col6)) )
      */
-    GenericUDFBridge udf1 = new GenericUDFBridge("+", true, UDFOPPlus.class.getCanonicalName());
-    GenericUDFBridge udf2 = new GenericUDFBridge("-", true, UDFOPMinus.class.getCanonicalName());
-    GenericUDFBridge udf3 = new GenericUDFBridge("*", true, UDFOPMultiply.class.getCanonicalName());
-    GenericUDFBridge udf4 = new GenericUDFBridge("+", true, UDFOPPlus.class.getCanonicalName());
-    GenericUDFBridge udf5 = new GenericUDFBridge("%", true, UDFOPMod.class.getCanonicalName());
+    GenericUDFOPPlus udf1 = new GenericUDFOPPlus();
+    GenericUDFOPMinus udf2 = new GenericUDFOPMinus();
+    GenericUDFOPMultiply udf3 = new GenericUDFOPMultiply();
+    GenericUDFOPPlus udf4 = new GenericUDFOPPlus();
+    GenericUDFOPMod udf5 = new GenericUDFOPMod();
 
     ExprNodeGenericFuncDesc sumExpr = new ExprNodeGenericFuncDesc();
     sumExpr.setTypeInfo(TypeInfoFactory.intTypeInfo);
@@ -224,7 +224,6 @@ public class TestVectorizationContext {
 
     //Generate vectorized expression
     VectorizationContext vc = new VectorizationContext(columnMap, 6);
-
     VectorExpression ve = vc.getVectorExpression(sumExpr, VectorExpressionDescriptor.Mode.PROJECTION);
 
     //Verify vectorized expression
@@ -232,6 +231,7 @@ public class TestVectorizationContext {
     assertEquals(2, ve.getChildExpressions().length);
     VectorExpression childExpr1 = ve.getChildExpressions()[0];
     VectorExpression childExpr2 = ve.getChildExpressions()[1];
+    System.out.println(ve.toString());
     assertEquals(6, ve.getOutputColumn());
 
     assertTrue(childExpr1 instanceof LongColSubtractLongColumn);
@@ -300,7 +300,7 @@ public class TestVectorizationContext {
     ExprNodeColumnDesc col1Expr = new ExprNodeColumnDesc(Float.class, "col1", "table", false);
     ExprNodeConstantDesc constDesc = new ExprNodeConstantDesc(new Integer(10));
 
-    GenericUDFBridge udf = new GenericUDFBridge("+", false, UDFOPPlus.class.getCanonicalName());
+    GenericUDFOPPlus udf = new GenericUDFOPPlus();
     ExprNodeGenericFuncDesc exprDesc = new ExprNodeGenericFuncDesc();
     exprDesc.setGenericUDF(udf);
 
@@ -571,7 +571,7 @@ public class TestVectorizationContext {
   @Test
   public void testVectorizeScalarColumnExpression() throws HiveException {
     ExprNodeGenericFuncDesc scalarMinusConstant = new ExprNodeGenericFuncDesc();
-    GenericUDF gudf = new GenericUDFBridge("-", true, UDFOPMinus.class.getCanonicalName());
+    GenericUDFOPMinus gudf = new GenericUDFOPMinus();
     scalarMinusConstant.setGenericUDF(gudf);
     List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(2);
     ExprNodeConstantDesc constDesc = new ExprNodeConstantDesc(TypeInfoFactory.longTypeInfo, 20);
