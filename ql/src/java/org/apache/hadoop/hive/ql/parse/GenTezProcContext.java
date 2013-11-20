@@ -24,10 +24,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.DependencyCollectionTask;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
@@ -89,6 +91,10 @@ public class GenTezProcContext implements NodeProcessorCtx{
   // traversing an operator tree
   public final Map<Operator<?>, List<BaseWork>> linkOpWithWorkMap;
 
+  // a map to keep track of what reduce sinks have to be hooked up to
+  // map join work
+  public final Map<BaseWork, List<ReduceSinkOperator>> linkWorkWithReduceSinkMap;
+
   // a map that maintains operator (file-sink or reduce-sink) to work mapping
   public final Map<Operator<?>, BaseWork> operatorWorkMap;
 
@@ -101,6 +107,15 @@ public class GenTezProcContext implements NodeProcessorCtx{
 
   // used to group dependent tasks for multi table inserts
   public final DependencyCollectionTask dependencyTask;
+
+  // root of last multi child operator encountered
+  public Stack<Operator<?>> lastRootOfMultiChildOperator;
+
+  // branches of current multi-child operator
+  public Stack<Integer> currentBranchCount;
+
+  // work generated for last multi-child operator
+  public Stack<BaseWork> lastWorkForMultiChildOperator;
 
   @SuppressWarnings("unchecked")
   public GenTezProcContext(HiveConf conf, ParseContext parseContext,
@@ -117,10 +132,14 @@ public class GenTezProcContext implements NodeProcessorCtx{
     this.leafOperatorToFollowingWork = new HashMap<Operator<?>, BaseWork>();
     this.rootOperators = rootOperators;
     this.linkOpWithWorkMap = new HashMap<Operator<?>, List<BaseWork>>();
+    this.linkWorkWithReduceSinkMap = new HashMap<BaseWork, List<ReduceSinkOperator>>();
     this.operatorWorkMap = new HashMap<Operator<?>, BaseWork>();
     this.mapJoinParentMap = new HashMap<MapJoinOperator, List<Operator<?>>>();
     this.linkChildOpWithDummyOp = new HashMap<Operator<?>, List<Operator<?>>>();
     this.dependencyTask = (DependencyCollectionTask)
         TaskFactory.get(new DependencyCollectionWork(), conf);
+    this.lastRootOfMultiChildOperator = new Stack<Operator<?>>();
+    this.currentBranchCount = new Stack<Integer>();
+    this.lastWorkForMultiChildOperator = new Stack<BaseWork>();
   }
 }

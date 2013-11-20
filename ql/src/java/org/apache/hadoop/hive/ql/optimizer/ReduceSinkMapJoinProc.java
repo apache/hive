@@ -88,6 +88,10 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
           // link the work with the work associated with the reduce sink that triggered this rule
           TezWork tezWork = context.currentTask.getWork();
           tezWork.connect(parentWork, myWork, EdgeType.BROADCAST_EDGE);
+
+          // remember the output name of the reduce sink
+          parentRS.getConf().setOutputName(myWork.getName());
+
         } else {
           List<BaseWork> linkWorkList = context.linkOpWithWorkMap.get(childOp);
           if (linkWorkList == null) {
@@ -95,6 +99,14 @@ public class ReduceSinkMapJoinProc implements NodeProcessor {
           }
           linkWorkList.add(parentWork);
           context.linkOpWithWorkMap.put(childOp, linkWorkList);
+
+          List<ReduceSinkOperator> reduceSinks 
+            = context.linkWorkWithReduceSinkMap.get(parentWork);
+          if (reduceSinks == null) {
+            reduceSinks = new ArrayList<ReduceSinkOperator>();
+          }
+          reduceSinks.add(parentRS);
+          context.linkWorkWithReduceSinkMap.put(parentWork, reduceSinks);
         }
 
         break;

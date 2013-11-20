@@ -64,9 +64,9 @@ public class MapRecordProcessor  extends RecordProcessor{
 
   @Override
   void init(JobConf jconf, MRTaskReporter mrReporter, Map<String, LogicalInput> inputs,
-      OutputCollector out){
+      Map<String, OutputCollector> outMap){
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_INIT_OPERATORS);
-    super.init(jconf, mrReporter, inputs, out);
+    super.init(jconf, mrReporter, inputs, outMap);
 
     //Update JobConf using MRInput, info like filename comes via this
     MRInputLegacy mrInput = getMRInput(inputs);
@@ -124,7 +124,7 @@ public class MapRecordProcessor  extends RecordProcessor{
         }
       }
 
-      OperatorUtils.setChildrenCollector(mapOp.getChildOperators(), out);
+      OperatorUtils.setChildrenCollector(mapOp.getChildOperators(), outMap);
       mapOp.setReporter(reporter);
       MapredContext.get().setReporter(reporter);
 

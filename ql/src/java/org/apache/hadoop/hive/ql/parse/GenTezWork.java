@@ -71,17 +71,18 @@ public class GenTezWork implements NodeProcessor {
     // packing into a vertex, typically a table scan, union or join
     Operator<?> root = context.currentRootOperator;
     if (root == null) {
-      // if there are no more rootOperators we're dealing with multiple
-      // file sinks off of the same table scan. Bail.
-      if (context.rootOperators.isEmpty()) {
-        return null;
-      }
-
       // null means that we're starting with a new table scan
       // the graph walker walks the rootOperators in the same
       // order so we can just take the next
       context.preceedingWork = null;
-      root = context.rootOperators.pop();
+
+      // if there are branches remaining we can't pop the next
+      // root operator yet.
+      if (context.currentBranchCount.isEmpty()
+          || (!context.lastWorkForMultiChildOperator.isEmpty()
+              && context.lastWorkForMultiChildOperator.peek() == null)) {
+        root = context.rootOperators.pop();
+      }
     }
 
     LOG.debug("Root operator: " + root);
@@ -93,18 +94,51 @@ public class GenTezWork implements NodeProcessor {
     // a reduce vertex
     BaseWork work;
     if (context.preceedingWork == null) {
-      assert root.getParentOperators().isEmpty();
-      MapWork mapWork = new MapWork("Map "+ (++sequenceNumber));
-      LOG.debug("Adding map work (" + mapWork.getName() + ") for " + root);
+      if (root == null) {
+        // this is the multi-insert case. we need to reuse the last
+        // table scan work.
+        root = context.lastRootOfMultiChildOperator.peek();
+        work = context.lastWorkForMultiChildOperator.peek();
+        LOG.debug("Visiting additional branch in: "+root);
 
-      // map work starts with table scan operators
-      assert root instanceof TableScanOperator;
-      String alias = ((TableScanOperator)root).getConf().getAlias();
+      } else {
+        assert root.getParentOperators().isEmpty();
+        MapWork mapWork = new MapWork("Map "+ (++sequenceNumber));
+        LOG.debug("Adding map work (" + mapWork.getName() + ") for " + root);
 
-      GenMapRedUtils.setMapWork(mapWork, context.parseContext,
-          context.inputs, null, root, alias, context.conf, false);
-      tezWork.add(mapWork);
-      work = mapWork;
+        // map work starts with table scan operators
+        assert root instanceof TableScanOperator;
+        String alias = ((TableScanOperator)root).getConf().getAlias();
+
+        GenMapRedUtils.setMapWork(mapWork, context.parseContext,
+            context.inputs, null, root, alias, context.conf, false);
+        tezWork.add(mapWork);
+        work = mapWork;
+
+        // remember this table scan and work item. this is needed for multiple
+        // insert statements where multiple operator pipelines hang of a single
+        // table scan
+        if (!context.lastWorkForMultiChildOperator.isEmpty()
+            && context.lastWorkForMultiChildOperator.peek() == null) {
+          LOG.debug("Capturing current work for 'multiple branches' case");
+          context.lastWorkForMultiChildOperator.pop();
+          context.lastWorkForMultiChildOperator.push(work);
+        }
+      }
+
+      if (!context.currentBranchCount.isEmpty()) {
+        // we've handled one branch. Adjust the counts.
+        int branches = context.currentBranchCount.pop();
+        if (--branches != 0) {
+          LOG.debug("Remaining branches: "+branches);
+          context.currentBranchCount.push(branches);
+        } else {
+          LOG.debug("No more remaining branches.");
+          context.lastRootOfMultiChildOperator.pop();
+          context.lastWorkForMultiChildOperator.pop();
+        }
+      }
+
     } else {
       assert !root.getParentOperators().isEmpty();
       ReduceWork reduceWork = new ReduceWork("Reducer "+ (++sequenceNumber));
@@ -119,6 +153,8 @@ public class GenTezWork implements NodeProcessor {
       assert context.parentOfRoot instanceof ReduceSinkOperator;
       ReduceSinkOperator reduceSink = (ReduceSinkOperator) context.parentOfRoot;
 
+      LOG.debug("Setting up reduce sink: " + reduceSink);
+
       reduceWork.setNumReduceTasks(reduceSink.getConf().getNumReducers());
 
       // need to fill in information about the key and value in the reducer
@@ -128,12 +164,25 @@ public class GenTezWork implements NodeProcessor {
       reduceWork.getTagToInput().put(reduceSink.getConf().getTag(),
            context.preceedingWork.getName());
 
+      // remember the output name of the reduce sink
+      reduceSink.getConf().setOutputName(reduceWork.getName());
+
       tezWork.add(reduceWork);
       tezWork.connect(
           context.preceedingWork,
           reduceWork, EdgeType.SIMPLE_EDGE);
 
       work = reduceWork;
+
+      // remember this work item. this is needed for multiple
+      // insert statements where multiple operator pipelines hang of a forward
+      // operator
+      if (!context.lastWorkForMultiChildOperator.isEmpty()
+          && context.lastWorkForMultiChildOperator.peek() == null) {
+        LOG.debug("Capturing current work for 'multiple branches' case");
+        context.lastWorkForMultiChildOperator.pop();
+        context.lastWorkForMultiChildOperator.push(work);
+      }
     }
 
     // We're scanning the operator from table scan to final file sink.
@@ -162,9 +211,11 @@ public class GenTezWork implements NodeProcessor {
       // remember which parent belongs to which tag
       rWork.getTagToInput().put(rs.getConf().getTag(), work.getName());
 
+      // remember the output name of the reduce sink
+      rs.getConf().setOutputName(rWork.getName());
+
       // add dependency between the two work items
-      tezWork.connect(work, context.leafOperatorToFollowingWork.get(operator),
-         EdgeType.SIMPLE_EDGE);
+      tezWork.connect(work, rWork, EdgeType.SIMPLE_EDGE);
     }
 
     // This is where we cut the tree as described above. We also remember that
@@ -183,6 +234,7 @@ public class GenTezWork implements NodeProcessor {
       context.currentRootOperator = operator.getChildOperators().get(0);
       context.preceedingWork = work;
     } else {
+      LOG.debug("Leaf operator - resetting context: " + context.currentRootOperator);
       context.parentOfRoot = null;
       context.currentRootOperator = null;
       context.preceedingWork = null;
@@ -214,6 +266,13 @@ public class GenTezWork implements NodeProcessor {
       }
       for (BaseWork parentWork : linkWorkList) {
         tezWork.connect(parentWork, work, EdgeType.BROADCAST_EDGE);
+        
+        // need to set up output name for reduce sink not that we know the name
+        // of the downstream work
+        for (ReduceSinkOperator r: 
+               context.linkWorkWithReduceSinkMap.get(parentWork)) {
+          r.getConf().setOutputName(work.getName());
+        }
       }
     }
 
