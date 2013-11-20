@@ -605,6 +605,8 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
     // call the operator specific close routine
     closeOp(abort);
 
+    reporter = null;
+
     if (counterNameToEnum != null) {
       incrCounter(numInputRowsCntr, inputRows);
       incrCounter(numOutputRowsCntr, outputRows);
