@@ -72,7 +72,7 @@ SELECT CASE 1
        CASE 1
         WHEN 1.0 THEN 123
         WHEN 2 THEN 1.0
-        ELSE 0.0BD
+        ELSE 222.02BD
        END,
        CASE 'abc'
         WHEN cast('abc' as varchar(3)) THEN 'abcd'

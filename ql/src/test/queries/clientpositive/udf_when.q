@@ -66,7 +66,7 @@ SELECT CASE
        CASE
         WHEN 1=1 THEN 123
         WHEN 1=2 THEN 1.0
-        ELSE 0.0BD
+        ELSE 222.02BD
        END,
        CASE
         WHEN 1=1 THEN 'abcd'

@@ -1899,8 +1899,8 @@ class RecordReaderImpl implements RecordReader {
       case DATE:
         return new DateTreeReader(path, columnId);
       case DECIMAL:
-        int precision = type.hasPrecision() ? type.getPrecision() : HiveDecimal.MAX_PRECISION;
-        int scale =  type.hasScale()? type.getScale() : HiveDecimal.MAX_SCALE;
+        int precision = type.hasPrecision() ? type.getPrecision() : HiveDecimal.SYSTEM_DEFAULT_PRECISION;
+        int scale =  type.hasScale()? type.getScale() : HiveDecimal.SYSTEM_DEFAULT_SCALE;
         return new DecimalTreeReader(path, columnId, precision, scale);
       case STRUCT:
         return new StructTreeReader(path, columnId, types, included);

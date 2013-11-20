@@ -193,8 +193,8 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
         case DECIMAL_TYPE:
           TTypeQualifierValue prec = tq.getQualifiers().get(TCLIServiceConstants.PRECISION);
           TTypeQualifierValue scale = tq.getQualifiers().get(TCLIServiceConstants.SCALE);
-          ret = new JdbcColumnAttributes(prec == null ? HiveDecimal.DEFAULT_PRECISION : prec.getI32Value(),
-              scale == null ? HiveDecimal.DEFAULT_SCALE : scale.getI32Value());
+          ret = new JdbcColumnAttributes(prec == null ? HiveDecimal.USER_DEFAULT_PRECISION : prec.getI32Value(),
+              scale == null ? HiveDecimal.USER_DEFAULT_SCALE : scale.getI32Value());
           break;
         default:
           break;

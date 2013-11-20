@@ -545,8 +545,8 @@ final class OrcStruct implements Writable {
       case DATE:
         return PrimitiveObjectInspectorFactory.javaDateObjectInspector;
       case DECIMAL:
-        int precision = type.hasPrecision() ? type.getPrecision() : HiveDecimal.MAX_PRECISION;
-        int scale =  type.hasScale()? type.getScale() : HiveDecimal.MAX_SCALE;
+        int precision = type.hasPrecision() ? type.getPrecision() : HiveDecimal.SYSTEM_DEFAULT_PRECISION;
+        int scale =  type.hasScale()? type.getScale() : HiveDecimal.SYSTEM_DEFAULT_SCALE;
         return PrimitiveObjectInspectorFactory.getPrimitiveJavaObjectInspector(
             TypeInfoFactory.getDecimalTypeInfo(precision, scale));
       case STRUCT:

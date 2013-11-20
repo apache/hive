@@ -42,7 +42,7 @@ DROP TABLE serde_regex;
 
 EXPLAIN
 CREATE TABLE serde_regex1(
-  key decimal(65,30),
+  key decimal(38,18),
   value int)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.RegexSerDe'
 WITH SERDEPROPERTIES (
@@ -51,7 +51,7 @@ WITH SERDEPROPERTIES (
 STORED AS TEXTFILE;
 
 CREATE TABLE serde_regex1(
-  key decimal(65,30),
+  key decimal(38,18),
   value int)
 ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.RegexSerDe'
 WITH SERDEPROPERTIES (

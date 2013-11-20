@@ -2,12 +2,12 @@ PREHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF
 PREHOOK: type: DROPTABLE
 POSTHOOK: query: DROP TABLE IF EXISTS DECIMAL_UDF
 POSTHOOK: type: DROPTABLE
-PREHOOK: query: CREATE TABLE DECIMAL_UDF (key decimal(65,30), value int) 
+PREHOOK: query: CREATE TABLE DECIMAL_UDF (key decimal(38,18), value int)
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
 PREHOOK: type: CREATETABLE
-POSTHOOK: query: CREATE TABLE DECIMAL_UDF (key decimal(65,30), value int) 
+POSTHOOK: query: CREATE TABLE DECIMAL_UDF (key decimal(38,18), value int)
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE
@@ -41,7 +41,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: (key + key)
-                  type: decimal(65,30)
+                  type: decimal(38,18)
             outputColumnNames: _col0
             ListSink
 
@@ -89,7 +89,7 @@ NULL
 6.28
 6.28
 6.28
-1.9999999999999999999999998
+2
 -2469135780.246913578
 2469135780.24691356
 PREHOOK: query: EXPLAIN SELECT key + value FROM DECIMAL_UDF
@@ -112,7 +112,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: (key + value)
-                  type: decimal(65,30)
+                  type: decimal(38,18)
             outputColumnNames: _col0
             ListSink
 
@@ -160,7 +160,7 @@ NULL
 6.14
 6.14
 7.14
-1.9999999999999999999999999
+2
 -2469135780.123456789
 2469135780.12345678
 PREHOOK: query: EXPLAIN SELECT key + (value/2) FROM DECIMAL_UDF
@@ -183,7 +183,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: (key + (value / 2))
-                  type: decimal(65,30)
+                  type: decimal(38,18)
             outputColumnNames: _col0
             ListSink
 
@@ -231,7 +231,7 @@ NULL
 4.64
 4.64
 5.14
-1.4999999999999999999999999
+1.5
 -1851851835.123456789
 1851851835.12345678
 PREHOOK: query: EXPLAIN SELECT key + '1.0' FROM DECIMAL_UDF
@@ -327,7 +327,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: (key - key)
-                  type: decimal(65,30)
+                  type: decimal(38,18)
             outputColumnNames: _col0
             ListSink
 
@@ -398,7 +398,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: (key - value)
-                  type: decimal(65,30)
+                  type: decimal(38,18)
             outputColumnNames: _col0
             ListSink
 
@@ -446,7 +446,7 @@ NULL
 0.14
 0.14
 -0.86
--0.0000000000000000000000001
+0
 -0.123456789
 0.12345678
 PREHOOK: query: EXPLAIN SELECT key - (value/2) FROM DECIMAL_UDF
@@ -469,7 +469,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: (key - (value / 2))
-                  type: decimal(65,30)
+                  type: decimal(38,18)
             outputColumnNames: _col0
             ListSink
 
@@ -517,7 +517,7 @@ NULL
 1.64
 1.64
 1.14
-0.4999999999999999999999999
+0.5
 -617283945.123456789
 617283945.12345678
 PREHOOK: query: EXPLAIN SELECT key - '1.0' FROM DECIMAL_UDF
@@ -613,7 +613,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: (key * key)
-                  type: decimal(65,30)
+                  type: decimal(38,36)
             outputColumnNames: _col0
             ListSink
 
@@ -626,17 +626,17 @@ POSTHOOK: query: SELECT key * key FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-19360000
+NULL
 NULL
 0
 0
-10000
-100
+NULL
+NULL
 1
 0.01
 0.0001
-40000
-400
+NULL
+NULL
 4
 0
 0.04
@@ -655,15 +655,15 @@ NULL
 1.258884
 1.2544
 1.258884
-15376
-15675.04
-1576255.1401
-9.8596
-9.8596
-9.8596
 NULL
-1524157875323883675.019051998750190521
-1524157875323883652.7968299765279684
+NULL
+NULL
+9.8596
+9.8596
+9.8596
+1
+NULL
+NULL
 PREHOOK: query: EXPLAIN SELECT key * value FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key * value FROM DECIMAL_UDF
@@ -684,7 +684,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: (key * value)
-                  type: decimal(65,30)
+                  type: decimal(38,18)
             outputColumnNames: _col0
             ListSink
 
@@ -732,7 +732,7 @@ NULL
 9.42
 9.42
 12.56
-0.9999999999999999999999999
+1
 1524157875171467887.50190521
 1524157875171467876.3907942
 PREHOOK: query: EXPLAIN SELECT key * (value/2) FROM DECIMAL_UDF
@@ -755,7 +755,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: (key * (value / 2))
-                  type: decimal(65,30)
+                  type: decimal(38,24)
             outputColumnNames: _col0
             ListSink
 
@@ -803,9 +803,9 @@ NULL
 4.71
 4.71
 6.28
-0.49999999999999999999999995
-762078937585733943.750952605
-762078937585733938.1953971
+0.5
+NULL
+NULL
 PREHOOK: query: EXPLAIN SELECT key * '2.0' FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key * '2.0' FROM DECIMAL_UDF
@@ -899,7 +899,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: (key / 0)
-                  type: decimal(65,30)
+                  type: decimal(38,20)
             outputColumnNames: _col0
             Limit
               ListSink
@@ -973,7 +973,7 @@ STAGE PLANS:
             Select Operator
               expressions:
                     expr: (key / key)
-                    type: decimal(65,30)
+                    type: decimal(38,38)
               outputColumnNames: _col0
               ListSink
 
@@ -986,40 +986,40 @@ POSTHOOK: query: SELECT key / key FROM DECIMAL_UDF WHERE key is not null and key
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
-1
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
+NULL
 PREHOOK: query: EXPLAIN SELECT key / value FROM DECIMAL_UDF WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key / value FROM DECIMAL_UDF WHERE value is not null and value <> 0
@@ -1044,7 +1044,7 @@ STAGE PLANS:
             Select Operator
               expressions:
                     expr: (key / value)
-                    type: decimal(65,30)
+                    type: decimal(38,29)
               outputColumnNames: _col0
               ListSink
 
@@ -1066,7 +1066,7 @@ POSTHOOK: Input: default@decimal_udf
 1
 1
 1
-1.046666666666666666666666666667
+1.04666666666666666666666666667
 1.12
 1.12
 0.102
@@ -1074,13 +1074,13 @@ POSTHOOK: Input: default@decimal_udf
 1.122
 1
 1.0016
-1.000390438247011952191235059761
-1.046666666666666666666666666667
-1.046666666666666666666666666667
+1.00039043824701195219123505976
+1.04666666666666666666666666667
+1.04666666666666666666666666667
 0.785
-0.9999999999999999999999999
-1.0000000001
-1.000000000099999992709999933661
+1
+NULL
+NULL
 PREHOOK: query: EXPLAIN SELECT key / (value/2) FROM DECIMAL_UDF  WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key / (value/2) FROM DECIMAL_UDF  WHERE value is not null and value <> 0
@@ -1105,7 +1105,7 @@ STAGE PLANS:
             Select Operator
               expressions:
                     expr: (key / (value / 2))
-                    type: decimal(65,30)
+                    type: decimal(38,35)
               outputColumnNames: _col0
               ListSink
 
@@ -1118,7 +1118,7 @@ POSTHOOK: query: SELECT key / (value/2) FROM DECIMAL_UDF  WHERE value is not nul
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--2
+NULL
 2
 2
 2
@@ -1127,7 +1127,7 @@ POSTHOOK: Input: default@decimal_udf
 2
 2
 2
-2.093333333333333333333333333333
+2.09333333333333333333333333333333333
 2.24
 2.24
 0.204
@@ -1135,13 +1135,13 @@ POSTHOOK: Input: default@decimal_udf
 2.244
 2
 2.0032
-2.000780876494023904382470119522
-2.093333333333333333333333333333
-2.093333333333333333333333333333
+NULL
+2.09333333333333333333333333333333333
+2.09333333333333333333333333333333333
 1.57
-1.9999999999999999999999998
-2.0000000002
-2.000000000199999985419999867322
+2
+NULL
+NULL
 PREHOOK: query: EXPLAIN SELECT key / '2.0' FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT key / '2.0' FROM DECIMAL_UDF
@@ -1235,7 +1235,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: abs(key)
-                  type: decimal(65,30)
+                  type: decimal(38,18)
             outputColumnNames: _col0
             ListSink
 
@@ -1283,7 +1283,7 @@ NULL
 3.14
 3.14
 3.14
-0.9999999999999999999999999
+1
 1234567890.123456789
 1234567890.12345678
 PREHOOK: query: -- avg
@@ -1312,7 +1312,7 @@ STAGE PLANS:
                     expr: value
                     type: int
                     expr: key
-                    type: decimal(65,30)
+                    type: decimal(38,18)
               outputColumnNames: value, key
               Group By Operator
                 aggregations:
@@ -1336,11 +1336,11 @@ STAGE PLANS:
                   tag: -1
                   value expressions:
                         expr: _col1
-                        type: decimal(65,30)
+                        type: decimal(38,18)
                         expr: _col2
                         type: bigint
                         expr: _col3
-                        type: struct<count:bigint,sum:decimal(65,30)>
+                        type: struct<count:bigint,sum:decimal(38,18)>
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1358,9 +1358,9 @@ STAGE PLANS:
                   expr: _col0
                   type: int
                   expr: (_col1 / _col2)
-                  type: decimal(65,30)
+                  type: decimal(38,38)
                   expr: _col3
-                  type: decimal(65,30)
+                  type: decimal(38,18)
             outputColumnNames: _col0, _col1, _col2
             File Output Operator
               compressed: false
@@ -1385,9 +1385,9 @@ STAGE PLANS:
                     expr: _col0
                     type: int
                     expr: _col1
-                    type: decimal(65,30)
+                    type: decimal(38,38)
                     expr: _col2
-                    type: decimal(65,30)
+                    type: decimal(38,18)
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -1411,23 +1411,23 @@ POSTHOOK: query: SELECT value, sum(key) / count(key), avg(key) FROM DECIMAL_UDF 
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--1234567890	-1234567890.123456789	-1234567890.123456789
--1255	-1255.49	-1255.49
--11	-1.122	-1.122
--1	-1.12	-1.12
-0	0.025384615384615384615384615385	0.025384615384615384615384615385
-1	1.04839999999999999999999998	1.04839999999999999999999998
-2	2	2
-3	3.14	3.14
-4	3.14	3.14
-10	10	10
-20	20	20
-100	100	100
-124	124	124
-125	125.2	125.2
-200	200	200
-4400	-4400	-4400
-1234567890	1234567890.12345678	1234567890.12345678
+-1234567890	NULL	-1234567890.123456789
+-1255	NULL	-1255.49
+-11	NULL	-1.122
+-1	NULL	-1.12
+0	NULL	0.025384615384615385
+1	NULL	1.0484
+2	NULL	2
+3	NULL	3.14
+4	NULL	3.14
+10	NULL	10
+20	NULL	20
+100	NULL	100
+124	NULL	124
+125	NULL	125.2
+200	NULL	200
+4400	NULL	-4400
+1234567890	NULL	1234567890.12345678
 PREHOOK: query: -- negative
 EXPLAIN SELECT -key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -1450,7 +1450,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: (- key)
-                  type: decimal(65,30)
+                  type: decimal(38,18)
             outputColumnNames: _col0
             ListSink
 
@@ -1498,7 +1498,7 @@ NULL
 -3.14
 -3.14
 -3.14
--0.9999999999999999999999999
+-1
 1234567890.123456789
 -1234567890.12345678
 PREHOOK: query: -- positive
@@ -1523,7 +1523,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: key
-                  type: decimal(65,30)
+                  type: decimal(38,18)
             outputColumnNames: _col0
             ListSink
 
@@ -1571,7 +1571,7 @@ NULL
 3.14
 3.14
 3.14
-0.9999999999999999999999999
+1
 -1234567890.123456789
 1234567890.12345678
 PREHOOK: query: -- ceiling
@@ -1596,7 +1596,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: ceil(key)
-                  type: decimal(65,30)
+                  type: decimal(38,18)
             outputColumnNames: _col0
             ListSink
 
@@ -1669,7 +1669,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: floor(key)
-                  type: decimal(65,30)
+                  type: decimal(38,18)
             outputColumnNames: _col0
             ListSink
 
@@ -1717,7 +1717,7 @@ NULL
 3
 3
 3
-0
+1
 -1234567891
 1234567890
 PREHOOK: query: -- round
@@ -1742,7 +1742,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: round(key, 2)
-                  type: decimal(38,2)
+                  type: decimal(23,2)
             outputColumnNames: _col0
             ListSink
 
@@ -1815,7 +1815,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: power(key, 2)
-                  type: decimal(65,30)
+                  type: decimal(38,18)
             outputColumnNames: _col0
             ListSink
 
@@ -1863,7 +1863,7 @@ NULL
 9.8596
 9.8596
 9.8596
-NULL
+1
 1524157875323883675.019051998750190521
 1524157875323883652.7968299765279684
 PREHOOK: query: -- modulo
@@ -1888,7 +1888,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: ((key + 1) % (key / 2))
-                  type: decimal(65,30)
+                  type: decimal(38,20)
             outputColumnNames: _col0
             ListSink
 
@@ -1936,7 +1936,7 @@ NULL
 1
 1
 1
-0.0000000000000000000000001
+0
 -617283944.0617283945
 1
 PREHOOK: query: -- stddev, var
@@ -1964,7 +1964,7 @@ STAGE PLANS:
                     expr: value
                     type: int
                     expr: key
-                    type: decimal(65,30)
+                    type: decimal(38,18)
               outputColumnNames: value, key
               Group By Operator
                 aggregations:
@@ -2073,7 +2073,7 @@ STAGE PLANS:
                     expr: value
                     type: int
                     expr: key
-                    type: decimal(65,30)
+                    type: decimal(38,18)
               outputColumnNames: value, key
               Group By Operator
                 aggregations:
@@ -2180,7 +2180,7 @@ STAGE PLANS:
             Select Operator
               expressions:
                     expr: key
-                    type: decimal(65,30)
+                    type: decimal(38,18)
               outputColumnNames: key
               Group By Operator
                 aggregations:
@@ -2251,7 +2251,7 @@ STAGE PLANS:
             Select Operator
               expressions:
                     expr: key
-                    type: decimal(65,30)
+                    type: decimal(38,18)
               outputColumnNames: key
               Group By Operator
                 aggregations:
@@ -2264,7 +2264,7 @@ STAGE PLANS:
                   tag: -1
                   value expressions:
                         expr: _col0
-                        type: decimal(65,30)
+                        type: decimal(38,18)
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -2275,7 +2275,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: _col0
-                  type: decimal(65,30)
+                  type: decimal(38,18)
             outputColumnNames: _col0
             File Output Operator
               compressed: false
@@ -2322,7 +2322,7 @@ STAGE PLANS:
             Select Operator
               expressions:
                     expr: key
-                    type: decimal(65,30)
+                    type: decimal(38,18)
               outputColumnNames: key
               Group By Operator
                 aggregations:
@@ -2335,7 +2335,7 @@ STAGE PLANS:
                   tag: -1
                   value expressions:
                         expr: _col0
-                        type: decimal(65,30)
+                        type: decimal(38,18)
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -2346,7 +2346,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: _col0
-                  type: decimal(65,30)
+                  type: decimal(38,18)
             outputColumnNames: _col0
             File Output Operator
               compressed: false
@@ -2393,7 +2393,7 @@ STAGE PLANS:
             Select Operator
               expressions:
                     expr: key
-                    type: decimal(65,30)
+                    type: decimal(38,18)
               outputColumnNames: key
               Group By Operator
                 aggregations:

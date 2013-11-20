@@ -64,8 +64,8 @@ public final class TypeInfoFactory {
   /**
    * A DecimalTypeInfo instance that has max precision and max scale.
    */
-  public static final DecimalTypeInfo decimalTypeInfo = new DecimalTypeInfo(HiveDecimal.MAX_PRECISION,
-      HiveDecimal.MAX_SCALE);
+  public static final DecimalTypeInfo decimalTypeInfo = new DecimalTypeInfo(HiveDecimal.SYSTEM_DEFAULT_PRECISION,
+      HiveDecimal.SYSTEM_DEFAULT_SCALE);
 
   public static final PrimitiveTypeInfo unknownTypeInfo = new PrimitiveTypeInfo("unknown");
 
