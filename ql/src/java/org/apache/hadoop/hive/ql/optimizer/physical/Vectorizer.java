@@ -450,8 +450,10 @@ public class Vectorizer implements PhysicalPlanResolver {
       case REDUCESINK:
         ret = validateReduceSinkOperator((ReduceSinkOperator) op);
         break;
-      case FILESINK:
       case TABLESCAN:
+        ret = validateTableScanOperator((TableScanOperator) op);
+        break;
+      case FILESINK:
       case LIMIT:
         ret = true;
         break;
@@ -460,6 +462,11 @@ public class Vectorizer implements PhysicalPlanResolver {
         break;
     }
     return ret;
+  }
+
+  private boolean validateTableScanOperator(TableScanOperator op) {
+    TableScanDesc desc = op.getConf();
+    return !desc.isGatherStats();
   }
 
   private boolean validateMapJoinOperator(MapJoinOperator op) {
