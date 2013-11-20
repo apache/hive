@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -15,8 +16,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# Resolve our absolute path                                                      
-# resolve links - $0 may be a softlink                                           
+# Resolve our absolute path
+# resolve links - $0 may be a softlink
 
 import os
 import sys
@@ -55,7 +56,7 @@ except ValueError:
 hcatcfg.findHive()
 if 'HIVE_HOME' not in os.environ:
   sys.exit("Hive not found.  Set HIVE_HOME to directory containing Hive.")
-    
+
 if 'HIVE_LIB_DIR' not in os.environ:
   sys.exit("Cannot find lib dir within HIVE_HOME %s" % (os.environ['HIVE_HOME'] + os.path.sep + "lib"))
 
@@ -66,13 +67,13 @@ if 'HIVE_CONF_DIR' not in os.environ:
 # find the hcatalog jar and add it to hadoop classpath
 hcatPrefix = hcatcfg.findHCatPrefix(bindir)
 
-hcatJars = glob.glob(os.path.join(hcatPrefix, 'share', 'hcatalog', 'hcatalog-core-*.jar'))
+hcatJars = glob.glob(os.path.join(hcatPrefix, 'share', 'hcatalog', 'hive-hcatalog-core-*.jar'))
 
 if len(hcatJars) > 1:
   sys.exit("Found more than one hcatalog jar in the prefix path")
 
 if len(hcatJars) < 1:
-  sys.exit("HCatalog jar not found in directory %s" % (os.path.join(hcatPrefix, 'share', 'hcatalog', 'hcatalog-core-*.jar')))
+  sys.exit("HCatalog jar not found in directory %s" % (os.path.join(hcatPrefix, 'share', 'hcatalog', 'hive-hcatalog-core-*.jar')))
 
 if 'HADOOP_CLASSPATH' not in os.environ:
   os.putenv('HADOOP_CLASSPATH', '')
@@ -100,7 +101,7 @@ os.environ['HADOOP_CLASSPATH'] += os.pathsep + os.environ['HIVE_CONF_DIR']
 
 # if the hbase conf dir is present in the environment, add it.
 # there are no checks to see if that path exists
-# FIXME add check - original shell script does not do much if the path 
+# FIXME add check - original shell script does not do much if the path
 # does not exist either
 try:
   if os.environ['HBASE_CONF_DIR'] != "":
