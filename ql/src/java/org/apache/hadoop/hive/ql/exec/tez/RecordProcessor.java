@@ -39,7 +39,7 @@ public abstract class RecordProcessor  {
 
   protected JobConf jconf;
   protected Map<String, LogicalInput> inputs;
-  protected OutputCollector out;
+  protected Map<String, OutputCollector> outMap;
 
   public static final Log l4j = LogFactory.getLog(RecordProcessor.class);
 
@@ -63,11 +63,11 @@ public abstract class RecordProcessor  {
    * @param out
    */
   void init(JobConf jconf, MRTaskReporter mrReporter, Map<String, LogicalInput> inputs,
-      OutputCollector out){
+      Map<String, OutputCollector> outMap){
     this.jconf = jconf;
     this.reporter = mrReporter;
     this.inputs = inputs;
-    this.out = out;
+    this.outMap = outMap;
 
     // Allocate the bean at the beginning -
     memoryMXBean = ManagementFactory.getMemoryMXBean();

@@ -34,10 +34,12 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.exec.ConditionalTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
+import org.apache.hadoop.hive.ql.exec.ForwardOperator;
 import org.apache.hadoop.hive.ql.exec.JoinOperator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
@@ -150,6 +152,40 @@ public class TezCompiler extends TaskCompiler {
           NodeProcessorCtx procCtx, Object... os) throws SemanticException {
         throw new SemanticException("Unions not yet supported on Tez."
             +" Please use MR for this query");
+      }
+    });
+
+    opRules.put(new RuleRegExp("Setup table scan",
+        TableScanOperator.getOperatorName() + "%"), new NodeProcessor()
+    {
+      @Override
+      public Object process(Node n, Stack<Node> s,
+          NodeProcessorCtx procCtx, Object... os) throws SemanticException {
+        GenTezProcContext context = (GenTezProcContext) procCtx;
+        TableScanOperator tableScan = (TableScanOperator) n;
+        LOG.debug("TableScan operator ("+tableScan
+            +"). Number of branches: "+tableScan.getNumChild());
+        context.lastRootOfMultiChildOperator.push(tableScan);
+        context.currentBranchCount.push(tableScan.getNumChild());
+        context.lastWorkForMultiChildOperator.push(null);
+        return null;
+      }
+    });
+
+    opRules.put(new RuleRegExp("Handle Forward opertor",
+        ForwardOperator.getOperatorName() + "%"), new NodeProcessor()
+    {
+      @Override
+      public Object process(Node n, Stack<Node> s,
+          NodeProcessorCtx procCtx, Object... os) throws SemanticException {
+        GenTezProcContext context = (GenTezProcContext) procCtx;
+        ForwardOperator forward = (ForwardOperator) n;
+        LOG.debug("Forward operator ("+forward+
+            "). Number of branches: "+forward.getNumChild());
+        context.lastRootOfMultiChildOperator.push(context.currentRootOperator);
+        context.currentBranchCount.push(forward.getNumChild());
+        context.lastWorkForMultiChildOperator.push(null);
+        return null;
       }
     });
 

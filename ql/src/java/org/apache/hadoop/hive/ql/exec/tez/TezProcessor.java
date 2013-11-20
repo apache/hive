@@ -17,12 +17,14 @@
  */
 package org.apache.hadoop.hive.ql.exec.tez;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.tez.TezProcessor.KVOutputCollector;
 import org.apache.hadoop.hive.ql.log.PerfLogger;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.OutputCollector;
@@ -89,17 +91,14 @@ public class TezProcessor implements LogicalIOProcessor {
 
     LOG.info("Running map: " + processorContext.getUniqueIdentifier());
 
-    if(outputs.size() > 1) {
-          throw new IOException("Cannot handle more than one output"
-          + ", outputCount=" + outputs.size());
+    Map<String, OutputCollector> outMap = new HashMap<String, OutputCollector>();
+
+    for (String outputName: outputs.keySet()) {
+      LOG.info("Handling output: " + outputName);
+      KeyValueWriter kvWriter = (KeyValueWriter) outputs.get(outputName).getWriter();
+      OutputCollector collector = new KVOutputCollector(kvWriter);
+      outMap.put(outputName, collector);
     }
-
-    LogicalOutput out = outputs.values().iterator().next();
-
-
-
-    KeyValueWriter kvWriter = (KeyValueWriter)out.getWriter();
-    OutputCollector collector = new KVOutputCollector(kvWriter);
 
     if(isMap){
       rproc = new MapRecordProcessor();
@@ -109,7 +108,7 @@ public class TezProcessor implements LogicalIOProcessor {
     }
 
     MRTaskReporter mrReporter = new MRTaskReporter(processorContext);
-    rproc.init(jobConf, mrReporter, inputs, collector);
+    rproc.init(jobConf, mrReporter, inputs, outMap);
     rproc.run();
 
     //done - output does not need to be committed as hive does not use outputcommitter
