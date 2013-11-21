@@ -33,4 +33,6 @@ public interface VectorExpressionWriter {
   Object writeValue(long value) throws HiveException;
   Object writeValue(double value) throws HiveException;
   Object writeValue(byte[] value, int start, int length) throws HiveException;
+  Object setValue(Object row, ColumnVector column, int columnRow) throws HiveException;
+  Object initValue(Object ost) throws HiveException;
 }
