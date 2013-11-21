@@ -2056,6 +2056,24 @@
 </property>
 
 <property>
+  <name>hive.vectorized.groupby.maxentries</name>
+  <value>1000000</value>
+  <description>Max number of entries in the vector group by aggregation hashtables. Exceeding this will trigger a flush irrelevant of memory pressure condition.</description>
+</property>
+
+<property>
+  <name>hive.vectorized.groupby.checkinterval</name>
+  <value>100000</value>
+  <description>Number of entries added to the group by aggregation hash before a reocmputation of average entry size is performed.</description>
+</property>
+
+<property>
+  <name>hive.vectorized.groupby.flush.percent</name>
+  <value>0.1</value>
+  <description>Percent of entries in the group by aggregation hash flushed when the memory treshold is exceeded.</description>
+</property>
+
+<property>
   <name>hive.compute.query.using.stats</name>
   <value>false</value>
   <description>
@@ -2064,7 +2082,6 @@
   For more advanced stats collection need to run analyze table queries.
   </description>
 </property>
-
 
 <property>
   <name>hive.metastore.schema.verification</name>
