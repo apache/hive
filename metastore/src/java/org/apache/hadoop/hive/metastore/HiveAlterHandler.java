@@ -156,7 +156,7 @@ public class HiveAlterHandler implements AlterHandler {
         destPath = new Path(newTblLoc);
         destFs = wh.getFs(destPath);
         // check that src and dest are on the same file system
-        if (srcFs != destFs) {
+        if (! equalsFileSystem(srcFs, destFs)) {
           throw new InvalidOperationException("table new location " + destPath
               + " is on a different file system than the old location "
               + srcPath + ". This operation is not supported");
@@ -249,6 +249,21 @@ public class HiveAlterHandler implements AlterHandler {
     if (!success) {
       throw new MetaException("Committing the alter table transaction was not successful.");
     }
+  }
+
+  /**
+   * @param fs1
+   * @param fs2
+   * @return return true if both file system arguments point to same file system
+   */
+  private boolean equalsFileSystem(FileSystem fs1, FileSystem fs2) {
+    //When file system cache is disabled, you get different FileSystem objects
+    // for same file system, so '==' can't be used in such cases
+    //FileSystem api doesn't have a .equals() function implemented, so using
+    //the uri for comparison. FileSystem already uses uri+Configuration for
+    //equality in its CACHE .
+    //Once equality has been added in HDFS-4321, we should make use of it
+    return fs1.getUri().equals(fs2.getUri());
   }
 
   public Partition alterPartition(final RawStore msdb, Warehouse wh, final String dbname,
