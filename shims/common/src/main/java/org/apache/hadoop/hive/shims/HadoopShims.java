@@ -303,6 +303,13 @@ public interface HadoopShims {
    */
   public void reLoginUserFromKeytab() throws IOException;
 
+  /***
+   * Check if the current UGI is keytab based
+   * @return
+   * @throws IOException
+   */
+  public boolean isLoginKeytabBased() throws IOException;
+
   /**
    * Move the directory/file to trash. In case of the symlinks or mount points, the file is
    * moved to the trashbin in the actual volume of the path p being deleted
