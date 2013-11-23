@@ -1897,7 +1897,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private Operator genHavingPlan(String dest, QB qb, Operator input)
+  private Operator genHavingPlan(String dest, QB qb, Operator input,
+      Map<String, Operator> aliasToOpInfo)
       throws SemanticException {
 
     ASTNode havingExpr = qb.getParseInfo().getHavingForClause(dest);
@@ -1912,21 +1913,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     ASTNode condn = (ASTNode) havingExpr.getChild(0);
 
-    Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new FilterDesc(genExprNodeDesc(condn, inputRR), false), new RowSchema(
-            inputRR.getColumnInfos()), input), inputRR);
-
+    /*
+     * Now a having clause can contain a SubQuery predicate;
+     * so we invoke genFilterPlan to handle SubQuery algebraic transformation,
+     * just as is done for SubQuery predicates appearing in the Where Clause.
+     */
+    Operator output = genFilterPlan(condn, qb, input, aliasToOpInfo, true);
+    output = putOpInsertMap(output, inputRR);
     return output;
   }
 
   @SuppressWarnings("nls")
-  private Operator genFilterPlan(String dest, QB qb, Operator input,
-      Map<String, Operator> aliasToOpInfo)
+  private Operator genFilterPlan(ASTNode searchCond, QB qb, Operator input,
+      Map<String, Operator> aliasToOpInfo,
+      boolean forHavingClause)
       throws SemanticException {
 
     OpParseContext inputCtx = opParseCtx.get(input);
     RowResolver inputRR = inputCtx.getRowResolver();
-    ASTNode whereExpr = qb.getParseInfo().getWhrForClause(dest);
 
     /*
      * Handling of SubQuery Expressions:
@@ -1949,8 +1953,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
      *     --> ===CONTINUE_FILTER_PROCESSING===
      *   endif
      * endif
+     * 
+     * Support for Sub Queries in Having Clause:
+     * - By and large this works the same way as SubQueries in the Where Clause.
+     * - The one addum is the handling of aggregation expressions from the Outer Query
+     *   appearing in correlation clauses. 
+     *   - So such correlating predicates are allowed:
+     *        min(OuterQuert.x) = SubQuery.y
+     *   - this requires special handling when converting to joins. See QBSubQuery.rewrite
+     *     method method for detailed comments. 
      */
-    ASTNode searchCond = (ASTNode) whereExpr.getChild(0);
     List<ASTNode> subQueriesInOriginalTree = SubQueryUtils.findSubQueries(searchCond);
 
     if ( subQueriesInOriginalTree.size() > 0 ) {
@@ -1982,13 +1994,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ASTNode subQueryAST = subQueries.get(i);
         ASTNode originalSubQueryAST = subQueriesInOriginalTree.get(i);
 
-        int sqIdx = i+1;
+        int sqIdx = qb.incrNumSubQueryPredicates();
         clonedSearchCond = SubQueryUtils.rewriteParentQueryWhere(clonedSearchCond, subQueryAST);
 
         QBSubQuery subQuery = SubQueryUtils.buildSubQuery(qb.getId(),
             sqIdx, subQueryAST, originalSubQueryAST, ctx);
+        
+        String havingInputAlias = null;
+        
+        if ( forHavingClause ) {
+        	havingInputAlias = "gby_sq" + sqIdx;
+        	aliasToOpInfo.put(havingInputAlias, input);
+        }
 
-        subQuery.validateAndRewriteAST(inputRR);
+        subQuery.validateAndRewriteAST(inputRR, forHavingClause, havingInputAlias);
 
         QB qbSQ = new QB(subQuery.getOuterQueryId(), subQuery.getAlias(), true);
         qbSQ.setSubQueryDef(subQuery);
@@ -2014,7 +2033,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         /*
          * Gen Join between outer Operator and SQ op
          */
-        subQuery.buildJoinCondition(inputRR, sqRR);
+        subQuery.buildJoinCondition(inputRR, sqRR, forHavingClause, havingInputAlias);
         QBJoinTree joinTree = genSQJoinTree(qb, subQuery,
             input,
             aliasToOpInfo);
@@ -4410,14 +4429,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       curr = forwardOp;
 
       if (parseInfo.getWhrForClause(dest) != null) {
-        curr = genFilterPlan(dest, qb, forwardOp, aliasToOpInfo);
+        ASTNode whereExpr = qb.getParseInfo().getWhrForClause(dest);
+        curr = genFilterPlan((ASTNode) whereExpr.getChild(0), qb, forwardOp, aliasToOpInfo, false);
       }
 
       // Generate GroupbyOperator
       Operator groupByOperatorInfo = genGroupByPlanGroupByOperator(parseInfo,
           dest, curr, reduceSinkOperatorInfo, GroupByDesc.Mode.COMPLETE, null);
 
-      curr = genPostGroupByBodyPlan(groupByOperatorInfo, dest, qb);
+      curr = genPostGroupByBodyPlan(groupByOperatorInfo, dest, qb, aliasToOpInfo);
     }
 
     return curr;
@@ -7777,7 +7797,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               curr = inputs.get(dest);
 
               if (qbp.getWhrForClause(dest) != null) {
-                curr = genFilterPlan(dest, qb, curr, aliasToOpInfo);
+                ASTNode whereExpr = qb.getParseInfo().getWhrForClause(dest);
+                curr = genFilterPlan((ASTNode) whereExpr.getChild(0), qb, curr, aliasToOpInfo, false);
               }
 
               if (qbp.getAggregationExprsForClause(dest).size() != 0
@@ -7804,7 +7825,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 }
               }
 
-              curr = genPostGroupByBodyPlan(curr, dest, qb);
+              curr = genPostGroupByBodyPlan(curr, dest, qb, aliasToOpInfo);
             }
           } else {
             curr = genGroupByPlan1ReduceMultiGBY(commonGroupByDestGroup, qb, input, aliasToOpInfo);
@@ -7830,7 +7851,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return inputs;
   }
 
-  private Operator genPostGroupByBodyPlan(Operator curr, String dest, QB qb)
+  private Operator genPostGroupByBodyPlan(Operator curr, String dest, QB qb,
+      Map<String, Operator> aliasToOpInfo)
       throws SemanticException {
 
     QBParseInfo qbp = qb.getParseInfo();
@@ -7840,7 +7862,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (getGroupByForClause(qbp, dest).size() == 0) {
         throw new SemanticException("HAVING specified without GROUP BY");
       }
-      curr = genHavingPlan(dest, qb, curr);
+      curr = genHavingPlan(dest, qb, curr, aliasToOpInfo);
     }
 
 

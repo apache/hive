@@ -69,6 +69,14 @@ public class QB {
    * If this QB represents a SubQuery predicate then this will point to the SubQuery object.
    */
   private QBSubQuery subQueryPredicateDef;
+  
+	/*
+	 * used to give a unique name to each SubQuery QB Currently there can be at
+	 * most 2 SubQueries in a Query: 1 in the Where clause, and 1 in the Having
+	 * clause.
+	 */
+	private int numSubQueryPredicates;
+  
 
   // results
 
@@ -320,5 +328,13 @@ public class QB {
   protected QBSubQuery getSubQueryPredicateDef() {
     return subQueryPredicateDef;
   }
+  
+	protected int getNumSubQueryPredicates() {
+		return numSubQueryPredicates;
+	}
+
+	protected int incrNumSubQueryPredicates() {
+		return ++numSubQueryPredicates;
+	}
 
 }
