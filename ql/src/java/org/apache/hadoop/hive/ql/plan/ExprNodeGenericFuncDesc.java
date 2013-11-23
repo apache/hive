@@ -133,7 +133,7 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
-    sb.append(genericUDF.getClass().toString());
+    sb.append(genericUDF.getClass().getSimpleName());
     sb.append("(");
     for (int i = 0; i < chidren.size(); i++) {
       if (i > 0) {
@@ -141,7 +141,6 @@ public class ExprNodeGenericFuncDesc extends ExprNodeDesc implements
       }
       sb.append(chidren.get(i).toString());
     }
-    sb.append("(");
     sb.append(")");
     return sb.toString();
   }
