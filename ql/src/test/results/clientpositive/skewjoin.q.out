@@ -1560,8 +1560,8 @@ STAGE PLANS:
                 1 {val}
               handleSkewJoin: false
               keys:
-                0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus(Column[key], Const int 1()]
-                1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+                0 [GenericUDFOPPlus(Column[key], Const int 1)]
+                1 [GenericUDFBridge(Column[key])]
               Position of Big Table: 0
 
   Stage: Stage-1
@@ -1578,8 +1578,8 @@ STAGE PLANS:
                 1 {val}
               handleSkewJoin: false
               keys:
-                0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus(Column[key], Const int 1()]
-                1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+                0 [GenericUDFOPPlus(Column[key], Const int 1)]
+                1 [GenericUDFBridge(Column[key])]
               outputColumnNames: _col0, _col5
               Position of Big Table: 0
               Select Operator
