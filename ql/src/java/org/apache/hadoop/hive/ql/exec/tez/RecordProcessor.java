@@ -72,18 +72,19 @@ public abstract class RecordProcessor  {
     // Allocate the bean at the beginning -
     memoryMXBean = ManagementFactory.getMemoryMXBean();
 
-
     l4j.info("maximum memory = " + memoryMXBean.getHeapMemoryUsage().getMax());
 
     isLogInfoEnabled = l4j.isInfoEnabled();
 
     //log classpaths
     try {
-      l4j.info("conf classpath = "
-          + Arrays.asList(((URLClassLoader) jconf.getClassLoader()).getURLs()));
-      l4j.info("thread classpath = "
-          + Arrays.asList(((URLClassLoader) Thread.currentThread()
-          .getContextClassLoader()).getURLs()));
+      if (l4j.isDebugEnabled()) {
+        l4j.debug("conf classpath = "
+            + Arrays.asList(((URLClassLoader) jconf.getClassLoader()).getURLs()));
+        l4j.debug("thread classpath = "
+            + Arrays.asList(((URLClassLoader) Thread.currentThread()
+            .getContextClassLoader()).getURLs()));
+      }
     } catch (Exception e) {
       l4j.info("cannot get classpath: " + e.getMessage());
     }

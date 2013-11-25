@@ -298,10 +298,10 @@ public final class Utilities {
         }
 
         if (HiveConf.getBoolVar(conf, ConfVars.HIVE_RPC_QUERY_PLAN)) {
-          LOG.info("Loading plan from: "+path.toUri().getPath());
+          LOG.debug("Loading plan from: "+path.toUri().getPath());
           String planString = conf.get(path.toUri().getPath());
           if (planString == null) {
-            LOG.info("Could not find plan!");
+            LOG.debug("Could not find plan string in conf");
             return null;
           }
           byte[] planBytes = Base64.decodeBase64(planString);
@@ -332,6 +332,8 @@ public final class Utilities {
           }
         }
         gWorkMap.put(path, gWork);
+      } else {
+        LOG.debug("Found plan in cache.");
       }
       return gWork;
     } catch (FileNotFoundException fnf) {

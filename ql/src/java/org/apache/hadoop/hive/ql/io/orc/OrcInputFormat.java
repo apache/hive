@@ -185,7 +185,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
     if (serializedPushdown == null
         || (conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR) == null
         && conf.get(serdeConstants.LIST_COLUMNS) == null)) {
-      LOG.info("No ORC pushdown predicate");
+      LOG.debug("No ORC pushdown predicate");
       return null;
     }
     SearchArgument sarg = SearchArgument.FACTORY.create
@@ -197,7 +197,9 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   public static String[] getIncludedColumnNames(
       List<OrcProto.Type> types, boolean[] includedColumns, Configuration conf) {
     String columnNamesString = conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR);
-    LOG.info("included columns names = " + columnNamesString);
+    if (LOG.isDebugEnabled()) {
+      LOG.debug("included columns names = " + columnNamesString);
+    }
     if (columnNamesString == null || conf.get(TableScanDesc.FILTER_EXPR_CONF_STR) == null) {
       return null;
     }
@@ -508,13 +510,14 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         } else {
           // Invalidate
           Context.footerCache.invalidate(file.getPath());
-          LOG.info("Meta-Info for : " + file.getPath() + " changed. CachedModificationTime: "
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Meta-Info for : " + file.getPath() + " changed. CachedModificationTime: "
               + fileInfo.modificationTime + ", CurrentModificationTime: "
               + file.getModificationTime()
               + ", CachedLength: " + fileInfo.size + ", CurrentLength: " + file.getLen());
+          }
         }
       } else {
-        LOG.info("Info not cached for path: " + file.getPath());
         if (LOG.isDebugEnabled()) {
           LOG.debug("Info not cached for path: " + file.getPath());
         }
