@@ -1555,7 +1555,7 @@ STAGE PLANS:
                   expr: (year <> 2001)
                   type: boolean
               Statistics:
-                  numRows: 1 dataSize: 325 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 0 dataSize: 162 basicStatsState: PARTIAL colStatsState: NONE
               Select Operator
                 expressions:
                       expr: state
@@ -1564,14 +1564,14 @@ STAGE PLANS:
                       type: int
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 1 dataSize: 325 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 0 dataSize: 162 basicStatsState: PARTIAL colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
                   Statistics:
-                      numRows: 1 dataSize: 325 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 0 dataSize: 162 basicStatsState: PARTIAL colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat

@@ -29,7 +29,7 @@ STAGE PLANS:
                   expr: ((rand(1) < 0.1) and (not ((key > 50) or (key < 10))))
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -42,14 +42,14 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics:
-                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
                   Statistics:
-                      numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                      numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -162,7 +162,7 @@ STAGE PLANS:
                   expr: (not ((key > 50) or (key < 10)))
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -175,14 +175,14 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics:
-                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
                   Statistics:
-                      numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                      numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat

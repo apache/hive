@@ -231,7 +231,7 @@ STAGE PLANS:
                 numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
             Limit
               Statistics:
-                  numRows: 0 dataSize: 0 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
               ListSink
 
 

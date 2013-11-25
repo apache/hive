@@ -25,6 +25,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
+import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.objectinspector.ConstantObjectInspector;
@@ -98,22 +99,6 @@ public class StatsUtils {
         }
       }
 
-      // if basic stats are not available then return
-      if (nr <= 0 && rds <= 0) {
-        stats.setBasicStatsState(Statistics.State.NONE);
-        return stats;
-      }
-
-      // if any basic stats is missing, mark it as partial stats
-      if (nr <= 0 || rds <= 0) {
-        stats.setBasicStatsState(Statistics.State.PARTIAL);
-      }
-
-      // if both are available then we have complete basic stats
-      if (nr > 0 && rds > 0) {
-        stats.setBasicStatsState(Statistics.State.COMPLETE);
-      }
-
       // number of rows -1 means that statistics from metastore is not reliable
       if (nr <= 0) {
         nr = 0;
@@ -177,25 +162,17 @@ public class StatsUtils {
           rds = getSumIgnoreNegatives(dataSizes);
         }
 
-        // basic stats
-        if (nr <= 0 && rds <= 0) {
-          stats.updateBasicStatsState(Statistics.State.NONE);
-        } else if (nr <= 0 || rds <= 0) {
-          stats.updateBasicStatsState(Statistics.State.PARTIAL);
-        } else {
-          if (containsNonPositives(rowCounts) || containsNonPositives(dataSizes)) {
-            stats.updateBasicStatsState(Statistics.State.PARTIAL);
-          } else {
-            stats.updateBasicStatsState(Statistics.State.COMPLETE);
-          }
-        }
-
         // number of rows -1 means that statistics from metastore is not reliable
         if (nr <= 0) {
           nr = 0;
         }
         stats.addToNumRows(nr);
         stats.addToDataSize(rds);
+
+        // if atleast a partition does not contain row count then mark basic stats state as PARTIAL
+        if (containsNonPositives(rowCounts)) {
+          stats.setBasicStatsState(State.PARTIAL);
+        }
 
         // column stats
         for (Partition part : partList.getNotDeniedPartns()) {
@@ -219,7 +196,6 @@ public class StatsUtils {
     }
 
     return stats;
-
   }
 
   /**

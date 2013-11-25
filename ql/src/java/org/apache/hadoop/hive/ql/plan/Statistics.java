@@ -49,8 +49,8 @@ public class Statistics implements Serializable {
   }
 
   public Statistics(long nr, long ds) {
-    this.numRows = nr;
-    this.dataSize = ds;
+    this.setNumRows(nr);
+    this.setDataSize(ds);
     this.basicStatsState = State.NONE;
     this.columnStats = null;
     this.columnStatsState = State.NONE;
@@ -62,6 +62,7 @@ public class Statistics implements Serializable {
 
   public void setNumRows(long numRows) {
     this.numRows = numRows;
+    updateBasicStatsState();
   }
 
   public long getDataSize() {
@@ -70,6 +71,17 @@ public class Statistics implements Serializable {
 
   public void setDataSize(long dataSize) {
     this.dataSize = dataSize;
+    updateBasicStatsState();
+  }
+
+  private void updateBasicStatsState() {
+    if (numRows <= 0 && dataSize <= 0) {
+      this.basicStatsState = State.NONE;
+    } else if (numRows <= 0 || dataSize <= 0) {
+      this.basicStatsState = State.PARTIAL;
+    } else {
+      this.basicStatsState = State.COMPLETE;
+    }
   }
 
   public State getBasicStatsState() {
@@ -120,10 +132,12 @@ public class Statistics implements Serializable {
 
   public void addToNumRows(long nr) {
     numRows += nr;
+    updateBasicStatsState();
   }
 
   public void addToDataSize(long rds) {
     dataSize += rds;
+    updateBasicStatsState();
   }
 
   public void setColumnStats(Map<String, ColStatistics> colStats) {
@@ -162,37 +176,14 @@ public class Statistics implements Serializable {
     }
   }
 
-  // newState
+  //                  newState
   //                  -----------------------------------------
-  // basicStatsState  | COMPLETE          PARTIAL      NONE    |
+  // columnStatsState | COMPLETE          PARTIAL      NONE    |
   //                  |________________________________________|
   //         COMPLETE | COMPLETE          PARTIAL      PARTIAL |
   //          PARTIAL | PARTIAL           PARTIAL      PARTIAL |
   //             NONE | COMPLETE          PARTIAL      NONE    |
   //                  -----------------------------------------
-  public void updateBasicStatsState(State newState) {
-    if (newState.equals(State.PARTIAL)) {
-      basicStatsState = State.PARTIAL;
-    }
-
-    if (newState.equals(State.NONE)) {
-      if (basicStatsState.equals(State.NONE)) {
-        basicStatsState = State.NONE;
-      } else {
-        basicStatsState = State.PARTIAL;
-      }
-    }
-
-    if (newState.equals(State.COMPLETE)) {
-      if (basicStatsState.equals(State.PARTIAL)) {
-        basicStatsState = State.PARTIAL;
-      } else {
-        basicStatsState = State.COMPLETE;
-      }
-    }
-  }
-
-  // similar to the table above for basic stats
   public void updateColumnStatsState(State newState) {
     if (newState.equals(State.PARTIAL)) {
       columnStatsState = State.PARTIAL;
@@ -216,11 +207,11 @@ public class Statistics implements Serializable {
   }
 
   public long getAvgRowSize() {
-    if (basicStatsState.equals(State.COMPLETE) && numRows != 0) {
+    if (numRows != 0) {
       return dataSize / numRows;
     }
 
-    return 0;
+    return dataSize;
   }
 
   public ColStatistics getColumnStatisticsFromFQColName(String fqColName) {

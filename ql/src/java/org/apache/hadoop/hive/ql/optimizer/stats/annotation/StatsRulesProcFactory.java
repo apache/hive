@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
+import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
@@ -213,6 +214,9 @@ public class StatsRulesProcFactory {
    * satisfy condition2
    * </ul>
    * <p>
+   * <i>Worst case:</i> If no column statistics are available, then T(R) = T(R)/2 will be
+   * used as heuristics.
+   * <p>
    * <i>For more information, refer 'Estimating The Cost Of Operations' chapter in
    * "Database Systems: The Complete Book" by Garcia-Molina et. al.</i>
    * </p>
@@ -239,7 +243,10 @@ public class StatsRulesProcFactory {
           fop.setStatistics(st);
         } else {
           if (parentStats != null) {
-            fop.setStatistics(parentStats.clone());
+
+            // worst case, in the absence of column statistics assume half the rows are emitted
+            Statistics wcStats = getWorstCaseStats(parentStats.clone());
+            fop.setStatistics(wcStats);
           }
         }
 
@@ -510,6 +517,9 @@ public class StatsRulesProcFactory {
    * assumed.
    *
    * <p>
+   * <i>Worst case:</i> If no column statistics are available, then T(R) = T(R)/2 will be
+   * used as heuristics.
+   * <p>
    * <i>For more information, refer 'Estimating The Cost Of Operations' chapter in
    * "Database Systems: The Complete Book" by Garcia-Molina et. al.</i>
    * </p>
@@ -527,13 +537,15 @@ public class StatsRulesProcFactory {
       HiveConf conf = aspCtx.getConf();
       int mapSideParallelism = HiveConf.getIntVar(conf,
           HiveConf.ConfVars.HIVE_STATS_MAP_SIDE_PARALLELISM);
+      List<AggregationDesc> aggDesc = gop.getConf().getAggregators();
+      Map<String, ExprNodeDesc> colExprMap = gop.getColumnExprMap();
+      RowSchema rs = gop.getSchema();
+      Statistics stats = null;
 
       try {
         if (satisfyPrecondition(parentStats)) {
-          Statistics stats = parentStats.clone();
-          RowSchema rs = gop.getSchema();
-          List<AggregationDesc> aggDesc = gop.getConf().getAggregators();
-          Map<String, ExprNodeDesc> colExprMap = gop.getColumnExprMap();
+          stats = parentStats.clone();
+
           List<ColStatistics> colStats = StatsUtils.getColStatisticsFromExprMap(conf, parentStats,
               colExprMap, rs);
           stats.setColumnStats(colStats);
@@ -548,6 +560,13 @@ public class StatsRulesProcFactory {
                 dv += 1;
               }
               dvProd *= dv;
+            } else {
+
+              // partial column statistics on grouping attributes case.
+              // if column statistics on grouping attribute is missing, then assume worst case.
+              // GBY rule will emit half the number of rows if dvProd is 0
+              dvProd = 0;
+              break;
             }
           }
 
@@ -588,44 +607,54 @@ public class StatsRulesProcFactory {
             newNumRows = applyGBYRule(stats.getNumRows(), dvProd);
             updateStats(stats, newNumRows);
           }
-
-          // if UDAFs are present, new columns needs to be added
-          if (!aggDesc.isEmpty()) {
-            List<ColStatistics> aggColStats = Lists.newArrayList();
-            for (ColumnInfo ci : rs.getSignature()) {
-
-              // if the columns in row schema is not contained in column
-              // expression map, then those are the aggregate columns that
-              // are added GBY operator. we will estimate the column statistics
-              // for those newly added columns
-              if (!colExprMap.containsKey(ci.getInternalName())) {
-                String colName = ci.getInternalName();
-                colName = StatsUtils.stripPrefixFromColumnName(colName);
-                String tabAlias = ci.getTabAlias();
-                String colType = ci.getTypeName();
-                ColStatistics cs = new ColStatistics(tabAlias, colName, colType);
-                cs.setCountDistint(stats.getNumRows());
-                cs.setNumNulls(0);
-                cs.setAvgColLen(StatsUtils.getAvgColLenOfFixedLengthTypes(colType));
-                aggColStats.add(cs);
-              }
-            }
-            stats.addToColumnStats(aggColStats);
-
-            // if UDAF present and if column expression map is empty then it must
-            // be full aggregation query like count(*) in which case number of rows will be 1
-            if (colExprMap.isEmpty()) {
-              stats.setNumRows(1);
-              updateStats(stats, 1);
-            }
-          }
-
-          gop.setStatistics(stats);
         } else {
           if (parentStats != null) {
-            gop.setStatistics(parentStats.clone());
+
+            // worst case, in the absence of column statistics assume half the rows are emitted
+            if (gop.getChildOperators().get(0) instanceof ReduceSinkOperator) {
+
+              // map side
+              stats = parentStats.clone();
+            } else {
+
+              // reduce side
+              stats = getWorstCaseStats(parentStats);
+            }
           }
         }
+
+        // if UDAFs are present, new columns needs to be added
+        if (!aggDesc.isEmpty() && stats != null) {
+          List<ColStatistics> aggColStats = Lists.newArrayList();
+          for (ColumnInfo ci : rs.getSignature()) {
+
+            // if the columns in row schema is not contained in column
+            // expression map, then those are the aggregate columns that
+            // are added GBY operator. we will estimate the column statistics
+            // for those newly added columns
+            if (!colExprMap.containsKey(ci.getInternalName())) {
+              String colName = ci.getInternalName();
+              colName = StatsUtils.stripPrefixFromColumnName(colName);
+              String tabAlias = ci.getTabAlias();
+              String colType = ci.getTypeName();
+              ColStatistics cs = new ColStatistics(tabAlias, colName, colType);
+              cs.setCountDistint(stats.getNumRows());
+              cs.setNumNulls(0);
+              cs.setAvgColLen(StatsUtils.getAvgColLenOfFixedLengthTypes(colType));
+              aggColStats.add(cs);
+            }
+          }
+          stats.addToColumnStats(aggColStats);
+
+          // if UDAF present and if column expression map is empty then it must
+          // be full aggregation query like count(*) in which case number of rows will be 1
+          if (colExprMap.isEmpty()) {
+            stats.setNumRows(1);
+            updateStats(stats, 1);
+          }
+        }
+
+        gop.setStatistics(stats);
       } catch (CloneNotSupportedException e) {
         throw new SemanticException(ErrorMsg.STATISTICS_CLONING_FAILED.getMsg());
       }
@@ -668,6 +697,9 @@ public class StatsRulesProcFactory {
    * attributes
    *
    * <p>
+   * <i>Worst case:</i> If no column statistics are available, then T(RXS) = T(R)*T(S)/2 will be
+   * used as heuristics.
+   * <p>
    * <i>For more information, refer 'Estimating The Cost Of Operations' chapter in
    * "Database Systems: The Complete Book" by Garcia-Molina et. al.</i>
    * </p>
@@ -698,7 +730,9 @@ public class StatsRulesProcFactory {
           }
         }
 
+        try {
         if (allSatisfyPreCondition) {
+
           // statistics object that is combination of statistics from all relations involved in JOIN
           Statistics stats = new Statistics();
           long prodRows = 1;
@@ -744,7 +778,6 @@ public class StatsRulesProcFactory {
 
             // since new statistics is derived from all relations involved in JOIN,
             // we need to update the state information accordingly
-            stats.updateBasicStatsState(parentStats.getBasicStatsState());
             stats.updateColumnStatsState(parentStats.getColumnStatsState());
           }
 
@@ -812,12 +845,43 @@ public class StatsRulesProcFactory {
           stats.setNumRows(newRowCount);
           stats.setDataSize(StatsUtils.getDataSizeFromColumnStats(newRowCount, outColStats));
           jop.setStatistics(stats);
+          } else {
+
+            // worst case, when no column statistics are available
+            if (parents.size() > 1) {
+              Statistics wcStats = new Statistics();
+              Statistics stp1 = parents.get(0).getStatistics();
+              long numRows = stp1.getNumRows();
+              long avgRowSize = stp1.getAvgRowSize();
+              for (int i = 1; i < parents.size(); i++) {
+                stp1 = parents.get(i).getStatistics();
+                numRows = (numRows * stp1.getNumRows()) / 2;
+                avgRowSize += stp1.getAvgRowSize();
+              }
+              wcStats.setNumRows(numRows);
+              wcStats.setDataSize(numRows * avgRowSize);
+              jop.setStatistics(wcStats);
+            } else {
+              jop.setStatistics(parents.get(0).getStatistics().clone());
+            }
+          }
+        } catch (CloneNotSupportedException e) {
+          throw new SemanticException(ErrorMsg.STATISTICS_CLONING_FAILED.getMsg());
         }
       }
       return null;
     }
 
     private long getDenominator(List<Long> distinctVals) {
+
+      if(distinctVals.isEmpty()) {
+
+        // TODO: in union20.q the tab alias is not properly propagated down the operator
+        // tree. This happens when UNION ALL is used as sub query. Hence, even if column
+        // statistics are available, the tab alias will be null which will fail to get
+        // proper column statistics. For now assume, worst case in which denominator is 2.
+        return 2;
+      }
 
       // simple join from 2 relations
       // denom = max(v1, v2)
@@ -857,22 +921,31 @@ public class StatsRulesProcFactory {
       Statistics parentStats = parent.getStatistics();
 
       try {
+        long limit = -1;
+        limit = lop.getConf().getLimit();
+
         if (satisfyPrecondition(parentStats)) {
           Statistics stats = parentStats.clone();
-          long limit = -1;
-          limit = lop.getConf().getLimit();
-          if (limit == -1) {
-            limit = lop.getConf().getLeastRows();
-          }
 
-          // if limit is greate than available rows then do not update statistics
+          // if limit is greater than available rows then do not update statistics
           if (limit <= parentStats.getNumRows()) {
             updateStats(stats, limit);
           }
           lop.setStatistics(stats);
         } else {
           if (parentStats != null) {
-            lop.setStatistics(parentStats.clone());
+
+            // in the absence of column statistics, compute data size based on based
+            // on average row size
+            Statistics wcStats = parentStats.clone();
+            if (limit <= parentStats.getNumRows()) {
+              long numRows = limit;
+              long avgRowSize = parentStats.getAvgRowSize();
+              long dataSize = avgRowSize * limit;
+              wcStats.setNumRows(numRows);
+              wcStats.setDataSize(dataSize);
+            }
+            lop.setStatistics(wcStats);
           }
         }
       } catch (CloneNotSupportedException e) {
@@ -909,7 +982,6 @@ public class StatsRulesProcFactory {
                   Statistics parentStats = parent.getStatistics();
                   stats.addToNumRows(parentStats.getNumRows());
                   stats.addToDataSize(parentStats.getDataSize());
-                  stats.updateBasicStatsState(parentStats.getBasicStatsState());
                   stats.updateColumnStatsState(parentStats.getColumnStatsState());
                   stats.addToColumnStats(parentStats.getColumnStats());
                   op.getConf().setStatistics(stats);
@@ -1000,5 +1072,18 @@ public class StatsRulesProcFactory {
   static boolean satisfyPrecondition(Statistics stats) {
     return stats != null && stats.getBasicStatsState().equals(Statistics.State.COMPLETE)
         && !stats.getColumnStatsState().equals(Statistics.State.NONE);
+  }
+
+  static Statistics getWorstCaseStats(Statistics stats) throws CloneNotSupportedException {
+    Statistics wcClone = stats.clone();
+    long numRows = wcClone.getNumRows() / 2;
+    long dataSize = wcClone.getDataSize() / 2;
+    long avgRowSize = wcClone.getAvgRowSize();
+    if (numRows > 0) {
+      dataSize = avgRowSize * numRows;
+    }
+    wcClone.setNumRows(numRows);
+    wcClone.setDataSize(dataSize);
+    return wcClone;
   }
 }
