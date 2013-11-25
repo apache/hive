@@ -350,8 +350,10 @@ public class MapOperator extends Operator<MapWork> implements Serializable, Clon
 
         for (String onealias : aliases) {
           Operator<? extends OperatorDesc> op = conf.getAliasToWork().get(onealias);
-          LOG.info("Adding alias " + onealias + " to work list for file "
-            + onefile);
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Adding alias " + onealias + " to work list for file "
+               + onefile);
+          }
           MapInputPath inp = new MapInputPath(onefile, onealias, op, partDesc);
           if (opCtxMap.containsKey(inp)) {
             continue;
