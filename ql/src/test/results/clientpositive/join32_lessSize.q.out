@@ -281,11 +281,15 @@ STAGE PLANS:
                       expr: _col1
                       type: string
                 outputColumnNames: _col0, _col1, _col2
+                Statistics:
+                    numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
+                  Statistics:
+                      numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1393,6 +1397,8 @@ STAGE PLANS:
               Map-reduce partition columns:
                     expr: _col4
                     type: string
+              Statistics:
+                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
               tag: 0
               value expressions:
                     expr: _col4
@@ -1560,6 +1566,8 @@ STAGE PLANS:
             2 {VALUE._col1}
           handleSkewJoin: false
           outputColumnNames: _col4, _col9, _col13
+          Statistics:
+              numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col4
@@ -1569,11 +1577,15 @@ STAGE PLANS:
                   expr: _col9
                   type: string
             outputColumnNames: _col0, _col1, _col2
+            Statistics:
+                numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 1
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1804,6 +1816,8 @@ STAGE PLANS:
                       expr: _col1
                       type: string
                 outputColumnNames: _col0, _col1
+                Statistics:
+                    numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
@@ -2005,11 +2019,15 @@ STAGE PLANS:
                       expr: _col1
                       type: string
                 outputColumnNames: _col0, _col1, _col2
+                Statistics:
+                    numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
+                  Statistics:
+                      numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2341,6 +2359,8 @@ STAGE PLANS:
                       expr: _col1
                       type: string
                 outputColumnNames: _col0, _col1
+                Statistics:
+                    numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
@@ -2542,11 +2562,15 @@ STAGE PLANS:
                       expr: _col1
                       type: string
                 outputColumnNames: _col0, _col1, _col2
+                Statistics:
+                    numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
+                  Statistics:
+                      numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat

@@ -29,7 +29,7 @@ STAGE PLANS:
                   expr: (((hash(key) & 2147483647) % 2) = 0)
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 11603 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -38,14 +38,14 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 0 dataSize: 11603 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
                   Statistics:
-                      numRows: 0 dataSize: 11603 basicStatsState: PARTIAL colStatsState: NONE
+                      numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat

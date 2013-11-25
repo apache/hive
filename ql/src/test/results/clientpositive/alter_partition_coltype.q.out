@@ -494,10 +494,10 @@ STAGE PLANS:
                   expr: ((ts = 3.0) and (dt = 10))
                   type: boolean
               Statistics:
-                  numRows: 75 dataSize: 0 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  numRows: 75 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
               Select Operator
                 Statistics:
-                    numRows: 75 dataSize: 0 basicStatsState: COMPLETE colStatsState: COMPLETE
+                    numRows: 75 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
                 Group By Operator
                   aggregations:
                         expr: count()

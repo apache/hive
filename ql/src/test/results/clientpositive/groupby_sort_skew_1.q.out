@@ -86,7 +86,7 @@ STAGE PLANS:
                 mode: final
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                 Select Operator
                   expressions:
                         expr: UDFToInteger(_col0)
@@ -95,14 +95,14 @@ STAGE PLANS:
                         type: int
                   outputColumnNames: _col0, _col1
                   Statistics:
-                      numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
                     Statistics:
-                        numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -608,7 +608,7 @@ STAGE PLANS:
           mode: final
           outputColumnNames: _col0, _col1, _col2
           Statistics:
-              numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: UDFToInteger(_col0)
@@ -619,14 +619,14 @@ STAGE PLANS:
                   type: int
             outputColumnNames: _col0, _col1, _col2
             Statistics:
-                numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 1
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
               Statistics:
-                  numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -769,7 +769,7 @@ STAGE PLANS:
                 mode: final
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                 Select Operator
                   expressions:
                         expr: UDFToInteger(_col0)
@@ -778,14 +778,14 @@ STAGE PLANS:
                         type: int
                   outputColumnNames: _col0, _col1
                   Statistics:
-                      numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
                     Statistics:
-                        numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1173,7 +1173,7 @@ STAGE PLANS:
                 mode: final
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                 Select Operator
                   expressions:
                         expr: UDFToInteger(_col0)
@@ -1182,14 +1182,14 @@ STAGE PLANS:
                         type: int
                   outputColumnNames: _col0, _col1
                   Statistics:
-                      numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
                     Statistics:
-                        numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1603,7 +1603,7 @@ STAGE PLANS:
                 mode: final
                 outputColumnNames: _col0, _col1, _col2
                 Statistics:
-                    numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                 Select Operator
                   expressions:
                         expr: _col0
@@ -1614,14 +1614,14 @@ STAGE PLANS:
                         type: int
                   outputColumnNames: _col0, _col1, _col2
                   Statistics:
-                      numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
                     Statistics:
-                        numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2179,7 +2179,7 @@ STAGE PLANS:
           mode: final
           outputColumnNames: _col0, _col1, _col2, _col3
           Statistics:
-              numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: UDFToInteger(_col0)
@@ -2192,14 +2192,14 @@ STAGE PLANS:
                   type: int
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics:
-                numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 1
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
               Statistics:
-                  numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2537,7 +2537,7 @@ STAGE PLANS:
           mode: final
           outputColumnNames: _col0, _col1, _col2
           Statistics:
-              numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: UDFToInteger(_col0)
@@ -2548,14 +2548,14 @@ STAGE PLANS:
                   type: int
             outputColumnNames: _col0, _col1, _col2
             Statistics:
-                numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 1
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
               Statistics:
-                  numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2755,7 +2755,7 @@ STAGE PLANS:
                 mode: final
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                 Select Operator
                   expressions:
                         expr: _col0
@@ -2764,7 +2764,7 @@ STAGE PLANS:
                         type: bigint
                   outputColumnNames: _col0, _col1
                   Statistics:
-                      numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                   Group By Operator
                     aggregations:
                           expr: sum(_col1)
@@ -2775,7 +2775,7 @@ STAGE PLANS:
                     mode: hash
                     outputColumnNames: _col0, _col1
                     Statistics:
-                        numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                     Reduce Output Operator
                       key expressions:
                             expr: _col0
@@ -2785,7 +2785,7 @@ STAGE PLANS:
                             expr: rand()
                             type: double
                       Statistics:
-                          numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                          numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                       tag: -1
                       value expressions:
                             expr: _col1
@@ -2853,7 +2853,7 @@ STAGE PLANS:
           mode: partials
           outputColumnNames: _col0, _col1
           Statistics:
-              numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
@@ -2887,7 +2887,7 @@ STAGE PLANS:
                     expr: _col0
                     type: double
               Statistics:
-                  numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
               tag: -1
               value expressions:
                     expr: _col1
@@ -2929,7 +2929,7 @@ STAGE PLANS:
           mode: final
           outputColumnNames: _col0, _col1
           Statistics:
-              numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 1 dataSize: 4 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: UDFToInteger(_col0)
@@ -2938,14 +2938,14 @@ STAGE PLANS:
                   type: int
             outputColumnNames: _col0, _col1
             Statistics:
-                numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 1 dataSize: 4 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 1
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
               Statistics:
-                  numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 1 dataSize: 4 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3157,7 +3157,7 @@ STAGE PLANS:
                 mode: final
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                 Select Operator
                   expressions:
                         expr: _col0
@@ -3166,10 +3166,10 @@ STAGE PLANS:
                         type: bigint
                   outputColumnNames: _col0, _col1
                   Statistics:
-                      numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                   Union
                     Statistics:
-                        numRows: 12 dataSize: 48 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
                     Select Operator
                       expressions:
                             expr: UDFToInteger(_col0)
@@ -3178,14 +3178,14 @@ STAGE PLANS:
                             type: int
                       outputColumnNames: _col0, _col1
                       Statistics:
-                          numRows: 12 dataSize: 48 basicStatsState: COMPLETE colStatsState: NONE
+                          numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
                       File Output Operator
                         compressed: false
                         GlobalTableId: 1
 #### A masked pattern was here ####
                         NumFilesPerFileSink: 1
                         Statistics:
-                            numRows: 12 dataSize: 48 basicStatsState: COMPLETE colStatsState: NONE
+                            numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3233,7 +3233,7 @@ STAGE PLANS:
                 mode: final
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                 Select Operator
                   expressions:
                         expr: _col0
@@ -3242,10 +3242,10 @@ STAGE PLANS:
                         type: bigint
                   outputColumnNames: _col0, _col1
                   Statistics:
-                      numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                   Union
                     Statistics:
-                        numRows: 12 dataSize: 48 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
                     Select Operator
                       expressions:
                             expr: UDFToInteger(_col0)
@@ -3254,14 +3254,14 @@ STAGE PLANS:
                             type: int
                       outputColumnNames: _col0, _col1
                       Statistics:
-                          numRows: 12 dataSize: 48 basicStatsState: COMPLETE colStatsState: NONE
+                          numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
                       File Output Operator
                         compressed: false
                         GlobalTableId: 1
 #### A masked pattern was here ####
                         NumFilesPerFileSink: 1
                         Statistics:
-                            numRows: 12 dataSize: 48 basicStatsState: COMPLETE colStatsState: NONE
+                            numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3874,7 +3874,7 @@ STAGE PLANS:
           mode: final
           outputColumnNames: _col0, _col1
           Statistics:
-              numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col0
@@ -3883,7 +3883,7 @@ STAGE PLANS:
                   type: bigint
             outputColumnNames: _col0, _col1
             Statistics:
-                numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -3910,7 +3910,7 @@ STAGE PLANS:
             GatherStats: false
             Union
               Statistics:
-                  numRows: 12 dataSize: 48 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: UDFToInteger(_col0)
@@ -3919,14 +3919,14 @@ STAGE PLANS:
                       type: int
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 12 dataSize: 48 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
                   Statistics:
-                      numRows: 12 dataSize: 48 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3974,7 +3974,7 @@ STAGE PLANS:
                 mode: final
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                 Select Operator
                   expressions:
                         expr: UDFToDouble(_col0)
@@ -3983,10 +3983,10 @@ STAGE PLANS:
                         type: bigint
                   outputColumnNames: _col0, _col1
                   Statistics:
-                      numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                   Union
                     Statistics:
-                        numRows: 12 dataSize: 48 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
                     Select Operator
                       expressions:
                             expr: UDFToInteger(_col0)
@@ -3995,14 +3995,14 @@ STAGE PLANS:
                             type: int
                       outputColumnNames: _col0, _col1
                       Statistics:
-                          numRows: 12 dataSize: 48 basicStatsState: COMPLETE colStatsState: NONE
+                          numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
                       File Output Operator
                         compressed: false
                         GlobalTableId: 1
 #### A masked pattern was here ####
                         NumFilesPerFileSink: 1
                         Statistics:
-                            numRows: 12 dataSize: 48 basicStatsState: COMPLETE colStatsState: NONE
+                            numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4481,7 +4481,7 @@ STAGE PLANS:
                 mode: final
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                 Select Operator
                   expressions:
                         expr: _col0
@@ -4490,7 +4490,7 @@ STAGE PLANS:
                         type: bigint
                   outputColumnNames: _col0, _col1
                   Statistics:
-                      numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                   Reduce Output Operator
                     key expressions:
                           expr: _col0
@@ -4500,7 +4500,7 @@ STAGE PLANS:
                           expr: _col0
                           type: string
                     Statistics:
-                        numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                     tag: 0
                     value expressions:
                           expr: _col0
@@ -4530,7 +4530,7 @@ STAGE PLANS:
                 mode: final
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                 Select Operator
                   expressions:
                         expr: _col0
@@ -4539,7 +4539,7 @@ STAGE PLANS:
                         type: bigint
                   outputColumnNames: _col0, _col1
                   Statistics:
-                      numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                   Reduce Output Operator
                     key expressions:
                           expr: _col0
@@ -4549,7 +4549,7 @@ STAGE PLANS:
                           expr: _col0
                           type: string
                     Statistics:
-                        numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                     tag: 1
                     value expressions:
                           expr: _col1
@@ -4615,6 +4615,8 @@ STAGE PLANS:
             1 {VALUE._col1}
           handleSkewJoin: false
           outputColumnNames: _col0, _col1, _col3
+          Statistics:
+              numRows: 4 dataSize: 32 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: UDFToInteger(_col0)
@@ -4622,11 +4624,15 @@ STAGE PLANS:
                   expr: UDFToInteger((_col1 + _col3))
                   type: int
             outputColumnNames: _col0, _col1
+            Statistics:
+                numRows: 4 dataSize: 32 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 1
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 4 dataSize: 32 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5022,7 +5028,7 @@ STAGE PLANS:
           mode: final
           outputColumnNames: _col0, _col1, _col2
           Statistics:
-              numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col0
@@ -5033,7 +5039,7 @@ STAGE PLANS:
                   type: bigint
             outputColumnNames: _col0, _col1, _col2
             Statistics:
-                numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -5067,7 +5073,7 @@ STAGE PLANS:
                     expr: _col0
                     type: string
               Statistics:
-                  numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
               tag: 1
               value expressions:
                     expr: _col0
@@ -5099,7 +5105,7 @@ STAGE PLANS:
                 mode: final
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                 Select Operator
                   expressions:
                         expr: _col0
@@ -5108,7 +5114,7 @@ STAGE PLANS:
                         type: bigint
                   outputColumnNames: _col0, _col1
                   Statistics:
-                      numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                   Reduce Output Operator
                     key expressions:
                           expr: _col0
@@ -5118,7 +5124,7 @@ STAGE PLANS:
                           expr: _col0
                           type: string
                     Statistics:
-                        numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                     tag: 0
                     value expressions:
                           expr: _col0
@@ -5207,6 +5213,8 @@ STAGE PLANS:
             1 {VALUE._col0} {VALUE._col1} {VALUE._col2}
           handleSkewJoin: false
           outputColumnNames: _col0, _col1, _col2, _col3, _col4
+          Statistics:
+              numRows: 4 dataSize: 32 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col0
@@ -5220,11 +5228,15 @@ STAGE PLANS:
                   expr: _col4
                   type: bigint
             outputColumnNames: _col0, _col1, _col2, _col3, _col4
+            Statistics:
+                numRows: 4 dataSize: 32 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 4 dataSize: 32 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5554,7 +5566,7 @@ STAGE PLANS:
           mode: final
           outputColumnNames: _col0, _col1
           Statistics:
-              numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: UDFToInteger(_col0)
@@ -5563,14 +5575,14 @@ STAGE PLANS:
                   type: int
             outputColumnNames: _col0, _col1
             Statistics:
-                numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 1
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
               Statistics:
-                  numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5808,7 +5820,7 @@ STAGE PLANS:
                 mode: final
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics:
-                    numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                 Select Operator
                   expressions:
                         expr: UDFToInteger(_col0)
@@ -5821,14 +5833,14 @@ STAGE PLANS:
                         type: int
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics:
-                      numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
                     Statistics:
-                        numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -6353,7 +6365,7 @@ STAGE PLANS:
                 mode: final
                 outputColumnNames: _col0, _col1, _col2, _col3, _col4
                 Statistics:
-                    numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                 Select Operator
                   expressions:
                         expr: UDFToInteger(_col0)
@@ -6368,14 +6380,14 @@ STAGE PLANS:
                         type: int
                   outputColumnNames: _col0, _col1, _col2, _col3, _col4
                   Statistics:
-                      numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
                     Statistics:
-                        numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -6837,7 +6849,7 @@ STAGE PLANS:
                 mode: final
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics:
-                    numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                 Select Operator
                   expressions:
                         expr: UDFToInteger(_col0)
@@ -6850,14 +6862,14 @@ STAGE PLANS:
                         type: int
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics:
-                      numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
                     Statistics:
-                        numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -7379,7 +7391,7 @@ STAGE PLANS:
                 mode: final
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics:
-                    numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                 Select Operator
                   expressions:
                         expr: UDFToInteger(_col0)
@@ -7392,14 +7404,14 @@ STAGE PLANS:
                         type: int
                   outputColumnNames: _col0, _col1, _col2, _col3
                   Statistics:
-                      numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 1
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
                     Statistics:
-                        numRows: 6 dataSize: 24 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 3 dataSize: 12 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat

@@ -15,6 +15,18 @@ insert overwrite table loc_orc select * from loc_staging;
 -- numRows: 8 rawDataSize: 796
 explain extended select * from loc_orc;
 
+-- partial column stats
+analyze table loc_orc compute statistics for columns state;
+
+-- inner group by: map - numRows: 8 reduce - numRows: 4
+-- outer group by: map - numRows: 4 reduce numRows: 2
+explain extended select a, c, min(b)
+from ( select state as a, locid as b, count(*) as c
+       from loc_orc
+       group by state,locid
+     ) sq1
+group by a,c;
+
 analyze table loc_orc compute statistics for columns state,locid,zip,year;
 
 -- only one distinct value in year column + 1 NULL value

@@ -188,15 +188,23 @@ STAGE PLANS:
                 0 [Column[key]]
                 1 [Column[key]]
               Position of Big Table: 0
+              Statistics:
+                  numRows: 250000 dataSize: 5000000 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
+                Statistics:
+                    numRows: 250000 dataSize: 5000000 basicStatsState: COMPLETE colStatsState: NONE
                 Group By Operator
                   aggregations:
                         expr: count()
                   bucketGroup: false
                   mode: hash
                   outputColumnNames: _col0
+                  Statistics:
+                      numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
                   Reduce Output Operator
                     sort order: 
+                    Statistics:
+                        numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
                     tag: -1
                     value expressions:
                           expr: _col0
@@ -303,16 +311,22 @@ STAGE PLANS:
           bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
+          Statistics:
+              numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
             outputColumnNames: _col0
+            Statistics:
+                numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -482,16 +496,24 @@ STAGE PLANS:
                 0 [Column[key]]
                 1 [Column[key]]
               Position of Big Table: 0
+              Statistics:
+                  numRows: 125000 dataSize: 2500000 basicStatsState: COMPLETE colStatsState: NONE
               BucketMapJoin: true
               Select Operator
+                Statistics:
+                    numRows: 125000 dataSize: 2500000 basicStatsState: COMPLETE colStatsState: NONE
                 Group By Operator
                   aggregations:
                         expr: count()
                   bucketGroup: false
                   mode: hash
                   outputColumnNames: _col0
+                  Statistics:
+                      numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
                   Reduce Output Operator
                     sort order: 
+                    Statistics:
+                        numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
                     tag: -1
                     value expressions:
                           expr: _col0
@@ -554,16 +576,22 @@ STAGE PLANS:
           bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
+          Statistics:
+              numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
             outputColumnNames: _col0
+            Statistics:
+                numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -745,16 +773,24 @@ STAGE PLANS:
                 0 [Column[key]]
                 1 [Column[key]]
               Position of Big Table: 0
+              Statistics:
+                  numRows: 125000 dataSize: 2500000 basicStatsState: COMPLETE colStatsState: NONE
               BucketMapJoin: true
               Select Operator
+                Statistics:
+                    numRows: 125000 dataSize: 2500000 basicStatsState: COMPLETE colStatsState: NONE
                 Group By Operator
                   aggregations:
                         expr: count()
                   bucketGroup: false
                   mode: hash
                   outputColumnNames: _col0
+                  Statistics:
+                      numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
                   Reduce Output Operator
                     sort order: 
+                    Statistics:
+                        numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
                     tag: -1
                     value expressions:
                           expr: _col0
@@ -817,16 +853,22 @@ STAGE PLANS:
           bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
+          Statistics:
+              numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
             outputColumnNames: _col0
+            Statistics:
+                numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1010,16 +1052,24 @@ STAGE PLANS:
                 0 [Column[key]]
                 1 [Column[key]]
               Position of Big Table: 0
+              Statistics:
+                  numRows: 125000 dataSize: 2500000 basicStatsState: COMPLETE colStatsState: NONE
               BucketMapJoin: true
               Select Operator
+                Statistics:
+                    numRows: 125000 dataSize: 2500000 basicStatsState: COMPLETE colStatsState: NONE
                 Group By Operator
                   aggregations:
                         expr: count()
                   bucketGroup: false
                   mode: hash
                   outputColumnNames: _col0
+                  Statistics:
+                      numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
                   Reduce Output Operator
                     sort order: 
+                    Statistics:
+                        numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
                     tag: -1
                     value expressions:
                           expr: _col0
@@ -1082,16 +1132,22 @@ STAGE PLANS:
           bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
+          Statistics:
+              numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
             outputColumnNames: _col0
+            Statistics:
+                numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat

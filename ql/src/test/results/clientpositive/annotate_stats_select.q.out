@@ -932,14 +932,14 @@ STAGE PLANS:
                     type: string
               outputColumnNames: _col0
               Statistics:
-                  numRows: 2 dataSize: 0 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  numRows: 2 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
                 Statistics:
-                    numRows: 2 dataSize: 0 basicStatsState: COMPLETE colStatsState: COMPLETE
+                    numRows: 2 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -4555,21 +4555,21 @@ STAGE PLANS:
                   expr: (not bo1)
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 0 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
               Select Operator
                 expressions:
                       expr: bo1
                       type: boolean
                 outputColumnNames: _col0
                 Statistics:
-                    numRows: 0 dataSize: 0 basicStatsState: COMPLETE colStatsState: COMPLETE
+                    numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
                   Statistics:
-                      numRows: 0 dataSize: 0 basicStatsState: COMPLETE colStatsState: COMPLETE
+                      numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
