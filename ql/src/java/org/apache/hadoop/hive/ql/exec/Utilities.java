@@ -2107,12 +2107,6 @@ public final class Utilities {
                 HiveStorageHandler handler = HiveUtils.getStorageHandler(myConf,
                     partDesc.getOverlayedProperties().getProperty(
                     hive_metastoreConstants.META_TABLE_STORAGE));
-                if (handler == null) {
-                  // native table
-                  FileSystem fs = p.getFileSystem(myConf);
-                  resultMap.put(pathStr, fs.getContentSummary(p));
-                  return;
-                }
                 if (handler instanceof InputEstimator) {
                   long total = 0;
                   TableDesc tableDesc = partDesc.getTableDesc();
@@ -2128,6 +2122,8 @@ public final class Utilities {
                   }
                   resultMap.put(pathStr, new ContentSummary(total, -1, -1));
                 }
+                FileSystem fs = p.getFileSystem(myConf);
+                resultMap.put(pathStr, fs.getContentSummary(p));
               } catch (Exception e) {
                 // We safely ignore this exception for summary data.
                 // We don't update the cache to protect it from polluting other
