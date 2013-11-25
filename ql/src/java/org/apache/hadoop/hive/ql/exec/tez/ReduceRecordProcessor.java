@@ -104,6 +104,8 @@ public class ReduceRecordProcessor  extends RecordProcessor{
     if (redWork == null) {
       redWork = Utilities.getReduceWork(jconf);
       cache.cache(REDUCE_PLAN_KEY, redWork);
+    } else {
+      Utilities.setReduceWork(jconf, redWork);
     }
 
     reducer = redWork.getReducer();
