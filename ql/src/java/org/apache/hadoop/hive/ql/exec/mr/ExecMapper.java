@@ -110,6 +110,8 @@ public class ExecMapper extends MapReduceBase implements Mapper {
       if (mrwork == null) {
         mrwork = Utilities.getMapWork(job);
         cache.cache(PLAN_KEY, mrwork);
+      } else {
+        Utilities.setMapWork(job, mrwork);
       }
       if (mrwork.getVectorMode()) {
         mo = new VectorMapOperator();

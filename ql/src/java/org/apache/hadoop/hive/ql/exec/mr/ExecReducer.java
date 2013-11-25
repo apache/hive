@@ -122,6 +122,8 @@ public class ExecReducer extends MapReduceBase implements Reducer {
     if (gWork == null) {
       gWork = Utilities.getReduceWork(job);
       cache.cache(PLAN_KEY, gWork);
+    } else {
+      Utilities.setReduceWork(job, gWork);
     }
 
     reducer = gWork.getReducer();

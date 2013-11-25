@@ -95,6 +95,8 @@ public class MapRecordProcessor  extends RecordProcessor{
         for (String s: mapWork.getAliases()) {
           l4j.info("Alias: "+s);
         }
+      } else {
+        Utilities.setMapWork(jconf, mapWork);
       }
       if (mapWork.getVectorMode()) {
         mapOp = new VectorMapOperator();

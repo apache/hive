@@ -36,14 +36,16 @@ public class ObjectCache implements org.apache.hadoop.hive.ql.exec.ObjectCache {
 
   @Override
   public void cache(String key, Object value) {
-    LOG.info("Adding " + key + " to cache");
+    LOG.info("Adding " + key + " to cache with value " + value);
     registry.add(ObjectLifeCycle.VERTEX, key, value);
   }
 
   @Override
   public Object retrieve(String key) {
     Object o = registry.get(key);
-    LOG.info("Found " + key + " in cache with value: " + o);
+    if (o != null) {
+      LOG.info("Found " + key + " in cache with value: " + o);
+    }
     return o;
   }
 }

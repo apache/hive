@@ -265,12 +265,28 @@ public final class Utilities {
     return w;
   }
 
+  public static void setMapWork(Configuration conf, MapWork work) {
+    setBaseWork(conf, MAP_PLAN_NAME, work);
+  }
+
   public static MapWork getMapWork(Configuration conf) {
     return (MapWork) getBaseWork(conf, MAP_PLAN_NAME);
   }
 
+  public static void setReduceWork(Configuration conf, ReduceWork work) {
+    setBaseWork(conf, REDUCE_PLAN_NAME, work);
+  }
+
   public static ReduceWork getReduceWork(Configuration conf) {
     return (ReduceWork) getBaseWork(conf, REDUCE_PLAN_NAME);
+  }
+
+  /**
+   * Pushes work into the global work map
+   */
+  public static void setBaseWork(Configuration conf, String name, BaseWork work) {
+    Path path = getPlanPath(conf, name);
+    gWorkMap.put(path, work);
   }
 
   /**
@@ -288,8 +304,7 @@ public final class Utilities {
     try {
       path = getPlanPath(conf, name);
       assert path != null;
-      gWork = gWorkMap.get(path);
-      if (gWork == null) {
+      if (!gWorkMap.containsKey(path)) {
         Path localPath;
         if (ShimLoader.getHadoopShims().isLocalMode(conf)) {
           localPath = path;
@@ -334,6 +349,7 @@ public final class Utilities {
         gWorkMap.put(path, gWork);
       } else {
         LOG.debug("Found plan in cache.");
+        gWork = gWorkMap.get(path);
       }
       return gWork;
     } catch (FileNotFoundException fnf) {
