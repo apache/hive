@@ -1,8 +1,0 @@
-PREHOOK: query: -- This test executes the OptrStatGroupBy hook which prints the optr level
--- stats of GROUPBY optr present is the plan of below query
-SELECT count(1) FROM src
-PREHOOK: type: QUERY
-PREHOOK: Input: default@src
-#### A masked pattern was here ####
-CNTR_NAME_GBY_2_COUNT_HASH_OUT=1
-500
