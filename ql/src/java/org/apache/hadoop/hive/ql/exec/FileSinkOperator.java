@@ -30,15 +30,15 @@ import java.util.Set;
 import java.util.Stack;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
-import org.apache.hadoop.hive.common.HiveStatsUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.io.FSRecordWriter;
 import org.apache.hadoop.hive.ql.io.FSRecordWriter.StatsProvidingRecordWriter;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.ql.metadata.HiveFatalException;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveKey;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
@@ -62,7 +62,6 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.Object
 import org.apache.hadoop.hive.serde2.objectinspector.StructField;
 import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.SubStructObjectInspector;
-import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Writable;
@@ -95,11 +94,15 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private transient boolean[] statsFromRecordWriter;
   private transient boolean isCollectRWStats;
 
+  /**
+   * RecordWriter.
+   *
+   */
+  public static interface RecordWriter {
+    void write(Writable w) throws IOException;
 
-  private static final transient String[] FATAL_ERR_MSG = {
-      null, // counter value 0 means no error
-      "Number of dynamic partitions exceeded hive.exec.max.dynamic.partitions.pernode."
-  };
+    void close(boolean abort) throws IOException;
+  }
 
   public class FSPaths implements Cloneable {
     Path tmpPath;
@@ -519,7 +522,9 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         statsFromRecordWriter[filesIdx] = fsp.outWriters[filesIdx] instanceof StatsProvidingRecordWriter;
         // increment the CREATED_FILES counter
         if (reporter != null) {
-          reporter.incrCounter(ProgressCounter.CREATED_FILES, 1);
+          reporter.incrCounter(HiveConf.getVar(hconf, HiveConf.ConfVars.HIVECOUNTERGROUP),
+                               Operator.HIVECOUNTERCREATEDFILES,
+                               1);
         }
         filesIdx++;
       }
@@ -571,16 +576,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         FSPaths fsp2 = lookupListBucketingPaths(lbDirName);
       } else {
         createBucketFiles(fsp);
-      }
-    }
-
-    // Since File Sink is a terminal operator, forward is not called - so,
-    // maintain the number of output rows explicitly
-    if (counterNameToEnum != null) {
-      ++outputRows;
-      if (outputRows % 1000 == 0) {
-        incrCounter(numOutputRowsCntr, outputRows);
-        outputRows = 0;
       }
     }
 
@@ -771,12 +766,10 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
       if (fsp2 == null) {
         // check # of dp
         if (valToPaths.size() > maxPartitions) {
-          // throw fatal error
-          if (counterNameToEnum != null) {
-            incrCounter(fatalErrorCntr, 1);
-          }
-          fatalError = true;
-          LOG.error("Fatal error was thrown due to exceeding number of dynamic partitions");
+          // we cannot proceed and need to tell the hive client that retries won't succeed either
+          throw new HiveFatalException(
+               ErrorMsg.DYNAMIC_PARTITIONS_TOO_MANY_PER_NODE_ERROR.getErrorCodedMsg()
+               + "Maximum was set to: " + maxPartitions);
         }
         fsp2 = createNewPaths(dpDir);
       }
@@ -807,54 +800,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private String getDynPartDirectory(List<String> row, List<String> dpColNames, int numDynParts) {
     assert row.size() == numDynParts && numDynParts == dpColNames.size() : "data length is different from num of DP columns";
     return FileUtils.makePartName(dpColNames, row);
-  }
-
-  @Override
-  protected void fatalErrorMessage(StringBuilder errMsg, long counterCode) {
-    errMsg.append("Operator ").append(getOperatorId()).append(" (id=").append(id).append("): ");
-    errMsg.append(counterCode > FATAL_ERR_MSG.length - 1 ?
-        "fatal error." :
-          FATAL_ERR_MSG[(int) counterCode]);
-    // number of partitions exceeds limit, list all the partition names
-    if (counterCode > 0) {
-      errMsg.append(lsDir());
-    }
-  }
-
-  // sample the partitions that are generated so that users have a sense of what's causing the error
-  private String lsDir() {
-    String specPath = conf.getDirName();
-    // need to get a JobConf here because it's not passed through at client side
-    JobConf jobConf = new JobConf();
-    Path tmpPath = Utilities.toTempPath(specPath);
-    StringBuilder sb = new StringBuilder("\n");
-    try {
-      DynamicPartitionCtx dpCtx = conf.getDynPartCtx();
-      int numDP = dpCtx.getNumDPCols();
-      FileSystem fs = tmpPath.getFileSystem(jobConf);
-      int level = numDP;
-      if (conf.isLinkedFileSink()) {
-        level++;
-      }
-      FileStatus[] status = HiveStatsUtils.getFileStatusRecurse(tmpPath, level, fs);
-      sb.append("Sample of ")
-        .append(Math.min(status.length, 100))
-        .append(" partitions created under ")
-        .append(tmpPath.toString())
-        .append(":\n");
-      for (int i = 0; i < status.length; ++i) {
-        sb.append("\t.../");
-        sb.append(getPartitionSpec(status[i].getPath(), numDP))
-          .append("\n");
-      }
-      sb.append("...\n");
-    } catch (Exception e) {
-      // cannot get the subdirectories, just return the root directory
-      sb.append(tmpPath).append("...\n").append(e.getMessage());
-      e.printStackTrace();
-    } finally {
-      return sb.toString();
-    }
   }
 
   private String getPartitionSpec(Path path, int level) {

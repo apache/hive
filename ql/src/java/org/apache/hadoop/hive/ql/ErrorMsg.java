@@ -373,6 +373,9 @@ public enum ErrorMsg {
       + "running your custom script."),
   SCRIPT_CLOSING_ERROR(20003, "An error occurred when trying to close the Operator " +
       "running your custom script."),
+  DYNAMIC_PARTITIONS_TOO_MANY_PER_NODE_ERROR(20004, "Fatal error occurred when node " +
+      "tried to create too many dynamic partitions. The maximum number of dynamic partitions " +
+      "is controlled by hive.exec.max.dynamic.partitions and hive.exec.max.dynamic.partitions.pernode. "),
 
   STATSPUBLISHER_NOT_OBTAINED(30000, "StatsPublisher cannot be obtained. " +
     "There was a error to retrieve the StatsPublisher, and retrying " +

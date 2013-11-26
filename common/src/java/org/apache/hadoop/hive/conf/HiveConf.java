@@ -538,8 +538,6 @@ public class HiveConf extends Configuration {
 
     HIVEDEBUGLOCALTASK("hive.debug.localtask",false),
 
-    HIVEJOBPROGRESS("hive.task.progress", false),
-
     HIVEINPUTFORMAT("hive.input.format", "org.apache.hadoop.hive.ql.io.CombineHiveInputFormat"),
 
     HIVEENFORCEBUCKETING("hive.enforce.bucketing", false),
@@ -851,6 +849,8 @@ public class HiveConf extends Configuration {
     // none, idonly, traverse, execution
     HIVESTAGEIDREARRANGE("hive.stageid.rearrange", "none"),
     HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES("hive.explain.dependency.append.tasktype", false),
+
+    HIVECOUNTERGROUP("hive.counters.group.name", "HIVE")
     ;
 
     public final String varname;

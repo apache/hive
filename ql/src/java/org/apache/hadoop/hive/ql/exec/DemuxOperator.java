@@ -266,7 +266,7 @@ public class DemuxOperator extends Operator<DemuxDesc>
     if (child.getDone()) {
       childrenDone++;
     } else {
-      child.process(row, oldTag);
+      child.processOp(row, oldTag);
     }
 
     // if all children are done, this operator is also done
@@ -327,10 +327,6 @@ public class DemuxOperator extends Operator<DemuxDesc>
   @Override
   public void endGroup() throws HiveException {
     if (childOperators == null) {
-      return;
-    }
-
-    if (fatalError) {
       return;
     }
 

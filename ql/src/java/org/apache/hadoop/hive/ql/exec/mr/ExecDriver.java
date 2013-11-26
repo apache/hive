@@ -184,17 +184,10 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
    * @return true if fatal errors happened during job execution, false otherwise.
    */
   public boolean checkFatalErrors(Counters ctrs, StringBuilder errMsg) {
-    for (Operator<? extends OperatorDesc> op : work.getMapWork().getAliasToWork().values()) {
-      if (op.checkFatalErrors(ctrs, errMsg)) {
-        return true;
-      }
-    }
-    if (work.getReduceWork() != null) {
-      if (work.getReduceWork().getReducer().checkFatalErrors(ctrs, errMsg)) {
-        return true;
-      }
-    }
-    return false;
+     Counters.Counter cntr = ctrs.findCounter(
+        HiveConf.getVar(job, HiveConf.ConfVars.HIVECOUNTERGROUP),
+        Operator.HIVECOUNTERFATAL);
+    return cntr != null && cntr.getValue() > 0;
   }
 
    /**
@@ -812,16 +805,6 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
   @Override
   public String getName() {
     return "MAPRED";
-  }
-
-  @Override
-  public void updateCounters(Counters ctrs, RunningJob rj) throws IOException {
-    for (Operator<? extends OperatorDesc> op : work.getMapWork().getAliasToWork().values()) {
-      op.updateCounters(ctrs);
-    }
-    if (work.getReduceWork() != null) {
-      work.getReduceWork().getReducer().updateCounters(ctrs);
-    }
   }
 
   @Override
