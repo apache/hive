@@ -358,7 +358,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
           forwardOp.close(false);
           break;
         }
-        forwardOp.process(row.o, 0);
+        forwardOp.processOp(row.o, 0);
         // check if any operator had a fatal error or early exit during
         // execution
         if (forwardOp.getDone()) {

@@ -57,12 +57,6 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
 
   transient int numMapRowsRead;
 
-  private static final transient String[] FATAL_ERR_MSG = {
-      null, // counter value 0 means no error
-      "Mapside join exceeds available memory. "
-          + "Please try removing the mapjoin hint."
-      };
-
   transient boolean firstRow;
 
 
@@ -120,13 +114,6 @@ public abstract class AbstractMapJoinOperator <T extends MapJoinDesc> extends Co
           structFieldObjectInspectors);
     }
     initializeChildren(hconf);
-  }
-
-
-  @Override
-  protected void fatalErrorMessage(StringBuilder errMsg, long counterCode) {
-    errMsg.append("Operator " + getOperatorId() + " (id=" + id + "): "
-        + FATAL_ERR_MSG[(int) counterCode]);
   }
 
   @Override

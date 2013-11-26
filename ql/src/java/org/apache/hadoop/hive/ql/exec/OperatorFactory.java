@@ -137,7 +137,6 @@ public final class OperatorFactory {
           Operator<T> op = (Operator<T>) o.opClass.getDeclaredConstructor(
               VectorizationContext.class, OperatorDesc.class).newInstance(
               vContext, conf);
-          op.initializeCounters();
           return op;
         } catch (Exception e) {
           e.printStackTrace();
@@ -155,7 +154,6 @@ public final class OperatorFactory {
       if (o.descClass == opClass) {
         try {
           Operator<T> op = (Operator<T>) o.opClass.newInstance();
-          op.initializeCounters();
           return op;
         } catch (Exception e) {
           e.printStackTrace();

@@ -372,10 +372,5 @@ public class BlockMergeTask extends Task<MergeWork> implements Serializable,
   @Override
   public void logPlanProgress(SessionState ss) throws IOException {
     // no op
-  }
-
-  @Override
-  public void updateCounters(Counters ctrs, RunningJob rj) throws IOException {
-    // no op
-  }
+  }  
 }

@@ -131,8 +131,6 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     this.nextSz = clone.nextSz;
     this.childOperators = clone.childOperators;
     this.parentOperators = clone.parentOperators;
-    this.counterNames = clone.counterNames;
-    this.counterNameToEnum = clone.counterNameToEnum;
     this.done = clone.done;
     this.operatorId = clone.operatorId;
     this.storage = clone.storage;
@@ -140,12 +138,9 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     this.conf = clone.getConf();
     this.setSchema(clone.getSchema());
     this.alias = clone.alias;
-    this.beginTime = clone.beginTime;
-    this.inputRows = clone.inputRows;
     this.childOperatorsArray = clone.childOperatorsArray;
     this.childOperatorsTag = clone.childOperatorsTag;
     this.colExprMap = clone.colExprMap;
-    this.counters = clone.counters;
     this.dummyObj = clone.dummyObj;
     this.dummyObjVectors = clone.dummyObjVectors;
     this.forwardCache = clone.forwardCache;
@@ -154,7 +149,6 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     this.hconf = clone.hconf;
     this.id = clone.id;
     this.inputObjInspectors = clone.inputObjInspectors;
-    this.inputRows = clone.inputRows;
     this.noOuterJoin = clone.noOuterJoin;
     this.numAliases = clone.numAliases;
     this.operatorId = clone.operatorId;

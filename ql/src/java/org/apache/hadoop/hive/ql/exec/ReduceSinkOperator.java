@@ -363,13 +363,6 @@ public class ReduceSinkOperator extends TerminalOperator<ReduceSinkDesc>
     if (null != out) {
       out.collect(keyWritable, valueWritable);
     }
-    if (++outputRows % 1000 == 0) {
-      if (counterNameToEnum != null) {
-        incrCounter(numOutputRowsCntr, outputRows);
-      }
-      increaseForward(outputRows);
-      outputRows = 0;
-    }
   }
 
   private BytesWritable makeValueWritable(Object row) throws Exception {

@@ -5274,11 +5274,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           qbm.setDPCtx(dest, dpCtx);
         }
 
-        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING)) { // allow DP
-          // turn on hive.task.progress to update # of partitions created to the JT
-          HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVEJOBPROGRESS, true);
-
-        } else { // QBMetaData.DEST_PARTITION capture the all-SP case
+        if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING)) { // allow DP
           throw new SemanticException(generateErrorMessage(
               qb.getParseInfo().getDestForClause(dest),
               ErrorMsg.DYNAMIC_PARTITION_DISABLED.getMsg()));

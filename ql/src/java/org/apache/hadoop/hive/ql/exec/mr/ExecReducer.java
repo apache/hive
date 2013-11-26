@@ -245,7 +245,7 @@ public class ExecReducer extends MapReduceBase implements Reducer {
           }
         }
         try {
-          reducer.process(row, tag);
+          reducer.processOp(row, tag);
         } catch (Exception e) {
           String rowString = null;
           try {

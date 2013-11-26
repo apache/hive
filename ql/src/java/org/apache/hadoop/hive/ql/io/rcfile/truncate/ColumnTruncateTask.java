@@ -252,9 +252,4 @@ public class ColumnTruncateTask extends Task<ColumnTruncateWork> implements Seri
   public void logPlanProgress(SessionState ss) throws IOException {
     // no op
   }
-
-  @Override
-  public void updateCounters(Counters ctrs, RunningJob rj) throws IOException {
-    // no op
-  }
 }

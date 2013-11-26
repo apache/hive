@@ -228,7 +228,7 @@ public class TestVectorGroupByOperator {
     long countRowsProduced = 0;
     for (VectorizedRowBatch unit: data) {
       countRowsProduced += 100;
-      vgo.process(unit,  0);
+      vgo.processOp(unit,  0);
       if (0 < outputRowCount) {
         break;
       }
@@ -1570,7 +1570,7 @@ public class TestVectorGroupByOperator {
     }.init(aggregateName, expected, keys));
 
     for (VectorizedRowBatch unit: data) {
-      vgo.process(unit,  0);
+      vgo.processOp(unit,  0);
     }
     vgo.close(false);
 
@@ -1680,7 +1680,7 @@ public class TestVectorGroupByOperator {
     }.init(aggregateName, expected, keys));
 
     for (VectorizedRowBatch unit: data) {
-      vgo.process(unit,  0);
+      vgo.processOp(unit,  0);
     }
     vgo.close(false);
 
@@ -1970,7 +1970,7 @@ public class TestVectorGroupByOperator {
     vgo.initialize(null, null);
 
     for (VectorizedRowBatch unit: data) {
-      vgo.process(unit,  0);
+      vgo.processOp(unit,  0);
     }
     vgo.close(false);
 
@@ -2001,7 +2001,7 @@ public class TestVectorGroupByOperator {
     vgo.initialize(null, null);
 
     for (VectorizedRowBatch unit: data) {
-      vgo.process(unit,  0);
+      vgo.processOp(unit,  0);
     }
     vgo.close(false);
 
@@ -2032,7 +2032,7 @@ public class TestVectorGroupByOperator {
     vgo.initialize(null, null);
 
     for (VectorizedRowBatch unit: data) {
-      vgo.process(unit,  0);
+      vgo.processOp(unit,  0);
     }
     vgo.close(false);
 
@@ -2062,7 +2062,7 @@ public class TestVectorGroupByOperator {
     vgo.initialize(null, null);
 
     for (VectorizedRowBatch unit: data) {
-      vgo.process(unit,  0);
+      vgo.processOp(unit,  0);
     }
     vgo.close(false);
 
@@ -2131,7 +2131,7 @@ public class TestVectorGroupByOperator {
     }.init(aggregateName, expected, keys));
 
     for (VectorizedRowBatch unit: data) {
-      vgo.process(unit,  0);
+      vgo.processOp(unit,  0);
     }
     vgo.close(false);
 
@@ -2198,7 +2198,7 @@ public class TestVectorGroupByOperator {
     }.init(aggregateName, expected, keys));
 
     for (VectorizedRowBatch unit: data) {
-      vgo.process(unit,  0);
+      vgo.processOp(unit,  0);
     }
     vgo.close(false);
 
