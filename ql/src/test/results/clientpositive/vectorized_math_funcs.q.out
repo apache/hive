@@ -175,7 +175,7 @@ STAGE PLANS:
                       type: double
                       expr: abs(ctinyint)
                       type: int
-                      expr: pmod(cint, 3)
+                      expr: (cint pmod 3)
                       type: int
                       expr: sin(cdouble)
                       type: double

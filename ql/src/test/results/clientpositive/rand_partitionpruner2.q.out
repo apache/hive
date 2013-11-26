@@ -35,12 +35,16 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics:
+                numRows: 0 dataSize: 11624 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
                   expr: (rand(1) < 0.1)
                   type: boolean
+              Statistics:
+                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -52,11 +56,15 @@ STAGE PLANS:
                       expr: hr
                       type: string
                 outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics:
+                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
+                  Statistics:
+                      numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat

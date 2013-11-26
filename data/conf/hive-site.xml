@@ -136,12 +136,6 @@
 </property>
 
 <property>
-  <name>hive.task.progress</name>
-  <value>false</value>
-  <description>Track progress of a task</description>
-</property>
-
-<property>
   <name>hive.support.concurrency</name>
   <value>true</value>
   <description>Whether hive supports concurrency or not. A zookeeper instance must be up and running for the default hive lock manager to support read-write locks.</description>
@@ -186,4 +180,9 @@
   <description>The default SerDe hive will use for the rcfile format</description>
 </property>
 
+<property>
+  <name>hive.stats.dbclass</name>
+  <value>jdbc:derby</value>
+  <description>The default storatge that stores temporary hive statistics. Currently, jdbc, hbase and counter type is supported</description>
+</property>
 </configuration>

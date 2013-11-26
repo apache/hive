@@ -19,9 +19,9 @@
 package org.apache.hadoop.hive.ql.plan;
 
 public class AbstractOperatorDesc implements OperatorDesc {
-  protected transient Statistics statistics;
 
   private boolean vectorMode = false;
+  protected transient Statistics statistics;
 
   @Override
   @Explain(displayName = "Statistics", normalExplain = false)

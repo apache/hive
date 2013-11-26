@@ -500,7 +500,7 @@ public class FetchOperator implements Serializable {
   public boolean pushRow() throws IOException, HiveException {
     if(work.getRowsComputedUsingStats() != null) {
       for (List<Object> row : work.getRowsComputedUsingStats()) {
-        operator.process(row, 0);
+        operator.processOp(row, 0);
       }
       operator.flush();
       return true;
@@ -515,7 +515,7 @@ public class FetchOperator implements Serializable {
   }
 
   protected void pushRow(InspectableObject row) throws HiveException {
-    operator.process(row.o, 0);
+    operator.processOp(row.o, 0);
   }
 
   private transient final InspectableObject inspectable = new InspectableObject();

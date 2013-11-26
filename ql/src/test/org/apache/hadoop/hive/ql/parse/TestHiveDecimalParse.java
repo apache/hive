@@ -61,7 +61,7 @@ public class TestHiveDecimalParse {
     int rc = driver.compile(query);
     Assert.assertTrue("Got " + rc + ", expected not zero", rc != 0);
     Assert.assertTrue(driver.getErrorMsg(),
-        driver.getErrorMsg().contains("Decimal precision out of allowed range [1,65]"));
+        driver.getErrorMsg().contains("Decimal precision out of allowed range [1,38]"));
   }
 
   @Test
@@ -72,7 +72,7 @@ public class TestHiveDecimalParse {
     int rc = driver.compile(query);
     Assert.assertTrue("Got " + rc + ", expected not zero", rc != 0);
     Assert.assertTrue(driver.getErrorMsg(),
-        driver.getErrorMsg().contains("Decimal precision out of allowed range [1,65]"));
+        driver.getErrorMsg().contains("Decimal precision out of allowed range [1,38]"));
   }
 
   @Test
@@ -83,7 +83,7 @@ public class TestHiveDecimalParse {
     int rc = driver.compile(query);
     Assert.assertTrue("Got " + rc + ", expected not zero", rc != 0);
     Assert.assertTrue(driver.getErrorMsg(),
-        driver.getErrorMsg().contains("Decimal scale out of allowed range [0,30]"));
+        driver.getErrorMsg().contains("Decimal scale must be less than or equal to precision"));
   }
 
   @Test

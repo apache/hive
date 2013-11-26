@@ -447,22 +447,6 @@
                       </void> 
                      </object> 
                     </void> 
-                    <void property="counterNames"> 
-                     <object class="java.util.ArrayList"> 
-                      <void method="add"> 
-                       <string>CNTR_NAME_RS_6_NUM_INPUT_ROWS</string> 
-                      </void> 
-                      <void method="add"> 
-                       <string>CNTR_NAME_RS_6_NUM_OUTPUT_ROWS</string> 
-                      </void> 
-                      <void method="add"> 
-                       <string>CNTR_NAME_RS_6_TIME_TAKEN</string> 
-                      </void> 
-                      <void method="add"> 
-                       <string>CNTR_NAME_RS_6_FATAL_ERROR</string> 
-                      </void> 
-                     </object> 
-                    </void> 
                     <void property="inputAlias"> 
                      <string>a</string> 
                     </void> 
@@ -573,22 +557,6 @@
                      <string>_col1</string> 
                     </void> 
                    </object> 
-                  </void> 
-                 </object> 
-                </void> 
-                <void property="counterNames"> 
-                 <object class="java.util.ArrayList"> 
-                  <void method="add"> 
-                   <string>CNTR_NAME_SEL_5_NUM_INPUT_ROWS</string> 
-                  </void> 
-                  <void method="add"> 
-                   <string>CNTR_NAME_SEL_5_NUM_OUTPUT_ROWS</string> 
-                  </void> 
-                  <void method="add"> 
-                   <string>CNTR_NAME_SEL_5_TIME_TAKEN</string> 
-                  </void> 
-                  <void method="add"> 
-                   <string>CNTR_NAME_SEL_5_FATAL_ERROR</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -740,22 +708,6 @@
               </void> 
              </object> 
             </void> 
-            <void property="counterNames"> 
-             <object class="java.util.ArrayList"> 
-              <void method="add"> 
-               <string>CNTR_NAME_FIL_12_NUM_INPUT_ROWS</string> 
-              </void> 
-              <void method="add"> 
-               <string>CNTR_NAME_FIL_12_NUM_OUTPUT_ROWS</string> 
-              </void> 
-              <void method="add"> 
-               <string>CNTR_NAME_FIL_12_TIME_TAKEN</string> 
-              </void> 
-              <void method="add"> 
-               <string>CNTR_NAME_FIL_12_FATAL_ERROR</string> 
-              </void> 
-             </object> 
-            </void> 
             <void property="operatorId"> 
              <string>FIL_12</string> 
             </void> 
@@ -817,22 +769,6 @@
           </void> 
           <void property="virtualCols"> 
            <object class="java.util.ArrayList"/> 
-          </void> 
-         </object> 
-        </void> 
-        <void property="counterNames"> 
-         <object class="java.util.ArrayList"> 
-          <void method="add"> 
-           <string>CNTR_NAME_TS_3_NUM_INPUT_ROWS</string> 
-          </void> 
-          <void method="add"> 
-           <string>CNTR_NAME_TS_3_NUM_OUTPUT_ROWS</string> 
-          </void> 
-          <void method="add"> 
-           <string>CNTR_NAME_TS_3_TIME_TAKEN</string> 
-          </void> 
-          <void method="add"> 
-           <string>CNTR_NAME_TS_3_FATAL_ERROR</string> 
           </void> 
          </object> 
         </void> 
@@ -1078,22 +1014,6 @@
                       </void> 
                      </object> 
                     </void> 
-                    <void property="counterNames"> 
-                     <object class="java.util.ArrayList"> 
-                      <void method="add"> 
-                       <string>CNTR_NAME_RS_7_NUM_INPUT_ROWS</string> 
-                      </void> 
-                      <void method="add"> 
-                       <string>CNTR_NAME_RS_7_NUM_OUTPUT_ROWS</string> 
-                      </void> 
-                      <void method="add"> 
-                       <string>CNTR_NAME_RS_7_TIME_TAKEN</string> 
-                      </void> 
-                      <void method="add"> 
-                       <string>CNTR_NAME_RS_7_FATAL_ERROR</string> 
-                      </void> 
-                     </object> 
-                    </void> 
                     <void property="inputAlias"> 
                      <string>b</string> 
                     </void> 
@@ -1204,22 +1124,6 @@
                      <string>_col1</string> 
                     </void> 
                    </object> 
-                  </void> 
-                 </object> 
-                </void> 
-                <void property="counterNames"> 
-                 <object class="java.util.ArrayList"> 
-                  <void method="add"> 
-                   <string>CNTR_NAME_SEL_2_NUM_INPUT_ROWS</string> 
-                  </void> 
-                  <void method="add"> 
-                   <string>CNTR_NAME_SEL_2_NUM_OUTPUT_ROWS</string> 
-                  </void> 
-                  <void method="add"> 
-                   <string>CNTR_NAME_SEL_2_TIME_TAKEN</string> 
-                  </void> 
-                  <void method="add"> 
-                   <string>CNTR_NAME_SEL_2_FATAL_ERROR</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -1363,22 +1267,6 @@
               </void> 
              </object> 
             </void> 
-            <void property="counterNames"> 
-             <object class="java.util.ArrayList"> 
-              <void method="add"> 
-               <string>CNTR_NAME_FIL_13_NUM_INPUT_ROWS</string> 
-              </void> 
-              <void method="add"> 
-               <string>CNTR_NAME_FIL_13_NUM_OUTPUT_ROWS</string> 
-              </void> 
-              <void method="add"> 
-               <string>CNTR_NAME_FIL_13_TIME_TAKEN</string> 
-              </void> 
-              <void method="add"> 
-               <string>CNTR_NAME_FIL_13_FATAL_ERROR</string> 
-              </void> 
-             </object> 
-            </void> 
             <void property="operatorId"> 
              <string>FIL_13</string> 
             </void> 
@@ -1440,22 +1328,6 @@
           </void> 
           <void property="virtualCols"> 
            <object class="java.util.ArrayList"/> 
-          </void> 
-         </object> 
-        </void> 
-        <void property="counterNames"> 
-         <object class="java.util.ArrayList"> 
-          <void method="add"> 
-           <string>CNTR_NAME_TS_0_NUM_INPUT_ROWS</string> 
-          </void> 
-          <void method="add"> 
-           <string>CNTR_NAME_TS_0_NUM_OUTPUT_ROWS</string> 
-          </void> 
-          <void method="add"> 
-           <string>CNTR_NAME_TS_0_TIME_TAKEN</string> 
-          </void> 
-          <void method="add"> 
-           <string>CNTR_NAME_TS_0_FATAL_ERROR</string> 
           </void> 
          </object> 
         </void> 
@@ -1794,22 +1666,6 @@
                   </void> 
                  </object> 
                 </void> 
-                <void property="counterNames"> 
-                 <object class="java.util.ArrayList"> 
-                  <void method="add"> 
-                   <string>CNTR_NAME_FS_11_NUM_INPUT_ROWS</string> 
-                  </void> 
-                  <void method="add"> 
-                   <string>CNTR_NAME_FS_11_NUM_OUTPUT_ROWS</string> 
-                  </void> 
-                  <void method="add"> 
-                   <string>CNTR_NAME_FS_11_TIME_TAKEN</string> 
-                  </void> 
-                  <void method="add"> 
-                   <string>CNTR_NAME_FS_11_FATAL_ERROR</string> 
-                  </void> 
-                 </object> 
-                </void> 
                 <void property="operatorId"> 
                  <string>FS_11</string> 
                 </void> 
@@ -1989,22 +1845,6 @@
                  <string>_col3</string> 
                 </void> 
                </object> 
-              </void> 
-             </object> 
-            </void> 
-            <void property="counterNames"> 
-             <object class="java.util.ArrayList"> 
-              <void method="add"> 
-               <string>CNTR_NAME_SEL_9_NUM_INPUT_ROWS</string> 
-              </void> 
-              <void method="add"> 
-               <string>CNTR_NAME_SEL_9_NUM_OUTPUT_ROWS</string> 
-              </void> 
-              <void method="add"> 
-               <string>CNTR_NAME_SEL_9_TIME_TAKEN</string> 
-              </void> 
-              <void method="add"> 
-               <string>CNTR_NAME_SEL_9_FATAL_ERROR</string> 
               </void> 
              </object> 
             </void> 
@@ -2275,22 +2115,6 @@
              <byte>1</byte> 
             </void> 
            </array> 
-          </void> 
-         </object> 
-        </void> 
-        <void property="counterNames"> 
-         <object class="java.util.ArrayList"> 
-          <void method="add"> 
-           <string>CNTR_NAME_JOIN_8_NUM_INPUT_ROWS</string> 
-          </void> 
-          <void method="add"> 
-           <string>CNTR_NAME_JOIN_8_NUM_OUTPUT_ROWS</string> 
-          </void> 
-          <void method="add"> 
-           <string>CNTR_NAME_JOIN_8_TIME_TAKEN</string> 
-          </void> 
-          <void method="add"> 
-           <string>CNTR_NAME_JOIN_8_FATAL_ERROR</string> 
           </void> 
          </object> 
         </void> 

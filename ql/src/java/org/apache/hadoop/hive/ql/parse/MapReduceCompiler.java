@@ -118,56 +118,6 @@ public class MapReduceCompiler extends TaskCompiler {
     }
   }
 
-  // loop over all the tasks recursively
-  @Override
-  protected void generateCountersTask(Task<? extends Serializable> task) {
-    if (task instanceof ExecDriver) {
-      HashMap<String, Operator<? extends OperatorDesc>> opMap = ((MapredWork) task
-          .getWork()).getMapWork().getAliasToWork();
-      if (!opMap.isEmpty()) {
-        for (Operator<? extends OperatorDesc> op : opMap.values()) {
-          generateCountersOperator(op);
-        }
-      }
-
-      if (((MapredWork)task.getWork()).getReduceWork() != null) {
-        Operator<? extends OperatorDesc> reducer = ((MapredWork) task.getWork()).getReduceWork()
-            .getReducer();
-        LOG.info("Generating counters for operator " + reducer);
-        generateCountersOperator(reducer);
-      }
-    } else if (task instanceof ConditionalTask) {
-      List<Task<? extends Serializable>> listTasks = ((ConditionalTask) task)
-          .getListTasks();
-      for (Task<? extends Serializable> tsk : listTasks) {
-        generateCountersTask(tsk);
-      }
-    }
-
-    // Start the counters from scratch - a hack for hadoop 17.
-    Operator.resetLastEnumUsed();
-
-    if (task.getChildTasks() == null) {
-      return;
-    }
-
-    for (Task<? extends Serializable> childTask : task.getChildTasks()) {
-      generateCountersTask(childTask);
-    }
-  }
-
-  private void generateCountersOperator(Operator<? extends OperatorDesc> op) {
-    op.assignCounterNameToEnum();
-
-    if (op.getChildOperators() == null) {
-      return;
-    }
-
-    for (Operator<? extends OperatorDesc> child : op.getChildOperators()) {
-      generateCountersOperator(child);
-    }
-  }
-
   @Override
   public ParseContext getParseContext(ParseContext pCtx, List<Task<? extends Serializable>> rootTasks) {
     return new ParseContext(conf, pCtx.getQB(), pCtx.getParseTree(),

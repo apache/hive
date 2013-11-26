@@ -542,8 +542,6 @@ public class HiveConf extends Configuration {
 
     HIVEDEBUGLOCALTASK("hive.debug.localtask",false),
 
-    HIVEJOBPROGRESS("hive.task.progress", false),
-
     HIVEINPUTFORMAT("hive.input.format", "org.apache.hadoop.hive.ql.io.CombineHiveInputFormat"),
 
     HIVEENFORCEBUCKETING("hive.enforce.bucketing", false),
@@ -607,8 +605,8 @@ public class HiveConf extends Configuration {
 
     // Statistics
     HIVESTATSAUTOGATHER("hive.stats.autogather", true),
-    HIVESTATSDBCLASS("hive.stats.dbclass",
-        "jdbc:derby"), // other options are jdbc:mysql and hbase as defined in StatsSetupConst.java
+    HIVESTATSDBCLASS("hive.stats.dbclass", "counter",
+        new PatternValidator("jdbc(:.*)", "hbase", "counter", "custom")), // StatsSetupConst.StatDB
     HIVESTATSJDBCDRIVER("hive.stats.jdbcdriver",
         "org.apache.derby.jdbc.EmbeddedDriver"), // JDBC driver specific to the dbclass
     HIVESTATSDBCONNECTIONSTRING("hive.stats.dbconnectionstring",
@@ -639,6 +637,14 @@ public class HiveConf extends Configuration {
     HIVE_STATS_NDV_ERROR("hive.stats.ndv.error", (float)20.0),
     HIVE_STATS_KEY_PREFIX_MAX_LENGTH("hive.stats.key.prefix.max.length", 150),
     HIVE_STATS_KEY_PREFIX("hive.stats.key.prefix", ""), // internal usage only
+    // if length of variable length data type cannot be determined this length will be used.
+    HIVE_STATS_MAX_VARIABLE_LENGTH("hive.stats.max.variable.length", 100),
+    // if number of elements in list cannot be determined, this value will be used
+    HIVE_STATS_LIST_NUM_ENTRIES("hive.stats.list.num.entries", 10),
+    // if number of elements in map cannot be determined, this value will be used
+    HIVE_STATS_MAP_NUM_ENTRIES("hive.stats.map.num.entries", 10),
+    // to accurately compute statistics for GROUPBY map side parallelism needs to be known
+    HIVE_STATS_MAP_SIDE_PARALLELISM("hive.stats.map.parallelism", 1),
 
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false),
@@ -841,6 +847,10 @@ public class HiveConf extends Configuration {
 
     // Vectorization enabled
     HIVE_VECTORIZATION_ENABLED("hive.vectorized.execution.enabled", false),
+    HIVE_VECTORIZATION_GROUPBY_CHECKINTERVAL("hive.vectorized.groupby.checkinterval", 100000),
+    HIVE_VECTORIZATION_GROUPBY_MAXENTRIES("hive.vectorized.groupby.maxentries", 1000000),
+    HIVE_VECTORIZATION_GROUPBY_FLUSH_PERCENT("hive.vectorized.groupby.flush.percent", (float) 0.1),
+    
 
     HIVE_TYPE_CHECK_ON_INSERT("hive.typecheck.on.insert", true),
 
@@ -853,6 +863,8 @@ public class HiveConf extends Configuration {
     // none, idonly, traverse, execution
     HIVESTAGEIDREARRANGE("hive.stageid.rearrange", "none"),
     HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES("hive.explain.dependency.append.tasktype", false),
+
+    HIVECOUNTERGROUP("hive.counters.group.name", "HIVE")
     ;
 
     public final String varname;
@@ -1370,6 +1382,27 @@ public class HiveConf extends Configuration {
         return "Invalid value.. expects one of " + expected;
       }
       return null;
+    }
+  }
+
+  public static class PatternValidator implements Validator {
+    private final List<Pattern> expected = new ArrayList<Pattern>();
+    private PatternValidator(String... values) {
+      for (String value : values) {
+        expected.add(Pattern.compile(value));
+      }
+    }
+    @Override
+    public String validate(String value) {
+      if (value == null) {
+        return "Invalid value.. expects one of patterns " + expected;
+      }
+      for (Pattern pattern : expected) {
+        if (pattern.matcher(value).matches()) {
+          return null;
+        }
+      }
+      return "Invalid value.. expects one of patterns " + expected;
     }
   }
 

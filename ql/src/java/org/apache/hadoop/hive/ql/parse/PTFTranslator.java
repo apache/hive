@@ -935,6 +935,11 @@ public class PTFTranslator {
       } else {
         rr.put(cInfo.getTabAlias(), colAlias, cInfo);
       }
+      
+      String[] altMapping = inputRR.getAlternateMappings(inpCInfo.getInternalName());
+      if ( altMapping != null ) {
+        rr.put(altMapping[0], altMapping[1], cInfo);
+      }
     }
 
     return rr;

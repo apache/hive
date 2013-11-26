@@ -36,12 +36,16 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics:
+                numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
                   expr: ((ds = '2010-10-15') and key is not null)
                   type: boolean
+              Statistics:
+                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1
@@ -133,12 +137,16 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics:
+                numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
                   expr: ((ds = '2010-10-15') and key is not null)
                   type: boolean
+              Statistics:
+                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
               Sorted Merge Bucket Map Join Operator
                 condition map:
                      Inner Join 0 to 1

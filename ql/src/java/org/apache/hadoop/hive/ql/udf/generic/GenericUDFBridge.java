@@ -185,7 +185,7 @@ public class GenericUDFBridge extends GenericUDF implements Serializable {
     // If the returned value is HiveDecimal, we assume maximum precision/scale.
     if (result != null && result instanceof HiveDecimalWritable) {
       result = HiveDecimalUtils.enforcePrecisionScale((HiveDecimalWritable) result,
-          HiveDecimal.MAX_PRECISION, HiveDecimal.MAX_SCALE);
+          HiveDecimal.SYSTEM_DEFAULT_PRECISION, HiveDecimal.SYSTEM_DEFAULT_SCALE);
     }
 
     return result;

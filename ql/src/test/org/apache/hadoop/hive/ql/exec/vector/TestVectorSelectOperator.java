@@ -32,9 +32,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.SelectDesc;
-import org.apache.hadoop.hive.ql.udf.UDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
-import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Test;
@@ -95,7 +94,8 @@ public class TestVectorSelectOperator {
     ExprNodeColumnDesc colDesc2 = new ExprNodeColumnDesc(Long.class, "b", "table", false);
     ExprNodeColumnDesc colDesc3 = new ExprNodeColumnDesc(Long.class, "c", "table", false);
     ExprNodeGenericFuncDesc plusDesc = new ExprNodeGenericFuncDesc();
-    GenericUDF gudf = new GenericUDFBridge("+", true, UDFOPPlus.class.getCanonicalName());
+    GenericUDF gudf = new GenericUDFOPPlus();
+
     plusDesc.setGenericUDF(gudf);
     List<ExprNodeDesc> children = new  ArrayList<ExprNodeDesc>();
     children.add(colDesc1);

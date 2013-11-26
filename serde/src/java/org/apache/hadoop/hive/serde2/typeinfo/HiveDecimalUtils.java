@@ -67,10 +67,7 @@ public class HiveDecimalUtils {
   }
 
   /**
-   * Get the precision of double type can be tricky. While a double may have more digits than
-   * a HiveDecimal can hold, in reality those numbers are of no practical use. Thus, we assume
-   * that a double can have at most HiveDecimal.MAX_PRECISION, which is generous enough. This
-   * implies that casting a double to a decimal type is always valid.
+   * Need to keep consistent with JdbcColumn.columnPrecision
    *
    */
   public static int getPrecisionForType(PrimitiveTypeInfo typeInfo) {
@@ -78,7 +75,9 @@ public class HiveDecimalUtils {
     case DECIMAL:
       return ((DecimalTypeInfo)typeInfo).precision();
     case FLOAT:
-      return 23;
+      return 7;
+    case DOUBLE:
+      return 15;
     case BYTE:
       return 3;
     case SHORT:
@@ -87,16 +86,15 @@ public class HiveDecimalUtils {
       return 10;
     case LONG:
       return 19;
+    case VOID:
+      return 1;
     default:
       return HiveDecimal.MAX_PRECISION;
     }
   }
 
   /**
-   * Get the scale of double type can be tricky. While a double may have more decimal digits than
-   * HiveDecimal, in reality those numbers are of no practical use. Thus, we assume that a double
-   * can have at most HiveDecimal.MAX_SCALE, which is generous enough. This implies implies that
-   * casting a double to a decimal type is always valid.
+   * Need to keep consistent with JdbcColumn.columnScale()
    *
    */
   public static int getScaleForType(PrimitiveTypeInfo typeInfo) {
@@ -105,13 +103,13 @@ public class HiveDecimalUtils {
       return ((DecimalTypeInfo)typeInfo).scale();
     case FLOAT:
       return 7;
+    case DOUBLE:
+      return 15;
     case BYTE:
-      return 0;
     case SHORT:
-      return 0;
     case INT:
-      return 0;
     case LONG:
+    case VOID:
       return 0;
     default:
       return HiveDecimal.MAX_SCALE;

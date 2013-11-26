@@ -716,9 +716,9 @@
 </property>
 
 <property>
-  <name>hive.task.progress</name>
-  <value>false</value>
-  <description>Whether Hive should periodically update task progress counters during execution.  Enabling this allows task progress to be monitored more closely in the job tracker, but may impose a performance penalty.  This flag is automatically set to true for jobs with hive.exec.dynamic.partition set to true.</description>
+  <name>hive.counters.group.name</name>
+  <value>HIVE</value>
+  <description>The name of counter group for internal hive variables(CREATED_FILE, FATAL_ERROR, etc.)</description>
 </property>
 
 <property>
@@ -1203,8 +1203,8 @@
 
 <property>
   <name>hive.stats.dbclass</name>
-  <value>jdbc:derby</value>
-  <description>The default database that stores temporary hive statistics.</description>
+  <value>counter</value>
+  <description>The storage that stores temporary hive statistics. Currently, jdbc, hbase, counter and custom type is supported</description>
 </property>
 
 <property>
@@ -1228,13 +1228,13 @@
 <property>
   <name>hive.stats.default.publisher</name>
   <value></value>
-  <description>The Java class (implementing the StatsPublisher interface) that is used by default if hive.stats.dbclass is not JDBC or HBase.</description>
+  <description>The Java class (implementing the StatsPublisher interface) that is used by default if hive.stats.dbclass is custom type.</description>
 </property>
 
 <property>
   <name>hive.stats.default.aggregator</name>
   <value></value>
-  <description>The Java class (implementing the StatsAggregator interface) that is used by default if hive.stats.dbclass is not JDBC or HBase.</description>
+  <description>The Java class (implementing the StatsAggregator interface) that is used by default if hive.stats.dbclass is custom type.</description>
 </property>
 
 <property>
@@ -1786,6 +1786,26 @@
 </property>
 
 <property>
+  <name>hive.fetch.task.conversion.threshold</name>
+  <value>-1</value>
+  <description>
+    Input threshold for applying hive.fetch.task.conversion. If target table is native, input length
+    is calculated by summation of file lengths. If it's not native, storage handler for the table
+    can optionally implement org.apache.hadoop.hive.ql.metadata.InputEstimator interface.
+  </description>
+</property>
+
+<property>
+  <name>hive.fetch.task.aggr</name>
+  <value>false</value>
+  <description>
+    Aggregation queries with no group-by clause (for example, select count(*) from src) executes
+    final aggregations in single reduce task. If this is set true, hive delegates final aggregation
+    stage to fetch task, possibly decreasing the query time.
+  </description>
+</property>
+
+<property>
   <name>hive.cache.expr.evaluation</name>
   <value>true</value>
   <description>
@@ -1796,17 +1816,6 @@
   </description>
 </property>
 
-
-
-<property>
-  <name>hive.fetch.task.conversion.threshold</name>
-  <value>-1</value>
-  <description>
-    Input threshold for applying hive.fetch.task.conversion. If target table is native, input length
-    is calculated by summation of file lengths. If it's not native, storage handler for the table
-    can optionally implement org.apache.hadoop.hive.ql.metadata.InputEstimator interface.
-  </description>
-</property>
 
 <property>
   <name>hive.hmshandler.retry.attempts</name>
@@ -2065,6 +2074,24 @@
 </property>
 
 <property>
+  <name>hive.vectorized.groupby.maxentries</name>
+  <value>1000000</value>
+  <description>Max number of entries in the vector group by aggregation hashtables. Exceeding this will trigger a flush irrelevant of memory pressure condition.</description>
+</property>
+
+<property>
+  <name>hive.vectorized.groupby.checkinterval</name>
+  <value>100000</value>
+  <description>Number of entries added to the group by aggregation hash before a reocmputation of average entry size is performed.</description>
+</property>
+
+<property>
+  <name>hive.vectorized.groupby.flush.percent</name>
+  <value>0.1</value>
+  <description>Percent of entries in the group by aggregation hash flushed when the memory treshold is exceeded.</description>
+</property>
+
+<property>
   <name>hive.compute.query.using.stats</name>
   <value>false</value>
   <description>
@@ -2073,7 +2100,6 @@
   For more advanced stats collection need to run analyze table queries.
   </description>
 </property>
-
 
 <property>
   <name>hive.metastore.schema.verification</name>

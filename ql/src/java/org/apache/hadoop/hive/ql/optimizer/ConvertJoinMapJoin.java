@@ -86,17 +86,16 @@ public class ConvertJoinMapJoin implements NodeProcessor {
 
     for (Operator<? extends OperatorDesc> parentOp : joinOp.getParentOperators()) {
 
-      Statistics currInputStat = null;
-      try {
-        currInputStat = parentOp.getStatistics(context.conf);
-      } catch (HiveException e) {
+      Statistics currInputStat = parentOp.getStatistics();
+      if (currInputStat == null) {
+        LOG.warn("Couldn't get statistics from: "+parentOp);
         return null;
       }
 
-      long inputSize = currInputStat.getNumberOfBytes();
+      long inputSize = currInputStat.getDataSize();
       if ((bigInputStat == null) ||
           ((bigInputStat != null) &&
-           (inputSize > bigInputStat.getNumberOfBytes()))) {
+           (inputSize > bigInputStat.getDataSize()))) {
 
         if (bigTableFound) {
           // cannot convert to map join; we've already chosen a big table
@@ -117,7 +116,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
         if (bigInputStat != null) {
           // we're replacing the current big table with a new one. Need
           // to count the current one as a map table then.
-          totalSize += bigInputStat.getNumberOfBytes();
+          totalSize += bigInputStat.getDataSize();
         }
 
         if (totalSize > maxSize) {
@@ -131,7 +130,7 @@ public class ConvertJoinMapJoin implements NodeProcessor {
           bigInputStat = currInputStat;
         }
       } else {
-        totalSize += currInputStat.getNumberOfBytes();
+        totalSize += currInputStat.getDataSize();
         if (totalSize > maxSize) {
           // cannot hold all map tables in memory. Cannot convert.
           return null;

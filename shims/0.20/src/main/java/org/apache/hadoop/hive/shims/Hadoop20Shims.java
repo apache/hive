@@ -572,6 +572,11 @@ public class Hadoop20Shims implements HadoopShims {
     throwKerberosUnsupportedError();
   }
 
+  @Override
+  public boolean isLoginKeytabBased() throws IOException {
+    return false;
+  }
+
   private void throwKerberosUnsupportedError() throws UnsupportedOperationException{
     throw new UnsupportedOperationException("Kerberos login is not supported" +
         " in this hadoop version (" + VersionInfo.getVersion() + ")");

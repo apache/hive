@@ -17,23 +17,23 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# Resolve our absolute path                                                      
-# resolve links - $0 may be a softlink                                           
-this="${BASH_SOURCE-$0}"                                                         
-while [ -h "$this" ]; do                                                         
-    ls=`ls -ld "$this"`                                                          
-    link=`expr "$ls" : '.*-> \(.*\)$'`                                           
-    if expr "$link" : '.*/.*' > /dev/null; then                                  
-        this="$link"                                                             
-    else                                                                         
-        this=`dirname "$this"`/"$link"                                           
-    fi                                                                           
-done                                                                             
-                                                                                 
-# convert relative path to absolute path                                         
-bin=`dirname "$this"`                                                            
-script=`basename "$this"`                                                        
-bin=`unset CDPATH; cd "$bin"; pwd`                                               
+# Resolve our absolute path
+# resolve links - $0 may be a softlink
+this="${BASH_SOURCE-$0}"
+while [ -h "$this" ]; do
+    ls=`ls -ld "$this"`
+    link=`expr "$ls" : '.*-> \(.*\)$'`
+    if expr "$link" : '.*/.*' > /dev/null; then
+        this="$link"
+    else
+        this=`dirname "$this"`/"$link"
+    fi
+done
+
+# convert relative path to absolute path
+bin=`dirname "$this"`
+script=`basename "$this"`
+bin=`unset CDPATH; cd "$bin"; pwd`
 this="$bin/$script"
 #to preserve value of 'this' since any other file that defines 'this' and is sourced
 #here (e.g. hcat-config.sh) will overwrite it
@@ -113,11 +113,11 @@ fi
 
 # Find our hcatalog jar
 shopt -s extglob
-if [ "$(ls -1 $HCAT_PREFIX/share/hcatalog/hcatalog-core-[0-9]*.jar | wc -l)" -ne 1 ]; then
-    echo "Error: did not find exactly one hcatalog-core jar in $HCAT_PREFIX/share/hcatalog"
+if [ "$(ls -1 $HCAT_PREFIX/share/hcatalog/hive-hcatalog-core-[0-9]*.jar | wc -l)" -ne 1 ]; then
+    echo "Error: did not find exactly one hive-hcatalog-core jar in $HCAT_PREFIX/share/hcatalog"
     exit 1
 fi
-HCAT_JAR=`ls $HCAT_PREFIX/share/hcatalog/hcatalog-core-[0-9]*.jar`
+HCAT_JAR=`ls $HCAT_PREFIX/share/hcatalog/hive-hcatalog-core-[0-9]*.jar`
 
 # Find the storage-handler jars.
 for jar in ${HCAT_PREFIX}/share/hcatalog/storage-handlers/*/lib/*.jar ; do
@@ -137,7 +137,7 @@ if [ -d "${HIVE_AUX_JARS_PATH}" ]; then
     fi
     HADOOP_CLASSPATH=${HADOOP_CLASSPATH}:$f
   done
-elif [ "${HIVE_AUX_JARS_PATH}" != "" ]; then 
+elif [ "${HIVE_AUX_JARS_PATH}" != "" ]; then
   HIVE_AUX_JARS_PATH=`echo $HIVE_AUX_JARS_PATH | sed 's/,/:/g'`
   HADOOP_CLASSPATH=$HADOOP_CLASSPATH:$HIVE_AUX_JARS_PATH
 fi

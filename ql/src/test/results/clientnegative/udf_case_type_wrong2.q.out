@@ -1,1 +1,0 @@
-FAILED: SemanticException [Error 10016]: Line 3:20 Argument type mismatch '4': The expressions after THEN should have the same type: "string" is expected but "int" is found

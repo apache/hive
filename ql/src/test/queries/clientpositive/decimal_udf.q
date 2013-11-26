@@ -2,7 +2,7 @@ set hive.fetch.task.conversion=more;
 
 DROP TABLE IF EXISTS DECIMAL_UDF;
 
-CREATE TABLE DECIMAL_UDF (key decimal(65,30), value int) 
+CREATE TABLE DECIMAL_UDF (key decimal(38,18), value int)
 ROW FORMAT DELIMITED
    FIELDS TERMINATED BY ' '
 STORED AS TEXTFILE;

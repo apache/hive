@@ -333,7 +333,6 @@ public class QueryPlan implements Serializable {
               // if the task has started, all operators within the task have
               // started
               op.setStarted(started.contains(task.getTaskId()));
-              op.setOperatorCounters(counters.get(op.getOperatorId()));
               // if the task is done, all operators are done as well
               op.setDone(done.contains(task.getTaskId()));
             }
@@ -382,8 +381,6 @@ public class QueryPlan implements Serializable {
       }
       if (task instanceof ExecDriver) {
         ExecDriver mrTask = (ExecDriver) task;
-        extractOperatorCounters(mrTask.getWork().getMapWork().getAliasToWork().values(),
-            task.getId() + "_MAP");
         if (mrTask.mapStarted()) {
           started.add(task.getId() + "_MAP");
         }
@@ -394,7 +391,6 @@ public class QueryPlan implements Serializable {
           Collection<Operator<? extends OperatorDesc>> reducerTopOps =
             new ArrayList<Operator<? extends OperatorDesc>>();
           reducerTopOps.add(mrTask.getWork().getReduceWork().getReducer());
-          extractOperatorCounters(reducerTopOps, task.getId() + "_REDUCE");
           if (mrTask.reduceStarted()) {
             started.add(task.getId() + "_REDUCE");
           }
@@ -411,34 +407,6 @@ public class QueryPlan implements Serializable {
         }
       }
     }
-  }
-
-  private void extractOperatorCounters(
-      Collection<Operator<? extends OperatorDesc>> topOps, String taskId) {
-    Queue<Operator<? extends OperatorDesc>> opsToVisit =
-      new LinkedList<Operator<? extends OperatorDesc>>();
-    Set<Operator<? extends OperatorDesc>> opsVisited =
-      new HashSet<Operator<? extends OperatorDesc>>();
-    opsToVisit.addAll(topOps);
-    while (opsToVisit.size() != 0) {
-      Operator<? extends OperatorDesc> op = opsToVisit.remove();
-      opsVisited.add(op);
-      Map<String,Long> ctrs = op.getCounters();
-      if (ctrs != null) {
-        counters.put(op.getOperatorId(), op.getCounters());
-      }
-      if (op.getDone()) {
-        done.add(op.getOperatorId());
-      }
-      if (op.getChildOperators() != null) {
-        for (Operator<? extends OperatorDesc> childOp : op.getChildOperators()) {
-          if (!opsVisited.contains(childOp)) {
-            opsToVisit.add(childOp);
-          }
-        }
-      }
-    }
-
   }
 
   public org.apache.hadoop.hive.ql.plan.api.Query getQueryPlan()
@@ -772,7 +740,7 @@ public class QueryPlan implements Serializable {
   /**
    * Sets the table access information.
    *
-   * @param taInfo The TableAccessInfo structure that is set right before the optimization phase.
+   * @param tableAccessInfo The TableAccessInfo structure that is set right before the optimization phase.
    */
   public void setTableAccessInfo(TableAccessInfo tableAccessInfo) {
     this.tableAccessInfo = tableAccessInfo;

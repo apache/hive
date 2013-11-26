@@ -116,7 +116,7 @@ public class TestOperators extends TestCase {
           new ObjectInspector[] {r[0].oi});
 
       for (InspectableObject oner : r) {
-        op.process(oner.o, 0);
+        op.processOp(oner.o, 0);
       }
 
       Map<Enum<?>, Long> results = op.getStats();
@@ -277,7 +277,7 @@ public class TestOperators extends TestCase {
 
       // evaluate on row
       for (int i = 0; i < 5; i++) {
-        op.process(r[i].o, 0);
+        op.processOp(r[i].o, 0);
       }
       op.close(false);
 

@@ -18,6 +18,7 @@
 package org.apache.hadoop.hive.serde2.objectinspector.primitive;
 
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 
 /**
@@ -84,6 +85,22 @@ public abstract class AbstractPrimitiveObjectInspector implements
 
   public PrimitiveTypeInfo getTypeInfo() {
     return this.typeInfo;
+  }
+
+  /**
+   * Default implementation.  Maybe overridden by exact types.
+   */
+  @Override
+  public int precision() {
+    return HiveDecimalUtils.getPrecisionForType(typeInfo);
+  }
+
+  /**
+   * Default implementation.  Maybe overridden by exact types.
+   */
+  @Override
+  public int scale() {
+    return HiveDecimalUtils.getScaleForType(typeInfo);
   }
 
 }

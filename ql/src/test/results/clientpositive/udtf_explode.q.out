@@ -26,20 +26,30 @@ STAGE PLANS:
         src 
           TableScan
             alias: src
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
                     expr: array(1,2,3)
                     type: array<int>
               outputColumnNames: _col0
+              Statistics:
+                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
               UDTF Operator
+                Statistics:
+                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
                 function name: explode
                 Limit
+                  Statistics:
+                      numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
                   File Output Operator
                     compressed: false
                     GlobalTableId: 0
 #### A masked pattern was here ####
                     NumFilesPerFileSink: 1
+                    Statistics:
+                        numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
 #### A masked pattern was here ####
                     table:
                         input format: org.apache.hadoop.mapred.TextInputFormat
@@ -127,17 +137,27 @@ STAGE PLANS:
         a:src 
           TableScan
             alias: src
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
                     expr: array(1,2,3)
                     type: array<int>
               outputColumnNames: _col0
+              Statistics:
+                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
               UDTF Operator
+                Statistics:
+                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
                 function name: explode
                 Limit
+                  Statistics:
+                      numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
                   Reduce Output Operator
                     sort order: 
+                    Statistics:
+                        numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
                     tag: -1
                     value expressions:
                           expr: col
@@ -192,12 +212,18 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Extract
+          Statistics:
+              numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
           Limit
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
             Select Operator
               expressions:
                     expr: _col0
                     type: int
               outputColumnNames: _col0
+              Statistics:
+                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
               Group By Operator
                 aggregations:
                       expr: count(1)
@@ -207,6 +233,8 @@ STAGE PLANS:
                       type: int
                 mode: hash
                 outputColumnNames: _col0, _col1
+                Statistics:
+                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
@@ -239,6 +267,8 @@ STAGE PLANS:
               Map-reduce partition columns:
                     expr: _col0
                     type: int
+              Statistics:
+                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
               tag: -1
               value expressions:
                     expr: _col1
@@ -279,6 +309,8 @@ STAGE PLANS:
                 type: int
           mode: mergepartial
           outputColumnNames: _col0, _col1
+          Statistics:
+              numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: COMPLETE
           Select Operator
             expressions:
                   expr: _col0
@@ -286,11 +318,15 @@ STAGE PLANS:
                   expr: _col1
                   type: bigint
             outputColumnNames: _col0, _col1
+            Statistics:
+                numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -403,17 +439,27 @@ STAGE PLANS:
         a:src 
           TableScan
             alias: src
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
                     expr: map(1:'one',2:'two',3:'three')
                     type: map<int,string>
               outputColumnNames: _col0
+              Statistics:
+                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
               UDTF Operator
+                Statistics:
+                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
                 function name: explode
                 Limit
+                  Statistics:
+                      numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
                   Reduce Output Operator
                     sort order: 
+                    Statistics:
+                        numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
                     tag: -1
                     value expressions:
                           expr: key
@@ -470,7 +516,11 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Extract
+          Statistics:
+              numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
           Limit
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
             Select Operator
               expressions:
                     expr: _col0
@@ -478,6 +528,8 @@ STAGE PLANS:
                     expr: _col1
                     type: string
               outputColumnNames: _col0, _col1
+              Statistics:
+                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
               Group By Operator
                 aggregations:
                       expr: count(1)
@@ -489,6 +541,8 @@ STAGE PLANS:
                       type: string
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
+                Statistics:
+                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
@@ -525,6 +579,8 @@ STAGE PLANS:
                     type: int
                     expr: _col1
                     type: string
+              Statistics:
+                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
               tag: -1
               value expressions:
                     expr: _col2
@@ -567,6 +623,8 @@ STAGE PLANS:
                 type: string
           mode: mergepartial
           outputColumnNames: _col0, _col1, _col2
+          Statistics:
+              numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: COMPLETE
           Select Operator
             expressions:
                   expr: _col0
@@ -576,11 +634,15 @@ STAGE PLANS:
                   expr: _col2
                   type: bigint
             outputColumnNames: _col0, _col1, _col2
+            Statistics:
+                numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat

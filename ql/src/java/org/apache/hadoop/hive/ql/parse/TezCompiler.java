@@ -96,14 +96,6 @@ public class TezCompiler extends TaskCompiler {
     opRules.put(new RuleRegExp(new String("Convert Join to Map-join"),
         JoinOperator.getOperatorName() + "%"), new ConvertJoinMapJoin());
 
-    // if this is an explain statement add rule to generate statistics for
-    // the whole tree.
-    if (pCtx.getContext().getExplain()) {
-      opRules.put(new RuleRegExp(new String("Set statistics - FileSink"),
-          FileSinkOperator.getOperatorName() + "%"),
-          new SetStatistics());
-    }
-
     // The dispatcher fires the processor corresponding to the closest matching
     // rule and passes the context along
     Dispatcher disp = new DefaultRuleDispatcher(null, opRules, procCtx);
@@ -238,48 +230,6 @@ public class TezCompiler extends TaskCompiler {
       for (Operator<? extends OperatorDesc> childOp : op.getChildOperators()) {
         setInputFormat(work, childOp);
       }
-    }
-  }
-
-  @Override
-  protected void generateCountersTask(Task<? extends Serializable> task) {
-    if (task instanceof TezTask) {
-      TezWork work = ((TezTask)task).getWork();
-      List<BaseWork> workItems = work.getAllWork();
-      for (BaseWork w: workItems) {
-        List<Operator<?>> ops = w.getAllOperators();
-        for (Operator<?> op: ops) {
-          generateCountersOperator(op);
-        }
-      }
-    } else if (task instanceof ConditionalTask) {
-      List<Task<? extends Serializable>> listTasks = ((ConditionalTask) task)
-          .getListTasks();
-      for (Task<? extends Serializable> tsk : listTasks) {
-        generateCountersTask(tsk);
-      }
-    }
-
-    Operator.resetLastEnumUsed();
-
-    if (task.getChildTasks() == null) {
-      return;
-    }
-
-    for (Task<? extends Serializable> childTask : task.getChildTasks()) {
-      generateCountersTask(childTask);
-    }
-  }
-
-  private void generateCountersOperator(Operator<?> op) {
-    op.assignCounterNameToEnum();
-
-    if (op.getChildOperators() == null) {
-      return;
-    }
-
-    for (Operator<?> child : op.getChildOperators()) {
-      generateCountersOperator(child);
     }
   }
 

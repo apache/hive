@@ -619,9 +619,9 @@ public class DagUtils {
     // initialize stats publisher if necessary
     if (work.isGatheringStats()) {
       StatsPublisher statsPublisher;
-      String statsImplementationClass = HiveConf.getVar(conf, HiveConf.ConfVars.HIVESTATSDBCLASS);
-      if (StatsFactory.setImplementation(statsImplementationClass, conf)) {
-        statsPublisher = StatsFactory.getStatsPublisher();
+      StatsFactory factory = StatsFactory.newFactory(conf);
+      if (factory != null) {
+        statsPublisher = factory.getStatsPublisher();
         if (!statsPublisher.init(conf)) { // creating stats table if not exists
           if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_RELIABLE)) {
             throw

@@ -74,7 +74,6 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
   private final String[] mSlaveLocalDirs;
   private final int mNumThreads;
   private final int mNumHosts;
-  private final int mNumRetries;
   private final long mRetrySleepInterval;
   private final CloudComputeService mCloudComputeService;
   private final Map<String, Long> mTerminatedHosts;
@@ -86,14 +85,13 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
   CloudExecutionContextProvider(String dataDir,
       int numHosts, CloudComputeService cloudComputeService, SSHCommandExecutor sshCommandExecutor,
       String workingDirectory, String privateKey, String user, String[] slaveLocalDirs, int numThreads,
-      int numRetries, long retrySleepInterval) throws IOException {
+      long retrySleepInterval) throws IOException {
     mNumHosts = numHosts;
     mCloudComputeService = cloudComputeService;
     mPrivateKey = privateKey;
     mUser = user;
     mSlaveLocalDirs = slaveLocalDirs;
     mNumThreads = numThreads;
-    mNumRetries = numRetries;
     mRetrySleepInterval = retrySleepInterval;
     mSSHCommandExecutor = sshCommandExecutor;
     mWorkingDir = Dirs.create(new File(workingDirectory, "working"));
@@ -191,35 +189,33 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
     }
   }
 
-  private Set<NodeMetadata> createNodes(int numHosts)
+  private Set<NodeMetadata> createNodes(final int numHosts)
       throws CreateHostsFailedException {
     Set<NodeMetadata> result = Sets.newHashSet();
     int attempts = 0;
     int numRequired = numHosts;
-    RunNodesException exception = null;
     do {
       LOG.info("Attempting to create " + numRequired + " nodes");
       try {
-        result.addAll(verifyHosts(mCloudComputeService.createNodes(numRequired)));
+        result.addAll(mCloudComputeService.createNodes(numRequired));
       } catch (RunNodesException e) {
-        exception = e;
         LOG.warn("Error creating nodes", e);
         terminateInternal(e.getNodeErrors().keySet());
-        result.addAll(verifyHosts(e.getSuccessfulNodes()));
+        result.addAll(e.getSuccessfulNodes());
       }
+      result = verifyHosts(result);
       LOG.info("Successfully created " + result.size() + " nodes");
       numRequired = numHosts - result.size();
       if(numRequired > 0) {
         try {
-          TimeUnit.SECONDS.sleep(mRetrySleepInterval);
+          TimeUnit.SECONDS.sleep(++attempts * mRetrySleepInterval);
         } catch(InterruptedException e) {
           throw new CreateHostsFailedException("Interrupted while trying to create hosts", e);
         }
       }
-    } while(attempts++ < mNumRetries && numRequired > 0);
-    if(result.size() < numHosts) {
-      throw new CreateHostsFailedException("Error creating nodes", exception);
-    }
+    } while(numRequired > 0);
+    Preconditions.checkState(result.size() >= numHosts,
+        "Results should always be >= numHosts " + numHosts + " => " + result.size());
     return result;
   }
 
@@ -240,39 +236,37 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
 
   private Set<NodeMetadata> verifyHosts(Set<? extends NodeMetadata> hosts)
       throws CreateHostsFailedException {
-    persistHostnamesToLog(hosts);
     final Set<NodeMetadata> result = Collections.synchronizedSet(new HashSet<NodeMetadata>());
-    ExecutorService executorService = Executors.newFixedThreadPool(Math.min(hosts.size(), 25));
-    try {
-      for(final NodeMetadata node : hosts) {
-        executorService.submit(new Runnable() {
-          @Override
-          public void run() {
-            SSHCommand command = new SSHCommand(mSSHCommandExecutor, mPrivateKey, mUser, node.getHostname(), 0, "pkill -f java");
-            mSSHCommandExecutor.execute(command);
-            if(command.getExitCode() == Constants.EXIT_CODE_UNKNOWN ||
-                command.getException() != null) {
-              if(command.getException() == null) {
-                LOG.error("Node " + node.getHostname() + " is bad on startup");
+    if(!hosts.isEmpty()) {
+      persistHostnamesToLog(hosts);
+      ExecutorService executorService = Executors.newFixedThreadPool(Math.min(hosts.size(), 25));
+      try {
+        for(final NodeMetadata node : hosts) {
+          executorService.submit(new Runnable() {
+            @Override
+            public void run() {
+              SSHCommand command = new SSHCommand(mSSHCommandExecutor, mPrivateKey, mUser, node.getHostname(), 0, "pkill -f java");
+              mSSHCommandExecutor.execute(command);
+              if(command.getExitCode() == Constants.EXIT_CODE_UNKNOWN ||
+                  command.getException() != null) {
+                LOG.error("Node " + node + " is bad on startup", command.getException());
+                terminateInternal(node);
               } else {
-                LOG.error("Node " + node.getHostname() + " is bad on startup", command.getException());
+                result.add(node);
               }
-              terminateInternal(node);
-            } else {
-              result.add(node);
             }
-          }
-        });
-      }
-      executorService.shutdown();
-      if(!executorService.awaitTermination(10, TimeUnit.MINUTES)) {
-        LOG.error("Verify command still executing on a host after 10 minutes");
-      }
-    } catch (InterruptedException e) {
-      throw new CreateHostsFailedException("Interrupted while trying to create hosts", e);
-    } finally {
-      if(!executorService.isShutdown()) {
-        executorService.shutdownNow();
+          });
+        }
+        executorService.shutdown();
+        if(!executorService.awaitTermination(10, TimeUnit.MINUTES)) {
+          LOG.error("Verify command still executing on a host after 10 minutes");
+        }
+      } catch (InterruptedException e) {
+        throw new CreateHostsFailedException("Interrupted while trying to create hosts", e);
+      } finally {
+        if(!executorService.isShutdown()) {
+          executorService.shutdownNow();
+        }
       }
     }
     return result;
@@ -310,7 +304,7 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
   }
 
   private void terminateInternal(final NodeMetadata node) {
-    LOG.info("Submitting termination for " + node.getHostname());
+    LOG.info("Submitting termination for " + node);
     mTerminationExecutor.submit(new Runnable() {
       @Override
       public void run() {
@@ -404,7 +398,7 @@ public class CloudExecutionContextProvider implements ExecutionContextProvider {
         instanceType, groupName, imageId, keyPair, securityGroup, maxBid);
     CloudExecutionContextProvider service = new CloudExecutionContextProvider(
         dataDir, numHosts, cloudComputeService, new SSHCommandExecutor(LOG), workingDirectory,
-        privateKey, user, localDirs, numThreads, 10, 10);
+        privateKey, user, localDirs, numThreads, 60);
     return service;
   }
 }

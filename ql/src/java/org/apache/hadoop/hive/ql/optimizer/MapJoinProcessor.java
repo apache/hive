@@ -543,6 +543,7 @@ public class MapJoinProcessor implements Transform {
     MapJoinDesc mapJoinDescriptor = new MapJoinDesc(keyExprMap, keyTableDesc, newValueExprs,
         valueTableDescs, valueFiltedTableDescs, outputColumnNames, mapJoinPos, joinCondns,
         filters, op.getConf().getNoOuterJoin(), dumpFilePrefix);
+    mapJoinDescriptor.setStatistics(op.getConf().getStatistics());
     mapJoinDescriptor.setTagOrder(tagOrder);
     mapJoinDescriptor.setNullSafes(desc.getNullSafes());
     mapJoinDescriptor.setFilterMap(desc.getFilterMap());
@@ -600,6 +601,8 @@ public class MapJoinProcessor implements Transform {
         smbJoinDesc.getOutputColumnNames(),
         bigTablePos, smbJoinDesc.getConds(),
         smbJoinDesc.getFilters(), smbJoinDesc.isNoOuterJoin(), smbJoinDesc.getDumpFilePrefix());
+
+    mapJoinDesc.setStatistics(smbJoinDesc.getStatistics());
 
     RowResolver joinRS = opParseCtxMap.get(smbJoinOp).getRowResolver();
     // The mapjoin has the same schema as the join operator

@@ -34,6 +34,7 @@
 
   <!-- odbc code depends on code generated in these modules -->
   <dependencies>
+    <!-- dependencies are always listed in sorted order by groupId, artifectId -->
     <!-- intra-project -->
     <dependency>
       <groupId>org.apache.hive</groupId>

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -40,7 +41,6 @@ def start_hcat():
       pidWords = line.split()
       for pidStr in pidWords:
         pid = int(pidStr.rstrip('\n'))
-        
     pidFileDesc.close()
   # check if service is already running, if so exit
     os.kill(pid, 0)
@@ -57,7 +57,7 @@ def start_hcat():
   #      n
   #      s/.*<value>\(.*\)<\/value>.*/\1/p
   #      }' $HIVE_SITE_XML`
-  #  HADOOP_OPTS="$HADOOP_OPTS -Dhive.metastore.warehouse.dir=$WAREHOUSE_DIR " 
+  #  HADOOP_OPTS="$HADOOP_OPTS -Dhive.metastore.warehouse.dir=$WAREHOUSE_DIR "
 
   # add in hive-site.xml to classpath
   if 'AUX_CLASSPATH' not in os.environ:
@@ -115,7 +115,7 @@ def start_hcat():
   except Exception as inst:
     print inst
     sys.exit("Metastore startup failed, see %s" % (errFile))
-  
+
   return
 
 def stop_hcat():
@@ -139,7 +139,6 @@ def stop_hcat():
   if kill == True:
     try:
       os.kill(pid, 9)
-      
     except:
       sys.exit("Failed to stop metastore server")
 

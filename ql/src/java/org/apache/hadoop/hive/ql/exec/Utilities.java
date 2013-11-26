@@ -837,7 +837,6 @@ public final class Utilities {
     // workaround for java 1.5
     e.setPersistenceDelegate(ExpressionTypes.class, new EnumDelegate());
     e.setPersistenceDelegate(GroupByDesc.Mode.class, new EnumDelegate());
-    e.setPersistenceDelegate(Operator.ProgressCounter.class, new EnumDelegate());
     e.setPersistenceDelegate(java.sql.Date.class, new DatePersistenceDelegate());
     e.setPersistenceDelegate(Timestamp.class, new TimestampPersistenceDelegate());
 
@@ -2155,12 +2154,6 @@ public final class Utilities {
                 HiveStorageHandler handler = HiveUtils.getStorageHandler(myConf,
                     partDesc.getOverlayedProperties().getProperty(
                     hive_metastoreConstants.META_TABLE_STORAGE));
-                if (handler == null) {
-                  // native table
-                  FileSystem fs = p.getFileSystem(myConf);
-                  resultMap.put(pathStr, fs.getContentSummary(p));
-                  return;
-                }
                 if (handler instanceof InputEstimator) {
                   long total = 0;
                   TableDesc tableDesc = partDesc.getTableDesc();
@@ -2176,6 +2169,8 @@ public final class Utilities {
                   }
                   resultMap.put(pathStr, new ContentSummary(total, -1, -1));
                 }
+                FileSystem fs = p.getFileSystem(myConf);
+                resultMap.put(pathStr, fs.getContentSummary(p));
               } catch (Exception e) {
                 // We safely ignore this exception for summary data.
                 // We don't update the cache to protect it from polluting other
@@ -2344,12 +2339,8 @@ public final class Utilities {
   }
 
   public static StatsPublisher getStatsPublisher(JobConf jc) {
-    String statsImplementationClass = HiveConf.getVar(jc, HiveConf.ConfVars.HIVESTATSDBCLASS);
-    if (StatsFactory.setImplementation(statsImplementationClass, jc)) {
-      return StatsFactory.getStatsPublisher();
-    } else {
-      return null;
-    }
+    StatsFactory factory = StatsFactory.newFactory(jc);
+    return factory == null ? null : factory.getStatsPublisher();
   }
 
   /**

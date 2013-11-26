@@ -34,8 +34,9 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.MapRedStats;
-import org.apache.hadoop.hive.ql.exec.Operator.ProgressCounter;
+import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskHandle;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -80,14 +81,6 @@ public class HadoopJobExecHelper {
     reduceProgress = reduceProgress == 100 ? (int)Math.floor(rj.reduceProgress() * 100) : reduceProgress;
     task.taskCounters.put("CNTR_NAME_" + task.getId() + "_MAP_PROGRESS", Long.valueOf(mapProgress));
     task.taskCounters.put("CNTR_NAME_" + task.getId() + "_REDUCE_PROGRESS", Long.valueOf(reduceProgress));
-    if (ctrs == null) {
-      // hadoop might return null if it cannot locate the job.
-      // we may still be able to retrieve the job status - so ignore
-      return;
-    }
-    if(callBackObj != null) {
-      callBackObj.updateCounters(ctrs, rj);
-    }
   }
 
   /**
@@ -200,6 +193,7 @@ public class HadoopJobExecHelper {
     }
   }
 
+  @SuppressWarnings("deprecation")
   public boolean checkFatalErrors(Counters ctrs, StringBuilder errMsg) {
     if (ctrs == null) {
       // hadoop might return null if it cannot locate the job.
@@ -207,7 +201,9 @@ public class HadoopJobExecHelper {
       return false;
     }
     // check for number of created files
-    long numFiles = ctrs.getCounter(ProgressCounter.CREATED_FILES);
+    Counters.Counter cntr = ctrs.findCounter(HiveConf.getVar(job, ConfVars.HIVECOUNTERGROUP),
+        Operator.HIVECOUNTERCREATEDFILES);
+    long numFiles = cntr != null ? cntr.getValue() : 0;
     long upperLimit = HiveConf.getLongVar(job, HiveConf.ConfVars.MAXCREATEDFILES);
     if (numFiles > upperLimit) {
       errMsg.append("total number of created files now is " + numFiles + ", which exceeds ").append(upperLimit);

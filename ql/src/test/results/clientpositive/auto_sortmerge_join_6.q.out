@@ -569,9 +569,9 @@ STAGE PLANS:
                 2 
               handleSkewJoin: false
               keys:
-                0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                2 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+                0 [GenericUDFBridge(Column[key])]
+                1 [GenericUDFBridge(Column[key])]
+                2 [GenericUDFBridge(Column[key])]
               Position of Big Table: 0
         c 
           TableScan
@@ -583,9 +583,9 @@ STAGE PLANS:
                 2 
               handleSkewJoin: false
               keys:
-                0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                2 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+                0 [GenericUDFBridge(Column[key])]
+                1 [GenericUDFBridge(Column[key])]
+                2 [GenericUDFBridge(Column[key])]
               Position of Big Table: 0
 
   Stage: Stage-5
@@ -604,9 +604,9 @@ STAGE PLANS:
                 2 
               handleSkewJoin: false
               keys:
-                0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                2 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+                0 [GenericUDFBridge(Column[key])]
+                1 [GenericUDFBridge(Column[key])]
+                2 [GenericUDFBridge(Column[key])]
               Position of Big Table: 0
               Select Operator
                 Group By Operator
@@ -676,9 +676,9 @@ STAGE PLANS:
                 2 
               handleSkewJoin: false
               keys:
-                0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                2 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+                0 [GenericUDFBridge(Column[key])]
+                1 [GenericUDFBridge(Column[key])]
+                2 [GenericUDFBridge(Column[key])]
               Position of Big Table: 1
         c 
           TableScan
@@ -690,9 +690,9 @@ STAGE PLANS:
                 2 
               handleSkewJoin: false
               keys:
-                0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                2 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+                0 [GenericUDFBridge(Column[key])]
+                1 [GenericUDFBridge(Column[key])]
+                2 [GenericUDFBridge(Column[key])]
               Position of Big Table: 1
 
   Stage: Stage-6
@@ -711,9 +711,9 @@ STAGE PLANS:
                 2 
               handleSkewJoin: false
               keys:
-                0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                2 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+                0 [GenericUDFBridge(Column[key])]
+                1 [GenericUDFBridge(Column[key])]
+                2 [GenericUDFBridge(Column[key])]
               Position of Big Table: 1
               Select Operator
                 Group By Operator
@@ -752,9 +752,9 @@ STAGE PLANS:
                 2 
               handleSkewJoin: false
               keys:
-                0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                2 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+                0 [GenericUDFBridge(Column[key])]
+                1 [GenericUDFBridge(Column[key])]
+                2 [GenericUDFBridge(Column[key])]
               Position of Big Table: 2
         b 
           TableScan
@@ -766,9 +766,9 @@ STAGE PLANS:
                 2 
               handleSkewJoin: false
               keys:
-                0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                2 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+                0 [GenericUDFBridge(Column[key])]
+                1 [GenericUDFBridge(Column[key])]
+                2 [GenericUDFBridge(Column[key])]
               Position of Big Table: 2
 
   Stage: Stage-7
@@ -787,9 +787,9 @@ STAGE PLANS:
                 2 
               handleSkewJoin: false
               keys:
-                0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                2 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+                0 [GenericUDFBridge(Column[key])]
+                1 [GenericUDFBridge(Column[key])]
+                2 [GenericUDFBridge(Column[key])]
               Position of Big Table: 2
               Select Operator
                 Group By Operator
@@ -1336,9 +1336,9 @@ STAGE PLANS:
                 2 
               handleSkewJoin: false
               keys:
-                0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                2 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+                0 [GenericUDFBridge(Column[key])]
+                1 [GenericUDFBridge(Column[key])]
+                2 [GenericUDFBridge(Column[key])]
               Position of Big Table: 0
         c 
           TableScan
@@ -1350,9 +1350,9 @@ STAGE PLANS:
                 2 
               handleSkewJoin: false
               keys:
-                0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                2 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+                0 [GenericUDFBridge(Column[key])]
+                1 [GenericUDFBridge(Column[key])]
+                2 [GenericUDFBridge(Column[key])]
               Position of Big Table: 0
 
   Stage: Stage-5
@@ -1371,9 +1371,9 @@ STAGE PLANS:
                 2 
               handleSkewJoin: false
               keys:
-                0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                2 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+                0 [GenericUDFBridge(Column[key])]
+                1 [GenericUDFBridge(Column[key])]
+                2 [GenericUDFBridge(Column[key])]
               Position of Big Table: 0
               Select Operator
                 Group By Operator
@@ -1443,9 +1443,9 @@ STAGE PLANS:
                 2 
               handleSkewJoin: false
               keys:
-                0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                2 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+                0 [GenericUDFBridge(Column[key])]
+                1 [GenericUDFBridge(Column[key])]
+                2 [GenericUDFBridge(Column[key])]
               Position of Big Table: 1
         c 
           TableScan
@@ -1457,9 +1457,9 @@ STAGE PLANS:
                 2 
               handleSkewJoin: false
               keys:
-                0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                2 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+                0 [GenericUDFBridge(Column[key])]
+                1 [GenericUDFBridge(Column[key])]
+                2 [GenericUDFBridge(Column[key])]
               Position of Big Table: 1
 
   Stage: Stage-6
@@ -1478,9 +1478,9 @@ STAGE PLANS:
                 2 
               handleSkewJoin: false
               keys:
-                0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                2 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+                0 [GenericUDFBridge(Column[key])]
+                1 [GenericUDFBridge(Column[key])]
+                2 [GenericUDFBridge(Column[key])]
               Position of Big Table: 1
               Select Operator
                 Group By Operator
@@ -1519,9 +1519,9 @@ STAGE PLANS:
                 2 
               handleSkewJoin: false
               keys:
-                0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                2 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+                0 [GenericUDFBridge(Column[key])]
+                1 [GenericUDFBridge(Column[key])]
+                2 [GenericUDFBridge(Column[key])]
               Position of Big Table: 2
         b 
           TableScan
@@ -1533,9 +1533,9 @@ STAGE PLANS:
                 2 
               handleSkewJoin: false
               keys:
-                0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                2 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+                0 [GenericUDFBridge(Column[key])]
+                1 [GenericUDFBridge(Column[key])]
+                2 [GenericUDFBridge(Column[key])]
               Position of Big Table: 2
 
   Stage: Stage-7
@@ -1554,9 +1554,9 @@ STAGE PLANS:
                 2 
               handleSkewJoin: false
               keys:
-                0 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                1 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
-                2 [class org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge(Column[key]()]
+                0 [GenericUDFBridge(Column[key])]
+                1 [GenericUDFBridge(Column[key])]
+                2 [GenericUDFBridge(Column[key])]
               Position of Big Table: 2
               Select Operator
                 Group By Operator

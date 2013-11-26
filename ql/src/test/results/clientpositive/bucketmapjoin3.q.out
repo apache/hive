@@ -157,6 +157,8 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -181,6 +183,8 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics:
+                numRows: 0 dataSize: 3062 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -194,6 +198,8 @@ STAGE PLANS:
                 1 [Column[key]]
               outputColumnNames: _col0, _col1, _col6
               Position of Big Table: 0
+              Statistics:
+                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
               BucketMapJoin: true
               Select Operator
                 expressions:
@@ -204,11 +210,15 @@ STAGE PLANS:
                       expr: _col6
                       type: string
                 outputColumnNames: _col0, _col1, _col2
+                Statistics:
+                    numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
+                  Statistics:
+                      numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -693,6 +703,8 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics:
+                numRows: 0 dataSize: 3062 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -717,6 +729,8 @@ STAGE PLANS:
         b 
           TableScan
             alias: b
+            Statistics:
+                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -730,6 +744,8 @@ STAGE PLANS:
                 1 [Column[key]]
               outputColumnNames: _col0, _col1, _col6
               Position of Big Table: 1
+              Statistics:
+                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
               BucketMapJoin: true
               Select Operator
                 expressions:
@@ -740,11 +756,15 @@ STAGE PLANS:
                       expr: _col6
                       type: string
                 outputColumnNames: _col0, _col1, _col2
+                Statistics:
+                    numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
+                  Statistics:
+                      numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat

@@ -56,4 +56,14 @@ implements ConstantObjectInspector {
     return new HiveDecimalWritable(dec);
   }
 
+  @Override
+  public int precision() {
+    return value.getHiveDecimal().precision();
+  }
+
+  @Override
+  public int scale() {
+    return value.getHiveDecimal().scale();
+  }
+
 }

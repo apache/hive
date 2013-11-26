@@ -24,7 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.common.JavaUtils;
-import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.common.StatsSetupConst.StatDB;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.util.ReflectionUtils;
 
@@ -36,9 +36,13 @@ public final class StatsFactory {
 
   static final private Log LOG = LogFactory.getLog(StatsFactory.class.getName());
 
-  private static Class <? extends Serializable> publisherImplementation;
-  private static Class <? extends Serializable> aggregatorImplementation;
-  private static Configuration jobConf;
+  private Class <? extends Serializable> publisherImplementation;
+  private Class <? extends Serializable> aggregatorImplementation;
+  private Configuration jobConf;
+
+  public static StatsFactory newFactory(Configuration conf) {
+    return newFactory(HiveConf.getVar(conf, HiveConf.ConfVars.HIVESTATSDBCLASS), conf);
+  }
 
   /**
    * Sets the paths of the implementation classes of publishing
@@ -46,53 +50,30 @@ public final class StatsFactory {
    * The paths are determined according to a configuration parameter which
    * is passed as the user input for choosing the implementation as MySQL, HBase, ...
    */
-  public static boolean setImplementation(String configurationParam, Configuration conf) {
-
-    ClassLoader classLoader = JavaUtils.getClassLoader();
-    if (configurationParam.equals(StatsSetupConst.HBASE_IMPL_CLASS_VAL)) {
-      // Case: hbase
-      try {
-        publisherImplementation = (Class<? extends Serializable>)
-          Class.forName("org.apache.hadoop.hive.hbase.HBaseStatsPublisher", true, classLoader);
-
-        aggregatorImplementation = (Class<? extends Serializable>)
-          Class.forName("org.apache.hadoop.hive.hbase.HBaseStatsAggregator", true, classLoader);
-      } catch (ClassNotFoundException e) {
-        LOG.error("HBase Publisher/Aggregator classes cannot be loaded.", e);
-        return false;
-      }
-    } else if (configurationParam.contains(StatsSetupConst.JDBC_IMPL_CLASS_VAL)) {
-      // Case: jdbc:mysql or jdbc:derby
-      try {
-        publisherImplementation = (Class<? extends Serializable>)
-          Class.forName("org.apache.hadoop.hive.ql.stats.jdbc.JDBCStatsPublisher", true, classLoader);
-
-        aggregatorImplementation = (Class<? extends Serializable>)
-          Class.forName("org.apache.hadoop.hive.ql.stats.jdbc.JDBCStatsAggregator", true, classLoader);
-      } catch (ClassNotFoundException e) {
-        LOG.error("JDBC Publisher/Aggregator classes cannot be loaded.", e);
-        return false;
-      }
-    } else {
-      // try default stats publisher/aggregator
-      String defPublisher = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_STATS_DEFAULT_PUBLISHER);
-      String defAggregator = HiveConf.getVar(conf,  HiveConf.ConfVars.HIVE_STATS_DEFAULT_AGGREGATOR);
-      // ERROR no default publisher/aggregator is defined
-      if (defPublisher == null || defAggregator == null) {
-        return false;
-      }
-      try{
-        publisherImplementation = (Class<? extends Serializable>)
-          Class.forName(defPublisher, true, classLoader);
-        aggregatorImplementation = (Class<? extends Serializable>)
-          Class.forName(defAggregator, true, classLoader);
-      } catch (ClassNotFoundException e) {
-        LOG.error("JDBC Publisher/Aggregator classes cannot be loaded.", e);
-        return false;
-      }
+  public static StatsFactory newFactory(String configurationParam, Configuration conf) {
+    StatsFactory factory = new StatsFactory(conf);
+    if (factory.initialize(configurationParam.toLowerCase())) {
+      return factory;
     }
+    return null;
+  }
 
-    jobConf = conf;
+  private StatsFactory(Configuration conf) {
+    this.jobConf = conf;
+  }
+
+  private boolean initialize(String type) {
+    ClassLoader classLoader = JavaUtils.getClassLoader();
+    try {
+      StatDB statDB = type.startsWith("jdbc") ? StatDB.jdbc : StatDB.valueOf(type);
+      publisherImplementation = (Class<? extends Serializable>)
+          Class.forName(statDB.getPublisher(jobConf), true, classLoader);
+      aggregatorImplementation = (Class<? extends Serializable>)
+          Class.forName(statDB.getAggregator(jobConf), true, classLoader);
+    } catch (Exception e) {
+      LOG.error(type + " Publisher/Aggregator classes cannot be loaded.", e);
+      return false;
+    }
     return true;
   }
 
@@ -100,7 +81,7 @@ public final class StatsFactory {
    * Returns a Stats publisher implementation class for the IStatsPublisher interface
    * For example HBaseStatsPublisher for the HBase implementation
    */
-  public static StatsPublisher getStatsPublisher() {
+  public StatsPublisher getStatsPublisher() {
 
     return (StatsPublisher) ReflectionUtils.newInstance(publisherImplementation, jobConf);
   }
@@ -109,7 +90,7 @@ public final class StatsFactory {
    * Returns a Stats Aggregator implementation class for the IStatsAggregator interface
    * For example HBaseStatsAggregator for the HBase implementation
    */
-  public static StatsAggregator getStatsAggregator() {
+  public StatsAggregator getStatsAggregator() {
 
     return (StatsAggregator) ReflectionUtils.newInstance(aggregatorImplementation, jobConf);
   }

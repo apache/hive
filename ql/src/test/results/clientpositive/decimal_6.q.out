@@ -127,5 +127,5 @@ PREHOOK: query: desc DECIMAL_6_3
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: desc DECIMAL_6_3
 POSTHOOK: type: DESCTABLE
-k                   	decimal(65,30)      	None                
+k                   	double              	None                
 v                   	int                 	None                

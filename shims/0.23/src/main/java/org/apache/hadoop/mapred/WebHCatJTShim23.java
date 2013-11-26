@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.shims.HadoopShims.WebHCatJTShim;
 
 import java.io.IOException;
 import java.net.URI;
+import java.security.PrivilegedExceptionAction;
 
 public class WebHCatJTShim23 implements WebHCatJTShim {
   private JobClient jc;
@@ -31,10 +32,23 @@ public class WebHCatJTShim23 implements WebHCatJTShim {
   /**
    * Create a connection to the Job Tracker.
    */
-  public WebHCatJTShim23(Configuration conf, final UserGroupInformation ugi)
+  public WebHCatJTShim23(final Configuration conf, final UserGroupInformation ugi)
           throws IOException {
-
-    jc = new JobClient(conf);
+    try {
+    jc = ugi.doAs(new PrivilegedExceptionAction<JobClient>() {
+      public JobClient run() throws IOException, InterruptedException  {
+        return ugi.doAs(new PrivilegedExceptionAction<JobClient>() {
+          public JobClient run() throws IOException {
+            //create this in doAs() so that it gets a security context based passed in 'ugi'
+            return new JobClient(conf);
+          }
+        });
+      }
+    });
+    }
+    catch(InterruptedException ex) {
+      throw new RuntimeException("Failed to create JobClient", ex);
+    }
   }
 
   /**

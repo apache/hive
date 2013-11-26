@@ -205,9 +205,9 @@ public class PartialScanTask extends Task<PartialScanWork> implements
       if (work.isGatheringStats()) {
         // initialize stats publishing table
         StatsPublisher statsPublisher;
-        String statsImplementationClass = HiveConf.getVar(job, HiveConf.ConfVars.HIVESTATSDBCLASS);
-        if (StatsFactory.setImplementation(statsImplementationClass, job)) {
-          statsPublisher = StatsFactory.getStatsPublisher();
+        StatsFactory factory = StatsFactory.newFactory(job);
+        if (factory != null) {
+          statsPublisher = factory.getStatsPublisher();
           if (!statsPublisher.init(job)) { // creating stats table if not exists
             if (HiveConf.getBoolVar(job, HiveConf.ConfVars.HIVE_STATS_RELIABLE)) {
               throw
@@ -375,11 +375,6 @@ public class PartialScanTask extends Task<PartialScanWork> implements
 
   @Override
   public void logPlanProgress(SessionState ss) throws IOException {
-    // no op
-  }
-
-  @Override
-  public void updateCounters(Counters ctrs, RunningJob rj) throws IOException {
     // no op
   }
 }

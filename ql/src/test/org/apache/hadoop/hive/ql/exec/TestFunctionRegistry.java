@@ -222,7 +222,7 @@ public class TestFunctionRegistry extends TestCase {
     common(TypeInfoFactory.stringTypeInfo, TypeInfoFactory.decimalTypeInfo,
            TypeInfoFactory.stringTypeInfo);
     common(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.decimalTypeInfo,
-           TypeInfoFactory.getDecimalTypeInfo(65, 30));
+           TypeInfoFactory.decimalTypeInfo);
     common(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.stringTypeInfo,
            TypeInfoFactory.stringTypeInfo);
 
@@ -244,7 +244,7 @@ public class TestFunctionRegistry extends TestCase {
     comparison(TypeInfoFactory.stringTypeInfo, TypeInfoFactory.decimalTypeInfo,
                TypeInfoFactory.decimalTypeInfo);
     comparison(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.decimalTypeInfo,
-               TypeInfoFactory.getDecimalTypeInfo(65, 30));
+               TypeInfoFactory.decimalTypeInfo);
     comparison(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.stringTypeInfo,
                TypeInfoFactory.doubleTypeInfo);
 
@@ -319,7 +319,7 @@ public class TestFunctionRegistry extends TestCase {
     unionAll(TypeInfoFactory.stringTypeInfo, TypeInfoFactory.decimalTypeInfo,
         TypeInfoFactory.decimalTypeInfo);
     unionAll(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.decimalTypeInfo,
-        TypeInfoFactory.getDecimalTypeInfo(65, 30));
+        TypeInfoFactory.decimalTypeInfo);
     unionAll(TypeInfoFactory.doubleTypeInfo, TypeInfoFactory.stringTypeInfo,
         TypeInfoFactory.stringTypeInfo);
 

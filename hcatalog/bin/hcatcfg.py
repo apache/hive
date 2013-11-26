@@ -15,8 +15,8 @@
 # specific language governing permissions and limitations
 # under the License.
 
-# Resolve our absolute path                                                      
-# resolve links - $0 may be a softlink                                           
+# Resolve our absolute path
+# resolve links - $0 may be a softlink
 
 import os.path
 import sys

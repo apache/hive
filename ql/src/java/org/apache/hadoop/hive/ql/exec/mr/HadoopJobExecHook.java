@@ -22,12 +22,10 @@ import java.io.IOException;
 
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapred.Counters;
-import org.apache.hadoop.mapred.RunningJob;
 
 @SuppressWarnings("deprecation")
 public interface HadoopJobExecHook {
   
-  public void updateCounters(Counters ctrs, RunningJob rj) throws IOException;
   public boolean checkFatalErrors(Counters ctrs, StringBuilder errMsg);
   public void logPlanProgress(SessionState ss) throws IOException;
   

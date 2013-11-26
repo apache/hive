@@ -90,6 +90,8 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics:
+                numRows: 500 dataSize: 5312 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Sorted Merge Bucket Map Join Operator
               condition map:
@@ -310,6 +312,8 @@ STAGE PLANS:
         a 
           TableScan
             alias: a
+            Statistics:
+                numRows: 3084 dataSize: 32904 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Sorted Merge Bucket Map Join Operator
               condition map:

@@ -133,8 +133,6 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     this.nextSz = clone.nextSz;
     this.childOperators = clone.childOperators;
     this.parentOperators = clone.parentOperators;
-    this.counterNames = clone.counterNames;
-    this.counterNameToEnum = clone.counterNameToEnum;
     this.done = clone.done;
     this.operatorId = clone.operatorId;
     this.storage = clone.storage;
@@ -142,12 +140,9 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     this.conf = clone.getConf();
     this.setSchema(clone.getSchema());
     this.alias = clone.alias;
-    this.beginTime = clone.beginTime;
-    this.inputRows = clone.inputRows;
     this.childOperatorsArray = clone.childOperatorsArray;
     this.childOperatorsTag = clone.childOperatorsTag;
     this.colExprMap = clone.colExprMap;
-    this.counters = clone.counters;
     this.dummyObj = clone.dummyObj;
     this.dummyObjVectors = clone.dummyObjVectors;
     this.forwardCache = clone.forwardCache;
@@ -156,7 +151,6 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
     this.hconf = clone.hconf;
     this.id = clone.id;
     this.inputObjInspectors = clone.inputObjInspectors;
-    this.inputRows = clone.inputRows;
     this.noOuterJoin = clone.noOuterJoin;
     this.numAliases = clone.numAliases;
     this.operatorId = clone.operatorId;
@@ -436,7 +430,7 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
       }
     }
     if (forward) {
-      internalForward(forwardCache, null);
+      internalForward(forwardCache, outputObjInspector);
       countAfterReport = 0;
     }
   }
@@ -820,25 +814,6 @@ public abstract class CommonJoinOperator<T extends JoinDesc> extends
    */
   public void setPosToAliasMap(Map<Integer, Set<String>> posToAliasMap) {
     this.posToAliasMap = posToAliasMap;
-  }
-
-  @Override
-  public Statistics getStatistics(HiveConf conf) throws HiveException {
-    Statistics stats = this.getConf().getStatistics();
-    if (stats == null) {
-      long maxSize = 0;
-      stats = new Statistics();
-      for (Operator<? extends OperatorDesc> parent: this.getParentOperators()) {
-        long size = parent.getStatistics(conf).getNumberOfBytes();
-        if (maxSize < size) {
-          maxSize = size;
-        }
-      }
-      
-      stats.setNumberOfBytes(maxSize*this.getParentOperators().size());
-      this.getConf().setStatistics(stats);
-    }
-    return stats;
   }
 
   @Override

@@ -189,7 +189,7 @@ STAGE PLANS:
                     type: string
                     expr: value
                     type: string
-        sq_1:s1 
+        sq_2:s1 
           TableScan
             alias: s1
             Filter Operator
