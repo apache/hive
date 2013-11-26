@@ -230,8 +230,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
 
 
       if(ShimLoader.getHadoopShims().isSecurityEnabled() &&
-          conf.getBoolVar(HiveConf.ConfVars.HIVE_SERVER2_ENABLE_DOAS) == true
-          ){
+          ShimLoader.getHadoopShims().isLoginKeytabBased()) {
         //If kerberos security is enabled, and HS2 doAs is enabled,
         // then additional params need to be set so that the command is run as
         // intended user
@@ -359,7 +358,7 @@ public class MapredLocalTask extends Task<MapredLocalWork> implements Serializab
           forwardOp.close(false);
           break;
         }
-        forwardOp.process(row.o, 0);
+        forwardOp.processOp(row.o, 0);
         // check if any operator had a fatal error or early exit during
         // execution
         if (forwardOp.getDone()) {

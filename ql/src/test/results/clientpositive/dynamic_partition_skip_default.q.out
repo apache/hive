@@ -67,17 +67,23 @@ STAGE PLANS:
         dynamic_part_table 
           TableScan
             alias: dynamic_part_table
+            Statistics:
+                numRows: 1 dataSize: 1 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
                     expr: intcol
                     type: int
               outputColumnNames: _col0
+              Statistics:
+                  numRows: 1 dataSize: 1 basicStatsState: COMPLETE colStatsState: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
+                Statistics:
+                    numRows: 1 dataSize: 1 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -112,9 +118,9 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.dynamic_part_table
               numFiles 1
-              numRows 0
+              numRows 1
               partition_columns partcol1/partcol2
-              rawDataSize 0
+              rawDataSize 1
               serialization.ddl struct dynamic_part_table { i32 intcol}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -168,17 +174,23 @@ STAGE PLANS:
         dynamic_part_table 
           TableScan
             alias: dynamic_part_table
+            Statistics:
+                numRows: 1 dataSize: 1 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
                     expr: intcol
                     type: int
               outputColumnNames: _col0
+              Statistics:
+                  numRows: 1 dataSize: 1 basicStatsState: COMPLETE colStatsState: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
+                Statistics:
+                    numRows: 1 dataSize: 1 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -213,9 +225,9 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.dynamic_part_table
               numFiles 1
-              numRows 0
+              numRows 1
               partition_columns partcol1/partcol2
-              rawDataSize 0
+              rawDataSize 1
               serialization.ddl struct dynamic_part_table { i32 intcol}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -269,17 +281,23 @@ STAGE PLANS:
         dynamic_part_table 
           TableScan
             alias: dynamic_part_table
+            Statistics:
+                numRows: 2 dataSize: 2 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
                     expr: intcol
                     type: int
               outputColumnNames: _col0
+              Statistics:
+                  numRows: 2 dataSize: 2 basicStatsState: COMPLETE colStatsState: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
+                Statistics:
+                    numRows: 2 dataSize: 2 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -314,9 +332,9 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.dynamic_part_table
               numFiles 1
-              numRows 0
+              numRows 1
               partition_columns partcol1/partcol2
-              rawDataSize 0
+              rawDataSize 1
               serialization.ddl struct dynamic_part_table { i32 intcol}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
@@ -356,9 +374,9 @@ STAGE PLANS:
 #### A masked pattern was here ####
               name default.dynamic_part_table
               numFiles 1
-              numRows 0
+              numRows 1
               partition_columns partcol1/partcol2
-              rawDataSize 0
+              rawDataSize 1
               serialization.ddl struct dynamic_part_table { i32 intcol}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe

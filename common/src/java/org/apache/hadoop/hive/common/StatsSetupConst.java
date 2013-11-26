@@ -17,6 +17,9 @@
  */
 package org.apache.hadoop.hive.common;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.conf.HiveConf;
+
 import java.util.Map;
 
 
@@ -27,15 +30,34 @@ import java.util.Map;
 
 public class StatsSetupConst {
 
-  /**
-   * The value of the user variable "hive.stats.dbclass" to use HBase implementation.
-   */
-  public static final String HBASE_IMPL_CLASS_VAL = "hbase";
-
-  /**
-   * The value of the user variable "hive.stats.dbclass" to use JDBC implementation.
-   */
-  public static final String JDBC_IMPL_CLASS_VAL = "jdbc";
+  public enum StatDB {
+    hbase {
+      public String getPublisher(Configuration conf) {
+        return "org.apache.hadoop.hive.hbase.HBaseStatsPublisher"; }
+      public String getAggregator(Configuration conf) {
+        return "org.apache.hadoop.hive.hbase.HBaseStatsAggregator"; }
+    },
+    jdbc {
+      public String getPublisher(Configuration conf) {
+        return "org.apache.hadoop.hive.ql.stats.jdbc.JDBCStatsPublisher"; }
+      public String getAggregator(Configuration conf) {
+        return "org.apache.hadoop.hive.ql.stats.jdbc.JDBCStatsAggregator"; }
+    },
+    counter {
+      public String getPublisher(Configuration conf) {
+        return "org.apache.hadoop.hive.ql.stats.CounterStatsPublisher"; }
+      public String getAggregator(Configuration conf) {
+        return "org.apache.hadoop.hive.ql.stats.CounterStatsAggregator"; }
+    },
+    custom {
+      public String getPublisher(Configuration conf) {
+        return HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_STATS_DEFAULT_PUBLISHER); }
+      public String getAggregator(Configuration conf) {
+        return HiveConf.getVar(conf,  HiveConf.ConfVars.HIVE_STATS_DEFAULT_AGGREGATOR); }
+    };
+    public abstract String getPublisher(Configuration conf);
+    public abstract String getAggregator(Configuration conf);
+  }
 
   // statistics stored in metastore
   /**

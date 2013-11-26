@@ -1,0 +1,2053 @@
+PREHOOK: query: create table if not exists loc_staging (
+  state string,
+  locid int,
+  zip bigint,
+  year int
+) row format delimited fields terminated by '|' stored as textfile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table if not exists loc_staging (
+  state string,
+  locid int,
+  zip bigint,
+  year int
+) row format delimited fields terminated by '|' stored as textfile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@loc_staging
+PREHOOK: query: create table loc_orc like loc_staging
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table loc_orc like loc_staging
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@loc_orc
+PREHOOK: query: alter table loc_orc set fileformat orc
+PREHOOK: type: ALTERTABLE_FILEFORMAT
+PREHOOK: Input: default@loc_orc
+PREHOOK: Output: default@loc_orc
+POSTHOOK: query: alter table loc_orc set fileformat orc
+POSTHOOK: type: ALTERTABLE_FILEFORMAT
+POSTHOOK: Input: default@loc_orc
+POSTHOOK: Output: default@loc_orc
+PREHOOK: query: load data local inpath '../../data/files/loc.txt' overwrite into table loc_staging
+PREHOOK: type: LOAD
+PREHOOK: Output: default@loc_staging
+POSTHOOK: query: load data local inpath '../../data/files/loc.txt' overwrite into table loc_staging
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@loc_staging
+PREHOOK: query: insert overwrite table loc_orc select * from loc_staging
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_staging
+PREHOOK: Output: default@loc_orc
+POSTHOOK: query: insert overwrite table loc_orc select * from loc_staging
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_staging
+POSTHOOK: Output: default@loc_orc
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+PREHOOK: query: -- numRows: 8 rawDataSize: 796
+explain extended select * from loc_orc
+PREHOOK: type: QUERY
+POSTHOOK: query: -- numRows: 8 rawDataSize: 796
+explain extended select * from loc_orc
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+      Processor Tree:
+        TableScan
+          alias: loc_orc
+          Statistics:
+              numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: NONE
+          GatherStats: false
+          Select Operator
+            expressions:
+                  expr: state
+                  type: string
+                  expr: locid
+                  type: int
+                  expr: zip
+                  type: bigint
+                  expr: year
+                  type: int
+            outputColumnNames: _col0, _col1, _col2, _col3
+            Statistics:
+                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: NONE
+            ListSink
+
+
+PREHOOK: query: -- partial column stats
+analyze table loc_orc compute statistics for columns state
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc
+#### A masked pattern was here ####
+POSTHOOK: query: -- partial column stats
+analyze table loc_orc compute statistics for columns state
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc
+#### A masked pattern was here ####
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+PREHOOK: query: -- inner group by: map - numRows: 8 reduce - numRows: 4
+-- outer group by: map - numRows: 4 reduce numRows: 2
+explain extended select a, c, min(b)
+from ( select state as a, locid as b, count(*) as c
+       from loc_orc
+       group by state,locid
+     ) sq1
+group by a,c
+PREHOOK: type: QUERY
+POSTHOOK: query: -- inner group by: map - numRows: 8 reduce - numRows: 4
+-- outer group by: map - numRows: 4 reduce numRows: 2
+explain extended select a, c, min(b)
+from ( select state as a, locid as b, count(*) as c
+       from loc_orc
+       group by state,locid
+     ) sq1
+group by a,c
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL state) a) (TOK_SELEXPR (TOK_TABLE_OR_COL locid) b) (TOK_SELEXPR (TOK_FUNCTIONSTAR count) c)) (TOK_GROUPBY (TOK_TABLE_OR_COL state) (TOK_TABLE_OR_COL locid)))) sq1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL a)) (TOK_SELEXPR (TOK_TABLE_OR_COL c)) (TOK_SELEXPR (TOK_FUNCTION min (TOK_TABLE_OR_COL b)))) (TOK_GROUPBY (TOK_TABLE_OR_COL a) (TOK_TABLE_OR_COL c))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        sq1:loc_orc 
+          TableScan
+            alias: loc_orc
+            Statistics:
+                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: PARTIAL
+            GatherStats: false
+            Select Operator
+              expressions:
+                    expr: state
+                    type: string
+                    expr: locid
+                    type: int
+              outputColumnNames: state, locid
+              Statistics:
+                  numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: PARTIAL
+              Group By Operator
+                aggregations:
+                      expr: count()
+                bucketGroup: false
+                keys:
+                      expr: state
+                      type: string
+                      expr: locid
+                      type: int
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics:
+                    numRows: 8 dataSize: 688 basicStatsState: COMPLETE colStatsState: PARTIAL
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: int
+                  sort order: ++
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: int
+                  Statistics:
+                      numRows: 8 dataSize: 688 basicStatsState: COMPLETE colStatsState: PARTIAL
+                  tag: -1
+                  value expressions:
+                        expr: _col2
+                        type: bigint
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: loc_orc
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            properties:
+              COLUMN_STATS_ACCURATE true
+              bucket_count -1
+              columns state,locid,zip,year
+              columns.types string:int:bigint:int
+              field.delim |
+#### A masked pattern was here ####
+              name default.loc_orc
+              numFiles 1
+              numRows 8
+              rawDataSize 796
+              serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+              serialization.format |
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              totalSize 489
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE true
+                bucket_count -1
+                columns state,locid,zip,year
+                columns.types string:int:bigint:int
+                field.delim |
+#### A masked pattern was here ####
+                name default.loc_orc
+                numFiles 1
+                numRows 8
+                rawDataSize 796
+                serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+                serialization.format |
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                totalSize 489
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc
+            name: default.loc_orc
+      Truncated Path -> Alias:
+        /loc_orc [sq1:loc_orc]
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+                expr: KEY._col1
+                type: int
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics:
+              numRows: 4 dataSize: 344 basicStatsState: COMPLETE colStatsState: PARTIAL
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: int
+                  expr: _col2
+                  type: bigint
+            outputColumnNames: _col0, _col1, _col2
+            Statistics:
+                numRows: 4 dataSize: 344 basicStatsState: COMPLETE colStatsState: PARTIAL
+            Group By Operator
+              aggregations:
+                    expr: min(_col1)
+              bucketGroup: false
+              keys:
+                    expr: _col0
+                    type: string
+                    expr: _col2
+                    type: bigint
+              mode: hash
+              outputColumnNames: _col0, _col1, _col2
+              Statistics:
+                  numRows: 4 dataSize: 376 basicStatsState: COMPLETE colStatsState: PARTIAL
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+#### A masked pattern was here ####
+                NumFilesPerFileSink: 1
+                table:
+                    input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                    properties:
+                      columns _col0,_col1,_col2
+                      columns.types string,bigint,int
+                      escape.delim \
+                      serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                    serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+                TotalFiles: 1
+                GatherStats: false
+                MultiFileSpray: false
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+          TableScan
+            GatherStats: false
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+              sort order: ++
+              Map-reduce partition columns:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: bigint
+              Statistics:
+                  numRows: 4 dataSize: 376 basicStatsState: COMPLETE colStatsState: PARTIAL
+              tag: -1
+              value expressions:
+                    expr: _col2
+                    type: int
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: -mr-10002
+            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+            properties:
+              columns _col0,_col1,_col2
+              columns.types string,bigint,int
+              escape.delim \
+              serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+            serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+          
+              input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+              properties:
+                columns _col0,_col1,_col2
+                columns.types string,bigint,int
+                escape.delim \
+                serialization.lib org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+              serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+      Truncated Path -> Alias:
+#### A masked pattern was here ####
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: min(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+                expr: KEY._col1
+                type: bigint
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics:
+              numRows: 2 dataSize: 188 basicStatsState: COMPLETE colStatsState: PARTIAL
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: bigint
+                  expr: _col2
+                  type: int
+            outputColumnNames: _col0, _col1, _col2
+            Statistics:
+                numRows: 2 dataSize: 196 basicStatsState: COMPLETE colStatsState: PARTIAL
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 2 dataSize: 196 basicStatsState: COMPLETE colStatsState: PARTIAL
+#### A masked pattern was here ####
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    columns _col0,_col1,_col2
+                    columns.types string:bigint:int
+                    escape.delim \
+                    hive.serialization.extend.nesting.levels true
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: analyze table loc_orc compute statistics for columns state,locid,zip,year
+PREHOOK: type: QUERY
+PREHOOK: Input: default@loc_orc
+#### A masked pattern was here ####
+POSTHOOK: query: analyze table loc_orc compute statistics for columns state,locid,zip,year
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@loc_orc
+#### A masked pattern was here ####
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+PREHOOK: query: -- only one distinct value in year column + 1 NULL value
+-- map-side GBY: numRows: 8 (map-side will not do any reduction)
+-- reduce-side GBY: numRows: 2
+explain extended select year from loc_orc group by year
+PREHOOK: type: QUERY
+POSTHOOK: query: -- only one distinct value in year column + 1 NULL value
+-- map-side GBY: numRows: 8 (map-side will not do any reduction)
+-- reduce-side GBY: numRows: 2
+explain extended select year from loc_orc group by year
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL year))) (TOK_GROUPBY (TOK_TABLE_OR_COL year))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        loc_orc 
+          TableScan
+            alias: loc_orc
+            Statistics:
+                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            GatherStats: false
+            Select Operator
+              expressions:
+                    expr: year
+                    type: int
+              outputColumnNames: year
+              Statistics:
+                  numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Group By Operator
+                bucketGroup: false
+                keys:
+                      expr: year
+                      type: int
+                mode: hash
+                outputColumnNames: _col0
+                Statistics:
+                    numRows: 8 dataSize: 28 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: int
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: int
+                  Statistics:
+                      numRows: 8 dataSize: 28 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  tag: -1
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: loc_orc
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            properties:
+              COLUMN_STATS_ACCURATE true
+              bucket_count -1
+              columns state,locid,zip,year
+              columns.types string:int:bigint:int
+              field.delim |
+#### A masked pattern was here ####
+              name default.loc_orc
+              numFiles 1
+              numRows 8
+              rawDataSize 796
+              serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+              serialization.format |
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              totalSize 489
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE true
+                bucket_count -1
+                columns state,locid,zip,year
+                columns.types string:int:bigint:int
+                field.delim |
+#### A masked pattern was here ####
+                name default.loc_orc
+                numFiles 1
+                numRows 8
+                rawDataSize 796
+                serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+                serialization.format |
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                totalSize 489
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc
+            name: default.loc_orc
+      Truncated Path -> Alias:
+        /loc_orc [loc_orc]
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Group By Operator
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: int
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics:
+              numRows: 2 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: int
+            outputColumnNames: _col0
+            Statistics:
+                numRows: 2 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 2 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+#### A masked pattern was here ####
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    columns _col0
+                    columns.types int
+                    escape.delim \
+                    hive.serialization.extend.nesting.levels true
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: -- map-side GBY: numRows: 8
+-- reduce-side GBY: numRows: 4
+explain extended select state,locid from loc_orc group by state,locid
+PREHOOK: type: QUERY
+POSTHOOK: query: -- map-side GBY: numRows: 8
+-- reduce-side GBY: numRows: 4
+explain extended select state,locid from loc_orc group by state,locid
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL state)) (TOK_SELEXPR (TOK_TABLE_OR_COL locid))) (TOK_GROUPBY (TOK_TABLE_OR_COL state) (TOK_TABLE_OR_COL locid))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        loc_orc 
+          TableScan
+            alias: loc_orc
+            Statistics:
+                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            GatherStats: false
+            Select Operator
+              expressions:
+                    expr: state
+                    type: string
+                    expr: locid
+                    type: int
+              outputColumnNames: state, locid
+              Statistics:
+                  numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Group By Operator
+                bucketGroup: false
+                keys:
+                      expr: state
+                      type: string
+                      expr: locid
+                      type: int
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Statistics:
+                    numRows: 8 dataSize: 720 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: int
+                  sort order: ++
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: int
+                  Statistics:
+                      numRows: 8 dataSize: 720 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  tag: -1
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: loc_orc
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            properties:
+              COLUMN_STATS_ACCURATE true
+              bucket_count -1
+              columns state,locid,zip,year
+              columns.types string:int:bigint:int
+              field.delim |
+#### A masked pattern was here ####
+              name default.loc_orc
+              numFiles 1
+              numRows 8
+              rawDataSize 796
+              serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+              serialization.format |
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              totalSize 489
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE true
+                bucket_count -1
+                columns state,locid,zip,year
+                columns.types string:int:bigint:int
+                field.delim |
+#### A masked pattern was here ####
+                name default.loc_orc
+                numFiles 1
+                numRows 8
+                rawDataSize 796
+                serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+                serialization.format |
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                totalSize 489
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc
+            name: default.loc_orc
+      Truncated Path -> Alias:
+        /loc_orc [loc_orc]
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Group By Operator
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+                expr: KEY._col1
+                type: int
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Statistics:
+              numRows: 4 dataSize: 360 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: int
+            outputColumnNames: _col0, _col1
+            Statistics:
+                numRows: 4 dataSize: 360 basicStatsState: COMPLETE colStatsState: COMPLETE
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 4 dataSize: 360 basicStatsState: COMPLETE colStatsState: COMPLETE
+#### A masked pattern was here ####
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    columns _col0,_col1
+                    columns.types string:int
+                    escape.delim \
+                    hive.serialization.extend.nesting.levels true
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: -- map-side GBY numRows: 32 reduce-side GBY numRows: 16
+explain extended select state,locid from loc_orc group by state,locid with cube
+PREHOOK: type: QUERY
+POSTHOOK: query: -- map-side GBY numRows: 32 reduce-side GBY numRows: 16
+explain extended select state,locid from loc_orc group by state,locid with cube
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL state)) (TOK_SELEXPR (TOK_TABLE_OR_COL locid))) (TOK_CUBE_GROUPBY (TOK_TABLE_OR_COL state) (TOK_TABLE_OR_COL locid))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        loc_orc 
+          TableScan
+            alias: loc_orc
+            Statistics:
+                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            GatherStats: false
+            Select Operator
+              expressions:
+                    expr: state
+                    type: string
+                    expr: locid
+                    type: int
+              outputColumnNames: state, locid
+              Statistics:
+                  numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Group By Operator
+                bucketGroup: false
+                keys:
+                      expr: state
+                      type: string
+                      expr: locid
+                      type: int
+                      expr: '0'
+                      type: string
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics:
+                    numRows: 32 dataSize: 3184 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: int
+                        expr: _col2
+                        type: string
+                  sort order: +++
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: int
+                        expr: _col2
+                        type: string
+                  Statistics:
+                      numRows: 32 dataSize: 3184 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  tag: -1
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: loc_orc
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            properties:
+              COLUMN_STATS_ACCURATE true
+              bucket_count -1
+              columns state,locid,zip,year
+              columns.types string:int:bigint:int
+              field.delim |
+#### A masked pattern was here ####
+              name default.loc_orc
+              numFiles 1
+              numRows 8
+              rawDataSize 796
+              serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+              serialization.format |
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              totalSize 489
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE true
+                bucket_count -1
+                columns state,locid,zip,year
+                columns.types string:int:bigint:int
+                field.delim |
+#### A masked pattern was here ####
+                name default.loc_orc
+                numFiles 1
+                numRows 8
+                rawDataSize 796
+                serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+                serialization.format |
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                totalSize 489
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc
+            name: default.loc_orc
+      Truncated Path -> Alias:
+        /loc_orc [loc_orc]
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Group By Operator
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+                expr: KEY._col1
+                type: int
+                expr: KEY._col2
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics:
+              numRows: 16 dataSize: 2800 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: int
+            outputColumnNames: _col0, _col1
+            Statistics:
+                numRows: 16 dataSize: 1440 basicStatsState: COMPLETE colStatsState: COMPLETE
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 16 dataSize: 1440 basicStatsState: COMPLETE colStatsState: COMPLETE
+#### A masked pattern was here ####
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    columns _col0,_col1
+                    columns.types string:int
+                    escape.delim \
+                    hive.serialization.extend.nesting.levels true
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: -- map-side GBY numRows: 24 reduce-side GBY numRows: 12
+explain extended select state,locid from loc_orc group by state,locid with rollup
+PREHOOK: type: QUERY
+POSTHOOK: query: -- map-side GBY numRows: 24 reduce-side GBY numRows: 12
+explain extended select state,locid from loc_orc group by state,locid with rollup
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL state)) (TOK_SELEXPR (TOK_TABLE_OR_COL locid))) (TOK_ROLLUP_GROUPBY (TOK_TABLE_OR_COL state) (TOK_TABLE_OR_COL locid))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        loc_orc 
+          TableScan
+            alias: loc_orc
+            Statistics:
+                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            GatherStats: false
+            Select Operator
+              expressions:
+                    expr: state
+                    type: string
+                    expr: locid
+                    type: int
+              outputColumnNames: state, locid
+              Statistics:
+                  numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Group By Operator
+                bucketGroup: false
+                keys:
+                      expr: state
+                      type: string
+                      expr: locid
+                      type: int
+                      expr: '0'
+                      type: string
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics:
+                    numRows: 24 dataSize: 2388 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: int
+                        expr: _col2
+                        type: string
+                  sort order: +++
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: int
+                        expr: _col2
+                        type: string
+                  Statistics:
+                      numRows: 24 dataSize: 2388 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  tag: -1
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: loc_orc
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            properties:
+              COLUMN_STATS_ACCURATE true
+              bucket_count -1
+              columns state,locid,zip,year
+              columns.types string:int:bigint:int
+              field.delim |
+#### A masked pattern was here ####
+              name default.loc_orc
+              numFiles 1
+              numRows 8
+              rawDataSize 796
+              serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+              serialization.format |
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              totalSize 489
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE true
+                bucket_count -1
+                columns state,locid,zip,year
+                columns.types string:int:bigint:int
+                field.delim |
+#### A masked pattern was here ####
+                name default.loc_orc
+                numFiles 1
+                numRows 8
+                rawDataSize 796
+                serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+                serialization.format |
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                totalSize 489
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc
+            name: default.loc_orc
+      Truncated Path -> Alias:
+        /loc_orc [loc_orc]
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Group By Operator
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+                expr: KEY._col1
+                type: int
+                expr: KEY._col2
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics:
+              numRows: 12 dataSize: 2100 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: int
+            outputColumnNames: _col0, _col1
+            Statistics:
+                numRows: 12 dataSize: 1080 basicStatsState: COMPLETE colStatsState: COMPLETE
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 12 dataSize: 1080 basicStatsState: COMPLETE colStatsState: COMPLETE
+#### A masked pattern was here ####
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    columns _col0,_col1
+                    columns.types string:int
+                    escape.delim \
+                    hive.serialization.extend.nesting.levels true
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: -- map-side GBY numRows: 8 reduce-side GBY numRows: 4
+explain extended select state,locid from loc_orc group by state,locid grouping sets((state))
+PREHOOK: type: QUERY
+POSTHOOK: query: -- map-side GBY numRows: 8 reduce-side GBY numRows: 4
+explain extended select state,locid from loc_orc group by state,locid grouping sets((state))
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL state)) (TOK_SELEXPR (TOK_TABLE_OR_COL locid))) (TOK_GROUPING_SETS (TOK_TABLE_OR_COL state) (TOK_TABLE_OR_COL locid) (TOK_GROUPING_SETS_EXPRESSION (TOK_TABLE_OR_COL state)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        loc_orc 
+          TableScan
+            alias: loc_orc
+            Statistics:
+                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            GatherStats: false
+            Select Operator
+              expressions:
+                    expr: state
+                    type: string
+                    expr: locid
+                    type: int
+              outputColumnNames: state, locid
+              Statistics:
+                  numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Group By Operator
+                bucketGroup: false
+                keys:
+                      expr: state
+                      type: string
+                      expr: locid
+                      type: int
+                      expr: '0'
+                      type: string
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics:
+                    numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: int
+                        expr: _col2
+                        type: string
+                  sort order: +++
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: int
+                        expr: _col2
+                        type: string
+                  Statistics:
+                      numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  tag: -1
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: loc_orc
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            properties:
+              COLUMN_STATS_ACCURATE true
+              bucket_count -1
+              columns state,locid,zip,year
+              columns.types string:int:bigint:int
+              field.delim |
+#### A masked pattern was here ####
+              name default.loc_orc
+              numFiles 1
+              numRows 8
+              rawDataSize 796
+              serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+              serialization.format |
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              totalSize 489
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE true
+                bucket_count -1
+                columns state,locid,zip,year
+                columns.types string:int:bigint:int
+                field.delim |
+#### A masked pattern was here ####
+                name default.loc_orc
+                numFiles 1
+                numRows 8
+                rawDataSize 796
+                serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+                serialization.format |
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                totalSize 489
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc
+            name: default.loc_orc
+      Truncated Path -> Alias:
+        /loc_orc [loc_orc]
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Group By Operator
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+                expr: KEY._col1
+                type: int
+                expr: KEY._col2
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics:
+              numRows: 4 dataSize: 700 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: int
+            outputColumnNames: _col0, _col1
+            Statistics:
+                numRows: 4 dataSize: 360 basicStatsState: COMPLETE colStatsState: COMPLETE
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 4 dataSize: 360 basicStatsState: COMPLETE colStatsState: COMPLETE
+#### A masked pattern was here ####
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    columns _col0,_col1
+                    columns.types string:int
+                    escape.delim \
+                    hive.serialization.extend.nesting.levels true
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: -- map-side GBY numRows: 16 reduce-side GBY numRows: 8
+explain extended select state,locid from loc_orc group by state,locid grouping sets((state),(locid))
+PREHOOK: type: QUERY
+POSTHOOK: query: -- map-side GBY numRows: 16 reduce-side GBY numRows: 8
+explain extended select state,locid from loc_orc group by state,locid grouping sets((state),(locid))
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL state)) (TOK_SELEXPR (TOK_TABLE_OR_COL locid))) (TOK_GROUPING_SETS (TOK_TABLE_OR_COL state) (TOK_TABLE_OR_COL locid) (TOK_GROUPING_SETS_EXPRESSION (TOK_TABLE_OR_COL state)) (TOK_GROUPING_SETS_EXPRESSION (TOK_TABLE_OR_COL locid)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        loc_orc 
+          TableScan
+            alias: loc_orc
+            Statistics:
+                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            GatherStats: false
+            Select Operator
+              expressions:
+                    expr: state
+                    type: string
+                    expr: locid
+                    type: int
+              outputColumnNames: state, locid
+              Statistics:
+                  numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Group By Operator
+                bucketGroup: false
+                keys:
+                      expr: state
+                      type: string
+                      expr: locid
+                      type: int
+                      expr: '0'
+                      type: string
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics:
+                    numRows: 16 dataSize: 1592 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: int
+                        expr: _col2
+                        type: string
+                  sort order: +++
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: int
+                        expr: _col2
+                        type: string
+                  Statistics:
+                      numRows: 16 dataSize: 1592 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  tag: -1
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: loc_orc
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            properties:
+              COLUMN_STATS_ACCURATE true
+              bucket_count -1
+              columns state,locid,zip,year
+              columns.types string:int:bigint:int
+              field.delim |
+#### A masked pattern was here ####
+              name default.loc_orc
+              numFiles 1
+              numRows 8
+              rawDataSize 796
+              serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+              serialization.format |
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              totalSize 489
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE true
+                bucket_count -1
+                columns state,locid,zip,year
+                columns.types string:int:bigint:int
+                field.delim |
+#### A masked pattern was here ####
+                name default.loc_orc
+                numFiles 1
+                numRows 8
+                rawDataSize 796
+                serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+                serialization.format |
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                totalSize 489
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc
+            name: default.loc_orc
+      Truncated Path -> Alias:
+        /loc_orc [loc_orc]
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Group By Operator
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+                expr: KEY._col1
+                type: int
+                expr: KEY._col2
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics:
+              numRows: 8 dataSize: 1400 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: int
+            outputColumnNames: _col0, _col1
+            Statistics:
+                numRows: 8 dataSize: 720 basicStatsState: COMPLETE colStatsState: COMPLETE
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 8 dataSize: 720 basicStatsState: COMPLETE colStatsState: COMPLETE
+#### A masked pattern was here ####
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    columns _col0,_col1
+                    columns.types string:int
+                    escape.delim \
+                    hive.serialization.extend.nesting.levels true
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: -- map-side GBY numRows: 24 reduce-side GBY numRows: 12
+explain extended select state,locid from loc_orc group by state,locid grouping sets((state),(locid),())
+PREHOOK: type: QUERY
+POSTHOOK: query: -- map-side GBY numRows: 24 reduce-side GBY numRows: 12
+explain extended select state,locid from loc_orc group by state,locid grouping sets((state),(locid),())
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL state)) (TOK_SELEXPR (TOK_TABLE_OR_COL locid))) (TOK_GROUPING_SETS (TOK_TABLE_OR_COL state) (TOK_TABLE_OR_COL locid) (TOK_GROUPING_SETS_EXPRESSION (TOK_TABLE_OR_COL state)) (TOK_GROUPING_SETS_EXPRESSION (TOK_TABLE_OR_COL locid)) TOK_GROUPING_SETS_EXPRESSION)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        loc_orc 
+          TableScan
+            alias: loc_orc
+            Statistics:
+                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            GatherStats: false
+            Select Operator
+              expressions:
+                    expr: state
+                    type: string
+                    expr: locid
+                    type: int
+              outputColumnNames: state, locid
+              Statistics:
+                  numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Group By Operator
+                bucketGroup: false
+                keys:
+                      expr: state
+                      type: string
+                      expr: locid
+                      type: int
+                      expr: '0'
+                      type: string
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics:
+                    numRows: 24 dataSize: 2388 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: int
+                        expr: _col2
+                        type: string
+                  sort order: +++
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: int
+                        expr: _col2
+                        type: string
+                  Statistics:
+                      numRows: 24 dataSize: 2388 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  tag: -1
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: loc_orc
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            properties:
+              COLUMN_STATS_ACCURATE true
+              bucket_count -1
+              columns state,locid,zip,year
+              columns.types string:int:bigint:int
+              field.delim |
+#### A masked pattern was here ####
+              name default.loc_orc
+              numFiles 1
+              numRows 8
+              rawDataSize 796
+              serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+              serialization.format |
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              totalSize 489
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE true
+                bucket_count -1
+                columns state,locid,zip,year
+                columns.types string:int:bigint:int
+                field.delim |
+#### A masked pattern was here ####
+                name default.loc_orc
+                numFiles 1
+                numRows 8
+                rawDataSize 796
+                serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+                serialization.format |
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                totalSize 489
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc
+            name: default.loc_orc
+      Truncated Path -> Alias:
+        /loc_orc [loc_orc]
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Group By Operator
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+                expr: KEY._col1
+                type: int
+                expr: KEY._col2
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics:
+              numRows: 12 dataSize: 2100 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: int
+            outputColumnNames: _col0, _col1
+            Statistics:
+                numRows: 12 dataSize: 1080 basicStatsState: COMPLETE colStatsState: COMPLETE
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 12 dataSize: 1080 basicStatsState: COMPLETE colStatsState: COMPLETE
+#### A masked pattern was here ####
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    columns _col0,_col1
+                    columns.types string:int
+                    escape.delim \
+                    hive.serialization.extend.nesting.levels true
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: -- map-side GBY numRows: 32 reduce-side GBY numRows: 16
+explain extended select state,locid from loc_orc group by state,locid grouping sets((state,locid),(state),(locid),())
+PREHOOK: type: QUERY
+POSTHOOK: query: -- map-side GBY numRows: 32 reduce-side GBY numRows: 16
+explain extended select state,locid from loc_orc group by state,locid grouping sets((state,locid),(state),(locid),())
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL state)) (TOK_SELEXPR (TOK_TABLE_OR_COL locid))) (TOK_GROUPING_SETS (TOK_TABLE_OR_COL state) (TOK_TABLE_OR_COL locid) (TOK_GROUPING_SETS_EXPRESSION (TOK_TABLE_OR_COL state) (TOK_TABLE_OR_COL locid)) (TOK_GROUPING_SETS_EXPRESSION (TOK_TABLE_OR_COL state)) (TOK_GROUPING_SETS_EXPRESSION (TOK_TABLE_OR_COL locid)) TOK_GROUPING_SETS_EXPRESSION)))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        loc_orc 
+          TableScan
+            alias: loc_orc
+            Statistics:
+                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            GatherStats: false
+            Select Operator
+              expressions:
+                    expr: state
+                    type: string
+                    expr: locid
+                    type: int
+              outputColumnNames: state, locid
+              Statistics:
+                  numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Group By Operator
+                bucketGroup: false
+                keys:
+                      expr: state
+                      type: string
+                      expr: locid
+                      type: int
+                      expr: '0'
+                      type: string
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics:
+                    numRows: 32 dataSize: 3184 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: int
+                        expr: _col2
+                        type: string
+                  sort order: +++
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: int
+                        expr: _col2
+                        type: string
+                  Statistics:
+                      numRows: 32 dataSize: 3184 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  tag: -1
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: loc_orc
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            properties:
+              COLUMN_STATS_ACCURATE true
+              bucket_count -1
+              columns state,locid,zip,year
+              columns.types string:int:bigint:int
+              field.delim |
+#### A masked pattern was here ####
+              name default.loc_orc
+              numFiles 1
+              numRows 8
+              rawDataSize 796
+              serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+              serialization.format |
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              totalSize 489
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE true
+                bucket_count -1
+                columns state,locid,zip,year
+                columns.types string:int:bigint:int
+                field.delim |
+#### A masked pattern was here ####
+                name default.loc_orc
+                numFiles 1
+                numRows 8
+                rawDataSize 796
+                serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+                serialization.format |
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                totalSize 489
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc
+            name: default.loc_orc
+      Truncated Path -> Alias:
+        /loc_orc [loc_orc]
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Group By Operator
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+                expr: KEY._col1
+                type: int
+                expr: KEY._col2
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics:
+              numRows: 16 dataSize: 2800 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: int
+            outputColumnNames: _col0, _col1
+            Statistics:
+                numRows: 16 dataSize: 1440 basicStatsState: COMPLETE colStatsState: COMPLETE
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 16 dataSize: 1440 basicStatsState: COMPLETE colStatsState: COMPLETE
+#### A masked pattern was here ####
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    columns _col0,_col1
+                    columns.types string:int
+                    escape.delim \
+                    hive.serialization.extend.nesting.levels true
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: -- map-side GBY: numRows: 80 (map-side will not do any reduction)
+-- reduce-side GBY: numRows: 2 Reason: numDistinct of year is 2. numRows = min(80/2, 2)
+explain extended select year from loc_orc group by year
+PREHOOK: type: QUERY
+POSTHOOK: query: -- map-side GBY: numRows: 80 (map-side will not do any reduction)
+-- reduce-side GBY: numRows: 2 Reason: numDistinct of year is 2. numRows = min(80/2, 2)
+explain extended select year from loc_orc group by year
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL year))) (TOK_GROUPBY (TOK_TABLE_OR_COL year))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        loc_orc 
+          TableScan
+            alias: loc_orc
+            Statistics:
+                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            GatherStats: false
+            Select Operator
+              expressions:
+                    expr: year
+                    type: int
+              outputColumnNames: year
+              Statistics:
+                  numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Group By Operator
+                bucketGroup: false
+                keys:
+                      expr: year
+                      type: int
+                mode: hash
+                outputColumnNames: _col0
+                Statistics:
+                    numRows: 80 dataSize: 280 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: int
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: int
+                  Statistics:
+                      numRows: 80 dataSize: 280 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  tag: -1
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: loc_orc
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            properties:
+              COLUMN_STATS_ACCURATE true
+              bucket_count -1
+              columns state,locid,zip,year
+              columns.types string:int:bigint:int
+              field.delim |
+#### A masked pattern was here ####
+              name default.loc_orc
+              numFiles 1
+              numRows 8
+              rawDataSize 796
+              serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+              serialization.format |
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              totalSize 489
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE true
+                bucket_count -1
+                columns state,locid,zip,year
+                columns.types string:int:bigint:int
+                field.delim |
+#### A masked pattern was here ####
+                name default.loc_orc
+                numFiles 1
+                numRows 8
+                rawDataSize 796
+                serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+                serialization.format |
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                totalSize 489
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc
+            name: default.loc_orc
+      Truncated Path -> Alias:
+        /loc_orc [loc_orc]
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Group By Operator
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: int
+          mode: mergepartial
+          outputColumnNames: _col0
+          Statistics:
+              numRows: 2 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: int
+            outputColumnNames: _col0
+            Statistics:
+                numRows: 2 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 2 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+#### A masked pattern was here ####
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    columns _col0
+                    columns.types int
+                    escape.delim \
+                    hive.serialization.extend.nesting.levels true
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: -- map-side GBY numRows: 320 reduce-side GBY numRows: 42 Reason: numDistinct of state and locid are 6,7 resp. numRows = min(320/2, 6*7)
+explain extended select state,locid from loc_orc group by state,locid with cube
+PREHOOK: type: QUERY
+POSTHOOK: query: -- map-side GBY numRows: 320 reduce-side GBY numRows: 42 Reason: numDistinct of state and locid are 6,7 resp. numRows = min(320/2, 6*7)
+explain extended select state,locid from loc_orc group by state,locid with cube
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: loc_orc.locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc.year SIMPLE [(loc_staging)loc_staging.FieldSchema(name:year, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc.zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL state)) (TOK_SELEXPR (TOK_TABLE_OR_COL locid))) (TOK_CUBE_GROUPBY (TOK_TABLE_OR_COL state) (TOK_TABLE_OR_COL locid))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        loc_orc 
+          TableScan
+            alias: loc_orc
+            Statistics:
+                numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+            GatherStats: false
+            Select Operator
+              expressions:
+                    expr: state
+                    type: string
+                    expr: locid
+                    type: int
+              outputColumnNames: state, locid
+              Statistics:
+                  numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Group By Operator
+                bucketGroup: false
+                keys:
+                      expr: state
+                      type: string
+                      expr: locid
+                      type: int
+                      expr: '0'
+                      type: string
+                mode: hash
+                outputColumnNames: _col0, _col1, _col2
+                Statistics:
+                    numRows: 320 dataSize: 31840 basicStatsState: COMPLETE colStatsState: COMPLETE
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: int
+                        expr: _col2
+                        type: string
+                  sort order: +++
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                        expr: _col1
+                        type: int
+                        expr: _col2
+                        type: string
+                  Statistics:
+                      numRows: 320 dataSize: 31840 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  tag: -1
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: loc_orc
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            properties:
+              COLUMN_STATS_ACCURATE true
+              bucket_count -1
+              columns state,locid,zip,year
+              columns.types string:int:bigint:int
+              field.delim |
+#### A masked pattern was here ####
+              name default.loc_orc
+              numFiles 1
+              numRows 8
+              rawDataSize 796
+              serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+              serialization.format |
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              totalSize 489
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                COLUMN_STATS_ACCURATE true
+                bucket_count -1
+                columns state,locid,zip,year
+                columns.types string:int:bigint:int
+                field.delim |
+#### A masked pattern was here ####
+                name default.loc_orc
+                numFiles 1
+                numRows 8
+                rawDataSize 796
+                serialization.ddl struct loc_orc { string state, i32 locid, i64 zip, i32 year}
+                serialization.format |
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+                totalSize 489
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc
+            name: default.loc_orc
+      Truncated Path -> Alias:
+        /loc_orc [loc_orc]
+      Needs Tagging: false
+      Reduce Operator Tree:
+        Group By Operator
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+                expr: KEY._col1
+                type: int
+                expr: KEY._col2
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Statistics:
+              numRows: 42 dataSize: 7350 basicStatsState: COMPLETE colStatsState: COMPLETE
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: int
+            outputColumnNames: _col0, _col1
+            Statistics:
+                numRows: 42 dataSize: 3780 basicStatsState: COMPLETE colStatsState: COMPLETE
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+#### A masked pattern was here ####
+              NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 42 dataSize: 3780 basicStatsState: COMPLETE colStatsState: COMPLETE
+#### A masked pattern was here ####
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  properties:
+                    columns _col0,_col1
+                    columns.types string:int
+                    escape.delim \
+                    hive.serialization.extend.nesting.levels true
+                    serialization.format 1
+                    serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              TotalFiles: 1
+              GatherStats: false
+              MultiFileSpray: false
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+

@@ -1,1 +1,0 @@
-FAILED: SemanticException [Error 10016]: Line 2:13 Argument type mismatch '1': The expressions after WHEN should have the same type with that after CASE: "string" is expected but "int" is found

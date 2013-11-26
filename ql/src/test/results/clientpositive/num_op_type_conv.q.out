@@ -24,11 +24,11 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: (null + 7)
-                  type: int
+                  type: double
                   expr: (1.0 - null)
                   type: double
                   expr: (null + null)
-                  type: tinyint
+                  type: double
                   expr: (UDFToLong(21) % UDFToByte(5))
                   type: bigint
                   expr: (UDFToLong(21) % UDFToLong(21))

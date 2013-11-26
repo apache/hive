@@ -322,18 +322,6 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
   }
 
   @Override
-  public Statistics getStatistics(HiveConf conf) throws HiveException {
-    Statistics stats = this.getConf().getStatistics();
-    if (stats == null) {
-      stats = new Statistics();
-      stats.addNumberOfBytes(Utilities.getSize(alias, getConf().getTable(), conf,
-          this, getConf().getPruningPredicate()));
-      this.getConf().setStatistics(stats);
-    }
-    return stats;
-  }
-
-  @Override
   public boolean supportSkewJoinOptimization() {
     return true;
   }

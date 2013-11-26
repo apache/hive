@@ -63,17 +63,23 @@ STAGE PLANS:
         srcpartbucket 
           TableScan
             alias: srcpartbucket
+            Statistics:
+                numRows: 40 dataSize: 240 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: true
               predicate:
                   expr: (((hash(key) & 2147483647) % 4) = 0)
                   type: boolean
+              Statistics:
+                  numRows: 20 dataSize: 120 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: ds
                       type: string
                 outputColumnNames: ds
+                Statistics:
+                    numRows: 20 dataSize: 120 basicStatsState: COMPLETE colStatsState: NONE
                 Group By Operator
                   aggregations:
                         expr: count(1)
@@ -83,6 +89,8 @@ STAGE PLANS:
                         type: string
                   mode: hash
                   outputColumnNames: _col0, _col1
+                  Statistics:
+                      numRows: 20 dataSize: 120 basicStatsState: COMPLETE colStatsState: NONE
                   Reduce Output Operator
                     key expressions:
                           expr: _col0
@@ -91,6 +99,8 @@ STAGE PLANS:
                     Map-reduce partition columns:
                           expr: _col0
                           type: string
+                    Statistics:
+                        numRows: 20 dataSize: 120 basicStatsState: COMPLETE colStatsState: NONE
                     tag: -1
                     value expressions:
                           expr: _col1
@@ -290,6 +300,8 @@ STAGE PLANS:
                 type: string
           mode: mergepartial
           outputColumnNames: _col0, _col1
+          Statistics:
+              numRows: 10 dataSize: 60 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col0
@@ -297,6 +309,8 @@ STAGE PLANS:
                   expr: _col1
                   type: bigint
             outputColumnNames: _col0, _col1
+            Statistics:
+                numRows: 10 dataSize: 60 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -326,6 +340,8 @@ STAGE PLANS:
                     expr: _col0
                     type: string
               sort order: +
+              Statistics:
+                  numRows: 10 dataSize: 60 basicStatsState: COMPLETE colStatsState: NONE
               tag: -1
               value expressions:
                     expr: _col0
@@ -360,11 +376,15 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Extract
+          Statistics:
+              numRows: 10 dataSize: 60 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
+            Statistics:
+                numRows: 10 dataSize: 60 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat

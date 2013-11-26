@@ -23,12 +23,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.lang.reflect.Constructor;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -154,6 +157,88 @@ public class TestVectorGroupByOperator {
     desc.getOutputColumnNames().add("_col1");
 
     return desc;
+  }
+  
+  long outputRowCount = 0;
+  
+  @Test
+  public void testMemoryPressureFlush() throws HiveException {
+
+    Map<String, Integer> mapColumnNames = new HashMap<String, Integer>();
+    mapColumnNames.put("Key", 0);
+    mapColumnNames.put("Value", 1);
+    VectorizationContext ctx = new VectorizationContext(mapColumnNames, 2);
+
+    GroupByDesc desc = buildKeyGroupByDesc (ctx, "max", 
+        "Value", TypeInfoFactory.longTypeInfo, 
+        "Key", TypeInfoFactory.longTypeInfo);
+    
+    // Set the memory treshold so that we get 100Kb before we need to flush.
+    MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
+    long maxMemory = memoryMXBean.getHeapMemoryUsage().getMax();
+    
+    float treshold = 100.0f*1024.0f/maxMemory;
+    desc.setMemoryThreshold(treshold);
+
+    VectorGroupByOperator vgo = new VectorGroupByOperator(ctx, desc);
+    
+    FakeCaptureOutputOperator out = FakeCaptureOutputOperator.addCaptureOutputChild(vgo);
+    vgo.initialize(null, null);
+    
+    this.outputRowCount = 0;
+    out.setOutputInspector(new FakeCaptureOutputOperator.OutputInspector() {
+      @Override
+      public void inspectRow(Object row, int tag) throws HiveException {
+        ++outputRowCount;
+      }
+    });
+          
+    Iterable<Object> it = new Iterable<Object>() {
+      @Override
+      public Iterator<Object> iterator() {
+        return new Iterator<Object> () {
+          long value = 0;
+
+          @Override
+          public boolean hasNext() {
+            return true;
+          }
+
+          @Override
+          public Object next() {
+            return ++value;
+          }
+
+          @Override
+          public void remove() {
+          }
+        };
+      }
+    };
+    
+    FakeVectorRowBatchFromObjectIterables data = new FakeVectorRowBatchFromObjectIterables(
+        100,
+        new String[] {"long", "long"},
+        it,
+        it);
+
+    // The 'it' data source will produce data w/o ever ending
+    // We want to see that memory pressure kicks in and some 
+    // entries in the VGBY are flushed.
+    long countRowsProduced = 0;
+    for (VectorizedRowBatch unit: data) {
+      countRowsProduced += 100;
+      vgo.processOp(unit,  0);
+      if (0 < outputRowCount) {
+        break;
+      }
+      // Set an upper bound how much we're willing to push before it should flush
+      // we've set the memory treshold at 100kb, each key is distinct
+      // It should not go beyond 100k/16 (key+data)
+      assertTrue(countRowsProduced < 100*1024/16);
+    }
+    
+    assertTrue(0 < outputRowCount);
   }
 
   @Test
@@ -1485,7 +1570,7 @@ public class TestVectorGroupByOperator {
     }.init(aggregateName, expected, keys));
 
     for (VectorizedRowBatch unit: data) {
-      vgo.process(unit,  0);
+      vgo.processOp(unit,  0);
     }
     vgo.close(false);
 
@@ -1595,7 +1680,7 @@ public class TestVectorGroupByOperator {
     }.init(aggregateName, expected, keys));
 
     for (VectorizedRowBatch unit: data) {
-      vgo.process(unit,  0);
+      vgo.processOp(unit,  0);
     }
     vgo.close(false);
 
@@ -1885,7 +1970,7 @@ public class TestVectorGroupByOperator {
     vgo.initialize(null, null);
 
     for (VectorizedRowBatch unit: data) {
-      vgo.process(unit,  0);
+      vgo.processOp(unit,  0);
     }
     vgo.close(false);
 
@@ -1916,7 +2001,7 @@ public class TestVectorGroupByOperator {
     vgo.initialize(null, null);
 
     for (VectorizedRowBatch unit: data) {
-      vgo.process(unit,  0);
+      vgo.processOp(unit,  0);
     }
     vgo.close(false);
 
@@ -1947,7 +2032,7 @@ public class TestVectorGroupByOperator {
     vgo.initialize(null, null);
 
     for (VectorizedRowBatch unit: data) {
-      vgo.process(unit,  0);
+      vgo.processOp(unit,  0);
     }
     vgo.close(false);
 
@@ -1977,7 +2062,7 @@ public class TestVectorGroupByOperator {
     vgo.initialize(null, null);
 
     for (VectorizedRowBatch unit: data) {
-      vgo.process(unit,  0);
+      vgo.processOp(unit,  0);
     }
     vgo.close(false);
 
@@ -2046,7 +2131,7 @@ public class TestVectorGroupByOperator {
     }.init(aggregateName, expected, keys));
 
     for (VectorizedRowBatch unit: data) {
-      vgo.process(unit,  0);
+      vgo.processOp(unit,  0);
     }
     vgo.close(false);
 
@@ -2113,7 +2198,7 @@ public class TestVectorGroupByOperator {
     }.init(aggregateName, expected, keys));
 
     for (VectorizedRowBatch unit: data) {
-      vgo.process(unit,  0);
+      vgo.processOp(unit,  0);
     }
     vgo.close(false);
 

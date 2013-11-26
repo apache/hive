@@ -1897,7 +1897,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   }
 
   @SuppressWarnings("nls")
-  private Operator genHavingPlan(String dest, QB qb, Operator input)
+  private Operator genHavingPlan(String dest, QB qb, Operator input,
+      Map<String, Operator> aliasToOpInfo)
       throws SemanticException {
 
     ASTNode havingExpr = qb.getParseInfo().getHavingForClause(dest);
@@ -1912,21 +1913,24 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     }
     ASTNode condn = (ASTNode) havingExpr.getChild(0);
 
-    Operator output = putOpInsertMap(OperatorFactory.getAndMakeChild(
-        new FilterDesc(genExprNodeDesc(condn, inputRR), false), new RowSchema(
-            inputRR.getColumnInfos()), input), inputRR);
-
+    /*
+     * Now a having clause can contain a SubQuery predicate;
+     * so we invoke genFilterPlan to handle SubQuery algebraic transformation,
+     * just as is done for SubQuery predicates appearing in the Where Clause.
+     */
+    Operator output = genFilterPlan(condn, qb, input, aliasToOpInfo, true);
+    output = putOpInsertMap(output, inputRR);
     return output;
   }
 
   @SuppressWarnings("nls")
-  private Operator genFilterPlan(String dest, QB qb, Operator input,
-      Map<String, Operator> aliasToOpInfo)
+  private Operator genFilterPlan(ASTNode searchCond, QB qb, Operator input,
+      Map<String, Operator> aliasToOpInfo,
+      boolean forHavingClause)
       throws SemanticException {
 
     OpParseContext inputCtx = opParseCtx.get(input);
     RowResolver inputRR = inputCtx.getRowResolver();
-    ASTNode whereExpr = qb.getParseInfo().getWhrForClause(dest);
 
     /*
      * Handling of SubQuery Expressions:
@@ -1949,8 +1953,16 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
      *     --> ===CONTINUE_FILTER_PROCESSING===
      *   endif
      * endif
+     * 
+     * Support for Sub Queries in Having Clause:
+     * - By and large this works the same way as SubQueries in the Where Clause.
+     * - The one addum is the handling of aggregation expressions from the Outer Query
+     *   appearing in correlation clauses. 
+     *   - So such correlating predicates are allowed:
+     *        min(OuterQuert.x) = SubQuery.y
+     *   - this requires special handling when converting to joins. See QBSubQuery.rewrite
+     *     method method for detailed comments. 
      */
-    ASTNode searchCond = (ASTNode) whereExpr.getChild(0);
     List<ASTNode> subQueriesInOriginalTree = SubQueryUtils.findSubQueries(searchCond);
 
     if ( subQueriesInOriginalTree.size() > 0 ) {
@@ -1982,13 +1994,20 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         ASTNode subQueryAST = subQueries.get(i);
         ASTNode originalSubQueryAST = subQueriesInOriginalTree.get(i);
 
-        int sqIdx = i+1;
+        int sqIdx = qb.incrNumSubQueryPredicates();
         clonedSearchCond = SubQueryUtils.rewriteParentQueryWhere(clonedSearchCond, subQueryAST);
 
         QBSubQuery subQuery = SubQueryUtils.buildSubQuery(qb.getId(),
             sqIdx, subQueryAST, originalSubQueryAST, ctx);
+        
+        String havingInputAlias = null;
+        
+        if ( forHavingClause ) {
+        	havingInputAlias = "gby_sq" + sqIdx;
+        	aliasToOpInfo.put(havingInputAlias, input);
+        }
 
-        subQuery.validateAndRewriteAST(inputRR);
+        subQuery.validateAndRewriteAST(inputRR, forHavingClause, havingInputAlias);
 
         QB qbSQ = new QB(subQuery.getOuterQueryId(), subQuery.getAlias(), true);
         qbSQ.setSubQueryDef(subQuery);
@@ -2014,7 +2033,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         /*
          * Gen Join between outer Operator and SQ op
          */
-        subQuery.buildJoinCondition(inputRR, sqRR);
+        subQuery.buildJoinCondition(inputRR, sqRR, forHavingClause, havingInputAlias);
         QBJoinTree joinTree = genSQJoinTree(qb, subQuery,
             input,
             aliasToOpInfo);
@@ -2084,6 +2103,12 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     if (!aliases.contains("")) {
       aliases.add("");
     }
+    /*
+     * track the input ColumnInfos that are added to the output.
+     * if a columnInfo has multiple mappings; then add the column only once,
+     * but carry the mappings forward.
+     */
+    Map<ColumnInfo, ColumnInfo> inputColsProcessed = new HashMap<ColumnInfo, ColumnInfo>(); 
     // For expr "*", aliases should be iterated in the order they are specified
     // in the query.
     for (String alias : aliases) {
@@ -2112,16 +2137,21 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           continue;
         }
 
-        ExprNodeColumnDesc expr = new ExprNodeColumnDesc(colInfo.getType(),
-            name, colInfo.getTabAlias(), colInfo.getIsVirtualCol(), colInfo.isSkewedCol());
         if (subQuery) {
           output.checkColumn(tmp[0], tmp[1]);
         }
-        col_list.add(expr);
-        output.put(tmp[0], tmp[1],
-            new ColumnInfo(getColumnInternalName(pos), colInfo.getType(),
-                colInfo.getTabAlias(), colInfo.getIsVirtualCol(),
-                colInfo.isHiddenVirtualCol()));
+        ColumnInfo oColInfo = inputColsProcessed.get(colInfo);
+        if (oColInfo == null) {
+          ExprNodeColumnDesc expr = new ExprNodeColumnDesc(colInfo.getType(),
+              name, colInfo.getTabAlias(), colInfo.getIsVirtualCol(),
+              colInfo.isSkewedCol());
+          col_list.add(expr);
+          oColInfo = new ColumnInfo(getColumnInternalName(pos),
+              colInfo.getType(), colInfo.getTabAlias(),
+              colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
+          inputColsProcessed.put(colInfo, oColInfo);
+        }
+        output.put(tmp[0], tmp[1], oColInfo);
         pos = Integer.valueOf(pos.intValue() + 1);
         matched++;
 
@@ -2916,6 +2946,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         colInfo.setSkewedCol((exp instanceof ExprNodeColumnDesc) ? ((ExprNodeColumnDesc) exp)
             .isSkewedCol() : false);
         out_rwsch.put(tabAlias, colAlias, colInfo);
+        
+        if ( exp instanceof ExprNodeColumnDesc ) {
+          ExprNodeColumnDesc colExp = (ExprNodeColumnDesc) exp;
+          String[] altMapping = inputRR.getAlternateMappings(colExp.getColumn());
+          if ( altMapping != null ) {
+            out_rwsch.put(altMapping[0], altMapping[1], colInfo);
+          }
+        }
 
         pos = Integer.valueOf(pos.intValue() + 1);
       }
@@ -3177,8 +3215,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           .getInternalName(), "", false));
       String field = getColumnInternalName(i);
       outputColumnNames.add(field);
+      ColumnInfo oColInfo = new ColumnInfo(field, exprInfo.getType(), null, false);
       groupByOutputRowResolver.putExpression(grpbyExpr,
-          new ColumnInfo(field, exprInfo.getType(), null, false));
+          oColInfo);
+      addAlternateGByKeyMappings(grpbyExpr, oColInfo, input, groupByOutputRowResolver);
       colExprMap.put(field, groupByKeys.get(groupByKeys.size() - 1));
     }
     // For each aggregation
@@ -3386,8 +3426,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           .getIsVirtualCol()));
       String field = getColumnInternalName(i);
       outputColumnNames.add(field);
+      ColumnInfo oColInfo = new ColumnInfo(field, exprInfo.getType(), "", false);
       groupByOutputRowResolver.putExpression(grpbyExpr,
-          new ColumnInfo(field, exprInfo.getType(), "", false));
+          oColInfo);
+      addAlternateGByKeyMappings(grpbyExpr, oColInfo, reduceSinkOperatorInfo, groupByOutputRowResolver);
       colExprMap.put(field, groupByKeys.get(groupByKeys.size() - 1));
     }
 
@@ -4168,8 +4210,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           exprInfo.getTabAlias(), exprInfo.getIsVirtualCol()));
       String field = getColumnInternalName(i);
       outputColumnNames.add(field);
+      ColumnInfo oColInfo = new ColumnInfo(field, exprInfo.getType(), "", false);
       groupByOutputRowResolver2.putExpression(grpbyExpr,
-          new ColumnInfo(field, exprInfo.getType(), "", false));
+          oColInfo);
+      addAlternateGByKeyMappings(grpbyExpr, oColInfo, reduceSinkOperatorInfo2, groupByOutputRowResolver2);
       colExprMap.put(field, groupByKeys.get(groupByKeys.size() - 1));
     }
 
@@ -4385,14 +4429,15 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       curr = forwardOp;
 
       if (parseInfo.getWhrForClause(dest) != null) {
-        curr = genFilterPlan(dest, qb, forwardOp, aliasToOpInfo);
+        ASTNode whereExpr = qb.getParseInfo().getWhrForClause(dest);
+        curr = genFilterPlan((ASTNode) whereExpr.getChild(0), qb, forwardOp, aliasToOpInfo, false);
       }
 
       // Generate GroupbyOperator
       Operator groupByOperatorInfo = genGroupByPlanGroupByOperator(parseInfo,
           dest, curr, reduceSinkOperatorInfo, GroupByDesc.Mode.COMPLETE, null);
 
-      curr = genPostGroupByBodyPlan(groupByOperatorInfo, dest, qb);
+      curr = genPostGroupByBodyPlan(groupByOperatorInfo, dest, qb, aliasToOpInfo);
     }
 
     return curr;
@@ -5229,11 +5274,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           qbm.setDPCtx(dest, dpCtx);
         }
 
-        if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING)) { // allow DP
-          // turn on hive.task.progress to update # of partitions created to the JT
-          HiveConf.setBoolVar(conf, HiveConf.ConfVars.HIVEJOBPROGRESS, true);
-
-        } else { // QBMetaData.DEST_PARTITION capture the all-SP case
+        if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.DYNAMICPARTITIONING)) { // allow DP
           throw new SemanticException(generateErrorMessage(
               qb.getParseInfo().getDestForClause(dest),
               ErrorMsg.DYNAMIC_PARTITION_DISABLED.getMsg()));
@@ -7753,7 +7794,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
               curr = inputs.get(dest);
 
               if (qbp.getWhrForClause(dest) != null) {
-                curr = genFilterPlan(dest, qb, curr, aliasToOpInfo);
+                ASTNode whereExpr = qb.getParseInfo().getWhrForClause(dest);
+                curr = genFilterPlan((ASTNode) whereExpr.getChild(0), qb, curr, aliasToOpInfo, false);
               }
 
               if (qbp.getAggregationExprsForClause(dest).size() != 0
@@ -7780,7 +7822,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                 }
               }
 
-              curr = genPostGroupByBodyPlan(curr, dest, qb);
+              curr = genPostGroupByBodyPlan(curr, dest, qb, aliasToOpInfo);
             }
           } else {
             curr = genGroupByPlan1ReduceMultiGBY(commonGroupByDestGroup, qb, input, aliasToOpInfo);
@@ -7806,7 +7848,8 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return inputs;
   }
 
-  private Operator genPostGroupByBodyPlan(Operator curr, String dest, QB qb)
+  private Operator genPostGroupByBodyPlan(Operator curr, String dest, QB qb,
+      Map<String, Operator> aliasToOpInfo)
       throws SemanticException {
 
     QBParseInfo qbp = qb.getParseInfo();
@@ -7816,7 +7859,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       if (getGroupByForClause(qbp, dest).size() == 0) {
         throw new SemanticException("HAVING specified without GROUP BY");
       }
-      curr = genHavingPlan(dest, qb, curr);
+      curr = genHavingPlan(dest, qb, curr, aliasToOpInfo);
     }
 
 
@@ -10707,7 +10750,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             outColName, colInfo.getType(), alias[0],
             colInfo.getIsVirtualCol(), colInfo.isHiddenVirtualCol());
         rsNewRR.put(alias[0], alias[1], newColInfo);
-
+        String[] altMapping = inputRR.getAlternateMappings(colInfo.getInternalName());
+        if ( altMapping != null ) {
+          rsNewRR.put(altMapping[0], altMapping[1], newColInfo);
+        }
     }
 
     input = putOpInsertMap(OperatorFactory.getAndMakeChild(PlanUtils
@@ -10752,6 +10798,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if ( !astNode.toStringTree().toLowerCase().equals(alias[1]) ) {
           colsAddedByHaving.put(alias, eColInfo);
         }
+      }
+      String[] altMapping = inputRR.getAlternateMappings(colInfo.getInternalName());
+      if ( altMapping != null ) {
+        extractRR.put(altMapping[0], altMapping[1], eColInfo);
       }
     }
 
@@ -10821,4 +10871,40 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     return selSpec;
   }
 
+  private void addAlternateGByKeyMappings(ASTNode gByExpr, ColumnInfo colInfo, 
+		  Operator<? extends OperatorDesc> reduceSinkOp, RowResolver gByRR) {
+	  if ( gByExpr.getType() == HiveParser.DOT
+          && gByExpr.getChild(0).getType() == HiveParser.TOK_TABLE_OR_COL ) {
+		  String tab_alias = BaseSemanticAnalyzer.unescapeIdentifier(gByExpr
+		            .getChild(0).getChild(0).getText());
+		  String col_alias = BaseSemanticAnalyzer.unescapeIdentifier(
+				  gByExpr.getChild(1).getText());
+		  gByRR.put(tab_alias, col_alias, colInfo);
+	  } else if ( gByExpr.getType() == HiveParser.TOK_TABLE_OR_COL ) {
+		  String col_alias = BaseSemanticAnalyzer.unescapeIdentifier(gByExpr
+		          .getChild(0).getText());
+		  String tab_alias = null;
+		  /*
+		   * If the input to the GBy has a tab alias for the column, then add an entry
+		   * based on that tab_alias.
+		   * For e.g. this query:
+		   * select b.x, count(*) from t1 b group by x
+		   * needs (tab_alias=b, col_alias=x) in the GBy RR.
+		   * tab_alias=b comes from looking at the RowResolver that is the ancestor
+		   * before any GBy/ReduceSinks added for the GBY operation.
+		   */
+		  Operator<? extends OperatorDesc> parent = reduceSinkOp;
+		  while ( parent instanceof ReduceSinkOperator || 
+				  parent instanceof GroupByOperator ) {
+			  parent = parent.getParentOperators().get(0);
+		  }
+		  RowResolver parentRR = opParseCtx.get(parent).getRowResolver();
+		  try {
+			  ColumnInfo pColInfo = parentRR.get(tab_alias, col_alias);
+			  tab_alias = pColInfo == null ? null : pColInfo.getTabAlias();
+		  } catch(SemanticException se) {
+		  }
+		  gByRR.put(tab_alias, col_alias, colInfo);
+	  }
+  }
 }

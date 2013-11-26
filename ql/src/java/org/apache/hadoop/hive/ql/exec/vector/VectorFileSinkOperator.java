@@ -98,16 +98,6 @@ public class VectorFileSinkOperator extends FileSinkOperator {
       }
     }
 
-    // Since File Sink is a terminal operator, forward is not called - so,
-    // maintain the number of output rows explicitly
-    if (counterNameToEnum != null) {
-      ++outputRows;
-      if (outputRows % 1000 == 0) {
-        incrCounter(numOutputRowsCntr, outputRows);
-        outputRows = 0;
-      }
-    }
-
     try {
       updateProgress();
 

@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.stats;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.Task;
 
 /**
  * An interface for any possible implementation for gathering statistics.
@@ -31,9 +32,10 @@ public interface StatsAggregator {
    *
    * @param hconf
    *          HiveConf that contains the connection parameters.
+   * @param sourceTask
    * @return true if connection is successful, false otherwise.
    */
-  public boolean connect(Configuration hconf);
+  public boolean connect(Configuration hconf, Task<?> sourceTask);
 
   /**
    * This method aggregates a given statistic from all tasks (partial stats).

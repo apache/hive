@@ -211,13 +211,6 @@ public abstract class TaskCompiler {
 
     optimizeTaskPlan(rootTasks, pCtx, ctx);
 
-    // For each operator, generate the counters if needed
-    if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVEJOBPROGRESS)) {
-      for (Task<? extends Serializable> rootTask : rootTasks) {
-        generateCountersTask(rootTask);
-      }
-    }
-
     decideExecMode(rootTasks, ctx, globalLimitCtx);
 
     if (qb.isCTAS()) {
@@ -338,11 +331,6 @@ public abstract class TaskCompiler {
    */
   protected abstract void decideExecMode(List<Task<? extends Serializable>> rootTasks, Context ctx,
       GlobalLimitCtx globalLimitCtx) throws SemanticException;
-
-  /*
-   * Called to setup counters for the generated tasks
-   */
-  protected abstract void generateCountersTask(Task<? extends Serializable> rootTask);
 
   /*
    * Called at the beginning of the compile phase to have another chance to optimize the operator plan

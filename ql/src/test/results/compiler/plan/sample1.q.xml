@@ -242,22 +242,6 @@
                       </void> 
                      </object> 
                     </void> 
-                    <void property="counterNames"> 
-                     <object class="java.util.ArrayList"> 
-                      <void method="add"> 
-                       <string>CNTR_NAME_FS_4_NUM_INPUT_ROWS</string> 
-                      </void> 
-                      <void method="add"> 
-                       <string>CNTR_NAME_FS_4_NUM_OUTPUT_ROWS</string> 
-                      </void> 
-                      <void method="add"> 
-                       <string>CNTR_NAME_FS_4_TIME_TAKEN</string> 
-                      </void> 
-                      <void method="add"> 
-                       <string>CNTR_NAME_FS_4_FATAL_ERROR</string> 
-                      </void> 
-                     </object> 
-                    </void> 
                     <void property="operatorId"> 
                      <string>FS_4</string> 
                     </void> 
@@ -450,22 +434,6 @@
                   </void> 
                   <void property="selectStar"> 
                    <boolean>true</boolean> 
-                  </void> 
-                 </object> 
-                </void> 
-                <void property="counterNames"> 
-                 <object class="java.util.ArrayList"> 
-                  <void method="add"> 
-                   <string>CNTR_NAME_SEL_3_NUM_INPUT_ROWS</string> 
-                  </void> 
-                  <void method="add"> 
-                   <string>CNTR_NAME_SEL_3_NUM_OUTPUT_ROWS</string> 
-                  </void> 
-                  <void method="add"> 
-                   <string>CNTR_NAME_SEL_3_TIME_TAKEN</string> 
-                  </void> 
-                  <void method="add"> 
-                   <string>CNTR_NAME_SEL_3_FATAL_ERROR</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -669,17 +637,7 @@
                      </object> 
                     </void> 
                     <void property="genericUDF"> 
-                     <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
-                      <void property="operator"> 
-                       <boolean>true</boolean> 
-                      </void> 
-                      <void property="udfClassName"> 
-                       <string>org.apache.hadoop.hive.ql.udf.UDFOPMod</string> 
-                      </void> 
-                      <void property="udfName"> 
-                       <string>%</string> 
-                      </void> 
-                     </object> 
+                     <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMod"/> 
                     </void> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo1"/> 
@@ -709,22 +667,6 @@
                  </object> 
                 </void> 
                </object> 
-              </void> 
-             </object> 
-            </void> 
-            <void property="counterNames"> 
-             <object class="java.util.ArrayList"> 
-              <void method="add"> 
-               <string>CNTR_NAME_FIL_1_NUM_INPUT_ROWS</string> 
-              </void> 
-              <void method="add"> 
-               <string>CNTR_NAME_FIL_1_NUM_OUTPUT_ROWS</string> 
-              </void> 
-              <void method="add"> 
-               <string>CNTR_NAME_FIL_1_TIME_TAKEN</string> 
-              </void> 
-              <void method="add"> 
-               <string>CNTR_NAME_FIL_1_FATAL_ERROR</string> 
               </void> 
              </object> 
             </void> 
@@ -821,22 +763,6 @@
           </void> 
           <void property="virtualCols"> 
            <object class="java.util.ArrayList"/> 
-          </void> 
-         </object> 
-        </void> 
-        <void property="counterNames"> 
-         <object class="java.util.ArrayList"> 
-          <void method="add"> 
-           <string>CNTR_NAME_TS_0_NUM_INPUT_ROWS</string> 
-          </void> 
-          <void method="add"> 
-           <string>CNTR_NAME_TS_0_NUM_OUTPUT_ROWS</string> 
-          </void> 
-          <void method="add"> 
-           <string>CNTR_NAME_TS_0_TIME_TAKEN</string> 
-          </void> 
-          <void method="add"> 
-           <string>CNTR_NAME_TS_0_FATAL_ERROR</string> 
           </void> 
          </object> 
         </void> 

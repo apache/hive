@@ -33,6 +33,7 @@
   </properties>
 
   <dependencies>
+    <!-- dependencies are always listed in sorted order by groupId, artifectId -->
     <!-- inter-project -->
     <dependency>
       <groupId>commons-logging</groupId>

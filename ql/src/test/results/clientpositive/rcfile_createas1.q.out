@@ -82,7 +82,7 @@ STAGE PLANS:
                     type: int
                     expr: value
                     type: string
-                    expr: pmod(hash(key), 50)
+                    expr: (hash(key) pmod 50)
                     type: int
               outputColumnNames: _col0, _col1, _col2
               File Output Operator

@@ -1,1 +1,0 @@
-FAILED: SemanticException [Error 10016]: Line 4:13 Argument type mismatch '5.3': The expression after ELSE should have the same type as those after THEN: "string" is expected but "double" is found

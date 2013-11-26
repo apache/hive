@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,6 +76,7 @@ class RecordReaderImpl implements RecordReader {
   private long rowCountInStripe = 0;
   private final Map<StreamName, InStream> streams =
       new HashMap<StreamName, InStream>();
+  List<BufferChunk> bufferChunks = new ArrayList<BufferChunk>(0);
   private final TreeReader reader;
   private final OrcProto.RowIndex[] indexes;
   private final SearchArgument sarg;
@@ -125,6 +127,7 @@ class RecordReaderImpl implements RecordReader {
         rows += stripe.getNumberOfRows();
       }
     }
+
     firstRow = skippedRows;
     totalRowCount = rows;
     reader = createTreeReader(path, 0, types, included);
@@ -1899,8 +1902,8 @@ class RecordReaderImpl implements RecordReader {
       case DATE:
         return new DateTreeReader(path, columnId);
       case DECIMAL:
-        int precision = type.hasPrecision() ? type.getPrecision() : HiveDecimal.MAX_PRECISION;
-        int scale =  type.hasScale()? type.getScale() : HiveDecimal.MAX_SCALE;
+        int precision = type.hasPrecision() ? type.getPrecision() : HiveDecimal.SYSTEM_DEFAULT_PRECISION;
+        int scale =  type.hasScale()? type.getScale() : HiveDecimal.SYSTEM_DEFAULT_SCALE;
         return new DecimalTreeReader(path, columnId, precision, scale);
       case STRUCT:
         return new StructTreeReader(path, columnId, types, included);
@@ -2176,6 +2179,17 @@ class RecordReaderImpl implements RecordReader {
     return null;
   }
 
+  private void clearStreams() throws IOException {
+    // explicit close of all streams to de-ref ByteBuffers
+    for(InStream is: streams.values()) {
+      is.close();
+    }
+    if(bufferChunks != null) {
+      bufferChunks.clear();
+    }
+    streams.clear();
+  }
+
   /**
    * Read the current stripe into memory.
    * @throws IOException
@@ -2183,7 +2197,7 @@ class RecordReaderImpl implements RecordReader {
   private void readStripe() throws IOException {
     StripeInformation stripe = stripes.get(currentStripe);
     stripeFooter = readStripeFooter(stripe);
-    streams.clear();
+    clearStreams();
     // setup the position in the stripe
     rowCountInStripe = stripe.getNumberOfRows();
     rowInStripe = 0;
@@ -2223,28 +2237,17 @@ class RecordReaderImpl implements RecordReader {
 
   private void readAllDataStreams(StripeInformation stripe
                                   ) throws IOException {
-    byte[] buffer =
-      new byte[(int) (stripe.getDataLength())];
-    file.seek(stripe.getOffset() + stripe.getIndexLength());
-    file.readFully(buffer, 0, buffer.length);
-    int sectionOffset = 0;
-    for(OrcProto.Stream section: stripeFooter.getStreamsList()) {
-      if (StreamName.getArea(section.getKind()) == StreamName.Area.DATA) {
-        int sectionLength = (int) section.getLength();
-        ByteBuffer sectionBuffer = ByteBuffer.wrap(buffer, sectionOffset,
-            sectionLength);
-        StreamName name = new StreamName(section.getColumn(),
-            section.getKind());
-        streams.put(name,
-            InStream.create(name.toString(), new ByteBuffer[]{sectionBuffer},
-                new long[]{0}, sectionLength, codec, bufferSize));
-        sectionOffset += sectionLength;
-      }
-    }
+    long start = stripe.getIndexLength();
+    long end = start + stripe.getDataLength();
+    // explicitly trigger 1 big read
+    DiskRange[] ranges = new DiskRange[]{new DiskRange(start, end)};
+    bufferChunks = readDiskRanges(file, stripe.getOffset(), Arrays.asList(ranges));
+    List<OrcProto.Stream> streamDescriptions = stripeFooter.getStreamsList();
+    createStreams(streamDescriptions, bufferChunks, null, codec, bufferSize, streams);
   }
 
   /**
-   * The secionts of stripe that we need to read.
+   * The sections of stripe that we need to read.
    */
   static class DiskRange {
     /** the first address we need to read. */
@@ -2272,6 +2275,30 @@ class RecordReaderImpl implements RecordReader {
     @Override
     public String toString() {
       return "range start: " + offset + " end: " + end;
+    }
+  }
+
+  /**
+   * The sections of stripe that we have read.
+   * This might not match diskRange - 1 disk range can be multiple buffer chunks, depending on DFS block boundaries.
+   */
+  static class BufferChunk {
+    final ByteBuffer chunk;
+    /** the first address we need to read. */
+    final long offset;
+    /** end of the buffer **/
+    final long end;
+
+    BufferChunk(ByteBuffer chunk, long offset) {
+      this.offset = offset;
+      this.chunk = chunk;
+      end = offset + chunk.remaining();
+    }
+
+    @Override
+    public final String toString() {
+      return "range start: " + offset + " size: " + chunk.remaining() + " type: "
+          + (chunk.isDirect() ? "direct" : "array-backed");
     }
   }
 
@@ -2460,17 +2487,17 @@ class RecordReaderImpl implements RecordReader {
    *    ranges
    * @throws IOException
    */
-  static byte[][] readDiskRanges(FSDataInputStream file,
+  List<BufferChunk> readDiskRanges(FSDataInputStream file,
                                  long base,
                                  List<DiskRange> ranges) throws IOException {
-    byte[][] result = new byte[ranges.size()][];
-    int i = 0;
+    ArrayList<BufferChunk> result = new ArrayList<RecordReaderImpl.BufferChunk>(ranges.size());
     for(DiskRange range: ranges) {
       int len = (int) (range.end - range.offset);
-      result[i] = new byte[len];
-      file.seek(base + range.offset);
-      file.readFully(result[i]);
-      i += 1;
+      long off = range.offset;
+      file.seek(base + off); 
+      byte[] buffer = new byte[len];
+      file.readFully(buffer, 0, buffer.length);
+      result.add(new BufferChunk(ByteBuffer.wrap(buffer), range.offset));
     }
     return result;
   }
@@ -2509,8 +2536,7 @@ class RecordReaderImpl implements RecordReader {
   }
 
   static void createStreams(List<OrcProto.Stream> streamDescriptions,
-                            List<DiskRange> ranges,
-                            byte[][] bytes,
+                            List<BufferChunk> ranges,
                             boolean[] includeColumn,
                             CompressionCodec codec,
                             int bufferSize,
@@ -2519,13 +2545,13 @@ class RecordReaderImpl implements RecordReader {
     long offset = 0;
     for(OrcProto.Stream streamDesc: streamDescriptions) {
       int column = streamDesc.getColumn();
-      if (includeColumn[column] &&
+      if ((includeColumn == null || includeColumn[column]) &&
           StreamName.getArea(streamDesc.getKind()) == StreamName.Area.DATA) {
         long length = streamDesc.getLength();
         int first = -1;
         int last = -2;
-        for(int i=0; i < bytes.length; ++i) {
-          DiskRange range = ranges.get(i);
+        for(int i=0; i < ranges.size(); ++i) {
+          BufferChunk range = ranges.get(i);
           if (overlap(offset, offset+length, range.offset, range.end)) {
             if (first == -1) {
               first = i;
@@ -2536,12 +2562,24 @@ class RecordReaderImpl implements RecordReader {
         ByteBuffer[] buffers = new ByteBuffer[last - first + 1];
         long[] offsets = new long[last - first + 1];
         for(int i=0; i < buffers.length; ++i) {
-          DiskRange range = ranges.get(i + first);
+          BufferChunk range = ranges.get(i + first);
           long start = Math.max(range.offset, offset);
           long end = Math.min(range.end, offset+length);
-          buffers[i] = ByteBuffer.wrap(bytes[first + i],
-              Math.max(0, (int) (offset - range.offset)), (int) (end - start));
-          offsets[i] = Math.max(0, range.offset - offset);
+          buffers[i] = range.chunk.slice();
+          assert range.chunk.position() == 0; // otherwise we'll mix up positions
+          /*
+           * buffers are positioned in-wards if the offset > range.offset
+           * offsets[i] == range.offset - offset, except if offset > range.offset
+           */
+          if(offset > range.offset) {
+            buffers[i].position((int)(offset - range.offset));
+            buffers[i].limit((int)(end - range.offset));
+            offsets[i] = 0;
+          } else {
+            buffers[i].position(0);
+            buffers[i].limit((int)(end - range.offset));
+            offsets[i] = (range.offset - offset);
+          }
         }
         StreamName name = new StreamName(column, streamDesc.getKind());
         streams.put(name, InStream.create(name.toString(), buffers, offsets,
@@ -2565,8 +2603,8 @@ class RecordReaderImpl implements RecordReader {
     if (LOG.isDebugEnabled()) {
       LOG.debug("merge = " + stringifyDiskRanges(chunks));
     }
-    byte[][] bytes = readDiskRanges(file, stripe.getOffset(), chunks);
-    createStreams(streamList, chunks, bytes, included, codec, bufferSize,
+    bufferChunks = readDiskRanges(file, stripe.getOffset(), chunks);
+    createStreams(streamList, bufferChunks, included, codec, bufferSize,
         streams);
   }
 
@@ -2666,6 +2704,7 @@ class RecordReaderImpl implements RecordReader {
 
   @Override
   public void close() throws IOException {
+    clearStreams();
     file.close();
   }
 

@@ -29,7 +29,6 @@ import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
 import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.OptimizeTezProcContext;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
@@ -66,30 +65,30 @@ public class SetReducerParallelism implements NodeProcessor {
 
     context.visitedReduceSinks.add(sink);
 
-    try {
-      if (desc.getNumReducers() <= 0) {
-        if (constantReducers > 0) {
-          LOG.info("Parallelism for reduce sink "+sink+" set by user to "+constantReducers);
-          desc.setNumReducers(constantReducers);
-        } else {
-          long numberOfBytes = 0;
-
-          // we need to add up all the estimates from the siblings of this reduce sink
-          for (Operator<? extends OperatorDesc> sibling:
-            sink.getChildOperators().get(0).getParentOperators()) {
-            numberOfBytes += sibling.getStatistics(context.conf).getNumberOfBytes();
-          }
-
-          int numReducers = Utilities.estimateReducers(numberOfBytes, bytesPerReducer,
-              maxReducers, false);
-          LOG.info("Set parallelism for reduce sink "+sink+" to: "+numReducers);
-          desc.setNumReducers(numReducers);
-        }
+    if (desc.getNumReducers() <= 0) {
+      if (constantReducers > 0) {
+        LOG.info("Parallelism for reduce sink "+sink+" set by user to "+constantReducers);
+        desc.setNumReducers(constantReducers);
       } else {
-        LOG.info("Number of reducers determined to be: "+desc.getNumReducers());
+        long numberOfBytes = 0;
+
+        // we need to add up all the estimates from the siblings of this reduce sink
+        for (Operator<? extends OperatorDesc> sibling:
+          sink.getChildOperators().get(0).getParentOperators()) {
+          if (sibling.getStatistics() != null) {
+            numberOfBytes += sibling.getStatistics().getDataSize();
+          } else {
+            LOG.warn("No stats available from: "+sibling);
+          }
+        }
+
+        int numReducers = Utilities.estimateReducers(numberOfBytes, bytesPerReducer,
+            maxReducers, false);
+        LOG.info("Set parallelism for reduce sink "+sink+" to: "+numReducers);
+        desc.setNumReducers(numReducers);
       }
-    } catch (HiveException e) {
-      throw new SemanticException(e);
+    } else {
+      LOG.info("Number of reducers determined to be: "+desc.getNumReducers());
     }
 
     return false;

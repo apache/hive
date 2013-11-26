@@ -28,16 +28,17 @@ public class TestHiveDecimal {
   public void testPrecisionScaleEnforcement() {
     String decStr = "1786135888657847525803324040144343378.09799306448796128931113691624";
     HiveDecimal dec = HiveDecimal.create(decStr);
-    Assert.assertEquals("1786135888657847525803324040144343378.0979930644879612893111369162", dec.toString());
+    Assert.assertEquals("1786135888657847525803324040144343378.1", dec.toString());
     Assert.assertTrue("Decimal precision should not go above maximum",
         dec.precision() <= HiveDecimal.MAX_PRECISION);
     Assert.assertTrue("Decimal scale should not go above maximum", dec.scale() <= HiveDecimal.MAX_SCALE);
 
+    decStr = "57847525803324040144343378.09799306448796128931113691624";
     BigDecimal bd = new BigDecimal(decStr);
     BigDecimal bd1 = HiveDecimal.enforcePrecisionScale(bd, 20, 5);
     Assert.assertNull(bd1);
-    bd1 = HiveDecimal.enforcePrecisionScale(bd, 45, 5);
-    Assert.assertEquals("1786135888657847525803324040144343378.09799", bd1.toString());
+    bd1 = HiveDecimal.enforcePrecisionScale(bd, 35, 5);
+    Assert.assertEquals("57847525803324040144343378.09799", bd1.toString());
     bd1 = HiveDecimal.enforcePrecisionScale(bd, 45, 20);
     Assert.assertNull(bd1);
 
@@ -45,7 +46,7 @@ public class TestHiveDecimal {
     Assert.assertNull(dec);
 
     dec = HiveDecimal.create("-1786135888657847525803324040144343378.09799306448796128931113691624");
-    Assert.assertEquals("-1786135888657847525803324040144343378.0979930644879612893111369162", dec.toString());
+    Assert.assertEquals("-1786135888657847525803324040144343378.1", dec.toString());
 
     dec = HiveDecimal.create("005.34000");
     Assert.assertEquals(dec.precision(), 3);
@@ -54,21 +55,21 @@ public class TestHiveDecimal {
     dec = HiveDecimal.create("178613588865784752580332404014434337809799306448796128931113691624");
     Assert.assertNull(dec);
   }
-  
+
   @Test
   public void testTrailingZeroRemovalAfterEnforcement() {
-    String decStr = "8.0900000000000000000000000000000123456";
+    String decStr = "8.090000000000000000000000000000000000000123456";
     HiveDecimal dec = HiveDecimal.create(decStr);
     Assert.assertEquals("8.09", dec.toString());
   }
-  
+
   @Test
   public void testMultiply() {
-    HiveDecimal dec1 = HiveDecimal.create("0.1786135888657847525803");
-    HiveDecimal dec2 = HiveDecimal.create("3.123456789");
+    HiveDecimal dec1 = HiveDecimal.create("0.00001786135888657847525803");
+    HiveDecimal dec2 = HiveDecimal.create("3.0000123456789");
     Assert.assertNull(dec1.multiply(dec2));
 
-    dec1 = HiveDecimal.create("1786135888657847525803232322323234442321.4");
+    dec1 = HiveDecimal.create("178613588865784752580323232232323444.4");
     dec2 = HiveDecimal.create("178613588865784752580302323232.3");
     Assert.assertNull(dec1.multiply(dec2));
 
@@ -79,10 +80,10 @@ public class TestHiveDecimal {
 
   @Test
   public void testPow() {
-    HiveDecimal dec = HiveDecimal.create("3.1415926");
+    HiveDecimal dec = HiveDecimal.create("3.00001415926");
     Assert.assertEquals(dec.pow(2), dec.multiply(dec));
 
-    HiveDecimal dec1 = HiveDecimal.create("0.17861358882");
+    HiveDecimal dec1 = HiveDecimal.create("0.000017861358882");
     dec1 = dec1.pow(3);
     Assert.assertNull(dec1);
   }
@@ -99,6 +100,14 @@ public class TestHiveDecimal {
     HiveDecimal dec1 = HiveDecimal.create("99999999999999999999999999999999999");
     HiveDecimal dec2 = HiveDecimal.create("1");
     Assert.assertNotNull(dec1.add(dec2));
+  }
+
+  @Test
+  public void testPosMod() {
+    HiveDecimal hd1 = HiveDecimal.create("-100.91");
+    HiveDecimal hd2 = HiveDecimal.create("9.8");
+    HiveDecimal dec = hd1.remainder(hd2).add(hd2).remainder(hd2);
+    Assert.assertEquals("6.89", dec.toString());
   }
 
   @Test

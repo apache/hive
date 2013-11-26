@@ -295,7 +295,7 @@ public class ReduceRecordProcessor  extends RecordProcessor{
         row.add(valueObj);
 
         try {
-          reducer.process(row, tag);
+          reducer.processOp(row, tag);
         } catch (Exception e) {
           String rowString = null;
           try {

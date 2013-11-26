@@ -28,10 +28,22 @@ import java.math.RoundingMode;
  *
  */
 public class HiveDecimal implements Comparable<HiveDecimal> {
-  public static final int MAX_PRECISION = 65;
-  public static final int MAX_SCALE = 30;
-  public static final int DEFAULT_PRECISION = 10;
-  public static final int DEFAULT_SCALE = 0;
+  public static final int MAX_PRECISION = 38;
+  public static final int MAX_SCALE = 38;
+
+  /**
+   * Default precision/scale when user doesn't specify in the column metadata, such as
+   * decimal and decimal(8).
+   */
+  public static final int USER_DEFAULT_PRECISION = 10;
+  public static final int USER_DEFAULT_SCALE = 0;
+
+  /**
+   *  Default precision/scale when system is not able to determine them, such as in case
+   *  of a non-generic udf.
+   */
+  public static final int SYSTEM_DEFAULT_PRECISION = 38;
+  public static final int SYSTEM_DEFAULT_SCALE = 18;
 
   public static final HiveDecimal ZERO = new HiveDecimal(BigDecimal.ZERO);
   public static final HiveDecimal ONE = new HiveDecimal(BigDecimal.ONE);

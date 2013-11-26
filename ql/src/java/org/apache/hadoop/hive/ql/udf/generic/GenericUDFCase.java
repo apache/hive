@@ -25,11 +25,11 @@ import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 
 /**
- * GenericUDF Class for SQL construct
- * "CASE WHEN a THEN b WHEN c THEN d [ELSE f] END".
+ * GenericUDF Class for SQL construct "CASE a WHEN b THEN c [ELSE f] END".
  * 
- * NOTES: 1. a and c should be boolean, or an exception will be thrown. 2. b, d
- * and f should have the same TypeInfo, or an exception will be thrown.
+ * NOTES: 1. a and b should be compatible, or an exception will be
+ * thrown. 2. c and f should be compatible types, or an exception will be
+ * thrown.
  */
 public class GenericUDFCase extends GenericUDF {
   private transient ObjectInspector[] argumentOIs;
@@ -40,8 +40,8 @@ public class GenericUDFCase extends GenericUDF {
   public ObjectInspector initialize(ObjectInspector[] arguments) throws UDFArgumentTypeException {
 
     argumentOIs = arguments;
-    caseOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver();
-    returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver();
+    caseOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver(true);
+    returnOIResolver = new GenericUDFUtils.ReturnObjectInspectorResolver(true);
 
     boolean r = caseOIResolver.update(arguments[0]);
     assert (r);
@@ -79,12 +79,13 @@ public class GenericUDFCase extends GenericUDF {
     Object exprValue = arguments[0].get();
     for (int i = 1; i + 1 < arguments.length; i += 2) {
       Object caseKey = arguments[i].get();
-      if (PrimitiveObjectInspectorUtils.comparePrimitiveObjects(exprValue,
-          (PrimitiveObjectInspector) argumentOIs[0], caseKey,
-          (PrimitiveObjectInspector) argumentOIs[i])) {
+      // May need to convert to common type to compare
+      PrimitiveObjectInspector caseOI = (PrimitiveObjectInspector) caseOIResolver.get();
+      if (PrimitiveObjectInspectorUtils.comparePrimitiveObjects(
+            caseOIResolver.convertIfNecessary(exprValue, argumentOIs[0]), caseOI,
+            caseOIResolver.convertIfNecessary(caseKey, argumentOIs[i]), caseOI)) {
         Object caseValue = arguments[i + 1].get();
-        return returnOIResolver.convertIfNecessary(caseValue,
-            argumentOIs[i + 1]);
+        return returnOIResolver.convertIfNecessary(caseValue, argumentOIs[i + 1]);
       }
     }
     // Process else statement

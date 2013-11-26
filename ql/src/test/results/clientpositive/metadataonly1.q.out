@@ -21,20 +21,28 @@ STAGE PLANS:
         test1 
           TableScan
             alias: test1
+            Statistics:
+                numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
                     expr: ds
                     type: string
               outputColumnNames: ds
+              Statistics:
+                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
               Group By Operator
                 aggregations:
                       expr: max(ds)
                 bucketGroup: false
                 mode: hash
                 outputColumnNames: _col0
+                Statistics:
+                    numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   sort order: 
+                  Statistics:
+                      numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -47,16 +55,22 @@ STAGE PLANS:
           bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
+          Statistics:
+              numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col0
                   type: string
             outputColumnNames: _col0
+            Statistics:
+                numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -112,20 +126,28 @@ STAGE PLANS:
         test1 
           TableScan
             alias: test1
+            Statistics:
+                numRows: 0 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
                     expr: ds
                     type: string
               outputColumnNames: ds
+              Statistics:
+                  numRows: 0 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
               Group By Operator
                 aggregations:
                       expr: max(ds)
                 bucketGroup: false
                 mode: hash
                 outputColumnNames: _col0
+                Statistics:
+                    numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: COMPLETE
                 Reduce Output Operator
                   sort order: 
+                  Statistics:
+                      numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: COMPLETE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -179,16 +201,22 @@ STAGE PLANS:
           bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
+          Statistics:
+              numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: COMPLETE
           Select Operator
             expressions:
                   expr: _col0
                   type: string
             outputColumnNames: _col0
+            Statistics:
+                numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -239,12 +267,16 @@ STAGE PLANS:
         test1 
           TableScan
             alias: test1
+            Statistics:
+                numRows: 0 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
                     expr: ds
                     type: string
               outputColumnNames: ds
+              Statistics:
+                  numRows: 0 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
               Group By Operator
                 aggregations:
                       expr: count(DISTINCT ds)
@@ -254,11 +286,15 @@ STAGE PLANS:
                       type: string
                 mode: hash
                 outputColumnNames: _col0, _col1
+                Statistics:
+                    numRows: 0 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
                         type: string
                   sort order: +
+                  Statistics:
+                      numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
                   tag: -1
                   value expressions:
                         expr: _col1
@@ -312,16 +348,22 @@ STAGE PLANS:
           bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
+          Statistics:
+              numRows: 1 dataSize: 16 basicStatsState: COMPLETE colStatsState: COMPLETE
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
             outputColumnNames: _col0
+            Statistics:
+                numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -372,20 +414,28 @@ STAGE PLANS:
         test1 
           TableScan
             alias: test1
+            Statistics:
+                numRows: 0 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
                     expr: ds
                     type: string
               outputColumnNames: ds
+              Statistics:
+                  numRows: 0 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
               Group By Operator
                 aggregations:
                       expr: count(ds)
                 bucketGroup: false
                 mode: hash
                 outputColumnNames: _col0
+                Statistics:
+                    numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
                 Reduce Output Operator
                   sort order: 
+                  Statistics:
+                      numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -439,16 +489,22 @@ STAGE PLANS:
           bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
+          Statistics:
+              numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
             outputColumnNames: _col0
+            Statistics:
+                numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -510,20 +566,28 @@ STAGE PLANS:
         b:test1 
           TableScan
             alias: test1
+            Statistics:
+                numRows: 0 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
                     expr: ds
                     type: string
               outputColumnNames: ds
+              Statistics:
+                  numRows: 0 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
               Group By Operator
                 aggregations:
                       expr: max(ds)
                 bucketGroup: false
                 mode: hash
                 outputColumnNames: _col0
+                Statistics:
+                    numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: COMPLETE
                 Reduce Output Operator
                   sort order: 
+                  Statistics:
+                      numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: COMPLETE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -615,11 +679,15 @@ STAGE PLANS:
           bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
+          Statistics:
+              numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: COMPLETE
           Select Operator
             expressions:
                   expr: _col0
                   type: string
             outputColumnNames: _col0
+            Statistics:
+                numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -652,10 +720,14 @@ STAGE PLANS:
               Map-reduce partition columns:
                     expr: _col0
                     type: string
+              Statistics:
+                  numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: COMPLETE
               tag: 1
         a2 
           TableScan
             alias: a2
+            Statistics:
+                numRows: 0 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
             GatherStats: false
             Reduce Output Operator
               key expressions:
@@ -665,6 +737,8 @@ STAGE PLANS:
               Map-reduce partition columns:
                     expr: ds
                     type: string
+              Statistics:
+                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
               tag: 0
       Path -> Alias:
 #### A masked pattern was here ####
@@ -774,13 +848,19 @@ STAGE PLANS:
             0 
             1 
           handleSkewJoin: false
+          Statistics:
+              numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
           Select Operator
+            Statistics:
+                numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
             Group By Operator
               aggregations:
                     expr: count()
               bucketGroup: false
               mode: hash
               outputColumnNames: _col0
+              Statistics:
+                  numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
@@ -807,6 +887,8 @@ STAGE PLANS:
             GatherStats: false
             Reduce Output Operator
               sort order: 
+              Statistics:
+                  numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
               tag: -1
               value expressions:
                     expr: _col0
@@ -844,16 +926,22 @@ STAGE PLANS:
           bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
+          Statistics:
+              numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
             outputColumnNames: _col0
+            Statistics:
+                numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -932,6 +1020,8 @@ STAGE PLANS:
         test2 
           TableScan
             alias: test2
+            Statistics:
+                numRows: 0 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -940,6 +1030,8 @@ STAGE PLANS:
                     expr: hr
                     type: string
               outputColumnNames: ds, hr
+              Statistics:
+                  numRows: 0 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
               Group By Operator
                 aggregations:
                       expr: count(DISTINCT hr)
@@ -951,6 +1043,8 @@ STAGE PLANS:
                       type: string
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
+                Statistics:
+                    numRows: 0 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -961,6 +1055,8 @@ STAGE PLANS:
                   Map-reduce partition columns:
                         expr: _col0
                         type: string
+                  Statistics:
+                      numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
                   tag: -1
                   value expressions:
                         expr: _col2
@@ -1096,6 +1192,8 @@ STAGE PLANS:
                 type: string
           mode: mergepartial
           outputColumnNames: _col0, _col1
+          Statistics:
+              numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
           Select Operator
             expressions:
                   expr: _col0
@@ -1103,11 +1201,15 @@ STAGE PLANS:
                   expr: _col1
                   type: bigint
             outputColumnNames: _col0, _col1
+            Statistics:
+                numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1162,6 +1264,8 @@ STAGE PLANS:
         test2 
           TableScan
             alias: test2
+            Statistics:
+                numRows: 0 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -1170,6 +1274,8 @@ STAGE PLANS:
                     expr: hr
                     type: string
               outputColumnNames: ds, hr
+              Statistics:
+                  numRows: 0 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
               Group By Operator
                 aggregations:
                       expr: count(hr)
@@ -1179,6 +1285,8 @@ STAGE PLANS:
                       type: string
                 mode: hash
                 outputColumnNames: _col0, _col1
+                Statistics:
+                    numRows: 0 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -1187,6 +1295,8 @@ STAGE PLANS:
                   Map-reduce partition columns:
                         expr: _col0
                         type: string
+                  Statistics:
+                      numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
                   tag: -1
                   value expressions:
                         expr: _col1
@@ -1320,6 +1430,8 @@ STAGE PLANS:
                 type: string
           mode: mergepartial
           outputColumnNames: _col0, _col1
+          Statistics:
+              numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
           Select Operator
             expressions:
                   expr: _col0
@@ -1327,11 +1439,15 @@ STAGE PLANS:
                   expr: _col1
                   type: bigint
             outputColumnNames: _col0, _col1
+            Statistics:
+                numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1385,20 +1501,28 @@ STAGE PLANS:
         test1 
           TableScan
             alias: test1
+            Statistics:
+                numRows: 0 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
                     expr: ds
                     type: string
               outputColumnNames: ds
+              Statistics:
+                  numRows: 0 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
               Group By Operator
                 aggregations:
                       expr: max(ds)
                 bucketGroup: false
                 mode: hash
                 outputColumnNames: _col0
+                Statistics:
+                    numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: COMPLETE
                 Reduce Output Operator
                   sort order: 
+                  Statistics:
+                      numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: COMPLETE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -1490,16 +1614,22 @@ STAGE PLANS:
           bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
+          Statistics:
+              numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: COMPLETE
           Select Operator
             expressions:
                   expr: _col0
                   type: string
             outputColumnNames: _col0
+            Statistics:
+                numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 1 dataSize: 84 basicStatsState: COMPLETE colStatsState: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1603,6 +1733,8 @@ STAGE PLANS:
         test2 
           TableScan
             alias: test2
+            Statistics:
+                numRows: 0 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -1611,6 +1743,8 @@ STAGE PLANS:
                     expr: hr
                     type: string
               outputColumnNames: ds, hr
+              Statistics:
+                  numRows: 0 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
               Group By Operator
                 aggregations:
                       expr: count(DISTINCT hr)
@@ -1622,6 +1756,8 @@ STAGE PLANS:
                       type: string
                 mode: hash
                 outputColumnNames: _col0, _col1, _col2
+                Statistics:
+                    numRows: 0 dataSize: 0 basicStatsState: PARTIAL colStatsState: COMPLETE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -1632,6 +1768,8 @@ STAGE PLANS:
                   Map-reduce partition columns:
                         expr: _col0
                         type: string
+                  Statistics:
+                      numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
                   tag: -1
                   value expressions:
                         expr: _col2
@@ -1845,6 +1983,8 @@ STAGE PLANS:
                 type: string
           mode: mergepartial
           outputColumnNames: _col0, _col1
+          Statistics:
+              numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
           Select Operator
             expressions:
                   expr: _col0
@@ -1852,11 +1992,15 @@ STAGE PLANS:
                   expr: _col1
                   type: bigint
             outputColumnNames: _col0, _col1
+            Statistics:
+                numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat

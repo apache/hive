@@ -268,7 +268,7 @@ public class TestOrcFile {
         + "binary,string1:string,middle:struct<list:array<struct<int1:int,"
         + "string1:string>>>,list:array<struct<int1:int,string1:string>>,"
         + "map:map<string,struct<int1:int,string1:string>>,ts:timestamp,"
-        + "decimal1:decimal(65,30)>", readerInspector.getTypeName());
+        + "decimal1:decimal(38,18)>", readerInspector.getTypeName());
     List<? extends StructField> fields = readerInspector
         .getAllStructFieldRefs();
     BooleanObjectInspector bo = (BooleanObjectInspector) readerInspector
@@ -1030,7 +1030,7 @@ public class TestOrcFile {
     synchronized (TestOrcFile.class) {
       inspector = OrcStruct.createObjectInspector(0, types);
     }
-    HiveDecimal maxValue = HiveDecimal.create("100000000000000000000");
+    HiveDecimal maxValue = HiveDecimal.create("10000000000000000000");
     Writer writer = OrcFile.createWriter(testFilePath,
                                          OrcFile.writerOptions(conf)
                                          .inspector(inspector)
@@ -1062,7 +1062,7 @@ public class TestOrcFile {
     writer.addRow(row);
     union.set((byte) 0, new IntWritable(200000));
     row.setFieldValue(0, Timestamp.valueOf("1900-01-01 00:00:00"));
-    value = HiveDecimal.create("100000000000000000000");
+    value = HiveDecimal.create("10000000000000000000");
     row.setFieldValue(2, value);
     writer.addRow(row);
     Random rand = new Random(42);
@@ -1073,8 +1073,8 @@ public class TestOrcFile {
       } else {
         union.set((byte) 1, new Text(new Integer(i*i).toString()));
       }
-      value = HiveDecimal.create(new BigInteger(104, rand),
-          rand.nextInt(28));
+      value = HiveDecimal.create(new BigInteger(64, rand),
+          rand.nextInt(18));
       row.setFieldValue(2, value);
       if (maxValue.compareTo(value) < 0) {
         maxValue = value;
@@ -1128,7 +1128,7 @@ public class TestOrcFile {
     row = (OrcStruct) rows.next(null);
     assertEquals(1, rows.getRowNumber());
     inspector = reader.getObjectInspector();
-    assertEquals("struct<time:timestamp,union:uniontype<int,string>,decimal:decimal(65,30)>",
+    assertEquals("struct<time:timestamp,union:uniontype<int,string>,decimal:decimal(38,18)>",
         inspector.getTypeName());
     assertEquals(Timestamp.valueOf("2000-03-12 15:00:00"),
         row.getFieldValue(0));
@@ -1162,7 +1162,7 @@ public class TestOrcFile {
     assertEquals(Timestamp.valueOf("1900-01-01 00:00:00"),
         row.getFieldValue(0));
     assertEquals(new IntWritable(200000), union.getObject());
-    assertEquals(HiveDecimal.create("100000000000000000000"),
+    assertEquals(HiveDecimal.create("10000000000000000000"),
                  row.getFieldValue(2));
     rand = new Random(42);
     for(int i=1900; i < 2200; ++i) {
@@ -1176,8 +1176,8 @@ public class TestOrcFile {
         assertEquals(1, union.getTag());
         assertEquals(new Text(new Integer(i*i).toString()), union.getObject());
       }
-      assertEquals(HiveDecimal.create(new BigInteger(104, rand),
-                                   rand.nextInt(28)), row.getFieldValue(2));
+      assertEquals(HiveDecimal.create(new BigInteger(64, rand),
+                                   rand.nextInt(18)), row.getFieldValue(2));
     }
     for(int i=0; i < 5000; ++i) {
       row = (OrcStruct) rows.next(row);

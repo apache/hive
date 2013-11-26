@@ -69,13 +69,11 @@ public class VectorizedOrcSerde extends OrcSerde {
         }
         for (int p = 0; p < batch.projectionSize; p++) {
           int k = batch.projectedColumns[p];
-          Writable w;
           if (batch.cols[k].isRepeating) {
-            w = (Writable) valueWriters[p].writeValue(batch.cols[k], 0);
+            valueWriters[p].setValue(ost, batch.cols[k], 0);
           } else {
-            w = (Writable) valueWriters[p].writeValue(batch.cols[k], index);
+            valueWriters[p].setValue(ost, batch.cols[k], index);
           }
-          ost.setFieldValue(k, w);
         }
         OrcSerdeRow row = (OrcSerdeRow) orcRowArray[i];
         row.realRow = ost;

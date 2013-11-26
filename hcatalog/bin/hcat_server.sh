@@ -61,7 +61,7 @@ function start_hcat() {
 #      n
 #      s/.*<value>\(.*\)<\/value>.*/\1/p
 #      }' $HIVE_SITE_XML`
-#  HADOOP_OPTS="$HADOOP_OPTS -Dhive.metastore.warehouse.dir=$WAREHOUSE_DIR " 
+#  HADOOP_OPTS="$HADOOP_OPTS -Dhive.metastore.warehouse.dir=$WAREHOUSE_DIR "
 
   # add in hive-site.xml to classpath
   AUX_CLASSPATH=${AUX_CLASSPATH}:`dirname ${HIVE_SITE_XML}`
@@ -100,7 +100,7 @@ function start_hcat() {
   echo Started metastore server init, testing if initialized correctly...
   sleep $SLEEP_TIME_AFTER_START
 
-  if ps -p $PID > /dev/null 
+  if ps -p $PID > /dev/null
   then
     echo $PID > $PID_FILE
     echo "Metastore initialized successfully on port[${METASTORE_PORT}]."

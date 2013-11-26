@@ -221,22 +221,6 @@
                       </void> 
                      </object> 
                     </void> 
-                    <void property="counterNames"> 
-                     <object class="java.util.ArrayList"> 
-                      <void method="add"> 
-                       <string>CNTR_NAME_FS_3_NUM_INPUT_ROWS</string> 
-                      </void> 
-                      <void method="add"> 
-                       <string>CNTR_NAME_FS_3_NUM_OUTPUT_ROWS</string> 
-                      </void> 
-                      <void method="add"> 
-                       <string>CNTR_NAME_FS_3_TIME_TAKEN</string> 
-                      </void> 
-                      <void method="add"> 
-                       <string>CNTR_NAME_FS_3_FATAL_ERROR</string> 
-                      </void> 
-                     </object> 
-                    </void> 
                     <void property="operatorId"> 
                      <string>FS_3</string> 
                     </void> 
@@ -498,17 +482,7 @@
                      </object> 
                     </void> 
                     <void property="genericUDF"> 
-                     <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
-                      <void property="operator"> 
-                       <boolean>true</boolean> 
-                      </void> 
-                      <void property="udfClassName"> 
-                       <string>org.apache.hadoop.hive.ql.udf.UDFOPPlus</string> 
-                      </void> 
-                      <void property="udfName"> 
-                       <string>+</string> 
-                      </void> 
-                     </object> 
+                     <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus"/> 
                     </void> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo0"/> 
@@ -543,17 +517,7 @@
                      </object> 
                     </void> 
                     <void property="genericUDF"> 
-                     <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
-                      <void property="operator"> 
-                       <boolean>true</boolean> 
-                      </void> 
-                      <void property="udfClassName"> 
-                       <string>org.apache.hadoop.hive.ql.udf.UDFOPPlus</string> 
-                      </void> 
-                      <void property="udfName"> 
-                       <string>+</string> 
-                      </void> 
-                     </object> 
+                     <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus"/> 
                     </void> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo1"/> 
@@ -588,17 +552,7 @@
                      </object> 
                     </void> 
                     <void property="genericUDF"> 
-                     <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
-                      <void property="operator"> 
-                       <boolean>true</boolean> 
-                      </void> 
-                      <void property="udfClassName"> 
-                       <string>org.apache.hadoop.hive.ql.udf.UDFOPPlus</string> 
-                      </void> 
-                      <void property="udfName"> 
-                       <string>+</string> 
-                      </void> 
-                     </object> 
+                     <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus"/> 
                     </void> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo1"/> 
@@ -633,17 +587,7 @@
                      </object> 
                     </void> 
                     <void property="genericUDF"> 
-                     <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
-                      <void property="operator"> 
-                       <boolean>true</boolean> 
-                      </void> 
-                      <void property="udfClassName"> 
-                       <string>org.apache.hadoop.hive.ql.udf.UDFOPPlus</string> 
-                      </void> 
-                      <void property="udfName"> 
-                       <string>+</string> 
-                      </void> 
-                     </object> 
+                     <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus"/> 
                     </void> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo1"/> 
@@ -678,17 +622,7 @@
                      </object> 
                     </void> 
                     <void property="genericUDF"> 
-                     <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge"> 
-                      <void property="operator"> 
-                       <boolean>true</boolean> 
-                      </void> 
-                      <void property="udfClassName"> 
-                       <string>org.apache.hadoop.hive.ql.udf.UDFOPPlus</string> 
-                      </void> 
-                      <void property="udfName"> 
-                       <string>+</string> 
-                      </void> 
-                     </object> 
+                     <object class="org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus"/> 
                     </void> 
                     <void property="typeInfo"> 
                      <object idref="PrimitiveTypeInfo0"/> 
@@ -748,22 +682,6 @@
                      <string>_col6</string> 
                     </void> 
                    </object> 
-                  </void> 
-                 </object> 
-                </void> 
-                <void property="counterNames"> 
-                 <object class="java.util.ArrayList"> 
-                  <void method="add"> 
-                   <string>CNTR_NAME_SEL_2_NUM_INPUT_ROWS</string> 
-                  </void> 
-                  <void method="add"> 
-                   <string>CNTR_NAME_SEL_2_NUM_OUTPUT_ROWS</string> 
-                  </void> 
-                  <void method="add"> 
-                   <string>CNTR_NAME_SEL_2_TIME_TAKEN</string> 
-                  </void> 
-                  <void method="add"> 
-                   <string>CNTR_NAME_SEL_2_FATAL_ERROR</string> 
                   </void> 
                  </object> 
                 </void> 
@@ -946,22 +864,6 @@
               </void> 
              </object> 
             </void> 
-            <void property="counterNames"> 
-             <object class="java.util.ArrayList"> 
-              <void method="add"> 
-               <string>CNTR_NAME_FIL_4_NUM_INPUT_ROWS</string> 
-              </void> 
-              <void method="add"> 
-               <string>CNTR_NAME_FIL_4_NUM_OUTPUT_ROWS</string> 
-              </void> 
-              <void method="add"> 
-               <string>CNTR_NAME_FIL_4_TIME_TAKEN</string> 
-              </void> 
-              <void method="add"> 
-               <string>CNTR_NAME_FIL_4_FATAL_ERROR</string> 
-              </void> 
-             </object> 
-            </void> 
             <void property="operatorId"> 
              <string>FIL_4</string> 
             </void> 
@@ -1007,22 +909,6 @@
           </void> 
           <void property="virtualCols"> 
            <object class="java.util.ArrayList"/> 
-          </void> 
-         </object> 
-        </void> 
-        <void property="counterNames"> 
-         <object class="java.util.ArrayList"> 
-          <void method="add"> 
-           <string>CNTR_NAME_TS_0_NUM_INPUT_ROWS</string> 
-          </void> 
-          <void method="add"> 
-           <string>CNTR_NAME_TS_0_NUM_OUTPUT_ROWS</string> 
-          </void> 
-          <void method="add"> 
-           <string>CNTR_NAME_TS_0_TIME_TAKEN</string> 
-          </void> 
-          <void method="add"> 
-           <string>CNTR_NAME_TS_0_FATAL_ERROR</string> 
           </void> 
          </object> 
         </void> 

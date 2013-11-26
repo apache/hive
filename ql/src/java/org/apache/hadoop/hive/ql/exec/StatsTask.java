@@ -28,9 +28,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.Warehouse;
@@ -178,11 +176,11 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
       if (!this.getWork().getNoStatsAggregator()) {
         String statsImplementationClass = HiveConf.getVar(conf, HiveConf.ConfVars.HIVESTATSDBCLASS);
-        StatsFactory.setImplementation(statsImplementationClass, conf);
-        if (work.isNoScanAnalyzeCommand()){
+        StatsFactory factory = StatsFactory.newFactory(statsImplementationClass, conf);
+        if (factory != null && work.isNoScanAnalyzeCommand()){
           // initialize stats publishing table for noscan which has only stats task
           // the rest of MR task following stats task initializes it in ExecDriver.java
-          StatsPublisher statsPublisher = StatsFactory.getStatsPublisher();
+          StatsPublisher statsPublisher = factory.getStatsPublisher();
           if (!statsPublisher.init(conf)) { // creating stats table if not exists
             if (HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_RELIABLE)) {
               throw
@@ -190,10 +188,12 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
             }
           }
         }
-        statsAggregator = StatsFactory.getStatsAggregator();
-        // manufacture a StatsAggregator
-        if (!statsAggregator.connect(conf)) {
-          throw new HiveException("StatsAggregator connect failed " + statsImplementationClass);
+        if (factory != null) {
+          statsAggregator = factory.getStatsAggregator();
+          // manufacture a StatsAggregator
+          if (!statsAggregator.connect(conf, getWork().getSourceTask())) {
+            throw new HiveException("StatsAggregator connect failed " + statsImplementationClass);
+          }
         }
       }
 
@@ -377,7 +377,7 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         if (work.getLoadTableDesc() != null &&
             !work.getLoadTableDesc().getReplace()) {
           String originalValue = parameters.get(statType);
-          if (originalValue != null) {
+          if (originalValue != null && !originalValue.equals("-1")) {
             longValue += Long.parseLong(originalValue);
           }
         }
@@ -444,20 +444,5 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       }
     }
     return list;
-  }
-
-  /**
-   * This method is static as it is called from the shutdown hook at the ExecDriver.
-   */
-  public static void cleanUp(String jobID, Configuration config) {
-    StatsAggregator statsAggregator;
-    String statsImplementationClass = HiveConf.getVar(config, HiveConf.ConfVars.HIVESTATSDBCLASS);
-    StatsFactory.setImplementation(statsImplementationClass, config);
-    statsAggregator = StatsFactory.getStatsAggregator();
-    if (statsAggregator.connect(config)) {
-      statsAggregator.cleanUp(jobID + Path.SEPARATOR); // Adding the path separator to avoid an Id
-                                                       // being a prefix of another ID
-      statsAggregator.closeConnection();
-    }
   }
 }

@@ -58,7 +58,7 @@ function log() {
 
 # return(print) the webhcat jar
 function find_jar_path() {
-         for dir in "." "build" "share/webhcat/svr/"; do
+         for dir in "." "build" "share/webhcat/svr/lib"; do
                 if (( `ls -1 $base_dir/$dir/$WEBHCAT_JAR 2>/dev/null| wc -l ` > 1 )) ; then
                        echo "Error:  found more than one hcatalog jar in $base_dir/$dir/$WEBHCAT_JAR"
                        exit 1

@@ -1138,8 +1138,8 @@ public abstract class BaseSemanticAnalyzer {
       Map<ASTNode, ExprNodeDesc> astExprNodeMap)
           throws SemanticException, HiveException {
 
-    if ((astNode == null) || (astNode.getChildren() == null) ||
-        (astNode.getChildren().size() <= 1)) {
+    if ((astNode == null) || (astNode.getChildren() == null) || 
+        (astNode.getChildren().size() == 0)) {
       return;
     }
 

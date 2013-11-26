@@ -32,6 +32,7 @@
   </properties>
 
   <dependencies>
+    <!-- dependencies are always listed in sorted order by groupId, artifectId -->
     <!-- intra-project -->
     <dependency>
       <groupId>org.apache.hive</groupId>
@@ -67,12 +68,12 @@
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>${httpcomponents.version}</version>
+      <version>${httpcomponents.client.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpcore</artifactId>
-      <version>${httpcomponents.version}</version>
+      <version>${httpcomponents.core.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.thrift</groupId>
