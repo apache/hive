@@ -168,8 +168,7 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
   public static SearchArgument createSarg(List<OrcProto.Type> types, Configuration conf) {
     String serializedPushdown = conf.get(TableScanDesc.FILTER_EXPR_CONF_STR);
     if (serializedPushdown == null
-        || (conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR) == null
-        && conf.get(serdeConstants.LIST_COLUMNS) == null)) {
+        || conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR) == null) {
       LOG.info("No ORC pushdown predicate");
       return null;
     }
@@ -542,15 +541,21 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
         int[] filterColumns = null;
         if (sarg != null) {
           List<PredicateLeaf> sargLeaves = null;
-          String[] columnNames = conf.get(serdeConstants.LIST_COLUMNS).split(",");
-          if (columnNames == null) {
-            columnNames = conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR).split(",");
-          }
+          String[] allColumns = conf.get(serdeConstants.LIST_COLUMNS).split(",");
+          String[] neededColumns = conf.get(ColumnProjectionUtils.READ_COLUMN_NAMES_CONF_STR).split(",");
           sargLeaves = sarg.getLeaves();
           filterColumns = new int[sargLeaves.size()];
           for (int i = 0; i < filterColumns.length; ++i) {
             String colName = sargLeaves.get(i).getColumnName();
-            filterColumns[i] = RecordReaderImpl.findColumns(columnNames, colName);
+
+            // if needed columns does not contain the column specified in filter expression then
+            // it must be partition column. There will not be columns within ORC file for partitioned
+            // column, so we can ignore them
+            if (containsColumn(neededColumns, colName)) {
+              filterColumns[i] = RecordReaderImpl.findColumns(allColumns, colName);
+            } else {
+              filterColumns[i] = -1;
+            }
           }
 
           Metadata metadata = orcReader.getMetadata();
@@ -609,6 +614,15 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
       }
     }
 
+    private boolean containsColumn(String[] neededColumns, String colName) {
+      for (String col : neededColumns) {
+        if (colName.equalsIgnoreCase(col)) {
+          return true;
+        }
+      }
+      return false;
+    }
+
     private boolean isStripeSatisfyPredicate(StripeStatistics stripeStatistics,
         SearchArgument sarg, int[] filterColumns) {
       if (sarg != null && filterColumns != null) {
@@ -623,6 +637,12 @@ public class OrcInputFormat  implements InputFormat<NullWritable, OrcStruct>,
             Object maxValue = getMax(stats);
             truthValues[pred] = RecordReaderImpl.evaluatePredicateRange(predLeaves.get(pred),
                 minValue, maxValue);
+          } else {
+
+            // parition column case.
+            // partition filter will be evaluated by partition pruner so
+            // we will not evaluate partition filter here.
+            truthValues[pred] = TruthValue.YES_NO_NULL;
           }
         }
         return sarg.evaluate(truthValues).isNeeded();

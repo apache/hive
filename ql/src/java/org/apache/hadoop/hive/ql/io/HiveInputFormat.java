@@ -280,6 +280,10 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
         Operator op = mrwork.getAliasToWork().get(aliases.get(0));
         if ((op != null) && (op instanceof TableScanOperator)) {
           TableScanOperator tableScan = (TableScanOperator) op;
+          // push down projections.
+          ColumnProjectionUtils.appendReadColumns(
+              newjob, tableScan.getNeededColumnIDs(), tableScan.getNeededColumns());
+          // push down filters
           pushFilters(newjob, tableScan);
         }
       }
