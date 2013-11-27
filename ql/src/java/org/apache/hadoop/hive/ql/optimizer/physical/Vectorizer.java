@@ -23,9 +23,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
@@ -48,6 +50,7 @@ import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -342,8 +345,17 @@ public class Vectorizer implements PhysicalPlanResolver {
       topNodes.addAll(mapWork.getAliasToWork().values());
       HashMap<Node, Object> nodeOutput = new HashMap<Node, Object>();
       ogw.startWalking(topNodes, nodeOutput);
-      mapWork.setScratchColumnVectorTypes(vnp.getScratchColumnVectorTypes());
-      mapWork.setScratchColumnMap(vnp.getScratchColumnMap());
+      
+      Map<String, Map<Integer, String>> columnVectorTypes = vnp.getScratchColumnVectorTypes();
+      mapWork.setScratchColumnVectorTypes(columnVectorTypes);
+      Map<String, Map<String, Integer>> columnMap = vnp.getScratchColumnMap();
+      mapWork.setScratchColumnMap(columnMap);
+      
+      if (LOG.isDebugEnabled()) {
+        LOG.debug(String.format("vectorTypes: %s", columnVectorTypes.toString()));
+        LOG.debug(String.format("columnMap: %s", columnMap.toString()));
+      }
+      
       return;
     }
   }
@@ -411,33 +423,42 @@ public class Vectorizer implements PhysicalPlanResolver {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
-      Node firstOp = stack.firstElement();
-      TableScanOperator tsOp = null;
-
-      tsOp = (TableScanOperator) firstOp;
-
-      VectorizationContext vContext = vContextsByTSOp.get(tsOp);
-      if (vContext == null) {
-        String fileKey = "";
+      Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) nd;
+      
+      VectorizationContext vContext = null;      
+      
+      if (op instanceof TableScanOperator) {
+        vContext = getVectorizationContext(op, physicalContext);
         for (String onefile : mWork.getPathToAliases().keySet()) {
           List<String> aliases = mWork.getPathToAliases().get(onefile);
           for (String alias : aliases) {
-            Operator<? extends OperatorDesc> op = mWork.getAliasToWork().get(alias);
-            if (op == tsOp) {
-              fileKey = onefile;
-              if (vContext == null) {
-                vContext = getVectorizationContext(tsOp, physicalContext);
-              }
-              vContext.setFileKey(fileKey);
-              vectorizationContexts.put(fileKey, vContext);
+            Operator<? extends OperatorDesc> opRoot = mWork.getAliasToWork().get(alias);
+            if (op == opRoot) {
+              // The same vectorization context is copied multiple times into
+              // the MapWork scratch columnMap
+              // Each partition gets a copy
+              //
+              vContext.setFileKey(onefile);
+              vectorizationContexts.put(onefile, vContext);
               break;
             }
           }
         }
-        vContextsByTSOp.put(tsOp, vContext);
+        vContextsByTSOp.put(op, vContext);
+      } else {
+        assert stack.size() > 1;
+        // Walk down the stack of operators until we found one willing to give us a context.
+        // At the bottom will be the TS operator, guaranteed to have a context
+        int i= stack.size()-2;
+        while (vContext == null) {
+          Operator<? extends OperatorDesc> opParent = (Operator<? extends OperatorDesc>) stack.get(i);
+          vContext = vContextsByTSOp.get(opParent);
+          --i;
+        }
       }
-
-      Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) nd;
+      
+      assert vContext != null;
+      
       if (op.getType().equals(OperatorType.REDUCESINK) &&
           op.getParentOperators().get(0).getType().equals(OperatorType.GROUPBY)) {
         // No need to vectorize
@@ -452,6 +473,12 @@ public class Vectorizer implements PhysicalPlanResolver {
             opsDone.add(op);
             if (vectorOp != op) {
               opsDone.add(vectorOp);
+            }
+            if (vectorOp instanceof VectorizationContextRegion) {
+              VectorizationContextRegion vcRegion = (VectorizationContextRegion) vectorOp;
+              VectorizationContext vOutContext = vcRegion.getOuputVectorizationContext();
+              vContextsByTSOp.put(op, vOutContext);
+              vectorizationContexts.put(vOutContext.getFileKey(), vOutContext);
             }
           }
         } catch (HiveException e) {
@@ -678,7 +705,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return supportedDataTypes.contains(type.toLowerCase());
   }
 
-  private VectorizationContext getVectorizationContext(TableScanOperator op,
+  private VectorizationContext getVectorizationContext(Operator<? extends OperatorDesc> op,
       PhysicalContext pctx) {
     RowResolver rr = pctx.getParseContext().getOpParseCtx().get(op).getRowResolver();
 
