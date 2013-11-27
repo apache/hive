@@ -63,6 +63,7 @@ public class TestScripts  {
     templateVariables.put("workingDir", "/some/working/dir");
     templateVariables.put("buildTool", "maven");
     templateVariables.put("antArgs", "-Dant=arg1");
+    templateVariables.put("mavenArgs", "-Dant=arg1");
     templateVariables.put("testClass", "TestCliDriver");
     templateVariables.put("buildTag", "build-1");
     templateVariables.put("logDir", "/some/log/dir");

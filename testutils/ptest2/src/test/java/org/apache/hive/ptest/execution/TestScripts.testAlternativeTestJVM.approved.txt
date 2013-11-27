@@ -58,7 +58,7 @@ then
   testModule=$(find ./ -name 'TestCliDriver.java' | awk -F'/' '{print $2}')
   if [[ -z "$testModule" ]]
   then
-  	testModule=./
+    testModule=./
   fi
   pushd $testModule
   timeout 2h mvn -B -o test -Dmaven.repo.local=/some/local/dir/instance-1/maven \
