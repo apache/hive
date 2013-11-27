@@ -157,7 +157,7 @@ STAGE PLANS:
                       type: double
                       expr: log(2.0, cdouble)
                       type: double
-                      expr: pow(log2(cdouble), 2.0)
+                      expr: power(log2(cdouble), 2.0)
                       type: double
                       expr: power(log2(cdouble), 2.0)
                       type: double

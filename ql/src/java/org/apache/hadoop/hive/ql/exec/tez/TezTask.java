@@ -35,7 +35,6 @@ import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.Context;
 import org.apache.hadoop.hive.ql.DriverContext;
-import org.apache.hadoop.hive.ql.exec.JobCloseFeedBack;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
@@ -256,12 +255,11 @@ public class TezTask extends Task<TezWork> {
    */
   private int close(TezWork work, int rc) {
     try {
-      JobCloseFeedBack feedBack = new JobCloseFeedBack();
       List<BaseWork> ws = work.getAllWork();
       for (BaseWork w: ws) {
         List<Operator<?>> ops = w.getAllOperators();
         for (Operator<?> op: ops) {
-          op.jobClose(conf, rc == 0, feedBack);
+          op.jobClose(conf, rc == 0);
         }
       }
     } catch (Exception e) {

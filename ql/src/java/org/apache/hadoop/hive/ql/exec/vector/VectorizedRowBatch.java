@@ -177,51 +177,6 @@ public class VectorizedRowBatch implements Writable {
     this.valueWriters = valueWriters;
   }
 
-  public static VectorizedRowBatch buildBatch(Map<Integer, String> typeMap,
-      Map<String, Integer> columnMap) throws HiveException {
-
-    Map<Integer, ColumnVector> mapVectorColumn = new HashMap<Integer, ColumnVector>(typeMap.size());
-    int maxIndex = 0;
-
-    Iterator<Entry<Integer, String>> typeMapIt = typeMap.entrySet().iterator();
-    while(typeMapIt.hasNext()) {
-      Entry<Integer, String> type = typeMapIt.next();
-      ColumnVector cv = VectorizationContext.allocateColumnVector(type.getValue(),
-          VectorizedRowBatch.DEFAULT_SIZE);
-      mapVectorColumn.put(type.getKey(), cv);
-      if (maxIndex < type.getKey()) {
-        maxIndex = type.getKey();
-      }
-    }
-
-    VectorizedRowBatch batch = new VectorizedRowBatch(maxIndex+1);
-    for(int i=0; i <= maxIndex; ++i) {
-      ColumnVector cv = mapVectorColumn.get(i);
-      if (cv == null) {
-        // allocate a default type for the unused column.
-        // there are APIs that expect all cols[i] to be non NULL
-        cv = VectorizationContext.allocateColumnVector("long",
-            VectorizedRowBatch.DEFAULT_SIZE);
-      }
-      batch.cols[i] = cv;
-    }
-
-    // Validate that every column in the column map exists
-    Iterator<Entry<String, Integer>> columnMapIt = columnMap.entrySet().iterator();
-    while(columnMapIt.hasNext()) {
-      Entry<String, Integer> cm = columnMapIt.next();
-      if (batch.cols.length <= cm.getValue() || batch.cols[cm.getValue()] == null) {
-        throw new HiveException(String.format(
-            "Internal error: The type map has no entry for column %d %s",
-            cm.getValue(), cm.getKey()));
-      }
-    }
-
-    batch.reset();
-
-    return batch;
-  }
-
   /**
    * Resets the row batch to default state
    *  - sets selectedInUse to false

@@ -103,7 +103,7 @@ STAGE PLANS:
                     type: bigint
                     expr: ceil((- 1.5))
                     type: bigint
-                    expr: ceiling(1.0)
+                    expr: ceil(1.0)
                     type: bigint
                     expr: rand(3)
                     type: double

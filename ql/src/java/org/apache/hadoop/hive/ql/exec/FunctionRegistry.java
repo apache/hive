@@ -44,8 +44,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.udf.GenericUDFDecode;
-import org.apache.hadoop.hive.ql.udf.GenericUDFEncode;
 import org.apache.hadoop.hive.ql.udf.SettableUDF;
 import org.apache.hadoop.hive.ql.udf.UDAFPercentile;
 import org.apache.hadoop.hive.ql.udf.UDFAcos;
@@ -54,7 +52,6 @@ import org.apache.hadoop.hive.ql.udf.UDFAsin;
 import org.apache.hadoop.hive.ql.udf.UDFAtan;
 import org.apache.hadoop.hive.ql.udf.UDFBase64;
 import org.apache.hadoop.hive.ql.udf.UDFBin;
-import org.apache.hadoop.hive.ql.udf.UDFCeil;
 import org.apache.hadoop.hive.ql.udf.UDFConv;
 import org.apache.hadoop.hive.ql.udf.UDFCos;
 import org.apache.hadoop.hive.ql.udf.UDFDate;
@@ -66,7 +63,6 @@ import org.apache.hadoop.hive.ql.udf.UDFDegrees;
 import org.apache.hadoop.hive.ql.udf.UDFE;
 import org.apache.hadoop.hive.ql.udf.UDFExp;
 import org.apache.hadoop.hive.ql.udf.UDFFindInSet;
-import org.apache.hadoop.hive.ql.udf.UDFFloor;
 import org.apache.hadoop.hive.ql.udf.UDFFromUnixTime;
 import org.apache.hadoop.hive.ql.udf.UDFHex;
 import org.apache.hadoop.hive.ql.udf.UDFHour;
@@ -86,11 +82,8 @@ import org.apache.hadoop.hive.ql.udf.UDFOPBitNot;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitOr;
 import org.apache.hadoop.hive.ql.udf.UDFOPBitXor;
 import org.apache.hadoop.hive.ql.udf.UDFOPLongDivide;
-import org.apache.hadoop.hive.ql.udf.UDFOPNegative;
-import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
 import org.apache.hadoop.hive.ql.udf.UDFPI;
 import org.apache.hadoop.hive.ql.udf.UDFParseUrl;
-import org.apache.hadoop.hive.ql.udf.UDFPower;
 import org.apache.hadoop.hive.ql.udf.UDFRTrim;
 import org.apache.hadoop.hive.ql.udf.UDFRadians;
 import org.apache.hadoop.hive.ql.udf.UDFRand;
@@ -197,10 +190,10 @@ public final class FunctionRegistry {
     registerGenericUDF("size", GenericUDFSize.class);
 
     registerGenericUDF("round", GenericUDFRound.class);
-    registerUDF("floor", UDFFloor.class, false);
+    registerGenericUDF("floor", GenericUDFFloor.class);
     registerUDF("sqrt", UDFSqrt.class, false);
-    registerUDF("ceil", UDFCeil.class, false);
-    registerUDF("ceiling", UDFCeil.class, false);
+    registerGenericUDF("ceil", GenericUDFCeil.class);
+    registerGenericUDF("ceiling", GenericUDFCeil.class);
     registerUDF("rand", UDFRand.class, false);
     registerGenericUDF("abs", GenericUDFAbs.class);
     registerGenericUDF("pmod", GenericUDFPosMod.class);
@@ -214,8 +207,8 @@ public final class FunctionRegistry {
     registerUDF("log10", UDFLog10.class, false);
     registerUDF("log", UDFLog.class, false);
     registerUDF("exp", UDFExp.class, false);
-    registerUDF("power", UDFPower.class, false);
-    registerUDF("pow", UDFPower.class, false);
+    registerGenericUDF("power", GenericUDFPower.class);
+    registerGenericUDF("pow", GenericUDFPower.class);
     registerUDF("sign", UDFSign.class, false);
     registerUDF("pi", UDFPI.class, false);
     registerUDF("degrees", UDFDegrees.class, false);
@@ -257,8 +250,8 @@ public final class FunctionRegistry {
     registerGenericUDF("str_to_map", GenericUDFStringToMap.class);
     registerGenericUDF("translate", GenericUDFTranslate.class);
 
-    registerUDF("positive", UDFOPPositive.class, true, "+");
-    registerUDF("negative", UDFOPNegative.class, true, "-");
+    registerGenericUDF("positive", GenericUDFOPPositive.class);
+    registerGenericUDF("negative", GenericUDFOPNegative.class);
 
     registerUDF("day", UDFDayOfMonth.class, false);
     registerUDF("dayofmonth", UDFDayOfMonth.class, false);
@@ -1430,17 +1423,12 @@ public final class FunctionRegistry {
    * Get the UDF class from an exprNodeDesc. Returns null if the exprNodeDesc
    * does not contain a UDF class.
    */
-  private static Class<? extends UDF> getUDFClassFromExprDesc(ExprNodeDesc desc) {
+  private static Class<? extends GenericUDF> getUDFClassFromExprDesc(ExprNodeDesc desc) {
     if (!(desc instanceof ExprNodeGenericFuncDesc)) {
       return null;
     }
     ExprNodeGenericFuncDesc genericFuncDesc = (ExprNodeGenericFuncDesc) desc;
-    if (!(genericFuncDesc.getGenericUDF() instanceof GenericUDFBridge)) {
-      return null;
-    }
-    GenericUDFBridge bridge = (GenericUDFBridge) (genericFuncDesc
-        .getGenericUDF());
-    return bridge.getUdfClass();
+    return genericFuncDesc.getGenericUDF().getClass();
   }
 
   /**
@@ -1533,8 +1521,8 @@ public final class FunctionRegistry {
    * Returns whether the exprNodeDesc is a node of "positive".
    */
   public static boolean isOpPositive(ExprNodeDesc desc) {
-    Class<? extends UDF> udfClass = getUDFClassFromExprDesc(desc);
-    return UDFOPPositive.class == udfClass;
+    Class<? extends GenericUDF> udfClass = getUDFClassFromExprDesc(desc);
+    return GenericUDFOPPositive.class == udfClass;
   }
 
   /**

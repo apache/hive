@@ -203,7 +203,7 @@ public class TestHostExecutor {
     executor.submitTests(parallelWorkQueue, isolatedWorkQueue, failedTestResults).get();
     Assert.assertEquals(Collections.emptySet(),  failedTestResults);
     Assert.assertEquals(parallelWorkQueue.toString(), 1, parallelWorkQueue.size());
-    Approvals.verify(getExecutedCommands());
+    Approvals.verify("EMPTY\n" + getExecutedCommands());
     Assert.assertTrue(executor.isShutdown());
   }
   @Test
