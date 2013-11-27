@@ -21,9 +21,11 @@ package org.apache.hadoop.hive.ql.exec.tez;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.security.auth.login.LoginException;
 
@@ -48,12 +50,14 @@ import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.util.StringUtils;
 import org.apache.hadoop.yarn.api.records.LocalResource;
 import org.apache.tez.client.TezSession;
+import org.apache.tez.common.counters.TezCounters;
 import org.apache.tez.dag.api.DAG;
 import org.apache.tez.dag.api.Edge;
 import org.apache.tez.dag.api.SessionNotRunning;
 import org.apache.tez.dag.api.TezException;
 import org.apache.tez.dag.api.Vertex;
 import org.apache.tez.dag.api.client.DAGClient;
+import org.apache.tez.dag.api.client.StatusGetOpts;
 
 /**
  *
@@ -67,8 +71,14 @@ public class TezTask extends Task<TezWork> {
   private static final String CLASS_NAME = TezTask.class.getName();
   private final PerfLogger perfLogger = PerfLogger.getPerfLogger();
 
+  private TezCounters counters;
+
   public TezTask() {
     super();
+  }
+
+  public TezCounters getTezCounters() {
+    return counters;
   }
 
   @Override
@@ -125,6 +135,10 @@ public class TezTask extends Task<TezWork> {
       // finally monitor will print progress until the job is done
       TezJobMonitor monitor = new TezJobMonitor();
       rc = monitor.monitorExecution(client);
+
+      // fetch the counters
+      Set<StatusGetOpts> statusGetOpts = EnumSet.of(StatusGetOpts.GET_COUNTERS);
+      counters = client.getDAGStatus(statusGetOpts).getDAGCounters();
 
     } catch (Exception e) {
       LOG.error("Failed to execute tez graph.", e);
