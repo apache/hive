@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf;
+package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.io.UnsupportedEncodingException;
 
@@ -27,30 +27,34 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredJavaObject;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF.DeferredObject;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.io.BytesWritable;
 
-public class TestGenericUDFDecode extends TestCase {
-  public void testDecode() throws UnsupportedEncodingException, HiveException {
+public class TestGenericUDFEncode extends TestCase {
+  public void testEncode() throws UnsupportedEncodingException, HiveException{
     String[] charsetNames = {"US-ASCII", "ISO-8859-1", "UTF-8", "UTF-16BE", "UTF-16LE", "UTF-16"};
     for (String charsetName : charsetNames){
-      verifyDecode("A sample string", charsetName);
+      verifyEncode("A sample string", charsetName);
     }
   }
 
-  public void verifyDecode(String string, String charsetName) throws UnsupportedEncodingException, HiveException{
-    GenericUDFDecode udf = new GenericUDFDecode();
-    byte[] bytes = string.getBytes(charsetName);
+  public void verifyEncode(String string, String charsetName) throws UnsupportedEncodingException, HiveException{
+    GenericUDFEncode udf = new GenericUDFEncode();
+    byte[] expected = string.getBytes(charsetName);
 
-    ObjectInspector valueOI = PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector;
+    ObjectInspector valueOI = PrimitiveObjectInspectorFactory.javaStringObjectInspector;
     ObjectInspector charsetOI = PrimitiveObjectInspectorFactory.javaStringObjectInspector;
     ObjectInspector[] initArguments = {valueOI, charsetOI};
     udf.initialize(initArguments);
 
-    DeferredObject valueObj = new DeferredJavaObject(bytes);
+    DeferredObject valueObj = new DeferredJavaObject(string);
     DeferredObject charsetObj = new DeferredJavaObject(charsetName);
     DeferredObject[] arguments = {valueObj, charsetObj};
-    String output = (String) udf.evaluate(arguments);
+    BytesWritable outputWritable = (BytesWritable) udf.evaluate(arguments);
 
-    assertEquals("Decoding failed for CharSet: " + charsetName, string, output);
+    byte[] output = outputWritable.getBytes();
+    assertTrue("Encoding failed for CharSet: " + charsetName, expected.length == outputWritable.getLength());
+    for (int i = 0; i < expected.length; i++){
+      assertEquals("Encoding failed for CharSet: " + charsetName, expected[i], output[i]);
+    }
   }
 }
-

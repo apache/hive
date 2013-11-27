@@ -57,7 +57,7 @@ cd /some/working/dir/
     fi
     if [[ -d apache-source ]] && [[ ! -d apache-source/.git ]]
     then
-      rm -rf apache-source	  
+      rm -rf apache-source
     fi
     if [[ ! -d apache-source ]]
     then
@@ -84,11 +84,11 @@ cd /some/working/dir/
   if [[ "${buildTool}" == "maven" ]]
   then
     rm -rf /some/working/dir/maven/org/apache/hive
-    mvn -B clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven
-    mvn -B test -Dmaven.repo.local=/some/working/dir/maven -Dtest=TestDummy
+    mvn -B clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven $mavenArgs
+    mvn -B test -Dmaven.repo.local=/some/working/dir/maven -Dtest=TestDummy $mavenArgs
     cd itests
-    mvn -B clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven
-    mvn -B test -Dmaven.repo.local=/some/working/dir/maven -Dtest=TestDummy
+    mvn -B clean install -DskipTests -Dmaven.repo.local=/some/working/dir/maven $mavenArgs
+    mvn -B test -Dmaven.repo.local=/some/working/dir/maven -Dtest=TestDummy $mavenArgs
   elif [[ "${buildTool}" == "ant" ]]
   then
     ant -Dant=arg1 -Divy.default.ivy.user.dir=/some/working/dir/ivy \

@@ -23,9 +23,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.Stack;
 
@@ -49,6 +51,7 @@ import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizationContext;
+import org.apache.hadoop.hive.ql.exec.vector.VectorizationContextRegion;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedInputFormatInterface;
 import org.apache.hadoop.hive.ql.lib.DefaultGraphWalker;
 import org.apache.hadoop.hive.ql.lib.DefaultRuleDispatcher;
@@ -82,13 +85,11 @@ import org.apache.hadoop.hive.ql.udf.UDFAcos;
 import org.apache.hadoop.hive.ql.udf.UDFAsin;
 import org.apache.hadoop.hive.ql.udf.UDFAtan;
 import org.apache.hadoop.hive.ql.udf.UDFBin;
-import org.apache.hadoop.hive.ql.udf.UDFCeil;
 import org.apache.hadoop.hive.ql.udf.UDFConv;
 import org.apache.hadoop.hive.ql.udf.UDFCos;
 import org.apache.hadoop.hive.ql.udf.UDFDayOfMonth;
 import org.apache.hadoop.hive.ql.udf.UDFDegrees;
 import org.apache.hadoop.hive.ql.udf.UDFExp;
-import org.apache.hadoop.hive.ql.udf.UDFFloor;
 import org.apache.hadoop.hive.ql.udf.UDFHex;
 import org.apache.hadoop.hive.ql.udf.UDFHour;
 import org.apache.hadoop.hive.ql.udf.UDFLTrim;
@@ -99,9 +100,6 @@ import org.apache.hadoop.hive.ql.udf.UDFLog;
 import org.apache.hadoop.hive.ql.udf.UDFLog10;
 import org.apache.hadoop.hive.ql.udf.UDFLog2;
 import org.apache.hadoop.hive.ql.udf.UDFMinute;
-import org.apache.hadoop.hive.ql.udf.UDFOPNegative;
-import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
-import org.apache.hadoop.hive.ql.udf.UDFPower;
 import org.apache.hadoop.hive.ql.udf.UDFRTrim;
 import org.apache.hadoop.hive.ql.udf.UDFRadians;
 import org.apache.hadoop.hive.ql.udf.UDFRand;
@@ -127,7 +125,9 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFAbs;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCeil;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFFloor;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLower;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
@@ -140,11 +140,14 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMinus;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMod;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMultiply;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNegative;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotEqual;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPositive;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFPower;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFRound;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFPosMod;
@@ -180,13 +183,13 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedDataTypes.add("float");
     supportedDataTypes.add("double");
 
-    supportedGenericUDFs.add(UDFOPNegative.class);
-    supportedGenericUDFs.add(UDFOPPositive.class);
     supportedGenericUDFs.add(GenericUDFOPPlus.class);
     supportedGenericUDFs.add(GenericUDFOPMinus.class);
     supportedGenericUDFs.add(GenericUDFOPMultiply.class);
     supportedGenericUDFs.add(GenericUDFOPDivide.class);
     supportedGenericUDFs.add(GenericUDFOPMod.class);
+    supportedGenericUDFs.add(GenericUDFOPNegative.class);
+    supportedGenericUDFs.add(GenericUDFOPPositive.class);
 
     supportedGenericUDFs.add(GenericUDFOPEqualOrLessThan.class);
     supportedGenericUDFs.add(GenericUDFOPEqualOrGreaterThan.class);
@@ -224,14 +227,14 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(UDFAtan.class);
     supportedGenericUDFs.add(UDFDegrees.class);
     supportedGenericUDFs.add(UDFRadians.class);
-    supportedGenericUDFs.add(UDFFloor.class);
-    supportedGenericUDFs.add(UDFCeil.class);
+    supportedGenericUDFs.add(GenericUDFFloor.class);
+    supportedGenericUDFs.add(GenericUDFCeil.class);
     supportedGenericUDFs.add(UDFExp.class);
     supportedGenericUDFs.add(UDFLn.class);
     supportedGenericUDFs.add(UDFLog2.class);
     supportedGenericUDFs.add(UDFLog10.class);
     supportedGenericUDFs.add(UDFLog.class);
-    supportedGenericUDFs.add(UDFPower.class);
+    supportedGenericUDFs.add(GenericUDFPower.class);
     supportedGenericUDFs.add(GenericUDFRound.class);
     supportedGenericUDFs.add(GenericUDFPosMod.class);
     supportedGenericUDFs.add(UDFSqrt.class);
@@ -354,8 +357,17 @@ public class Vectorizer implements PhysicalPlanResolver {
       topNodes.addAll(mapWork.getAliasToWork().values());
       HashMap<Node, Object> nodeOutput = new HashMap<Node, Object>();
       ogw.startWalking(topNodes, nodeOutput);
-      mapWork.setScratchColumnVectorTypes(vnp.getScratchColumnVectorTypes());
-      mapWork.setScratchColumnMap(vnp.getScratchColumnMap());
+      
+      Map<String, Map<Integer, String>> columnVectorTypes = vnp.getScratchColumnVectorTypes();
+      mapWork.setScratchColumnVectorTypes(columnVectorTypes);
+      Map<String, Map<String, Integer>> columnMap = vnp.getScratchColumnMap();
+      mapWork.setScratchColumnMap(columnMap);
+      
+      if (LOG.isDebugEnabled()) {
+        LOG.debug(String.format("vectorTypes: %s", columnVectorTypes.toString()));
+        LOG.debug(String.format("columnMap: %s", columnMap.toString()));
+      }
+      
       return;
     }
   }
@@ -423,33 +435,42 @@ public class Vectorizer implements PhysicalPlanResolver {
     public Object process(Node nd, Stack<Node> stack, NodeProcessorCtx procCtx,
         Object... nodeOutputs) throws SemanticException {
 
-      Node firstOp = stack.firstElement();
-      TableScanOperator tsOp = null;
-
-      tsOp = (TableScanOperator) firstOp;
-
-      VectorizationContext vContext = vContextsByTSOp.get(tsOp);
-      if (vContext == null) {
-        String fileKey = "";
+      Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) nd;
+      
+      VectorizationContext vContext = null;      
+      
+      if (op instanceof TableScanOperator) {
+        vContext = getVectorizationContext(op, physicalContext);
         for (String onefile : mWork.getPathToAliases().keySet()) {
           List<String> aliases = mWork.getPathToAliases().get(onefile);
           for (String alias : aliases) {
-            Operator<? extends OperatorDesc> op = mWork.getAliasToWork().get(alias);
-            if (op == tsOp) {
-              fileKey = onefile;
-              if (vContext == null) {
-                vContext = getVectorizationContext(tsOp, physicalContext);
-              }
-              vContext.setFileKey(fileKey);
-              vectorizationContexts.put(fileKey, vContext);
+            Operator<? extends OperatorDesc> opRoot = mWork.getAliasToWork().get(alias);
+            if (op == opRoot) {
+              // The same vectorization context is copied multiple times into
+              // the MapWork scratch columnMap
+              // Each partition gets a copy
+              //
+              vContext.setFileKey(onefile);
+              vectorizationContexts.put(onefile, vContext);
               break;
             }
           }
         }
-        vContextsByTSOp.put(tsOp, vContext);
+        vContextsByTSOp.put(op, vContext);
+      } else {
+        assert stack.size() > 1;
+        // Walk down the stack of operators until we found one willing to give us a context.
+        // At the bottom will be the TS operator, guaranteed to have a context
+        int i= stack.size()-2;
+        while (vContext == null) {
+          Operator<? extends OperatorDesc> opParent = (Operator<? extends OperatorDesc>) stack.get(i);
+          vContext = vContextsByTSOp.get(opParent);
+          --i;
+        }
       }
-
-      Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) nd;
+      
+      assert vContext != null;
+      
       if (op.getType().equals(OperatorType.REDUCESINK) &&
           op.getParentOperators().get(0).getType().equals(OperatorType.GROUPBY)) {
         // No need to vectorize
@@ -464,6 +485,12 @@ public class Vectorizer implements PhysicalPlanResolver {
             opsDone.add(op);
             if (vectorOp != op) {
               opsDone.add(vectorOp);
+            }
+            if (vectorOp instanceof VectorizationContextRegion) {
+              VectorizationContextRegion vcRegion = (VectorizationContextRegion) vectorOp;
+              VectorizationContext vOutContext = vcRegion.getOuputVectorizationContext();
+              vContextsByTSOp.put(op, vOutContext);
+              vectorizationContexts.put(vOutContext.getFileKey(), vOutContext);
             }
           }
         } catch (HiveException e) {
@@ -690,7 +717,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     return supportedDataTypes.contains(type.toLowerCase());
   }
 
-  private VectorizationContext getVectorizationContext(TableScanOperator op,
+  private VectorizationContext getVectorizationContext(Operator<? extends OperatorDesc> op,
       PhysicalContext pctx) {
     RowResolver rr = pctx.getParseContext().getOpParseCtx().get(op).getRowResolver();
 

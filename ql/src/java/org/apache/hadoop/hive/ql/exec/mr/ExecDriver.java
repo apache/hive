@@ -50,7 +50,6 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.QueryPlan;
 import org.apache.hadoop.hive.ql.exec.FetchOperator;
 import org.apache.hadoop.hive.ql.exec.HiveTotalOrderPartitioner;
-import org.apache.hadoop.hive.ql.exec.JobCloseFeedBack;
 import org.apache.hadoop.hive.ql.exec.Operator;
 import org.apache.hadoop.hive.ql.exec.OperatorUtils;
 import org.apache.hadoop.hive.ql.exec.PartitionKeySampler;
@@ -466,14 +465,13 @@ public class ExecDriver extends Task<MapredWork> implements Serializable, Hadoop
     // get the list of Dynamic partition paths
     try {
       if (rj != null) {
-        JobCloseFeedBack feedBack = new JobCloseFeedBack();
         if (mWork.getAliasToWork() != null) {
           for (Operator<? extends OperatorDesc> op : mWork.getAliasToWork().values()) {
-            op.jobClose(job, success, feedBack);
+            op.jobClose(job, success);
           }
         }
         if (rWork != null) {
-          rWork.getReducer().jobClose(job, success, feedBack);
+          rWork.getReducer().jobClose(job, success);
         }
       }
     } catch (Exception e) {

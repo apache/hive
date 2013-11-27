@@ -302,8 +302,13 @@ public class HiveInputFormat<K extends WritableComparable, V extends Writable>
       // Make filter pushdown information available to getSplits.
       if ((aliases != null) && (aliases.size() == 1)) {
         Operator op = mrwork.getAliasToWork().get(aliases.get(0));
-        if (op instanceof TableScanOperator) {
+        if ((op != null) && (op instanceof TableScanOperator)) {
           tableScan = (TableScanOperator) op;
+          // push down projections.
+          ColumnProjectionUtils.appendReadColumns(
+              newjob, tableScan.getNeededColumnIDs(), tableScan.getNeededColumns());
+          // push down filters
+          pushFilters(newjob, tableScan);
         }
       }
 

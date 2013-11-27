@@ -16,12 +16,14 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf;
+package org.apache.hadoop.hive.ql.udf.generic;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColUnaryMinus;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.LongColUnaryMinus;
+import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -30,78 +32,59 @@ import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 
-/**
- * UDFOPNegative.
- *
- */
 @Description(name = "-", value = "_FUNC_ a - Returns -a")
 @VectorizedExpressions({LongColUnaryMinus.class, DoubleColUnaryMinus.class})
-public class UDFOPNegative extends UDFBaseNumericUnaryOp {
+public class GenericUDFOPNegative extends GenericUDFBaseUnary {
 
-  public UDFOPNegative() {
+  public GenericUDFOPNegative() {
+    super();
+    this.opDisplayName = "-";
   }
 
   @Override
-  public ByteWritable evaluate(ByteWritable a) {
-    if (a == null) {
+  public Object evaluate(DeferredObject[] arguments) throws HiveException {
+    if (arguments[0] == null) {
       return null;
     }
-    byteWritable.set((byte) -a.get());
-    return byteWritable;
-  }
 
-  @Override
-  public ShortWritable evaluate(ShortWritable a) {
-    if (a == null) {
+    Object input = arguments[0].get();
+    if (input == null) {
       return null;
     }
-    shortWritable.set((short) -a.get());
-    return shortWritable;
-  }
 
-  @Override
-  public IntWritable evaluate(IntWritable a) {
-    if (a == null) {
+    input = converter.convert(input);
+    if (input == null) {
       return null;
     }
-    intWritable.set(-a.get());
-    return intWritable;
-  }
 
-  @Override
-  public LongWritable evaluate(LongWritable a) {
-    if (a == null) {
-      return null;
+    switch (resultOI.getPrimitiveCategory()) {
+    case BYTE:
+      byteWritable.set((byte) -(((ByteWritable)input).get()));
+      return byteWritable;
+    case SHORT:
+      shortWritable.set((short) -(((ShortWritable)input).get()));
+      return shortWritable;
+    case INT:
+      intWritable.set(-(((IntWritable)input).get()));
+      return intWritable;
+    case LONG:
+      longWritable.set(-(((LongWritable)input).get()));
+      return longWritable;
+    case FLOAT:
+      floatWritable.set(-(((FloatWritable)input).get()));
+      return floatWritable;
+    case DOUBLE:
+      doubleWritable.set(-(((DoubleWritable)input).get()));
+      return doubleWritable;
+    case DECIMAL:
+      HiveDecimal dec = ((HiveDecimalWritable)input).getHiveDecimal();
+      decimalWritable.set(dec.negate());
+      return decimalWritable;
+    default:
+      // Should never happen.
+      throw new RuntimeException("Unexpected type in evaluating " + opName + ": " +
+          resultOI.getPrimitiveCategory());
     }
-    longWritable.set(-a.get());
-    return longWritable;
-  }
-
-  @Override
-  public FloatWritable evaluate(FloatWritable a) {
-    if (a == null) {
-      return null;
-    }
-    floatWritable.set(-a.get());
-    return floatWritable;
-  }
-
-  @Override
-  public DoubleWritable evaluate(DoubleWritable a) {
-    if (a == null) {
-      return null;
-    }
-    doubleWritable.set(-a.get());
-    return doubleWritable;
-  }
-
-  @Override
-  public HiveDecimalWritable evaluate(HiveDecimalWritable a) {
-    if (a == null) {
-      return null;
-    }
-    decimalWritable.set(a.getHiveDecimal().negate());
-    return decimalWritable;
   }
 
 }

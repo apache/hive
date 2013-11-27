@@ -96,6 +96,25 @@ public class VectorizedRowBatchCtx {
   public VectorizedRowBatchCtx() {
 
   }
+  
+  /**
+   * Initializes the VectorizedRowBatch context based on an arbitrary object inspector
+   * Used by non-tablescan operators when they change the vectorization context 
+   * @param hiveConf
+   * @param fileKey 
+   *          The key on which to retrieve the extra column mapping from the map scratch
+   * @param rowOI
+   *          Object inspector that shapes the column types
+   */
+  public void init(Configuration hiveConf, String fileKey,
+      StructObjectInspector rowOI) {
+    columnTypeMap = Utilities
+        .getMapRedWork(hiveConf).getMapWork().getScratchColumnVectorTypes()
+        .get(fileKey);
+    this.rowOI= rowOI;
+    this.rawRowOI = rowOI;
+  }
+  
 
   /**
    * Initializes VectorizedRowBatch context based on the
@@ -251,6 +270,7 @@ public class VectorizedRowBatchCtx {
     }
     result.numCols = fieldRefs.size();
     this.addScratchColumnsToBatch(result);
+    result.reset();
     return result;
   }
 
@@ -351,4 +371,5 @@ public class VectorizedRowBatchCtx {
       return new LongColumnVector(defaultSize);
     }
   }
+
 }

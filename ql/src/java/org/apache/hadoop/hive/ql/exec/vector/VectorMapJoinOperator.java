@@ -28,6 +28,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.ExprNodeEvaluator;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
+import org.apache.hadoop.hive.ql.exec.TableScanOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.persistence.MapJoinKey;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
@@ -39,11 +40,12 @@ import org.apache.hadoop.hive.ql.plan.MapJoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector;
 
 /**
  * The vectorized version of the MapJoinOperator.
  */
-public class VectorMapJoinOperator extends MapJoinOperator {
+public class VectorMapJoinOperator extends MapJoinOperator implements VectorizationContextRegion {
 
   private static final Log LOG = LogFactory.getLog(
       VectorMapJoinOperator.class.getName());
@@ -77,7 +79,10 @@ public class VectorMapJoinOperator extends MapJoinOperator {
   //
   private transient int batchIndex;
   private transient VectorHashKeyWrapper[] keyValues;
-
+  
+  private transient VectorizationContext vOutContext = null;
+  private transient VectorizedRowBatchCtx vrbCtx = null;
+  
   public VectorMapJoinOperator() {
     super();
   }
@@ -113,36 +118,28 @@ public class VectorMapJoinOperator extends MapJoinOperator {
     bigTableValueExpressions = vContext.getVectorExpressions(exprs.get(posBigTable));
 
     List<String> outColNames = desc.getOutputColumnNames();
-    int outputColumnIndex = 0;
-
-    Map<String, Integer> cMap = vContext.getColumnMap();
-    for(byte alias:order) {
-      for(ExprNodeDesc expr: exprs.get(alias)) {
-        String columnName = outColNames.get(outputColumnIndex);
-        if (!cMap.containsKey(columnName)) {
-          vContext.addOutputColumn(columnName, expr.getTypeString());
-        }
-        ++outputColumnIndex;
-      }
+    
+    Map<String, Integer> mapOutCols = new HashMap<String, Integer>(outColNames.size());
+    
+    int outColIndex = 0;
+    for(String outCol: outColNames) {
+      mapOutCols.put(outCol,  outColIndex++);
     }
-
-    this.fileKey = vContext.getFileKey();
+    
+    vOutContext = new VectorizationContext(mapOutCols, outColIndex);
+    vOutContext.setFileKey(vContext.getFileKey() + "/MAP_JOIN_" + desc.getBigTableAlias());
+    this.fileKey = vOutContext.getFileKey();
   }
 
   @Override
   public void initializeOp(Configuration hconf) throws HiveException {
     super.initializeOp(hconf);
+    
 
-    Map<String, Map<Integer, String>> allTypeMaps = Utilities.
-        getMapRedWork(hconf).getMapWork().getScratchColumnVectorTypes();
-    Map<Integer, String> typeMap = allTypeMaps.get(fileKey);
-
-    Map<String, Map<String, Integer>> allColumnMaps = Utilities.
-        getMapRedWork(hconf).getMapWork().getScratchColumnMap();
-
-    Map<String, Integer> columnMap = allColumnMaps.get(fileKey);
-
-    outputBatch = VectorizedRowBatch.buildBatch(typeMap, columnMap);
+    vrbCtx = new VectorizedRowBatchCtx();
+    vrbCtx.init(hconf, this.fileKey, (StructObjectInspector) this.outputObjInspector);
+    
+    outputBatch = vrbCtx.createVectorizedRowBatch();
 
     keyWrapperBatch =VectorHashKeyWrapperBatch.compileKeyWrapperBatch(keyExpressions);
 
@@ -297,5 +294,10 @@ public class VectorMapJoinOperator extends MapJoinOperator {
     // outside the inner loop results in NPE/OutOfBounds errors
     batchIndex = -1;
     keyValues = null;
+  }
+
+  @Override
+  public VectorizationContext getOuputVectorizationContext() {
+    return vOutContext;
   }
 }

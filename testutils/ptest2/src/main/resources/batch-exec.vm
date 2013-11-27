@@ -59,7 +59,7 @@ then
   testModule=$(find ./ -name '${testClass}.java' | awk -F'/' '{print $2}')
   if [[ -z "$testModule" ]]
   then
-  	testModule=./
+    testModule=./
   fi
   pushd $testModule
   timeout 2h mvn -B -o test -Dmaven.repo.local=$localDir/$instanceName/maven \

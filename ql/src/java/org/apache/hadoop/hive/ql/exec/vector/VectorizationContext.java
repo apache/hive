@@ -77,11 +77,8 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.hadoop.hive.ql.plan.ExprNodeNullDesc;
 import org.apache.hadoop.hive.ql.udf.UDFConv;
 import org.apache.hadoop.hive.ql.udf.UDFHex;
-import org.apache.hadoop.hive.ql.udf.UDFOPNegative;
-import org.apache.hadoop.hive.ql.udf.UDFOPPositive;
 import org.apache.hadoop.hive.ql.udf.UDFToBoolean;
 import org.apache.hadoop.hive.ql.udf.UDFToByte;
 import org.apache.hadoop.hive.ql.udf.UDFToDouble;
@@ -355,22 +352,15 @@ public class VectorizationContext {
     }
 
     GenericUDF gudf = ((ExprNodeGenericFuncDesc) exprDesc).getGenericUDF();
-    if (!(gudf instanceof GenericUDFBridge)) {
-      return exprDesc;
-    }
-
-    Class<? extends UDF> cl = ((GenericUDFBridge) gudf).getUdfClass();
-
-    if (cl.equals(UDFOPNegative.class) || cl.equals(UDFOPPositive.class)) {
+    if (gudf instanceof GenericUDFOPNegative || gudf instanceof GenericUDFOPPositive) {
       ExprNodeEvaluator<?> evaluator = ExprNodeEvaluatorFactory.get(exprDesc);
       ObjectInspector output = evaluator.initialize(null);
-
       Object constant = evaluator.evaluate(null);
       Object java = ObjectInspectorUtils.copyToStandardJavaObject(constant, output);
       return new ExprNodeConstantDesc(java);
-    } else {
-      return exprDesc;
     }
+
+    return exprDesc;
   }
 
   /* Fold simple unary expressions in all members of the input list and return new list
@@ -561,6 +551,8 @@ public class VectorizationContext {
       return getBetweenFilterExpression(childExpr, mode);
     } else if (udf instanceof GenericUDFIn) {
       return getInFilterExpression(childExpr);
+    } else if (udf instanceof GenericUDFOPPositive) {
+      return getIdentityExpression(childExpr);
     } else if (udf instanceof GenericUDFBridge) {
       VectorExpression v = getGenericUDFBridgeVectorExpression((GenericUDFBridge) udf, childExpr, mode);
       if (v != null) {
@@ -670,9 +662,7 @@ public class VectorizationContext {
   private VectorExpression getGenericUDFBridgeVectorExpression(GenericUDFBridge udf,
       List<ExprNodeDesc> childExpr, Mode mode) throws HiveException {
     Class<? extends UDF> cl = udf.getUdfClass();
-    if (cl.equals(UDFOPPositive.class)) {
-      return getIdentityExpression(childExpr);
-    } else if (isCastToIntFamily(cl)) {
+    if (isCastToIntFamily(cl)) {
       return getCastToLongExpression(childExpr);
     } else if (cl.equals(UDFToBoolean.class)) {
       return getCastToBoolean(childExpr);
