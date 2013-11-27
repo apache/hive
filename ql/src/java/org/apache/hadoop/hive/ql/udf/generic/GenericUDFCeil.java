@@ -16,11 +16,10 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.udf;
+package org.apache.hadoop.hive.ql.udf.generic;
 
 import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
-import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncCeilDoubleToLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FuncCeilLongToLong;
@@ -28,41 +27,31 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
 import org.apache.hadoop.io.LongWritable;
 
-/**
- * UDFCeil.
- *
- */
 @Description(name = "ceil,ceiling",
-    value = "_FUNC_(x) - Find the smallest integer not smaller than x",
-    extended = "Example:\n"
+value = "_FUNC_(x) - Find the smallest integer not smaller than x",
+extended = "Example:\n"
     + "  > SELECT _FUNC_(-0.1) FROM src LIMIT 1;\n"
     + "  0\n"
     + "  > SELECT _FUNC_(5) FROM src LIMIT 1;\n" + "  5")
 @VectorizedExpressions({FuncCeilLongToLong.class, FuncCeilDoubleToLong.class})
-public class UDFCeil extends UDF {
-  private final LongWritable longWritable = new LongWritable();
-  private final HiveDecimalWritable decimalWritable = new HiveDecimalWritable();
+public final class GenericUDFCeil extends GenericUDFFloorCeilBase {
 
-  public UDFCeil() {
+  public GenericUDFCeil() {
+    super();
+    opDisplayName = "ceil";
   }
 
-  public LongWritable evaluate(DoubleWritable i) {
-    if (i == null) {
-      return null;
-    } else {
-      longWritable.set((long) Math.ceil(i.get()));
-      return longWritable;
-    }
+  @Override
+  protected LongWritable evaluate(DoubleWritable input) {
+    longWritable.set((long) Math.ceil(input.get()));
+    return longWritable;
   }
 
-  public HiveDecimalWritable evaluate(HiveDecimalWritable i) {
-    if (i == null) {
-      return null;
-    } else {
-      HiveDecimal bd = i.getHiveDecimal();
-      int origScale = bd.scale();
-      decimalWritable.set(bd.setScale(0, HiveDecimal.ROUND_CEILING).setScale(origScale));
-      return decimalWritable;
-    }
+  @Override
+  protected HiveDecimalWritable evaluate(HiveDecimalWritable input) {
+    HiveDecimal bd = input.getHiveDecimal();
+    decimalWritable.set(bd.setScale(0, HiveDecimal.ROUND_CEILING));
+    return decimalWritable;
   }
+
 }

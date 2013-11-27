@@ -1596,7 +1596,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: ceil(key)
-                  type: decimal(38,18)
+                  type: decimal(21,0)
             outputColumnNames: _col0
             ListSink
 
@@ -1669,7 +1669,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: floor(key)
-                  type: decimal(38,18)
+                  type: decimal(21,0)
             outputColumnNames: _col0
             ListSink
 
@@ -1815,7 +1815,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: power(key, 2)
-                  type: decimal(38,18)
+                  type: double
             outputColumnNames: _col0
             ListSink
 
@@ -1828,44 +1828,44 @@ POSTHOOK: query: SELECT POWER(key, 2) FROM DECIMAL_UDF
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-19360000
+1.936E7
 NULL
-0
-0
-10000
-100
-1
-0.01
-0.0001
-40000
-400
-4
-0
-0.04
-0.0004
+0.0
+0.0
+10000.0
+100.0
+1.0
+0.010000000000000002
+1.0E-4
+40000.0
+400.0
+4.0
+0.0
+0.04000000000000001
+4.0E-4
 0.09
-0.1089
-0.110889
+0.10890000000000001
+0.11088900000000002
 0.09
-0.1089
-0.110889
-1
-4
+0.10890000000000001
+0.11088900000000002
+1.0
+4.0
 9.8596
-1.2544
-1.2544
-1.258884
-1.2544
-1.258884
-15376
+1.2544000000000002
+1.2544000000000002
+1.2588840000000003
+1.2544000000000002
+1.2588840000000003
+15376.0
 15675.04
 1576255.1401
 9.8596
 9.8596
 9.8596
-1
-1524157875323883675.019051998750190521
-1524157875323883652.7968299765279684
+1.0
+1.52415787532388352E18
+1.52415787532388352E18
 PREHOOK: query: -- modulo
 EXPLAIN SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
