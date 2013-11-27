@@ -571,7 +571,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   private boolean jobCloseDone = false;
 
   // Operator specific logic goes here
-  public void jobCloseOp(Configuration conf, boolean success, JobCloseFeedBack feedBack)
+  public void jobCloseOp(Configuration conf, boolean success)
       throws HiveException {
   }
 
@@ -584,19 +584,19 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
    * @param success
    *          whether the job was completed successfully or not
    */
-  public void jobClose(Configuration conf, boolean success, JobCloseFeedBack feedBack)
+  public void jobClose(Configuration conf, boolean success)
       throws HiveException {
     // JobClose has already been performed on this operator
     if (jobCloseDone) {
       return;
     }
 
-    jobCloseOp(conf, success, feedBack);
+    jobCloseOp(conf, success);
     jobCloseDone = true;
 
     if (childOperators != null) {
       for (Operator<? extends OperatorDesc> op : childOperators) {
-        op.jobClose(conf, success, feedBack);
+        op.jobClose(conf, success);
       }
     }
   }
