@@ -43,6 +43,7 @@ import org.apache.hive.ptest.execution.conf.TestConfiguration;
 import org.apache.hive.ptest.execution.conf.TestParser;
 import org.apache.hive.ptest.execution.context.ExecutionContext;
 import org.apache.hive.ptest.execution.context.ExecutionContextProvider;
+import org.apache.hive.ptest.execution.ssh.NonZeroExitCodeException;
 import org.apache.hive.ptest.execution.ssh.RSyncCommandExecutor;
 import org.apache.hive.ptest.execution.ssh.SSHCommandExecutor;
 import org.apache.velocity.app.Velocity;
@@ -171,7 +172,17 @@ public class PTest {
       }
     } catch(Throwable throwable) {
       mLogger.error("Test run exited with an unexpected error", throwable);
-      messages.add("Tests failed with: " + throwable.getClass().getSimpleName() + ": " + throwable.getMessage());
+      // NonZeroExitCodeExceptions can have long messages and should be
+      // trimmable when published to the JIRA via the JiraService
+      if(throwable instanceof NonZeroExitCodeException) {
+        messages.add("Tests exited with: " + throwable.getClass().getSimpleName());
+        for(String line : Strings.nullToEmpty(throwable.getMessage()).split("\n")) {
+          messages.add(line);
+        }
+      } else {
+        messages.add("Tests exited with: " + throwable.getClass().getSimpleName() +
+            ": " + throwable.getMessage());
+      }
       error = true;
     } finally {
       for(HostExecutor hostExecutor : mHostExecutors) {
