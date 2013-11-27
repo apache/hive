@@ -27,19 +27,23 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.Arrays;
 import java.util.Iterator;
 
 /**
  * Abstract base class representing a set of rows to be displayed.
+ * Holds column values as strings
  */
 abstract class Rows implements Iterator {
   private final BeeLine beeLine;
   final ResultSetMetaData rsMeta;
   final Boolean[] primaryKeys;
   final NumberFormat numberFormat;
+  private final String nullStr;
 
   Rows(BeeLine beeLine, ResultSet rs) throws SQLException {
     this.beeLine = beeLine;
+    nullStr = beeLine.getOpts().getNullString();
     rsMeta = rs.getMetaData();
     int count = rsMeta.getColumnCount();
     primaryKeys = new Boolean[count];
@@ -125,6 +129,10 @@ abstract class Rows implements Iterator {
       inserted = false;
     }
 
+    @Override
+    public String toString(){
+      return Arrays.asList(values).toString();
+    }
 
     Row(int size, ResultSet rs) throws SQLException {
       isMeta = false;
@@ -157,7 +165,8 @@ abstract class Rows implements Iterator {
         } else {
           values[i] = rs.getString(i + 1);
         }
-        sizes[i] = values[i] == null ? 1 : values[i].length();
+        values[i] = values[i] == null ? nullStr : values[i];
+        sizes[i] = values[i].length();
       }
     }
   }

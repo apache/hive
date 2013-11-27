@@ -23,9 +23,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hive.beeline.BeeLine;
 import org.apache.hive.service.server.HiveServer2;
@@ -33,6 +38,8 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 /**
  * TestBeeLineWithArgs - executes tests of the command-line arguments to BeeLine
@@ -42,6 +49,9 @@ import org.junit.Test;
 public class TestBeeLineWithArgs {
   // Default location of HiveServer2
   final private static String JDBC_URL = BeeLine.BEELINE_DEFAULT_JDBC_URL + "localhost:10000";
+  private static final String tableName = "TestBeelineTable1";
+  private static final String tableComment = "Test table comment";
+
 
   private static HiveServer2 hiveServer2;
 
@@ -67,6 +77,45 @@ public class TestBeeLineWithArgs {
     System.err.println("Starting HiveServer2...");
     hiveServer2.start();
     Thread.sleep(1000);
+    createTable();
+
+  }
+
+  /**
+   * Create table for use by tests
+   * @throws ClassNotFoundException
+   * @throws SQLException
+   */
+  private static void createTable() throws ClassNotFoundException, SQLException {
+    Class.forName(BeeLine.BEELINE_DEFAULT_JDBC_DRIVER);
+    Connection con = DriverManager.getConnection(JDBC_URL,"", "");
+
+    assertNotNull("Connection is null", con);
+    assertFalse("Connection should not be closed", con.isClosed());
+    Statement stmt = con.createStatement();
+    assertNotNull("Statement is null", stmt);
+
+    stmt.execute("set hive.support.concurrency = false");
+
+    HiveConf conf = new HiveConf();
+    String dataFileDir = conf.get("test.data.files").replace('\\', '/')
+        .replace("c:", "");
+    Path dataFilePath = new Path(dataFileDir, "kv1.txt");
+    // drop table. ignore error.
+    try {
+      stmt.execute("drop table " + tableName);
+    } catch (Exception ex) {
+      fail(ex.toString());
+    }
+
+    // create table
+    stmt.execute("create table " + tableName
+        + " (under_col int comment 'the under column', value string) comment '"
+        + tableComment + "'");
+
+    // load data
+    stmt.execute("load data local inpath '"
+        + dataFilePath.toString() + "' into table " + tableName);
   }
 
   /**
@@ -129,39 +178,12 @@ public class TestBeeLineWithArgs {
     argList.add("-f");
     argList.add(scriptFile.getAbsolutePath());
 
-    if(shouldMatch) {
-      try {
-        String output = testCommandLineScript(argList);
-        long elapsedTime = (System.currentTimeMillis() - startTime)/1000;
-        String time = "(" + elapsedTime + "s)";
-        if (output.contains(expectedPattern)) {
-          System.out.println(">>> PASSED " + testName + " " + time);
-        } else {
-          System.err.println("Output: " + output);
-          System.err.println(">>> FAILED " + testName + " (ERROR) " + time);
-          Assert.fail(testName);
-        }
-      } catch (Throwable e) {
-        e.printStackTrace();
-        throw e;
-      }
-    } else {
-      try {
-        String output = testCommandLineScript(argList);
-        long elapsedTime = (System.currentTimeMillis() - startTime)/1000;
-        String time = "(" + elapsedTime + "s)";
-        if (output.contains(expectedPattern)) {
-          System.err.println("Output: " + output);
-          System.err.println(">>> FAILED " + testName + " (ERROR) " + time);
-          Assert.fail(testName);
-        } else {
-          System.out.println(">>> PASSED " + testName + " " + time);
-        }
-      } catch (Throwable e) {
-        System.err.println("Exception: " + e.toString());
-        e.printStackTrace();
-        throw e;
-      }
+    String output = testCommandLineScript(argList);
+    boolean matches = output.contains(expectedPattern);
+    if (shouldMatch != matches) {
+      //failed
+      fail(testName + ": Output" + output + " should" +  (shouldMatch ? "" : " not") +
+          " contain " + expectedPattern);
     }
     scriptFile.delete();
   }
@@ -212,6 +234,72 @@ public class TestBeeLineWithArgs {
     testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, false, argList);
   }
 
+
+  /**
+   * Select null from table , check how null is printed
+   * Print PASSED or FAILED
+   */
+  @Test
+  public void testNullDefault() throws Throwable {
+    final String TEST_NAME = "testNullDefault";
+    final String SCRIPT_TEXT = "set hive.support.concurrency = false;\n" +
+        "select null from " + tableName + " limit 1 ;\n";
+    final String EXPECTED_PATTERN = "NULL";
+    testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, true, getBaseArgs(JDBC_URL));
+  }
+
+  /**
+   * Select null from table , check if default null is printed differently
+   * Print PASSED or FAILED
+   */
+  @Test
+  public void testNullNonEmpty() throws Throwable {
+    final String TEST_NAME = "testNullNonDefault";
+    final String SCRIPT_TEXT = "set hive.support.concurrency = false;\n" +
+        "!set nullemptystring false\n select null from " + tableName + " limit 1 ;\n";
+    final String EXPECTED_PATTERN = "NULL";
+    testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, true, getBaseArgs(JDBC_URL));
+  }
+
+  /**
+   * Select null from table , check if setting null to empty string works.
+   * Original beeline/sqlline used to print nulls as empty strings
+   * Print PASSED or FAILED
+   */
+  @Test
+  public void testNullEmpty() throws Throwable {
+    final String TEST_NAME = "testNullNonDefault";
+    final String SCRIPT_TEXT = "set hive.support.concurrency = false;\n" +
+                "!set nullemptystring true\n select 'abc',null,'def' from " + tableName + " limit 1 ;\n";
+    final String EXPECTED_PATTERN = "'abc','','def'";
+
+    List<String> argList = getBaseArgs(JDBC_URL);
+    argList.add("--outputformat=csv");
+
+    testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
+  }
+
+  /**
+   * Select null from table , check if setting null to empty string works - Using beeling cmd line
+   *  argument.
+   * Original beeline/sqlline used to print nulls as empty strings
+   * Print PASSED or FAILED
+   */
+  @Test
+  public void testNullEmptyCmdArg() throws Throwable {
+    final String TEST_NAME = "testNullNonDefault";
+    final String SCRIPT_TEXT = "set hive.support.concurrency = false;\n" +
+                "select 'abc',null,'def' from " + tableName + " limit 1 ;\n";
+    //final String EXPECTED_PATTERN = "| abc  |      | def  |";
+    final String EXPECTED_PATTERN = "'abc','','def'";
+
+    List<String> argList = getBaseArgs(JDBC_URL);
+    argList.add("--nullemptystring=true");
+    argList.add("--outputformat=csv");
+
+    testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
+  }
+
   /**
    * Attempt to execute a missing script file with the -f option to BeeLine
    * Print PASSED or FAILED
@@ -239,7 +327,7 @@ public class TestBeeLineWithArgs {
       if (output.contains(EXPECTED_PATTERN)) {
         System.err.println("Output: " + output);
         System.err.println(">>> FAILED " + TEST_NAME + " (ERROR) " + time);
-        Assert.fail(TEST_NAME);
+        fail(TEST_NAME);
       } else {
         System.out.println(">>> PASSED " + TEST_NAME + " " + time);
       }
