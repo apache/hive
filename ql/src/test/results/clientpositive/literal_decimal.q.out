@@ -18,7 +18,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: (- 1)
-                  type: decimal(38,18)
+                  type: decimal(1,0)
                   expr: 0
                   type: decimal(1,0)
                   expr: 1
@@ -26,7 +26,7 @@ STAGE PLANS:
                   expr: 3.14
                   type: decimal(3,2)
                   expr: (- 3.14)
-                  type: decimal(38,18)
+                  type: decimal(3,2)
                   expr: 99999999999999999
                   type: decimal(17,0)
                   expr: 99999999999999999.9999999999999

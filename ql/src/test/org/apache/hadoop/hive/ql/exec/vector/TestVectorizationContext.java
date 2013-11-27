@@ -85,8 +85,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.udf.UDFLTrim;
 import org.apache.hadoop.hive.ql.udf.UDFLog;
-import org.apache.hadoop.hive.ql.udf.UDFOPNegative;
-import org.apache.hadoop.hive.ql.udf.UDFPower;
 import org.apache.hadoop.hive.ql.udf.UDFSin;
 import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
@@ -101,10 +99,12 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPLessThan;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMinus;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMod;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPMultiply;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNegative;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNot;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNotNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPNull;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPOr;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFPower;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFRound;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
@@ -619,7 +619,7 @@ public class TestVectorizationContext {
   public void testUnaryMinusColumnLong() throws HiveException {
     ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(Integer.class, "col1", "table", false);
     ExprNodeGenericFuncDesc negExprDesc = new ExprNodeGenericFuncDesc();
-    GenericUDF gudf = new GenericUDFBridge("-", true, UDFOPNegative.class.getCanonicalName());
+    GenericUDF gudf = new GenericUDFOPNegative();
     negExprDesc.setGenericUDF(gudf);
     List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(1);
     children.add(col1Expr);
@@ -637,7 +637,7 @@ public class TestVectorizationContext {
   public void testUnaryMinusColumnDouble() throws HiveException {
     ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(Float.class, "col1", "table", false);
     ExprNodeGenericFuncDesc negExprDesc = new ExprNodeGenericFuncDesc();
-    GenericUDF gudf = new GenericUDFBridge("-", true, UDFOPNegative.class.getCanonicalName());
+    GenericUDF gudf = new GenericUDFOPNegative();
     negExprDesc.setGenericUDF(gudf);
     List<ExprNodeDesc> children = new ArrayList<ExprNodeDesc>(1);
     children.add(col1Expr);
@@ -841,11 +841,10 @@ public class TestVectorizationContext {
     Assert.assertTrue(4.5 == ((FuncLogWithBaseLongToDouble) ve).getBase());
 
     //Power with double power
-    gudfBridge = new GenericUDFBridge("power", false, UDFPower.class.getName());
     children2.clear();
     children2.add(colDesc2);
     children2.add(new ExprNodeConstantDesc(4.5));
-    mathFuncExpr.setGenericUDF(gudfBridge);
+    mathFuncExpr.setGenericUDF(new GenericUDFPower());
     mathFuncExpr.setChildren(children2);
     ve = vc.getVectorExpression(mathFuncExpr);
     Assert.assertEquals(FuncPowerDoubleToDouble.class, ve.getClass());

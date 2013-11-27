@@ -560,7 +560,7 @@ STAGE PLANS:
                   expr: _col7
                   type: double
                   expr: (- (_col0 / (- 3728)))
-                  type: decimal(38,18)
+                  type: decimal(16,6)
                   expr: ((- (_col0 * (- 3728))) % ((- 563) % (_col0 * (- 3728))))
                   type: int
                   expr: ((_col0 / (- 3728)) - _col4)
@@ -2740,7 +2740,7 @@ STAGE PLANS:
                       expr: (cbigint % 79.553)
                       type: double
                       expr: (- (cint / cbigint))
-                      type: decimal(38,18)
+                      type: decimal(30,20)
                       expr: (10.175 % cfloat)
                       type: double
                       expr: (- cfloat)
@@ -2855,8 +2855,8 @@ WHERE  (((197 > ctinyint)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypesorc
 #### A masked pattern was here ####
--462839731	988888	ss	false	-51.0	NULL	NULL	NULL	Lml5J2QBU77	false	-468.04059812638033831941	44.210000000033915	468.040598126380338319	10.175	51.0	-102.0	-102.0	NULL	NULL	-988888	417.04059812638036	NULL	3569	NULL	NULL
--635141101	-89010	ss	false	-51.0	NULL	NULL	NULL	rVWAj4N1MCg8Scyp7wj2C	true	7135.61511066172340186496	-69.74600000000305	-7135.615110661723401865	10.175	51.0	-102.0	-102.0	NULL	NULL	89010	-7186.6151106617235	NULL	3569	NULL	NULL
+-462839731	988888	ss	false	-51.0	NULL	NULL	NULL	Lml5J2QBU77	false	-468.04059812638033831941	44.210000000033915	468.04059812638033831941	10.175	51.0	-102.0	-102.0	NULL	NULL	-988888	417.04059812638036	NULL	3569	NULL	NULL
+-635141101	-89010	ss	false	-51.0	NULL	NULL	NULL	rVWAj4N1MCg8Scyp7wj2C	true	7135.61511066172340186496	-69.74600000000305	-7135.61511066172340186496	10.175	51.0	-102.0	-102.0	NULL	NULL	89010	-7186.6151106617235	NULL	3569	NULL	NULL
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: -- TargetTypeClasses: String, Bool, Double, Long, Timestamp
 -- Functions: Sum, Max, Avg, Var, StDevP, VarP
