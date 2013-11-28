@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveCharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector;
@@ -60,6 +61,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspect
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector;
+import org.apache.hadoop.hive.serde2.typeinfo.CharTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo;
 import org.apache.hadoop.io.BytesWritable;
@@ -1053,6 +1055,28 @@ class WriterImpl implements Writer, MemoryManager.Callback {
   }
 
   /**
+   * Under the covers, char is written to ORC the same way as string.
+   */
+  private static class CharTreeWriter extends StringTreeWriter {
+
+    CharTreeWriter(int columnId,
+        ObjectInspector inspector,
+        StreamFactory writer,
+        boolean nullable) throws IOException {
+      super(columnId, inspector, writer, nullable);
+    }
+
+    /**
+     * Override base class implementation to support char values.
+     */
+    @Override
+    String getStringValue(Object obj) {
+      return (((HiveCharObjectInspector) inspector)
+          .getPrimitiveJavaObject(obj)).getValue();
+    }
+  }
+
+  /**
    * Under the covers, varchar is written to ORC the same way as string.
    */
   private static class VarcharTreeWriter extends StringTreeWriter {
@@ -1564,6 +1588,9 @@ class WriterImpl implements Writer, MemoryManager.Callback {
           case STRING:
             return new StringTreeWriter(streamFactory.getNextColumnId(),
                 inspector, streamFactory, nullable);
+          case CHAR:
+            return new CharTreeWriter(streamFactory.getNextColumnId(),
+                inspector, streamFactory, nullable);
           case VARCHAR:
             return new VarcharTreeWriter(streamFactory.getNextColumnId(),
                 inspector, streamFactory, nullable);
@@ -1631,6 +1658,13 @@ class WriterImpl implements Writer, MemoryManager.Callback {
             break;
           case STRING:
             type.setKind(OrcProto.Type.Kind.STRING);
+            break;
+          case CHAR:
+            // The char length needs to be written to file and should be available
+            // from the object inspector
+            CharTypeInfo charTypeInfo = (CharTypeInfo) ((PrimitiveObjectInspector) treeWriter.inspector).getTypeInfo();
+            type.setKind(Type.Kind.CHAR);
+            type.setMaximumLength(charTypeInfo.getLength());
             break;
           case VARCHAR:
             // The varchar length needs to be written to file and should be available

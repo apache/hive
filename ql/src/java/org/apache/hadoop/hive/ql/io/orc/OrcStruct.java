@@ -483,6 +483,9 @@ final class OrcStruct implements Writable {
             return PrimitiveObjectInspectorFactory.writableBinaryObjectInspector;
           case STRING:
             return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+          case CHAR:
+            return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+                (PrimitiveTypeInfo) info);
           case VARCHAR:
             return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
                 (PrimitiveTypeInfo) info);
@@ -533,6 +536,13 @@ final class OrcStruct implements Writable {
         return PrimitiveObjectInspectorFactory.writableBinaryObjectInspector;
       case STRING:
         return PrimitiveObjectInspectorFactory.writableStringObjectInspector;
+      case CHAR:
+        if (!type.hasMaximumLength()) {
+          throw new UnsupportedOperationException(
+              "Illegal use of char type without length in ORC type definition.");
+        }
+        return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(
+            TypeInfoFactory.getCharTypeInfo(type.getMaximumLength()));
       case VARCHAR:
         if (!type.hasMaximumLength()) {
           throw new UnsupportedOperationException(
