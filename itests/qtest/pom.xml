@@ -118,9 +118,6 @@
     </profile>
     <profile>
       <id>hadoop-1</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <properties>
         <active.hadoop.version>${hadoop-20S.version}</active.hadoop.version>
         <test.dfs.mkdir>-mkdir</test.dfs.mkdir>
@@ -206,9 +203,22 @@
       </properties>
       <dependencies>
         <dependency>
+          <groupId>com.sun.jersey</groupId>
+          <artifactId>jersey-servlet</artifactId>
+          <version>${jersey.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
           <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-common</artifactId>
           <version>${hadoop-23.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+          <version>${hadoop-23.version}</version>
+          <classifier>tests</classifier>
           <scope>test</scope>
         </dependency>
         <dependency>
@@ -220,9 +230,21 @@
         </dependency>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-hdfs</artifactId>
+          <version>${hadoop-23.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
           <version>${hadoop-23.version}</version>
           <classifier>tests</classifier>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-mapreduce-client-hs</artifactId>
+          <version>${hadoop-23.version}</version>
           <scope>test</scope>
         </dependency>
         <dependency>
@@ -232,6 +254,13 @@
           <scope>test</scope>
         </dependency>
         <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-yarn-server-tests</artifactId>
+          <version>${hadoop-23.version}</version>
+          <scope>test</scope>
+          <classifier>tests</classifier>
+        </dependency>
+        <dependency>
           <groupId>org.apache.hbase</groupId>
           <artifactId>hbase-common</artifactId>
           <version>${hbase.hadoop2.version}</version>
@@ -269,6 +298,12 @@
           <version>${hbase.hadoop2.version}</version>
           <scope>test</scope>
           <classifier>tests</classifier>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-server</artifactId>
+          <version>${hbase.hadoop2.version}</version>
+          <scope>test</scope>
         </dependency>
         <dependency>
           <groupId>org.apache.hbase</groupId>
