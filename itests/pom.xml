@@ -33,7 +33,6 @@
 
   <modules>
    <module>custom-serde</module>
-   <module>hive-unit</module>
    <module>hcatalog-unit</module>
    <module>util</module>
    <module>test-serde</module>
