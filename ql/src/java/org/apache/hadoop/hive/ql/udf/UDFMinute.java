@@ -27,6 +27,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDF;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedExpressions;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFMinuteLong;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFMinuteString;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -43,7 +44,7 @@ import org.apache.hadoop.io.Text;
     + "  > SELECT _FUNC_('2009-07-30 12:58:59') FROM src LIMIT 1;\n"
     + "  58\n"
     + "  > SELECT _FUNC_('12:58:59') FROM src LIMIT 1;\n" + "  58")
-@VectorizedExpressions({VectorUDFMinuteLong.class})
+@VectorizedExpressions({VectorUDFMinuteLong.class, VectorUDFMinuteString.class})
 public class UDFMinute extends UDF {
   private final SimpleDateFormat formatter1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
   private final SimpleDateFormat formatter2 = new SimpleDateFormat("HH:mm:ss");
