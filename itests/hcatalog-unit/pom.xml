@@ -55,7 +55,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive.hcatalog</groupId>
-      <artifactId>hive-hbase-storage-handler</artifactId>
+      <artifactId>hive-hcatalog-hbase-storage-handler</artifactId>
       <version>${project.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
