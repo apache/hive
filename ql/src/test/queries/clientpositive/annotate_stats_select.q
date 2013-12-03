@@ -1,3 +1,5 @@
+set hive.stats.fetch.column.stats=true;
+
 create table if not exists alltypes (
  bo1 boolean,
  ti1 tinyint,

@@ -1,3 +1,5 @@
+set hive.stats.fetch.column.stats=true;
+
 create table if not exists loc_staging (
   state string,
   locid int,

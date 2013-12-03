@@ -1,3 +1,6 @@
+set hive.stats.fetch.column.stats=true;
+set hive.stats.autogather=false;
+
 create table if not exists emp_staging (
   lastname string,
   deptid int
@@ -10,8 +13,6 @@ alter table emp_orc set fileformat orc;
 explain extended select * from emp_orc;
 
 LOAD DATA LOCAL INPATH '../../data/files/emp.txt' OVERWRITE INTO TABLE emp_staging;
-
-set hive.stats.autogather=false;
 
 insert overwrite table emp_orc select * from emp_staging;
 
