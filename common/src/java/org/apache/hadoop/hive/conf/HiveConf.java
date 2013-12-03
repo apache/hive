@@ -641,6 +641,9 @@ public class HiveConf extends Configuration {
     HIVE_STATS_MAP_NUM_ENTRIES("hive.stats.map.num.entries", 10),
     // to accurately compute statistics for GROUPBY map side parallelism needs to be known
     HIVE_STATS_MAP_SIDE_PARALLELISM("hive.stats.map.parallelism", 1),
+    // statistics annotation fetches column statistics for all required columns and for all
+    // required partitions which can be very expensive sometimes
+    HIVE_STATS_FETCH_COLUMN_STATS("hive.stats.fetch.column.stats", false),
 
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false),
