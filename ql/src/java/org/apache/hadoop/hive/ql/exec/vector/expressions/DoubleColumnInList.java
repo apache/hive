@@ -18,41 +18,34 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
-import org.apache.hadoop.hive.ql.metadata.HiveException;
-import org.apache.hadoop.hive.ql.udf.UDFLike;
-import org.apache.hadoop.io.Text;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 
 /**
- * Evaluate IN filter on a batch for a vector of doubles.
+ * Output a boolean value indicating if a column is IN a list of constants.
  */
-public class FilterDoubleColumnInList extends VectorExpression implements IDoubleInExpr {
+public class DoubleColumnInList extends VectorExpression implements IDoubleInExpr {
+
   private static final long serialVersionUID = 1L;
-  private int inputCol;
+
+  private int colNum;
+  private int outputColumn;
   private double[] inListValues;
 
   // The set object containing the IN list. This is optimized for lookup
   // of the data type of the column.
   private transient CuckooSetDouble inSet;
 
-  public FilterDoubleColumnInList() {
-    super();
-    inSet = null;
+  public DoubleColumnInList(int colNum, int outputColumn) {
+    this.colNum = colNum;
+    this.outputColumn = outputColumn;
   }
 
-  /**
-   * After construction you must call setInListValues() to add the values to the IN set.
-   */
-  public FilterDoubleColumnInList(int colNum) {
-    this.inputCol = colNum;
+  public DoubleColumnInList() {
+    super();
     inSet = null;
   }
 
@@ -68,113 +61,104 @@ public class FilterDoubleColumnInList extends VectorExpression implements IDoubl
       inSet.load(inListValues);
     }
 
-    DoubleColumnVector inputColVector = (DoubleColumnVector) batch.cols[inputCol];
+    DoubleColumnVector inputColVector = (DoubleColumnVector) batch.cols[colNum];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
     int[] sel = batch.selected;
     boolean[] nullPos = inputColVector.isNull;
+    boolean[] outNulls = outputColVector.isNull;
     int n = batch.size;
     double[] vector = inputColVector.vector;
+    long[] outputVector = outputColVector.vector;
 
     // return immediately if batch is empty
     if (n == 0) {
       return;
     }
 
+    outputColVector.isRepeating = false;
+    outputColVector.noNulls = inputColVector.noNulls;
     if (inputColVector.noNulls) {
       if (inputColVector.isRepeating) {
 
         // All must be selected otherwise size would be zero
         // Repeating property will not change.
-
-        if (!(inSet.lookup(vector[0]))) {
-          //Entire batch is filtered out.
-          batch.size = 0;
-        }
+        outputVector[0] = inSet.lookup(vector[0]) ? 1 : 0;
+        outputColVector.isRepeating = true;
       } else if (batch.selectedInUse) {
-        int newSize = 0;
-        for(int j=0; j != n; j++) {
+        for(int j = 0; j != n; j++) {
           int i = sel[j];
-          if (inSet.lookup(vector[i])) {
-            sel[newSize++] = i;
-          }
+          outputVector[i] = inSet.lookup(vector[i]) ? 1 : 0;
         }
-        batch.size = newSize;
       } else {
-        int newSize = 0;
         for(int i = 0; i != n; i++) {
-          if (inSet.lookup(vector[i])) {
-            sel[newSize++] = i;
-          }
-        }
-        if (newSize < n) {
-          batch.size = newSize;
-          batch.selectedInUse = true;
+          outputVector[i] = inSet.lookup(vector[i]) ? 1 : 0;
         }
       }
     } else {
       if (inputColVector.isRepeating) {
-        //All must be selected otherwise size would be zero
-        //Repeating property will not change.
+
+        // All must be selected otherwise size would be zero
+        // Repeating property will not change.
         if (!nullPos[0]) {
-          if (!inSet.lookup(vector[0])) {
-            //Entire batch is filtered out.
-            batch.size = 0;
-          }
+          outputVector[0] = inSet.lookup(vector[0]) ? 1 : 0;
+          outNulls[0] = false;
         } else {
-          batch.size = 0;
+          outNulls[0] = true;
         }
+        outputColVector.isRepeating = true;
       } else if (batch.selectedInUse) {
-        int newSize = 0;
         for(int j = 0; j != n; j++) {
           int i = sel[j];
+          outNulls[i] = nullPos[i];
           if (!nullPos[i]) {
-           if (inSet.lookup(vector[i])) {
-             sel[newSize++] = i;
-           }
+            outputVector[i] = inSet.lookup(vector[i]) ? 1 : 0;
           }
         }
-
-        // Change the selected vector
-        batch.size = newSize;
       } else {
-        int newSize = 0;
+        System.arraycopy(nullPos, 0, outNulls, 0, n);
         for(int i = 0; i != n; i++) {
           if (!nullPos[i]) {
-            if (inSet.lookup(vector[i])) {
-              sel[newSize++] = i;
-            }
+            outputVector[i] = inSet.lookup(vector[i]) ? 1 : 0;
           }
-        }
-        if (newSize < n) {
-          batch.size = newSize;
-          batch.selectedInUse = true;
         }
       }
     }
   }
 
+  @Override
+  public int getOutputColumn() {
+    return outputColumn;
+  }
 
   @Override
   public String getOutputType() {
     return "boolean";
   }
 
-  @Override
-  public int getOutputColumn() {
-    return -1;
+  public int getColNum() {
+    return colNum;
   }
 
-  @Override
-  public Descriptor getDescriptor() {
+  public void setColNum(int colNum) {
+    this.colNum = colNum;
+  }
 
-    // This VectorExpression (IN) is a special case, so don't return a descriptor.
-    return null;
+  public void setOutputColumn(int outputColumn) {
+    this.outputColumn = outputColumn;
   }
 
   public double[] getInListValues() {
     return this.inListValues;
   }
 
-  public void setInListValues(double [] a) {
+  public void setInListValues(double[] a) {
     this.inListValues = a;
+  }
+
+  @Override
+  public VectorExpressionDescriptor.Descriptor getDescriptor() {
+
+    // return null since this will be handled as a special case in VectorizationContext
+    return null;
   }
 }
