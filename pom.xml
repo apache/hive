@@ -371,11 +371,6 @@
         <version>${httpcomponents.core.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.apache.mina</groupId>
-        <artifactId>mina-core</artifactId>
-        <version>${mina.version}</version>
-      </dependency>
-      <dependency>
         <groupId>org.apache.velocity</groupId>
         <artifactId>velocity</artifactId>
         <version>${velocity.version}</version>
