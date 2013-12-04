@@ -75,22 +75,35 @@ public class GenericUDFOPDivide extends GenericUDFBaseNumeric {
   }
 
   @Override
-  protected HiveDecimalWritable evaluate(HiveDecimalWritable left, HiveDecimalWritable right) {
-    HiveDecimal hd1 = left.getHiveDecimal();
-    HiveDecimal hd2 = right.getHiveDecimal();
-    if (hd2.compareTo(HiveDecimal.ZERO) == 0) {
+  protected HiveDecimalWritable evaluate(HiveDecimal left, HiveDecimal right) {
+    if (right.compareTo(HiveDecimal.ZERO) == 0) {
       return null;
     }
-    HiveDecimal dec = hd1.divide(hd2);
+
+    HiveDecimal dec = left.divide(right);
+    if (dec == null) {
+      return null;
+    }
+
     decimalWritable.set(dec);
     return decimalWritable;
   }
 
+  /**
+   * A balanced way to determine the precision/scale of decimal division result. Integer digits and
+   * decimal digits are computed independently. However, when the precision from above reaches above
+   * HiveDecimal.MAX_PRECISION, interger digit and decimal digits are shrunk equally to fit.
+   */
   @Override
   protected DecimalTypeInfo deriveResultDecimalTypeInfo(int prec1, int scale1, int prec2, int scale2) {
-    int scale = Math.min(HiveDecimal.MAX_SCALE, Math.max(6, scale1 + prec2 + 1));
-    int prec = Math.min(HiveDecimal.MAX_PRECISION, prec1 - scale1 + scale2 + scale);
-    return TypeInfoFactory.getDecimalTypeInfo(prec, scale);
+    int intDig = Math.min(HiveDecimal.MAX_SCALE, prec1 - scale1 + scale2);
+    int decDig = Math.min(HiveDecimal.MAX_SCALE, Math.max(6, scale1 + prec2 + 1));
+    int diff = intDig + decDig -  HiveDecimal.MAX_SCALE;
+    if (diff > 0) {
+      decDig -= diff/2 + 1; // Slight negative bias.
+      intDig = HiveDecimal.MAX_SCALE - decDig;
+    }
+    return TypeInfoFactory.getDecimalTypeInfo(intDig + decDig, decDig);
   }
 
 }

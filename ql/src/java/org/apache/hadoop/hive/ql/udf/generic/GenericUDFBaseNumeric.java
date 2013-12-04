@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.udf.generic;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.hadoop.hive.common.type.HiveDecimal;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.FunctionRegistry;
 import org.apache.hadoop.hive.ql.exec.NoMatchingMethodException;
@@ -38,6 +39,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.C
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector.PrimitiveCategory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
@@ -113,6 +115,17 @@ public abstract class GenericUDFBaseNumeric extends GenericUDF {
       return null;
     }
 
+    // Handle decimal separately.
+    if (resultOI.getPrimitiveCategory() == PrimitiveCategory.DECIMAL) {
+      HiveDecimal hdLeft = PrimitiveObjectInspectorUtils.getHiveDecimal(left, leftOI);
+      HiveDecimal hdRight = PrimitiveObjectInspectorUtils.getHiveDecimal(right, rightOI);
+      if (hdLeft == null || hdRight == null) {
+        return null;
+      }
+      HiveDecimalWritable result = evaluate(hdLeft, hdRight);
+      return resultOI.getPrimitiveWritableObject(result);
+    }
+
     left = converterLeft.convert(left);
     if (left == null) {
       return null;
@@ -135,9 +148,6 @@ public abstract class GenericUDFBaseNumeric extends GenericUDF {
       return evaluate((FloatWritable) left, (FloatWritable) right);
     case DOUBLE:
       return evaluate((DoubleWritable) left, (DoubleWritable) right);
-    case DECIMAL:
-      return resultOI.getPrimitiveWritableObject(
-          evaluate((HiveDecimalWritable) left, (HiveDecimalWritable) right));
     default:
       // Should never happen.
       throw new RuntimeException("Unexpected type in evaluating " + opName + ": " +
@@ -161,15 +171,15 @@ public abstract class GenericUDFBaseNumeric extends GenericUDF {
     return null;
   }
 
-  protected HiveDecimalWritable evaluate(HiveDecimalWritable left, HiveDecimalWritable right) {
-    return null;
-  }
-
   protected FloatWritable evaluate(FloatWritable left, FloatWritable right) {
     return null;
   }
 
   protected DoubleWritable evaluate(DoubleWritable left, DoubleWritable right) {
+    return null;
+  }
+
+  protected HiveDecimalWritable evaluate(HiveDecimal left, HiveDecimal right) {
     return null;
   }
 
