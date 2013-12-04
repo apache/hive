@@ -636,8 +636,12 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private boolean validateExprNodeDescRecursive(ExprNodeDesc desc) {
-    boolean ret = validateDataType(desc.getTypeInfo().getTypeName());
+    String typeName = desc.getTypeInfo().getTypeName();
+    boolean ret = validateDataType(typeName);
     if (!ret) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Cannot vectorize " + desc.getExprString() + " of type " + typeName);
+      }
       return false;
     }
     if (desc instanceof ExprNodeGenericFuncDesc) {
@@ -669,6 +673,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     try {
       VectorizationContext vc = new ValidatorVectorizationContext();
       if (vc.getVectorExpression(desc, mode) == null) {
+        // TODO: this cannot happen - VectorizationContext throws in such cases.
         return false;
       }
     } catch (HiveException e) {
