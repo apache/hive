@@ -184,7 +184,7 @@ public class TestGenericUDFPower {
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.doubleTypeInfo, oi.getTypeInfo());
     DoubleWritable res = (DoubleWritable) udf.evaluate(args);
-    Assert.assertEquals(new Double(-4.52 * 4.52 * 4.52), new Double(res.get()));
+    Assert.assertEquals("Unexpected result", new Double(-4.52 * 4.52 * 4.52), new Double(res.get()), 1e-6);
   }
 
   @Test
