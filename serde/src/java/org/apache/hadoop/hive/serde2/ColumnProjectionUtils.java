@@ -37,6 +37,34 @@ public final class ColumnProjectionUtils {
   private static final boolean READ_ALL_COLUMNS_DEFAULT = true;
 
   /**
+   * @deprecated for backwards compatibility with <= 0.12, use setReadAllColumns
+   */
+  @Deprecated
+  public static void setFullyReadColumns(Configuration conf) {
+    setReadAllColumns(conf);
+  }
+
+  /**
+   * @deprecated for backwards compatibility with <= 0.12, use setReadAllColumns
+   * and appendReadColumns
+   */
+  @Deprecated
+  public static void setReadColumnIDs(Configuration conf, List<Integer> ids) {
+    setReadColumnIDConf(conf, READ_COLUMN_IDS_CONF_STR_DEFAULT);
+    appendReadColumns(conf, ids);
+  }
+
+  /**
+   * @deprecated for backwards compatibility with <= 0.12, use appendReadColumns
+   */
+  @Deprecated
+  public static void appendReadColumnID(Configuration conf, List<Integer> ids) {
+    appendReadColumns(conf, ids);
+  }
+
+
+
+  /**
    * Sets the <em>READ_ALL_COLUMNS</em> flag and removes any previously
    * set column ids.
    */
