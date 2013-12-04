@@ -179,6 +179,7 @@ public class TestVectorScalarColArithmetic {
     expr.evaluate(batch);
 
     // verify NULL output in entry 0 is correct
+    assertFalse(out.noNulls);
     assertTrue(out.isNull[0]);
     assertTrue(Double.isNaN(out.vector[0]));
 
@@ -186,7 +187,6 @@ public class TestVectorScalarColArithmetic {
     for (int i = 1; i != batch.size; i++) {
       assertTrue(equalsWithinTolerance((i * 37) / 100d, out.vector[i]));
     }
-    assertFalse(out.noNulls);
     assertFalse(out.isRepeating);
   }
 
@@ -203,7 +203,8 @@ public class TestVectorScalarColArithmetic {
     expr.evaluate(batch);
 
     // verify zero-divide result for position 0
-    assertTrue(Double.isInfinite(out.vector[0]));
+    assertTrue(out.isNull[0]);
+    assertTrue(Double.isNaN(out.vector[0]));
 
     // verify NULL output in entry 1 is correct
     assertTrue(out.isNull[1]);

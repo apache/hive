@@ -16,52 +16,65 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.hive.ql.exec.vector.expressions;
+package org.apache.hadoop.hive.ql.exec.vector.expressions.gen;
 
+import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorExpression;
+import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
+
+/*
+ * Because of the templatized nature of the code, either or both
+ * of these ColumnVector imports may be needed. Listing both of them
+ * rather than using ....vectorization.*;
+ */
 import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
-import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.NullUtil;
 
 /**
- * This operation is handled as a special case because Hive
- * long/long division returns double. This file is thus not generated
- * from a template like the other arithmetic operations are.
+ * Generated from template ScalarArithmeticColumn.txt.
+ * Implements a vectorized arithmetic operator with a scalar on the left and a
+ * column vector on the right. The result is output to an output column vector.
  */
-public class LongScalarDivideLongColumn extends VectorExpression {
+public class <ClassName> extends VectorExpression {
+
   private static final long serialVersionUID = 1L;
+
   private int colNum;
-  private double value;
+  private <OperandType1> value;
   private int outputColumn;
 
-  public LongScalarDivideLongColumn(long value, int colNum, int outputColumn) {
-    this();
+  public <ClassName>(<OperandType1> value, int colNum, int outputColumn) {
     this.colNum = colNum;
-    this.value = (double) value;
+    this.value = value;
     this.outputColumn = outputColumn;
   }
 
-  public LongScalarDivideLongColumn() {
-    super();
+  public <ClassName>() {
   }
 
   @Override
+  /**
+   * Method to evaluate scalar-column operation in vectorized fashion.
+   *
+   * @batch a package of rows with each column stored in a vector
+   */
   public void evaluate(VectorizedRowBatch batch) {
 
     if (childExpressions != null) {
       super.evaluateChildren(batch);
     }
 
-    LongColumnVector inputColVector = (LongColumnVector) batch.cols[colNum];
-    DoubleColumnVector outputColVector = (DoubleColumnVector) batch.cols[outputColumn];
+    <InputColumnVectorType> inputColVector = (<InputColumnVectorType>) batch.cols[colNum];
+    <OutputColumnVectorType> outputColVector = (<OutputColumnVectorType>) batch.cols[outputColumn];
     int[] sel = batch.selected;
     boolean[] inputIsNull = inputColVector.isNull;
     boolean[] outputIsNull = outputColVector.isNull;
     outputColVector.noNulls = inputColVector.noNulls;
     outputColVector.isRepeating = inputColVector.isRepeating;
     int n = batch.size;
-    long[] vector = inputColVector.vector;
-    double[] outputVector = outputColVector.vector;
+    <OperandType2>[] vector = inputColVector.vector;
+    <ReturnType>[] outputVector = outputColVector.vector;
 
     // return immediately if batch is empty
     if (n == 0) {
@@ -70,8 +83,8 @@ public class LongScalarDivideLongColumn extends VectorExpression {
 
     boolean hasDivBy0 = false;
     if (inputColVector.isRepeating) {
-      long denom = vector[0];
-      outputVector[0] = value / denom;
+      <OperandType2> denom = vector[0];
+      outputVector[0] = value <OperatorSymbol> denom;
       hasDivBy0 = hasDivBy0 || (denom == 0);
 
       // Even if there are no nulls, we always copy over entry 0. Simplifies code.
@@ -80,43 +93,40 @@ public class LongScalarDivideLongColumn extends VectorExpression {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          long denom = vector[i];
-          outputVector[i] = value / denom;
+          <OperandType2> denom = vector[i];
+          outputVector[i] = value <OperatorSymbol> denom;
           hasDivBy0 = hasDivBy0 || (denom == 0);
         }
       } else {
         for(int i = 0; i != n; i++) {
-          long denom = vector[i];
-          outputVector[i] = value / denom;
+          <OperandType2> denom = vector[i];
+          outputVector[i] = value <OperatorSymbol> denom;
           hasDivBy0 = hasDivBy0 || (denom == 0);
         }
       }
-    } else /* there are nulls */ {
+    } else {                         /* there are nulls */
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          long denom = vector[i];
-          outputVector[i] = value / denom;
+          <OperandType2> denom = vector[i];
+          outputVector[i] = value <OperatorSymbol> denom;
           hasDivBy0 = hasDivBy0 || (denom == 0);
           outputIsNull[i] = inputIsNull[i];
         }
       } else {
         for(int i = 0; i != n; i++) {
-          long denom = vector[i];
-          outputVector[i] = value / denom;
+          <OperandType2> denom = vector[i];
+          outputVector[i] = value <OperatorSymbol> denom;
           hasDivBy0 = hasDivBy0 || (denom == 0);
         }
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }
     }
 
-    /* Set double data vector array entries for NULL elements to the correct value.
-     * Unlike other col-scalar operations, this one doesn't benefit from carrying
-     * over NaN values from the input array.
-     */
     if (!hasDivBy0) {
-      NullUtil.setNullDataEntriesDouble(outputColVector, batch.selectedInUse, sel, n);
+      NullUtil.setNullOutputEntriesColScalar(outputColVector, batch.selectedInUse, sel, n);
     } else {
+      // Currently, the output from division is always double.
       NullUtil.setNullAndDivBy0DataEntriesDouble(
           outputColVector, batch.selectedInUse, sel, n, inputColVector);
     }
@@ -129,7 +139,7 @@ public class LongScalarDivideLongColumn extends VectorExpression {
 
   @Override
   public String getOutputType() {
-    return "double";
+    return "<ReturnType>";
   }
 
   public int getColNum() {
@@ -140,11 +150,11 @@ public class LongScalarDivideLongColumn extends VectorExpression {
     this.colNum = colNum;
   }
 
-  public double getValue() {
+  public <OperandType1> getValue() {
     return value;
   }
 
-  public void setValue(double value) {
+  public void setValue(<OperandType1> value) {
     this.value = value;
   }
 
@@ -159,8 +169,8 @@ public class LongScalarDivideLongColumn extends VectorExpression {
             VectorExpressionDescriptor.Mode.PROJECTION)
         .setNumArguments(2)
         .setArgumentTypes(
-            VectorExpressionDescriptor.ArgumentType.LONG,
-            VectorExpressionDescriptor.ArgumentType.LONG)
+            VectorExpressionDescriptor.ArgumentType.getType("<OperandType1>"),
+            VectorExpressionDescriptor.ArgumentType.getType("<OperandType2>"))
         .setInputExpressionTypes(
             VectorExpressionDescriptor.InputExpressionType.SCALAR,
             VectorExpressionDescriptor.InputExpressionType.COLUMN).build();
