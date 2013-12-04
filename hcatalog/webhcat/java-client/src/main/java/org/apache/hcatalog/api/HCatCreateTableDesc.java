@@ -31,7 +31,11 @@ import org.apache.hadoop.hive.metastore.api.Order;
 import org.apache.hadoop.hive.metastore.api.SerDeInfo;
 import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
-import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat;
+import org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcInputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat;
+import org.apache.hadoop.hive.ql.io.orc.OrcSerde;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.RCFileOutputFormat;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -39,7 +43,6 @@ import org.apache.hadoop.hive.ql.metadata.HiveStorageHandler;
 import org.apache.hadoop.hive.ql.metadata.HiveUtils;
 import org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe;
 import org.apache.hadoop.mapred.SequenceFileInputFormat;
-import org.apache.hadoop.mapred.SequenceFileOutputFormat;
 import org.apache.hadoop.mapred.TextInputFormat;
 import org.apache.hcatalog.common.HCatException;
 import org.apache.hcatalog.data.schema.HCatFieldSchema;
@@ -496,12 +499,16 @@ public class HCatCreateTableDesc {
         desc.fileFormat = fileFormat;
         if ("SequenceFile".equalsIgnoreCase(fileFormat)) {
           desc.inputformat = SequenceFileInputFormat.class.getName();
-          desc.outputformat = SequenceFileOutputFormat.class
+          desc.outputformat = HiveSequenceFileOutputFormat.class
             .getName();
         } else if ("RCFile".equalsIgnoreCase(fileFormat)) {
           desc.inputformat = RCFileInputFormat.class.getName();
           desc.outputformat = RCFileOutputFormat.class.getName();
           desc.serde = ColumnarSerDe.class.getName();
+        } else if ("orcfile".equalsIgnoreCase(fileFormat)) {
+          desc.inputformat = OrcInputFormat.class.getName();
+          desc.outputformat = OrcOutputFormat.class.getName();
+          desc.serde = OrcSerde.class.getName();
         }
         desc.storageHandler = StringUtils.EMPTY;
       } else if (!StringUtils.isEmpty(storageHandler)) {
@@ -511,7 +518,7 @@ public class HCatCreateTableDesc {
         LOG.info("Using text file format for the table.");
         desc.inputformat = TextInputFormat.class.getName();
         LOG.info("Table input format:" + desc.inputformat);
-        desc.outputformat = IgnoreKeyTextOutputFormat.class
+        desc.outputformat = HiveIgnoreKeyTextOutputFormat.class
           .getName();
         LOG.info("Table output format:" + desc.outputformat);
       }
