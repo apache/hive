@@ -112,17 +112,16 @@ public class GenericUDFOPMod extends GenericUDFBaseNumeric {
   }
 
   @Override
-  protected HiveDecimalWritable evaluate(HiveDecimalWritable left, HiveDecimalWritable right) {
-    HiveDecimal hd1 = left.getHiveDecimal();
-    HiveDecimal hd2 = right.getHiveDecimal();
-    if (hd2.compareTo(HiveDecimal.ZERO) == 0) {
+  protected HiveDecimalWritable evaluate(HiveDecimal left, HiveDecimal right) {
+    if (right.compareTo(HiveDecimal.ZERO) == 0) {
       return null;
     }
 
-    HiveDecimal dec = hd1.remainder(hd2);
+    HiveDecimal dec = left.remainder(right);
     if (dec == null) {
       return null;
     }
+
     decimalWritable.set(dec);
     return decimalWritable;
   }
