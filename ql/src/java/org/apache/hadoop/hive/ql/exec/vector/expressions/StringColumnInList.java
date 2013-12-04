@@ -18,7 +18,7 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
-import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorExpressionDescriptor.Descriptor;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -32,18 +32,22 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Evaluate IN filter on a batch for a vector of doubles.
+ * Evaluate an IN boolean expression (not a filter) on a batch for a vector of strings.
+ * This is optimized so that no objects have to be created in
+ * the inner loop, and there is a hash table implemented
+ * with Cuckoo hashing that has fast lookup to do the IN test.
  */
-public class FilterDoubleColumnInList extends VectorExpression implements IDoubleInExpr {
+public class StringColumnInList extends VectorExpression implements IStringInExpr {
   private static final long serialVersionUID = 1L;
   private int inputCol;
-  private double[] inListValues;
+  private int outputColumn;
+  private byte[][] inListValues;
 
   // The set object containing the IN list. This is optimized for lookup
   // of the data type of the column.
-  private transient CuckooSetDouble inSet;
+  private transient CuckooSetBytes inSet;
 
-  public FilterDoubleColumnInList() {
+  public StringColumnInList() {
     super();
     inSet = null;
   }
@@ -51,8 +55,9 @@ public class FilterDoubleColumnInList extends VectorExpression implements IDoubl
   /**
    * After construction you must call setInListValues() to add the values to the IN set.
    */
-  public FilterDoubleColumnInList(int colNum) {
+  public StringColumnInList(int colNum, int outputColumn) {
     this.inputCol = colNum;
+    this.outputColumn = outputColumn;
     inSet = null;
   }
 
@@ -64,89 +69,66 @@ public class FilterDoubleColumnInList extends VectorExpression implements IDoubl
     }
 
     if (inSet == null) {
-      inSet = new CuckooSetDouble(inListValues.length);
+      inSet = new CuckooSetBytes(inListValues.length);
       inSet.load(inListValues);
     }
 
-    DoubleColumnVector inputColVector = (DoubleColumnVector) batch.cols[inputCol];
+    BytesColumnVector inputColVector = (BytesColumnVector) batch.cols[inputCol];
+    LongColumnVector outputColVector = (LongColumnVector) batch.cols[outputColumn];
     int[] sel = batch.selected;
     boolean[] nullPos = inputColVector.isNull;
     int n = batch.size;
-    double[] vector = inputColVector.vector;
+    byte[][] vector = inputColVector.vector;
+    int[] start = inputColVector.start;
+    int[] len = inputColVector.length;
+    long[] outputVector = outputColVector.vector;
 
     // return immediately if batch is empty
     if (n == 0) {
       return;
     }
 
+    outputColVector.isRepeating = inputColVector.isRepeating;
+    outputColVector.noNulls = inputColVector.noNulls;
     if (inputColVector.noNulls) {
       if (inputColVector.isRepeating) {
 
         // All must be selected otherwise size would be zero
         // Repeating property will not change.
-
-        if (!(inSet.lookup(vector[0]))) {
-          //Entire batch is filtered out.
-          batch.size = 0;
-        }
+        outputVector[0] = inSet.lookup(vector[0], start[0], len[0]) ? 1 : 0;
       } else if (batch.selectedInUse) {
-        int newSize = 0;
-        for(int j=0; j != n; j++) {
+        for(int j = 0; j != n; j++) {
           int i = sel[j];
-          if (inSet.lookup(vector[i])) {
-            sel[newSize++] = i;
-          }
+          outputVector[i] = inSet.lookup(vector[i], start[i], len[i]) ? 1 : 0;
         }
-        batch.size = newSize;
       } else {
-        int newSize = 0;
         for(int i = 0; i != n; i++) {
-          if (inSet.lookup(vector[i])) {
-            sel[newSize++] = i;
-          }
-        }
-        if (newSize < n) {
-          batch.size = newSize;
-          batch.selectedInUse = true;
+          outputVector[i] = inSet.lookup(vector[i], start[i], len[i]) ? 1 : 0;
         }
       }
     } else {
       if (inputColVector.isRepeating) {
-        //All must be selected otherwise size would be zero
-        //Repeating property will not change.
+
+        // All must be selected otherwise size would be zero
+        // Repeating property will not change.
         if (!nullPos[0]) {
-          if (!inSet.lookup(vector[0])) {
-            //Entire batch is filtered out.
-            batch.size = 0;
-          }
-        } else {
-          batch.size = 0;
+          outputVector[0] = inSet.lookup(vector[0], start[0], len[0]) ? 1 : 0;
         }
+        outputColVector.isNull[0] = nullPos[0];
       } else if (batch.selectedInUse) {
-        int newSize = 0;
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           if (!nullPos[i]) {
-           if (inSet.lookup(vector[i])) {
-             sel[newSize++] = i;
-           }
+            outputVector[i] = inSet.lookup(vector[i], start[i], len[i]) ? 1 : 0;
           }
+          outputColVector.isNull[i] = nullPos[i];
         }
-
-        // Change the selected vector
-        batch.size = newSize;
       } else {
-        int newSize = 0;
+        System.arraycopy(nullPos, 0, outputColVector.isNull, 0, n);
         for(int i = 0; i != n; i++) {
           if (!nullPos[i]) {
-            if (inSet.lookup(vector[i])) {
-              sel[newSize++] = i;
-            }
+            outputVector[i] = inSet.lookup(vector[i], start[i], len[i]) ? 1 : 0;
           }
-        }
-        if (newSize < n) {
-          batch.size = newSize;
-          batch.selectedInUse = true;
         }
       }
     }
@@ -160,7 +142,19 @@ public class FilterDoubleColumnInList extends VectorExpression implements IDoubl
 
   @Override
   public int getOutputColumn() {
-    return -1;
+    return this.outputColumn;
+  }
+
+  public void setOutputColumn(int value) {
+    this.outputColumn = value;
+  }
+
+  public int getInputCol() {
+    return inputCol;
+  }
+
+  public void setInputCol(int colNum) {
+    this.inputCol = colNum;
   }
 
   @Override
@@ -170,11 +164,11 @@ public class FilterDoubleColumnInList extends VectorExpression implements IDoubl
     return null;
   }
 
-  public double[] getInListValues() {
+  public byte[][] getInListValues() {
     return this.inListValues;
   }
 
-  public void setInListValues(double [] a) {
+  public void setInListValues(byte [][] a) {
     this.inListValues = a;
   }
 }
