@@ -55,7 +55,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hive.hcatalog</groupId>
-      <artifactId>hive-hbase-storage-handler</artifactId>
+      <artifactId>hive-hcatalog-hbase-storage-handler</artifactId>
       <version>${project.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
@@ -108,9 +108,6 @@
   <profiles>
     <profile>
       <id>hadoop-1</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <dependencies>
         <!-- test -->
         <dependency>
