@@ -8508,11 +8508,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Theoretically the key prefix could be any unique string shared
       // between TableScanOperator (when publishing) and StatsTask (when aggregating).
       // Here we use
-      // table_name + partitionSec
+      // db_name.table_name + partitionSec
       // as the prefix for easy of read during explain and debugging.
       // Currently, partition spec can only be static partition.
       String k = tblName + Path.SEPARATOR;
-      tsDesc.setStatsAggPrefix(k);
+      tsDesc.setStatsAggPrefix(tab.getDbName()+"."+k);
 
       // set up WritenEntity for replication
       outputs.add(new WriteEntity(tab, true));

@@ -52,6 +52,7 @@ import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.PlanUtils;
 import org.apache.hadoop.hive.ql.plan.SkewedColumnPositionPair;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.ql.stats.CounterStatsPublisher;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde2.SerDeException;
 import org.apache.hadoop.hive.serde2.SerDeStats;
@@ -974,15 +975,26 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
 
       // construct the key(fileID) to insert into the intermediate stats table
       if (fspKey == "") {
+        if (statsPublisher instanceof CounterStatsPublisher) {
+          // key is of form either of dbName.TblName/ or dbName.TblName/p1=v1/
+          key = Utilities.appendPathSeparator(conf.getTableInfo().getTableName() + Path.SEPARATOR + spSpec);
+          } else {
         // for non-partitioned/static partitioned table, the key for temp storage is
         // common key prefix + static partition spec + taskID
         String keyPrefix = Utilities.getHashedStatsPrefix(
             conf.getStatsAggPrefix() + spSpec, conf.getMaxStatsKeyPrefixLength());
         key = keyPrefix + taskID;
+          }
       } else {
-        // for partitioned table, the key is
-        // common key prefix + static partition spec + DynamicPartSpec + taskID
-        key = createKeyForStatsPublisher(taskID, spSpec, fspKey);
+          if (statsPublisher instanceof CounterStatsPublisher) {
+          // key is of form either of dbName.TblName/p1=v1/
+            key = Utilities.appendPathSeparator(Utilities.appendPathSeparator(
+              conf.getTableInfo().getTableName() + Path.SEPARATOR + spSpec) + fspKey);
+          } else {
+              // for partitioned table, the key is
+              // common key prefix + static partition spec + DynamicPartSpec + taskID
+              key = createKeyForStatsPublisher(taskID, spSpec, fspKey);
+          }
       }
       Map<String, String> statsToPublish = new HashMap<String, String>();
       for (String statType : fspValue.stat.getStoredStats()) {
