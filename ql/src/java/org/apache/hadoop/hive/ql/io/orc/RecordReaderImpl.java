@@ -45,6 +45,7 @@ import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.serde2.io.ByteWritable;
 import org.apache.hadoop.hive.serde2.io.DateWritable;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
+import org.apache.hadoop.hive.serde2.io.HiveCharWritable;
 import org.apache.hadoop.hive.serde2.io.HiveVarcharWritable;
 import org.apache.hadoop.hive.serde2.io.ShortWritable;
 import org.apache.hadoop.hive.serde2.typeinfo.HiveDecimalUtils;
@@ -1471,6 +1472,34 @@ class RecordReaderImpl implements RecordReader {
     }
   }
 
+  private static class CharTreeReader extends StringTreeReader {
+    int maxLength;
+
+    CharTreeReader(Path path, int columnId, int maxLength) {
+      super(path, columnId);
+      this.maxLength = maxLength;
+    }
+
+    @Override
+    Object next(Object previous) throws IOException {
+      HiveCharWritable result = null;
+      if (previous == null) {
+        result = new HiveCharWritable();
+      } else {
+        result = (HiveCharWritable) previous;
+      }
+      // Use the string reader implementation to populate the internal Text value
+      Object textVal = super.next(result.getTextValue());
+      if (textVal == null) {
+        return null;
+      }
+      // result should now hold the value that was read in.
+      // enforce char length
+      result.enforceMaxLength(maxLength);
+      return result;
+    }
+  }
+
   private static class VarcharTreeReader extends StringTreeReader {
     int maxLength;
 
@@ -1890,6 +1919,11 @@ class RecordReaderImpl implements RecordReader {
         return new LongTreeReader(path, columnId);
       case STRING:
         return new StringTreeReader(path, columnId);
+      case CHAR:
+        if (!type.hasMaximumLength()) {
+          throw new IllegalArgumentException("ORC char type has no length specified");
+        }
+        return new CharTreeReader(path, columnId, type.getMaximumLength());
       case VARCHAR:
         if (!type.hasMaximumLength()) {
           throw new IllegalArgumentException("ORC varchar type has no length specified");

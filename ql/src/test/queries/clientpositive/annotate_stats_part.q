@@ -1,3 +1,8 @@
+set hive.stats.fetch.column.stats=true;
+set hive.stats.autogather=false;
+set hive.exec.dynamic.partition=true;
+set hive.exec.dynamic.partition.mode=nonstrict;
+
 create table if not exists loc_staging (
   state string,
   locid int,
@@ -15,10 +20,6 @@ create table if not exists loc_orc (
 
 -- basicStatState: NONE colStatState: NONE
 explain extended select * from loc_orc;
-
-set hive.stats.autogather=false;
-set hive.exec.dynamic.partition=true;
-set hive.exec.dynamic.partition.mode=nonstrict;
 
 insert overwrite table loc_orc partition(year) select * from loc_staging;
 

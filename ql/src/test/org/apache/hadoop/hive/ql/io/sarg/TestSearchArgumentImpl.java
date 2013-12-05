@@ -25,12 +25,13 @@ import java.beans.XMLDecoder;
 import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.Set;
 
+import com.google.common.collect.Sets;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgument.TruthValue;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.ExpressionBuilder;
 import org.apache.hadoop.hive.ql.io.sarg.SearchArgumentImpl.ExpressionTree;
 import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
-import org.apache.mina.util.IdentityHashSet;
 import org.junit.Test;
 
 /**
@@ -207,11 +208,11 @@ public class TestSearchArgumentImpl {
     assertNoSharedNodes(ExpressionBuilder.convertToCNF(or(and(leaf(0), leaf(1), leaf(2)),
         and(leaf(3), leaf(4), leaf(5)),
         and(leaf(6), leaf(7)),
-        leaf(8))), new IdentityHashSet<ExpressionTree>());
+        leaf(8))), Sets.<ExpressionTree>newIdentityHashSet());
   }
 
   private static void assertNoSharedNodes(ExpressionTree tree,
-                                          IdentityHashSet<ExpressionTree> seen
+                                          Set<ExpressionTree> seen
                                          ) throws Exception {
     if (seen.contains(tree) &&
         tree.getOperator() != ExpressionTree.Operator.LEAF) {
@@ -776,7 +777,7 @@ public class TestSearchArgumentImpl {
         " (not leaf-4) leaf-5 leaf-6 leaf-8))",
         sarg.getExpression().toString());
     assertNoSharedNodes(sarg.getExpression(),
-        new IdentityHashSet<ExpressionTree>());
+        Sets.<ExpressionTree>newIdentityHashSet());
   }
 
   @Test
@@ -1012,7 +1013,7 @@ public class TestSearchArgumentImpl {
     assertEquals("(or leaf-0 (not leaf-1) (not leaf-2) leaf-3)",
         sarg.getExpression().toString());
     assertNoSharedNodes(sarg.getExpression(),
-        new IdentityHashSet<ExpressionTree>());
+        Sets.<ExpressionTree>newIdentityHashSet());
     assertEquals(TruthValue.NO,
         sarg.evaluate(values(TruthValue.NO, TruthValue.YES, TruthValue.YES,
             TruthValue.NO)));
@@ -1426,7 +1427,7 @@ public class TestSearchArgumentImpl {
     assertEquals("(and leaf-0 leaf-1 leaf-2)",
         sarg.getExpression().toString());
     assertNoSharedNodes(sarg.getExpression(),
-        new IdentityHashSet<ExpressionTree>());
+        Sets.<ExpressionTree>newIdentityHashSet());
   }
 
   @Test
@@ -1636,7 +1637,7 @@ public class TestSearchArgumentImpl {
     assertEquals("(and (not leaf-0) leaf-1 leaf-2)",
         sarg.getExpression().toString());
     assertNoSharedNodes(sarg.getExpression(),
-        new IdentityHashSet<ExpressionTree>());
+        Sets.<ExpressionTree>newIdentityHashSet());
     assertEquals(TruthValue.YES,
         sarg.evaluate(values(TruthValue.NO, TruthValue.YES, TruthValue.YES)));
     assertEquals(TruthValue.NULL,
@@ -1878,7 +1879,7 @@ public class TestSearchArgumentImpl {
     assertEquals("leaf-0",
         sarg.getExpression().toString());
     assertNoSharedNodes(sarg.getExpression(),
-        new IdentityHashSet<ExpressionTree>());
+        Sets.<ExpressionTree>newIdentityHashSet());
   }
 
   @Test
@@ -2740,7 +2741,7 @@ public class TestSearchArgumentImpl {
     assertEquals("(and (not leaf-0) (not leaf-0))",
         sarg.getExpression().toString());
     assertNoSharedNodes(sarg.getExpression(),
-        new IdentityHashSet<ExpressionTree>());
+        Sets.<ExpressionTree>newIdentityHashSet());
     assertEquals(TruthValue.NO, sarg.evaluate(values(TruthValue.YES)));
     assertEquals(TruthValue.YES, sarg.evaluate(values(TruthValue.NO)));
     assertEquals(TruthValue.NULL, sarg.evaluate(values(TruthValue.NULL)));

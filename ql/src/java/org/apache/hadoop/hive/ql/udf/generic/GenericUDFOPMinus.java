@@ -94,8 +94,8 @@ public class GenericUDFOPMinus extends GenericUDFBaseNumeric {
   }
 
   @Override
-  protected HiveDecimalWritable evaluate(HiveDecimalWritable left, HiveDecimalWritable right) {
-    HiveDecimal dec = left.getHiveDecimal().subtract(right.getHiveDecimal());
+  protected HiveDecimalWritable evaluate(HiveDecimal left, HiveDecimal right) {
+    HiveDecimal dec = left.subtract(right);
     if (dec == null) {
       return null;
     }

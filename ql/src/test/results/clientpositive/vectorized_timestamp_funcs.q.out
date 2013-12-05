@@ -1,0 +1,647 @@
+PREHOOK: query: -- Test timestamp functions in vectorized mode to verify they run correctly end-to-end.
+
+CREATE TABLE alltypesorc_string(ctimestamp1 timestamp, stimestamp1 string) STORED AS ORC
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- Test timestamp functions in vectorized mode to verify they run correctly end-to-end.
+
+CREATE TABLE alltypesorc_string(ctimestamp1 timestamp, stimestamp1 string) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@alltypesorc_string
+PREHOOK: query: INSERT OVERWRITE TABLE alltypesorc_string
+SELECT
+  to_utc_timestamp(ctimestamp1, 'America/Los_Angeles'),
+  CAST(to_utc_timestamp(ctimestamp1, 'America/Los_Angeles') AS STRING)
+FROM alltypesorc
+LIMIT 40
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@alltypesorc_string
+POSTHOOK: query: INSERT OVERWRITE TABLE alltypesorc_string
+SELECT
+  to_utc_timestamp(ctimestamp1, 'America/Los_Angeles'),
+  CAST(to_utc_timestamp(ctimestamp1, 'America/Los_Angeles') AS STRING)
+FROM alltypesorc
+LIMIT 40
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@alltypesorc_string
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+PREHOOK: query: CREATE TABLE alltypesorc_wrong(stimestamp1 string) STORED AS ORC
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE alltypesorc_wrong(stimestamp1 string) STORED AS ORC
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@alltypesorc_wrong
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+PREHOOK: query: INSERT INTO TABLE alltypesorc_wrong SELECT 'abcd' FROM alltypesorc LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@alltypesorc_wrong
+POSTHOOK: query: INSERT INTO TABLE alltypesorc_wrong SELECT 'abcd' FROM alltypesorc LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@alltypesorc_wrong
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+PREHOOK: query: INSERT INTO TABLE alltypesorc_wrong SELECT '2000:01:01 00-00-00' FROM alltypesorc LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@alltypesorc_wrong
+POSTHOOK: query: INSERT INTO TABLE alltypesorc_wrong SELECT '2000:01:01 00-00-00' FROM alltypesorc LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@alltypesorc_wrong
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+PREHOOK: query: INSERT INTO TABLE alltypesorc_wrong SELECT '0000-00-00 99:99:99' FROM alltypesorc LIMIT 1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc
+PREHOOK: Output: default@alltypesorc_wrong
+POSTHOOK: query: INSERT INTO TABLE alltypesorc_wrong SELECT '0000-00-00 99:99:99' FROM alltypesorc LIMIT 1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc
+POSTHOOK: Output: default@alltypesorc_wrong
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+PREHOOK: query: EXPLAIN SELECT
+  to_unix_timestamp(ctimestamp1),
+  year(ctimestamp1),
+  month(ctimestamp1),
+  day(ctimestamp1),
+  dayofmonth(ctimestamp1),
+  weekofyear(ctimestamp1),
+  hour(ctimestamp1),
+  minute(ctimestamp1),
+  second(ctimestamp1)
+FROM alltypesorc_string
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT
+  to_unix_timestamp(ctimestamp1),
+  year(ctimestamp1),
+  month(ctimestamp1),
+  day(ctimestamp1),
+  dayofmonth(ctimestamp1),
+  weekofyear(ctimestamp1),
+  hour(ctimestamp1),
+  minute(ctimestamp1),
+  second(ctimestamp1)
+FROM alltypesorc_string
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypesorc_string))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION to_unix_timestamp (TOK_TABLE_OR_COL ctimestamp1))) (TOK_SELEXPR (TOK_FUNCTION year (TOK_TABLE_OR_COL ctimestamp1))) (TOK_SELEXPR (TOK_FUNCTION month (TOK_TABLE_OR_COL ctimestamp1))) (TOK_SELEXPR (TOK_FUNCTION day (TOK_TABLE_OR_COL ctimestamp1))) (TOK_SELEXPR (TOK_FUNCTION dayofmonth (TOK_TABLE_OR_COL ctimestamp1))) (TOK_SELEXPR (TOK_FUNCTION weekofyear (TOK_TABLE_OR_COL ctimestamp1))) (TOK_SELEXPR (TOK_FUNCTION hour (TOK_TABLE_OR_COL ctimestamp1))) (TOK_SELEXPR (TOK_FUNCTION minute (TOK_TABLE_OR_COL ctimestamp1))) (TOK_SELEXPR (TOK_FUNCTION second (TOK_TABLE_OR_COL ctimestamp1))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        alltypesorc_string 
+          TableScan
+            alias: alltypesorc_string
+            Select Operator
+              expressions:
+                    expr: to_unix_timestamp(ctimestamp1)
+                    type: bigint
+                    expr: year(ctimestamp1)
+                    type: int
+                    expr: month(ctimestamp1)
+                    type: int
+                    expr: day(ctimestamp1)
+                    type: int
+                    expr: dayofmonth(ctimestamp1)
+                    type: int
+                    expr: weekofyear(ctimestamp1)
+                    type: int
+                    expr: hour(ctimestamp1)
+                    type: int
+                    expr: minute(ctimestamp1)
+                    type: int
+                    expr: second(ctimestamp1)
+                    type: int
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+              Vectorized execution: true
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                Vectorized execution: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT
+  to_unix_timestamp(ctimestamp1),
+  year(ctimestamp1),
+  month(ctimestamp1),
+  day(ctimestamp1),
+  dayofmonth(ctimestamp1),
+  weekofyear(ctimestamp1),
+  hour(ctimestamp1),
+  minute(ctimestamp1),
+  second(ctimestamp1)
+FROM alltypesorc_string
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  to_unix_timestamp(ctimestamp1),
+  year(ctimestamp1),
+  month(ctimestamp1),
+  day(ctimestamp1),
+  dayofmonth(ctimestamp1),
+  weekofyear(ctimestamp1),
+  hour(ctimestamp1),
+  minute(ctimestamp1),
+  second(ctimestamp1)
+FROM alltypesorc_string
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+28786	1969	12	31	31	1	23	59	46
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+28795	1969	12	31	31	1	23	59	55
+28784	1969	12	31	31	1	23	59	44
+28790	1969	12	31	31	1	23	59	50
+28815	1970	1	1	1	1	0	0	15
+28807	1970	1	1	1	1	0	0	7
+28804	1970	1	1	1	1	0	0	4
+28792	1969	12	31	31	1	23	59	52
+28784	1969	12	31	31	1	23	59	44
+28784	1969	12	31	31	1	23	59	44
+28805	1970	1	1	1	1	0	0	5
+28814	1970	1	1	1	1	0	0	14
+28813	1970	1	1	1	1	0	0	13
+28787	1969	12	31	31	1	23	59	47
+28809	1970	1	1	1	1	0	0	9
+28792	1969	12	31	31	1	23	59	52
+28800	1970	1	1	1	1	0	0	0
+28805	1970	1	1	1	1	0	0	5
+28798	1969	12	31	31	1	23	59	58
+28789	1969	12	31	31	1	23	59	49
+28811	1970	1	1	1	1	0	0	11
+28808	1970	1	1	1	1	0	0	8
+28802	1970	1	1	1	1	0	0	2
+28804	1970	1	1	1	1	0	0	4
+28784	1969	12	31	31	1	23	59	44
+28789	1969	12	31	31	1	23	59	49
+28792	1969	12	31	31	1	23	59	52
+28807	1970	1	1	1	1	0	0	7
+28795	1969	12	31	31	1	23	59	55
+28800	1970	1	1	1	1	0	0	0
+28798	1969	12	31	31	1	23	59	58
+28807	1970	1	1	1	1	0	0	7
+28795	1969	12	31	31	1	23	59	55
+28785	1969	12	31	31	1	23	59	45
+28788	1969	12	31	31	1	23	59	48
+28803	1970	1	1	1	1	0	0	3
+28808	1970	1	1	1	1	0	0	8
+28792	1969	12	31	31	1	23	59	52
+28806	1970	1	1	1	1	0	0	6
+PREHOOK: query: EXPLAIN SELECT
+  to_unix_timestamp(stimestamp1),
+  year(stimestamp1),
+  month(stimestamp1),
+  day(stimestamp1),
+  dayofmonth(stimestamp1),
+  weekofyear(stimestamp1),
+  hour(stimestamp1),
+  minute(stimestamp1),
+  second(stimestamp1)
+FROM alltypesorc_string
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT
+  to_unix_timestamp(stimestamp1),
+  year(stimestamp1),
+  month(stimestamp1),
+  day(stimestamp1),
+  dayofmonth(stimestamp1),
+  weekofyear(stimestamp1),
+  hour(stimestamp1),
+  minute(stimestamp1),
+  second(stimestamp1)
+FROM alltypesorc_string
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypesorc_string))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION to_unix_timestamp (TOK_TABLE_OR_COL stimestamp1))) (TOK_SELEXPR (TOK_FUNCTION year (TOK_TABLE_OR_COL stimestamp1))) (TOK_SELEXPR (TOK_FUNCTION month (TOK_TABLE_OR_COL stimestamp1))) (TOK_SELEXPR (TOK_FUNCTION day (TOK_TABLE_OR_COL stimestamp1))) (TOK_SELEXPR (TOK_FUNCTION dayofmonth (TOK_TABLE_OR_COL stimestamp1))) (TOK_SELEXPR (TOK_FUNCTION weekofyear (TOK_TABLE_OR_COL stimestamp1))) (TOK_SELEXPR (TOK_FUNCTION hour (TOK_TABLE_OR_COL stimestamp1))) (TOK_SELEXPR (TOK_FUNCTION minute (TOK_TABLE_OR_COL stimestamp1))) (TOK_SELEXPR (TOK_FUNCTION second (TOK_TABLE_OR_COL stimestamp1))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        alltypesorc_string 
+          TableScan
+            alias: alltypesorc_string
+            Select Operator
+              expressions:
+                    expr: to_unix_timestamp(stimestamp1)
+                    type: bigint
+                    expr: year(stimestamp1)
+                    type: int
+                    expr: month(stimestamp1)
+                    type: int
+                    expr: day(stimestamp1)
+                    type: int
+                    expr: dayofmonth(stimestamp1)
+                    type: int
+                    expr: weekofyear(stimestamp1)
+                    type: int
+                    expr: hour(stimestamp1)
+                    type: int
+                    expr: minute(stimestamp1)
+                    type: int
+                    expr: second(stimestamp1)
+                    type: int
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+              Vectorized execution: true
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                Vectorized execution: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT
+  to_unix_timestamp(stimestamp1),
+  year(stimestamp1),
+  month(stimestamp1),
+  day(stimestamp1),
+  dayofmonth(stimestamp1),
+  weekofyear(stimestamp1),
+  hour(stimestamp1),
+  minute(stimestamp1),
+  second(stimestamp1)
+FROM alltypesorc_string
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  to_unix_timestamp(stimestamp1),
+  year(stimestamp1),
+  month(stimestamp1),
+  day(stimestamp1),
+  dayofmonth(stimestamp1),
+  weekofyear(stimestamp1),
+  hour(stimestamp1),
+  minute(stimestamp1),
+  second(stimestamp1)
+FROM alltypesorc_string
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+28786	1969	12	31	31	1	23	59	46
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+28795	1969	12	31	31	1	23	59	55
+28784	1969	12	31	31	1	23	59	44
+28790	1969	12	31	31	1	23	59	50
+28815	1970	1	1	1	1	0	0	15
+28807	1970	1	1	1	1	0	0	7
+28804	1970	1	1	1	1	0	0	4
+28792	1969	12	31	31	1	23	59	52
+28784	1969	12	31	31	1	23	59	44
+28784	1969	12	31	31	1	23	59	44
+28805	1970	1	1	1	1	0	0	5
+28814	1970	1	1	1	1	0	0	14
+28813	1970	1	1	1	1	0	0	13
+28787	1969	12	31	31	1	23	59	47
+28809	1970	1	1	1	1	0	0	9
+28792	1969	12	31	31	1	23	59	52
+28800	1970	1	1	1	1	0	0	0
+28805	1970	1	1	1	1	0	0	5
+28798	1969	12	31	31	1	23	59	58
+28789	1969	12	31	31	1	23	59	49
+28811	1970	1	1	1	1	0	0	11
+28808	1970	1	1	1	1	0	0	8
+28802	1970	1	1	1	1	0	0	2
+28804	1970	1	1	1	1	0	0	4
+28784	1969	12	31	31	1	23	59	44
+28789	1969	12	31	31	1	23	59	49
+28792	1969	12	31	31	1	23	59	52
+28807	1970	1	1	1	1	0	0	7
+28795	1969	12	31	31	1	23	59	55
+28800	1970	1	1	1	1	0	0	0
+28798	1969	12	31	31	1	23	59	58
+28807	1970	1	1	1	1	0	0	7
+28795	1969	12	31	31	1	23	59	55
+28785	1969	12	31	31	1	23	59	45
+28788	1969	12	31	31	1	23	59	48
+28803	1970	1	1	1	1	0	0	3
+28808	1970	1	1	1	1	0	0	8
+28792	1969	12	31	31	1	23	59	52
+28806	1970	1	1	1	1	0	0	6
+PREHOOK: query: EXPLAIN SELECT
+  to_unix_timestamp(ctimestamp1) = to_unix_timestamp(stimestamp1),
+  year(ctimestamp1) = year(stimestamp1),
+  month(ctimestamp1) = month(stimestamp1),
+  day(ctimestamp1) = day(stimestamp1),
+  dayofmonth(ctimestamp1) = dayofmonth(stimestamp1),
+  weekofyear(ctimestamp1) = weekofyear(stimestamp1),
+  hour(ctimestamp1) = hour(stimestamp1),
+  minute(ctimestamp1) = minute(stimestamp1),
+  second(ctimestamp1) = second(stimestamp1)
+FROM alltypesorc_string
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT
+  to_unix_timestamp(ctimestamp1) = to_unix_timestamp(stimestamp1),
+  year(ctimestamp1) = year(stimestamp1),
+  month(ctimestamp1) = month(stimestamp1),
+  day(ctimestamp1) = day(stimestamp1),
+  dayofmonth(ctimestamp1) = dayofmonth(stimestamp1),
+  weekofyear(ctimestamp1) = weekofyear(stimestamp1),
+  hour(ctimestamp1) = hour(stimestamp1),
+  minute(ctimestamp1) = minute(stimestamp1),
+  second(ctimestamp1) = second(stimestamp1)
+FROM alltypesorc_string
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypesorc_string))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (= (TOK_FUNCTION to_unix_timestamp (TOK_TABLE_OR_COL ctimestamp1)) (TOK_FUNCTION to_unix_timestamp (TOK_TABLE_OR_COL stimestamp1)))) (TOK_SELEXPR (= (TOK_FUNCTION year (TOK_TABLE_OR_COL ctimestamp1)) (TOK_FUNCTION year (TOK_TABLE_OR_COL stimestamp1)))) (TOK_SELEXPR (= (TOK_FUNCTION month (TOK_TABLE_OR_COL ctimestamp1)) (TOK_FUNCTION month (TOK_TABLE_OR_COL stimestamp1)))) (TOK_SELEXPR (= (TOK_FUNCTION day (TOK_TABLE_OR_COL ctimestamp1)) (TOK_FUNCTION day (TOK_TABLE_OR_COL stimestamp1)))) (TOK_SELEXPR (= (TOK_FUNCTION dayofmonth (TOK_TABLE_OR_COL ctimestamp1)) (TOK_FUNCTION dayofmonth (TOK_TABLE_OR_COL stimestamp1)))) (TOK_SELEXPR (= (TOK_FUNCTION weekofyear (TOK_TABLE_OR_COL ctimestamp1)) (TOK_FUNCTION weekofyear (TOK_TABLE_OR_COL stimestamp1)))) (TOK_SELEXPR (= (TOK_FUNCTION hour (TOK_TABLE_OR_COL ctimestamp1)) (TOK_FUNCTION hour (TOK_TABLE_OR_COL stimestamp1)))) (TOK_SELEXPR (= (TOK_FUNCTION minute (TOK_TABLE_OR_COL ctimestamp1)) (TOK_FUNCTION minute (TOK_TABLE_OR_COL stimestamp1)))) (TOK_SELEXPR (= (TOK_FUNCTION second (TOK_TABLE_OR_COL ctimestamp1)) (TOK_FUNCTION second (TOK_TABLE_OR_COL stimestamp1)))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        alltypesorc_string 
+          TableScan
+            alias: alltypesorc_string
+            Select Operator
+              expressions:
+                    expr: (to_unix_timestamp(ctimestamp1) = to_unix_timestamp(stimestamp1))
+                    type: boolean
+                    expr: (year(ctimestamp1) = year(stimestamp1))
+                    type: boolean
+                    expr: (month(ctimestamp1) = month(stimestamp1))
+                    type: boolean
+                    expr: (day(ctimestamp1) = day(stimestamp1))
+                    type: boolean
+                    expr: (dayofmonth(ctimestamp1) = dayofmonth(stimestamp1))
+                    type: boolean
+                    expr: (weekofyear(ctimestamp1) = weekofyear(stimestamp1))
+                    type: boolean
+                    expr: (hour(ctimestamp1) = hour(stimestamp1))
+                    type: boolean
+                    expr: (minute(ctimestamp1) = minute(stimestamp1))
+                    type: boolean
+                    expr: (second(ctimestamp1) = second(stimestamp1))
+                    type: boolean
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+              Vectorized execution: true
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                Vectorized execution: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: -- Should all be true or NULL
+SELECT
+  to_unix_timestamp(ctimestamp1) = to_unix_timestamp(stimestamp1),
+  year(ctimestamp1) = year(stimestamp1),
+  month(ctimestamp1) = month(stimestamp1),
+  day(ctimestamp1) = day(stimestamp1),
+  dayofmonth(ctimestamp1) = dayofmonth(stimestamp1),
+  weekofyear(ctimestamp1) = weekofyear(stimestamp1),
+  hour(ctimestamp1) = hour(stimestamp1),
+  minute(ctimestamp1) = minute(stimestamp1),
+  second(ctimestamp1) = second(stimestamp1)
+FROM alltypesorc_string
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
+POSTHOOK: query: -- Should all be true or NULL
+SELECT
+  to_unix_timestamp(ctimestamp1) = to_unix_timestamp(stimestamp1),
+  year(ctimestamp1) = year(stimestamp1),
+  month(ctimestamp1) = month(stimestamp1),
+  day(ctimestamp1) = day(stimestamp1),
+  dayofmonth(ctimestamp1) = dayofmonth(stimestamp1),
+  weekofyear(ctimestamp1) = weekofyear(stimestamp1),
+  hour(ctimestamp1) = hour(stimestamp1),
+  minute(ctimestamp1) = minute(stimestamp1),
+  second(ctimestamp1) = second(stimestamp1)
+FROM alltypesorc_string
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_string
+#### A masked pattern was here ####
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+true	true	true	true	true	true	true	true	true
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+true	true	true	true	true	true	true	true	true
+PREHOOK: query: -- Wrong format. Should all be NULL.
+EXPLAIN SELECT
+  to_unix_timestamp(stimestamp1),
+  year(stimestamp1),
+  month(stimestamp1),
+  day(stimestamp1),
+  dayofmonth(stimestamp1),
+  weekofyear(stimestamp1),
+  hour(stimestamp1),
+  minute(stimestamp1),
+  second(stimestamp1)
+FROM alltypesorc_wrong
+PREHOOK: type: QUERY
+POSTHOOK: query: -- Wrong format. Should all be NULL.
+EXPLAIN SELECT
+  to_unix_timestamp(stimestamp1),
+  year(stimestamp1),
+  month(stimestamp1),
+  day(stimestamp1),
+  dayofmonth(stimestamp1),
+  weekofyear(stimestamp1),
+  hour(stimestamp1),
+  minute(stimestamp1),
+  second(stimestamp1)
+FROM alltypesorc_wrong
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypesorc_wrong))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION to_unix_timestamp (TOK_TABLE_OR_COL stimestamp1))) (TOK_SELEXPR (TOK_FUNCTION year (TOK_TABLE_OR_COL stimestamp1))) (TOK_SELEXPR (TOK_FUNCTION month (TOK_TABLE_OR_COL stimestamp1))) (TOK_SELEXPR (TOK_FUNCTION day (TOK_TABLE_OR_COL stimestamp1))) (TOK_SELEXPR (TOK_FUNCTION dayofmonth (TOK_TABLE_OR_COL stimestamp1))) (TOK_SELEXPR (TOK_FUNCTION weekofyear (TOK_TABLE_OR_COL stimestamp1))) (TOK_SELEXPR (TOK_FUNCTION hour (TOK_TABLE_OR_COL stimestamp1))) (TOK_SELEXPR (TOK_FUNCTION minute (TOK_TABLE_OR_COL stimestamp1))) (TOK_SELEXPR (TOK_FUNCTION second (TOK_TABLE_OR_COL stimestamp1))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        alltypesorc_wrong 
+          TableScan
+            alias: alltypesorc_wrong
+            Select Operator
+              expressions:
+                    expr: to_unix_timestamp(stimestamp1)
+                    type: bigint
+                    expr: year(stimestamp1)
+                    type: int
+                    expr: month(stimestamp1)
+                    type: int
+                    expr: day(stimestamp1)
+                    type: int
+                    expr: dayofmonth(stimestamp1)
+                    type: int
+                    expr: weekofyear(stimestamp1)
+                    type: int
+                    expr: hour(stimestamp1)
+                    type: int
+                    expr: minute(stimestamp1)
+                    type: int
+                    expr: second(stimestamp1)
+                    type: int
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8
+              Vectorized execution: true
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                Vectorized execution: true
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+
+PREHOOK: query: SELECT
+  to_unix_timestamp(stimestamp1),
+  year(stimestamp1),
+  month(stimestamp1),
+  day(stimestamp1),
+  dayofmonth(stimestamp1),
+  weekofyear(stimestamp1),
+  hour(stimestamp1),
+  minute(stimestamp1),
+  second(stimestamp1)
+FROM alltypesorc_wrong
+PREHOOK: type: QUERY
+PREHOOK: Input: default@alltypesorc_wrong
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT
+  to_unix_timestamp(stimestamp1),
+  year(stimestamp1),
+  month(stimestamp1),
+  day(stimestamp1),
+  dayofmonth(stimestamp1),
+  weekofyear(stimestamp1),
+  hour(stimestamp1),
+  minute(stimestamp1),
+  second(stimestamp1)
+FROM alltypesorc_wrong
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@alltypesorc_wrong
+#### A masked pattern was here ####
+POSTHOOK: Lineage: alltypesorc_string.ctimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_string.stimestamp1 EXPRESSION [(alltypesorc)alltypesorc.FieldSchema(name:ctimestamp1, type:timestamp, comment:from deserializer), ]
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+POSTHOOK: Lineage: alltypesorc_wrong.stimestamp1 SIMPLE []
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL
+NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL	NULL

@@ -901,8 +901,19 @@ public class Driver implements CommandProcessor {
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.RELEASE_LOCKS);
   }
 
-  public CommandProcessorResponse run(String command) throws CommandNeedRetryException {
-    CommandProcessorResponse cpr = runInternal(command);
+  public CommandProcessorResponse run(String command)
+      throws CommandNeedRetryException {
+    return run(command, false);
+  }
+
+  public CommandProcessorResponse run()
+      throws CommandNeedRetryException {
+    return run(null, true);
+  }
+
+  public CommandProcessorResponse run(String command, boolean alreadyCompiled)
+        throws CommandNeedRetryException {
+    CommandProcessorResponse cpr = runInternal(command, alreadyCompiled);
     if(cpr.getResponseCode() == 0) {
       return cpr;
     }
@@ -957,7 +968,25 @@ public class Driver implements CommandProcessor {
     }
     return cpr;
   }
-  private CommandProcessorResponse runInternal(String command) throws CommandNeedRetryException {
+
+  public CommandProcessorResponse compileAndRespond(String command) {
+    return new CommandProcessorResponse(compileInternal(command),
+        errorMessage, SQLState);
+  }
+
+  private int compileInternal(String command) {
+    int ret;
+    synchronized (compileMonitor) {
+      ret = compile(command);
+    }
+    if (ret != 0) {
+      releaseLocks(ctx.getHiveLocks());
+    }
+    return ret;
+  }
+
+  private CommandProcessorResponse runInternal(String command, boolean alreadyCompiled)
+      throws CommandNeedRetryException {
     errorMessage = null;
     SQLState = null;
     downstreamError = null;
@@ -990,12 +1019,11 @@ public class Driver implements CommandProcessor {
     perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TIME_TO_SUBMIT);
 
     int ret;
-    synchronized (compileMonitor) {
-      ret = compile(command);
-    }
-    if (ret != 0) {
-      releaseLocks(ctx.getHiveLocks());
-      return new CommandProcessorResponse(ret, errorMessage, SQLState);
+    if (!alreadyCompiled) {
+      ret = compileInternal(command);
+      if (ret != 0) {
+        return new CommandProcessorResponse(ret, errorMessage, SQLState);
+      }
     }
 
     boolean requireLock = false;

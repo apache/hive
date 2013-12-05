@@ -68,9 +68,13 @@ public class LongColDivideLongScalar extends VectorExpression {
       return;
     }
 
-    if (inputColVector.isRepeating) {
+    if (value == 0) {
+      // Denominator is zero, convert the batch to nulls
+      outputColVector.noNulls = false;
+      outputColVector.isRepeating = true;
+      outputIsNull[0] = true;
+    } else if (inputColVector.isRepeating) {
       outputVector[0] = vector[0] / (double) value;
-
       // Even if there are no nulls, we always copy over entry 0. Simplifies code.
       outputIsNull[0] = inputIsNull[0];
     } else if (inputColVector.noNulls) {

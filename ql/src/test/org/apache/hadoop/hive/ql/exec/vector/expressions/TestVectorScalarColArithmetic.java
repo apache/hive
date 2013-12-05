@@ -179,6 +179,7 @@ public class TestVectorScalarColArithmetic {
     expr.evaluate(batch);
 
     // verify NULL output in entry 0 is correct
+    assertFalse(out.noNulls);
     assertTrue(out.isNull[0]);
     assertTrue(Double.isNaN(out.vector[0]));
 
@@ -186,7 +187,6 @@ public class TestVectorScalarColArithmetic {
     for (int i = 1; i != batch.size; i++) {
       assertTrue(equalsWithinTolerance((i * 37) / 100d, out.vector[i]));
     }
-    assertFalse(out.noNulls);
     assertFalse(out.isRepeating);
   }
 
@@ -203,7 +203,8 @@ public class TestVectorScalarColArithmetic {
     expr.evaluate(batch);
 
     // verify zero-divide result for position 0
-    assertTrue(Double.isInfinite(out.vector[0]));
+    assertTrue(out.isNull[0]);
+    assertTrue(Double.isNaN(out.vector[0]));
 
     // verify NULL output in entry 1 is correct
     assertTrue(out.isNull[1]);
@@ -215,5 +216,30 @@ public class TestVectorScalarColArithmetic {
     }
     assertFalse(out.noNulls);
     assertFalse(out.isRepeating);
+  }
+
+  @Test
+  public void testBooleanValuedLongIn() {
+    VectorizedRowBatch batch = getBatch();
+    long[] a = new long[2];
+    a[0] = 20;
+    a[1] = 1000;
+    batch.size = 2;
+    VectorExpression expr = (new LongColumnInList(0, 1));
+    ((LongColumnInList) expr).setInListValues(a);
+    expr.evaluate(batch);
+    LongColumnVector out = (LongColumnVector) batch.cols[1];
+    Assert.assertEquals(0, out.vector[0]);
+    Assert.assertEquals(1, out.vector[1]);
+  }
+
+  private VectorizedRowBatch getBatch() {
+    VectorizedRowBatch b = new VectorizedRowBatch(2);
+    LongColumnVector v = new LongColumnVector();
+    v.vector[0] = 10;
+    v.vector[1] = 20;
+    b.cols[0] = v;
+    b.cols[1] = new LongColumnVector();
+    return b;
   }
 }

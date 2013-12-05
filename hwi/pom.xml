@@ -96,9 +96,6 @@
   <profiles>
     <profile>
       <id>hadoop-1</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <dependencies>
     <!-- dependencies are always listed in sorted order by groupId, artifectId -->
         <dependency>

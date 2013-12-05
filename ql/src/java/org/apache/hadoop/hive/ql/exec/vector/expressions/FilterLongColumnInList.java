@@ -33,7 +33,8 @@ import java.util.regex.Pattern;
 /**
  * Evaluate IN filter on a batch for a vector of longs.
  */
-public class FilterLongColumnInList extends VectorExpression {
+public class FilterLongColumnInList extends VectorExpression implements ILongInExpr {
+
   private static final long serialVersionUID = 1L;
   private int inputCol;
   private long[] inListValues;

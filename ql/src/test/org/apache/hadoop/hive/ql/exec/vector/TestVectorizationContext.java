@@ -31,6 +31,7 @@ import junit.framework.Assert;
 
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ColAndCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.ColOrCol;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.DoubleColumnInList;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprAndExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprOrExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncLogWithBaseDoubleToDouble;
@@ -38,12 +39,14 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncLogWithBaseLongToDo
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncPowerDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IsNotNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IsNull;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColumnInList;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.NotCol;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.RoundWithNumDigitsDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsFalse;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNotNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.SelectColumnIsTrue;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.StringColumnInList;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLTrim;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringLower;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.StringUpper;
@@ -957,8 +960,9 @@ public class TestVectorizationContext {
     assertTrue(ve instanceof FilterLongColumnNotBetween);
   }
 
+  // Test translation of both IN filters and boolean-valued IN expressions (non-filters).
   @Test
-  public void testInFilters() throws HiveException {
+  public void testInFiltersAndExprs() throws HiveException {
     ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(String.class, "col1", "table", false);
     ExprNodeConstantDesc constDesc = new ExprNodeConstantDesc("Alpha");
     ExprNodeConstantDesc constDesc2 = new ExprNodeConstantDesc("Bravo");
@@ -979,6 +983,8 @@ public class TestVectorizationContext {
     VectorizationContext vc = new VectorizationContext(columnMap, 2);
     VectorExpression ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
     assertTrue(ve instanceof FilterStringColumnInList);
+    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.PROJECTION);
+    assertTrue(ve instanceof StringColumnInList);
 
     // long IN
     children1.set(0, new ExprNodeColumnDesc(Long.class, "col1", "table", false));
@@ -986,6 +992,8 @@ public class TestVectorizationContext {
     children1.set(2, new ExprNodeConstantDesc(20));
     ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
     assertTrue(ve instanceof FilterLongColumnInList);
+    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.PROJECTION);
+    assertTrue(ve instanceof LongColumnInList);
 
     // double IN
     children1.set(0, new ExprNodeColumnDesc(Double.class, "col1", "table", false));
@@ -993,5 +1001,7 @@ public class TestVectorizationContext {
     children1.set(2, new ExprNodeConstantDesc(20d));
     ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.FILTER);
     assertTrue(ve instanceof FilterDoubleColumnInList);
+    ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.PROJECTION);
+    assertTrue(ve instanceof DoubleColumnInList);
   }
 }

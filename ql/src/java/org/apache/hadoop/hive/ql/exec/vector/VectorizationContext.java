@@ -550,7 +550,7 @@ public class VectorizationContext {
     if (udf instanceof GenericUDFBetween) {
       return getBetweenFilterExpression(childExpr, mode);
     } else if (udf instanceof GenericUDFIn) {
-      return getInFilterExpression(childExpr);
+      return getInExpression(childExpr, mode);
     } else if (udf instanceof GenericUDFOPPositive) {
       return getIdentityExpression(childExpr);
     } else if (udf instanceof GenericUDFBridge) {
@@ -575,11 +575,9 @@ public class VectorizationContext {
   }
 
   /**
-   * Create a filter expression for column IN ( <list-of-constants> )
-   * @param childExpr
-   * @return
+   * Create a filter or boolean-valued expression for column IN ( <list-of-constants> )
    */
-  private VectorExpression getInFilterExpression(List<ExprNodeDesc> childExpr)
+  private VectorExpression getInExpression(List<ExprNodeDesc> childExpr, Mode mode)
       throws HiveException {
     ExprNodeDesc colExpr = childExpr.get(0);
     String colType = colExpr.getTypeString();
@@ -601,48 +599,41 @@ public class VectorizationContext {
     // determine class
     Class<?> cl = null;
     if (isIntFamily(colType)) {
-      cl = FilterLongColumnInList.class;
+      cl = (mode == Mode.FILTER ? FilterLongColumnInList.class : LongColumnInList.class);
       long[] inVals = new long[childrenForInList.size()];
       for (int i = 0; i != inVals.length; i++) {
         inVals[i] = getIntFamilyScalarAsLong((ExprNodeConstantDesc) childrenForInList.get(i));
       }
-      FilterLongColumnInList f = (FilterLongColumnInList)
-          createVectorExpression(cl, childExpr.subList(0, 1), Mode.PROJECTION);
-      f.setInListValues(inVals);
-      expr = f;
+      expr = createVectorExpression(cl, childExpr.subList(0, 1), Mode.PROJECTION);
+      ((ILongInExpr) expr).setInListValues(inVals);
     } else if (colType.equals("timestamp")) {
-      cl = FilterLongColumnInList.class;
+      cl = (mode == Mode.FILTER ? FilterLongColumnInList.class : LongColumnInList.class);
       long[] inVals = new long[childrenForInList.size()];
       for (int i = 0; i != inVals.length; i++) {
         inVals[i] = getTimestampScalar(childrenForInList.get(i));
       }
-      FilterLongColumnInList f = (FilterLongColumnInList)
-          createVectorExpression(cl, childExpr.subList(0, 1), Mode.PROJECTION);
-      f.setInListValues(inVals);
-      expr = f;
+      expr = createVectorExpression(cl, childExpr.subList(0, 1), Mode.PROJECTION);
+      ((ILongInExpr) expr).setInListValues(inVals);
     } else if (colType.equals("string")) {
-      cl = FilterStringColumnInList.class;
+      cl = (mode == Mode.FILTER ? FilterStringColumnInList.class : StringColumnInList.class);
       byte[][] inVals = new byte[childrenForInList.size()][];
       for (int i = 0; i != inVals.length; i++) {
         inVals[i] = getStringScalarAsByteArray((ExprNodeConstantDesc) childrenForInList.get(i));
       }
-      FilterStringColumnInList f =(FilterStringColumnInList)
-          createVectorExpression(cl, childExpr.subList(0, 1), Mode.PROJECTION);
-      f.setInListValues(inVals);
-      expr = f;
+      expr = createVectorExpression(cl, childExpr.subList(0, 1), Mode.PROJECTION);
+      ((IStringInExpr) expr).setInListValues(inVals);
     } else if (isFloatFamily(colType)) {
-      cl = FilterDoubleColumnInList.class;
+      cl = (mode == Mode.FILTER ? FilterDoubleColumnInList.class : DoubleColumnInList.class);
       double[] inValsD = new double[childrenForInList.size()];
       for (int i = 0; i != inValsD.length; i++) {
         inValsD[i] = getNumericScalarAsDouble(childrenForInList.get(i));
       }
-      FilterDoubleColumnInList f = (FilterDoubleColumnInList)
-          createVectorExpression(cl, childExpr.subList(0, 1), Mode.PROJECTION);
-      f.setInListValues(inValsD);
-      expr = f;
-    } else {
-      throw new HiveException("Type " + colType + " not supported for IN in vectorized mode");
+      expr = createVectorExpression(cl, childExpr.subList(0, 1), Mode.PROJECTION);
+      ((IDoubleInExpr) expr).setInListValues(inValsD);
     }
+
+    // Return the desired VectorExpression if found. Otherwise, return null to cause
+    // execution to fall back to row mode.
     return expr;
   }
 

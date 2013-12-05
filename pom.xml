@@ -373,11 +373,6 @@
         <version>${httpcomponents.core.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.apache.mina</groupId>
-        <artifactId>mina-core</artifactId>
-        <version>${mina.version}</version>
-      </dependency>
-      <dependency>
         <groupId>org.apache.velocity</groupId>
         <artifactId>velocity</artifactId>
         <version>${velocity.version}</version>
@@ -692,7 +687,7 @@
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <reuseForks>false</reuseForks>
           <failIfNoTests>false</failIfNoTests>
-          <argLine></argLine>
+          <argLine>-Xmx1024m -XX:MaxPermSize=256m</argLine>
           <additionalClasspathElements>
             <additionalClasspathElement>${test.tmp.dir}/conf</additionalClasspathElement>
             <additionalClasspathElement>${basedir}/${hive.path.to.root}/conf</additionalClasspathElement>

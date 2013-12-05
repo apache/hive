@@ -52,6 +52,7 @@ class BeeLineOpts implements Completor {
   public static final String PROPERTY_PREFIX = "beeline.";
   public static final String PROPERTY_NAME_EXIT =
       PROPERTY_PREFIX + "system.exit";
+  public static final String DEFAULT_NULL_STRING = "NULL";
 
   private final BeeLine beeLine;
   private boolean autosave = false;
@@ -77,6 +78,9 @@ class BeeLineOpts implements Completor {
   private String outputFormat = "table";
   private boolean trimScripts = true;
   private boolean allowMultiLineCommand = true;
+
+  //This can be set for old behavior of nulls printed as empty strings
+  private boolean nullEmptyString = false;
 
   private final File rcFile = new File(saveDir(), "beeline.properties");
   private String historyFile = new File(saveDir(), "history").getAbsolutePath();
@@ -442,6 +446,23 @@ class BeeLineOpts implements Completor {
   public void setAllowMultiLineCommand(boolean allowMultiLineCommand) {
     this.allowMultiLineCommand = allowMultiLineCommand;
   }
+
+  /**
+   * Use getNullString() to get the null string to be used.
+   * @return true if null representation should be an empty string
+   */
+  public boolean getNullEmptyString() {
+    return nullEmptyString;
+  }
+
+  public void setNullEmptyString(boolean nullStringEmpty) {
+    this.nullEmptyString = nullStringEmpty;
+  }
+
+  public String getNullString(){
+    return nullEmptyString ? "" : DEFAULT_NULL_STRING;
+  }
+
 
 }
 

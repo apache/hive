@@ -77,21 +77,32 @@ public class LongColDivideLongColumn extends VectorExpression {
      * more inputs are null. This is to improve speed by avoiding
      * conditional checks in the inner loop.
      */
+    boolean hasDivBy0 = false;
     if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
-      outputVector[0] = vector1[0] / (double) vector2[0];
+      long denom = vector2[0];
+      outputVector[0] = vector1[0] / (double) denom;
+      hasDivBy0 = hasDivBy0 || (denom == 0);
     } else if (inputColVector1.isRepeating) {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = vector1[0] / (double) vector2[i];
+          long denom = vector2[i];
+          outputVector[i] = vector1[0] / (double) denom;
+          hasDivBy0 = hasDivBy0 || (denom == 0);
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = vector1[0] / (double) vector2[i];
+          long denom = vector2[i];
+          outputVector[i] = vector1[0] / (double) denom;
+          hasDivBy0 = hasDivBy0 || (denom == 0);
         }
       }
     } else if (inputColVector2.isRepeating) {
-      if (batch.selectedInUse) {
+      if (vector2[0] == 0) {
+        outputColVector.noNulls = false;
+        outputColVector.isRepeating = true;
+        outputColVector.isNull[0] = true;
+      } else if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           outputVector[i] = vector1[i] / (double) vector2[0];
@@ -105,11 +116,15 @@ public class LongColDivideLongColumn extends VectorExpression {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = vector1[i] / (double) vector2[i];
+          long denom = vector2[i];
+          outputVector[i] = vector1[i] / (double) denom;
+          hasDivBy0 = hasDivBy0 || (denom == 0);
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = vector1[i] /  (double) vector2[i];
+          long denom = vector2[i];
+          outputVector[i] = vector1[i] / (double) denom;
+          hasDivBy0 = hasDivBy0 || (denom == 0);
         }
       }
     }
@@ -120,7 +135,12 @@ public class LongColDivideLongColumn extends VectorExpression {
      * in complex arithmetic expressions like col2 / (col1 - 1)
      * in the case when some col1 entries are null.
      */
-    NullUtil.setNullDataEntriesDouble(outputColVector, batch.selectedInUse, sel, n);
+    if (!hasDivBy0) {
+      NullUtil.setNullDataEntriesDouble(outputColVector, batch.selectedInUse, sel, n);
+    } else {
+      NullUtil.setNullAndDivBy0DataEntriesDouble(
+        outputColVector, batch.selectedInUse, sel, n, inputColVector2);
+    }
   }
 
   @Override

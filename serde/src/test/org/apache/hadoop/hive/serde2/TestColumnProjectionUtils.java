@@ -83,4 +83,35 @@ public class TestColumnProjectionUtils {
     assertEquals(columnIds, actual);
     assertFalse(ColumnProjectionUtils.isReadAllColumns(conf));
   }
+
+  @Test
+  public void testDeprecatedMethods() {
+    List<Integer> columnIds = new ArrayList<Integer>();
+    List<Integer> actual;
+
+    assertEquals(Collections.EMPTY_LIST, ColumnProjectionUtils.getReadColumnIDs(conf));
+
+    // test that read columns are initially an empty list
+    actual = ColumnProjectionUtils.getReadColumnIDs(conf);
+    assertEquals(Collections.EMPTY_LIST, actual);
+    // setting empty list results in reading none
+    ColumnProjectionUtils.setReadColumnIDs(conf, columnIds);
+    actual = ColumnProjectionUtils.getReadColumnIDs(conf);
+    assertEquals(Collections.EMPTY_LIST, actual);
+    // test set and append methods
+    columnIds.add(1);
+    ColumnProjectionUtils.setReadColumnIDs(conf, Collections.singletonList(1));
+    actual = ColumnProjectionUtils.getReadColumnIDs(conf);
+    Collections.sort(actual);
+    assertEquals(columnIds, actual);
+    columnIds.add(2);
+    ColumnProjectionUtils.appendReadColumnID(conf, Collections.singletonList(2));
+    actual = ColumnProjectionUtils.getReadColumnIDs(conf);
+    Collections.sort(actual);
+    assertEquals(columnIds, actual);
+    // test that setting read column ids set read all columns to false
+    assertFalse(ColumnProjectionUtils.isReadAllColumns(conf));
+    ColumnProjectionUtils.setFullyReadColumns(conf);
+    assertTrue(ColumnProjectionUtils.isReadAllColumns(conf));
+  }
 }

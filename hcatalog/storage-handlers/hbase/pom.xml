@@ -29,7 +29,7 @@
   <relativePath>../../pom.xml</relativePath>
   </parent>
 
-  <artifactId>hive-hbase-storage-handler</artifactId>
+  <artifactId>hive-hcatalog-hbase-storage-handler</artifactId>
   <packaging>jar</packaging>
   <name>Hive HCatalog HBase Storage Handler</name>
 

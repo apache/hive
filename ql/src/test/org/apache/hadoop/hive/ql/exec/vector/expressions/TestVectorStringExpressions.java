@@ -1830,4 +1830,43 @@ public class TestVectorStringExpressions {
     b.size = 5;
     return b;
   }
+
+  // Test boolean-valued (non-filter) IN expression for strings
+  @Test
+  public void testStringInExpr() {
+
+    // test basic operation
+    VectorizedRowBatch b = makeStringBatch();
+    b.size = 2;
+    b.cols[0].noNulls = true;
+    byte[][] inVals = new byte[2][];
+    inVals[0] = red;
+    inVals[1] = blue;
+    StringColumnInList expr = new StringColumnInList(0, 2);
+    expr.setInListValues(inVals);
+    expr.evaluate(b);
+    LongColumnVector outV = (LongColumnVector) b.cols[2];
+    Assert.assertEquals(1, outV.vector[0]);
+    Assert.assertEquals(0, outV.vector[1]);
+
+    // test null input
+    b = makeStringBatch();
+    b.size = 2;
+    b.cols[0].noNulls = false;
+    b.cols[0].isNull[0] = true;
+    expr.evaluate(b);
+    outV = (LongColumnVector) b.cols[2];
+    Assert.assertEquals(true, !outV.noNulls && outV.isNull[0] && !outV.isNull[1]);
+    Assert.assertEquals(0, outV.vector[1]);
+
+    // test repeating logic
+    b = makeStringBatch();
+    b.size = 2;
+    b.cols[0].noNulls = true;
+    b.cols[0].isRepeating = true;
+    expr.evaluate(b);
+    outV = (LongColumnVector) b.cols[2];
+    Assert.assertEquals(1, outV.vector[0]);
+    Assert.assertEquals(true, outV.isRepeating);
+  }
  }

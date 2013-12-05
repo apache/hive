@@ -86,6 +86,7 @@ public class StatsUtils {
     List<String> neededColumns = tableScanOperator.getNeededColumns();
     String dbName = table.getDbName();
     String tabName = table.getTableName();
+    boolean fetchColStats = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS);
 
     if (!table.isPartitioned()) {
       long nr = getNumRows(dbName, tabName);
@@ -106,7 +107,10 @@ public class StatsUtils {
       stats.setNumRows(nr);
       stats.setDataSize(rds);
 
-      List<ColStatistics> colStats = getTableColumnStats(table, schema, neededColumns);
+      List<ColStatistics> colStats = Lists.newArrayList();
+      if (fetchColStats) {
+        colStats = getTableColumnStats(table, schema, neededColumns);
+      }
 
       // if column stats available and if atleast one column doesn't have stats
       // then mark it as partial
@@ -128,11 +132,8 @@ public class StatsUtils {
         } else {
           stats.setColumnStatsState(Statistics.State.COMPLETE);
         }
-        stats.addToColumnStats(null);
-      } else {
-        // set col stats and mark it as table level col stats
-        stats.addToColumnStats(colStats);
       }
+      stats.addToColumnStats(colStats);
     } else {
 
       // For partitioned tables, get the size of all the partitions after pruning
@@ -176,7 +177,10 @@ public class StatsUtils {
 
         // column stats
         for (Partition part : partList.getNotDeniedPartns()) {
-          List<ColStatistics> colStats = getPartitionColumnStats(table, part, schema, neededColumns);
+          List<ColStatistics> colStats = Lists.newArrayList();
+          if (fetchColStats) {
+            colStats = getPartitionColumnStats(table, part, schema, neededColumns);
+          }
           if (checkIfColStatsAvailable(colStats) && colStats.contains(null)) {
             stats.updateColumnStatsState(Statistics.State.PARTIAL);
           } else if (checkIfColStatsAvailable(colStats) && !colStats.contains(null)) {

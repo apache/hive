@@ -188,6 +188,27 @@ public class TestGenericUDFOPDivide {
   }
 
   @Test
+  public void testDecimalDivideDecimal2() throws HiveException {
+    GenericUDFOPDivide udf = new GenericUDFOPDivide();
+
+    HiveDecimalWritable left = new HiveDecimalWritable(HiveDecimal.create("5"));
+    HiveDecimalWritable right = new HiveDecimalWritable(HiveDecimal.create("25"));
+    ObjectInspector[] inputOIs = {
+        PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(TypeInfoFactory.getDecimalTypeInfo(1, 0)),
+        PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(TypeInfoFactory.getDecimalTypeInfo(2, 0))
+    };
+    DeferredObject[] args = {
+        new DeferredJavaObject(left),
+        new DeferredJavaObject(right),
+    };
+
+    PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
+    Assert.assertEquals(TypeInfoFactory.getDecimalTypeInfo(7, 6), oi.getTypeInfo());
+    HiveDecimalWritable res = (HiveDecimalWritable) udf.evaluate(args);
+    Assert.assertEquals(HiveDecimal.create("0.2"), res.getHiveDecimal());
+  }
+
+  @Test
   public void testDecimalDivideDecimalSameParams() throws HiveException {
     GenericUDFOPDivide udf = new GenericUDFOPDivide();
 
@@ -198,6 +219,33 @@ public class TestGenericUDFOPDivide {
 
     PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
     Assert.assertEquals(TypeInfoFactory.getDecimalTypeInfo(13, 8), oi.getTypeInfo());
+  }
+
+  @Test
+  public void testDecimalDivisionResultType() throws HiveException {
+    testDecimalDivisionResultType(5, 2, 3, 2, 11, 6);
+    testDecimalDivisionResultType(38, 18, 38, 18, 38, 18);
+    testDecimalDivisionResultType(38, 18, 20, 0, 38, 27);
+    testDecimalDivisionResultType(20, 0, 8, 5, 34, 9);
+    testDecimalDivisionResultType(10, 0, 10, 0, 21, 11);
+    testDecimalDivisionResultType(5, 2, 5, 5, 16, 8);
+    testDecimalDivisionResultType(10, 10, 5, 0, 16, 16);
+    testDecimalDivisionResultType(10, 10, 5, 5, 21, 16);
+    testDecimalDivisionResultType(38, 38, 38, 38, 38, 18);
+    testDecimalDivisionResultType(38, 0, 38, 0, 38, 18);
+  }
+
+  private void testDecimalDivisionResultType(int prec1, int scale1, int prec2, int scale2, int prec3, int scale3)
+      throws HiveException {
+    GenericUDFOPDivide udf = new GenericUDFOPDivide();
+
+    ObjectInspector[] inputOIs = {
+        PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(TypeInfoFactory.getDecimalTypeInfo(prec1, scale1)),
+        PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(TypeInfoFactory.getDecimalTypeInfo(prec2, scale2))
+    };
+
+    PrimitiveObjectInspector oi = (PrimitiveObjectInspector) udf.initialize(inputOIs);
+    Assert.assertEquals(TypeInfoFactory.getDecimalTypeInfo(prec3, scale3), oi.getTypeInfo());
   }
 
 }

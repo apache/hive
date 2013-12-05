@@ -94,11 +94,13 @@ public class GenericUDFOPMultiply extends GenericUDFBaseNumeric {
   }
 
   @Override
-  protected HiveDecimalWritable evaluate(HiveDecimalWritable left, HiveDecimalWritable right) {
-    HiveDecimal dec = left.getHiveDecimal().multiply(right.getHiveDecimal());
+  protected HiveDecimalWritable evaluate(HiveDecimal left, HiveDecimal right) {
+    HiveDecimal dec = left.multiply(right);
+
     if (dec == null) {
       return null;
     }
+
     decimalWritable.set(dec);
     return decimalWritable;
   }
