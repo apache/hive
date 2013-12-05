@@ -37,7 +37,7 @@ import java.util.regex.Pattern;
  * the inner loop, and there is a hash table implemented
  * with Cuckoo hashing that has fast lookup to do the IN test.
  */
-public class FilterStringColumnInList extends VectorExpression {
+public class FilterStringColumnInList extends VectorExpression implements IStringInExpr {
   private static final long serialVersionUID = 1L;
   private int inputCol;
   private byte[][] inListValues;

@@ -34,7 +34,7 @@ import java.util.regex.Pattern;
 /**
  * Evaluate IN filter on a batch for a vector of doubles.
  */
-public class FilterDoubleColumnInList extends VectorExpression {
+public class FilterDoubleColumnInList extends VectorExpression implements IDoubleInExpr {
   private static final long serialVersionUID = 1L;
   private int inputCol;
   private double[] inListValues;

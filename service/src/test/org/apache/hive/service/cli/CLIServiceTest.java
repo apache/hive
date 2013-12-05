@@ -21,6 +21,7 @@ package org.apache.hive.service.cli;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -155,7 +156,7 @@ public abstract class CLIServiceTest {
     long pollTimeout = System.currentTimeMillis() + 100000;
     assertNotNull(sessionHandle);
     OperationState state = null;
-    OperationHandle ophandle;
+    OperationHandle ophandle = null;
 
     // Change lock manager, otherwise unit-test doesn't go through
     String queryString = "SET hive.lock.manager=" +
@@ -171,8 +172,16 @@ public abstract class CLIServiceTest {
     client.executeStatement(sessionHandle, queryString, confOverlay);
 
     // Test async execution response when query is malformed
-    String wrongQueryString = "SELECT NAME FROM TEST_EXEC";
-    ophandle = client.executeStatementAsync(sessionHandle, wrongQueryString, confOverlay);
+    String wrongQuery = "SELECT NAME FROM TEST_EXEC";
+    try {
+      ophandle = client.executeStatementAsync(sessionHandle, wrongQuery, confOverlay);
+      fail("Async syntax excution should fail");
+    } catch (HiveSQLException e) {
+      // expected error
+    }
+
+    wrongQuery = "CREATE TABLE NON_EXISTING_TAB (ID STRING) location 'hdfs://fooNN:10000/a/b/c'";
+    ophandle = client.executeStatementAsync(sessionHandle, wrongQuery, confOverlay);
 
     int count = 0;
     while (true) {
@@ -199,6 +208,7 @@ public abstract class CLIServiceTest {
     ophandle =
         client.executeStatementAsync(sessionHandle, queryString, confOverlay);
 
+    assertTrue(ophandle.hasResultSet());
     count = 0;
     while (true) {
       // Break if polling times out

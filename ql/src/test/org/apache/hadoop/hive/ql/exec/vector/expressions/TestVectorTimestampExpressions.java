@@ -18,15 +18,22 @@
 
 package org.apache.hadoop.hive.ql.exec.vector.expressions;
 
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
 import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
 import junit.framework.Assert;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.hadoop.hive.ql.exec.vector.BytesColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.TestVectorizedRowBatch;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
@@ -40,12 +47,14 @@ import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.serde2.io.TimestampWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
 import org.junit.Test;
 
 /**
  * Unit tests for timestamp expressions.
  */
 public class TestVectorTimestampExpressions {
+  private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
   /* copied over from VectorUDFTimestampFieldLong */
   private TimestampWritable toTimestampWritable(long nanos) {
@@ -97,6 +106,34 @@ public class TestVectorTimestampExpressions {
     return batch;
   }
 
+  private VectorizedRowBatch getVectorizedRandomRowBatchStringLong(int seed, int size) {
+    VectorizedRowBatch batch = new VectorizedRowBatch(2, size);
+    BytesColumnVector bcv = new BytesColumnVector(size);
+    Random rand = new Random(seed);
+    for (int i = 0; i < size; i++) {
+      /* all 32 bit numbers qualify & multiply up to get nano-seconds */
+      byte[] encoded = encodeTime(1000 * 1000 * 1000 * rand.nextInt());
+      bcv.vector[i] = encoded;
+      bcv.start[i] = 0;
+      bcv.length[i] = encoded.length;
+    }
+    batch.cols[0] = bcv;
+    batch.cols[1] = new LongColumnVector(size);
+    batch.size = size;
+    return batch;
+  }
+
+  private VectorizedRowBatch getVectorizedRandomRowBatch(int seed, int size, TestType testType) {
+    switch (testType) {
+      case LONG2:
+        return getVectorizedRandomRowBatchLong2(seed, size);
+      case STRING_LONG:
+        return getVectorizedRandomRowBatchStringLong(seed, size);
+      default:
+        throw new IllegalArgumentException();
+    }
+  }
+
   /*
    * Input array is used to fill the entire size of the vector row batch
    */
@@ -112,7 +149,83 @@ public class TestVectorTimestampExpressions {
     return batch;
   }
 
-  /*begin-macro*/
+  /*
+   * Input array is used to fill the entire size of the vector row batch
+   */
+  private VectorizedRowBatch getVectorizedRowBatchStringLong(long[] inputs, int size) {
+    VectorizedRowBatch batch = new VectorizedRowBatch(2, size);
+    BytesColumnVector bcv = new BytesColumnVector(size);
+    for (int i = 0; i < size; i++) {
+      byte[] encoded = encodeTime(inputs[i % inputs.length]);
+      bcv.vector[i] = encoded;
+      bcv.start[i] = 0;
+      bcv.length[i] = encoded.length;
+    }
+    batch.cols[0] = bcv;
+    batch.cols[1] = new LongColumnVector(size);
+    batch.size = size;
+    return batch;
+  }
+
+  private VectorizedRowBatch getVectorizedRowBatchStringLong(byte[] vector, int start, int length) {
+    VectorizedRowBatch batch = new VectorizedRowBatch(2, 1);
+    BytesColumnVector bcv = new BytesColumnVector(1);
+
+    bcv.vector[0] = vector;
+    bcv.start[0] = start;
+    bcv.length[0] = length;
+
+    batch.cols[0] = bcv;
+    batch.cols[1] = new LongColumnVector(1);
+    batch.size = 1;
+    return batch;
+  }
+
+  private VectorizedRowBatch getVectorizedRowBatch(long[] inputs, int size, TestType testType) {
+    switch (testType) {
+      case LONG2:
+        return getVectorizedRowBatchLong2(inputs, size);
+      case STRING_LONG:
+        return getVectorizedRowBatchStringLong(inputs, size);
+      default:
+        throw new IllegalArgumentException();
+    }
+  }
+
+  private byte[] encodeTime(long time) {
+    ByteBuffer encoded;
+    try {
+      String formatted = dateFormat.format(new Date(time / (1000 * 1000)));
+      encoded = Text.encode(formatted);
+    } catch (CharacterCodingException e) {
+      throw new RuntimeException(e);
+    }
+    return Arrays.copyOf(encoded.array(), encoded.limit());
+  }
+
+  private long decodeTime(byte[] time) {
+    try {
+      return dateFormat.parse(Text.decode(time)).getTime() * 1000 * 1000;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private long readVectorElementAt(ColumnVector col, int i) {
+    if (col instanceof LongColumnVector) {
+      return ((LongColumnVector) col).vector[i];
+    }
+    if (col instanceof BytesColumnVector) {
+      byte[] timeBytes = ((BytesColumnVector) col).vector[i];
+      return decodeTime(timeBytes);
+    }
+    throw new IllegalArgumentException();
+  }
+
+  private enum TestType {
+    LONG2, STRING_LONG
+  }
+
   private void compareToUDFYearLong(long t, int y) {
     UDFYear udf = new UDFYear();
     TimestampWritable tsw = toTimestampWritable(t);
@@ -120,20 +233,23 @@ public class TestVectorTimestampExpressions {
     Assert.assertEquals(res.get(), y);
   }
 
-  private void verifyUDFYearLong(VectorizedRowBatch batch) {
-    /* col[1] = UDFYear(col[0]) */
-    VectorUDFYearLong udf = new VectorUDFYearLong(0, 1);
+  private void verifyUDFYear(VectorizedRowBatch batch, TestType testType) {
+    VectorExpression udf = null;
+    if (testType == TestType.LONG2) {
+      udf = new VectorUDFYearLong(0, 1);
+    } else {
+      udf = new VectorUDFYearString(0, 1);
+    }
     udf.evaluate(batch);
     final int in = 0;
     final int out = 1;
-    Assert.assertEquals(batch.cols[in].noNulls, batch.cols[out].noNulls);
 
     for (int i = 0; i < batch.size; i++) {
       if (batch.cols[in].noNulls || !batch.cols[in].isNull[i]) {
         if (!batch.cols[in].noNulls) {
           Assert.assertEquals(batch.cols[out].isNull[i], batch.cols[in].isNull[i]);
         }
-        long t = ((LongColumnVector) batch.cols[in]).vector[i];
+        long t = readVectorElementAt(batch.cols[in], i);
         long y = ((LongColumnVector) batch.cols[out]).vector[i];
         compareToUDFYearLong(t, (int) y);
       } else {
@@ -142,40 +258,54 @@ public class TestVectorTimestampExpressions {
     }
   }
 
-  @Test
-  public void testVectorUDFYearLong() {
-    VectorizedRowBatch batch = getVectorizedRowBatchLong2(new long[] {0},
-        VectorizedRowBatch.DEFAULT_SIZE);
+  private void testVectorUDFYear(TestType testType) {
+    VectorizedRowBatch batch = getVectorizedRowBatch(new long[] {0},
+            VectorizedRowBatch.DEFAULT_SIZE, testType);
     Assert.assertTrue(((LongColumnVector) batch.cols[1]).noNulls);
     Assert.assertFalse(((LongColumnVector) batch.cols[1]).isRepeating);
-    verifyUDFYearLong(batch);
+    verifyUDFYear(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFYearLong(batch);
+    verifyUDFYear(batch, testType);
 
     long[] boundaries = getAllBoundaries();
-    batch = getVectorizedRowBatchLong2(boundaries, boundaries.length);
-    verifyUDFYearLong(batch);
+    batch = getVectorizedRowBatch(boundaries, boundaries.length, testType);
+    verifyUDFYear(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFYearLong(batch);
+    verifyUDFYear(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[1]);
-    verifyUDFYearLong(batch);
+    verifyUDFYear(batch, testType);
 
-    batch = getVectorizedRowBatchLong2(new long[] {0}, 1);
+    batch = getVectorizedRowBatch(new long[] {0}, 1, testType);
     batch.cols[0].isRepeating = true;
-    verifyUDFYearLong(batch);
+    verifyUDFYear(batch, testType);
     batch.cols[0].noNulls = false;
     batch.cols[0].isNull[0] = true;
-    verifyUDFYearLong(batch);
+    verifyUDFYear(batch, testType);
 
-    batch = getVectorizedRandomRowBatchLong2(200, VectorizedRowBatch.DEFAULT_SIZE);
-    verifyUDFYearLong(batch);
+    batch = getVectorizedRandomRowBatch(200, VectorizedRowBatch.DEFAULT_SIZE, testType);
+    verifyUDFYear(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFYearLong(batch);
+    verifyUDFYear(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[1]);
-    verifyUDFYearLong(batch);
+    verifyUDFYear(batch, testType);
   }
-  /*end-macro*/
 
+  @Test
+  public void testVectorUDFYearLong() {
+    testVectorUDFYear(TestType.LONG2);
+  }
+
+  @Test
+  public void testVectorUDFYearString() {
+    testVectorUDFYear(TestType.STRING_LONG);
+
+    VectorizedRowBatch batch = getVectorizedRowBatchStringLong(new byte[] {'2', '2', '0', '1', '3'}, 1, 3);
+    VectorExpression udf = new VectorUDFYearString(0, 1);
+    udf.evaluate(batch);
+    LongColumnVector lcv = (LongColumnVector) batch.cols[1];
+    Assert.assertEquals(false, batch.cols[0].isNull[0]);
+    Assert.assertEquals(true, lcv.isNull[0]);
+  }
 
   private void compareToUDFDayOfMonthLong(long t, int y) {
     UDFDayOfMonth udf = new UDFDayOfMonth();
@@ -184,20 +314,23 @@ public class TestVectorTimestampExpressions {
     Assert.assertEquals(res.get(), y);
   }
 
-  private void verifyUDFDayOfMonthLong(VectorizedRowBatch batch) {
-    /* col[1] = UDFDayOfMonth(col[0]) */
-    VectorUDFDayOfMonthLong udf = new VectorUDFDayOfMonthLong(0, 1);
+  private void verifyUDFDayOfMonth(VectorizedRowBatch batch, TestType testType) {
+    VectorExpression udf = null;
+    if (testType == TestType.LONG2) {
+      udf = new VectorUDFDayOfMonthLong(0, 1);
+    } else {
+      udf = new VectorUDFDayOfMonthString(0, 1);
+    }
     udf.evaluate(batch);
     final int in = 0;
     final int out = 1;
-    Assert.assertEquals(batch.cols[in].noNulls, batch.cols[out].noNulls);
 
     for (int i = 0; i < batch.size; i++) {
       if (batch.cols[in].noNulls || !batch.cols[in].isNull[i]) {
         if (!batch.cols[in].noNulls) {
           Assert.assertEquals(batch.cols[out].isNull[i], batch.cols[in].isNull[i]);
         }
-        long t = ((LongColumnVector) batch.cols[in]).vector[i];
+        long t = readVectorElementAt(batch.cols[in], i);
         long y = ((LongColumnVector) batch.cols[out]).vector[i];
         compareToUDFDayOfMonthLong(t, (int) y);
       } else {
@@ -206,37 +339,46 @@ public class TestVectorTimestampExpressions {
     }
   }
 
-  @Test
-  public void testVectorUDFDayOfMonthLong() {
-    VectorizedRowBatch batch = getVectorizedRowBatchLong2(new long[] {0},
-        VectorizedRowBatch.DEFAULT_SIZE);
+  private void testVectorUDFDayOfMonth(TestType testType) {
+    VectorizedRowBatch batch = getVectorizedRowBatch(new long[] {0},
+            VectorizedRowBatch.DEFAULT_SIZE, testType);
     Assert.assertTrue(((LongColumnVector) batch.cols[1]).noNulls);
     Assert.assertFalse(((LongColumnVector) batch.cols[1]).isRepeating);
-    verifyUDFDayOfMonthLong(batch);
+    verifyUDFDayOfMonth(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFDayOfMonthLong(batch);
+    verifyUDFDayOfMonth(batch, testType);
 
     long[] boundaries = getAllBoundaries();
-    batch = getVectorizedRowBatchLong2(boundaries, boundaries.length);
-    verifyUDFDayOfMonthLong(batch);
+    batch = getVectorizedRowBatch(boundaries, boundaries.length, testType);
+    verifyUDFDayOfMonth(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFDayOfMonthLong(batch);
+    verifyUDFDayOfMonth(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[1]);
-    verifyUDFDayOfMonthLong(batch);
+    verifyUDFDayOfMonth(batch, testType);
 
-    batch = getVectorizedRowBatchLong2(new long[] {0}, 1);
+    batch = getVectorizedRowBatch(new long[] {0}, 1, testType);
     batch.cols[0].isRepeating = true;
-    verifyUDFDayOfMonthLong(batch);
+    verifyUDFDayOfMonth(batch, testType);
     batch.cols[0].noNulls = false;
     batch.cols[0].isNull[0] = true;
-    verifyUDFDayOfMonthLong(batch);
+    verifyUDFDayOfMonth(batch, testType);
 
-    batch = getVectorizedRandomRowBatchLong2(200, VectorizedRowBatch.DEFAULT_SIZE);
-    verifyUDFDayOfMonthLong(batch);
+    batch = getVectorizedRandomRowBatch(200, VectorizedRowBatch.DEFAULT_SIZE, testType);
+    verifyUDFDayOfMonth(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFDayOfMonthLong(batch);
+    verifyUDFDayOfMonth(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[1]);
-    verifyUDFDayOfMonthLong(batch);
+    verifyUDFDayOfMonth(batch, testType);
+  }
+
+  @Test
+  public void testVectorUDFDayOfMonthLong() {
+    testVectorUDFDayOfMonth(TestType.LONG2);
+  }
+
+  @Test
+  public void testVectorUDFDayOfMonthString() {
+    testVectorUDFDayOfMonth(TestType.STRING_LONG);
   }
 
   private void compareToUDFHourLong(long t, int y) {
@@ -246,20 +388,23 @@ public class TestVectorTimestampExpressions {
     Assert.assertEquals(res.get(), y);
   }
 
-  private void verifyUDFHourLong(VectorizedRowBatch batch) {
-    /* col[1] = UDFHour(col[0]) */
-    VectorUDFHourLong udf = new VectorUDFHourLong(0, 1);
+  private void verifyUDFHour(VectorizedRowBatch batch, TestType testType) {
+    VectorExpression udf = null;
+    if (testType == TestType.LONG2) {
+      udf = new VectorUDFHourLong(0, 1);
+    } else {
+      udf = new VectorUDFHourString(0, 1);
+    }
     udf.evaluate(batch);
     final int in = 0;
     final int out = 1;
-    Assert.assertEquals(batch.cols[in].noNulls, batch.cols[out].noNulls);
 
     for (int i = 0; i < batch.size; i++) {
       if (batch.cols[in].noNulls || !batch.cols[in].isNull[i]) {
         if (!batch.cols[in].noNulls) {
           Assert.assertEquals(batch.cols[out].isNull[i], batch.cols[in].isNull[i]);
         }
-        long t = ((LongColumnVector) batch.cols[in]).vector[i];
+        long t = readVectorElementAt(batch.cols[in], i);
         long y = ((LongColumnVector) batch.cols[out]).vector[i];
         compareToUDFHourLong(t, (int) y);
       } else {
@@ -268,37 +413,46 @@ public class TestVectorTimestampExpressions {
     }
   }
 
-  @Test
-  public void testVectorUDFHourLong() {
-    VectorizedRowBatch batch = getVectorizedRowBatchLong2(new long[] {0},
-        VectorizedRowBatch.DEFAULT_SIZE);
+  private void testVectorUDFHour(TestType testType) {
+    VectorizedRowBatch batch = getVectorizedRowBatch(new long[] {0},
+            VectorizedRowBatch.DEFAULT_SIZE, testType);
     Assert.assertTrue(((LongColumnVector) batch.cols[1]).noNulls);
     Assert.assertFalse(((LongColumnVector) batch.cols[1]).isRepeating);
-    verifyUDFHourLong(batch);
+    verifyUDFHour(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFHourLong(batch);
+    verifyUDFHour(batch, testType);
 
     long[] boundaries = getAllBoundaries();
-    batch = getVectorizedRowBatchLong2(boundaries, boundaries.length);
-    verifyUDFHourLong(batch);
+    batch = getVectorizedRowBatch(boundaries, boundaries.length, testType);
+    verifyUDFHour(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFHourLong(batch);
+    verifyUDFHour(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[1]);
-    verifyUDFHourLong(batch);
+    verifyUDFHour(batch, testType);
 
-    batch = getVectorizedRowBatchLong2(new long[] {0}, 1);
+    batch = getVectorizedRowBatch(new long[] {0}, 1, testType);
     batch.cols[0].isRepeating = true;
-    verifyUDFHourLong(batch);
+    verifyUDFHour(batch, testType);
     batch.cols[0].noNulls = false;
     batch.cols[0].isNull[0] = true;
-    verifyUDFHourLong(batch);
+    verifyUDFHour(batch, testType);
 
-    batch = getVectorizedRandomRowBatchLong2(200, VectorizedRowBatch.DEFAULT_SIZE);
-    verifyUDFHourLong(batch);
+    batch = getVectorizedRandomRowBatch(200, VectorizedRowBatch.DEFAULT_SIZE, testType);
+    verifyUDFHour(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFHourLong(batch);
+    verifyUDFHour(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[1]);
-    verifyUDFHourLong(batch);
+    verifyUDFHour(batch, testType);
+  }
+
+  @Test
+  public void testVectorUDFHourLong() {
+    testVectorUDFHour(TestType.LONG2);
+  }
+
+  @Test
+  public void testVectorUDFHourString() {
+    testVectorUDFHour(TestType.STRING_LONG);
   }
 
   private void compareToUDFMinuteLong(long t, int y) {
@@ -308,20 +462,23 @@ public class TestVectorTimestampExpressions {
     Assert.assertEquals(res.get(), y);
   }
 
-  private void verifyUDFMinuteLong(VectorizedRowBatch batch) {
-    /* col[1] = UDFMinute(col[0]) */
-    VectorUDFMinuteLong udf = new VectorUDFMinuteLong(0, 1);
+  private void verifyUDFMinute(VectorizedRowBatch batch, TestType testType) {
+    VectorExpression udf = null;
+    if (testType == TestType.LONG2) {
+      udf = new VectorUDFMinuteLong(0, 1);
+    } else {
+      udf = new VectorUDFMinuteString(0, 1);
+    }
     udf.evaluate(batch);
     final int in = 0;
     final int out = 1;
-    Assert.assertEquals(batch.cols[in].noNulls, batch.cols[out].noNulls);
 
     for (int i = 0; i < batch.size; i++) {
       if (batch.cols[in].noNulls || !batch.cols[in].isNull[i]) {
         if (!batch.cols[in].noNulls) {
           Assert.assertEquals(batch.cols[out].isNull[i], batch.cols[in].isNull[i]);
         }
-        long t = ((LongColumnVector) batch.cols[in]).vector[i];
+        long t = readVectorElementAt(batch.cols[in], i);
         long y = ((LongColumnVector) batch.cols[out]).vector[i];
         compareToUDFMinuteLong(t, (int) y);
       } else {
@@ -330,37 +487,46 @@ public class TestVectorTimestampExpressions {
     }
   }
 
-  @Test
-  public void testVectorUDFMinuteLong() {
-    VectorizedRowBatch batch = getVectorizedRowBatchLong2(new long[] {0},
-        VectorizedRowBatch.DEFAULT_SIZE);
+  private void testVectorUDFMinute(TestType testType) {
+    VectorizedRowBatch batch = getVectorizedRowBatch(new long[] {0},
+            VectorizedRowBatch.DEFAULT_SIZE, testType);
     Assert.assertTrue(((LongColumnVector) batch.cols[1]).noNulls);
     Assert.assertFalse(((LongColumnVector) batch.cols[1]).isRepeating);
-    verifyUDFMinuteLong(batch);
+    verifyUDFMinute(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFMinuteLong(batch);
+    verifyUDFMinute(batch, testType);
 
     long[] boundaries = getAllBoundaries();
-    batch = getVectorizedRowBatchLong2(boundaries, boundaries.length);
-    verifyUDFMinuteLong(batch);
+    batch = getVectorizedRowBatch(boundaries, boundaries.length, testType);
+    verifyUDFMinute(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFMinuteLong(batch);
+    verifyUDFMinute(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[1]);
-    verifyUDFMinuteLong(batch);
+    verifyUDFMinute(batch, testType);
 
-    batch = getVectorizedRowBatchLong2(new long[] {0}, 1);
+    batch = getVectorizedRowBatch(new long[] {0}, 1, testType);
     batch.cols[0].isRepeating = true;
-    verifyUDFMinuteLong(batch);
+    verifyUDFMinute(batch, testType);
     batch.cols[0].noNulls = false;
     batch.cols[0].isNull[0] = true;
-    verifyUDFMinuteLong(batch);
+    verifyUDFMinute(batch, testType);
 
-    batch = getVectorizedRandomRowBatchLong2(200, VectorizedRowBatch.DEFAULT_SIZE);
-    verifyUDFMinuteLong(batch);
+    batch = getVectorizedRandomRowBatch(200, VectorizedRowBatch.DEFAULT_SIZE, testType);
+    verifyUDFMinute(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFMinuteLong(batch);
+    verifyUDFMinute(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[1]);
-    verifyUDFMinuteLong(batch);
+    verifyUDFMinute(batch, testType);
+  }
+
+  @Test
+  public void testVectorUDFMinuteLong() {
+    testVectorUDFMinute(TestType.LONG2);
+  }
+
+  @Test
+  public void testVectorUDFMinuteString() {
+    testVectorUDFMinute(TestType.STRING_LONG);
   }
 
   private void compareToUDFMonthLong(long t, int y) {
@@ -370,20 +536,23 @@ public class TestVectorTimestampExpressions {
     Assert.assertEquals(res.get(), y);
   }
 
-  private void verifyUDFMonthLong(VectorizedRowBatch batch) {
-    /* col[1] = UDFMonth(col[0]) */
-    VectorUDFMonthLong udf = new VectorUDFMonthLong(0, 1);
+  private void verifyUDFMonth(VectorizedRowBatch batch, TestType testType) {
+    VectorExpression udf;
+    if (testType == TestType.LONG2) {
+      udf = new VectorUDFMonthLong(0, 1);
+    } else {
+      udf = new VectorUDFMonthString(0, 1);
+    }
     udf.evaluate(batch);
     final int in = 0;
     final int out = 1;
-    Assert.assertEquals(batch.cols[in].noNulls, batch.cols[out].noNulls);
 
     for (int i = 0; i < batch.size; i++) {
       if (batch.cols[in].noNulls || !batch.cols[in].isNull[i]) {
         if (!batch.cols[in].noNulls) {
           Assert.assertEquals(batch.cols[out].isNull[i], batch.cols[in].isNull[i]);
         }
-        long t = ((LongColumnVector) batch.cols[in]).vector[i];
+        long t = readVectorElementAt(batch.cols[in], i);
         long y = ((LongColumnVector) batch.cols[out]).vector[i];
         compareToUDFMonthLong(t, (int) y);
       } else {
@@ -392,37 +561,46 @@ public class TestVectorTimestampExpressions {
     }
   }
 
-  @Test
-  public void testVectorUDFMonthLong() {
-    VectorizedRowBatch batch = getVectorizedRowBatchLong2(new long[] {0},
-        VectorizedRowBatch.DEFAULT_SIZE);
+  private void testVectorUDFMonth(TestType testType) {
+    VectorizedRowBatch batch = getVectorizedRowBatch(new long[] {0},
+            VectorizedRowBatch.DEFAULT_SIZE, testType);
     Assert.assertTrue(((LongColumnVector) batch.cols[1]).noNulls);
     Assert.assertFalse(((LongColumnVector) batch.cols[1]).isRepeating);
-    verifyUDFMonthLong(batch);
+    verifyUDFMonth(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFMonthLong(batch);
+    verifyUDFMonth(batch, testType);
 
     long[] boundaries = getAllBoundaries();
-    batch = getVectorizedRowBatchLong2(boundaries, boundaries.length);
-    verifyUDFMonthLong(batch);
+    batch = getVectorizedRowBatch(boundaries, boundaries.length, testType);
+    verifyUDFMonth(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFMonthLong(batch);
+    verifyUDFMonth(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[1]);
-    verifyUDFMonthLong(batch);
+    verifyUDFMonth(batch, testType);
 
-    batch = getVectorizedRowBatchLong2(new long[] {0}, 1);
+    batch = getVectorizedRowBatch(new long[] {0}, 1, testType);
     batch.cols[0].isRepeating = true;
-    verifyUDFMonthLong(batch);
+    verifyUDFMonth(batch, testType);
     batch.cols[0].noNulls = false;
     batch.cols[0].isNull[0] = true;
-    verifyUDFMonthLong(batch);
+    verifyUDFMonth(batch, testType);
 
-    batch = getVectorizedRandomRowBatchLong2(200, VectorizedRowBatch.DEFAULT_SIZE);
-    verifyUDFMonthLong(batch);
+    batch = getVectorizedRandomRowBatch(200, VectorizedRowBatch.DEFAULT_SIZE, testType);
+    verifyUDFMonth(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFMonthLong(batch);
+    verifyUDFMonth(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[1]);
-    verifyUDFMonthLong(batch);
+    verifyUDFMonth(batch, testType);
+  }
+
+  @Test
+  public void testVectorUDFMonthLong() {
+    testVectorUDFMonth(TestType.LONG2);
+  }
+
+  @Test
+  public void testVectorUDFMonthString() {
+    testVectorUDFMonth(TestType.STRING_LONG);
   }
 
   private void compareToUDFSecondLong(long t, int y) {
@@ -432,20 +610,23 @@ public class TestVectorTimestampExpressions {
     Assert.assertEquals(res.get(), y);
   }
 
-  private void verifyUDFSecondLong(VectorizedRowBatch batch) {
-    /* col[1] = UDFSecond(col[0]) */
-    VectorUDFSecondLong udf = new VectorUDFSecondLong(0, 1);
+  private void verifyUDFSecond(VectorizedRowBatch batch, TestType testType) {
+    VectorExpression udf;
+    if (testType == TestType.LONG2) {
+      udf = new VectorUDFSecondLong(0, 1);
+    } else {
+      udf = new VectorUDFSecondString(0, 1);
+    }
     udf.evaluate(batch);
     final int in = 0;
     final int out = 1;
-    Assert.assertEquals(batch.cols[in].noNulls, batch.cols[out].noNulls);
 
     for (int i = 0; i < batch.size; i++) {
       if (batch.cols[in].noNulls || !batch.cols[in].isNull[i]) {
         if (!batch.cols[in].noNulls) {
           Assert.assertEquals(batch.cols[out].isNull[i], batch.cols[in].isNull[i]);
         }
-        long t = ((LongColumnVector) batch.cols[in]).vector[i];
+        long t = readVectorElementAt(batch.cols[in], i);
         long y = ((LongColumnVector) batch.cols[out]).vector[i];
         compareToUDFSecondLong(t, (int) y);
       } else {
@@ -454,37 +635,46 @@ public class TestVectorTimestampExpressions {
     }
   }
 
-  @Test
-  public void testVectorUDFSecondLong() {
-    VectorizedRowBatch batch = getVectorizedRowBatchLong2(new long[] {0},
-        VectorizedRowBatch.DEFAULT_SIZE);
+  private void testVectorUDFSecond(TestType testType) {
+    VectorizedRowBatch batch = getVectorizedRowBatch(new long[] {0},
+            VectorizedRowBatch.DEFAULT_SIZE, testType);
     Assert.assertTrue(((LongColumnVector) batch.cols[1]).noNulls);
     Assert.assertFalse(((LongColumnVector) batch.cols[1]).isRepeating);
-    verifyUDFSecondLong(batch);
+    verifyUDFSecond(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFSecondLong(batch);
+    verifyUDFSecond(batch, testType);
 
     long[] boundaries = getAllBoundaries();
-    batch = getVectorizedRowBatchLong2(boundaries, boundaries.length);
-    verifyUDFSecondLong(batch);
+    batch = getVectorizedRowBatch(boundaries, boundaries.length, testType);
+    verifyUDFSecond(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFSecondLong(batch);
+    verifyUDFSecond(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[1]);
-    verifyUDFSecondLong(batch);
+    verifyUDFSecond(batch, testType);
 
-    batch = getVectorizedRowBatchLong2(new long[] {0}, 1);
+    batch = getVectorizedRowBatch(new long[] {0}, 1, testType);
     batch.cols[0].isRepeating = true;
-    verifyUDFSecondLong(batch);
+    verifyUDFSecond(batch, testType);
     batch.cols[0].noNulls = false;
     batch.cols[0].isNull[0] = true;
-    verifyUDFSecondLong(batch);
+    verifyUDFSecond(batch, testType);
 
-    batch = getVectorizedRandomRowBatchLong2(200, VectorizedRowBatch.DEFAULT_SIZE);
-    verifyUDFSecondLong(batch);
+    batch = getVectorizedRandomRowBatch(200, VectorizedRowBatch.DEFAULT_SIZE, testType);
+    verifyUDFSecond(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFSecondLong(batch);
+    verifyUDFSecond(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[1]);
-    verifyUDFSecondLong(batch);
+    verifyUDFSecond(batch, testType);
+  }
+
+  @Test
+  public void testVectorUDFSecondLong() {
+    testVectorUDFSecond(TestType.LONG2);
+  }
+
+  @Test
+  public void testVectorUDFSecondString() {
+    testVectorUDFSecond(TestType.STRING_LONG);
   }
 
   private LongWritable getLongWritable(TimestampWritable i) {
@@ -508,20 +698,23 @@ public class TestVectorTimestampExpressions {
     Assert.assertEquals(res.get(), y);
   }
 
-  private void verifyUDFUnixTimeStampLong(VectorizedRowBatch batch) {
-    /* col[1] = UDFUnixTimeStamp(col[0]) */
-    VectorUDFUnixTimeStampLong udf = new VectorUDFUnixTimeStampLong(0, 1);
+  private void verifyUDFUnixTimeStamp(VectorizedRowBatch batch, TestType testType) {
+    VectorExpression udf;
+    if (testType == TestType.LONG2) {
+      udf = new VectorUDFUnixTimeStampLong(0, 1);
+    } else {
+      udf = new VectorUDFUnixTimeStampString(0, 1);
+    }
     udf.evaluate(batch);
     final int in = 0;
     final int out = 1;
-    Assert.assertEquals(batch.cols[in].noNulls, batch.cols[out].noNulls);
 
     for (int i = 0; i < batch.size; i++) {
       if (batch.cols[in].noNulls || !batch.cols[in].isNull[i]) {
-        if (!batch.cols[in].noNulls) {
+        if (!batch.cols[out].noNulls) {
           Assert.assertEquals(batch.cols[out].isNull[i], batch.cols[in].isNull[i]);
         }
-        long t = ((LongColumnVector) batch.cols[in]).vector[i];
+        long t = readVectorElementAt(batch.cols[in], i);
         long y = ((LongColumnVector) batch.cols[out]).vector[i];
         compareToUDFUnixTimeStampLong(t, y);
       } else {
@@ -530,37 +723,46 @@ public class TestVectorTimestampExpressions {
     }
   }
 
-  @Test
-  public void testVectorUDFUnixTimeStampLong() {
-    VectorizedRowBatch batch = getVectorizedRowBatchLong2(new long[] {0},
-        VectorizedRowBatch.DEFAULT_SIZE);
+  private void testVectorUDFUnixTimeStamp(TestType testType) {
+    VectorizedRowBatch batch = getVectorizedRowBatch(new long[] {0},
+            VectorizedRowBatch.DEFAULT_SIZE, testType);
     Assert.assertTrue(((LongColumnVector) batch.cols[1]).noNulls);
     Assert.assertFalse(((LongColumnVector) batch.cols[1]).isRepeating);
-    verifyUDFUnixTimeStampLong(batch);
+    verifyUDFUnixTimeStamp(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFUnixTimeStampLong(batch);
+    verifyUDFUnixTimeStamp(batch, testType);
 
     long[] boundaries = getAllBoundaries();
-    batch = getVectorizedRowBatchLong2(boundaries, boundaries.length);
-    verifyUDFUnixTimeStampLong(batch);
+    batch = getVectorizedRowBatch(boundaries, boundaries.length, testType);
+    verifyUDFUnixTimeStamp(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFUnixTimeStampLong(batch);
+    verifyUDFUnixTimeStamp(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[1]);
-    verifyUDFUnixTimeStampLong(batch);
+    verifyUDFUnixTimeStamp(batch, testType);
 
-    batch = getVectorizedRowBatchLong2(new long[] {0}, 1);
+    batch = getVectorizedRowBatch(new long[] {0}, 1, testType);
     batch.cols[0].isRepeating = true;
-    verifyUDFUnixTimeStampLong(batch);
+    verifyUDFUnixTimeStamp(batch, testType);
     batch.cols[0].noNulls = false;
     batch.cols[0].isNull[0] = true;
-    verifyUDFUnixTimeStampLong(batch);
+    verifyUDFUnixTimeStamp(batch, testType);
 
-    batch = getVectorizedRandomRowBatchLong2(200, VectorizedRowBatch.DEFAULT_SIZE);
-    verifyUDFUnixTimeStampLong(batch);
+    batch = getVectorizedRandomRowBatch(200, VectorizedRowBatch.DEFAULT_SIZE, testType);
+    verifyUDFUnixTimeStamp(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFUnixTimeStampLong(batch);
+    verifyUDFUnixTimeStamp(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[1]);
-    verifyUDFUnixTimeStampLong(batch);
+    verifyUDFUnixTimeStamp(batch, testType);
+  }
+
+  @Test
+  public void testVectorUDFUnixTimeStampLong() {
+    testVectorUDFUnixTimeStamp(TestType.LONG2);
+  }
+
+  @Test
+  public void testVectorUDFUnixTimeStampString() {
+    testVectorUDFUnixTimeStamp(TestType.STRING_LONG);
   }
 
   private void compareToUDFWeekOfYearLong(long t, int y) {
@@ -570,20 +772,20 @@ public class TestVectorTimestampExpressions {
     Assert.assertEquals(res.get(), y);
   }
 
-  private void verifyUDFWeekOfYearLong(VectorizedRowBatch batch) {
-    /* col[1] = UDFWeekOfYear(col[0]) */
-    VectorUDFWeekOfYearLong udf = new VectorUDFWeekOfYearLong(0, 1);
+  private void verifyUDFWeekOfYear(VectorizedRowBatch batch, TestType testType) {
+    VectorExpression udf;
+    if (testType == TestType.LONG2) {
+      udf = new VectorUDFWeekOfYearLong(0, 1);
+    } else {
+      udf = new VectorUDFWeekOfYearString(0, 1);
+    }
     udf.evaluate(batch);
     final int in = 0;
     final int out = 1;
-    Assert.assertEquals(batch.cols[in].noNulls, batch.cols[out].noNulls);
 
     for (int i = 0; i < batch.size; i++) {
       if (batch.cols[in].noNulls || !batch.cols[in].isNull[i]) {
-        if (!batch.cols[in].noNulls) {
-          Assert.assertEquals(batch.cols[out].isNull[i], batch.cols[in].isNull[i]);
-        }
-        long t = ((LongColumnVector) batch.cols[in]).vector[i];
+        long t = readVectorElementAt(batch.cols[in], i);
         long y = ((LongColumnVector) batch.cols[out]).vector[i];
         compareToUDFWeekOfYearLong(t, (int) y);
       } else {
@@ -592,37 +794,46 @@ public class TestVectorTimestampExpressions {
     }
   }
 
-  @Test
-  public void testVectorUDFWeekOfYearLong() {
-    VectorizedRowBatch batch = getVectorizedRowBatchLong2(new long[] {0},
-        VectorizedRowBatch.DEFAULT_SIZE);
+  private void testVectorUDFWeekOfYear(TestType testType) {
+    VectorizedRowBatch batch = getVectorizedRowBatch(new long[] {0},
+            VectorizedRowBatch.DEFAULT_SIZE, testType);
     Assert.assertTrue(((LongColumnVector) batch.cols[1]).noNulls);
     Assert.assertFalse(((LongColumnVector) batch.cols[1]).isRepeating);
-    verifyUDFWeekOfYearLong(batch);
+    verifyUDFWeekOfYear(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFWeekOfYearLong(batch);
+    verifyUDFWeekOfYear(batch, testType);
 
     long[] boundaries = getAllBoundaries();
-    batch = getVectorizedRowBatchLong2(boundaries, boundaries.length);
-    verifyUDFWeekOfYearLong(batch);
+    batch = getVectorizedRowBatch(boundaries, boundaries.length, testType);
+    verifyUDFWeekOfYear(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFWeekOfYearLong(batch);
+    verifyUDFWeekOfYear(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[1]);
-    verifyUDFWeekOfYearLong(batch);
+    verifyUDFWeekOfYear(batch, testType);
 
-    batch = getVectorizedRowBatchLong2(new long[] {0}, 1);
+    batch = getVectorizedRowBatch(new long[] {0}, 1, testType);
     batch.cols[0].isRepeating = true;
-    verifyUDFWeekOfYearLong(batch);
+    verifyUDFWeekOfYear(batch, testType);
     batch.cols[0].noNulls = false;
     batch.cols[0].isNull[0] = true;
-    verifyUDFWeekOfYearLong(batch);
+    verifyUDFWeekOfYear(batch, testType);
 
-    batch = getVectorizedRandomRowBatchLong2(200, VectorizedRowBatch.DEFAULT_SIZE);
-    verifyUDFWeekOfYearLong(batch);
+    batch = getVectorizedRandomRowBatch(200, VectorizedRowBatch.DEFAULT_SIZE, testType);
+    verifyUDFWeekOfYear(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[0]);
-    verifyUDFWeekOfYearLong(batch);
+    verifyUDFWeekOfYear(batch, testType);
     TestVectorizedRowBatch.addRandomNulls(batch.cols[1]);
-    verifyUDFWeekOfYearLong(batch);
+    verifyUDFWeekOfYear(batch, testType);
+  }
+
+  @Test
+  public void testVectorUDFWeekOfYearLong() {
+    testVectorUDFWeekOfYear(TestType.LONG2);
+  }
+
+  @Test
+  public void testVectorUDFWeekOfYearString() {
+    testVectorUDFWeekOfYear(TestType.STRING_LONG);
   }
 
   public static void main(String[] args) {
@@ -633,6 +844,12 @@ public class TestVectorTimestampExpressions {
     self.testVectorUDFHourLong();
     self.testVectorUDFWeekOfYearLong();
     self.testVectorUDFUnixTimeStampLong();
+    self.testVectorUDFYearString();
+    self.testVectorUDFMonthString();
+    self.testVectorUDFDayOfMonthString();
+    self.testVectorUDFHourString();
+    self.testVectorUDFWeekOfYearString();
+    self.testVectorUDFUnixTimeStampString();
    }
 }
 

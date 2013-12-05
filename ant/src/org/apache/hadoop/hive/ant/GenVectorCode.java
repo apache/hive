@@ -43,19 +43,16 @@ public class GenVectorCode extends Task {
       {"ColumnArithmeticScalar", "Add", "long", "double", "+"},
       {"ColumnArithmeticScalar", "Subtract", "long", "double", "-"},
       {"ColumnArithmeticScalar", "Multiply", "long", "double", "*"},
-      {"ColumnArithmeticScalar", "Divide", "long", "double", "/"},
       {"ColumnArithmeticScalar", "Modulo", "long", "double", "%"},
 
       {"ColumnArithmeticScalar", "Add", "double", "long", "+"},
       {"ColumnArithmeticScalar", "Subtract", "double", "long", "-"},
       {"ColumnArithmeticScalar", "Multiply", "double", "long", "*"},
-      {"ColumnArithmeticScalar", "Divide", "double", "long", "/"},
       {"ColumnArithmeticScalar", "Modulo", "double", "long", "%"},
 
       {"ColumnArithmeticScalar", "Add", "double", "double", "+"},
       {"ColumnArithmeticScalar", "Subtract", "double", "double", "-"},
       {"ColumnArithmeticScalar", "Multiply", "double", "double", "*"},
-      {"ColumnArithmeticScalar", "Divide", "double", "double", "/"},
       {"ColumnArithmeticScalar", "Modulo", "double", "double", "%"},
 
       {"ScalarArithmeticColumn", "Add", "long", "long", "+"},
@@ -66,19 +63,16 @@ public class GenVectorCode extends Task {
       {"ScalarArithmeticColumn", "Add", "long", "double", "+"},
       {"ScalarArithmeticColumn", "Subtract", "long", "double", "-"},
       {"ScalarArithmeticColumn", "Multiply", "long", "double", "*"},
-      {"ScalarArithmeticColumn", "Divide", "long", "double", "/"},
       {"ScalarArithmeticColumn", "Modulo", "long", "double", "%"},
 
       {"ScalarArithmeticColumn", "Add", "double", "long", "+"},
       {"ScalarArithmeticColumn", "Subtract", "double", "long", "-"},
       {"ScalarArithmeticColumn", "Multiply", "double", "long", "*"},
-      {"ScalarArithmeticColumn", "Divide", "double", "long", "/"},
       {"ScalarArithmeticColumn", "Modulo", "double", "long", "%"},
 
       {"ScalarArithmeticColumn", "Add", "double", "double", "+"},
       {"ScalarArithmeticColumn", "Subtract", "double", "double", "-"},
       {"ScalarArithmeticColumn", "Multiply", "double", "double", "*"},
-      {"ScalarArithmeticColumn", "Divide", "double", "double", "/"},
       {"ScalarArithmeticColumn", "Modulo", "double", "double", "%"},
 
       {"ColumnArithmeticColumn", "Add", "long", "long", "+"},
@@ -89,20 +83,27 @@ public class GenVectorCode extends Task {
       {"ColumnArithmeticColumn", "Add", "long", "double", "+"},
       {"ColumnArithmeticColumn", "Subtract", "long", "double", "-"},
       {"ColumnArithmeticColumn", "Multiply", "long", "double", "*"},
-      {"ColumnArithmeticColumn", "Divide", "long", "double", "/"},
       {"ColumnArithmeticColumn", "Modulo", "long", "double", "%"},
 
       {"ColumnArithmeticColumn", "Add", "double", "long", "+"},
       {"ColumnArithmeticColumn", "Subtract", "double", "long", "-"},
       {"ColumnArithmeticColumn", "Multiply", "double", "long", "*"},
-      {"ColumnArithmeticColumn", "Divide", "double", "long", "/"},
       {"ColumnArithmeticColumn", "Modulo", "double", "long", "%"},
 
       {"ColumnArithmeticColumn", "Add", "double", "double", "+"},
       {"ColumnArithmeticColumn", "Subtract", "double", "double", "-"},
       {"ColumnArithmeticColumn", "Multiply", "double", "double", "*"},
-      {"ColumnArithmeticColumn", "Divide", "double", "double", "/"},
       {"ColumnArithmeticColumn", "Modulo", "double", "double", "%"},
+
+      {"ColumnDivideScalar", "Divide", "long", "double", "/"},
+      {"ColumnDivideScalar", "Divide", "double", "long", "/"},
+      {"ColumnDivideScalar", "Divide", "double", "double", "/"},
+      {"ScalarDivideColumn", "Divide", "long", "double", "/"},
+      {"ScalarDivideColumn", "Divide", "double", "long", "/"},
+      {"ScalarDivideColumn", "Divide", "double", "double", "/"},
+      {"ColumnDivideColumn", "Divide", "long", "double", "/"},
+      {"ColumnDivideColumn", "Divide", "double", "long", "/"},
+      {"ColumnDivideColumn", "Divide", "double", "double", "/"},
 
       {"ColumnCompareScalar", "Equal", "long", "double", "=="},
       {"ColumnCompareScalar", "Equal", "double", "double", "=="},
@@ -518,7 +519,7 @@ public class GenVectorCode extends Task {
   private void generate() throws Exception {
     System.out.println("Generating vector expression code");
     for (String [] tdesc : templateExpansions) {
-      if (tdesc[0].equals("ColumnArithmeticScalar")) {
+      if (tdesc[0].equals("ColumnArithmeticScalar") || tdesc[0].equals("ColumnDivideScalar")) {
         generateColumnArithmeticScalar(tdesc);
       } else if (tdesc[0].equals("ColumnCompareScalar")) {
         generateColumnCompareScalar(tdesc);
@@ -530,13 +531,13 @@ public class GenVectorCode extends Task {
         generateFilterScalarCompareColumn(tdesc);
       } else if (tdesc[0].equals("FilterColumnBetween")) {
         generateFilterColumnBetween(tdesc);
-      } else if (tdesc[0].equals("ScalarArithmeticColumn")) {
+      } else if (tdesc[0].equals("ScalarArithmeticColumn") || tdesc[0].equals("ScalarDivideColumn")) {
         generateScalarArithmeticColumn(tdesc);
       } else if (tdesc[0].equals("FilterColumnCompareColumn")) {
         generateFilterColumnCompareColumn(tdesc);
       } else if (tdesc[0].equals("ColumnCompareColumn")) {
         generateColumnCompareColumn(tdesc);
-      } else if (tdesc[0].equals("ColumnArithmeticColumn")) {
+      } else if (tdesc[0].equals("ColumnArithmeticColumn") || tdesc[0].equals("ColumnDivideColumn")) {
         generateColumnArithmeticColumn(tdesc);
       } else if (tdesc[0].equals("ColumnUnaryMinus")) {
         generateColumnUnaryMinus(tdesc);

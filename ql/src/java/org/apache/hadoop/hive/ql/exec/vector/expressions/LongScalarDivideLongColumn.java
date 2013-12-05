@@ -68,8 +68,11 @@ public class LongScalarDivideLongColumn extends VectorExpression {
       return;
     }
 
+    boolean hasDivBy0 = false;
     if (inputColVector.isRepeating) {
-      outputVector[0] = value / vector[0];
+      long denom = vector[0];
+      outputVector[0] = value / denom;
+      hasDivBy0 = hasDivBy0 || (denom == 0);
 
       // Even if there are no nulls, we always copy over entry 0. Simplifies code.
       outputIsNull[0] = inputIsNull[0];
@@ -77,23 +80,31 @@ public class LongScalarDivideLongColumn extends VectorExpression {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = value / vector[i];
+          long denom = vector[i];
+          outputVector[i] = value / denom;
+          hasDivBy0 = hasDivBy0 || (denom == 0);
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = value / vector[i];
+          long denom = vector[i];
+          outputVector[i] = value / denom;
+          hasDivBy0 = hasDivBy0 || (denom == 0);
         }
       }
     } else /* there are nulls */ {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          outputVector[i] = value / vector[i];
+          long denom = vector[i];
+          outputVector[i] = value / denom;
+          hasDivBy0 = hasDivBy0 || (denom == 0);
           outputIsNull[i] = inputIsNull[i];
         }
       } else {
         for(int i = 0; i != n; i++) {
-          outputVector[i] = value / vector[i];
+          long denom = vector[i];
+          outputVector[i] = value / denom;
+          hasDivBy0 = hasDivBy0 || (denom == 0);
         }
         System.arraycopy(inputIsNull, 0, outputIsNull, 0, n);
       }
@@ -103,7 +114,12 @@ public class LongScalarDivideLongColumn extends VectorExpression {
      * Unlike other col-scalar operations, this one doesn't benefit from carrying
      * over NaN values from the input array.
      */
-    NullUtil.setNullDataEntriesDouble(outputColVector, batch.selectedInUse, sel, n);
+    if (!hasDivBy0) {
+      NullUtil.setNullDataEntriesDouble(outputColVector, batch.selectedInUse, sel, n);
+    } else {
+      NullUtil.setNullAndDivBy0DataEntriesDouble(
+          outputColVector, batch.selectedInUse, sel, n, inputColVector);
+    }
   }
 
   @Override

@@ -251,7 +251,6 @@ public class TestVectorArithmeticExpressions {
 
   @Test
   public void testLongColDivideLongColumn() {
-
     /* Testing for equality of doubles after a math operation is
      * not always reliable so use this as a tolerance.
      */
@@ -270,6 +269,8 @@ public class TestVectorArithmeticExpressions {
     expr.evaluate(batch);
 
     // 0/0 for entry 0 should work but generate NaN
+    assertFalse(out.noNulls);
+    assertTrue(out.isNull[0]);
     assertTrue(Double.isNaN(out.vector[0]));
 
     // verify NULL output in entry 1 is correct

@@ -130,6 +130,7 @@ message Type {
     DECIMAL = 14;
     DATE = 15;
     VARCHAR = 16;
+    CHAR = 17;
   }
   required Kind kind = 1;
   repeated uint32 subtypes = 2 [packed=true];

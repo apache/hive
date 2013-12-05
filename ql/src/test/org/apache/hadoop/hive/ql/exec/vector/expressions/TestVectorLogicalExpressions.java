@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.exec.vector.expressions;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
+import org.apache.hadoop.hive.ql.exec.vector.DoubleColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.LongColumnVector;
 import org.apache.hadoop.hive.ql.exec.vector.VectorizedRowBatch;
 import org.junit.Assert;
@@ -459,5 +460,68 @@ public class TestVectorLogicalExpressions {
     assertEquals(1, batch1.size);
 
     assertEquals(2, batch1.selected[0]);
+  }
+
+  @Test
+  public void testLongInExpr() {
+
+    // check basic operation
+    VectorizedRowBatch b = TestVectorMathFunctions.getVectorizedRowBatchLongInLongOut();
+    LongColumnVector outV = (LongColumnVector) b.cols[1];
+    long[] inVals = new long[2];
+    inVals[0] = 0;
+    inVals[1] = -2;
+    LongColumnInList expr = new LongColumnInList(0, 1);
+    expr.setInListValues(inVals);
+    expr.evaluate(b);
+    assertEquals(1, outV.vector[0]);
+    assertEquals(0, outV.vector[1]);
+
+    // check null handling
+    b.cols[0].noNulls = false;
+    b.cols[0].isNull[0] = true;
+    expr.evaluate(b);
+    assertEquals(true, !outV.noNulls && outV.isNull[0]);
+    assertEquals(0, outV.vector[1]);
+
+    // check isRepeating handling
+    b = TestVectorMathFunctions.getVectorizedRowBatchLongInLongOut();
+    outV = (LongColumnVector) b.cols[1];
+    b.cols[0].isRepeating = true;
+    expr.evaluate(b);
+    assertEquals(true, outV.isRepeating);
+    assertEquals(1, outV.vector[0]);
+  }
+
+  @Test
+  public void testDoubleInExpr() {
+
+    // check basic operation
+    VectorizedRowBatch b = TestVectorMathFunctions.getVectorizedRowBatchDoubleInLongOut();
+    LongColumnVector outV = (LongColumnVector) b.cols[1];
+    double[] inVals = new double[2];
+    inVals[0] = -1.5d;
+    inVals[1] = 30d;
+    b.size = 2;
+    DoubleColumnInList expr = new DoubleColumnInList(0, 1);
+    expr.setInListValues(inVals);
+    expr.evaluate(b);
+    assertEquals(1, outV.vector[0]);
+    assertEquals(0, outV.vector[1]);
+
+    // check null handling
+    b.cols[0].noNulls = false;
+    b.cols[0].isNull[0] = true;
+    expr.evaluate(b);
+    assertEquals(true, !outV.noNulls && outV.isNull[0]);
+    assertEquals(0, outV.vector[1]);
+
+    // check isRepeating handling
+    b = TestVectorMathFunctions.getVectorizedRowBatchDoubleInLongOut();
+    outV = (LongColumnVector) b.cols[1];
+    b.cols[0].isRepeating = true;
+    expr.evaluate(b);
+    assertEquals(true, outV.isRepeating);
+    assertEquals(1, outV.vector[0]);
   }
 }

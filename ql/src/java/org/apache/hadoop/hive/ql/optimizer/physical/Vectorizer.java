@@ -100,6 +100,7 @@ import org.apache.hadoop.hive.ql.udf.UDFLog;
 import org.apache.hadoop.hive.ql.udf.UDFLog10;
 import org.apache.hadoop.hive.ql.udf.UDFLog2;
 import org.apache.hadoop.hive.ql.udf.UDFMinute;
+import org.apache.hadoop.hive.ql.udf.UDFMonth;
 import org.apache.hadoop.hive.ql.udf.UDFRTrim;
 import org.apache.hadoop.hive.ql.udf.UDFRadians;
 import org.apache.hadoop.hive.ql.udf.UDFRand;
@@ -202,15 +203,16 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(GenericUDFOPOr.class);
     supportedGenericUDFs.add(GenericUDFOPAnd.class);
     supportedGenericUDFs.add(GenericUDFOPEqual.class);
-    supportedGenericUDFs.add(GenericUDFToUnixTimeStamp.class);
-
-    supportedGenericUDFs.add(UDFHour.class);
     supportedGenericUDFs.add(UDFLength.class);
+
+    supportedGenericUDFs.add(UDFYear.class);
+    supportedGenericUDFs.add(UDFMonth.class);
+    supportedGenericUDFs.add(UDFDayOfMonth.class);
+    supportedGenericUDFs.add(UDFHour.class);
     supportedGenericUDFs.add(UDFMinute.class);
     supportedGenericUDFs.add(UDFSecond.class);
-    supportedGenericUDFs.add(UDFYear.class);
     supportedGenericUDFs.add(UDFWeekOfYear.class);
-    supportedGenericUDFs.add(UDFDayOfMonth.class);
+    supportedGenericUDFs.add(GenericUDFToUnixTimeStamp.class);
 
     supportedGenericUDFs.add(UDFLike.class);
     supportedGenericUDFs.add(UDFRegExp.class);
@@ -646,8 +648,12 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private boolean validateExprNodeDescRecursive(ExprNodeDesc desc) {
-    boolean ret = validateDataType(desc.getTypeInfo().getTypeName());
+    String typeName = desc.getTypeInfo().getTypeName();
+    boolean ret = validateDataType(typeName);
     if (!ret) {
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Cannot vectorize " + desc.getExprString() + " of type " + typeName);
+      }
       return false;
     }
     if (desc instanceof ExprNodeGenericFuncDesc) {
@@ -679,6 +685,7 @@ public class Vectorizer implements PhysicalPlanResolver {
     try {
       VectorizationContext vc = new ValidatorVectorizationContext();
       if (vc.getVectorExpression(desc, mode) == null) {
+        // TODO: this cannot happen - VectorizationContext throws in such cases.
         return false;
       }
     } catch (HiveException e) {

@@ -1,3 +1,5 @@
+set hive.stats.fetch.column.stats=true;
+
 create table if not exists emp_staging (
   lastname string,
   deptid int
@@ -27,7 +29,6 @@ alter table loc_orc set fileformat orc;
 LOAD DATA LOCAL INPATH '../../data/files/emp.txt' OVERWRITE INTO TABLE emp_staging;
 LOAD DATA LOCAL INPATH '../../data/files/dept.txt' OVERWRITE INTO TABLE dept_staging;
 LOAD DATA LOCAL INPATH '../../data/files/loc.txt' OVERWRITE INTO TABLE loc_staging;
-
 
 insert overwrite table emp_orc select * from emp_staging;
 insert overwrite table dept_orc select * from dept_staging;

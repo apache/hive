@@ -210,12 +210,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.mina</groupId>
-      <artifactId>mina-core</artifactId>
-      <version>${mina.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
       <version>${mockito-all.version}</version>
@@ -226,9 +220,6 @@
   <profiles>
     <profile>
       <id>hadoop-1</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <dependencies>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
@@ -433,6 +424,12 @@
                   <include>com.google.guava:guava</include>
                 </includes>
               </artifactSet>
+              <relocations>
+                <relocation>
+                  <pattern>com.esotericsoftware</pattern>
+                  <shadedPattern>org.apache.hive.com.esotericsoftware</shadedPattern>
+                </relocation>
+              </relocations>
             </configuration>
           </execution>
         </executions>

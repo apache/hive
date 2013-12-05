@@ -61,7 +61,7 @@
       <useProjectArtifact>false</useProjectArtifact>
       <useStrictFiltering>true</useStrictFiltering>
       <includes>
-        <include>org.apache.hive.hcatalog:hive-hbase-storage-handler</include>
+        <include>org.apache.hive.hcatalog:hive-hcatalog-hbase-storage-handler</include>
       </includes>
     </dependencySet>
     <!-- TODO 0.12 release the webhcat server lib directory had all transitive jars
