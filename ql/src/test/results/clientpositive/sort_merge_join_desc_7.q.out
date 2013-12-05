@@ -266,10 +266,10 @@ STAGE PLANS:
                 1 [Column[key]]
               Position of Big Table: 0
               Statistics:
-                  numRows: 500000 dataSize: 10000000 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 1100 dataSize: 11686 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 Statistics:
-                    numRows: 500000 dataSize: 10000000 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 1100 dataSize: 11686 basicStatsState: COMPLETE colStatsState: NONE
                 Group By Operator
                   aggregations:
                         expr: count()

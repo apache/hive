@@ -98,7 +98,7 @@ STAGE PLANS:
         TableScan
           alias: emp_orc
           Statistics:
-              numRows: 0 dataSize: 349 basicStatsState: PARTIAL colStatsState: NONE
+              numRows: 3 dataSize: 349 basicStatsState: COMPLETE colStatsState: NONE
           GatherStats: false
           Select Operator
             expressions:
@@ -108,7 +108,7 @@ STAGE PLANS:
                   type: int
             outputColumnNames: _col0, _col1
             Statistics:
-                numRows: 0 dataSize: 349 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 3 dataSize: 349 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
 
 

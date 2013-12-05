@@ -3,6 +3,8 @@ package org.apache.hadoop.hive.ql.stats;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
@@ -62,9 +64,10 @@ import com.google.common.collect.Lists;
 
 public class StatsUtils {
 
+  private static final Log LOG = LogFactory.getLog(StatsUtils.class.getName());
+
   /**
    * Collect table, partition and column level statistics
-   *
    * @param conf
    *          - hive configuration
    * @param partList
@@ -86,26 +89,38 @@ public class StatsUtils {
     List<String> neededColumns = tableScanOperator.getNeededColumns();
     String dbName = table.getDbName();
     String tabName = table.getTableName();
-    boolean fetchColStats = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS);
+    boolean fetchColStats =
+        HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_FETCH_COLUMN_STATS);
+    float deserFactor =
+        HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_DESERIALIZATION_FACTOR);
 
     if (!table.isPartitioned()) {
       long nr = getNumRows(dbName, tabName);
-      long rds = getRawDataSize(dbName, tabName);
-      if (rds <= 0) {
-        rds = getTotalSize(dbName, tabName);
+      long ds = getRawDataSize(dbName, tabName);
+      if (ds <= 0) {
+        ds = getTotalSize(dbName, tabName);
 
         // if data size is still 0 then get file size
-        if (rds <= 0) {
-          rds = getFileSizeForTable(conf, table);
+        if (ds <= 0) {
+          ds = getFileSizeForTable(conf, table);
         }
+
+        ds = (long) (ds * deserFactor);
       }
 
       // number of rows -1 means that statistics from metastore is not reliable
+      // and 0 means statistics gathering is disabled
       if (nr <= 0) {
-        nr = 0;
+        int avgRowSize = estimateRowSizeFromSchema(conf, schema, neededColumns);
+        if (avgRowSize > 0) {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Estimated average row size: " + avgRowSize);
+          }
+          nr = ds / avgRowSize;
+        }
       }
       stats.setNumRows(nr);
-      stats.setDataSize(rds);
+      stats.setDataSize(ds);
 
       List<ColStatistics> colStats = Lists.newArrayList();
       if (fetchColStats) {
@@ -126,7 +141,7 @@ public class StatsUtils {
 
       if (!checkIfColStatsAvailable(colStats)) {
         // if there is column projection and if we do not have stats then mark
-        // it as NONE. Else we will have stats for const/udf columns
+        // it as NONE. Else we will have estimated stats for const/udf columns
         if (!neededColumns.isEmpty()) {
           stats.setColumnStatsState(Statistics.State.NONE);
         } else {
@@ -144,31 +159,56 @@ public class StatsUtils {
           partNames.add(part.getName());
         }
 
-        List<Long> rowCounts = getBasicStatForPartitions(table, partNames,
-            StatsSetupConst.ROW_COUNT);
-        List<Long> dataSizes = getBasicStatForPartitions(table, partNames,
-            StatsSetupConst.RAW_DATA_SIZE);
+        List<Long> rowCounts =
+            getBasicStatForPartitions(table, partNames, StatsSetupConst.ROW_COUNT);
+        List<Long> dataSizes =
+            getBasicStatForPartitions(table, partNames, StatsSetupConst.RAW_DATA_SIZE);
 
         long nr = getSumIgnoreNegatives(rowCounts);
-        long rds = getSumIgnoreNegatives(dataSizes);
-        if (rds <= 0) {
+        long ds = getSumIgnoreNegatives(dataSizes);
+        if (ds <= 0) {
           dataSizes = getBasicStatForPartitions(table, partNames, StatsSetupConst.TOTAL_SIZE);
-          rds = getSumIgnoreNegatives(dataSizes);
+          ds = getSumIgnoreNegatives(dataSizes);
 
           // if data size still could not be determined, then fall back to filesytem to get file
           // sizes
-          if (rds <= 0) {
+          if (ds <= 0) {
             dataSizes = getFileSizeForPartitions(conf, partList.getNotDeniedPartns());
           }
-          rds = getSumIgnoreNegatives(dataSizes);
+          ds = getSumIgnoreNegatives(dataSizes);
+
+          ds = (long) (ds * deserFactor);
         }
 
-        // number of rows -1 means that statistics from metastore is not reliable
-        if (nr <= 0) {
-          nr = 0;
+        int avgRowSize = estimateRowSizeFromSchema(conf, schema, neededColumns);
+        if (avgRowSize > 0) {
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("Estimated average row size: " + avgRowSize);
+          }
+
+          for (int i = 0; i < rowCounts.size(); i++) {
+            long rc = rowCounts.get(i);
+            long s = dataSizes.get(i);
+            if (rc <= 0 && s > 0) {
+              rc = s / avgRowSize;
+              rowCounts.set(i, rc);
+            }
+
+            if (s <= 0 && rc > 0) {
+              s = rc * avgRowSize;
+              dataSizes.set(i, s);
+            }
+          }
+          nr = getSumIgnoreNegatives(rowCounts);
+          ds = getSumIgnoreNegatives(dataSizes);
+
+          // number of rows -1 means that statistics from metastore is not reliable
+          if (nr <= 0) {
+            nr = ds / avgRowSize;
+          }
         }
         stats.addToNumRows(nr);
-        stats.addToDataSize(rds);
+        stats.addToDataSize(ds);
 
         // if atleast a partition does not contain row count then mark basic stats state as PARTIAL
         if (containsNonPositives(rowCounts)) {
@@ -187,7 +227,7 @@ public class StatsUtils {
             stats.updateColumnStatsState(Statistics.State.COMPLETE);
           } else {
             // if there is column projection and if we do not have stats then mark
-            // it as NONE. Else we will have stats for const/udf columns
+            // it as NONE. Else we will have estimated stats for const/udf columns
             if (!neededColumns.isEmpty()) {
               stats.updateColumnStatsState(Statistics.State.NONE);
             } else {
@@ -202,9 +242,40 @@ public class StatsUtils {
     return stats;
   }
 
+  public static int estimateRowSizeFromSchema(HiveConf conf, List<ColumnInfo> schema,
+      List<String> neededColumns) {
+    int avgRowSize = 0;
+    for (String neededCol : neededColumns) {
+      ColumnInfo ci = getColumnInfoForColumn(neededCol, schema);
+      ObjectInspector oi = ci.getObjectInspector();
+      String colType = ci.getTypeName();
+      if (colType.equalsIgnoreCase(serdeConstants.STRING_TYPE_NAME)
+          || colType.equalsIgnoreCase(serdeConstants.BINARY_TYPE_NAME)
+          || colType.startsWith(serdeConstants.VARCHAR_TYPE_NAME)
+          || colType.startsWith(serdeConstants.CHAR_TYPE_NAME)
+          || colType.startsWith(serdeConstants.LIST_TYPE_NAME)
+          || colType.startsWith(serdeConstants.MAP_TYPE_NAME)
+          || colType.startsWith(serdeConstants.STRUCT_TYPE_NAME)
+          || colType.startsWith(serdeConstants.UNION_TYPE_NAME)) {
+        avgRowSize += getAvgColLenOfVariableLengthTypes(conf, oi, colType);
+      } else {
+        avgRowSize += getAvgColLenOfFixedLengthTypes(colType);
+      }
+    }
+    return avgRowSize;
+  }
+
+  private static ColumnInfo getColumnInfoForColumn(String neededCol, List<ColumnInfo> schema) {
+    for (ColumnInfo ci : schema) {
+      if (ci.getInternalName().equalsIgnoreCase(neededCol)) {
+        return ci;
+      }
+    }
+    return null;
+  }
+
   /**
    * Find the bytes on disk occupied by a table
-   *
    * @param conf
    *          - hive conf
    * @param table
@@ -225,7 +296,6 @@ public class StatsUtils {
 
   /**
    * Find the bytes on disks occupied by list of partitions
-   *
    * @param conf
    *          - hive conf
    * @param parts
@@ -259,7 +329,6 @@ public class StatsUtils {
 
   /**
    * Get sum of all values in the list that are >0
-   *
    * @param vals
    *          - list of values
    * @return sum
@@ -276,7 +345,6 @@ public class StatsUtils {
 
   /**
    * Get the partition level columns statistics from metastore for all the needed columns
-   *
    * @param table
    *          - table object
    * @param part
@@ -312,7 +380,6 @@ public class StatsUtils {
 
   /**
    * Get the partition level columns statistics from metastore for a specific column
-   *
    * @param dbName
    *          - database name
    * @param tabName
@@ -326,8 +393,8 @@ public class StatsUtils {
   public static ColStatistics getParitionColumnStatsForColumn(String dbName, String tabName,
       String partName, String colName) {
     try {
-      ColumnStatistics colStats = Hive.get().getPartitionColumnStatistics(dbName, tabName,
-          partName, colName);
+      ColumnStatistics colStats =
+          Hive.get().getPartitionColumnStatistics(dbName, tabName, partName, colName);
       if (colStats != null) {
         return getColStatistics(colStats.getStatsObj().get(0), tabName, colName);
       }
@@ -339,7 +406,6 @@ public class StatsUtils {
 
   /**
    * Will return true if column statistics for atleast one column is available
-   *
    * @param colStats
    *          - column stats
    * @return
@@ -355,7 +421,6 @@ public class StatsUtils {
 
   /**
    * Get table level column stats for specified column
-   *
    * @param dbName
    *          - database name
    * @param tableName
@@ -380,7 +445,6 @@ public class StatsUtils {
 
   /**
    * Convert ColumnStatisticsObj to ColStatistics
-   *
    * @param cso
    *          - ColumnStatisticsObj
    * @param tabName
@@ -446,7 +510,6 @@ public class StatsUtils {
 
   /**
    * Get table level column statistics from metastore for needed columns
-   *
    * @param table
    *          - table
    * @param schema
@@ -479,7 +542,6 @@ public class StatsUtils {
 
   /**
    * Get the raw data size of variable length data types
-   *
    * @param conf
    *          - hive conf
    * @param oi
@@ -533,10 +595,11 @@ public class StatsUtils {
         return coi.getWritableConstantValue().toString().length();
       } else if (oi instanceof WritableConstantHiveVarcharObjectInspector) {
 
-        WritableConstantHiveVarcharObjectInspector wcsoi = (WritableConstantHiveVarcharObjectInspector) oi;
+        WritableConstantHiveVarcharObjectInspector wcsoi =
+            (WritableConstantHiveVarcharObjectInspector) oi;
         return wcsoi.getWritableConstantValue().toString().length();
       } else if (oi instanceof WritableHiveVarcharObjectInspector) {
-        return ((WritableHiveVarcharObjectInspector)oi).getMaxLength();
+        return ((WritableHiveVarcharObjectInspector) oi).getMaxLength();
       }
     } else if (colType.startsWith(serdeConstants.CHAR_TYPE_NAME)) {
 
@@ -552,7 +615,8 @@ public class StatsUtils {
         return coi.getWritableConstantValue().toString().length();
       } else if (oi instanceof WritableConstantHiveCharObjectInspector) {
 
-        WritableConstantHiveCharObjectInspector wcsoi = (WritableConstantHiveCharObjectInspector) oi;
+        WritableConstantHiveCharObjectInspector wcsoi =
+            (WritableConstantHiveCharObjectInspector) oi;
         return wcsoi.getWritableConstantValue().toString().length();
       } else if (oi instanceof WritableHiveCharObjectInspector) {
         return ((WritableHiveCharObjectInspector) oi).getMaxLength();
@@ -592,7 +656,6 @@ public class StatsUtils {
 
   /**
    * Get the size of complex data types
-   *
    * @param conf
    *          - hive conf
    * @param oi
@@ -690,7 +753,6 @@ public class StatsUtils {
 
   /**
    * Get size of fixed length primitives
-   *
    * @param colType
    *          - column type
    * @return raw data size
@@ -718,7 +780,6 @@ public class StatsUtils {
 
   /**
    * Get the size of arrays of primitive types
-   *
    * @param colType
    *          - column type
    * @param length
@@ -752,7 +813,6 @@ public class StatsUtils {
 
   /**
    * Estimate the size of map object
-   *
    * @param scmoi
    *          - object inspector
    * @return size of map
@@ -774,7 +834,6 @@ public class StatsUtils {
 
   /**
    * Get size of primitive data types based on their respective writable object inspector
-   *
    * @param oi
    *          - object inspector
    * @param value
@@ -817,7 +876,6 @@ public class StatsUtils {
 
   /**
    * Get column statistics from parent statistics.
-   *
    * @param conf
    *          - hive conf
    * @param parentStats
@@ -829,8 +887,7 @@ public class StatsUtils {
    * @return column statistics
    */
   public static List<ColStatistics> getColStatisticsFromExprMap(HiveConf conf,
-      Statistics parentStats,
-      Map<String, ExprNodeDesc> colExprMap, RowSchema rowSchema) {
+      Statistics parentStats, Map<String, ExprNodeDesc> colExprMap, RowSchema rowSchema) {
 
     List<ColStatistics> cs = Lists.newArrayList();
     if (colExprMap != null) {
@@ -856,7 +913,6 @@ public class StatsUtils {
 
   /**
    * Get column statistics expression nodes
-   *
    * @param conf
    *          - hive conf
    * @param parentStats
@@ -963,7 +1019,6 @@ public class StatsUtils {
 
   /**
    * Get number of rows of a give table
-   *
    * @param dbName
    *          - database name
    * @param tabName
@@ -976,7 +1031,6 @@ public class StatsUtils {
 
   /**
    * Get raw data size of a give table
-   *
    * @param dbName
    *          - database name
    * @param tabName
@@ -989,7 +1043,6 @@ public class StatsUtils {
 
   /**
    * Get total size of a give table
-   *
    * @param dbName
    *          - database name
    * @param tabName
@@ -1002,7 +1055,6 @@ public class StatsUtils {
 
   /**
    * Get basic stats of table
-   *
    * @param dbName
    *          - database name
    * @param tabName
@@ -1035,7 +1087,6 @@ public class StatsUtils {
 
   /**
    * Get basic stats of partitions
-   *
    * @param table
    *          - table
    * @param partNames
@@ -1072,7 +1123,6 @@ public class StatsUtils {
 
   /**
    * Compute raw data size from column statistics
-   *
    * @param numRows
    *          - number of rows
    * @param colStats
@@ -1130,7 +1180,6 @@ public class StatsUtils {
 
   /**
    * Remove KEY/VALUE prefix from column name
-   *
    * @param colName
    *          - column name
    * @return column name
@@ -1146,7 +1195,6 @@ public class StatsUtils {
 
   /**
    * Returns fully qualified name of column
-   *
    * @param tabName
    * @param colName
    * @return
@@ -1157,7 +1205,6 @@ public class StatsUtils {
 
   /**
    * Returns fully qualified name of column
-   *
    * @param dbName
    * @param tabName
    * @param colName
@@ -1169,7 +1216,6 @@ public class StatsUtils {
 
   /**
    * Returns fully qualified name of column
-   *
    * @param dbName
    * @param tabName
    * @param partName
@@ -1193,7 +1239,6 @@ public class StatsUtils {
 
   /**
    * Try to get fully qualified column name from expression node
-   *
    * @param keyExprs
    *          - expression nodes
    * @param map

@@ -50,7 +50,7 @@ STAGE PLANS:
           TableScan
             alias: x
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
@@ -58,14 +58,14 @@ STAGE PLANS:
                   expr: (key < 20)
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 19 dataSize: 1903 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
                       type: string
                 outputColumnNames: key
                 Statistics:
-                    numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 19 dataSize: 1903 basicStatsState: COMPLETE colStatsState: NONE
                 Group By Operator
                   aggregations:
                         expr: count(1)
@@ -76,7 +76,7 @@ STAGE PLANS:
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics:
-                      numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                      numRows: 19 dataSize: 1903 basicStatsState: COMPLETE colStatsState: NONE
                   Reduce Output Operator
                     key expressions:
                           expr: _col0
@@ -86,7 +86,7 @@ STAGE PLANS:
                           expr: _col0
                           type: string
                     Statistics:
-                        numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                        numRows: 19 dataSize: 1903 basicStatsState: COMPLETE colStatsState: NONE
                     tag: -1
                     value expressions:
                           expr: _col1
@@ -150,7 +150,7 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics:
-              numRows: 0 dataSize: 1453 basicStatsState: PARTIAL colStatsState: NONE
+              numRows: 9 dataSize: 901 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col0
@@ -159,7 +159,7 @@ STAGE PLANS:
                   type: bigint
             outputColumnNames: _col0, _col1
             Statistics:
-                numRows: 0 dataSize: 1453 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 9 dataSize: 901 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -606,7 +606,7 @@ STAGE PLANS:
             GatherStats: false
             Union
               Statistics:
-                  numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 18 dataSize: 1802 basicStatsState: COMPLETE colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: _col0
@@ -616,7 +616,7 @@ STAGE PLANS:
                       expr: _col0
                       type: string
                 Statistics:
-                    numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 18 dataSize: 1802 basicStatsState: COMPLETE colStatsState: NONE
                 tag: 0
                 value expressions:
                       expr: _col1
@@ -626,7 +626,7 @@ STAGE PLANS:
             GatherStats: false
             Union
               Statistics:
-                  numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 18 dataSize: 1802 basicStatsState: COMPLETE colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: _col0
@@ -636,7 +636,7 @@ STAGE PLANS:
                       expr: _col0
                       type: string
                 Statistics:
-                    numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 18 dataSize: 1802 basicStatsState: COMPLETE colStatsState: NONE
                 tag: 0
                 value expressions:
                       expr: _col1
@@ -645,7 +645,7 @@ STAGE PLANS:
           TableScan
             alias: x
             Statistics:
-                numRows: 0 dataSize: 216 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 1 dataSize: 216 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Reduce Output Operator
               key expressions:
@@ -656,7 +656,7 @@ STAGE PLANS:
                     expr: key
                     type: string
               Statistics:
-                  numRows: 0 dataSize: 216 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 1 dataSize: 216 basicStatsState: COMPLETE colStatsState: NONE
               tag: 1
               value expressions:
                     expr: key
@@ -762,7 +762,7 @@ STAGE PLANS:
           handleSkewJoin: false
           outputColumnNames: _col1, _col2, _col3
           Statistics:
-              numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+              numRows: 19 dataSize: 1982 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col2
@@ -773,14 +773,14 @@ STAGE PLANS:
                   type: int
             outputColumnNames: _col0, _col1, _col2
             Statistics:
-                numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                numRows: 19 dataSize: 1982 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 1
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
               Statistics:
-                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                  numRows: 19 dataSize: 1982 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -808,7 +808,7 @@ STAGE PLANS:
           TableScan
             alias: x1
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
@@ -816,14 +816,14 @@ STAGE PLANS:
                   expr: (key > 100)
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 19 dataSize: 1903 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
                       type: string
                 outputColumnNames: key
                 Statistics:
-                    numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 19 dataSize: 1903 basicStatsState: COMPLETE colStatsState: NONE
                 Group By Operator
                   aggregations:
                         expr: count(1)
@@ -834,7 +834,7 @@ STAGE PLANS:
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics:
-                      numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                      numRows: 19 dataSize: 1903 basicStatsState: COMPLETE colStatsState: NONE
                   Reduce Output Operator
                     key expressions:
                           expr: _col0
@@ -844,7 +844,7 @@ STAGE PLANS:
                           expr: _col0
                           type: string
                     Statistics:
-                        numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                        numRows: 19 dataSize: 1903 basicStatsState: COMPLETE colStatsState: NONE
                     tag: -1
                     value expressions:
                           expr: _col1
@@ -908,7 +908,7 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics:
-              numRows: 0 dataSize: 1453 basicStatsState: PARTIAL colStatsState: NONE
+              numRows: 9 dataSize: 901 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col0
@@ -917,7 +917,7 @@ STAGE PLANS:
                   type: bigint
             outputColumnNames: _col0, _col1
             Statistics:
-                numRows: 0 dataSize: 1453 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 9 dataSize: 901 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0

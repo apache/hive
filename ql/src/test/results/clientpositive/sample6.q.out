@@ -34,7 +34,7 @@ STAGE PLANS:
           TableScan
             alias: s
             Statistics:
-                numRows: 0 dataSize: 11603 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 111 dataSize: 11603 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: true
@@ -42,7 +42,7 @@ STAGE PLANS:
                   expr: (((hash(key) & 2147483647) % 4) = 0)
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -51,14 +51,14 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
                   Statistics:
-                      numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                      numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -598,7 +598,7 @@ STAGE PLANS:
           TableScan
             alias: s
             Statistics:
-                numRows: 0 dataSize: 11603 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 111 dataSize: 11603 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: true
@@ -606,7 +606,7 @@ STAGE PLANS:
                   expr: (((hash(key) & 2147483647) % 4) = 3)
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -615,7 +615,7 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -624,7 +624,7 @@ STAGE PLANS:
                         type: string
                   sort order: ++
                   Statistics:
-                      numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                      numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -684,14 +684,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+              numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -987,7 +987,7 @@ STAGE PLANS:
           TableScan
             alias: s
             Statistics:
-                numRows: 0 dataSize: 11603 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 111 dataSize: 11603 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: true
@@ -995,7 +995,7 @@ STAGE PLANS:
                   expr: (((hash(key) & 2147483647) % 2) = 0)
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -1004,7 +1004,7 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -1013,7 +1013,7 @@ STAGE PLANS:
                         type: string
                   sort order: ++
                   Statistics:
-                      numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                      numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -1073,14 +1073,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+              numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1630,7 +1630,7 @@ STAGE PLANS:
           TableScan
             alias: s
             Statistics:
-                numRows: 0 dataSize: 11603 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 111 dataSize: 11603 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: true
@@ -1638,7 +1638,7 @@ STAGE PLANS:
                   expr: (((hash(key) & 2147483647) % 3) = 0)
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -1647,7 +1647,7 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -1656,7 +1656,7 @@ STAGE PLANS:
                         type: string
                   sort order: ++
                   Statistics:
-                      numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                      numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -1716,14 +1716,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+              numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2116,7 +2116,7 @@ STAGE PLANS:
           TableScan
             alias: s
             Statistics:
-                numRows: 0 dataSize: 11603 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 111 dataSize: 11603 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: true
@@ -2124,7 +2124,7 @@ STAGE PLANS:
                   expr: (((hash(key) & 2147483647) % 3) = 1)
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -2133,7 +2133,7 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -2142,7 +2142,7 @@ STAGE PLANS:
                         type: string
                   sort order: ++
                   Statistics:
-                      numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                      numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -2202,14 +2202,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+              numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2588,7 +2588,7 @@ STAGE PLANS:
           TableScan
             alias: s
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 55 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: true
@@ -2596,7 +2596,7 @@ STAGE PLANS:
                   expr: (((hash(key) & 2147483647) % 2) = 0)
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 27 dataSize: 2853 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -2605,7 +2605,7 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 27 dataSize: 2853 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -2614,7 +2614,7 @@ STAGE PLANS:
                         type: string
                   sort order: ++
                   Statistics:
-                      numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                      numRows: 27 dataSize: 2853 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -2719,14 +2719,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+              numRows: 27 dataSize: 2853 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 27 dataSize: 2853 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2905,7 +2905,7 @@ STAGE PLANS:
           TableScan
             alias: s
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 55 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: true
@@ -2913,7 +2913,7 @@ STAGE PLANS:
                   expr: (((hash(key) & 2147483647) % 4) = 1)
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 27 dataSize: 2853 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -2922,7 +2922,7 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 27 dataSize: 2853 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -2931,7 +2931,7 @@ STAGE PLANS:
                         type: string
                   sort order: ++
                   Statistics:
-                      numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                      numRows: 27 dataSize: 2853 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -2991,14 +2991,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+              numRows: 27 dataSize: 2853 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 27 dataSize: 2853 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
