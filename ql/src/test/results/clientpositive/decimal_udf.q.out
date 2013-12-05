@@ -1450,7 +1450,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: (- key)
-                  type: decimal(38,18)
+                  type: decimal(20,10)
             outputColumnNames: _col0
             ListSink
 
@@ -1596,7 +1596,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: ceil(key)
-                  type: decimal(21,0)
+                  type: decimal(11,0)
             outputColumnNames: _col0
             ListSink
 
@@ -1669,7 +1669,7 @@ STAGE PLANS:
           Select Operator
             expressions:
                   expr: floor(key)
-                  type: decimal(21,0)
+                  type: decimal(11,0)
             outputColumnNames: _col0
             ListSink
 
