@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.stats;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,6 +27,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.mapred.Counters;
+import org.apache.hadoop.mapred.Counters.Counter;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RunningJob;
@@ -46,7 +48,7 @@ public class CounterStatsAggregator implements StatsAggregator {
         counters = job.getCounters();
       }
     } catch (Exception e) {
-      LOG.error("Failed to get Job instance for " + sourceTask.getJobID());
+      LOG.error("Failed to get Job instance for " + sourceTask.getJobID(),e);
     }
     return counters != null;
   }
@@ -56,14 +58,10 @@ public class CounterStatsAggregator implements StatsAggregator {
   }
 
   @Override
-  public String aggregateStats(String keyPrefix, String statType) {
-    long value = 0;
-    for (String groupName : counters.getGroupNames()) {
-      if (groupName.startsWith(keyPrefix)) {
-        value += counters.getGroup(groupName).getCounter(statType);
-      }
-    }
-    return String.valueOf(value);
+  public String aggregateStats(String counterGrpName, String statType) {
+    // In case of counters, aggregation is done by JobTracker / MR AM itself
+	// so no need to aggregate, simply return the counter value for requested stat.
+	return String.valueOf(counters.getGroup(counterGrpName).getCounter(statType));
   }
 
   @Override

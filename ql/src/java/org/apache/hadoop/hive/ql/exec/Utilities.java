@@ -2298,7 +2298,7 @@ public final class Utilities {
     return ret;
   }
 
-  private static String appendPathSeparator(String path) {
+  public static String appendPathSeparator(String path) {
     if (!path.endsWith(Path.SEPARATOR)) {
       path = path + Path.SEPARATOR;
     }
