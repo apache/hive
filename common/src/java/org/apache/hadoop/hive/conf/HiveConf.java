@@ -644,6 +644,17 @@ public class HiveConf extends Configuration {
     // statistics annotation fetches column statistics for all required columns and for all
     // required partitions which can be very expensive sometimes
     HIVE_STATS_FETCH_COLUMN_STATS("hive.stats.fetch.column.stats", false),
+    // in the absence of table/partition stats, average row size will be used to
+    // estimate the number of rows/data size
+    HIVE_STATS_AVG_ROW_SIZE("hive.stats.avg.row.size", 10000),
+    // in the absence of column statistics, the estimated number of rows/data size that will
+    // emitted from join operator will depend on t factor
+    HIVE_STATS_JOIN_FACTOR("hive.stats.join.factor", (float) 1.1),
+    // in the absence of uncompressed/raw data size, total file size will be used for statistics
+    // annotation. But the file may be compressed, encoded and serialized which may be lesser in size
+    // than the actual uncompressed/raw data size. This factor will be multiplied to file size to estimate
+    // the raw data size.
+    HIVE_STATS_DESERIALIZATION_FACTOR("hive.stats.deserialization.factor", (float) 1.0),
 
     // Concurrency
     HIVE_SUPPORT_CONCURRENCY("hive.support.concurrency", false),

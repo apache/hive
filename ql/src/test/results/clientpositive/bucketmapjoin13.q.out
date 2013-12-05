@@ -189,10 +189,10 @@ STAGE PLANS:
                 1 [Column[key]]
               Position of Big Table: 0
               Statistics:
-                  numRows: 250000 dataSize: 5000000 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 1100 dataSize: 11686 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 Statistics:
-                    numRows: 250000 dataSize: 5000000 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 1100 dataSize: 11686 basicStatsState: COMPLETE colStatsState: NONE
                 Group By Operator
                   aggregations:
                         expr: count()
@@ -497,11 +497,11 @@ STAGE PLANS:
                 1 [Column[key]]
               Position of Big Table: 0
               Statistics:
-                  numRows: 125000 dataSize: 2500000 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 550 dataSize: 5843 basicStatsState: COMPLETE colStatsState: NONE
               BucketMapJoin: true
               Select Operator
                 Statistics:
-                    numRows: 125000 dataSize: 2500000 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 550 dataSize: 5843 basicStatsState: COMPLETE colStatsState: NONE
                 Group By Operator
                   aggregations:
                         expr: count()
@@ -774,11 +774,11 @@ STAGE PLANS:
                 1 [Column[key]]
               Position of Big Table: 0
               Statistics:
-                  numRows: 125000 dataSize: 2500000 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 550 dataSize: 5843 basicStatsState: COMPLETE colStatsState: NONE
               BucketMapJoin: true
               Select Operator
                 Statistics:
-                    numRows: 125000 dataSize: 2500000 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 550 dataSize: 5843 basicStatsState: COMPLETE colStatsState: NONE
                 Group By Operator
                   aggregations:
                         expr: count()
@@ -1053,11 +1053,11 @@ STAGE PLANS:
                 1 [Column[key]]
               Position of Big Table: 0
               Statistics:
-                  numRows: 125000 dataSize: 2500000 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 550 dataSize: 5843 basicStatsState: COMPLETE colStatsState: NONE
               BucketMapJoin: true
               Select Operator
                 Statistics:
-                    numRows: 125000 dataSize: 2500000 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 550 dataSize: 5843 basicStatsState: COMPLETE colStatsState: NONE
                 Group By Operator
                   aggregations:
                         expr: count()

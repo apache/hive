@@ -77,3 +77,9 @@ explain extended select state,locid from loc_orc where year!=2001;
 
 -- basicStatState: COMPLETE colStatState: PARTIAL
 explain extended select * from loc_orc;
+
+-- This is to test filter expression evaluation on partition column
+-- numRows: 2 dataSize: 8 basicStatState: COMPLETE colStatState: COMPLETE
+explain extended select locid from loc_orc where locid>0 and year=2001;
+explain extended select locid,year from loc_orc where locid>0 and year=2001;
+explain extended select * from (select locid,year from loc_orc) test where locid>0 and year=2001;

@@ -849,10 +849,10 @@ STAGE PLANS:
             1 
           handleSkewJoin: false
           Statistics:
-              numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+              numRows: 1 dataSize: 92 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             Statistics:
-                numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                numRows: 1 dataSize: 92 basicStatsState: COMPLETE colStatsState: NONE
             Group By Operator
               aggregations:
                     expr: count()

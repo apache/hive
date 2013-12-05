@@ -27,7 +27,7 @@ analyze table loc_orc compute statistics for columns state,locid,zip,year;
 -- numRows: 1 rawDataSize: 102
 explain extended select * from loc_orc where state='OH';
 
--- not equals comparison shouldn't affect number of rows. rawDataSize is 792 and not 796 because of rounding off issue with avgColLen. avgColLen uses integers and not double.
+-- not equals comparison shouldn't affect number of rows
 -- numRows: 8 rawDataSize: 804
 explain extended select * from loc_orc where state!='OH';
 explain extended select * from loc_orc where state<>'OH';

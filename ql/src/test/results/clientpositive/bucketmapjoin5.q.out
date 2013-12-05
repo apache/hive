@@ -154,7 +154,7 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics:
-                numRows: 0 dataSize: 2750 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 26 dataSize: 2750 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -180,7 +180,7 @@ STAGE PLANS:
           TableScan
             alias: b
             Statistics:
-                numRows: 0 dataSize: 11624 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 110 dataSize: 11624 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -195,7 +195,7 @@ STAGE PLANS:
               outputColumnNames: _col0, _col1, _col5
               Position of Big Table: 1
               Statistics:
-                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                  numRows: 121 dataSize: 12786 basicStatsState: COMPLETE colStatsState: NONE
               BucketMapJoin: true
               Select Operator
                 expressions:
@@ -207,14 +207,14 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1, _col2
                 Statistics:
-                    numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                    numRows: 121 dataSize: 12786 basicStatsState: COMPLETE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
                   Statistics:
-                      numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                      numRows: 121 dataSize: 12786 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -702,7 +702,7 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics:
-                numRows: 0 dataSize: 2750 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 26 dataSize: 2750 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -728,7 +728,7 @@ STAGE PLANS:
           TableScan
             alias: b
             Statistics:
-                numRows: 0 dataSize: 6124 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 58 dataSize: 6124 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -743,7 +743,7 @@ STAGE PLANS:
               outputColumnNames: _col0, _col1, _col5
               Position of Big Table: 1
               Statistics:
-                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                  numRows: 63 dataSize: 6736 basicStatsState: COMPLETE colStatsState: NONE
               BucketMapJoin: true
               Select Operator
                 expressions:
@@ -755,14 +755,14 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1, _col2
                 Statistics:
-                    numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                    numRows: 63 dataSize: 6736 basicStatsState: COMPLETE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
                   Statistics:
-                      numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                      numRows: 63 dataSize: 6736 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat

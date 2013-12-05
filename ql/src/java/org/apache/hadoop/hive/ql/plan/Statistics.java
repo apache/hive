@@ -115,6 +115,21 @@ public class Statistics implements Serializable {
     return sb.toString();
   }
 
+  public String extendedToString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(" numRows: ");
+    sb.append(numRows);
+    sb.append(" dataSize: ");
+    sb.append(dataSize);
+    sb.append(" basicStatsState: ");
+    sb.append(basicStatsState);
+    sb.append(" colStatsState: ");
+    sb.append(columnStatsState);
+    sb.append(" colStats: ");
+    sb.append(columnStats);
+    return sb.toString();
+  }
+
   @Override
   public Statistics clone() throws CloneNotSupportedException {
     Statistics clone = new Statistics(numRows, dataSize);
@@ -215,7 +230,10 @@ public class Statistics implements Serializable {
   }
 
   public ColStatistics getColumnStatisticsFromFQColName(String fqColName) {
-    return columnStats.get(fqColName);
+    if (columnStats != null) {
+      return columnStats.get(fqColName);
+    }
+    return null;
   }
 
   public ColStatistics getColumnStatisticsFromColName(String colName) {

@@ -99,10 +99,10 @@ STAGE PLANS:
                 1 [Column[key], Column[value]]
               Position of Big Table: 0
               Statistics:
-                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                  numRows: 0 dataSize: 22 basicStatsState: PARTIAL colStatsState: NONE
               Select Operator
                 Statistics:
-                    numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                    numRows: 0 dataSize: 22 basicStatsState: PARTIAL colStatsState: NONE
                 Group By Operator
                   aggregations:
                         expr: count()

@@ -48,7 +48,7 @@ STAGE PLANS:
           TableScan
             alias: x
             Statistics:
-                numRows: 0 dataSize: 216 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 1 dataSize: 216 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -67,7 +67,7 @@ STAGE PLANS:
           TableScan
             alias: x
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
@@ -75,7 +75,7 @@ STAGE PLANS:
                   expr: (key < 20)
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 9 dataSize: 1803 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -84,10 +84,10 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 9 dataSize: 1803 basicStatsState: COMPLETE colStatsState: NONE
                 Union
                   Statistics:
-                      numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                      numRows: 18 dataSize: 3606 basicStatsState: COMPLETE colStatsState: NONE
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
@@ -110,14 +110,14 @@ STAGE PLANS:
                             type: string
                       outputColumnNames: _col0, _col1, _col2
                       Statistics:
-                          numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                          numRows: 19 dataSize: 3966 basicStatsState: COMPLETE colStatsState: NONE
                       File Output Operator
                         compressed: false
                         GlobalTableId: 1
 #### A masked pattern was here ####
                         NumFilesPerFileSink: 1
                         Statistics:
-                            numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                            numRows: 19 dataSize: 3966 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat
@@ -141,7 +141,7 @@ STAGE PLANS:
           TableScan
             alias: x1
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
@@ -149,7 +149,7 @@ STAGE PLANS:
                   expr: (key > 100)
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 9 dataSize: 1803 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -158,10 +158,10 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 9 dataSize: 1803 basicStatsState: COMPLETE colStatsState: NONE
                 Union
                   Statistics:
-                      numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                      numRows: 18 dataSize: 3606 basicStatsState: COMPLETE colStatsState: NONE
                   Map Join Operator
                     condition map:
                          Inner Join 0 to 1
@@ -184,14 +184,14 @@ STAGE PLANS:
                             type: string
                       outputColumnNames: _col0, _col1, _col2
                       Statistics:
-                          numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                          numRows: 19 dataSize: 3966 basicStatsState: COMPLETE colStatsState: NONE
                       File Output Operator
                         compressed: false
                         GlobalTableId: 1
 #### A masked pattern was here ####
                         NumFilesPerFileSink: 1
                         Statistics:
-                            numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                            numRows: 19 dataSize: 3966 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                         table:
                             input format: org.apache.hadoop.mapred.TextInputFormat

@@ -70,7 +70,7 @@ STAGE PLANS:
           TableScan
             alias: src
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
@@ -80,7 +80,7 @@ STAGE PLANS:
                     type: string
               outputColumnNames: _col0, _col1
               Statistics:
-                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
               Transform Operator
                 command: cat
                 output info:
@@ -95,14 +95,14 @@ STAGE PLANS:
                       serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 Statistics:
-                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
                   Statistics:
-                      numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                      numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat

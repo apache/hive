@@ -70,7 +70,7 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -96,7 +96,7 @@ STAGE PLANS:
           TableScan
             alias: b
             Statistics:
-                numRows: 0 dataSize: 2750 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 27 dataSize: 2750 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -110,11 +110,11 @@ STAGE PLANS:
                 1 [Column[key]]
               Position of Big Table: 1
               Statistics:
-                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                  numRows: 63 dataSize: 6393 basicStatsState: COMPLETE colStatsState: NONE
               BucketMapJoin: true
               Select Operator
                 Statistics:
-                    numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                    numRows: 63 dataSize: 6393 basicStatsState: COMPLETE colStatsState: NONE
                 Group By Operator
                   aggregations:
                         expr: count()
@@ -259,7 +259,7 @@ STAGE PLANS:
           TableScan
             alias: b
             Statistics:
-                numRows: 0 dataSize: 2750 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 27 dataSize: 2750 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Sorted Merge Bucket Map Join Operator
               condition map:
