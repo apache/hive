@@ -4943,38 +4943,39 @@ public class ObjectStore implements RawStore, Configurable {
     ColumnStatisticsObj statsObj = new ColumnStatisticsObj();
     statsObj.setColType(mStatsObj.getColType());
     statsObj.setColName(mStatsObj.getColName());
-    String colType = mStatsObj.getColType();
+    String colType = mStatsObj.getColType().toLowerCase();
     ColumnStatisticsData colStatsData = new ColumnStatisticsData();
 
-    if (colType.equalsIgnoreCase("boolean")) {
+    if (colType.equals("boolean")) {
       BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
       boolStats.setNumFalses(mStatsObj.getNumFalses());
       boolStats.setNumTrues(mStatsObj.getNumTrues());
       boolStats.setNumNulls(mStatsObj.getNumNulls());
       colStatsData.setBooleanStats(boolStats);
-    } else if (colType.equalsIgnoreCase("string")) {
+    } else if (colType.equals("string") ||
+        colType.startsWith("varchar") || colType.startsWith("char")) {
       StringColumnStatsData stringStats = new StringColumnStatsData();
       stringStats.setNumNulls(mStatsObj.getNumNulls());
       stringStats.setAvgColLen(mStatsObj.getAvgColLen());
       stringStats.setMaxColLen(mStatsObj.getMaxColLen());
       stringStats.setNumDVs(mStatsObj.getNumDVs());
       colStatsData.setStringStats(stringStats);
-    } else if (colType.equalsIgnoreCase("binary")) {
+    } else if (colType.equals("binary")) {
       BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
       binaryStats.setNumNulls(mStatsObj.getNumNulls());
       binaryStats.setAvgColLen(mStatsObj.getAvgColLen());
       binaryStats.setMaxColLen(mStatsObj.getMaxColLen());
       colStatsData.setBinaryStats(binaryStats);
-    } else if (colType.equalsIgnoreCase("bigint") || colType.equalsIgnoreCase("int") ||
-        colType.equalsIgnoreCase("smallint") || colType.equalsIgnoreCase("tinyint") ||
-        colType.equalsIgnoreCase("timestamp")) {
+    } else if (colType.equals("bigint") || colType.equals("int") ||
+        colType.equals("smallint") || colType.equals("tinyint") ||
+        colType.equals("timestamp")) {
       LongColumnStatsData longStats = new LongColumnStatsData();
       longStats.setNumNulls(mStatsObj.getNumNulls());
       longStats.setHighValue(mStatsObj.getLongHighValue());
       longStats.setLowValue(mStatsObj.getLongLowValue());
       longStats.setNumDVs(mStatsObj.getNumDVs());
       colStatsData.setLongStats(longStats);
-   } else if (colType.equalsIgnoreCase("double") || colType.equalsIgnoreCase("float")) {
+   } else if (colType.equals("double") || colType.equals("float")) {
      DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
      doubleStats.setNumNulls(mStatsObj.getNumNulls());
      doubleStats.setHighValue(mStatsObj.getDoubleHighValue());
@@ -5119,38 +5120,39 @@ public class ObjectStore implements RawStore, Configurable {
     ColumnStatisticsObj statsObj = new ColumnStatisticsObj();
     statsObj.setColType(mStatsObj.getColType());
     statsObj.setColName(mStatsObj.getColName());
-    String colType = mStatsObj.getColType();
+    String colType = mStatsObj.getColType().toLowerCase();
     ColumnStatisticsData colStatsData = new ColumnStatisticsData();
 
-    if (colType.equalsIgnoreCase("boolean")) {
+    if (colType.equals("boolean")) {
       BooleanColumnStatsData boolStats = new BooleanColumnStatsData();
       boolStats.setNumFalses(mStatsObj.getNumFalses());
       boolStats.setNumTrues(mStatsObj.getNumTrues());
       boolStats.setNumNulls(mStatsObj.getNumNulls());
       colStatsData.setBooleanStats(boolStats);
-    } else if (colType.equalsIgnoreCase("string")) {
+    } else if (colType.equals("string") ||
+        colType.startsWith("varchar") || colType.startsWith("char")) {
       StringColumnStatsData stringStats = new StringColumnStatsData();
       stringStats.setNumNulls(mStatsObj.getNumNulls());
       stringStats.setAvgColLen(mStatsObj.getAvgColLen());
       stringStats.setMaxColLen(mStatsObj.getMaxColLen());
       stringStats.setNumDVs(mStatsObj.getNumDVs());
       colStatsData.setStringStats(stringStats);
-    } else if (colType.equalsIgnoreCase("binary")) {
+    } else if (colType.equals("binary")) {
       BinaryColumnStatsData binaryStats = new BinaryColumnStatsData();
       binaryStats.setNumNulls(mStatsObj.getNumNulls());
       binaryStats.setAvgColLen(mStatsObj.getAvgColLen());
       binaryStats.setMaxColLen(mStatsObj.getMaxColLen());
       colStatsData.setBinaryStats(binaryStats);
-    } else if (colType.equalsIgnoreCase("tinyint") || colType.equalsIgnoreCase("smallint") ||
-        colType.equalsIgnoreCase("int") || colType.equalsIgnoreCase("bigint") ||
-        colType.equalsIgnoreCase("timestamp")) {
+    } else if (colType.equals("tinyint") || colType.equals("smallint") ||
+        colType.equals("int") || colType.equals("bigint") ||
+        colType.equals("timestamp")) {
       LongColumnStatsData longStats = new LongColumnStatsData();
       longStats.setNumNulls(mStatsObj.getNumNulls());
       longStats.setHighValue(mStatsObj.getLongHighValue());
       longStats.setLowValue(mStatsObj.getLongLowValue());
       longStats.setNumDVs(mStatsObj.getNumDVs());
       colStatsData.setLongStats(longStats);
-   } else if (colType.equalsIgnoreCase("double") || colType.equalsIgnoreCase("float")) {
+   } else if (colType.equals("double") || colType.equals("float")) {
      DoubleColumnStatsData doubleStats = new DoubleColumnStatsData();
      doubleStats.setNumNulls(mStatsObj.getNumNulls());
      doubleStats.setHighValue(mStatsObj.getDoubleHighValue());
