@@ -1134,48 +1134,53 @@ public abstract class BaseSemanticAnalyzer {
     return storedAsDirs;
   }
 
-  private static void getPartExprNodeDesc(ASTNode astNode,
-      Map<ASTNode, ExprNodeDesc> astExprNodeMap)
-          throws SemanticException, HiveException {
+  private static boolean getPartExprNodeDesc(ASTNode astNode,
+      Map<ASTNode, ExprNodeDesc> astExprNodeMap) throws SemanticException {
 
-    if ((astNode == null) || (astNode.getChildren() == null) || 
-        (astNode.getChildren().size() == 0)) {
-      return;
+    if (astNode == null) {
+      return true;
+    } else if ((astNode.getChildren() == null) || (astNode.getChildren().size() == 0)) {
+      return astNode.getType() != HiveParser.TOK_PARTVAL;
     }
 
     TypeCheckCtx typeCheckCtx = new TypeCheckCtx(null);
+    boolean result = true;
     for (Node childNode : astNode.getChildren()) {
       ASTNode childASTNode = (ASTNode)childNode;
 
       if (childASTNode.getType() != HiveParser.TOK_PARTVAL) {
-        getPartExprNodeDesc(childASTNode, astExprNodeMap);
+        result = getPartExprNodeDesc(childASTNode, astExprNodeMap) && result;
       } else {
-        if (childASTNode.getChildren().size() <= 1) {
-          throw new HiveException("This is dynamic partitioning");
+        boolean isDynamicPart = childASTNode.getChildren().size() <= 1;
+        result = !isDynamicPart && result;
+        if (!isDynamicPart) {
+          ASTNode partVal = (ASTNode)childASTNode.getChildren().get(1);
+          astExprNodeMap.put((ASTNode)childASTNode.getChildren().get(0),
+            TypeCheckProcFactory.genExprNode(partVal, typeCheckCtx).get(partVal));
         }
-
-        ASTNode partValASTChild = (ASTNode)childASTNode.getChildren().get(1);
-        astExprNodeMap.put((ASTNode)childASTNode.getChildren().get(0),
-            TypeCheckProcFactory.genExprNode(partValASTChild, typeCheckCtx).get(partValASTChild));
       }
     }
+    return result;
   }
 
   public static void validatePartSpec(Table tbl, Map<String, String> partSpec,
       ASTNode astNode, HiveConf conf) throws SemanticException {
-    Map<ASTNode, ExprNodeDesc> astExprNodeMap = new HashMap<ASTNode, ExprNodeDesc>();
-
-    Utilities.validatePartSpec(tbl, partSpec);
+    Utilities.validatePartSpecColumnNames(tbl, partSpec);
 
     if (!HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_TYPE_CHECK_ON_INSERT)) {
       return;
     }
 
-    try {
-      getPartExprNodeDesc(astNode, astExprNodeMap);
-    } catch (HiveException e) {
-      return;
+    Map<ASTNode, ExprNodeDesc> astExprNodeMap = new HashMap<ASTNode, ExprNodeDesc>();
+    if (!getPartExprNodeDesc(astNode, astExprNodeMap)) {
+      STATIC_LOG.warn("Dynamic partitioning is used; only validating "
+          + astExprNodeMap.size() + " columns");
     }
+
+    if (astExprNodeMap.isEmpty()) {
+      return; // All columns are dynamic, nothing to do.
+    }
+
     List<FieldSchema> parts = tbl.getPartitionKeys();
     Map<String, String> partCols = new HashMap<String, String>(parts.size());
     for (FieldSchema col : parts) {
