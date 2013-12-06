@@ -20,8 +20,6 @@
 package org.apache.hadoop.hive.ql;
 
 import java.io.DataInput;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -40,7 +38,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FSDataInputStream;
-import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
@@ -455,27 +452,14 @@ public class Driver implements CommandProcessor {
 
       plan = new QueryPlan(command, sem, perfLogger.getStartTime(PerfLogger.DRIVER_RUN));
 
-      // test Only - serialize the query plan and deserialize it
-      if ("true".equalsIgnoreCase(System.getProperty("test.serialize.qplan"))) {
+      String queryId = plan.getQueryId();
+      String queryStr = plan.getQueryStr();
 
-        String queryPlanFileName = ctx.getLocalScratchDir(true) + Path.SEPARATOR_CHAR
-            + "queryplan.xml";
-        LOG.info("query plan = " + queryPlanFileName);
-        queryPlanFileName = new Path(queryPlanFileName).toUri().getPath();
+      conf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
+      conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, queryStr);
 
-        // serialize the queryPlan
-        FileOutputStream fos = new FileOutputStream(queryPlanFileName);
-        Utilities.serializePlan(plan, fos, conf);
-        fos.close();
-
-        // deserialize the queryPlan
-        FileInputStream fis = new FileInputStream(queryPlanFileName);
-        QueryPlan newPlan = Utilities.deserializePlan(fis, QueryPlan.class, conf);
-        fis.close();
-
-        // Use the deserialized plan
-        plan = newPlan;
-      }
+      conf.set("mapreduce.workflow.id", "hive_" + queryId);
+      conf.set("mapreduce.workflow.name", queryStr);
 
       // initialize FetchTask right here
       if (plan.getFetchTask() != null) {
@@ -1160,12 +1144,6 @@ public class Driver implements CommandProcessor {
 
     String queryId = plan.getQueryId();
     String queryStr = plan.getQueryStr();
-
-    conf.setVar(HiveConf.ConfVars.HIVEQUERYID, queryId);
-    conf.setVar(HiveConf.ConfVars.HIVEQUERYSTRING, queryStr);
-
-    conf.set("mapreduce.workflow.id", "hive_"+queryId);
-    conf.set("mapreduce.workflow.name", queryStr);
 
     maxthreads = HiveConf.getIntVar(conf, HiveConf.ConfVars.EXECPARALLETHREADNUMBER);
 
