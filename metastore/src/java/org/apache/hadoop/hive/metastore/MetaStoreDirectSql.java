@@ -758,7 +758,7 @@ class MetaStoreDirectSql {
         }
       }
       if (joins.get(partColIndex) == null) {
-        joins.set(partColIndex, "inner join \"PARTITION_KEY_VALS\" as \"FILTER" + partColIndex
+        joins.set(partColIndex, "inner join \"PARTITION_KEY_VALS\" \"FILTER" + partColIndex
             + "\" on \"FILTER"  + partColIndex + "\".\"PART_ID\" = \"PARTITIONS\".\"PART_ID\""
             + " and \"FILTER" + partColIndex + "\".\"INTEGER_IDX\" = " + partColIndex);
       }
