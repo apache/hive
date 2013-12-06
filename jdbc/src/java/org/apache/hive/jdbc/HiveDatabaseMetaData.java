@@ -65,6 +65,9 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
   //  The maximum column length = MFieldSchema.FNAME in metastore/src/model/package.jdo
   private static final int maxColumnNameLength = 128;
 
+  //  Cached values, to save on round trips to database.
+  private String dbVersion = null;
+
   /**
    *
    */
@@ -254,11 +257,11 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
   }
 
   public int getDatabaseMajorVersion() throws SQLException {
-    throw new SQLException("Method not supported");
+    return Utils.getVersionPart(getDatabaseProductVersion(), 1);
   }
 
   public int getDatabaseMinorVersion() throws SQLException {
-    throw new SQLException("Method not supported");
+    return Utils.getVersionPart(getDatabaseProductVersion(), 2);
   }
 
   public String getDatabaseProductName() throws SQLException {
@@ -266,6 +269,9 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
   }
 
   public String getDatabaseProductVersion() throws SQLException {
+    if (dbVersion != null) { //lazy-caching of the version.
+      return dbVersion;
+    }
 
     TGetInfoReq req = new TGetInfoReq(sessHandle, GetInfoType.CLI_DBMS_VER.toTGetInfoType());
     TGetInfoResp resp;
@@ -276,7 +282,8 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     }
     Utils.verifySuccess(resp.getStatus());
 
-    return resp.getInfoValue().getStringValue();
+    this.dbVersion = resp.getInfoValue().getStringValue();
+    return dbVersion;
   }
 
   public int getDefaultTransactionIsolation() throws SQLException {
