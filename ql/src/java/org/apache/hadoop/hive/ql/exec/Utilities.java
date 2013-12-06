@@ -2351,7 +2351,7 @@ public final class Utilities {
     jobConf.set(serdeConstants.LIST_COLUMN_TYPES, columnTypesString);
   }
 
-  public static void validatePartSpec(Table tbl, Map<String, String> partSpec)
+  public static void validatePartSpecColumnNames(Table tbl, Map<String, String> partSpec)
       throws SemanticException {
 
     List<FieldSchema> parts = tbl.getPartitionKeys();
