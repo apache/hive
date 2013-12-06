@@ -1315,6 +1315,10 @@ public class TestJdbcDriver2 {
     assertFalse(meta.supportsMultipleResultSets());
     assertFalse(meta.supportsStoredProcedures());
     assertTrue(meta.supportsAlterTableWithAddColumn());
+
+    //-1 indicates malformed version.
+    assertTrue(meta.getDatabaseMajorVersion() > -1);
+    assertTrue(meta.getDatabaseMinorVersion() > -1);
   }
 
   @Test
