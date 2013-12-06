@@ -452,7 +452,14 @@ public final class GenericUDFUtils {
    */
   public static int findText(Text text, Text subtext, int start) {
     // src.position(start) can't accept negative numbers.
-    if (start < 0) {
+    int length = text.getLength() - start;
+    if (start < 0 || length < 0 || length < subtext.getLength()) {
+      return -1;
+    }
+    if (subtext.getLength() == 0) {
+      return 0;
+    }
+    if (length == 0) {
       return -1;
     }
 
