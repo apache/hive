@@ -604,6 +604,10 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private boolean validateGroupByOperator(GroupByOperator op) {
+    if (op.getConf().isGroupingSetsPresent()) {
+      LOG.warn("Grouping sets not supported in vector mode");
+      return false;
+    }
     boolean ret = validateExprNodeDesc(op.getConf().getKeys());
     if (!ret) {
       return false;
