@@ -72,8 +72,8 @@ EXPLAIN SELECT abs(key) FROM DECIMAL_UDF;
 SELECT abs(key) FROM DECIMAL_UDF;
 
 -- avg
-EXPLAIN SELECT value, sum(key) / count(key), avg(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value;
-SELECT value, sum(key) / count(key), avg(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value;
+EXPLAIN SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value;
+SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value;
 
 -- negative
 EXPLAIN SELECT -key FROM DECIMAL_UDF;

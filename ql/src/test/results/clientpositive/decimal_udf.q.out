@@ -1268,13 +1268,13 @@ NULL
 1234567890.123456789
 1234567890.12345678
 PREHOOK: query: -- avg
-EXPLAIN SELECT value, sum(key) / count(key), avg(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
+EXPLAIN SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
 PREHOOK: type: QUERY
 POSTHOOK: query: -- avg
-EXPLAIN SELECT value, sum(key) / count(key), avg(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
+EXPLAIN SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (/ (TOK_FUNCTION sum (TOK_TABLE_OR_COL key)) (TOK_FUNCTION count (TOK_TABLE_OR_COL key)))) (TOK_SELEXPR (TOK_FUNCTION avg (TOK_TABLE_OR_COL key)))) (TOK_GROUPBY (TOK_TABLE_OR_COL value)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_UDF))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL value)) (TOK_SELEXPR (/ (TOK_FUNCTION sum (TOK_TABLE_OR_COL key)) (TOK_FUNCTION count (TOK_TABLE_OR_COL key)))) (TOK_SELEXPR (TOK_FUNCTION avg (TOK_TABLE_OR_COL key))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_TABLE_OR_COL key)))) (TOK_GROUPBY (TOK_TABLE_OR_COL value)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL value)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -1317,11 +1317,11 @@ STAGE PLANS:
                   tag: -1
                   value expressions:
                         expr: _col1
-                        type: decimal(38,18)
+                        type: decimal(30,10)
                         expr: _col2
                         type: bigint
                         expr: _col3
-                        type: struct<count:bigint,sum:decimal(38,18)>
+                        type: struct<count:bigint,sum:decimal(24,14)>
       Reduce Operator Tree:
         Group By Operator
           aggregations:
@@ -1339,10 +1339,12 @@ STAGE PLANS:
                   expr: _col0
                   type: int
                   expr: (_col1 / _col2)
-                  type: decimal(38,27)
+                  type: decimal(38,23)
                   expr: _col3
-                  type: decimal(38,18)
-            outputColumnNames: _col0, _col1, _col2
+                  type: decimal(24,14)
+                  expr: _col1
+                  type: decimal(30,10)
+            outputColumnNames: _col0, _col1, _col2, _col3
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -1366,9 +1368,11 @@ STAGE PLANS:
                     expr: _col0
                     type: int
                     expr: _col1
-                    type: decimal(38,27)
+                    type: decimal(38,23)
                     expr: _col2
-                    type: decimal(38,18)
+                    type: decimal(24,14)
+                    expr: _col3
+                    type: decimal(30,10)
       Reduce Operator Tree:
         Extract
           File Output Operator
@@ -1383,31 +1387,31 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-PREHOOK: query: SELECT value, sum(key) / count(key), avg(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
+PREHOOK: query: SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
-POSTHOOK: query: SELECT value, sum(key) / count(key), avg(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
+POSTHOOK: query: SELECT value, sum(key) / count(key), avg(key), sum(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_udf
 #### A masked pattern was here ####
--1234567890	-1234567890.123456789	-1234567890.123456789
--1255	-1255.49	-1255.49
--11	-1.122	-1.122
--1	-1.12	-1.12
-0	0.025384615384615384615384615	0.025384615384615385
-1	1.0484	1.0484
-2	2	2
-3	3.14	3.14
-4	3.14	3.14
-10	10	10
-20	20	20
-100	100	100
-124	124	124
-125	125.2	125.2
-200	200	200
-4400	-4400	-4400
-1234567890	1234567890.12345678	1234567890.12345678
+-1234567890	-1234567890.123456789	-1234567890.123456789	-1234567890.123456789
+-1255	-1255.49	-1255.49	-1255.49
+-11	-1.122	-1.122	-1.122
+-1	-1.12	-1.12	-2.24
+0	0.02538461538461538461538	0.02538461538462	0.33
+1	1.0484	1.0484	5.242
+2	2	2	4
+3	3.14	3.14	9.42
+4	3.14	3.14	3.14
+10	10	10	10
+20	20	20	20
+100	100	100	100
+124	124	124	124
+125	125.2	125.2	125.2
+200	200	200	200
+4400	-4400	-4400	-4400
+1234567890	1234567890.12345678	1234567890.12345678	1234567890.12345678
 PREHOOK: query: -- negative
 EXPLAIN SELECT -key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
