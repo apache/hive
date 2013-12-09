@@ -36,9 +36,9 @@ import org.apache.hadoop.hive.ql.parse.SemanticException;
 public class DefaultGraphWalker implements GraphWalker {
 
   protected Stack<Node> opStack;
-  private final List<Node> toWalk = new ArrayList<Node>();
-  private final HashMap<Node, Object> retMap = new HashMap<Node, Object>();
-  private final Dispatcher dispatcher;
+  protected final List<Node> toWalk = new ArrayList<Node>();
+  protected final HashMap<Node, Object> retMap = new HashMap<Node, Object>();
+  protected final Dispatcher dispatcher;
 
   /**
    * Constructor.
