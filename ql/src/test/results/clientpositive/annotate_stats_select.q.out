@@ -155,7 +155,6 @@ STAGE PLANS:
                 numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
 
-
 PREHOOK: query: -- statistics for complex types are not supported yet
 analyze table alltypes_orc compute statistics for columns bo1, ti1, si1, i1, bi1, f1, d1, s1, vc1
 PREHOOK: type: QUERY
@@ -254,7 +253,6 @@ STAGE PLANS:
             Statistics:
                 numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: PARTIAL
             ListSink
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 8
 explain extended select bo1 from alltypes_orc
@@ -380,7 +378,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- col alias renaming
 -- numRows: 2 rawDataSize: 8
@@ -509,7 +506,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- numRows: 2 rawDataSize: 174
 explain extended select s1 from alltypes_orc
 PREHOOK: type: QUERY
@@ -634,7 +630,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- column statistics for complex types unsupported and so statistics will not be updated
 -- numRows: 2 rawDataSize: 1514
@@ -762,7 +757,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 246
 explain extended select bo1, ti1, si1, i1, bi1, f1, d1,s1 from alltypes_orc
@@ -903,7 +897,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- numRows: 2 rawDataSize: 0
 explain extended select null from alltypes_orc
 PREHOOK: type: QUERY
@@ -1028,7 +1021,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 8
 explain extended select 11 from alltypes_orc
@@ -1155,7 +1147,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- numRows: 2 rawDataSize: 16
 explain extended select 11L from alltypes_orc
 PREHOOK: type: QUERY
@@ -1280,7 +1271,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 16
 explain extended select 11.0 from alltypes_orc
@@ -1407,7 +1397,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- numRows: 2 rawDataSize: 178
 explain extended select "hello" from alltypes_orc
 PREHOOK: type: QUERY
@@ -1533,7 +1522,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain extended select cast("hello" as char(5)) from alltypes_orc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select cast("hello" as char(5)) from alltypes_orc
@@ -1657,7 +1645,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain extended select cast("hello" as varchar(5)) from alltypes_orc
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select cast("hello" as varchar(5)) from alltypes_orc
@@ -1780,7 +1767,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 96
 explain extended select unbase64("0xe23") from alltypes_orc
@@ -1906,7 +1892,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 16
 explain extended select cast("1" as TINYINT), cast("20" as SMALLINT) from alltypes_orc
@@ -2035,7 +2020,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- numRows: 2 rawDataSize: 80
 explain extended select cast("1970-12-31 15:59:58.174" as TIMESTAMP) from alltypes_orc
 PREHOOK: type: QUERY
@@ -2160,7 +2144,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 112
 explain extended select cast("1970-12-31 15:59:58.174" as DATE) from alltypes_orc
@@ -2287,7 +2270,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- numRows: 2 rawDataSize: 224
 explain extended select cast("58.174" as DECIMAL) from alltypes_orc
 PREHOOK: type: QUERY
@@ -2412,7 +2394,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 112
 explain extended select array(1,2,3) from alltypes_orc
@@ -2539,7 +2520,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- numRows: 2 rawDataSize: 1508
 explain extended select str_to_map("a=1 b=2 c=3", " ", "=") from alltypes_orc
 PREHOOK: type: QUERY
@@ -2664,7 +2644,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 112
 explain extended select NAMED_STRUCT("a", 11, "b", 11) from alltypes_orc
@@ -2791,7 +2770,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- numRows: 2 rawDataSize: 250
 explain extended select CREATE_UNION(0, "hello") from alltypes_orc
 PREHOOK: type: QUERY
@@ -2916,7 +2894,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- COUNT(*) is projected as new column. It is not projected as GenericUDF and so datasize estimate will be based on number of rows
 -- numRows: 1 rawDataSize: 8
@@ -3074,7 +3051,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- COUNT(1) is projected as new column. It is not projected as GenericUDF and so datasize estimate will be based on number of rows
 -- numRows: 1 rawDataSize: 8
 explain extended select count(1) from alltypes_orc
@@ -3230,7 +3206,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- column statistics for complex column types will be missing. data size will be calculated from available column statistics
 -- numRows: 2 rawDataSize: 254
@@ -3389,7 +3364,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- subquery selects
 -- inner select - numRows: 2 rawDataSize: 8
 -- outer select - numRows: 2 rawDataSize: 8
@@ -3544,7 +3518,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- inner select - numRows: 2 rawDataSize: 16
 -- outer select - numRows: 2 rawDataSize: 8
@@ -3702,7 +3675,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- inner select - numRows: 2 rawDataSize: 16
 -- outer select - numRows: 2 rawDataSize: 186
@@ -3863,7 +3835,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- inner select - numRows: 2 rawDataSize: 24
 -- outer select - numRows: 2 rawDataSize: 16
 explain extended select x from (select i1,11.0 as x from alltypes_orc limit 10) temp
@@ -4020,7 +3991,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- inner select - numRows: 2 rawDataSize: 104
 -- outer select - numRows: 2 rawDataSize: 186
@@ -4180,7 +4150,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- inner select -  numRows: 2 rawDataSize: 186
 -- middle select - numRows: 2 rawDataSize: 178
@@ -4419,7 +4388,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- This test is for FILTER operator where filter expression is a boolean column
 -- numRows: 2 rawDataSize: 8
 explain extended select bo1 from alltypes_orc where bo1
@@ -4554,7 +4522,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- numRows: 0 rawDataSize: 0
 explain extended select bo1 from alltypes_orc where !bo1
 PREHOOK: type: QUERY
@@ -4686,5 +4653,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 

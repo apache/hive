@@ -54,7 +54,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: load data local inpath '../../data/files/srcbucket20.txt' INTO TABLE srcbucket_mapjoin_part partition(ds='2008-04-08')
 PREHOOK: type: LOAD
 PREHOOK: Output: default@srcbucket_mapjoin_part
@@ -656,7 +655,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: insert overwrite table bucketmapjoin_tmp_result 
 select /*+mapjoin(b)*/ a.key, a.value, b.value 
 from srcbucket_mapjoin a join srcbucket_mapjoin_part b 
@@ -1195,7 +1193,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: insert overwrite table bucketmapjoin_tmp_result 
 select /*+mapjoin(a)*/ a.key, a.value, b.value 

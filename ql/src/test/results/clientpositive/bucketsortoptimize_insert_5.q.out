@@ -293,7 +293,6 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: default.test_table3
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 
 FROM test_table1 a JOIN test_table2 b 
@@ -660,7 +659,6 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: default.test_table3
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.key, concat(a.value, b.value) 

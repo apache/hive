@@ -256,7 +256,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select count(*) FROM bucket_small a JOIN bucket_big b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@bucket_big
@@ -450,7 +449,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key
 PREHOOK: type: QUERY
@@ -1232,7 +1230,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select count(*) FROM bucket_big a JOIN bucket_small b ON a.key = b.key
 PREHOOK: type: QUERY

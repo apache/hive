@@ -56,7 +56,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- ansi cross join
 explain select src.key from src cross join src src2
 PREHOOK: type: QUERY
@@ -114,7 +113,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- appending condition is allowed
 explain select src.key from src cross join src src2 on src.key=src2.key
@@ -185,5 +183,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 

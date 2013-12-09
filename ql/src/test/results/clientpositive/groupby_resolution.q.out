@@ -59,7 +59,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain select b.key, count(*) from src b group by key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select b.key, count(*) from src b group by key
@@ -121,7 +120,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain select key, count(*) from src b group by b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select key, count(*) from src b group by b.key
@@ -218,7 +216,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: explain select b.key, count(*) from src b group by key
 PREHOOK: type: QUERY
@@ -317,7 +314,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain select key, count(*) from src b group by b.key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select key, count(*) from src b group by b.key
@@ -391,7 +387,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain select b.key, count(*) from src b group by key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select b.key, count(*) from src b group by key
@@ -464,7 +459,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: explain select key, count(*) from src b group by b.key
 PREHOOK: type: QUERY
@@ -575,7 +569,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain select b.key, count(*) from src b group by key
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select b.key, count(*) from src b group by key
@@ -684,7 +677,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- windowing after group by
 select key, count(*), rank() over(order by count(*))
@@ -929,7 +921,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- order by
 select key 
 from src t 
@@ -1017,5 +1008,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 

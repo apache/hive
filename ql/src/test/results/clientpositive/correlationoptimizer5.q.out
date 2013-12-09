@@ -268,7 +268,6 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE dest_co1
 SELECT b.key, d.val
 FROM
@@ -477,7 +476,6 @@ STAGE PLANS:
 
   Stage: Stage-2
     Stats-Aggr Operator
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_co2
 SELECT b.key, d.val
@@ -838,7 +836,6 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
       Local Work:
         Map Reduce Local Work
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_co3
 SELECT b.key, d.val

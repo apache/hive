@@ -668,7 +668,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 5
 
-
 PREHOOK: query: SELECT
      `dim_pay_date`.`date`
     , `deal`.`dealid`

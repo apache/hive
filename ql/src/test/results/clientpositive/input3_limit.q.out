@@ -121,7 +121,6 @@ STAGE PLANS:
   Stage: Stage-3
     Stats-Aggr Operator
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE T2 SELECT * FROM (SELECT * FROM T1 DISTRIBUTE BY key SORT BY key, value) T LIMIT 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1

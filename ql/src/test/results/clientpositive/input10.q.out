@@ -26,7 +26,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: DESCRIBE TEST10
 PREHOOK: type: DESCTABLE
 POSTHOOK: query: DESCRIBE TEST10

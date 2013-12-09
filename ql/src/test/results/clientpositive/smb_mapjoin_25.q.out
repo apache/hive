@@ -230,7 +230,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- explain
 -- select * from smb_bucket_1 a left outer join smb_bucket_2 b on a.key = b.key left outer join src c on a.key=c.value
 
@@ -361,7 +360,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select * from (select a.key from smb_bucket_1 a join smb_bucket_2 b on (a.key = b.key) where a.key = 5) t1 left outer join (select c.key from smb_bucket_2 c join smb_bucket_3 d on (c.key = d.key) where c.key=5) t2 on (t1.key=t2.key) where t2.key=5
 PREHOOK: type: QUERY

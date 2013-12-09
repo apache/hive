@@ -90,7 +90,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: FROM src src1 JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value
 PREHOOK: type: QUERY

@@ -82,7 +82,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE test_table2
 SELECT * FROM test_table1
 PREHOOK: type: QUERY
@@ -270,7 +269,6 @@ STAGE PLANS:
 
   Stage: Stage-2
     Stats-Aggr Operator
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table2
 SELECT * FROM test_table1

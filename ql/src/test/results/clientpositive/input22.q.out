@@ -64,7 +64,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 10
 
-
 PREHOOK: query: SELECT a.KEY2
 FROM (SELECT INPUT4.*, INPUT4.KEY as KEY2
       FROM INPUT4) a

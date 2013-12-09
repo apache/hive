@@ -69,7 +69,6 @@ STAGE PLANS:
                 numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
             ListSink
 
-
 PREHOOK: query: insert overwrite table loc_orc partition(year) select * from loc_staging
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_staging
@@ -211,7 +210,6 @@ STAGE PLANS:
                 numRows: 5 dataSize: 727 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
 
-
 PREHOOK: query: -- partition level analyze statistics for specific parition
 analyze table loc_orc partition(year=2001) compute statistics
 PREHOOK: type: QUERY
@@ -314,7 +312,6 @@ STAGE PLANS:
             Statistics:
                 numRows: 2 dataSize: 325 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
-
 
 PREHOOK: query: -- basicStatState: PARTIAL colStatState: NONE
 explain extended select * from loc_orc
@@ -438,7 +435,6 @@ STAGE PLANS:
                 numRows: 9 dataSize: 727 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
 
-
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: NONE
 explain extended select * from loc_orc where year=2001
 PREHOOK: type: QUERY
@@ -521,7 +517,6 @@ STAGE PLANS:
             Statistics:
                 numRows: 7 dataSize: 402 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
-
 
 PREHOOK: query: -- partition level analyze statistics for all partitions
 analyze table loc_orc partition(year) compute statistics
@@ -629,7 +624,6 @@ STAGE PLANS:
             Statistics:
                 numRows: 1 dataSize: 325 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
-
 
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: NONE
 explain extended select * from loc_orc
@@ -753,7 +747,6 @@ STAGE PLANS:
                 numRows: 8 dataSize: 727 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
 
-
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: NONE
 explain extended select * from loc_orc where year=2001 or year='__HIVE_DEFAULT_PARTITION__'
 PREHOOK: type: QUERY
@@ -876,7 +869,6 @@ STAGE PLANS:
                 numRows: 8 dataSize: 727 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
 
-
 PREHOOK: query: -- both partitions will be pruned
 -- basicStatState: NONE colStatState: NONE
 explain extended select * from loc_orc where year=2001 and year='__HIVE_DEFAULT_PARTITION__'
@@ -928,7 +920,6 @@ STAGE PLANS:
               Statistics:
                   numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
               ListSink
-
 
 PREHOOK: query: -- partition level partial column statistics
 analyze table loc_orc partition(year=2001) compute statistics for columns state,locid
@@ -1099,7 +1090,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: PARTIAL
 explain extended select state from loc_orc
 PREHOOK: type: QUERY
@@ -1250,7 +1240,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- column statistics for __HIVE_DEFAULT_PARTITION__ is not supported yet. Hence colStatState reports PARTIAL
 -- basicStatState: COMPLETE colStatState: PARTIAL
@@ -1407,7 +1396,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: COMPLETE
 explain extended select state,locid from loc_orc where year=2001
 PREHOOK: type: QUERY
@@ -1518,7 +1506,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: NONE
 explain extended select state,locid from loc_orc where year!=2001
@@ -1637,7 +1624,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: PARTIAL
 explain extended select * from loc_orc
@@ -1761,7 +1747,6 @@ STAGE PLANS:
                 numRows: 8 dataSize: 727 basicStatsState: COMPLETE colStatsState: PARTIAL
             ListSink
 
-
 PREHOOK: query: -- This is to test filter expression evaluation on partition column
 -- numRows: 2 dataSize: 8 basicStatState: COMPLETE colStatState: COMPLETE
 explain extended select locid from loc_orc where locid>0 and year=2001
@@ -1880,7 +1865,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain extended select locid,year from loc_orc where locid>0 and year=2001
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select locid,year from loc_orc where locid>0 and year=2001
@@ -1997,7 +1981,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain extended select * from (select locid,year from loc_orc) test where locid>0 and year=2001
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select * from (select locid,year from loc_orc) test where locid>0 and year=2001
@@ -2113,5 +2096,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 

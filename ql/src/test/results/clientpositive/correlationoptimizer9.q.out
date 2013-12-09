@@ -273,7 +273,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT xx.key, yy.key, xx.cnt, yy.cnt
 FROM 
 (SELECT x.c1 AS key, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1) xx
@@ -533,7 +532,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT xx.key, yy.key, xx.cnt, yy.cnt
 FROM 
@@ -870,7 +868,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
 FROM 
 (SELECT x.c1 AS key1, x.c3 AS key2, count(1) AS cnt FROM tmp x WHERE x.c1 < 120 GROUP BY x.c1, x.c3) xx
@@ -1168,7 +1165,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT xx.key1, xx.key2, yy.key1, yy.key2, xx.cnt, yy.cnt
 FROM 

@@ -115,7 +115,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT 3 + 2, 3.0 + 2, 3 + 2.0, 3.0 + 2.0, 3 + CAST(2.0 AS INT) + CAST(CAST(0 AS SMALLINT) AS INT), CAST(1 AS BOOLEAN), CAST(TRUE AS INT) WHERE src.key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

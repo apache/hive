@@ -46,7 +46,6 @@ STAGE PLANS:
             outputColumnNames: _col0
             ListSink
 
-
 PREHOOK: query: -- Test Primitive Types
 SELECT printf("Hello World %d %s", 100, "days") FROM src tablesample (1 rows)
 PREHOOK: type: QUERY

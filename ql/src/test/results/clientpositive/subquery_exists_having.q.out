@@ -158,7 +158,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select b.key, count(*) 
 from src b 
 group by b.key

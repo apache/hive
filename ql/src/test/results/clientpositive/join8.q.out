@@ -147,7 +147,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: FROM (
  FROM 
   (

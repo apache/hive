@@ -61,7 +61,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT minute('2009-08-07 13:14:15'), minute('13:14:15'), minute('2009-08-07')
 FROM src WHERE key = 86
 PREHOOK: type: QUERY

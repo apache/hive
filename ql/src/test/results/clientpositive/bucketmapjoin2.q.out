@@ -447,7 +447,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: insert overwrite table bucketmapjoin_tmp_result 
 select /*+mapjoin(b)*/ a.key, a.value, b.value 
 from srcbucket_mapjoin_part a join srcbucket_mapjoin_part_2 b
@@ -1032,7 +1031,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: insert overwrite table bucketmapjoin_tmp_result 
 select /*+mapjoin(a)*/ a.key, a.value, b.value 
@@ -1818,7 +1816,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: insert overwrite table bucketmapjoin_tmp_result
 select /*+mapjoin(b)*/ a.key, a.value, b.value

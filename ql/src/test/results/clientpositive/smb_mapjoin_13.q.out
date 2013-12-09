@@ -207,7 +207,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 10
 
-
 PREHOOK: query: SELECT /*+mapjoin(b)*/ * FROM test_table1 a JOIN test_table2 b ON a.key = b.value ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table1
@@ -426,7 +425,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
-
 
 PREHOOK: query: SELECT /*+mapjoin(b)*/ * FROM test_table3 a JOIN test_table4 b ON a.key = b.value ORDER BY a.key LIMIT 10
 PREHOOK: type: QUERY

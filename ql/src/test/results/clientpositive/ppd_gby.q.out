@@ -94,7 +94,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT src1.c1 
 FROM
 (SELECT src.value as c1, count(src.key) as c2 from src where src.value > 'val_10' group by src.value) src1
@@ -326,7 +325,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT src1.c1 
 FROM

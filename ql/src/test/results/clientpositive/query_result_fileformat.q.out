@@ -75,7 +75,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select * from nzhang_test1 where key='key1'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nzhang_test1
@@ -151,7 +150,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select * from nzhang_test1 where key='key1'
 PREHOOK: type: QUERY

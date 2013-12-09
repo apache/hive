@@ -100,7 +100,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1
 SELECT src.key as c1, CAST(src.key / 10 AS INT) as c2, CAST(src.key % 10 AS INT) as c3, src.value as c4

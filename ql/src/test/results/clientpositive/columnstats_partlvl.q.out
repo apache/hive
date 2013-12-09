@@ -88,7 +88,6 @@ STAGE PLANS:
           Partition: employeesalary=2000.0
           Table: Employee_Part
 
-
 PREHOOK: query: explain extended
 analyze table Employee_Part partition (employeeSalary=2000.0) compute statistics for columns employeeID
 PREHOOK: type: QUERY
@@ -218,7 +217,6 @@ STAGE PLANS:
           Table: Employee_Part
           Is Table Level Stats: false
 
-
 PREHOOK: query: analyze table Employee_Part partition (employeeSalary=2000.0) compute statistics for columns employeeID
 PREHOOK: type: QUERY
 PREHOOK: Input: default@employee_part
@@ -293,7 +291,6 @@ STAGE PLANS:
           Column Types: int
           Partition: employeesalary=4000.0
           Table: Employee_Part
-
 
 PREHOOK: query: explain extended
 analyze table Employee_Part partition (employeeSalary=4000.0) compute statistics for columns employeeID
@@ -423,7 +420,6 @@ STAGE PLANS:
           Partition: employeesalary=4000.0
           Table: Employee_Part
           Is Table Level Stats: false
-
 
 PREHOOK: query: analyze table Employee_Part partition (employeeSalary=4000.0) compute statistics for columns employeeID
 PREHOOK: type: QUERY

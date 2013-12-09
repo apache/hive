@@ -65,7 +65,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select * from hbase_pushdown where key=90
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_pushdown
@@ -122,7 +121,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select * from hbase_pushdown where key=90 and value like '%90%'
 PREHOOK: type: QUERY
@@ -183,7 +181,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- with contradictory pushdowns
 
 explain select * from hbase_pushdown
@@ -231,7 +228,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select * from hbase_pushdown
 where key=80 and key=90 and value like '%90%'
 PREHOOK: type: QUERY
@@ -271,7 +267,6 @@ STAGE PLANS:
                   type: string
             outputColumnNames: _col0, _col1
             ListSink
-
 
 PREHOOK: query: -- with a predicate which is not actually part of the filter, so
 -- it should be ignored by pushdown
@@ -322,7 +317,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- with a predicate which is under an OR, so it should
 -- be ignored by pushdown
 
@@ -372,7 +366,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- with pushdown disabled
 
 explain select * from hbase_pushdown where key=90
@@ -417,5 +410,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 

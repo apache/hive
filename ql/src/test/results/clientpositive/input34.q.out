@@ -126,7 +126,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe'

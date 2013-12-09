@@ -67,7 +67,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select count(1) from tst x where x.d='2009-01-01'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst

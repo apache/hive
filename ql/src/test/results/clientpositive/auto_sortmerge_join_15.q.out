@@ -180,7 +180,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain
 select count(*) FROM tbl1 a RIGHT OUTER JOIN tbl2 b ON a.key = b.key
 PREHOOK: type: QUERY
@@ -330,5 +329,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 

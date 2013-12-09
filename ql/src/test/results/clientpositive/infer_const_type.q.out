@@ -89,7 +89,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT * FROM infertypes WHERE
   ti  = '127' AND
   si  = 32767 AND
@@ -182,7 +181,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT * FROM infertypes WHERE
   ti  = '128' OR
   si  = 32768 OR
@@ -262,7 +260,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT * FROM infertypes WHERE
   ti  = '127.0' OR
   si  = 327.0 OR
@@ -333,7 +330,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT * FROM infertypes WHERE
   ti < '127.0' AND

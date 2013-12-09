@@ -247,7 +247,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT * FROM doctors WHERE number > 6 ORDER BY number
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__doctors_doctors_index__

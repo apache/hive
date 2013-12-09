@@ -225,7 +225,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select count(*) from alter_coltype where dt = 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_coltype
@@ -434,7 +433,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: --  validate partition key column predicate on two different partition column data type 
 --  can still work.
@@ -690,7 +688,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- query where multiple partition values (of different datatypes) are being selected 
 select key, value, dt, ts from alter_coltype where dt is not null
@@ -989,7 +986,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select count(*) from alter_coltype where ts = 3.0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_coltype
@@ -1256,7 +1252,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: desc alter_coltype
 PREHOOK: type: DESCTABLE

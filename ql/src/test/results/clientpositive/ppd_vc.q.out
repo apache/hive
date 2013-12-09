@@ -248,7 +248,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select * from srcpart where BLOCK__OFFSET__INSIDE__FILE<100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -739,7 +738,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select b.* from src a join
   (select *,BLOCK__OFFSET__INSIDE__FILE from srcpart where BLOCK__OFFSET__INSIDE__FILE<100) b

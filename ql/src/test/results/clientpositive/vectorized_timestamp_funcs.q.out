@@ -148,7 +148,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT
   to_unix_timestamp(ctimestamp1),
   year(ctimestamp1),
@@ -300,7 +299,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT
   to_unix_timestamp(stimestamp1),
   year(stimestamp1),
@@ -451,7 +449,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- Should all be true or NULL
 SELECT
@@ -607,7 +604,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT
   to_unix_timestamp(stimestamp1),

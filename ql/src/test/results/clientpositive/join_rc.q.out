@@ -111,7 +111,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select join_rc1.key, join_rc2.value
 FROM join_rc1 JOIN join_rc2 ON join_rc1.key = join_rc2.key
 PREHOOK: type: QUERY

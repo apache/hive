@@ -66,7 +66,6 @@ STAGE PLANS:
                       serde: org.apache.hadoop.hive.hbase.HBaseSerDe
                       name: default.hbase_table_1
 
-
 PREHOOK: query: FROM src INSERT OVERWRITE TABLE hbase_table_1 SELECT * WHERE (key%2)=0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -217,7 +216,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
-
 
 PREHOOK: query: SELECT Y.* 
 FROM 
@@ -395,7 +393,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT Y.*
 FROM 
@@ -656,7 +653,6 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.hbase.HiveHBaseTableOutputFormat
                   serde: org.apache.hadoop.hive.hbase.HBaseSerDe
                   name: default.hbase_table_3
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE hbase_table_3
 SELECT x.key, x.value, Y.count 

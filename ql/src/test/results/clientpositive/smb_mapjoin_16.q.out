@@ -102,7 +102,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT /*+mapjoin(b)*/ count(*) FROM test_table1 a JOIN test_table2 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_table1

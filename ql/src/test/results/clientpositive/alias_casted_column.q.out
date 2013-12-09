@@ -35,7 +35,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: --backward
 explain select key2 from (select cast(key as int) key2 from src )t
 PREHOOK: type: QUERY
@@ -72,5 +71,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 

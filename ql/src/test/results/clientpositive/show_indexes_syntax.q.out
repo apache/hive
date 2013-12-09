@@ -48,7 +48,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SHOW INDEX ON show_idx_t1
 PREHOOK: type: SHOWINDEXES
 POSTHOOK: query: SHOW INDEX ON show_idx_t1
@@ -82,7 +81,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SHOW INDEXES ON show_idx_t1
 PREHOOK: type: SHOWINDEXES
 POSTHOOK: query: SHOW INDEXES ON show_idx_t1
@@ -115,7 +113,6 @@ STAGE PLANS:
   Stage: Stage-1
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SHOW FORMATTED INDEXES ON show_idx_t1
 PREHOOK: type: SHOWINDEXES

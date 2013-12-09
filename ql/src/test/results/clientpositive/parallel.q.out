@@ -185,7 +185,6 @@ STAGE PLANS:
   Stage: Stage-5
     Stats-Aggr Operator
 
-
 PREHOOK: query: from (select key, value from src group by key, value) s
 insert overwrite table src_a select s.key, s.value group by s.key, s.value
 insert overwrite table src_b select s.key, s.value group by s.key, s.value

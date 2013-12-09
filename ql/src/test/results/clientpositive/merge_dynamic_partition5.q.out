@@ -171,7 +171,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: insert overwrite table merge_dynamic_part partition (ds = '2008-04-08', hr)
 select key, value, if(key % 100 == 0, 'a1', 'b1') as hr from srcpart_merge_dp_rc where ds = '2008-04-08'
 PREHOOK: type: QUERY

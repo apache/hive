@@ -166,7 +166,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT
   CAST(key AS INT) AS user_id, value
   FROM srcpart
@@ -444,7 +443,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT
   CAST(key AS INT) AS user_id, value

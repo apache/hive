@@ -106,7 +106,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: insert overwrite table nzhang_part partition (ds='2010-08-15', hr) select key, value, hr from srcpart where ds='2008-04-08'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -1244,7 +1243,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: insert overwrite table nzhang_part partition (ds='2010-08-15', hr=11) select key, value from srcpart where ds='2008-04-08'
 PREHOOK: type: QUERY
@@ -2966,7 +2964,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: insert overwrite table nzhang_part partition (ds='2010-08-15', hr) 
 select * from (

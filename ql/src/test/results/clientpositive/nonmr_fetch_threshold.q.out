@@ -29,7 +29,6 @@ STAGE PLANS:
             Limit
               ListSink
 
-
 PREHOOK: query: explain select cast(key as int) * 10, upper(value) from src limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select cast(key as int) * 10, upper(value) from src limit 10
@@ -56,7 +55,6 @@ STAGE PLANS:
             outputColumnNames: _col0, _col1
             Limit
               ListSink
-
 
 PREHOOK: query: explain select * from srcpart where ds='2008-04-08' AND hr='11' limit 10
 PREHOOK: type: QUERY
@@ -100,7 +98,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 10
 
-
 PREHOOK: query: explain select cast(key as int) * 10, upper(value) from src limit 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select cast(key as int) * 10, upper(value) from src limit 10
@@ -138,5 +135,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
-
 

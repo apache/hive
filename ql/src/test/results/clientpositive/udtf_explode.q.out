@@ -117,7 +117,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 3
 
-
 PREHOOK: query: EXPLAIN EXTENDED SELECT a.myCol, count(1) FROM (SELECT explode(array(1,2,3)) AS myCol FROM src LIMIT 3) a GROUP BY a.myCol
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN EXTENDED SELECT a.myCol, count(1) FROM (SELECT explode(array(1,2,3)) AS myCol FROM src LIMIT 3) a GROUP BY a.myCol
@@ -347,7 +346,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT explode(array(1,2,3)) AS myCol FROM src LIMIT 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -418,7 +416,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 3
-
 
 PREHOOK: query: EXPLAIN EXTENDED SELECT a.myKey, a.myVal, count(1) FROM (SELECT explode(map(1,'one',2,'two',3,'three')) as (myKey,myVal) FROM src LIMIT 3) a GROUP BY a.myKey, a.myVal
 PREHOOK: type: QUERY
@@ -662,7 +659,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT explode(map(1,'one',2,'two',3,'three')) as (myKey,myVal) FROM src LIMIT 3
 PREHOOK: type: QUERY

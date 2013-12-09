@@ -126,7 +126,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, value, count(1) FROM src GROUP BY key, value WITH ROLLUP
 PREHOOK: type: QUERY
@@ -368,7 +367,6 @@ STAGE PLANS:
 
   Stage: Stage-2
     Stats-Aggr Operator
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, value, count(1) FROM src GROUP BY key, value WITH CUBE
@@ -646,7 +644,6 @@ STAGE PLANS:
 
   Stage: Stage-2
     Stats-Aggr Operator
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table_out PARTITION (part = '1') 
 SELECT key, value, count(1) FROM src GROUP BY key, value GROUPING SETS (key, value)

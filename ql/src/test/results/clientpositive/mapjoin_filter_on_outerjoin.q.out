@@ -199,7 +199,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT /*+ mapjoin(src1, src2) */ * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)
   JOIN src src3 ON (src2.key = src3.key AND src3.key < 300)
@@ -396,7 +395,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT * FROM src1
   RIGHT OUTER JOIN src1 src2 ON (src1.key = src2.key AND src1.key < 10 AND src2.key > 10)

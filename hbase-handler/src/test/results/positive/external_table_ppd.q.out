@@ -166,7 +166,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT * FROM t_hbase where int_col > 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t_hbase

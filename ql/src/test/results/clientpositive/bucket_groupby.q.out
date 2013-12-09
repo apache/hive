@@ -113,7 +113,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 10
 
-
 PREHOOK: query: select key, count(1) from clustergroupby where ds='100' group by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby
@@ -246,7 +245,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 10
 
-
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby
@@ -353,7 +351,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 10
 
-
 PREHOOK: query: select length(key), count(1) from clustergroupby  where ds='101' group by length(key) limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby
@@ -450,7 +447,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
-
 
 PREHOOK: query: select abs(length(key)), count(1) from clustergroupby  where ds='101' group by abs(length(key)) limit 10
 PREHOOK: type: QUERY
@@ -559,7 +555,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 10
 
-
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='101' group by key,3 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby
@@ -666,7 +661,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 10
 
-
 PREHOOK: query: select key, count(1) from (select value as key, key as value from clustergroupby where ds='101')subq group by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby
@@ -769,7 +763,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select key, count(1) from clustergroupby  group by key
 PREHOOK: type: QUERY
@@ -1183,7 +1176,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- number of buckets cannot be changed, so drop the table
 drop table clustergroupby
 PREHOOK: type: DROPTABLE
@@ -1335,7 +1327,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 10
 
-
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='102' group by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby
@@ -1443,7 +1434,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
-
 
 PREHOOK: query: select value, count(1) from clustergroupby  where ds='102'  group by value limit 10
 PREHOOK: type: QUERY
@@ -1562,7 +1552,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
-
 
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='102'  group by key, value limit 10
 PREHOOK: type: QUERY
@@ -1751,7 +1740,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 10
 
-
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by key limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@clustergroupby
@@ -1873,7 +1861,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
-
 
 PREHOOK: query: select key, count(1) from clustergroupby  where ds='103' group by  value, key limit 10
 PREHOOK: type: QUERY

@@ -286,7 +286,6 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
 
-
 PREHOOK: query: CREATE INDEX srcpart_rc_index ON TABLE srcpart_rc(key) as 'COMPACT' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX srcpart_rc_index ON TABLE srcpart_rc(key) as 'COMPACT' WITH DEFERRED REBUILD

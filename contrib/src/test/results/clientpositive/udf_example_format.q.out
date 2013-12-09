@@ -54,7 +54,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 1
 
-
 PREHOOK: query: SELECT example_format("abc"),
        example_format("%1$s", 1.1),
        example_format("%1$s %2$e", 1.1, 1.2),

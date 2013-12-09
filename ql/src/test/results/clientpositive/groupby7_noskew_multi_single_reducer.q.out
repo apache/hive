@@ -197,7 +197,6 @@ STAGE PLANS:
   Stage: Stage-6
     Stats-Aggr Operator
 
-
 PREHOOK: query: FROM SRC
 INSERT OVERWRITE TABLE DEST1 SELECT SRC.key, sum(SUBSTR(SRC.value,5)) GROUP BY SRC.key limit 10
 INSERT OVERWRITE TABLE DEST2 SELECT SRC.key, sum(SUBSTR(SRC.value,5)) GROUP BY SRC.key limit 10

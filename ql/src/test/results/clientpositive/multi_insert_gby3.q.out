@@ -186,7 +186,6 @@ STAGE PLANS:
   Stage: Stage-5
     Stats-Aggr Operator
 
-
 PREHOOK: query: explain
 FROM (select key, cast(key as double) as keyD, value from src order by key) a
 INSERT OVERWRITE TABLE e2
@@ -359,7 +358,6 @@ STAGE PLANS:
 
   Stage: Stage-5
     Stats-Aggr Operator
-
 
 PREHOOK: query: FROM (select key, cast(key as double) as keyD, value from src order by key) a
 INSERT OVERWRITE TABLE e1
@@ -1906,7 +1904,6 @@ STAGE PLANS:
   Stage: Stage-5
     Stats-Aggr Operator
 
-
 PREHOOK: query: explain
 FROM (select key, cast(key as double) as keyD, value from src order by key) a
 INSERT OVERWRITE TABLE e1
@@ -2156,5 +2153,4 @@ STAGE PLANS:
 
   Stage: Stage-7
     Stats-Aggr Operator
-
 

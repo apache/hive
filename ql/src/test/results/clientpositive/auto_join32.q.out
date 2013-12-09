@@ -130,7 +130,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select s.name, count(distinct registration)
 from studenttab10k s join votertab10k v
 on (s.name = v.name)
@@ -255,7 +254,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select s.name, count(distinct registration)
 from studenttab10k_smb s join votertab10k_smb v
@@ -393,7 +391,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select s.name, count(distinct registration)
 from studenttab10k_smb s join votertab10k_smb v
@@ -553,7 +550,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select s.name, count(distinct registration)
 from studenttab10k_part s join votertab10k_part v

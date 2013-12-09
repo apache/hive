@@ -32,7 +32,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SHOW TABLES 'shtb_*'
 PREHOOK: type: SHOWTABLES
 POSTHOOK: query: SHOW TABLES 'shtb_*'
@@ -62,7 +61,6 @@ STAGE PLANS:
   Stage: Stage-1
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SHOW TABLES LIKE 'shtb_test1|shtb_test2'
 PREHOOK: type: SHOWTABLES

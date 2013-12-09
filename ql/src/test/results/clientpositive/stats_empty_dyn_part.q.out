@@ -113,7 +113,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: insert overwrite table tmptable partition (part) select key, value from src where key = 'no_such_value'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

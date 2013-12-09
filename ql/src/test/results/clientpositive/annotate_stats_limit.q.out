@@ -97,7 +97,6 @@ STAGE PLANS:
                 numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
             ListSink
 
-
 PREHOOK: query: -- numRows: 4 rawDataSize: 396
 explain extended select * from loc_orc limit 4
 PREHOOK: type: QUERY
@@ -141,7 +140,6 @@ STAGE PLANS:
               Statistics:
                   numRows: 4 dataSize: 396 basicStatsState: COMPLETE colStatsState: COMPLETE
               ListSink
-
 
 PREHOOK: query: -- greater than the available number of rows
 -- numRows: 8 rawDataSize: 796
@@ -189,7 +187,6 @@ STAGE PLANS:
                   numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
               ListSink
 
-
 PREHOOK: query: -- numRows: 0 rawDataSize: 0
 explain extended select * from loc_orc limit 0
 PREHOOK: type: QUERY
@@ -233,5 +230,4 @@ STAGE PLANS:
               Statistics:
                   numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: COMPLETE
               ListSink
-
 

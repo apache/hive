@@ -47,7 +47,6 @@ STAGE PLANS:
         Drop Table
           table: mp
 
-
 PREHOOK: query: alter table mp drop partition (b='1')
 PREHOOK: type: ALTERTABLE_DROPPARTS
 PREHOOK: Input: default@mp

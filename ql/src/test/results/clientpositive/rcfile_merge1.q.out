@@ -129,7 +129,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE rcfile_merge1 PARTITION (ds='1', part)
     SELECT key, value, PMOD(HASH(key), 100) as part
     FROM src
@@ -720,7 +719,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE rcfile_merge1b PARTITION (ds='1', part)
     SELECT key, value, PMOD(HASH(key), 100) as part

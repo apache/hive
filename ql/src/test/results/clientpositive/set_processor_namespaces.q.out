@@ -44,7 +44,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT * FROM src where key=5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

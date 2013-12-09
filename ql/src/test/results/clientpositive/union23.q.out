@@ -109,7 +109,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select s.key2, s.value2
 from (
   select transform(key, value) using 'cat' as (key2, value2)

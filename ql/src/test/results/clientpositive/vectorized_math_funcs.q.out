@@ -218,7 +218,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select
    cdouble
   ,Round(cdouble, 2)

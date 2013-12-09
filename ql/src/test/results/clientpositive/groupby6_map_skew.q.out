@@ -113,7 +113,6 @@ STAGE PLANS:
   Stage: Stage-3
     Stats-Aggr Operator
 
-
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1 SELECT DISTINCT substr(src.value,5,1)
 PREHOOK: type: QUERY

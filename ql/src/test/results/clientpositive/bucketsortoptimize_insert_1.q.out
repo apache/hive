@@ -92,7 +92,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
 SELECT x.key, x.value from 
 (
@@ -223,7 +222,6 @@ STAGE PLANS:
 
   Stage: Stage-2
     Stats-Aggr Operator
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
 SELECT * from 
@@ -368,7 +366,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: -- it should be a map-reduce job
 EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
@@ -453,7 +450,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: -- it should be a map-only job
 EXPLAIN
 INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
@@ -521,5 +517,4 @@ STAGE PLANS:
 
   Stage: Stage-2
     Stats-Aggr Operator
-
 

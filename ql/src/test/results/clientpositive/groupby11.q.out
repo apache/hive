@@ -218,7 +218,6 @@ STAGE PLANS:
   Stage: Stage-6
     Stats-Aggr Operator
 
-
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1 partition(ds='111')
   SELECT src.value, count(src.key), count(distinct src.key) GROUP BY src.value

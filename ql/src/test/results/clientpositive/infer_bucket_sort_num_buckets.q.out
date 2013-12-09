@@ -109,7 +109,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (ds = '2008-04-08', hr)
 SELECT key2, value, cast(hr as int) FROM
 (SELECT if ((key % 3) < 2, 0, 1) as key2, value, (key % 3 % 2) as hr

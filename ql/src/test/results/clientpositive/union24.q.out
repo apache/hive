@@ -560,7 +560,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select s.key, s.count from (
   select key, count from src2  where key < 10
   union all
@@ -1105,7 +1104,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select s.key, s.count from (
   select key, count from src2  where key < 10
@@ -1733,7 +1731,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select s.key, s.count from (
   select key, count from src2  where key < 10

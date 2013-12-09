@@ -279,7 +279,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT * FROM (
   SELECT X.* FROM SRCPART X WHERE X.key < 100
   UNION ALL

@@ -305,7 +305,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT s.*
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 2 on key) s
 PREHOOK: type: QUERY

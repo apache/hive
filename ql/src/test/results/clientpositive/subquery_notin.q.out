@@ -186,7 +186,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select * 
 from src 
 where src.key not in  ( select key from src s1 where s1.key > '2')
@@ -473,7 +472,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select p_mfgr, b.p_name, p_size 
 from part b 
 where b.p_name not in 
@@ -686,7 +684,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select p_name, p_size 
 from 
@@ -934,7 +931,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select p_mfgr, p_name, p_size 
 from part b where b.p_size not in 

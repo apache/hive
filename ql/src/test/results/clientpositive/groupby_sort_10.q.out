@@ -70,7 +70,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select distinct key from T1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
@@ -172,7 +171,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select distinct key from T1
 PREHOOK: type: QUERY

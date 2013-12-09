@@ -55,7 +55,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: load data local inpath '../../data/files/test.dat' overwrite into table hive_test_src
 PREHOOK: type: LOAD
 PREHOOK: Output: default@hive_test_src

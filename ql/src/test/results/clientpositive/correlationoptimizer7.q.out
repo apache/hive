@@ -201,7 +201,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)
@@ -458,7 +457,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
@@ -710,7 +708,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM src x JOIN src1 y ON (x.key = y.key)
@@ -967,7 +964,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT xx.key, xx.cnt, yy.key, yy.value
 FROM (SELECT x.key AS key, count(1) AS cnt

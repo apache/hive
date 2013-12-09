@@ -42,7 +42,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 5
 
-
 PREHOOK: query: SELECT x.* FROM SRC x WHERE x.key < 300 LIMIT 5
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

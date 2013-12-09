@@ -278,7 +278,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: insert overwrite table list_bucketing_static_part partition (ds = '2008-04-08', hr = '11')
 select key, value from src
 PREHOOK: type: QUERY

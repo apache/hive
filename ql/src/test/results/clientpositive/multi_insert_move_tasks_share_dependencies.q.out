@@ -104,7 +104,6 @@ STAGE PLANS:
   Stage: Stage-5
     Stats-Aggr Operator
 
-
 PREHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20
@@ -362,7 +361,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20
@@ -540,7 +538,6 @@ STAGE PLANS:
   Stage: Stage-5
     Stats-Aggr Operator
 
-
 PREHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20
@@ -830,7 +827,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20
@@ -1083,7 +1079,6 @@ STAGE PLANS:
 
   Stage: Stage-5
     Stats-Aggr Operator
-
 
 PREHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10 group by key, value
@@ -1427,7 +1422,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10 group by key, value
 insert overwrite table src_multi2 select * where key > 10 and key < 20 group by key, value
@@ -1673,7 +1667,6 @@ STAGE PLANS:
 
   Stage: Stage-5
     Stats-Aggr Operator
-
 
 PREHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10 group by key, value
@@ -2016,7 +2009,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10 group by key, value
@@ -2276,7 +2268,6 @@ STAGE PLANS:
 
   Stage: Stage-5
     Stats-Aggr Operator
-
 
 PREHOOK: query: from (select * from src  union all select * from src) s
 insert overwrite table src_multi1 select * where key < 10
@@ -2675,7 +2666,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: from (select * from src  union all select * from src) s
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20
@@ -2992,7 +2982,6 @@ STAGE PLANS:
 
   Stage: Stage-5
     Stats-Aggr Operator
-
 
 PREHOOK: query: from (select * from src  union all select * from src) s
 insert overwrite table src_multi1 select * where key < 10
@@ -3422,7 +3411,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: from (select * from src  union all select * from src) s
 insert overwrite table src_multi1 select * where key < 10
@@ -3721,7 +3709,6 @@ STAGE PLANS:
       files:
           hdfs directory: false
 #### A masked pattern was here ####
-
 
 PREHOOK: query: from src 
 #### A masked pattern was here ####
@@ -3900,7 +3887,6 @@ STAGE PLANS:
           hdfs directory: false
 #### A masked pattern was here ####
 
-
 PREHOOK: query: from src 
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
@@ -4078,7 +4064,6 @@ STAGE PLANS:
           hdfs directory: false
 #### A masked pattern was here ####
 
-
 PREHOOK: query: from src 
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
@@ -4255,7 +4240,6 @@ STAGE PLANS:
       files:
           hdfs directory: false
 #### A masked pattern was here ####
-
 
 PREHOOK: query: from src 
 #### A masked pattern was here ####
@@ -4512,7 +4496,6 @@ STAGE PLANS:
       files:
           hdfs directory: false
 #### A masked pattern was here ####
-
 
 PREHOOK: query: from src
 #### A masked pattern was here ####
@@ -4770,7 +4753,6 @@ STAGE PLANS:
           hdfs directory: false
 #### A masked pattern was here ####
 
-
 PREHOOK: query: from src
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
@@ -5027,7 +5009,6 @@ STAGE PLANS:
           hdfs directory: false
 #### A masked pattern was here ####
 
-
 PREHOOK: query: from src
 #### A masked pattern was here ####
 PREHOOK: type: QUERY
@@ -5283,7 +5264,6 @@ STAGE PLANS:
       files:
           hdfs directory: false
 #### A masked pattern was here ####
-
 
 PREHOOK: query: from src
 #### A masked pattern was here ####
@@ -5613,7 +5593,6 @@ STAGE PLANS:
           hdfs directory: false
 #### A masked pattern was here ####
 
-
 PREHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20
@@ -6064,7 +6043,6 @@ STAGE PLANS:
       files:
           hdfs directory: false
 #### A masked pattern was here ####
-
 
 PREHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10
@@ -6629,7 +6607,6 @@ STAGE PLANS:
           hdfs directory: false
 #### A masked pattern was here ####
 
-
 PREHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10
 insert overwrite table src_multi2 select * where key > 10 and key < 20
@@ -7208,7 +7185,6 @@ STAGE PLANS:
       files:
           hdfs directory: false
 #### A masked pattern was here ####
-
 
 PREHOOK: query: from src
 insert overwrite table src_multi1 select * where key < 10

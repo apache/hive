@@ -70,7 +70,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT * FROM src_null DISTRIBUTE BY c SORT BY d
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_null

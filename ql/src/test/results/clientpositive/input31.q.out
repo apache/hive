@@ -82,7 +82,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: insert overwrite table dest31
 select count(1) from srcbucket
 PREHOOK: type: QUERY

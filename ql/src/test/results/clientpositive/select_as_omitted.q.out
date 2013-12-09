@@ -59,7 +59,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 1
 
-
 PREHOOK: query: SELECT a, b FROM (
   SELECT key a, value b
   FROM src

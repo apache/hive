@@ -85,7 +85,6 @@ STAGE PLANS:
             Limit
               ListSink
 
-
 PREHOOK: query: SELECT
     'abc',        "abc",
     'abc\'',      "abc\"",

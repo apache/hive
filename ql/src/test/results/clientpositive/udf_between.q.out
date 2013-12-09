@@ -39,7 +39,6 @@ STAGE PLANS:
               Limit
                 ListSink
 
-
 PREHOOK: query: SELECT * FROM src where key + 100 between (150 + -50) AND (150 + 50) LIMIT 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -98,7 +97,6 @@ STAGE PLANS:
               outputColumnNames: _col0, _col1
               Limit
                 ListSink
-
 
 PREHOOK: query: SELECT * FROM src where key + 100 not between (150 + -50) AND (150 + 50) LIMIT 20
 PREHOOK: type: QUERY
@@ -159,7 +157,6 @@ STAGE PLANS:
               Limit
                 ListSink
 
-
 PREHOOK: query: SELECT * FROM src where 'b' between 'a' AND 'c' LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -199,7 +196,6 @@ STAGE PLANS:
               outputColumnNames: _col0, _col1
               Limit
                 ListSink
-
 
 PREHOOK: query: SELECT * FROM src where 2 between 2 AND '3' LIMIT 1
 PREHOOK: type: QUERY

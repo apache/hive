@@ -274,7 +274,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: from src_10
 insert overwrite table src_lv1 select key, C lateral view explode(array(key+1, key+2)) A as C
 insert overwrite table src_lv2 select key, C lateral view explode(array(key+3, key+4)) A as C
@@ -629,7 +628,6 @@ STAGE PLANS:
 
   Stage: Stage-5
     Stats-Aggr Operator
-
 
 PREHOOK: query: from src_10
 insert overwrite table src_lv1 select key, sum(C) lateral view explode(array(key+1, key+2)) A as C group by key
@@ -986,7 +984,6 @@ STAGE PLANS:
 
   Stage: Stage-7
     Stats-Aggr Operator
-
 
 PREHOOK: query: from src_10
 insert overwrite table src_lv1 select key, sum(C) lateral view explode(array(key+1, key+2)) A as C group by key
@@ -1494,7 +1491,6 @@ STAGE PLANS:
 
   Stage: Stage-8
     Stats-Aggr Operator
-
 
 PREHOOK: query: from src_10
 insert overwrite table src_lv1 select C, sum(distinct key) lateral view explode(array(key+1, key+2)) A as C group by C
@@ -2115,7 +2111,6 @@ STAGE PLANS:
 
   Stage: Stage-10
     Stats-Aggr Operator
-
 
 PREHOOK: query: from src_10
 insert overwrite table src_lv1 select key, sum(distinct C) lateral view explode(array(key+1, key+2)) A as C group by key

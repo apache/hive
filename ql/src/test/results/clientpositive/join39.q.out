@@ -155,7 +155,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1
 SELECT /*+ MAPJOIN(y) */ x.key, x.value, y.key, y.value
 FROM src x left outer JOIN (select * from src where key <= 100) y ON (x.key = y.key)

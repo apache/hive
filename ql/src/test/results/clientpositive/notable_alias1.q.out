@@ -97,7 +97,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1 SELECT '1234', key, count(1) WHERE src.key < 100 group by key
 PREHOOK: type: QUERY

@@ -157,7 +157,6 @@ STAGE PLANS:
   Stage: Stage-4
     Stats-Aggr Operator
 
-
 PREHOOK: query: from src
 insert overwrite table e1
 select key, count(*)
@@ -365,7 +364,6 @@ STAGE PLANS:
 
   Stage: Stage-4
     Stats-Aggr Operator
-
 
 PREHOOK: query: from src
 insert overwrite table e1
@@ -591,7 +589,6 @@ STAGE PLANS:
   Stage: Stage-4
     Stats-Aggr Operator
 
-
 PREHOOK: query: from src
 insert overwrite table e1
 select key, count(*)
@@ -831,7 +828,6 @@ STAGE PLANS:
 
   Stage: Stage-4
     Stats-Aggr Operator
-
 
 PREHOOK: query: from src
 insert overwrite table e1

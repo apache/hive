@@ -151,7 +151,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain extended select intcol from dynamic_part_table where partcol1=1 and partcol2=1
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select intcol from dynamic_part_table where partcol1=1 and partcol2=1
@@ -257,7 +256,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: explain extended select intcol from dynamic_part_table where (partcol1=1 and partcol2=1)or (partcol1=1 and partcol2='__HIVE_DEFAULT_PARTITION__')
 PREHOOK: type: QUERY
@@ -407,5 +405,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 

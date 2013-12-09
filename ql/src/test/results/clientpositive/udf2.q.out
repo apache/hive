@@ -62,7 +62,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT '|', trim(dest1.c1), '|', rtrim(dest1.c1), '|', ltrim(dest1.c1), '|' FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1

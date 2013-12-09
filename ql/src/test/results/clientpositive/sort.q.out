@@ -50,7 +50,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT x.* FROM SRC x SORT BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

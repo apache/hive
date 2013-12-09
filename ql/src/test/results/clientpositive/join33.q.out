@@ -342,7 +342,6 @@ STAGE PLANS:
     Stats-Aggr Operator
 #### A masked pattern was here ####
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1
 SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 

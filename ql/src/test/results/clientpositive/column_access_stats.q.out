@@ -114,7 +114,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT key FROM (SELECT key, val FROM T1) subq1 ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@t1
@@ -171,7 +170,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT k FROM (SELECT key as k, val as v FROM T1) subq1 ORDER BY k
 PREHOOK: type: QUERY
@@ -291,7 +289,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT * FROM (
 SELECT key as c FROM T1
  UNION ALL
@@ -392,7 +389,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT * FROM (
 SELECT key as c FROM T1
@@ -543,7 +539,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT T1.key
 FROM T1 JOIN T2
@@ -725,7 +720,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT *
 FROM T1 JOIN T2
 ON T1.key = T2.key AND T1.val = 3 and T2.val = 3
@@ -859,7 +853,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT subq1.val
 FROM 
@@ -1067,7 +1060,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT *
 FROM

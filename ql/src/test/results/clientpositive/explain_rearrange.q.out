@@ -414,7 +414,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- changes id only
 
 explain
@@ -816,7 +815,6 @@ STAGE PLANS:
   Stage: Stage-10
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- assign ids in traverse order
 
@@ -1220,7 +1218,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- assign ids in execution order
 
 explain
@@ -1622,5 +1619,4 @@ STAGE PLANS:
   Stage: Stage-10
     Fetch Operator
       limit: -1
-
 

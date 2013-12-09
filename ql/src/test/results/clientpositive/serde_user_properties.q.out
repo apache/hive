@@ -104,7 +104,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain extended select a.key from src a
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select a.key from src a
@@ -206,7 +205,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: explain extended select a.key from src tablesample(1 percent) a
 PREHOOK: type: QUERY
@@ -314,7 +312,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain extended select key from src ('user.defined.key'='some.value')
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select key from src ('user.defined.key'='some.value')
@@ -418,7 +415,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: explain extended select key from src ('user.defined.key'='some.value') tablesample(1 percent)
 PREHOOK: type: QUERY
@@ -528,7 +524,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain extended select a.key from src ('user.defined.key'='some.value') a
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select a.key from src ('user.defined.key'='some.value') a
@@ -632,7 +627,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: explain extended select a.key from src ('user.defined.key'='some.value') tablesample(1 percent) a
 PREHOOK: type: QUERY
@@ -741,5 +735,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
