@@ -101,6 +101,7 @@ import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionedTableFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitioningSpec;
 import org.apache.hadoop.hive.ql.parse.QBSubQuery.SubQueryType;
+import org.apache.hadoop.hive.ql.parse.SubQueryUtils.ISubQueryJoinInfo;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.CurrentRowSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
@@ -1922,6 +1923,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     output = putOpInsertMap(output, inputRR);
     return output;
   }
+  
+  private Operator genPlanForSubQueryPredicate(
+      QB qbSQ,
+      ISubQueryJoinInfo subQueryPredicate) throws SemanticException {
+    qbSQ.setSubQueryDef(subQueryPredicate.getSubQuery());
+    Phase1Ctx ctx_1 = initPhase1Ctx();
+    doPhase1(subQueryPredicate.getSubQueryAST(), qbSQ, ctx_1);
+    getMetaData(qbSQ);
+    Operator op = genPlan(qbSQ);
+    return op;
+  }
 
   @SuppressWarnings("nls")
   private Operator genFilterPlan(ASTNode searchCond, QB qb, Operator input,
@@ -2010,11 +2022,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         subQuery.validateAndRewriteAST(inputRR, forHavingClause, havingInputAlias);
 
         QB qbSQ = new QB(subQuery.getOuterQueryId(), subQuery.getAlias(), true);
-        qbSQ.setSubQueryDef(subQuery);
-        Phase1Ctx ctx_1 = initPhase1Ctx();
-        doPhase1(subQuery.getSubQueryAST(), qbSQ, ctx_1);
-        getMetaData(qbSQ);
-        Operator sqPlanTopOp = genPlan(qbSQ);
+        Operator sqPlanTopOp = genPlanForSubQueryPredicate(qbSQ, subQuery);
         aliasToOpInfo.put(subQuery.getAlias(), sqPlanTopOp);
         RowResolver sqRR = opParseCtx.get(sqPlanTopOp).getRowResolver();
 
@@ -2028,6 +2036,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                subQuery.getNumOfCorrelationExprsAddedToSQSelect() > 1 ) {
           throw new SemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
               subQueryAST, "SubQuery can contain only 1 item in Select List."));
+        }
+        
+        /*
+         * If this is a Not In SubQuery Predicate then Join in the Null Check SubQuery.
+         * See QBSubQuery.NotInCheck for details on why and how this is constructed.
+         */
+        if ( subQuery.getNotInCheck() != null ) {
+          QBSubQuery.NotInCheck notInCheck = subQuery.getNotInCheck();
+          notInCheck.setSQRR(sqRR);
+          QB qbSQ_nic = new QB(subQuery.getOuterQueryId(), notInCheck.getAlias(), true);
+          Operator sqnicPlanTopOp = genPlanForSubQueryPredicate(qbSQ_nic, notInCheck);
+          aliasToOpInfo.put(notInCheck.getAlias(), sqnicPlanTopOp);
+          QBJoinTree joinTree_nic = genSQJoinTree(qb, notInCheck,
+              input,
+              aliasToOpInfo);
+          pushJoinFilters(qb, joinTree_nic, aliasToOpInfo, false);
+          input = genJoinOperator(qbSQ_nic, joinTree_nic, aliasToOpInfo, input);
+          inputRR = opParseCtx.get(input).getRowResolver();
+          if ( forHavingClause ) {
+            aliasToOpInfo.put(havingInputAlias, input);
+          }
         }
 
         /*
@@ -6759,7 +6788,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Given this information, once we initialize the QBJoinTree, we call the 'parseJoinCondition'
    * method to validate and parse Join conditions.
    */
-  private QBJoinTree genSQJoinTree(QB qb, QBSubQuery subQuery,
+  private QBJoinTree genSQJoinTree(QB qb, ISubQueryJoinInfo subQuery,
       Operator joiningOp,
       Map<String, Operator> aliasToOpInfo)
           throws SemanticException {
