@@ -19,18 +19,16 @@
 package org.apache.hadoop.hive.ql.parse;
 
 import java.io.Serializable;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.ql.exec.DependencyCollectionTask;
 import org.apache.hadoop.hive.ql.exec.MapJoinOperator;
-import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
+import org.apache.hadoop.hive.ql.exec.ReduceSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.tez.TezTask;
@@ -60,10 +58,6 @@ public class GenTezProcContext implements NodeProcessorCtx{
 
   public final Set<ReadEntity> inputs;
   public final Set<WriteEntity> outputs;
-
-  // rootOperators are all the table scan operators in sequence
-  // of traversal
-  public final Deque<Operator<? extends OperatorDesc>> rootOperators;
 
   // holds the root of the operator tree we're currently processing
   // this could be a table scan, but also a join, ptf, etc (i.e.:
@@ -98,6 +92,9 @@ public class GenTezProcContext implements NodeProcessorCtx{
   // a map that maintains operator (file-sink or reduce-sink) to work mapping
   public final Map<Operator<?>, BaseWork> operatorWorkMap;
 
+  // a map to keep track of which root generated which work
+  public final Map<Operator<?>, BaseWork> rootToWorkMap;
+
   // we need to keep the original list of operators in the map join to know
   // what position in the mapjoin the different parent work items will have.
   public final Map<MapJoinOperator, List<Operator<?>>> mapJoinParentMap;
@@ -108,19 +105,10 @@ public class GenTezProcContext implements NodeProcessorCtx{
   // used to group dependent tasks for multi table inserts
   public final DependencyCollectionTask dependencyTask;
 
-  // root of last multi child operator encountered
-  public Stack<Operator<?>> lastRootOfMultiChildOperator;
-
-  // branches of current multi-child operator
-  public Stack<Integer> currentBranchCount;
-
-  // work generated for last multi-child operator
-  public Stack<BaseWork> lastWorkForMultiChildOperator;
-
   @SuppressWarnings("unchecked")
   public GenTezProcContext(HiveConf conf, ParseContext parseContext,
       List<Task<MoveWork>> moveTask, List<Task<? extends Serializable>> rootTasks,
-      Set<ReadEntity> inputs, Set<WriteEntity> outputs, Deque<Operator<?>> rootOperators) {
+      Set<ReadEntity> inputs, Set<WriteEntity> outputs) {
 
     this.conf = conf;
     this.parseContext = parseContext;
@@ -130,16 +118,15 @@ public class GenTezProcContext implements NodeProcessorCtx{
     this.outputs = outputs;
     this.currentTask = (TezTask) TaskFactory.get(new TezWork(), conf);
     this.leafOperatorToFollowingWork = new HashMap<Operator<?>, BaseWork>();
-    this.rootOperators = rootOperators;
     this.linkOpWithWorkMap = new HashMap<Operator<?>, List<BaseWork>>();
     this.linkWorkWithReduceSinkMap = new HashMap<BaseWork, List<ReduceSinkOperator>>();
     this.operatorWorkMap = new HashMap<Operator<?>, BaseWork>();
+    this.rootToWorkMap = new HashMap<Operator<?>, BaseWork>();
     this.mapJoinParentMap = new HashMap<MapJoinOperator, List<Operator<?>>>();
     this.linkChildOpWithDummyOp = new HashMap<Operator<?>, List<Operator<?>>>();
     this.dependencyTask = (DependencyCollectionTask)
         TaskFactory.get(new DependencyCollectionWork(), conf);
-    this.lastRootOfMultiChildOperator = new Stack<Operator<?>>();
-    this.currentBranchCount = new Stack<Integer>();
-    this.lastWorkForMultiChildOperator = new Stack<BaseWork>();
+
+    rootTasks.add(currentTask);
   }
 }
