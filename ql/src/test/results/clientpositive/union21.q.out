@@ -247,7 +247,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT key, count(1)
 FROM (
   SELECT '1' as key from src

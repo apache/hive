@@ -95,7 +95,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: DROP TABLE INPUTDDL6
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@inputddl6

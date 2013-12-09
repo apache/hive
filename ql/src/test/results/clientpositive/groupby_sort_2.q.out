@@ -124,7 +124,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
 SELECT val, count(1) FROM T1 GROUP BY val
 PREHOOK: type: QUERY

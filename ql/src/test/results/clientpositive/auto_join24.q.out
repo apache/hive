@@ -113,7 +113,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT sum(a.cnt)  FROM tst1 a JOIN tst1 b ON a.key = b.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@tst1

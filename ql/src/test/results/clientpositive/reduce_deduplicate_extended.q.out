@@ -84,7 +84,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain select key, sum(key), lower(value) from (select * from src order by key) Q1 group by key, lower(value)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select key, sum(key), lower(value) from (select * from src order by key) Q1 group by key, lower(value)
@@ -168,7 +167,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: explain select key, sum(key), (X + 1) from (select key, (value + 1) as X from src order by key) Q1 group by key, (X + 1)
 PREHOOK: type: QUERY
@@ -254,7 +252,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- mGBY-RS-rGBY-RS
 explain select key, sum(key) as value from src group by key order by key, value
 PREHOOK: type: QUERY
@@ -331,7 +328,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- RS-JOIN-mGBY-RS-rGBY
 explain select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key group by src.key, src.value
@@ -467,7 +463,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- RS-JOIN-RS
 explain select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value
 PREHOOK: type: QUERY
@@ -571,7 +566,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- mGBY-RS-rGBY-mGBY-RS-rGBY
 explain from (select key, value from src group by key, value) s select s.key group by s.key
 PREHOOK: type: QUERY
@@ -657,7 +651,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: explain select key, count(distinct value) from (select key, value from src group by key, value) t group by key
 PREHOOK: type: QUERY
@@ -748,7 +741,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select key, sum(key) from (select * from src distribute by key sort by key, value) Q1 group by key
 PREHOOK: type: QUERY
@@ -2802,7 +2794,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain select key, sum(key), lower(value) from (select * from src order by key) Q1 group by key, lower(value)
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select key, sum(key), lower(value) from (select * from src order by key) Q1 group by key, lower(value)
@@ -2886,7 +2877,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: explain select key, sum(key), (X + 1) from (select key, (value + 1) as X from src order by key) Q1 group by key, (X + 1)
 PREHOOK: type: QUERY
@@ -2972,7 +2962,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- RS-GBY-RS
 explain select key, sum(key) as value from src group by key order by key, value
 PREHOOK: type: QUERY
@@ -3037,7 +3026,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- RS-JOIN-RS-GBY
 explain select src.key, sum(src.key) FROM src JOIN src1 ON src.key = src1.key group by src.key, src.value
@@ -3159,7 +3147,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- RS-JOIN-RS
 explain select src.key, src.value FROM src JOIN src1 ON src.key = src1.key order by src.key, src.value
 PREHOOK: type: QUERY
@@ -3263,7 +3250,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- RS-GBY-RS-GBY
 explain from (select key, value from src group by key, value) s select s.key group by s.key
 PREHOOK: type: QUERY
@@ -3340,7 +3326,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: explain select key, count(distinct value) from (select key, value from src group by key, value) t group by key
 PREHOOK: type: QUERY
@@ -3422,7 +3407,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select key, sum(key) from (select * from src distribute by key sort by key, value) Q1 group by key
 PREHOOK: type: QUERY

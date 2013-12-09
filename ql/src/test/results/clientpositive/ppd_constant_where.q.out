@@ -61,7 +61,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT COUNT(*) FROM srcpart WHERE ds = '2008-04-08' and 'a' = 'a'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart

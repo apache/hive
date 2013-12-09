@@ -134,7 +134,6 @@ STAGE PLANS:
   Stage: Stage-3
     Stats-Aggr Operator
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1 
 SELECT subq.key1, z.value
 FROM

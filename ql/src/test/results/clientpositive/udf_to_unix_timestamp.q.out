@@ -130,7 +130,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain select * from (select * from src) a where to_unix_timestamp(a.key) > 10
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from (select * from src) a where to_unix_timestamp(a.key) > 10
@@ -171,5 +170,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 

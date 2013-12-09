@@ -209,7 +209,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select key, value, ds from push_or where ds='2000-04-09' or key=5 order by key, ds
 PREHOOK: type: QUERY
 PREHOOK: Input: default@push_or

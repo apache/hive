@@ -1538,9 +1538,9 @@ public class Driver implements CommandProcessor {
           numRows++;
           res.add(row);
         }
+        row = null;
       } catch (IOException e) {
         console.printError("FAILED: Unexpected IO exception : " + e.getMessage());
-        res = null;
         return false;
       }
 

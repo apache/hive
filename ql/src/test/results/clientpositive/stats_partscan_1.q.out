@@ -128,7 +128,6 @@ STAGE PLANS:
   Stage: Stage-1
     Stats-Aggr Operator
 
-
 PREHOOK: query: analyze table analyze_srcpart_partial_scan PARTITION(ds='2008-04-08',hr=11) compute statistics partialscan
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_srcpart_partial_scan

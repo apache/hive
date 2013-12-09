@@ -98,7 +98,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: create table summary as select *, sum(key), count(value) from src
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -231,7 +230,6 @@ STAGE PLANS:
 
   Stage: Stage-2
     Stats-Aggr Operator
-
 
 PREHOOK: query: create table x4 as select *, rank() over(partition by key order by value) as rr from src1
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -415,7 +413,6 @@ STAGE PLANS:
   Stage: Stage-3
     Stats-Aggr Operator
 
-
 PREHOOK: query: create table x5 as select *, lead(key,1) over(partition by key order by value) as lead1 from src limit 20
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -570,7 +567,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: create table x6 as select * from (select *, max(key) from src1) a
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src1
@@ -705,7 +701,6 @@ STAGE PLANS:
 
   Stage: Stage-2
     Stats-Aggr Operator
-
 
 PREHOOK: query: create table x7 as select * from (select * from src group by key) a
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -1153,7 +1148,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: create table x8 as select * from (select * from src group by key having key < 9) a
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -1310,7 +1304,6 @@ STAGE PLANS:
 
   Stage: Stage-2
     Stats-Aggr Operator
-
 
 PREHOOK: query: create table x9 as select * from (select max(value),key from src group by key having key < 9 AND max(value) IS NOT NULL) a
 PREHOOK: type: CREATETABLE_AS_SELECT

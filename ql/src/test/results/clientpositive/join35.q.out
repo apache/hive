@@ -936,7 +936,6 @@ STAGE PLANS:
               GatherStats: false
               MultiFileSpray: false
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1
 SELECT x.key, x.value, subq1.cnt
 FROM 

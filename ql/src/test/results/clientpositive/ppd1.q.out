@@ -39,7 +39,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT src.key as c3 from src where src.key > '2'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -469,7 +468,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT src.key as c3 from src where src.key > '2'
 PREHOOK: type: QUERY

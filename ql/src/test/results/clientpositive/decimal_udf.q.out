@@ -45,7 +45,6 @@ STAGE PLANS:
             outputColumnNames: _col0
             ListSink
 
-
 PREHOOK: query: SELECT key + key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf
@@ -115,7 +114,6 @@ STAGE PLANS:
                   type: decimal(21,10)
             outputColumnNames: _col0
             ListSink
-
 
 PREHOOK: query: SELECT key + value FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -187,7 +185,6 @@ STAGE PLANS:
             outputColumnNames: _col0
             ListSink
 
-
 PREHOOK: query: SELECT key + (value/2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf
@@ -257,7 +254,6 @@ STAGE PLANS:
                   type: double
             outputColumnNames: _col0
             ListSink
-
 
 PREHOOK: query: SELECT key + '1.0' FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -331,7 +327,6 @@ STAGE PLANS:
             outputColumnNames: _col0
             ListSink
 
-
 PREHOOK: query: SELECT key - key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf
@@ -401,7 +396,6 @@ STAGE PLANS:
                   type: decimal(21,10)
             outputColumnNames: _col0
             ListSink
-
 
 PREHOOK: query: SELECT key - value FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -473,7 +467,6 @@ STAGE PLANS:
             outputColumnNames: _col0
             ListSink
 
-
 PREHOOK: query: SELECT key - (value/2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf
@@ -543,7 +536,6 @@ STAGE PLANS:
                   type: double
             outputColumnNames: _col0
             ListSink
-
 
 PREHOOK: query: SELECT key - '1.0' FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -617,7 +609,6 @@ STAGE PLANS:
             outputColumnNames: _col0
             ListSink
 
-
 PREHOOK: query: SELECT key * key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf
@@ -687,7 +678,6 @@ STAGE PLANS:
                   type: decimal(31,10)
             outputColumnNames: _col0
             ListSink
-
 
 PREHOOK: query: SELECT key * value FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -759,7 +749,6 @@ STAGE PLANS:
             outputColumnNames: _col0
             ListSink
 
-
 PREHOOK: query: SELECT key * (value/2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf
@@ -829,7 +818,6 @@ STAGE PLANS:
                   type: double
             outputColumnNames: _col0
             ListSink
-
 
 PREHOOK: query: SELECT key * '2.0' FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -904,7 +892,6 @@ STAGE PLANS:
             Limit
               ListSink
 
-
 PREHOOK: query: SELECT key / 0 FROM DECIMAL_UDF limit 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf
@@ -938,7 +925,6 @@ STAGE PLANS:
             outputColumnNames: _col0
             Limit
               ListSink
-
 
 PREHOOK: query: SELECT key / NULL FROM DECIMAL_UDF limit 1
 PREHOOK: type: QUERY
@@ -976,7 +962,6 @@ STAGE PLANS:
                     type: decimal(38,24)
               outputColumnNames: _col0
               ListSink
-
 
 PREHOOK: query: SELECT key / key FROM DECIMAL_UDF WHERE key is not null and key <> 0
 PREHOOK: type: QUERY
@@ -1048,7 +1033,6 @@ STAGE PLANS:
               outputColumnNames: _col0
               ListSink
 
-
 PREHOOK: query: SELECT key / value FROM DECIMAL_UDF WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf
@@ -1109,7 +1093,6 @@ STAGE PLANS:
               outputColumnNames: _col0
               ListSink
 
-
 PREHOOK: query: SELECT key / (value/2) FROM DECIMAL_UDF  WHERE value is not null and value <> 0
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf
@@ -1165,7 +1148,6 @@ STAGE PLANS:
                   type: double
             outputColumnNames: _col0
             ListSink
-
 
 PREHOOK: query: SELECT key / '2.0' FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -1238,7 +1220,6 @@ STAGE PLANS:
                   type: decimal(38,18)
             outputColumnNames: _col0
             ListSink
-
 
 PREHOOK: query: SELECT abs(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -1402,7 +1383,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT value, sum(key) / count(key), avg(key) FROM DECIMAL_UDF GROUP BY value ORDER BY value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf
@@ -1453,7 +1433,6 @@ STAGE PLANS:
                   type: decimal(20,10)
             outputColumnNames: _col0
             ListSink
-
 
 PREHOOK: query: SELECT -key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -1527,7 +1506,6 @@ STAGE PLANS:
             outputColumnNames: _col0
             ListSink
 
-
 PREHOOK: query: SELECT +key FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf
@@ -1599,7 +1577,6 @@ STAGE PLANS:
                   type: decimal(11,0)
             outputColumnNames: _col0
             ListSink
-
 
 PREHOOK: query: SELECT CEIL(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -1673,7 +1650,6 @@ STAGE PLANS:
             outputColumnNames: _col0
             ListSink
 
-
 PREHOOK: query: SELECT FLOOR(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf
@@ -1745,7 +1721,6 @@ STAGE PLANS:
                   type: decimal(13,2)
             outputColumnNames: _col0
             ListSink
-
 
 PREHOOK: query: SELECT ROUND(key, 2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -1819,7 +1794,6 @@ STAGE PLANS:
             outputColumnNames: _col0
             ListSink
 
-
 PREHOOK: query: SELECT POWER(key, 2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf
@@ -1891,7 +1865,6 @@ STAGE PLANS:
                   type: decimal(22,12)
             outputColumnNames: _col0
             ListSink
-
 
 PREHOOK: query: SELECT (key + 1) % (key / 2) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -2022,7 +1995,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT value, stddev(key), variance(key) FROM DECIMAL_UDF GROUP BY value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf
@@ -2131,7 +2103,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT value, stddev_samp(key), var_samp(key) FROM DECIMAL_UDF GROUP BY value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf
@@ -2218,7 +2189,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT histogram_numeric(key, 3) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf
@@ -2288,7 +2258,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT MIN(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
@@ -2360,7 +2329,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT MAX(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_udf
@@ -2430,7 +2398,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT COUNT(key) FROM DECIMAL_UDF
 PREHOOK: type: QUERY

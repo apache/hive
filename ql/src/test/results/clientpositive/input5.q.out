@@ -94,7 +94,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: FROM (
   FROM src_thrift
   SELECT TRANSFORM(src_thrift.lint, src_thrift.lintstring)

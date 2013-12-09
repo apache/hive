@@ -197,7 +197,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: insert overwrite table union_subq_union 
 select * from (
   select key, value from src 

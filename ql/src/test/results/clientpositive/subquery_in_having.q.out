@@ -233,7 +233,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select s1.key, count(*) from src s1 where s1.key > '9' group by s1.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -531,7 +530,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- agg, non corr
 explain
 select p_mfgr, avg(p_size)
@@ -751,7 +749,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- join on agg
 select b.key, min(b.value)
@@ -1077,7 +1074,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- Plan is:
 -- Stage  5: group by on sq2:src (subquery in having)
@@ -1429,7 +1425,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- non agg, non corr, windowing
 explain
 select p_mfgr, p_name, avg(p_size) 
@@ -1695,5 +1690,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 

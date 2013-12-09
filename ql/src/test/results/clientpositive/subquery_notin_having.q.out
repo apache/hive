@@ -189,7 +189,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- non agg, corr
 explain
 select b.p_mfgr, min(p_retailprice) 
@@ -425,7 +424,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select b.p_mfgr, min(p_retailprice) 
 from part b 
@@ -670,7 +668,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select b.p_mfgr, min(p_retailprice) 
 from part b 

@@ -753,7 +753,6 @@ STAGE PLANS:
               GatherStats: false
               MultiFileSpray: false
 
-
 PREHOOK: query: insert overwrite table dst_union22 partition (ds='2')
 select * from
 (

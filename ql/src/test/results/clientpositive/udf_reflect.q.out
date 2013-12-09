@@ -73,7 +73,6 @@ STAGE PLANS:
                 numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
 
-
 PREHOOK: query: SELECT reflect("java.lang.String", "valueOf", 1),
        reflect("java.lang.String", "isEmpty"),
        reflect("java.lang.Math", "max", 2, 3),

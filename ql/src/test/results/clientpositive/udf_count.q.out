@@ -71,7 +71,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT count(key) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -145,7 +144,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT count(DISTINCT key) FROM src
 PREHOOK: type: QUERY
@@ -227,7 +225,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT count(DISTINCT key, value) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -292,7 +289,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT count(*) FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -356,7 +352,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT count(1) FROM src
 PREHOOK: type: QUERY

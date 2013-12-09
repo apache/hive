@@ -92,7 +92,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: FROM 
 (SELECT src.* FROM src) x
 JOIN 

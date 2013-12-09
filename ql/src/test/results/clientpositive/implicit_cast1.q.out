@@ -50,7 +50,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT implicit_test1.*
 FROM implicit_test1
 WHERE implicit_test1.a <> 0

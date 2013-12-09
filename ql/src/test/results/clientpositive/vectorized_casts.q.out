@@ -302,7 +302,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select 
 -- to boolean
    cast (ctinyint as boolean)

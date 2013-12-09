@@ -49,7 +49,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: FROM src_thrift
 SELECT src_thrift.mstringstring['key_9'], lintstring.myint
 WHERE src_thrift.mstringstring['key_9'] IS NOT NULL
@@ -126,7 +125,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: FROM src_thrift
 SELECT src_thrift.mstringstring['key_9'], lintstring.myint

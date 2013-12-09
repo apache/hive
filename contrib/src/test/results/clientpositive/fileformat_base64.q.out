@@ -30,7 +30,6 @@ STAGE PLANS:
           name: base64_test
           isExternal: false
 
-
 PREHOOK: query: CREATE TABLE base64_test(key INT, value STRING) STORED AS
   INPUTFORMAT 'org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.hive.contrib.fileformat.base64.Base64TextOutputFormat'

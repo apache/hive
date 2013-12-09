@@ -228,7 +228,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT a.*, b.* FROM T1 a JOIN T2 b ON a.key = b.key
 ORDER BY a.key, b.key, a.val, b.val
 PREHOOK: type: QUERY

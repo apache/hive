@@ -51,7 +51,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 1
 
-
 PREHOOK: query: SELECT in_file("303", "../../data/files/test2.dat"),
        in_file("304", "../../data/files/test2.dat"),
        in_file(CAST(NULL AS STRING), "../../data/files/test2.dat")

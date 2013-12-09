@@ -143,7 +143,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: from src a
 insert overwrite table src_x1
 select key,"" where a.key > 0 AND a.key < 50

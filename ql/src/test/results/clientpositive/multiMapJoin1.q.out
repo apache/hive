@@ -302,7 +302,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
  bigTbl.value as value2 FROM bigTbl JOIN smallTbl1 
@@ -486,7 +485,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
@@ -692,7 +690,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select count(*) FROM
 (select bigTbl.key as key, bigTbl.value as value1,
@@ -1869,7 +1866,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
        SUM(HASH(join3.key3)),
@@ -2316,7 +2312,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
@@ -2788,7 +2783,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),
@@ -3916,7 +3910,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT SUM(HASH(join3.key1)),
        SUM(HASH(join3.key2)),

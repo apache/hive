@@ -39,7 +39,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT c1 FROM (select value as c1, key as c2 from src) x where c2 < 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

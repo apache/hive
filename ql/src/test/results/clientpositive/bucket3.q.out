@@ -172,7 +172,6 @@ STAGE PLANS:
     Stats-Aggr Operator
 #### A masked pattern was here ####
 
-
 PREHOOK: query: insert overwrite table bucket3_1 partition (ds='1')
 select * from src
 PREHOOK: type: QUERY
@@ -262,7 +261,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select * from bucket3_1 tablesample (bucket 1 out of 2) s where ds = '1' order by key
 PREHOOK: type: QUERY

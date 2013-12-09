@@ -34,7 +34,6 @@ STAGE PLANS:
             Limit
               ListSink
 
-
 PREHOOK: query: select str_to_map('a=1,b=2,c=3',',','=')['a'] from src limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -71,7 +70,6 @@ STAGE PLANS:
             Limit
               ListSink
 
-
 PREHOOK: query: select str_to_map('a:1,b:2,c:3') from src limit 3
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -107,7 +105,6 @@ STAGE PLANS:
             outputColumnNames: _col0
             Limit
               ListSink
-
 
 PREHOOK: query: select str_to_map('a:1,b:2,c:3',',',':') from src limit 3
 PREHOOK: type: QUERY
@@ -170,7 +167,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 3
-
 
 PREHOOK: query: select str_to_map(t.ss,',',':')['a']
 from (select transform('a:1,b:2,c:3') using 'cat' as (ss) from src) t

@@ -482,7 +482,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE bucketed_table SELECT key, value
 INSERT OVERWRITE TABLE unbucketed_table SELECT key, value cluster by key

@@ -26,7 +26,6 @@ STAGE PLANS:
           name: dest1
           isExternal: false
 
-
 PREHOOK: query: CREATE TABLE dest1(key INT, value STRING) STORED AS
   INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat'
   OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'

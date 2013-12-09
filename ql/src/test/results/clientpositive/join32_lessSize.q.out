@@ -405,7 +405,6 @@ STAGE PLANS:
     Stats-Aggr Operator
 #### A masked pattern was here ####
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1
 SELECT x.key, z.value, y.value
 FROM src1 x JOIN src y ON (x.key = y.key) 
@@ -1611,7 +1610,6 @@ STAGE PLANS:
               GatherStats: true
               MultiFileSpray: false
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1
 SELECT x.key, z.value, y.value
 FROM src w JOIN src1 x ON (x.value = w.value) 
@@ -2142,7 +2140,6 @@ STAGE PLANS:
   Stage: Stage-3
     Stats-Aggr Operator
 #### A masked pattern was here ####
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j2
 SELECT res.key, z.value, res.value
@@ -2696,7 +2693,6 @@ STAGE PLANS:
     Stats-Aggr Operator
 #### A masked pattern was here ####
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j2
 SELECT res.key, z.value, res.value
 FROM (select x.key, x.value from src1 x LEFT OUTER JOIN src y ON (x.key = y.key)) res 
@@ -3007,7 +3003,6 @@ STAGE PLANS:
   Stage: Stage-3
     Stats-Aggr Operator
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j2
 SELECT res.key, x.value, res.value  
 FROM (select x.key, x.value from src1 x JOIN src y ON (x.key = y.key)) res 
@@ -3314,7 +3309,6 @@ STAGE PLANS:
 
   Stage: Stage-3
     Stats-Aggr Operator
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j2
 SELECT res.key, y.value, res.value

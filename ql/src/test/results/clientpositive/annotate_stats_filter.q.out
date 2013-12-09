@@ -85,7 +85,6 @@ STAGE PLANS:
                 numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
 
-
 PREHOOK: query: -- column stats are not COMPLETE, so stats are not updated
 -- numRows: 8 rawDataSize: 796
 explain extended select * from loc_orc where state='OH'
@@ -210,7 +209,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: analyze table loc_orc compute statistics for columns state,locid,zip,year
 PREHOOK: type: QUERY
@@ -349,7 +347,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- not equals comparison shouldn't affect number of rows
 -- numRows: 8 rawDataSize: 804
 explain extended select * from loc_orc where state!='OH'
@@ -475,7 +472,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain extended select * from loc_orc where state<>'OH'
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select * from loc_orc where state<>'OH'
@@ -596,7 +592,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- nulls are treated as constant equality comparison
 -- numRows: 1 rawDataSize: 102
@@ -723,7 +718,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- numRows: 1 rawDataSize: 102
 explain extended select * from loc_orc where !(zip is not null)
 PREHOOK: type: QUERY
@@ -846,7 +840,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- not nulls are treated as inverse of nulls
 -- numRows: 7 rawDataSize: 702
@@ -973,7 +966,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- numRows: 7 rawDataSize: 702
 explain extended select * from loc_orc where !(zip is null)
 PREHOOK: type: QUERY
@@ -1096,7 +1088,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- NOT evaluation. true will pass all rows, false will not pass any rows
 -- numRows: 8 rawDataSize: 804
@@ -1223,7 +1214,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- numRows: 0 rawDataSize: 0
 explain extended select * from loc_orc where !true
 PREHOOK: type: QUERY
@@ -1346,7 +1336,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- OR evaluation. 1 row for OH and 1 row for CA
 -- numRows: 2 rawDataSize: 204
@@ -1473,7 +1462,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- AND evaluation. cascadingly apply rules. 8/2 = 4/2 = 2
 -- numRows: 2 rawDataSize: 204
 explain extended select * from loc_orc where year=2001 and year is null
@@ -1599,7 +1587,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- numRows: 1 rawDataSize: 102
 explain extended select * from loc_orc where year=2001 and state='OH' and state='FL'
 PREHOOK: type: QUERY
@@ -1722,7 +1709,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- AND and OR together. left expr will yield 1 row and right will yield 1 row
 -- numRows: 3 rawDataSize: 306
@@ -1849,7 +1835,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- AND and OR together. left expr will yield 8 rows and right will yield 1 row
 -- numRows: 1 rawDataSize: 102
 explain extended select * from loc_orc where (year=2001 or year is null) and (state='CA')
@@ -1974,7 +1959,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- all inequality conditions rows/3 is the rules
 -- numRows: 2 rawDataSize: 204
@@ -2101,7 +2085,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain extended select * from loc_orc where locid > 30
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select * from loc_orc where locid > 30
@@ -2222,7 +2205,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: explain extended select * from loc_orc where locid <= 30
 PREHOOK: type: QUERY
@@ -2345,7 +2327,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain extended select * from loc_orc where locid >= 30
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select * from loc_orc where locid >= 30
@@ -2466,5 +2447,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 

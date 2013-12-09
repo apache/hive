@@ -82,7 +82,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 20
 
-
 PREHOOK: query: -- negative, RS + filter
 explain select value, sum(key) as sum from src group by value having sum > 100 limit 20
 PREHOOK: type: QUERY
@@ -164,7 +163,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
-
 
 PREHOOK: query: -- negative, RS + lateral view
 explain select key, L.* from (select * from src order by key) a lateral view explode(array(value, value)) L as v limit 10
@@ -257,7 +255,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
-
 
 PREHOOK: query: -- negative, RS + forward + multi-groupby
 CREATE TABLE dest_2(key STRING, c1 INT)
@@ -426,5 +423,4 @@ STAGE PLANS:
 
   Stage: Stage-5
     Stats-Aggr Operator
-
 

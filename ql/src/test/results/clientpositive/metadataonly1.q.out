@@ -91,7 +91,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select max(ds) from TEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test1
@@ -236,7 +235,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select max(ds) from TEST1
 PREHOOK: type: QUERY
@@ -384,7 +382,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select count(distinct ds) from TEST1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test1
@@ -524,7 +521,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select count(ds) from TEST1
 PREHOOK: type: QUERY
@@ -962,7 +958,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select count(*) from TEST1 a2 join (select max(ds) m from TEST1) b on a2.ds=b.m
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test1
@@ -1230,7 +1225,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select ds, count(distinct hr) from TEST2 group by ds
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test2
@@ -1468,7 +1462,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select ds, count(hr) from TEST2 group by ds
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test2
@@ -1649,7 +1642,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select max(ds) from TEST1
 PREHOOK: type: QUERY
@@ -2020,7 +2012,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select ds, count(distinct hr) from TEST2 group by ds
 PREHOOK: type: QUERY

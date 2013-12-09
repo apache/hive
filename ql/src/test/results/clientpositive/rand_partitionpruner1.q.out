@@ -111,7 +111,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select * from src where rand(1) < 0.1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

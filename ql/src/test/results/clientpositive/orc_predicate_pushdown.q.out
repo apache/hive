@@ -201,7 +201,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
 PREHOOK: type: QUERY
 POSTHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
@@ -271,7 +270,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- all the following queries have predicates which are pushed down to table scan operator if
 -- hive.optimize.index.filter is set to true. the explain plan should show filter expression
@@ -493,7 +491,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: EXPLAIN SELECT SUM(HASH(t)) FROM orc_pred
   WHERE t IS NOT NULL
   AND t < 0
@@ -577,7 +574,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT t, s FROM orc_pred
   WHERE t <=> -1
   AND s IS NOT NULL
@@ -708,7 +704,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   WHERE t <=> -1
@@ -785,7 +780,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT t, s FROM orc_pred
   WHERE s IS NOT NULL
@@ -927,7 +921,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: EXPLAIN SELECT t, s FROM orc_pred
   WHERE s IS NOT NULL
@@ -1008,7 +1001,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT t, si, d, s FROM orc_pred
   WHERE d >= ROUND(9.99)
@@ -1181,7 +1173,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 3
-
 
 PREHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   WHERE d >= ROUND(9.99)
@@ -1277,7 +1268,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 3
-
 
 PREHOOK: query: SELECT t, si, d, s FROM orc_pred
   WHERE t > 10
@@ -1490,7 +1480,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 3
-
 
 PREHOOK: query: EXPLAIN SELECT t, si, d, s FROM orc_pred
   WHERE t > 10
@@ -1622,5 +1611,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 3
-
 

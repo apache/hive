@@ -48,7 +48,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: show grant user hive_test on table test_user
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test on table test_user
@@ -114,7 +113,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: show grant user hive_test on table test_user
 PREHOOK: type: SHOW_GRANT

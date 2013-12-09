@@ -370,7 +370,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: FROM 
   src a
  RIGHT OUTER JOIN 
@@ -692,7 +691,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: FROM 
   srcpart a
  RIGHT OUTER JOIN 
@@ -1009,7 +1007,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: FROM 
   src a
@@ -1415,7 +1412,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: FROM 
   srcpart a

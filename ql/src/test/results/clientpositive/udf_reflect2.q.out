@@ -250,7 +250,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 5
 
-
 PREHOOK: query: SELECT key,
        reflect2(key,   "byteValue"),
        reflect2(key,   "shortValue"),

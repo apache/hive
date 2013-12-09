@@ -40,7 +40,6 @@ STAGE PLANS:
             outputColumnNames: _col0
             ListSink
 
-
 PREHOOK: query: FROM src1 SELECT find_in_set(src1.key,concat(src1.key,',',src1.value))
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src1

@@ -63,7 +63,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select * from hbase_ppd_keyrange where key > 8 and key < 21
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_ppd_keyrange
@@ -125,7 +124,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select * from hbase_ppd_keyrange where key > 8 and key <= 17
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_ppd_keyrange
@@ -184,7 +182,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select * from hbase_ppd_keyrange where key > 8 and key <= 17 and value like '%11%'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@hbase_ppd_keyrange
@@ -234,7 +231,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select * from hbase_ppd_keyrange where key >=9  and key < 17 and key = 11
 PREHOOK: type: QUERY

@@ -66,7 +66,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 2
 
-
 PREHOOK: query: SELECT myTab.* from src LATERAL VIEW explode(map('key1', 100, 'key2', 200)) myTab limit 2
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -114,7 +113,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 2
-
 
 PREHOOK: query: SELECT explode(map('key1', 100, 'key2', 200)) from src limit 2
 PREHOOK: type: QUERY
@@ -337,7 +335,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select * from lv_noalias a join lv_noalias b on a.key=b.key
 PREHOOK: type: QUERY

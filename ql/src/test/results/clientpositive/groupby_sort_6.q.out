@@ -150,7 +150,6 @@ STAGE PLANS:
     Stats-Aggr Operator
 #### A masked pattern was here ####
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 where ds = '1' GROUP BY key
 PREHOOK: type: QUERY
@@ -335,7 +334,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 #### A masked pattern was here ####
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 where ds = '1' GROUP BY key
@@ -559,7 +557,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 #### A masked pattern was here ####
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
 SELECT key, count(1) FROM T1 where ds = '2' GROUP BY key

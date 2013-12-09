@@ -113,7 +113,6 @@ STAGE PLANS:
           Column Types: string, int, float
           Table: UserVisits_web_text_none
 
-
 PREHOOK: query: explain extended
 analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
 PREHOOK: type: QUERY
@@ -259,7 +258,6 @@ STAGE PLANS:
           Table: UserVisits_web_text_none
           Is Table Level Stats: true
 
-
 PREHOOK: query: analyze table UserVisits_web_text_none compute statistics for columns sourceIP, avgTimeOnSite, adRevenue
 PREHOOK: type: QUERY
 PREHOOK: Input: default@uservisits_web_text_none
@@ -380,7 +378,6 @@ STAGE PLANS:
           Columns: a, b, c, d, e
           Column Types: int, double, string, boolean, binary
           Table: empty_tab
-
 
 PREHOOK: query: analyze table empty_tab compute statistics for columns a,b,c,d,e
 PREHOOK: type: QUERY

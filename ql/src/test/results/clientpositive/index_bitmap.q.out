@@ -17,7 +17,6 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
 
-
 PREHOOK: query: CREATE INDEX srcpart_index_proj ON TABLE srcpart(key) as 'BITMAP' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX
 POSTHOOK: query: CREATE INDEX srcpart_index_proj ON TABLE srcpart(key) as 'BITMAP' WITH DEFERRED REBUILD
@@ -177,7 +176,6 @@ STAGE DEPENDENCIES:
 
 STAGE PLANS:
   Stage: Stage-0
-
 
 PREHOOK: query: CREATE INDEX srcpart_index_proj ON TABLE srcpart(key) as 'BITMAP' WITH DEFERRED REBUILD
 PREHOOK: type: CREATEINDEX

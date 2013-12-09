@@ -132,7 +132,6 @@ STAGE PLANS:
   Stage: Stage-3
     Stats-Aggr Operator
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT a.key, a.key2, concat(a.value, b.value) 
 FROM test_table1 a JOIN test_table2 b 
@@ -312,7 +311,6 @@ STAGE PLANS:
 
   Stage: Stage-2
     Stats-Aggr Operator
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT subq1.key, subq1.key2, subq1.value from
@@ -696,7 +694,6 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: default.test_table3
 
-
 PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
 -- This should be a map-reduce operation
 EXPLAIN
@@ -981,7 +978,6 @@ STAGE PLANS:
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: default.test_table3
 
-
 PREHOOK: query: -- Insert data into the bucketed table by selecting from another bucketed table
 -- This should be a map-only operation
 EXPLAIN
@@ -1081,7 +1077,6 @@ STAGE PLANS:
 
   Stage: Stage-3
     Stats-Aggr Operator
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT subq2.key, subq2.key2, subq2.value from
@@ -1304,7 +1299,6 @@ STAGE PLANS:
 
   Stage: Stage-3
     Stats-Aggr Operator
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_table3 PARTITION (ds = '1')
 SELECT subq2.k2, subq2.k1, subq2.value from
@@ -1754,5 +1748,4 @@ STAGE PLANS:
                 output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                 serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
                 name: default.test_table4
-
 

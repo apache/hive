@@ -132,7 +132,6 @@ STAGE PLANS:
           name: priceview
           original text: SELECT items.id, items.info['price'] FROM items
 
-
 PREHOOK: query: CREATE VIEW priceview AS SELECT items.id, items.info['price'] FROM items
 PREHOOK: type: CREATEVIEW
 POSTHOOK: query: CREATE VIEW priceview AS SELECT items.id, items.info['price'] FROM items

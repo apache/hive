@@ -219,7 +219,6 @@ STAGE PLANS:
   Stage: Stage-6
     Stats-Aggr Operator
 
-
 PREHOOK: query: FROM INPUT
 INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
 INSERT OVERWRITE TABLE dest2 SELECT INPUT.key, sum(substr(INPUT.value,5)), sum(distinct substr(INPUT.value,5))   GROUP BY INPUT.key
@@ -513,7 +512,6 @@ STAGE PLANS:
 
   Stage: Stage-6
     Stats-Aggr Operator
-
 
 PREHOOK: query: FROM INPUT
 INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, count(substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key
@@ -834,7 +832,6 @@ STAGE PLANS:
 
   Stage: Stage-6
     Stats-Aggr Operator
-
 
 PREHOOK: query: FROM INPUT
 INSERT OVERWRITE TABLE dest1 SELECT INPUT.key, sum(distinct substr(INPUT.value,5)), count(distinct substr(INPUT.value,5)) GROUP BY INPUT.key

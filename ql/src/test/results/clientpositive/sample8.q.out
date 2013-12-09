@@ -411,7 +411,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT s.key, s.value
 FROM srcpart TABLESAMPLE (BUCKET 1 OUT OF 1 ON key) s
 JOIN srcpart TABLESAMPLE (BUCKET 1 OUT OF 10 ON key) t

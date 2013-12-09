@@ -43,7 +43,6 @@ STAGE PLANS:
             outputColumnNames: _col0, _col1, _col2, _col3
             ListSink
 
-
 PREHOOK: query: SELECT struct(1), struct(1, "a"), struct(1, "b", 1.5).col1, struct(1, struct("a", 1.5)).col2.col1
 FROM src tablesample (1 rows)
 PREHOOK: type: QUERY

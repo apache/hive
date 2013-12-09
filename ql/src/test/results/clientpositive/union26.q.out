@@ -286,7 +286,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT 
 count(1) as counts,
 key,

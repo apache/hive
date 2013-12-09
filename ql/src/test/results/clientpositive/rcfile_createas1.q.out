@@ -136,7 +136,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: CREATE TABLE rcfile_createas1b
     STORED AS RCFILE AS 
         SELECT key, value, PMOD(HASH(key), 50) as part

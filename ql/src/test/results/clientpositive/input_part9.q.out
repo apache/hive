@@ -182,7 +182,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT x.* FROM SRCPART x WHERE key IS NOT NULL AND ds = '2008-04-08' order by x.key, x.hr
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart

@@ -730,7 +730,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE test_table PARTITION (ds = '2008-04-08', hr)
 SELECT key, value, IF (key % 100 == 0, '11', '12') FROM
 (SELECT key, COUNT(*) AS value FROM srcpart

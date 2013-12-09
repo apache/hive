@@ -108,7 +108,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select 
    substr(cstring1, 1, 2)
   ,substr(cstring1, 2)

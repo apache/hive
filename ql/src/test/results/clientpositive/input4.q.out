@@ -35,7 +35,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/kv1.txt' INTO TABLE INPUT4
 PREHOOK: type: LOAD
 PREHOOK: Output: default@input4

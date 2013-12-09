@@ -55,7 +55,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT lower('AbC 123'), upper('AbC 123') FROM src WHERE key = 86
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

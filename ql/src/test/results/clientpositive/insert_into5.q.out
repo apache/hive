@@ -76,7 +76,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: INSERT INTO TABLE insert_into5a SELECT 1, 'one' FROM src LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -199,7 +198,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: INSERT INTO TABLE insert_into5a SELECT * FROM insert_into5a
 PREHOOK: type: QUERY
@@ -333,7 +331,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: INSERT INTO TABLE insert_into5b PARTITION (ds='1') SELECT * FROM insert_into5a
 PREHOOK: type: QUERY
@@ -475,7 +472,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: INSERT INTO TABLE insert_into5b PARTITION (ds='1') 
   SELECT key, value FROM insert_into5b

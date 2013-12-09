@@ -266,7 +266,6 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-
 PREHOOK: query: FROM (
   SELECT key, count(1) as values from inputTbl1 group by key
   UNION ALL

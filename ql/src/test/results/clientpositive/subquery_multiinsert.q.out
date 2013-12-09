@@ -281,7 +281,6 @@ STAGE PLANS:
   Stage: Stage-6
     Stats-Aggr Operator
 
-
 PREHOOK: query: from src b 
 INSERT OVERWRITE TABLE src_4 
   select * 

@@ -130,5 +130,4 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 FAILED: SemanticException [Error 10135]: Sort merge bucketed join could not be performed. If you really want to perform the operation, either set hive.optimize.bucketmapjoin.sortedmerge=false, or set hive.enforce.sortmergebucketmapjoin=false.

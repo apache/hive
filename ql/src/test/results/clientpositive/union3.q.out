@@ -322,7 +322,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: CREATE TABLE union_out (id int)
 PREHOOK: type: CREATETABLE
 POSTHOOK: query: CREATE TABLE union_out (id int)

@@ -198,7 +198,6 @@ STAGE PLANS:
   Stage: Stage-6
     Stats-Aggr Operator
 
-
 PREHOOK: query: from src
 insert overwrite table dest1 select key, count(distinct value) group by key
 insert overwrite table dest2 select key+key, count(distinct value) group by key+key
@@ -440,7 +439,6 @@ STAGE PLANS:
 
   Stage: Stage-5
     Stats-Aggr Operator
-
 
 PREHOOK: query: from src
 insert overwrite table dest1 select key, count(distinct value) group by key

@@ -55,7 +55,6 @@ STAGE PLANS:
                 numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
             ListSink
 
-
 PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/emp.txt' OVERWRITE INTO TABLE emp_staging
 PREHOOK: type: LOAD
 PREHOOK: Output: default@emp_staging
@@ -111,7 +110,6 @@ STAGE PLANS:
                 numRows: 3 dataSize: 349 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
 
-
 PREHOOK: query: -- table level analyze statistics
 analyze table emp_orc compute statistics
 PREHOOK: type: QUERY
@@ -159,7 +157,6 @@ STAGE PLANS:
                 numRows: 6 dataSize: 349 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
 
-
 PREHOOK: query: -- column level partial statistics
 analyze table emp_orc compute statistics for columns deptid
 PREHOOK: type: QUERY
@@ -206,7 +203,6 @@ STAGE PLANS:
             Statistics:
                 numRows: 6 dataSize: 349 basicStatsState: COMPLETE colStatsState: PARTIAL
             ListSink
-
 
 PREHOOK: query: -- all selected columns have statistics
 -- basicStatState: COMPLETE colStatState: COMPLETE
@@ -318,7 +314,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- column level complete statistics
 analyze table emp_orc compute statistics for columns lastname,deptid
 PREHOOK: type: QUERY
@@ -365,7 +360,6 @@ STAGE PLANS:
             Statistics:
                 numRows: 6 dataSize: 349 basicStatsState: COMPLETE colStatsState: COMPLETE
             ListSink
-
 
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: COMPLETE
 explain extended select lastname from emp_orc
@@ -475,7 +469,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: COMPLETE
 explain extended select deptid from emp_orc
 PREHOOK: type: QUERY
@@ -583,7 +576,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: COMPLETE
 explain extended select lastname,deptid from emp_orc
@@ -694,5 +686,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 

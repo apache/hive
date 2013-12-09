@@ -73,7 +73,6 @@ STAGE PLANS:
                 numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: COMPLETE
             ListSink
 
-
 PREHOOK: query: SELECT java_method("java.lang.String", "valueOf", 1),
        java_method("java.lang.String", "isEmpty"),
        java_method("java.lang.Math", "max", 2, 3),
