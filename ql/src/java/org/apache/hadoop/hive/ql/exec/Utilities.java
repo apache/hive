@@ -1623,27 +1623,20 @@ public final class Utilities {
     FileSystem fs = (new Path(specPath)).getFileSystem(hconf);
     Path tmpPath = Utilities.toTempPath(specPath);
     Path taskTmpPath = Utilities.toTaskTempPath(specPath);
-    Path intermediatePath = new Path(tmpPath.getParent(), tmpPath.getName()
-        + ".intermediate");
     Path finalPath = new Path(specPath);
     if (success) {
       if (fs.exists(tmpPath)) {
-        // Step1: rename tmp output folder to intermediate path. After this
-        // point, updates from speculative tasks still writing to tmpPath
-        // will not appear in finalPath.
-        log.info("Moving tmp dir: " + tmpPath + " to: " + intermediatePath);
-        Utilities.rename(fs, tmpPath, intermediatePath);
-        // Step2: remove any tmp file or double-committed output files
+        // remove any tmp file or double-committed output files
         ArrayList<String> emptyBuckets =
-            Utilities.removeTempOrDuplicateFiles(fs, intermediatePath, dpCtx);
+            Utilities.removeTempOrDuplicateFiles(fs, tmpPath, dpCtx);
         // create empty buckets if necessary
         if (emptyBuckets.size() > 0) {
           createEmptyBuckets(hconf, emptyBuckets, conf, reporter);
         }
 
-        // Step3: move to the file destination
-        log.info("Moving tmp dir: " + intermediatePath + " to: " + finalPath);
-        Utilities.renameOrMoveFiles(fs, intermediatePath, finalPath);
+        // move to the file destination
+        log.info("Moving tmp dir: " + tmpPath + " to: " + finalPath);
+        Utilities.renameOrMoveFiles(fs, tmpPath, finalPath);
       }
     } else {
       fs.delete(tmpPath, true);
