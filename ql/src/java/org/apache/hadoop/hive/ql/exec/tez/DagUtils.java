@@ -50,6 +50,7 @@ import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.EdgeType;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.shims.Hadoop20Shims.NullOutputCommitter;
@@ -417,10 +418,20 @@ public class DagUtils {
   public static List<LocalResource> localizeTempFiles(Configuration conf) throws IOException, LoginException {
     List<LocalResource> tmpResources = new ArrayList<LocalResource>();
 
+    String addedFiles = Utilities.getResourceFiles(conf, SessionState.ResourceType.FILE);
+    if (StringUtils.isNotBlank(addedFiles)) {
+      HiveConf.setVar(conf, ConfVars.HIVEADDEDFILES, addedFiles);
+    }
+    String addedJars = Utilities.getResourceFiles(conf, SessionState.ResourceType.JAR);
+    if (StringUtils.isNotBlank(addedJars)) {
+      HiveConf.setVar(conf, ConfVars.HIVEADDEDJARS, addedJars);
+    }
+    String addedArchives = Utilities.getResourceFiles(conf, SessionState.ResourceType.ARCHIVE);
+    if (StringUtils.isNotBlank(addedArchives)) {
+      HiveConf.setVar(conf, ConfVars.HIVEADDEDARCHIVES, addedArchives);
+    }
+
     String auxJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEAUXJARS);
-    String addedJars = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEADDEDJARS);
-    String addedFiles = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEADDEDFILES);
-    String addedArchives = HiveConf.getVar(conf, HiveConf.ConfVars.HIVEADDEDARCHIVES);
 
     // need to localize the additional jars and files
 
@@ -447,6 +458,9 @@ public class DagUtils {
     String allFiles = auxJars + "," + addedJars + "," + addedFiles + "," + addedArchives;
     String[] allFilesArr = allFiles.split(",");
     for (String file : allFilesArr) {
+      if (!StringUtils.isNotBlank(file)) {
+        continue;
+      }
       String hdfsFilePathStr = hdfsDirPathStr + "/" + getResourceBaseName(file);
       LocalResource localResource = localizeResource(new Path(file),
           new Path(hdfsFilePathStr), conf);
