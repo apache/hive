@@ -129,29 +129,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
      * Update OutPath according to tmpPath.
      */
     public Path getTaskOutPath(String taskId) {
-      return getOutPath(taskId, this.taskOutputTempPath);
-    }
-
-
-    /**
-     * Update OutPath according to tmpPath.
-     */
-    public Path getOutPath(String taskId) {
-      return getOutPath(taskId, this.tmpPath);
-    }
-
-    /**
-     * Update OutPath according to tmpPath.
-     */
-    public Path getOutPath(String taskId, Path tmp) {
-      return new Path(tmp, Utilities.toTempPath(taskId));
-    }
-
-    /**
-     * Update the final paths according to tmpPath.
-     */
-    public Path getFinalPath(String taskId) {
-      return getFinalPath(taskId, this.tmpPath, null);
+      return new Path(this.taskOutputTempPath, Utilities.toTempPath(taskId));
     }
 
     /**
@@ -229,8 +207,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private static final long serialVersionUID = 1L;
   protected transient FileSystem fs;
   protected transient Serializer serializer;
-  protected transient BytesWritable commonKey = new BytesWritable();
-  protected transient TableIdEnum tabIdEnum = null;
   protected transient LongWritable row_count;
   private transient boolean isNativeTable = true;
 
@@ -254,28 +230,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private transient SubStructObjectInspector subSetOI;
   private transient int timeOut; // JT timeout in msec.
   private transient long lastProgressReport = System.currentTimeMillis();
-
-  /**
-   * TableIdEnum.
-   *
-   */
-  public static enum TableIdEnum {
-    TABLE_ID_1_ROWCOUNT,
-    TABLE_ID_2_ROWCOUNT,
-    TABLE_ID_3_ROWCOUNT,
-    TABLE_ID_4_ROWCOUNT,
-    TABLE_ID_5_ROWCOUNT,
-    TABLE_ID_6_ROWCOUNT,
-    TABLE_ID_7_ROWCOUNT,
-    TABLE_ID_8_ROWCOUNT,
-    TABLE_ID_9_ROWCOUNT,
-    TABLE_ID_10_ROWCOUNT,
-    TABLE_ID_11_ROWCOUNT,
-    TABLE_ID_12_ROWCOUNT,
-    TABLE_ID_13_ROWCOUNT,
-    TABLE_ID_14_ROWCOUNT,
-    TABLE_ID_15_ROWCOUNT;
-  }
 
   protected transient boolean autoDelete = false;
   protected transient JobConf jc;
@@ -356,14 +310,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
         prtner = (HivePartitioner<HiveKey, Object>) ReflectionUtils.newInstance(
             jc.getPartitionerClass(), null);
       }
-      int id = conf.getDestTableId();
-      if ((id != 0) && (id <= TableIdEnum.values().length)) {
-        String enumName = "TABLE_ID_" + String.valueOf(id) + "_ROWCOUNT";
-        tabIdEnum = TableIdEnum.valueOf(enumName);
-        row_count = new LongWritable();
-        statsMap.put(tabIdEnum, row_count);
-      }
-
+      row_count = new LongWritable();
       if (dpCtx != null) {
         dpSetup();
       }
@@ -478,7 +425,7 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
           taskId = Utilities.replaceTaskIdFromFilename(Utilities.getTaskId(hconf), bucketNum);
         }
         if (isNativeTable) {
-          fsp.finalPaths[filesIdx] = fsp.getFinalPath(taskId);
+          fsp.finalPaths[filesIdx] = fsp.getFinalPath(taskId, fsp.tmpPath, null);
           LOG.info("Final Path: FS " + fsp.finalPaths[filesIdx]);
           fsp.outPaths[filesIdx] = fsp.getTaskOutPath(taskId);
           LOG.info("Writing to temp file: FS " + fsp.outPaths[filesIdx]);
@@ -801,20 +748,6 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
   private String getDynPartDirectory(List<String> row, List<String> dpColNames, int numDynParts) {
     assert row.size() == numDynParts && numDynParts == dpColNames.size() : "data length is different from num of DP columns";
     return FileUtils.makePartName(dpColNames, row);
-  }
-
-  private String getPartitionSpec(Path path, int level) {
-    Stack<String> st = new Stack<String>();
-    Path p = path;
-    for (int i = 0; i < level; ++i) {
-      st.push(p.getName());
-      p = p.getParent();
-    }
-    StringBuilder sb = new StringBuilder();
-    while (!st.empty()) {
-      sb.append(st.pop());
-    }
-    return sb.toString();
   }
 
   @Override
