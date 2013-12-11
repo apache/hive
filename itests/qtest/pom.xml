@@ -210,6 +210,12 @@
         </dependency>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-archives</artifactId>
+          <version>${hadoop-23.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-common</artifactId>
           <version>${hadoop-23.version}</version>
           <scope>test</scope>
@@ -298,12 +304,6 @@
           <version>${hbase.hadoop2.version}</version>
           <scope>test</scope>
           <classifier>tests</classifier>
-        </dependency>
-        <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-server</artifactId>
-          <version>${hbase.hadoop2.version}</version>
-          <scope>test</scope>
         </dependency>
         <dependency>
           <groupId>org.apache.hbase</groupId>

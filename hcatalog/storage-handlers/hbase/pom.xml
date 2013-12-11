@@ -91,9 +91,6 @@
   <profiles>
     <profile>
       <id>hadoop-1</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <dependencies>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
@@ -170,6 +167,12 @@
           <version>${hadoop-23.version}</version>
         </dependency>
         <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+          <version>${hadoop-23.version}</version>
+          <optional>true</optional>
+        </dependency>
+        <dependency>
           <groupId>org.apache.hbase</groupId>
           <artifactId>hbase-client</artifactId>
           <version>${hbase.hadoop2.version}</version>
@@ -197,9 +200,15 @@
         <!-- test -->
         <dependency>
           <groupId>org.apache.hadoop</groupId>
-          <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+          <artifactId>hadoop-common</artifactId>
           <version>${hadoop-23.version}</version>
           <classifier>tests</classifier>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-mapreduce-client-hs</artifactId>
+          <version>${hadoop-23.version}</version>
           <scope>test</scope>
         </dependency>
         <dependency>
@@ -210,15 +219,22 @@
           <scope>test</scope>
         </dependency>
         <dependency>
-          <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-common</artifactId>
-          <version>${hbase.hadoop2.version}</version>
-          <type>test-jar</type>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+          <version>${hadoop-23.version}</version>
+          <classifier>tests</classifier>
           <scope>test</scope>
         </dependency>
+       <dependency>
+         <groupId>org.apache.hadoop</groupId>
+         <artifactId>hadoop-yarn-server-tests</artifactId>
+         <version>${hadoop-23.version}</version>
+         <classifier>tests</classifier>
+         <scope>test</scope>
+       </dependency>
         <dependency>
           <groupId>org.apache.hbase</groupId>
-          <artifactId>hbase-server</artifactId>
+          <artifactId>hbase-common</artifactId>
           <version>${hbase.hadoop2.version}</version>
           <type>test-jar</type>
           <scope>test</scope>
@@ -235,6 +251,13 @@
           <artifactId>hbase-hadoop2-compat</artifactId>
           <version>${hbase.hadoop2.version}</version>
           <classifier>tests</classifier>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hbase</groupId>
+          <artifactId>hbase-server</artifactId>
+          <version>${hbase.hadoop2.version}</version>
+          <type>test-jar</type>
           <scope>test</scope>
         </dependency>
       </dependencies>
