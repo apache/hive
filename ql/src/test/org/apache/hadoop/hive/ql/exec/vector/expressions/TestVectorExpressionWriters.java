@@ -418,4 +418,62 @@ public class TestVectorExpressionWriters {
   public void testVectorExpressionSetterBinary() throws HiveException {
     testSetterText(TypeInfoFactory.binaryTypeInfo);
   }
+
+  @Test
+  public void testTimeStampUtils(){
+    Timestamp ts = new Timestamp(0);
+
+    // Convert positive nanoseconds to timestamp object.
+    TimestampUtils.assignTimeInNanoSec(1234567891, ts);
+    Assert.assertEquals(234567891, ts.getNanos());
+    Assert.assertEquals(1234567891, TimestampUtils.getTimeNanoSec(ts));
+
+    // Test negative nanoseconds
+    TimestampUtils.assignTimeInNanoSec(-1234567891, ts);
+    Assert.assertEquals((1000000000-234567891), ts.getNanos());
+    Assert.assertEquals(-1234567891, TimestampUtils.getTimeNanoSec(ts));
+
+    // Test positive value smaller than a second.
+    TimestampUtils.assignTimeInNanoSec(234567891, ts);
+    Assert.assertEquals(234567891, ts.getNanos());
+    Assert.assertEquals(234567891, TimestampUtils.getTimeNanoSec(ts));
+
+    // Test negative value smaller than a second.
+    TimestampUtils.assignTimeInNanoSec(-234567891, ts);
+    Assert.assertEquals((1000000000-234567891), ts.getNanos());
+    Assert.assertEquals(-234567891, TimestampUtils.getTimeNanoSec(ts));
+
+    // Test a positive long timestamp
+    long big = 152414813551296L;
+    TimestampUtils.assignTimeInNanoSec(big, ts);
+    Assert.assertEquals(big % 1000000000, ts.getNanos());
+    Assert.assertEquals(big, TimestampUtils.getTimeNanoSec(ts));
+
+    // Test a negative long timestamp
+    big = -152414813551296L;
+    TimestampUtils.assignTimeInNanoSec(big, ts);
+    Assert.assertEquals((1000000000 + (big % 1000000000)), ts.getNanos());
+    Assert.assertEquals(big, TimestampUtils.getTimeNanoSec(ts));
+
+    // big/1000000 will yield zero nanoseconds
+    big = -1794750230000828416L;
+    ts = new Timestamp(0);
+    TimestampUtils.assignTimeInNanoSec(big, ts);
+    Assert.assertEquals((1000000000 + big % 1000000000), ts.getNanos());
+    Assert.assertEquals(big, TimestampUtils.getTimeNanoSec(ts));
+
+    // Very small nanosecond part
+    big = 1700000000000000016L;
+    ts = new Timestamp(0);
+    TimestampUtils.assignTimeInNanoSec(big, ts);
+    Assert.assertEquals(big % 1000000000, ts.getNanos());
+    Assert.assertEquals(big, TimestampUtils.getTimeNanoSec(ts));
+
+    // Very small nanosecond part
+    big = -1700000000000000016L;
+    ts = new Timestamp(0);
+    TimestampUtils.assignTimeInNanoSec(big, ts);
+    Assert.assertEquals((1000000000 + big % 1000000000), ts.getNanos());
+    Assert.assertEquals(big, TimestampUtils.getTimeNanoSec(ts));
+  }
 }
