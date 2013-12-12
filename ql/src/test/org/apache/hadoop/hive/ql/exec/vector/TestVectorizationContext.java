@@ -37,6 +37,10 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterExprOrExpr;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncLogWithBaseDoubleToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncLogWithBaseLongToDouble;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FuncPowerDoubleToDouble;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringColumnStringColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringColumnStringScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringScalarStringColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.IfExprStringScalarStringScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IsNotNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.IsNull;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.LongColumnInList;
@@ -56,6 +60,15 @@ import org.apache.hadoop.hive.ql.exec.vector.expressions.VectorUDFYearLong;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterStringColumnInList;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterLongColumnInList;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.FilterDoubleColumnInList;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongColumnLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongColumnLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongScalarLongScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprLongScalarLongColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleColumnDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleColumnDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleScalarDoubleColumn;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleScalarDoubleScalar;
+import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.IfExprDoubleScalarLongColumn;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.DoubleColUnaryMinus;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColLessDoubleScalar;
 import org.apache.hadoop.hive.ql.exec.vector.expressions.gen.FilterDoubleColumnBetween;
@@ -93,6 +106,7 @@ import org.apache.hadoop.hive.ql.udf.UDFYear;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBetween;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLower;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
@@ -111,6 +125,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFPower;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFRound;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPPlus;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFToUnixTimeStamp;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFTimestamp;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.junit.Test;
 
@@ -1003,5 +1018,178 @@ public class TestVectorizationContext {
     assertTrue(ve instanceof FilterDoubleColumnInList);
     ve = vc.getVectorExpression(exprDesc, VectorExpressionDescriptor.Mode.PROJECTION);
     assertTrue(ve instanceof DoubleColumnInList);
+  }
+
+  /**
+   * Test that correct VectorExpression classes are chosen for the
+   * IF (expr1, expr2, expr3) conditional expression for integer, float,
+   * boolean, timestamp and string input types. expr1 is always an input column expression
+   * of type long. expr2 and expr3 can be column expressions or constants of other types
+   * but must have the same type.
+   */
+  @Test
+  public void testIfConditionalExprs() throws HiveException {
+    ExprNodeColumnDesc col1Expr = new  ExprNodeColumnDesc(Long.class, "col1", "table", false);
+    ExprNodeColumnDesc col2Expr = new  ExprNodeColumnDesc(Long.class, "col2", "table", false);
+    ExprNodeColumnDesc col3Expr = new  ExprNodeColumnDesc(Long.class, "col3", "table", false);
+
+    ExprNodeConstantDesc constDesc2 = new ExprNodeConstantDesc(new Integer(1));
+    ExprNodeConstantDesc constDesc3 = new ExprNodeConstantDesc(new Integer(2));
+
+    // long column/column IF
+    GenericUDFIf udf = new GenericUDFIf();
+    ExprNodeGenericFuncDesc exprDesc = new ExprNodeGenericFuncDesc();
+    exprDesc.setGenericUDF(udf);
+    List<ExprNodeDesc> children1 = new ArrayList<ExprNodeDesc>();
+    children1.add(col1Expr);
+    children1.add(col2Expr);
+    children1.add(col3Expr);
+    exprDesc.setChildren(children1);
+
+    Map<String, Integer> columnMap = new HashMap<String, Integer>();
+    columnMap.put("col1", 1);
+    columnMap.put("col2", 2);
+    columnMap.put("col3", 3);
+    VectorizationContext vc = new VectorizationContext(columnMap, 3);
+    VectorExpression ve = vc.getVectorExpression(exprDesc);
+    assertTrue(ve instanceof IfExprLongColumnLongColumn);
+
+    // long column/scalar IF
+    children1.set(2,  new ExprNodeConstantDesc(1L));
+    ve = vc.getVectorExpression(exprDesc);
+    assertTrue(ve instanceof IfExprLongColumnLongScalar);
+
+    // long scalar/scalar IF
+    children1.set(1, new ExprNodeConstantDesc(1L));
+    ve = vc.getVectorExpression(exprDesc);
+    assertTrue(ve instanceof IfExprLongScalarLongScalar);
+
+    // long scalar/column IF
+    children1.set(2, col3Expr);
+    ve = vc.getVectorExpression(exprDesc);
+    assertTrue(ve instanceof IfExprLongScalarLongColumn);
+
+    // test for double type
+    col2Expr = new  ExprNodeColumnDesc(Double.class, "col2", "table", false);
+    col3Expr = new  ExprNodeColumnDesc(Double.class, "col3", "table", false);
+
+    // double column/column IF
+    children1.set(1, col2Expr);
+    children1.set(2, col3Expr);
+    ve = vc.getVectorExpression(exprDesc);
+    assertTrue(ve instanceof IfExprDoubleColumnDoubleColumn);
+
+    // double column/scalar IF
+    children1.set(2,  new ExprNodeConstantDesc(1D));
+    ve = vc.getVectorExpression(exprDesc);
+    assertTrue(ve instanceof IfExprDoubleColumnDoubleScalar);
+
+    // double scalar/scalar IF
+    children1.set(1, new ExprNodeConstantDesc(1D));
+    ve = vc.getVectorExpression(exprDesc);
+    assertTrue(ve instanceof IfExprDoubleScalarDoubleScalar);
+
+    // double scalar/column IF
+    children1.set(2, col3Expr);
+    ve = vc.getVectorExpression(exprDesc);
+    assertTrue(ve instanceof IfExprDoubleScalarDoubleColumn);
+
+    // double scalar/long column IF
+    children1.set(2, new  ExprNodeColumnDesc(Long.class, "col3", "table", false));
+    ve = vc.getVectorExpression(exprDesc);
+    assertTrue(ve instanceof IfExprDoubleScalarLongColumn);
+
+    // Additional combinations of (long,double)X(column,scalar) for each of the second
+    // and third arguments are omitted. We have coverage of all the source templates
+    // already.
+
+    // test for timestamp type
+    col2Expr = new  ExprNodeColumnDesc(Timestamp.class, "col2", "table", false);
+    col3Expr = new  ExprNodeColumnDesc(Timestamp.class, "col3", "table", false);
+
+    // timestamp column/column IF
+    children1.set(1, col2Expr);
+    children1.set(2, col3Expr);
+    ve = vc.getVectorExpression(exprDesc);
+    assertTrue(ve instanceof IfExprLongColumnLongColumn);
+
+    // timestamp column/scalar IF where scalar is really a CAST of a constant to timestamp.
+    ExprNodeGenericFuncDesc f = new ExprNodeGenericFuncDesc();
+    f.setGenericUDF(new GenericUDFTimestamp());
+    f.setTypeInfo(TypeInfoFactory.timestampTypeInfo);
+    List<ExprNodeDesc> children2 = new ArrayList<ExprNodeDesc>();
+    f.setChildren(children2);
+    children2.add(new ExprNodeConstantDesc("2013-11-05 00:00:00.000"));
+    children1.set(2, f);
+    ve = vc.getVectorExpression(exprDesc);
+
+    // We check for two different classes below because initially the result
+    // is IfExprLongColumnLongColumn but in the future if the system is enhanced
+    // with constant folding then the result will be IfExprLongColumnLongScalar.
+    assertTrue(IfExprLongColumnLongColumn.class == ve.getClass()
+               || IfExprLongColumnLongScalar.class == ve.getClass());
+
+    // timestamp scalar/scalar
+    children1.set(1, f);
+    ve = vc.getVectorExpression(exprDesc);
+    assertTrue(IfExprLongColumnLongColumn.class == ve.getClass()
+        || IfExprLongScalarLongScalar.class == ve.getClass());
+
+    // timestamp scalar/column
+    children1.set(2, col3Expr);
+    assertTrue(IfExprLongColumnLongColumn.class == ve.getClass()
+        || IfExprLongScalarLongColumn.class == ve.getClass());
+
+    // test for boolean type
+    col2Expr = new  ExprNodeColumnDesc(Boolean.class, "col2", "table", false);
+    col3Expr = new  ExprNodeColumnDesc(Boolean.class, "col3", "table", false);
+
+    // column/column
+    children1.set(1, col2Expr);
+    children1.set(2, col3Expr);
+    ve = vc.getVectorExpression(exprDesc);
+    assertTrue(ve instanceof IfExprLongColumnLongColumn);
+
+    // column/scalar IF
+    children1.set(2,  new ExprNodeConstantDesc(true));
+    ve = vc.getVectorExpression(exprDesc);
+    assertTrue(ve instanceof IfExprLongColumnLongScalar);
+
+    // scalar/scalar IF
+    children1.set(1, new ExprNodeConstantDesc(true));
+    ve = vc.getVectorExpression(exprDesc);
+    assertTrue(ve instanceof IfExprLongScalarLongScalar);
+
+    // scalar/column IF
+    children1.set(2, col3Expr);
+    ve = vc.getVectorExpression(exprDesc);
+    assertTrue(ve instanceof IfExprLongScalarLongColumn);
+
+    // test for string type
+    constDesc2 = new ExprNodeConstantDesc("Alpha");
+    constDesc3 = new ExprNodeConstantDesc("Bravo");
+    col2Expr = new  ExprNodeColumnDesc(String.class, "col2", "table", false);
+    col3Expr = new  ExprNodeColumnDesc(String.class, "col3", "table", false);
+
+    // column/column
+    children1.set(1, col2Expr);
+    children1.set(2, col3Expr);
+    ve = vc.getVectorExpression(exprDesc);
+    assertTrue(ve instanceof IfExprStringColumnStringColumn);
+
+    // column/scalar
+    children1.set(2,  constDesc3);
+    ve = vc.getVectorExpression(exprDesc);
+    assertTrue(ve instanceof IfExprStringColumnStringScalar);
+
+    // scalar/scalar
+    children1.set(1,  constDesc2);
+    ve = vc.getVectorExpression(exprDesc);
+    assertTrue(ve instanceof IfExprStringScalarStringScalar);
+
+    // scalar/column
+    children1.set(2,  col3Expr);
+    ve = vc.getVectorExpression(exprDesc);
+    assertTrue(ve instanceof IfExprStringScalarStringColumn);
   }
 }
