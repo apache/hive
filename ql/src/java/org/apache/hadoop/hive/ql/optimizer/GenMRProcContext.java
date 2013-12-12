@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.exec.DependencyCollectionTask;
 import org.apache.hadoop.hive.ql.exec.FileSinkOperator;
 import org.apache.hadoop.hive.ql.exec.Operator;
@@ -440,8 +441,10 @@ public class GenMRProcContext implements NodeProcessorCtx {
    */
   public DependencyCollectionTask getDependencyTaskForMultiInsert() {
     if (dependencyTaskForMultiInsert == null) {
-      dependencyTaskForMultiInsert =
-          (DependencyCollectionTask) TaskFactory.get(new DependencyCollectionWork(), conf);
+      if (conf.getBoolVar(ConfVars.HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES)) {
+        dependencyTaskForMultiInsert =
+            (DependencyCollectionTask) TaskFactory.get(new DependencyCollectionWork(), conf);
+      }
     }
     return dependencyTaskForMultiInsert;
   }
