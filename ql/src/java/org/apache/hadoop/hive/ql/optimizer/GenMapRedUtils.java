@@ -1332,7 +1332,7 @@ public final class GenMapRedUtils {
       Task<? extends Serializable> parentTask, DependencyCollectionTask dependencyTask) {
 
     if (mvTask != null) {
-      if (hconf.getBoolVar(ConfVars.HIVE_MULTI_INSERT_MOVE_TASKS_SHARE_DEPENDENCIES)) {
+      if (dependencyTask != null) {
         parentTask.addDependentTask(dependencyTask);
         if (mvTask.getWork().getLoadTableWork() != null) {
           // Moving tables/partitions depend on the dependencyTask
