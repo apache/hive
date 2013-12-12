@@ -23,18 +23,18 @@ import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Properties;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.api.hive_metastoreConstants;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.HiveFileFormatUtils;
 import org.apache.hadoop.hive.ql.io.HiveOutputFormat;
-import org.apache.hadoop.hive.ql.metadata.Hive;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.serde.serdeConstants;
 import org.apache.hadoop.hive.serde2.Deserializer;
 import org.apache.hadoop.mapred.InputFormat;
+import org.apache.hadoop.util.ReflectionUtils;
 
 /**
  * PartitionDesc.
@@ -105,14 +105,19 @@ public class PartitionDesc implements Serializable, Cloneable {
   }
 
   /**
-   * Return a deserializer object corresponding to the tableDesc.
+   * Return a deserializer object corresponding to the partitionDesc.
    */
-  public Deserializer getDeserializer() {
-    try {
-      return MetaStoreUtils.getDeserializer(Hive.get().getConf(), getProperties());
-    } catch (Exception e) {
-      return null;
+  public Deserializer getDeserializer(Configuration conf) throws Exception {
+    Properties schema = getProperties();
+    String clazzName = schema.getProperty(serdeConstants.SERIALIZATION_LIB);
+    if (clazzName == null) {
+      throw new IllegalStateException("Property " + serdeConstants.SERIALIZATION_LIB +
+          " cannot be null");
     }
+    Deserializer deserializer = ReflectionUtils.newInstance(conf.getClassByName(clazzName)
+        .asSubclass(Deserializer.class), conf);
+    deserializer.initialize(conf, schema);
+    return deserializer;
   }
 
   public void setInputFileFormatClass(
