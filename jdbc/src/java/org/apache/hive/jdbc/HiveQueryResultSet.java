@@ -20,6 +20,7 @@ package org.apache.hive.jdbc;
 
 import static org.apache.hive.service.cli.thrift.TCLIServiceConstants.TYPE_NAMES;
 
+import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.sql.SQLException;
@@ -66,6 +67,8 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
   private Iterator<TRow> fetchedRowsItr;
   private boolean isClosed = false;
   private boolean emptyResultSet = false;
+  private boolean isScrollable = false;
+  private boolean fetchFirst = false;
 
   public static class Builder {
 
@@ -86,6 +89,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     private List<JdbcColumnAttributes> colAttributes;
     private int fetchSize = 50;
     private boolean emptyResultSet = false;
+    private boolean isScrollable = false;
 
     public Builder(Statement statement) {
       this.statement = statement;
@@ -143,6 +147,11 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
       return this;
     }
 
+    public Builder setScrollable(boolean setScrollable) {
+      this.isScrollable = setScrollable;
+      return this;
+    }
+
     public HiveQueryResultSet build() throws SQLException {
       return new HiveQueryResultSet(this);
     }
@@ -168,6 +177,7 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     } else {
       this.maxRows = builder.maxRows;
     }
+    this.isScrollable = builder.isScrollable;
   }
 
   /**
@@ -286,9 +296,18 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
     }
 
     try {
+      TFetchOrientation orientation = TFetchOrientation.FETCH_NEXT;
+      if (fetchFirst) {
+        // If we are asked to start from begining, clear the current fetched resultset
+        orientation = TFetchOrientation.FETCH_FIRST;
+        fetchedRows = null;
+        fetchedRowsItr = null;
+        fetchFirst = false;
+      }
+
       if (fetchedRows == null || !fetchedRowsItr.hasNext()) {
         TFetchResultsReq fetchReq = new TFetchResultsReq(stmtHandle,
-            TFetchOrientation.FETCH_NEXT, fetchSize);
+            orientation, fetchSize);
         TFetchResultsResp fetchResp = client.FetchResults(fetchReq);
         Utils.verifySuccessWithInfo(fetchResp.getStatus());
         fetchedRows = fetchResp.getResults().getRows();
@@ -334,6 +353,18 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
   }
 
   @Override
+  public int getType() throws SQLException {
+    if (isClosed) {
+      throw new SQLException("Resultset is closed");
+    }
+    if (isScrollable) {
+      return ResultSet.TYPE_SCROLL_INSENSITIVE;
+    } else {
+      return ResultSet.TYPE_FORWARD_ONLY;
+    }
+  }
+
+  @Override
   public int getFetchSize() throws SQLException {
     if (isClosed) {
       throw new SQLException("Resultset is closed");
@@ -349,5 +380,37 @@ public class HiveQueryResultSet extends HiveBaseResultSet {
   public <T> T getObject(int columnIndex, Class<T> type)  throws SQLException {
     //JDK 1.7
     throw new SQLException("Method not supported");
+  }
+
+  /**
+   * Moves the cursor before the first row of the resultset.
+   *
+   * @see java.sql.ResultSet#next()
+   * @throws SQLException
+   *           if a database access error occurs.
+   */
+  @Override
+  public void beforeFirst() throws SQLException {
+    if (isClosed) {
+      throw new SQLException("Resultset is closed");
+    }
+    if (!isScrollable) {
+      throw new SQLException("Method not supported for TYPE_FORWARD_ONLY resultset");
+    }
+    fetchFirst = true;
+    rowsFetched = 0;
+  }
+
+  @Override
+  public boolean isBeforeFirst() throws SQLException {
+    if (isClosed) {
+      throw new SQLException("Resultset is closed");
+    }
+    return (rowsFetched == 0);
+  }
+
+  @Override
+  public int getRow() throws SQLException {
+    return rowsFetched;
   }
 }
