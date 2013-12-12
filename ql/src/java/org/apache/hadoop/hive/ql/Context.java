@@ -481,6 +481,13 @@ public class Context {
     return null;
   }
 
+  public void resetStream() {
+    if (initialized) {
+      resDirFilesNum = 0;
+      initialized = false;
+    }
+  }
+
   /**
    * Little abbreviation for StringUtils.
    */

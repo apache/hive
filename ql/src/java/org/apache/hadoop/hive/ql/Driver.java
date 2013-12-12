@@ -1551,6 +1551,20 @@ public class Driver implements CommandProcessor {
     return true;
   }
 
+  public void resetFetch() throws IOException {
+    if (plan != null && plan.getFetchTask() != null) {
+      try {
+        plan.getFetchTask().clearFetch();
+      } catch (Exception e) {
+        throw new IOException("Error closing the current fetch task", e);
+      }
+      plan.getFetchTask().initialize(conf, plan, null);
+    } else {
+      ctx.resetStream();
+      resStream = null;
+    }
+  }
+
   public int getTryCount() {
     return tryCount;
   }
