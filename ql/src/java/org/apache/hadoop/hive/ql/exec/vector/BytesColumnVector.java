@@ -18,6 +18,8 @@
 
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -218,5 +220,94 @@ public class BytesColumnVector extends ColumnVector {
       result = NullWritable.get();
     }
     return result;
+  }
+
+  /** Copy the current object contents into the output. Only copy selected entries,
+    * as indicated by selectedInUse and the sel array.
+    */
+  public void copySelected(
+      boolean selectedInUse, int[] sel, int size, BytesColumnVector output) {
+
+    // Output has nulls if and only if input has nulls.
+    output.noNulls = noNulls;
+    output.isRepeating = false;
+
+    // Handle repeating case
+    if (isRepeating) {
+      output.setVal(0, vector[0], start[0], length[0]);
+      output.isNull[0] = isNull[0];
+      output.isRepeating = true;
+      return;
+    }
+
+    // Handle normal case
+
+    // Copy data values over
+    if (selectedInUse) {
+      for (int j = 0; j < size; j++) {
+        int i = sel[j];
+        output.setVal(i, vector[i], start[i], length[i]);
+      }
+    }
+    else {
+      for (int i = 0; i < size; i++) {
+        output.setVal(i, vector[i], start[i], length[i]);
+      }
+    }
+
+    // Copy nulls over if needed
+    if (!noNulls) {
+      if (selectedInUse) {
+        for (int j = 0; j < size; j++) {
+          int i = sel[j];
+          output.isNull[i] = isNull[i];
+        }
+      }
+      else {
+        System.arraycopy(isNull, 0, output.isNull, 0, size);
+      }
+    }
+  }
+
+  /** Simplify vector by brute-force flattening noNulls and isRepeating
+    * This can be used to reduce combinatorial explosion of code paths in VectorExpressions
+    * with many arguments, at the expense of loss of some performance.
+    */
+  public void flatten(boolean selectedInUse, int[] sel, int size) {
+    flattenPush();
+    if (isRepeating) {
+      isRepeating = false;
+
+      // setRef is used below and this is safe, because the reference
+      // is to data owned by this column vector. If this column vector
+      // gets re-used, the whole thing is re-used together so there
+      // is no danger of a dangling reference.
+
+      // Only copy data values if entry is not null. The string value
+      // at position 0 is undefined if the position 0 value is null.
+      if (noNulls || (!noNulls && !isNull[0])) {
+
+        // loops start at position 1 because position 0 is already set
+        if (selectedInUse) {
+          for (int j = 1; j < size; j++) {
+            int i = sel[j];
+            this.setRef(i, vector[0], start[0], length[0]);
+          }
+        } else {
+          for (int i = 1; i < size; i++) {
+            this.setRef(i, vector[0], start[0], length[0]);
+          }
+        }
+      }
+      flattenRepeatingNulls(selectedInUse, sel, size);
+    }
+    flattenNoNulls(selectedInUse, sel, size);
+  }
+
+  // Fill the all the vector entries with provided value
+  public void fill(byte[] value) {
+    noNulls = true;
+    isRepeating = true;
+    setRef(0, value, 0, value.length);
   }
 }

@@ -386,9 +386,25 @@ public class GenVectorCode extends Task {
       // See org.apache.hadoop.hive.ql.exec.vector.expressions for remaining cast VectorExpression
       // classes
 
-        {"ColumnUnaryMinus", "long"},
-        {"ColumnUnaryMinus", "double"},
+      {"ColumnUnaryMinus", "long"},
+      {"ColumnUnaryMinus", "double"},
 
+      // IF conditional expression
+      // fileHeader, resultType, arg2Type, arg3Type
+      {"IfExprColumnColumn", "long"},
+      {"IfExprColumnColumn", "double"},
+      {"IfExprColumnScalar", "long", "long"},
+      {"IfExprColumnScalar", "double", "long"},
+      {"IfExprColumnScalar", "long", "double"},
+      {"IfExprColumnScalar", "double", "double"},
+      {"IfExprScalarColumn", "long", "long"},
+      {"IfExprScalarColumn", "double", "long"},
+      {"IfExprScalarColumn", "long", "double"},
+      {"IfExprScalarColumn", "double", "double"},
+      {"IfExprScalarScalar", "long", "long"},
+      {"IfExprScalarScalar", "double", "long"},
+      {"IfExprScalarScalar", "long", "double"},
+      {"IfExprScalarScalar", "double", "double"},
 
       // template, <ClassName>, <ValueType>, <OperatorSymbol>, <DescriptionName>, <DescriptionValue>
       {"VectorUDAFMinMax", "VectorUDAFMinLong", "long", "<", "min",
@@ -567,6 +583,14 @@ public class GenVectorCode extends Task {
         generateFilterStringColumnCompareColumn(tdesc);
       } else if (tdesc[0].equals("StringColumnCompareColumn")) {
         generateStringColumnCompareColumn(tdesc);
+      } else if (tdesc[0].equals("IfExprColumnColumn")) {
+        generateIfExprColumnColumn(tdesc);
+      } else if (tdesc[0].equals("IfExprColumnScalar")) {
+        generateIfExprColumnScalar(tdesc);
+      } else if (tdesc[0].equals("IfExprScalarColumn")) {
+        generateIfExprScalarColumn(tdesc);
+      } else if (tdesc[0].equals("IfExprScalarScalar")) {
+        generateIfExprScalarScalar(tdesc);
       } else {
         continue;
       }
@@ -796,6 +820,89 @@ public class GenVectorCode extends Task {
     templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
     templateString = templateString.replaceAll("<OperandType>", operandType);
     templateString = templateString.replaceAll("<ReturnType>", returnType);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateIfExprColumnColumn(String[] tdesc) throws IOException {
+    String operandType = tdesc[1];
+    String inputColumnVectorType = this.getColumnVectorType(operandType);
+    String outputColumnVectorType = inputColumnVectorType;
+    String returnType = operandType;
+    String className = "IfExpr" + getCamelCaseType(operandType) + "Column"
+        + getCamelCaseType(operandType) + "Column";
+    String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    // Expand, and write result
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<InputColumnVectorType>", inputColumnVectorType);
+    templateString = templateString.replaceAll("<OperandType>", operandType);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateIfExprColumnScalar(String[] tdesc) throws IOException {
+    String operandType2 = tdesc[1];
+    String operandType3 = tdesc[2];
+    String arg2ColumnVectorType = this.getColumnVectorType(operandType2);
+    String returnType = getArithmeticReturnType(operandType2, operandType3);
+    String outputColumnVectorType = getColumnVectorType(returnType);
+    String className = "IfExpr" + getCamelCaseType(operandType2) + "Column"
+        + getCamelCaseType(operandType3) + "Scalar";
+    String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    // Expand, and write result
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<Arg2ColumnVectorType>", arg2ColumnVectorType);
+    templateString = templateString.replaceAll("<ReturnType>", returnType);
+    templateString = templateString.replaceAll("<OperandType2>", operandType2);
+    templateString = templateString.replaceAll("<OperandType3>", operandType3);
+    templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateIfExprScalarColumn(String[] tdesc) throws IOException {
+    String operandType2 = tdesc[1];
+    String operandType3 = tdesc[2];
+    String arg3ColumnVectorType = this.getColumnVectorType(operandType3);
+    String returnType = getArithmeticReturnType(operandType2, operandType3);
+    String outputColumnVectorType = getColumnVectorType(returnType);
+    String className = "IfExpr" + getCamelCaseType(operandType2) + "Scalar"
+        + getCamelCaseType(operandType3) + "Column";
+    String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    // Expand, and write result
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<Arg3ColumnVectorType>", arg3ColumnVectorType);
+    templateString = templateString.replaceAll("<ReturnType>", returnType);
+    templateString = templateString.replaceAll("<OperandType2>", operandType2);
+    templateString = templateString.replaceAll("<OperandType3>", operandType3);
+    templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
+    writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
+        className, templateString);
+  }
+
+  private void generateIfExprScalarScalar(String[] tdesc) throws IOException {
+    String operandType2 = tdesc[1];
+    String operandType3 = tdesc[2];
+    String arg3ColumnVectorType = this.getColumnVectorType(operandType3);
+    String returnType = getArithmeticReturnType(operandType2, operandType3);
+    String outputColumnVectorType = getColumnVectorType(returnType);
+    String className = "IfExpr" + getCamelCaseType(operandType2) + "Scalar"
+        + getCamelCaseType(operandType3) + "Scalar";
+    String outputFile = joinPath(this.expressionOutputDirectory, className + ".java");
+    File templateFile = new File(joinPath(this.expressionTemplateDirectory, tdesc[0] + ".txt"));
+    String templateString = readFile(templateFile);
+    // Expand, and write result
+    templateString = templateString.replaceAll("<ClassName>", className);
+    templateString = templateString.replaceAll("<ReturnType>", returnType);
+    templateString = templateString.replaceAll("<OperandType2>", operandType2);
+    templateString = templateString.replaceAll("<OperandType3>", operandType3);
+    templateString = templateString.replaceAll("<OutputColumnVectorType>", outputColumnVectorType);
     writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
   }
