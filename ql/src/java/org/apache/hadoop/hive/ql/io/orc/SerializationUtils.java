@@ -200,7 +200,7 @@ final class SerializationUtils {
    */
   static int findClosestNumBits(long value) {
     int count = 0;
-    while (value > 0) {
+    while (value != 0) {
       count++;
       value = value >>> 1;
     }

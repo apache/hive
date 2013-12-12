@@ -949,6 +949,38 @@ public class TestNewIntegerEncoding {
   }
 
   @Test
+  public void testDirectLargeNegatives() throws Exception {
+    ObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Long.class,
+          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+
+    Writer writer = OrcFile.createWriter(testFilePath,
+        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000).bufferSize(10000));
+
+    writer.addRow(-7486502418706614742L);
+    writer.addRow(0L);
+    writer.addRow(1L);
+    writer.addRow(1L);
+    writer.addRow(-5535739865598783616L);
+    writer.close();
+
+    Reader reader = OrcFile.createReader(fs, testFilePath);
+    RecordReader rows = reader.rows(null);
+    Object row = rows.next(null);
+    assertEquals(-7486502418706614742L, ((LongWritable) row).get());
+    row = rows.next(row);
+    assertEquals(0L, ((LongWritable) row).get());
+    row = rows.next(row);
+    assertEquals(1L, ((LongWritable) row).get());
+    row = rows.next(row);
+    assertEquals(1L, ((LongWritable) row).get());
+    row = rows.next(row);
+    assertEquals(-5535739865598783616L, ((LongWritable) row).get());
+  }
+
+  @Test
   public void testSeek() throws Exception {
     ObjectInspector inspector;
     synchronized (TestOrcFile.class) {
