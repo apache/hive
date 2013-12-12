@@ -525,7 +525,7 @@ public abstract class Operator<T extends OperatorDesc> implements Serializable,C
   }
 
   public void processGroup(int tag) throws HiveException {
-    if (childOperators == null) {
+    if (childOperators == null || childOperators.isEmpty()) {
       return;
     }
     for (int i = 0; i < childOperatorsArray.length; i++) {
