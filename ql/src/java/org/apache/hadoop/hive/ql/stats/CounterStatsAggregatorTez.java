@@ -32,15 +32,29 @@ public class CounterStatsAggregatorTez implements StatsAggregator {
   private static final Log LOG = LogFactory.getLog(CounterStatsAggregatorTez.class.getName());
 
   private TezCounters counters;
+  private CounterStatsAggregator mrAggregator;
+  private boolean delegate;
+
+  public CounterStatsAggregatorTez() {
+    mrAggregator = new CounterStatsAggregator();
+  }
 
   @Override
   public boolean connect(Configuration hconf, Task<?> sourceTask) {
+    if (!(sourceTask instanceof TezTask)) {
+      delegate = true;
+      return mrAggregator.connect(hconf, sourceTask);
+    }
     counters = ((TezTask) sourceTask).getTezCounters();
     return counters != null;
   }
 
   @Override
   public String aggregateStats(String keyPrefix, String statType) {
+    if (delegate) {
+      return mrAggregator.aggregateStats(keyPrefix, statType);
+    }
+
     long value = 0;
     for (String groupName : counters.getGroupNames()) {
       if (groupName.startsWith(keyPrefix)) {
