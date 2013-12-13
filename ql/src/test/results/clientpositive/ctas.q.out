@@ -117,7 +117,6 @@ STAGE PLANS:
   Stage: Stage-3
     Stats-Aggr Operator
 
-
 PREHOOK: query: create table nzhang_CTAS1 as select key k, value from src sort by k, value limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -160,8 +159,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	96                  
 	totalSize           	106                 
@@ -279,7 +278,6 @@ STAGE PLANS:
   Stage: Stage-3
     Stats-Aggr Operator
 
-
 PREHOOK: query: create table nzhang_ctas2 as select * from src sort by key, value limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -322,8 +320,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	96                  
 	totalSize           	106                 
@@ -442,7 +440,6 @@ STAGE PLANS:
   Stage: Stage-3
     Stats-Aggr Operator
 
-
 PREHOOK: query: create table nzhang_ctas3 row format serde "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" stored as RCFile as select key/2 half_key, concat(value, "_con") conb  from src sort by half_key, conb limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -485,8 +482,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	120                 
 	totalSize           	199                 
@@ -511,7 +508,6 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
 
-STAGE PLANS:
 STAGE PLANS:
 PREHOOK: query: create table if not exists nzhang_ctas3 as select key, value from src sort by key, value limit 2
 PREHOOK: type: CREATETABLE
@@ -552,8 +548,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	120                 
 	totalSize           	199                 
@@ -672,7 +668,6 @@ STAGE PLANS:
   Stage: Stage-3
     Stats-Aggr Operator
 
-
 PREHOOK: query: create table nzhang_ctas4 row format delimited fields terminated by ',' stored as textfile as select key, value from src sort by key, value limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -715,8 +710,8 @@ Retention:          	0
 #### A masked pattern was here ####
 Table Type:         	MANAGED_TABLE       	 
 Table Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numPartitions       	0                   
 	numRows             	10                  
 	rawDataSize         	96                  
 	totalSize           	106                 
@@ -754,6 +749,8 @@ STAGE PLANS:
         src 
           TableScan
             alias: src
+            Statistics:
+                numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
@@ -762,6 +759,8 @@ STAGE PLANS:
                     expr: value
                     type: string
               outputColumnNames: _col0, _col1
+              Statistics:
+                  numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: _col0
@@ -769,6 +768,8 @@ STAGE PLANS:
                       expr: _col1
                       type: string
                 sort order: ++
+                Statistics:
+                    numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
                 tag: -1
                 value expressions:
                       expr: _col0
@@ -784,13 +785,13 @@ STAGE PLANS:
             input format: org.apache.hadoop.mapred.TextInputFormat
             output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
 #### A masked pattern was here ####
               name default.src
               numFiles 1
-              numPartitions 0
               numRows 0
               rawDataSize 0
               serialization.ddl struct src { string key, string value}
@@ -803,13 +804,13 @@ STAGE PLANS:
               input format: org.apache.hadoop.mapred.TextInputFormat
               output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
               properties:
+                COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 columns key,value
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.src
                 numFiles 1
-                numPartitions 0
                 numRows 0
                 rawDataSize 0
                 serialization.ddl struct src { string key, string value}
@@ -825,7 +826,11 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Extract
+          Statistics:
+              numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
           Limit
+            Statistics:
+                numRows: 10 dataSize: 2000 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -857,6 +862,8 @@ STAGE PLANS:
                     expr: _col1
                     type: string
               sort order: ++
+              Statistics:
+                  numRows: 10 dataSize: 2000 basicStatsState: COMPLETE colStatsState: NONE
               tag: -1
               value expressions:
                     expr: _col0
@@ -891,12 +898,18 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Extract
+          Statistics:
+              numRows: 10 dataSize: 2000 basicStatsState: COMPLETE colStatsState: NONE
           Limit
+            Statistics:
+                numRows: 10 dataSize: 2000 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 1
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 10 dataSize: 2000 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -940,7 +953,6 @@ STAGE PLANS:
     Stats-Aggr Operator
 #### A masked pattern was here ####
 
-
 PREHOOK: query: create table nzhang_ctas5 row format delimited fields terminated by ',' lines terminated by '\012' stored as textfile as select key, value from src sort by key, value limit 10
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src
@@ -953,11 +965,11 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table nzhang_ctas6 (key string, `to` string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@nzhang_ctas6
-PREHOOK: query: insert overwrite table nzhang_ctas6 select key, value from src limit 10
+PREHOOK: query: insert overwrite table nzhang_ctas6 select key, value from src tablesample (10 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@nzhang_ctas6
-POSTHOOK: query: insert overwrite table nzhang_ctas6 select key, value from src limit 10
+POSTHOOK: query: insert overwrite table nzhang_ctas6 select key, value from src tablesample (10 rows)
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src
 POSTHOOK: Output: default@nzhang_ctas6
