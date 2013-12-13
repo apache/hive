@@ -18,6 +18,8 @@
 
 package org.apache.hive.service.cli.operation;
 
+import java.util.EnumSet;
+
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
@@ -84,6 +86,10 @@ public class GetSchemasOperation extends MetadataOperation {
   @Override
   public RowSet getNextRowSet(FetchOrientation orientation, long maxRows) throws HiveSQLException {
     assertState(OperationState.FINISHED);
+    validateDefaultFetchOrientation(orientation);
+    if (orientation.equals(FetchOrientation.FETCH_FIRST)) {
+      rowSet.setStartOffset(0);
+    }
     return rowSet.extractSubset((int)maxRows);
   }
 }

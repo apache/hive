@@ -386,7 +386,6 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1 
 SELECT subq1.key, count(1) as cnt
 FROM (select x.key, count(1) as cnt from src1 x group by x.key) subq1 JOIN 

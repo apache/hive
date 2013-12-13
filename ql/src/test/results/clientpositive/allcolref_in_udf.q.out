@@ -42,7 +42,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 10
 
-
 PREHOOK: query: select concat(*),array(*) from src where key < 100 limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -165,7 +164,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 10
 
-
 PREHOOK: query: select stack(2, *) as (e1,e2,e3) from (
   select concat(*), concat(a.*), concat(b.*), concat(a.*, b.key), concat(a.key, b.*)
   from src a join src b on a.key+1=b.key where a.key < 100) x limit 10
@@ -234,7 +232,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
-
 
 PREHOOK: query: select explode(*) as x from allcolref limit 10
 PREHOOK: type: QUERY

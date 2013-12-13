@@ -61,7 +61,6 @@ STAGE PLANS:
               Limit
                 ListSink
 
-
 PREHOOK: query: SELECT NULL IS NULL,
        1 IS NOT NULL, 
        'my string' IS NOT NULL
@@ -123,7 +122,6 @@ STAGE PLANS:
               outputColumnNames: _col0, _col1, _col2
               Limit
                 ListSink
-
 
 PREHOOK: query: FROM src_thrift
 SELECT src_thrift.lint IS NOT NULL, 

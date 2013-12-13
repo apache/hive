@@ -243,7 +243,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE test_src 
 SELECT key, value FROM (
 	SELECT key, value FROM src 
@@ -514,7 +513,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE test_src 
 SELECT key, value FROM (

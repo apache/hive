@@ -562,7 +562,7 @@ class RunLengthIntegerWriterV2 implements IntegerWriter {
 
   private void preparePatchedBlob() {
     // mask will be max value beyond which patch will be generated
-    int mask = (1 << brBits95p) - 1;
+    long mask = (1L << brBits95p) - 1;
 
     // since we are considering only 95 percentile, the size of gap and
     // patch array can contain only be 5% values

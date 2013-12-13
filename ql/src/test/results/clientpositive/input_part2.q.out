@@ -46,7 +46,7 @@ STAGE PLANS:
           TableScan
             alias: srcpart
             Statistics:
-                numRows: 0 dataSize: 11624 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 58 dataSize: 11624 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
@@ -54,7 +54,7 @@ STAGE PLANS:
                   expr: ((key < 100) and (ds = '2008-04-08'))
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 19 dataSize: 3807 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: UDFToInteger(key)
@@ -67,14 +67,14 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics:
-                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 19 dataSize: 3807 basicStatsState: COMPLETE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
                   Statistics:
-                      numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                      numRows: 19 dataSize: 3807 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -100,7 +100,7 @@ STAGE PLANS:
                   expr: ((key < 100) and (ds = '2008-04-09'))
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 19 dataSize: 3807 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: UDFToInteger(key)
@@ -113,14 +113,14 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics:
-                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 19 dataSize: 3807 basicStatsState: COMPLETE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 2
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
                   Statistics:
-                      numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                      numRows: 19 dataSize: 3807 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -580,7 +580,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: FROM srcpart
 INSERT OVERWRITE TABLE dest1 SELECT srcpart.key, srcpart.value, srcpart.hr, srcpart.ds WHERE srcpart.key < 100 and srcpart.ds = '2008-04-08' and srcpart.hr = '12'

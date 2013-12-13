@@ -48,7 +48,6 @@ STAGE PLANS:
             outputColumnNames: _col0
             ListSink
 
-
 PREHOOK: query: SELECT sort_array(array("f", "a", "g", "c", "b", "d", "e")) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

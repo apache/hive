@@ -45,7 +45,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 7
 
-
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: SELECT cbigint, cdouble FROM alltypesorc WHERE cbigint < cdouble and cint > 0 limit 7
 PREHOOK: type: QUERY
@@ -133,7 +132,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
-
 
 PREHOOK: query: select ctinyint,cdouble,csmallint from alltypesorc where ctinyint is not null order by ctinyint,cdouble limit 20
 PREHOOK: type: QUERY
@@ -247,7 +245,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 20
 
-
 PREHOOK: query: select ctinyint,avg(cdouble + 1) from alltypesorc group by ctinyint order by ctinyint limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
@@ -348,7 +345,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
-
 
 PREHOOK: query: select distinct(ctinyint) from alltypesorc limit 20
 PREHOOK: type: QUERY
@@ -464,7 +460,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 20
 
-
 PREHOOK: query: select ctinyint, count(distinct(cdouble)) from alltypesorc group by ctinyint limit 20
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc
@@ -549,7 +544,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 0
-
 
 PREHOOK: query: select ctinyint,cdouble from alltypesorc order by ctinyint limit 0
 PREHOOK: type: QUERY
@@ -676,7 +670,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 20
-
 
 PREHOOK: query: select cdouble, sum(ctinyint) as sum from alltypesorc where ctinyint is not null group by cdouble order by sum, cdouble limit 20
 PREHOOK: type: QUERY

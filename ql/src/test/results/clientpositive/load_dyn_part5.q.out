@@ -68,7 +68,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: insert overwrite table nzhang_part5 partition (value) select key, value from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

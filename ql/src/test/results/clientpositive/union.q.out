@@ -140,7 +140,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: FROM (
   FROM src select src.key, src.value WHERE src.key < 100
   UNION ALL

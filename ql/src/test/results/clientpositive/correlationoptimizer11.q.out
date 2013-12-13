@@ -177,7 +177,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT x.key AS key, count(1) AS cnt
 FROM part_table x JOIN part_table y ON (x.key = y.key)
 WHERE x.partitionId = 1 AND
@@ -304,7 +303,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT x.key AS key, count(1) AS cnt
 FROM part_table x JOIN part_table y ON (x.key = y.key)
@@ -475,7 +473,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT x.key AS key, count(1) AS cnt
 FROM part_table x JOIN part_table y ON (x.key = y.key)
 WHERE x.partitionId = 2 AND
@@ -613,7 +610,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT x.key AS key, count(1) AS cnt
 FROM part_table x JOIN part_table y ON (x.key = y.key)

@@ -80,7 +80,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: INSERT INTO TABLE insert_into2 PARTITION (ds='1') SELECT * FROM src limit 100
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -212,7 +211,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE insert_into2 PARTITION (ds='2')
   SELECT * FROM src LIMIT 100
 PREHOOK: type: QUERY
@@ -328,7 +326,6 @@ STAGE PLANS:
 
   Stage: Stage-2
     Stats-Aggr Operator
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE insert_into2 PARTITION (ds='2')
   SELECT * FROM src LIMIT 50

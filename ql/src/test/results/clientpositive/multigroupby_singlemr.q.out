@@ -209,7 +209,6 @@ STAGE PLANS:
   Stage: Stage-5
     Stats-Aggr Operator
 
-
 PREHOOK: query: EXPLAIN
 FROM TBL
 INSERT OVERWRITE TABLE DEST1 SELECT TBL.C1, COUNT(TBL.C2) GROUP BY TBL.C1
@@ -395,7 +394,6 @@ STAGE PLANS:
 
   Stage: Stage-5
     Stats-Aggr Operator
-
 
 PREHOOK: query: EXPLAIN
 FROM TBL
@@ -758,7 +756,6 @@ STAGE PLANS:
   Stage: Stage-4
     Stats-Aggr Operator
 
-
 PREHOOK: query: EXPLAIN
 FROM TBL
 INSERT OVERWRITE TABLE DEST3 SELECT TBL.C1, TBL.C2, TBL.C3, COUNT(TBL.C4) GROUP BY TBL.C1, TBL.C2, TBL.C3
@@ -1052,5 +1049,4 @@ STAGE PLANS:
 
   Stage: Stage-8
     Stats-Aggr Operator
-
 

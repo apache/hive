@@ -182,7 +182,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT *
 FROM srcpart a JOIN srcpart b
 ON a.key = b.key
@@ -398,7 +397,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT *
 FROM srcpart a JOIN srcpart b

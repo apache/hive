@@ -342,7 +342,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT xx.key, xx.cnt, yy.key, yy.cnt
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
@@ -616,7 +615,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT xx.key, xx.cnt, yy.key, yy.cnt
 FROM
@@ -932,7 +930,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT xx.key, xx.cnt, yy.key, yy.cnt
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
@@ -1151,7 +1148,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
@@ -1359,7 +1355,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
@@ -1624,7 +1619,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
@@ -1844,7 +1838,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
@@ -2109,7 +2102,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT xx.key, xx.cnt, yy.key
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
@@ -2351,7 +2343,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT xx.key, xx.cnt, yy.key
 FROM
@@ -2656,7 +2647,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN src zz ON xx.key=zz.key
@@ -2928,7 +2918,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
@@ -3235,7 +3224,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
 JOIN
@@ -3497,7 +3485,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT xx.key, yy.key, yy.cnt
 FROM src1 xx
@@ -3937,7 +3924,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT tmp.key, tmp.sum1, tmp.sum2, z.key, z.value
 FROM
 (SELECT xx.key as key, sum(xx.cnt) as sum1, sum(yy.cnt) as sum2
@@ -4347,7 +4333,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT tmp.key, tmp.sum1, tmp.sum2, z.key, z.value
 FROM
@@ -4778,7 +4763,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT xx.key, xx.cnt, yy.key, yy.value, yy.cnt
 FROM
 (SELECT x.key as key, count(1) as cnt FROM src1 x JOIN src1 y ON (x.key = y.key) group by x.key) xx
@@ -5140,7 +5124,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT xx.key, xx.cnt, yy.key, yy.value, yy.cnt
 FROM
@@ -5512,7 +5495,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT xx.key, xx.cnt, yy.key, yy.value, yy.cnt
 FROM

@@ -97,7 +97,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: FROM src INSERT OVERWRITE TABLE dest1 SELECT count(CAST('' AS INT)), sum(CAST('' AS INT)), avg(CAST('' AS INT)), 
 min(CAST('' AS INT)), max(CAST('' AS INT))
 PREHOOK: type: QUERY

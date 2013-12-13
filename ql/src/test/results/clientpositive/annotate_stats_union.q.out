@@ -166,7 +166,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- numRows: 16 rawDataSize: 1376
 explain extended select * from (select state from loc_orc union all select state from loc_orc) tmp
 PREHOOK: type: QUERY
@@ -332,7 +331,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- numRows: 8 rawDataSize: 796
 explain extended select * from loc_orc
 PREHOOK: type: QUERY
@@ -373,7 +371,6 @@ STAGE PLANS:
             Statistics:
                 numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: COMPLETE
             ListSink
-
 
 PREHOOK: query: -- numRows: 16 rawDataSize: 1592
 explain extended select * from (select * from loc_orc union all select * from loc_orc) tmp
@@ -563,7 +560,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: create database test
 PREHOOK: type: CREATEDATABASE
@@ -909,7 +905,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- numRows: 16 rawDataSize: 1376
 explain extended select * from (select state from test.loc_staging union all select state from test.loc_orc) temp
 PREHOOK: type: QUERY
@@ -1123,5 +1118,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 

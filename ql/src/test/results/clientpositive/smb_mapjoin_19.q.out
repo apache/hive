@@ -86,7 +86,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE test_table2 PARTITION (ds = '1')
 SELECT a.key, a.value FROM test_table1 a WHERE a.ds = '1'
 PREHOOK: type: QUERY

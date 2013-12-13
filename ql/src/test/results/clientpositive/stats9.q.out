@@ -37,7 +37,6 @@ STAGE PLANS:
   Stage: Stage-1
     Stats-Aggr Operator
 
-
 PREHOOK: query: analyze table analyze_srcbucket compute statistics
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_srcbucket

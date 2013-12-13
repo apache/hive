@@ -48,7 +48,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT transform(*) USING 'cat' AS (col array<bigint>) FROM transform1_t1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@transform1_t1
@@ -116,7 +115,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT transform('0\0021\0022') USING 'cat' AS (col array<int>) FROM transform1_t2
 PREHOOK: type: QUERY

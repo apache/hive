@@ -413,6 +413,9 @@ public class LazyBinarySerDe extends AbstractSerDe {
       case DECIMAL: {
         HiveDecimalObjectInspector bdoi = (HiveDecimalObjectInspector) poi;
         HiveDecimalWritable t = bdoi.getPrimitiveWritableObject(obj);
+        if (t == null) {
+          return warnedOnceNullMapKey;
+        }
         t.writeToByteStream(byteStream);
         return warnedOnceNullMapKey;
       }

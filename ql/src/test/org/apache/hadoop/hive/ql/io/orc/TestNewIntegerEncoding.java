@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -45,6 +46,14 @@ import com.google.common.collect.Lists;
 import com.google.common.primitives.Longs;
 
 public class TestNewIntegerEncoding {
+
+  public static class TSRow {
+    Timestamp ts;
+
+    public TSRow(Timestamp ts) {
+      this.ts = ts;
+    }
+  }
 
   public static class Row {
     Integer int1;
@@ -875,6 +884,100 @@ public class TestNewIntegerEncoding {
       Object row = rows.next(null);
       assertEquals(input.get(idx++).longValue(), ((LongWritable) row).get());
     }
+  }
+
+  @Test
+  public void testPatchedBaseTimestamp() throws Exception {
+    ObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = ObjectInspectorFactory.getReflectionObjectInspector(TSRow.class,
+          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+
+    Writer writer = OrcFile.createWriter(testFilePath,
+        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000).bufferSize(10000));
+
+    List<Timestamp> tslist = Lists.newArrayList();
+    tslist.add(Timestamp.valueOf("9999-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("2003-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("1999-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("1995-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("2002-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("2010-03-02 00:00:00"));
+    tslist.add(Timestamp.valueOf("2005-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("2006-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("2003-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("1996-08-02 00:00:00"));
+    tslist.add(Timestamp.valueOf("1998-11-02 00:00:00"));
+    tslist.add(Timestamp.valueOf("2008-10-02 00:00:00"));
+    tslist.add(Timestamp.valueOf("1993-08-02 00:00:00"));
+    tslist.add(Timestamp.valueOf("2008-01-02 00:00:00"));
+    tslist.add(Timestamp.valueOf("2007-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("2004-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("2008-10-02 00:00:00"));
+    tslist.add(Timestamp.valueOf("2003-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("2004-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("2008-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("2005-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("1994-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("2006-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("2004-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("2001-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("2000-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("2000-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("2002-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("2006-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("2011-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("2002-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("2005-01-01 00:00:00"));
+    tslist.add(Timestamp.valueOf("1974-01-01 00:00:00"));
+
+    for (Timestamp ts : tslist) {
+      writer.addRow(new TSRow(ts));
+    }
+
+    writer.close();
+
+    Reader reader = OrcFile.createReader(fs, testFilePath);
+    RecordReader rows = reader.rows(null);
+    int idx = 0;
+    while (rows.hasNext()) {
+      Object row = rows.next(null);
+      assertEquals(tslist.get(idx++).getNanos(),
+          ((Timestamp) ((OrcStruct) row).getFieldValue(0)).getNanos());
+    }
+  }
+
+  @Test
+  public void testDirectLargeNegatives() throws Exception {
+    ObjectInspector inspector;
+    synchronized (TestOrcFile.class) {
+      inspector = ObjectInspectorFactory.getReflectionObjectInspector(Long.class,
+          ObjectInspectorFactory.ObjectInspectorOptions.JAVA);
+    }
+
+    Writer writer = OrcFile.createWriter(testFilePath,
+        OrcFile.writerOptions(conf).inspector(inspector).stripeSize(100000).bufferSize(10000));
+
+    writer.addRow(-7486502418706614742L);
+    writer.addRow(0L);
+    writer.addRow(1L);
+    writer.addRow(1L);
+    writer.addRow(-5535739865598783616L);
+    writer.close();
+
+    Reader reader = OrcFile.createReader(fs, testFilePath);
+    RecordReader rows = reader.rows(null);
+    Object row = rows.next(null);
+    assertEquals(-7486502418706614742L, ((LongWritable) row).get());
+    row = rows.next(row);
+    assertEquals(0L, ((LongWritable) row).get());
+    row = rows.next(row);
+    assertEquals(1L, ((LongWritable) row).get());
+    row = rows.next(row);
+    assertEquals(1L, ((LongWritable) row).get());
+    row = rows.next(row);
+    assertEquals(-5535739865598783616L, ((LongWritable) row).get());
   }
 
   @Test

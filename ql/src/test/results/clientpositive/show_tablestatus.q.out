@@ -18,7 +18,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SHOW TABLE EXTENDED IN default LIKE `src`
 PREHOOK: type: SHOW_TABLESTATUS
 POSTHOOK: query: SHOW TABLE EXTENDED IN default LIKE `src`

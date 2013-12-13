@@ -299,7 +299,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select *
 from 
 T1 a join T2 b on a.key = b.key 

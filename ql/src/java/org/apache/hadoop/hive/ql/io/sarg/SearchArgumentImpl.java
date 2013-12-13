@@ -573,7 +573,7 @@ final class SearchArgumentImpl implements SearchArgument {
      * @param expr The expression to clean up
      * @return The cleaned up expression
      */
-    ExpressionTree foldMaybe(ExpressionTree expr) {
+    static ExpressionTree foldMaybe(ExpressionTree expr) {
       if (expr.children != null) {
         for(int i=0; i < expr.children.size(); ++i) {
           ExpressionTree child = foldMaybe(expr.children.get(i));
@@ -593,6 +593,9 @@ final class SearchArgumentImpl implements SearchArgument {
           } else {
             expr.children.set(i, child);
           }
+        }
+        if (expr.children.isEmpty()) {
+          return new ExpressionTree(TruthValue.YES_NO_NULL);
         }
       }
       return expr;

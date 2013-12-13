@@ -103,7 +103,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: FROM src1
 INSERT OVERWRITE TABLE dest1 SELECT NULL, src1.key
 PREHOOK: type: QUERY

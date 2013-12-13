@@ -69,7 +69,6 @@ STAGE PLANS:
                 numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
             ListSink
 
-
 PREHOOK: query: insert overwrite table loc_orc partition(year) select * from loc_staging
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_staging
@@ -194,7 +193,7 @@ STAGE PLANS:
         TableScan
           alias: loc_orc
           Statistics:
-              numRows: 0 dataSize: 727 basicStatsState: PARTIAL colStatsState: NONE
+              numRows: 5 dataSize: 727 basicStatsState: COMPLETE colStatsState: NONE
           GatherStats: false
           Select Operator
             expressions:
@@ -208,9 +207,8 @@ STAGE PLANS:
                   type: string
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics:
-                numRows: 0 dataSize: 727 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 5 dataSize: 727 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
-
 
 PREHOOK: query: -- partition level analyze statistics for specific parition
 analyze table loc_orc partition(year=2001) compute statistics
@@ -298,7 +296,7 @@ STAGE PLANS:
         TableScan
           alias: loc_orc
           Statistics:
-              numRows: 0 dataSize: 325 basicStatsState: PARTIAL colStatsState: NONE
+              numRows: 2 dataSize: 325 basicStatsState: COMPLETE colStatsState: NONE
           GatherStats: false
           Select Operator
             expressions:
@@ -312,9 +310,8 @@ STAGE PLANS:
                   type: string
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics:
-                numRows: 0 dataSize: 325 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 2 dataSize: 325 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
-
 
 PREHOOK: query: -- basicStatState: PARTIAL colStatState: NONE
 explain extended select * from loc_orc
@@ -421,7 +418,7 @@ STAGE PLANS:
         TableScan
           alias: loc_orc
           Statistics:
-              numRows: 7 dataSize: 727 basicStatsState: PARTIAL colStatsState: NONE
+              numRows: 9 dataSize: 727 basicStatsState: COMPLETE colStatsState: NONE
           GatherStats: false
           Select Operator
             expressions:
@@ -435,9 +432,8 @@ STAGE PLANS:
                   type: string
             outputColumnNames: _col0, _col1, _col2, _col3
             Statistics:
-                numRows: 7 dataSize: 727 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 9 dataSize: 727 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
-
 
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: NONE
 explain extended select * from loc_orc where year=2001
@@ -521,7 +517,6 @@ STAGE PLANS:
             Statistics:
                 numRows: 7 dataSize: 402 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
-
 
 PREHOOK: query: -- partition level analyze statistics for all partitions
 analyze table loc_orc partition(year) compute statistics
@@ -629,7 +624,6 @@ STAGE PLANS:
             Statistics:
                 numRows: 1 dataSize: 325 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
-
 
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: NONE
 explain extended select * from loc_orc
@@ -752,7 +746,6 @@ STAGE PLANS:
             Statistics:
                 numRows: 8 dataSize: 727 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
-
 
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: NONE
 explain extended select * from loc_orc where year=2001 or year='__HIVE_DEFAULT_PARTITION__'
@@ -876,7 +869,6 @@ STAGE PLANS:
                 numRows: 8 dataSize: 727 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
 
-
 PREHOOK: query: -- both partitions will be pruned
 -- basicStatState: NONE colStatState: NONE
 explain extended select * from loc_orc where year=2001 and year='__HIVE_DEFAULT_PARTITION__'
@@ -928,7 +920,6 @@ STAGE PLANS:
               Statistics:
                   numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
               ListSink
-
 
 PREHOOK: query: -- partition level partial column statistics
 analyze table loc_orc partition(year=2001) compute statistics for columns state,locid
@@ -1099,7 +1090,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: PARTIAL
 explain extended select state from loc_orc
 PREHOOK: type: QUERY
@@ -1250,7 +1240,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- column statistics for __HIVE_DEFAULT_PARTITION__ is not supported yet. Hence colStatState reports PARTIAL
 -- basicStatState: COMPLETE colStatState: PARTIAL
@@ -1407,7 +1396,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: COMPLETE
 explain extended select state,locid from loc_orc where year=2001
 PREHOOK: type: QUERY
@@ -1519,7 +1507,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: NONE
 explain extended select state,locid from loc_orc where year!=2001
 PREHOOK: type: QUERY
@@ -1555,7 +1542,7 @@ STAGE PLANS:
                   expr: (year <> 2001)
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 162 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 1 dataSize: 325 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: state
@@ -1564,14 +1551,14 @@ STAGE PLANS:
                       type: int
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 0 dataSize: 162 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 1 dataSize: 325 basicStatsState: COMPLETE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
                   Statistics:
-                      numRows: 0 dataSize: 162 basicStatsState: PARTIAL colStatsState: NONE
+                      numRows: 1 dataSize: 325 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1637,7 +1624,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: PARTIAL
 explain extended select * from loc_orc
@@ -1761,4 +1747,353 @@ STAGE PLANS:
                 numRows: 8 dataSize: 727 basicStatsState: COMPLETE colStatsState: PARTIAL
             ListSink
 
+PREHOOK: query: -- This is to test filter expression evaluation on partition column
+-- numRows: 2 dataSize: 8 basicStatState: COMPLETE colStatState: COMPLETE
+explain extended select locid from loc_orc where locid>0 and year=2001
+PREHOOK: type: QUERY
+POSTHOOK: query: -- This is to test filter expression evaluation on partition column
+-- numRows: 2 dataSize: 8 basicStatState: COMPLETE colStatState: COMPLETE
+explain extended select locid from loc_orc where locid>0 and year=2001
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: loc_orc PARTITION(year=2001).locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc PARTITION(year=2001).state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc PARTITION(year=2001).zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+POSTHOOK: Lineage: loc_orc PARTITION(year=__HIVE_DEFAULT_PARTITION__).locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc PARTITION(year=__HIVE_DEFAULT_PARTITION__).state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc PARTITION(year=__HIVE_DEFAULT_PARTITION__).zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL locid))) (TOK_WHERE (and (> (TOK_TABLE_OR_COL locid) 0) (= (TOK_TABLE_OR_COL year) 2001)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        loc_orc 
+          TableScan
+            alias: loc_orc
+            Statistics:
+                numRows: 7 dataSize: 402 basicStatsState: COMPLETE colStatsState: COMPLETE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate:
+                  expr: (locid > 0)
+                  type: boolean
+              Statistics:
+                  numRows: 2 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Select Operator
+                expressions:
+                      expr: locid
+                      type: int
+                outputColumnNames: _col0
+                Statistics:
+                    numRows: 2 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics:
+                      numRows: 2 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      properties:
+                        columns _col0
+                        columns.types int
+                        escape.delim \
+                        hive.serialization.extend.nesting.levels true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: year=2001
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2001
+            properties:
+              COLUMN_STATS_ACCURATE true
+              bucket_count -1
+              columns state,locid,zip
+              columns.types string:int:bigint
+#### A masked pattern was here ####
+              name default.loc_orc
+              numFiles 1
+              numRows 7
+              partition_columns year
+              rawDataSize 0
+              serialization.ddl struct loc_orc { string state, i32 locid, i64 zip}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              totalSize 402
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucket_count -1
+                columns state,locid,zip
+                columns.types string:int:bigint
+#### A masked pattern was here ####
+                name default.loc_orc
+                partition_columns year
+                serialization.ddl struct loc_orc { string state, i32 locid, i64 zip}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc
+            name: default.loc_orc
+      Truncated Path -> Alias:
+        /loc_orc/year=2001 [loc_orc]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+PREHOOK: query: explain extended select locid,year from loc_orc where locid>0 and year=2001
+PREHOOK: type: QUERY
+POSTHOOK: query: explain extended select locid,year from loc_orc where locid>0 and year=2001
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: loc_orc PARTITION(year=2001).locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc PARTITION(year=2001).state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc PARTITION(year=2001).zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+POSTHOOK: Lineage: loc_orc PARTITION(year=__HIVE_DEFAULT_PARTITION__).locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc PARTITION(year=__HIVE_DEFAULT_PARTITION__).state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc PARTITION(year=__HIVE_DEFAULT_PARTITION__).zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL locid)) (TOK_SELEXPR (TOK_TABLE_OR_COL year))) (TOK_WHERE (and (> (TOK_TABLE_OR_COL locid) 0) (= (TOK_TABLE_OR_COL year) 2001)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        loc_orc 
+          TableScan
+            alias: loc_orc
+            Statistics:
+                numRows: 7 dataSize: 402 basicStatsState: COMPLETE colStatsState: COMPLETE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate:
+                  expr: (locid > 0)
+                  type: boolean
+              Statistics:
+                  numRows: 2 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Select Operator
+                expressions:
+                      expr: locid
+                      type: int
+                      expr: year
+                      type: string
+                outputColumnNames: _col0, _col1
+                Statistics:
+                    numRows: 2 dataSize: 376 basicStatsState: COMPLETE colStatsState: COMPLETE
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics:
+                      numRows: 2 dataSize: 376 basicStatsState: COMPLETE colStatsState: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      properties:
+                        columns _col0,_col1
+                        columns.types int:string
+                        escape.delim \
+                        hive.serialization.extend.nesting.levels true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: year=2001
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2001
+            properties:
+              COLUMN_STATS_ACCURATE true
+              bucket_count -1
+              columns state,locid,zip
+              columns.types string:int:bigint
+#### A masked pattern was here ####
+              name default.loc_orc
+              numFiles 1
+              numRows 7
+              partition_columns year
+              rawDataSize 0
+              serialization.ddl struct loc_orc { string state, i32 locid, i64 zip}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              totalSize 402
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucket_count -1
+                columns state,locid,zip
+                columns.types string:int:bigint
+#### A masked pattern was here ####
+                name default.loc_orc
+                partition_columns year
+                serialization.ddl struct loc_orc { string state, i32 locid, i64 zip}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc
+            name: default.loc_orc
+      Truncated Path -> Alias:
+        /loc_orc/year=2001 [loc_orc]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+PREHOOK: query: explain extended select * from (select locid,year from loc_orc) test where locid>0 and year=2001
+PREHOOK: type: QUERY
+POSTHOOK: query: explain extended select * from (select locid,year from loc_orc) test where locid>0 and year=2001
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: loc_orc PARTITION(year=2001).locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc PARTITION(year=2001).state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc PARTITION(year=2001).zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+POSTHOOK: Lineage: loc_orc PARTITION(year=__HIVE_DEFAULT_PARTITION__).locid SIMPLE [(loc_staging)loc_staging.FieldSchema(name:locid, type:int, comment:null), ]
+POSTHOOK: Lineage: loc_orc PARTITION(year=__HIVE_DEFAULT_PARTITION__).state SIMPLE [(loc_staging)loc_staging.FieldSchema(name:state, type:string, comment:null), ]
+POSTHOOK: Lineage: loc_orc PARTITION(year=__HIVE_DEFAULT_PARTITION__).zip SIMPLE [(loc_staging)loc_staging.FieldSchema(name:zip, type:bigint, comment:null), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME loc_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL locid)) (TOK_SELEXPR (TOK_TABLE_OR_COL year))))) test)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (and (> (TOK_TABLE_OR_COL locid) 0) (= (TOK_TABLE_OR_COL year) 2001)))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        test:loc_orc 
+          TableScan
+            alias: loc_orc
+            Statistics:
+                numRows: 7 dataSize: 402 basicStatsState: COMPLETE colStatsState: COMPLETE
+            GatherStats: false
+            Filter Operator
+              isSamplingPred: false
+              predicate:
+                  expr: (locid > 0)
+                  type: boolean
+              Statistics:
+                  numRows: 2 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+              Select Operator
+                expressions:
+                      expr: locid
+                      type: int
+                      expr: year
+                      type: string
+                outputColumnNames: _col0, _col1
+                Statistics:
+                    numRows: 2 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+#### A masked pattern was here ####
+                  NumFilesPerFileSink: 1
+                  Statistics:
+                      numRows: 2 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
+#### A masked pattern was here ####
+                  table:
+                      input format: org.apache.hadoop.mapred.TextInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                      properties:
+                        columns _col0,_col1
+                        columns.types int:string
+                        escape.delim \
+                        hive.serialization.extend.nesting.levels true
+                        serialization.format 1
+                        serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                      serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  TotalFiles: 1
+                  GatherStats: false
+                  MultiFileSpray: false
+      Path -> Alias:
+#### A masked pattern was here ####
+      Path -> Partition:
+#### A masked pattern was here ####
+          Partition
+            base file name: year=2001
+            input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+            output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+            partition values:
+              year 2001
+            properties:
+              COLUMN_STATS_ACCURATE true
+              bucket_count -1
+              columns state,locid,zip
+              columns.types string:int:bigint
+#### A masked pattern was here ####
+              name default.loc_orc
+              numFiles 1
+              numRows 7
+              partition_columns year
+              rawDataSize 0
+              serialization.ddl struct loc_orc { string state, i32 locid, i64 zip}
+              serialization.format 1
+              serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              totalSize 402
+#### A masked pattern was here ####
+            serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+          
+              input format: org.apache.hadoop.hive.ql.io.orc.OrcInputFormat
+              output format: org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat
+              properties:
+                bucket_count -1
+                columns state,locid,zip
+                columns.types string:int:bigint
+#### A masked pattern was here ####
+                name default.loc_orc
+                partition_columns year
+                serialization.ddl struct loc_orc { string state, i32 locid, i64 zip}
+                serialization.format 1
+                serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
+#### A masked pattern was here ####
+              serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
+              name: default.loc_orc
+            name: default.loc_orc
+      Truncated Path -> Alias:
+        /loc_orc/year=2001 [test:loc_orc]
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
 

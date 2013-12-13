@@ -93,7 +93,7 @@ public class HdfsAuthorizationProvider extends HiveAuthorizationProviderBase {
 
     switch (priv.getPriv()) {
     case ALL:
-      throw new AuthorizationException("no matching Action for Privilege.All");
+      return FsAction.READ_WRITE;
     case ALTER_DATA:
       return FsAction.WRITE;
     case ALTER_METADATA:

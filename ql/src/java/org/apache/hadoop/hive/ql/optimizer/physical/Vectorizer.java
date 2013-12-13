@@ -129,6 +129,7 @@ import org.apache.hadoop.hive.ql.udf.generic.GenericUDFBridge;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFCeil;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFConcat;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFFloor;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIf;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFIn;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFLower;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
@@ -264,6 +265,9 @@ public class Vectorizer implements PhysicalPlanResolver {
     supportedGenericUDFs.add(UDFToString.class);
     supportedGenericUDFs.add(GenericUDFTimestamp.class);
 
+    // For conditional expressions
+    supportedGenericUDFs.add(GenericUDFIf.class);
+
     supportedAggregationUdfs.add("min");
     supportedAggregationUdfs.add("max");
     supportedAggregationUdfs.add("count");
@@ -359,17 +363,17 @@ public class Vectorizer implements PhysicalPlanResolver {
       topNodes.addAll(mapWork.getAliasToWork().values());
       HashMap<Node, Object> nodeOutput = new HashMap<Node, Object>();
       ogw.startWalking(topNodes, nodeOutput);
-      
+
       Map<String, Map<Integer, String>> columnVectorTypes = vnp.getScratchColumnVectorTypes();
       mapWork.setScratchColumnVectorTypes(columnVectorTypes);
       Map<String, Map<String, Integer>> columnMap = vnp.getScratchColumnMap();
       mapWork.setScratchColumnMap(columnMap);
-      
+
       if (LOG.isDebugEnabled()) {
         LOG.debug(String.format("vectorTypes: %s", columnVectorTypes.toString()));
         LOG.debug(String.format("columnMap: %s", columnMap.toString()));
       }
-      
+
       return;
     }
   }
@@ -438,9 +442,9 @@ public class Vectorizer implements PhysicalPlanResolver {
         Object... nodeOutputs) throws SemanticException {
 
       Operator<? extends OperatorDesc> op = (Operator<? extends OperatorDesc>) nd;
-      
-      VectorizationContext vContext = null;      
-      
+
+      VectorizationContext vContext = null;
+
       if (op instanceof TableScanOperator) {
         vContext = getVectorizationContext(op, physicalContext);
         for (String onefile : mWork.getPathToAliases().keySet()) {
@@ -470,9 +474,9 @@ public class Vectorizer implements PhysicalPlanResolver {
           --i;
         }
       }
-      
+
       assert vContext != null;
-      
+
       if (op.getType().equals(OperatorType.REDUCESINK) &&
           op.getParentOperators().get(0).getType().equals(OperatorType.GROUPBY)) {
         // No need to vectorize
@@ -616,6 +620,10 @@ public class Vectorizer implements PhysicalPlanResolver {
   }
 
   private boolean validateGroupByOperator(GroupByOperator op) {
+    if (op.getConf().isGroupingSetsPresent()) {
+      LOG.warn("Grouping sets not supported in vector mode");
+      return false;
+    }
     boolean ret = validateExprNodeDesc(op.getConf().getKeys());
     if (!ret) {
       return false;

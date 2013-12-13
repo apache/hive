@@ -137,7 +137,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: drop table invites
 PREHOOK: type: DROPTABLE
 PREHOOK: Input: default@invites

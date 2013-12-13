@@ -34,7 +34,7 @@ STAGE PLANS:
           TableScan
             alias: s
             Statistics:
-                numRows: 0 dataSize: 11603 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 111 dataSize: 11603 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: true
@@ -42,7 +42,7 @@ STAGE PLANS:
                   expr: (((hash(key) & 2147483647) % 5) = 0)
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -51,14 +51,14 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
                   Statistics:
-                      numRows: 0 dataSize: 5801 basicStatsState: PARTIAL colStatsState: NONE
+                      numRows: 55 dataSize: 5749 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -302,7 +302,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest1 SELECT s.* -- here's another test
 FROM srcbucket TABLESAMPLE (BUCKET 1 OUT OF 5 on key) s

@@ -56,7 +56,6 @@ STAGE PLANS:
               outputColumnNames: _col0, _col1
               ListSink
 
-
 PREHOOK: query: SELECT key, value
 FROM src
 WHERE key <> '302'
@@ -603,7 +602,6 @@ STAGE PLANS:
                     type: string
               outputColumnNames: _col0, _col1
               ListSink
-
 
 PREHOOK: query: SELECT key, value
 FROM src

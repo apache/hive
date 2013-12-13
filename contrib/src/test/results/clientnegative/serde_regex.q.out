@@ -62,7 +62,6 @@ STAGE PLANS:
           name: serde_regex
           isExternal: false
 
-
 PREHOOK: query: CREATE TABLE serde_regex(
   host STRING,
   identity STRING,

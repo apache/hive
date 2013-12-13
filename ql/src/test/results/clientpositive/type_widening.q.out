@@ -25,7 +25,6 @@ STAGE PLANS:
             Limit
               ListSink
 
-
 PREHOOK: query: SELECT COALESCE(0, 9223372036854775807) FROM src LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -109,7 +108,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT * FROM (SELECT 0 AS numcol FROM src UNION ALL SELECT 9223372036854775807 AS numcol FROM src) a ORDER BY numcol
 PREHOOK: type: QUERY

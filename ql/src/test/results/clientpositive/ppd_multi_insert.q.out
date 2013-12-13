@@ -202,7 +202,6 @@ STAGE PLANS:
           hdfs directory: true
           destination: target/warehouse/mi4.out
 
-
 PREHOOK: query: FROM src a JOIN src b ON (a.key = b.key)
 INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100
 INSERT OVERWRITE TABLE mi2 SELECT a.key, a.value WHERE a.key >= 100 and a.key < 200
@@ -1492,7 +1491,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
           destination: target/warehouse/mi4.out
-
 
 PREHOOK: query: FROM src a JOIN src b ON (a.key = b.key)
 INSERT OVERWRITE TABLE mi1 SELECT a.* WHERE a.key < 100

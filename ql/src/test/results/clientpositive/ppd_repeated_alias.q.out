@@ -107,7 +107,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- Q2: predicate should not be pushed on the right side of a left outer join
 explain
 SELECT * FROM
@@ -201,7 +200,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- Q3: predicate should be pushed
 explain
 SELECT * FROM
@@ -294,7 +292,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- Q4: here, the filter c.bar should be created under the first join but above the second
 explain select c.foo, d.bar from (select c.foo, b.bar, c.blah from pokes c left outer join pokes b on c.foo=b.foo) c left outer join pokes d where d.foo=1 and c.bar=2
@@ -423,7 +420,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: drop table pokes
 PREHOOK: type: DROPTABLE

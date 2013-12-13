@@ -83,7 +83,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: INSERT INTO TABLE insert_into4a SELECT * FROM src LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -177,7 +176,6 @@ STAGE PLANS:
 
   Stage: Stage-2
     Stats-Aggr Operator
-
 
 PREHOOK: query: INSERT INTO TABLE insert_into4a SELECT * FROM src LIMIT 10
 PREHOOK: type: QUERY
@@ -311,7 +309,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: INSERT INTO TABLE insert_into4b SELECT * FROM insert_into4a
 PREHOOK: type: QUERY

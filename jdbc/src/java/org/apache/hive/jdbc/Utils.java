@@ -270,4 +270,30 @@ public class Utils {
 
     return connParams;
   }
+
+  /**
+   * Takes a version string delmited by '.' and '-' characters
+   * and returns a partial version.
+   *
+   * @param fullVersion
+   *          version string.
+   * @param tokenPosition
+   *          position of version string to get starting at 1. eg, for a X.x.xxx
+   *          string, 1 will return the major version, 2 will return minor
+   *          version.
+   * @return version part, or -1 if version string was malformed.
+   */
+  static int getVersionPart(String fullVersion, int position) {
+    int version = -1;
+    try {
+      String[] tokens = fullVersion.split("[\\.-]"); //$NON-NLS-1$
+
+      if (tokens != null && tokens.length > 1 && tokens[position] != null) {
+        version = Integer.parseInt(tokens[position]);
+      }
+    } catch (Exception e) {
+      version = -1;
+    }
+    return version;
+  }
 }

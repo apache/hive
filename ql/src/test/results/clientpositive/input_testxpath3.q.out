@@ -39,7 +39,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: FROM src_thrift
 SELECT src_thrift.mstringstring['key_9'], src_thrift.lintstring.myint
 PREHOOK: type: QUERY

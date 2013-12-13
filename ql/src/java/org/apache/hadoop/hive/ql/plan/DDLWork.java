@@ -36,6 +36,8 @@ public class DDLWork implements Serializable {
   private CreateDatabaseDesc createDatabaseDesc;
   private SwitchDatabaseDesc switchDatabaseDesc;
   private DropDatabaseDesc dropDatabaseDesc;
+  private LockDatabaseDesc lockDatabaseDesc;
+  private UnlockDatabaseDesc unlockDatabaseDesc;
   private CreateTableDesc createTblDesc;
   private CreateTableLikeDesc createTblLikeDesc;
   private CreateViewDesc createVwDesc;
@@ -284,6 +286,24 @@ public class DDLWork implements Serializable {
   }
 
   /**
+   * @param lockDatabaseDesc
+   */
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      LockDatabaseDesc lockDatabaseDesc) {
+    this(inputs, outputs);
+    this.lockDatabaseDesc = lockDatabaseDesc;
+  }
+
+  /**
+   * @param unlockDatabaseDesc
+   */
+  public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
+      UnlockDatabaseDesc unlockDatabaseDesc) {
+    this(inputs, outputs);
+    this.unlockDatabaseDesc = unlockDatabaseDesc;
+  }
+
+  /**
    * @param showFuncsDesc
    */
   public DDLWork(HashSet<ReadEntity> inputs, HashSet<WriteEntity> outputs,
@@ -499,6 +519,22 @@ public class DDLWork implements Serializable {
    */
   public void setSwitchDatabaseDesc(SwitchDatabaseDesc switchDatabaseDesc) {
     this.switchDatabaseDesc = switchDatabaseDesc;
+  }
+
+  public LockDatabaseDesc getLockDatabaseDesc() {
+    return lockDatabaseDesc;
+  }
+
+  public void setLockDatabaseDesc(LockDatabaseDesc lockDatabaseDesc) {
+    this.lockDatabaseDesc = lockDatabaseDesc;
+  }
+
+  public UnlockDatabaseDesc getUnlockDatabaseDesc() {
+    return unlockDatabaseDesc;
+  }
+
+  public void setUnlockDatabaseDesc(UnlockDatabaseDesc unlockDatabaseDesc) {
+    this.unlockDatabaseDesc = unlockDatabaseDesc;
   }
 
   /**

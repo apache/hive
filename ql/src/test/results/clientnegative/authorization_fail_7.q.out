@@ -26,7 +26,6 @@ PREHOOK: type: SHOW_ROLE_GRANT
 POSTHOOK: query: show role grant user hive_test_user
 POSTHOOK: type: SHOW_ROLE_GRANT
 role name:hive_test_role_fail
-role name:hive_test_role_fail
 PREHOOK: query: show grant role hive_test_role_fail on table authorization_fail
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant role hive_test_role_fail on table authorization_fail
@@ -43,4 +42,4 @@ PREHOOK: query: drop role hive_test_role_fail
 PREHOOK: type: DROPROLE
 POSTHOOK: query: drop role hive_test_role_fail
 POSTHOOK: type: DROPROLE
-Authorization failed:No privilege 'Select' found for inputs { database:default, table:authorization_fail, columnName:key}. Use show grant to get more details.
+Authorization failed:No privilege 'Select' found for inputs { database:default, table:authorization_fail, columnName:key}. Use SHOW GRANT to get more details.

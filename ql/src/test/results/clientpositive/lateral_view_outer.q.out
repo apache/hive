@@ -79,7 +79,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 10
 
-
 PREHOOK: query: select * from src LATERAL VIEW OUTER explode(array()) C AS a limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -178,7 +177,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
-
 
 PREHOOK: query: select * from src LATERAL VIEW OUTER explode(array(4,5)) C AS a limit 10
 PREHOOK: type: QUERY
@@ -283,7 +281,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
-
 
 PREHOOK: query: select * from array_valued LATERAL VIEW OUTER explode(value) C AS a limit 10
 PREHOOK: type: QUERY

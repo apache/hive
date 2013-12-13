@@ -60,7 +60,6 @@ STAGE PLANS:
   Stage: Stage-1
     Stats-Aggr Operator
 
-
 PREHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=11) compute statistics
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_srcpart
@@ -202,7 +201,6 @@ STAGE PLANS:
   Stage: Stage-1
     Stats-Aggr Operator
 
-
 PREHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-08',hr=12) compute statistics
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_srcpart
@@ -300,7 +298,6 @@ STAGE PLANS:
 
   Stage: Stage-1
     Stats-Aggr Operator
-
 
 PREHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-09',hr=11) compute statistics
 PREHOOK: type: QUERY
@@ -400,7 +397,6 @@ STAGE PLANS:
   Stage: Stage-1
     Stats-Aggr Operator
 
-
 PREHOOK: query: analyze table analyze_srcpart PARTITION(ds='2008-04-09',hr=12) compute statistics
 PREHOOK: type: QUERY
 PREHOOK: Input: default@analyze_srcpart
@@ -498,7 +494,6 @@ STAGE PLANS:
 
   Stage: Stage-1
     Stats-Aggr Operator
-
 
 PREHOOK: query: analyze table analyze_srcpart PARTITION(ds, hr) compute statistics
 PREHOOK: type: QUERY

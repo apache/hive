@@ -21,7 +21,7 @@ STAGE PLANS:
           TableScan
             alias: src
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
@@ -29,14 +29,14 @@ STAGE PLANS:
                     type: string
               outputColumnNames: _col0
               Statistics:
-                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
                 Statistics:
-                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -103,7 +103,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: explain extended select a.key from src a
 PREHOOK: type: QUERY
@@ -124,7 +123,7 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
@@ -132,14 +131,14 @@ STAGE PLANS:
                     type: string
               outputColumnNames: _col0
               Statistics:
-                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
                 Statistics:
-                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -206,7 +205,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: explain extended select a.key from src tablesample(1 percent) a
 PREHOOK: type: QUERY
@@ -227,7 +225,7 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
@@ -235,14 +233,14 @@ STAGE PLANS:
                     type: string
               outputColumnNames: _col0
               Statistics:
-                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
                 Statistics:
-                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -313,7 +311,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: explain extended select key from src ('user.defined.key'='some.value')
 PREHOOK: type: QUERY
@@ -334,7 +331,7 @@ STAGE PLANS:
           TableScan
             alias: src
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
@@ -342,14 +339,14 @@ STAGE PLANS:
                     type: string
               outputColumnNames: _col0
               Statistics:
-                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
                 Statistics:
-                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -418,7 +415,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: explain extended select key from src ('user.defined.key'='some.value') tablesample(1 percent)
 PREHOOK: type: QUERY
@@ -439,7 +435,7 @@ STAGE PLANS:
           TableScan
             alias: src
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
@@ -447,14 +443,14 @@ STAGE PLANS:
                     type: string
               outputColumnNames: _col0
               Statistics:
-                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
                 Statistics:
-                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -528,7 +524,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain extended select a.key from src ('user.defined.key'='some.value') a
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select a.key from src ('user.defined.key'='some.value') a
@@ -548,7 +543,7 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
@@ -556,14 +551,14 @@ STAGE PLANS:
                     type: string
               outputColumnNames: _col0
               Statistics:
-                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
                 Statistics:
-                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -633,7 +628,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain extended select a.key from src ('user.defined.key'='some.value') tablesample(1 percent) a
 PREHOOK: type: QUERY
 POSTHOOK: query: explain extended select a.key from src ('user.defined.key'='some.value') tablesample(1 percent) a
@@ -653,7 +647,7 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
@@ -661,14 +655,14 @@ STAGE PLANS:
                     type: string
               outputColumnNames: _col0
               Statistics:
-                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
                 Statistics:
-                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 58 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -741,5 +735,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 

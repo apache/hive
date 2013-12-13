@@ -276,7 +276,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT a.key, a.value, b.key, b.value1,  b.value2
  FROM 
   (

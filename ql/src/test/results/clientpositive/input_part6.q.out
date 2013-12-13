@@ -46,7 +46,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 10
 
-
 PREHOOK: query: SELECT x.* FROM SRCPART x WHERE x.ds = 2008-04-08 LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart

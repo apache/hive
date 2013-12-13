@@ -95,7 +95,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: FROM (
   FROM src select src.* WHERE src.key < 100
 ) unioninput

@@ -1,1 +1,1 @@
-Authorization failed:No privilege 'Select' found for inputs { database:default, table:src, columnName:key}. Use show grant to get more details.
+Authorization failed:No privilege 'Select' found for inputs { database:default, table:src, columnName:key}. Use SHOW GRANT to get more details.

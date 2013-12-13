@@ -29,6 +29,8 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.common.StatsSetupConst;
+import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -37,6 +39,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TableScanDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
+import org.apache.hadoop.hive.ql.stats.CounterStatsPublisher;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
@@ -292,17 +295,27 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
     for (String pspecs : stats.keySet()) {
       statsToPublish.clear();
       if (pspecs.isEmpty()) {
+        if (statsPublisher instanceof CounterStatsPublisher) {
+          // key is of form : dbName.TblName/
+          key = conf.getStatsAggPrefix();
+       	 } else { 
         // In case of a non-partitioned table, the key for temp storage is just
         // "tableName + taskID"
         String keyPrefix = Utilities.getHashedStatsPrefix(
-            conf.getStatsAggPrefix(), conf.getMaxStatsKeyPrefixLength());
+          conf.getStatsAggPrefix(), conf.getMaxStatsKeyPrefixLength());
         key = keyPrefix + taskID;
+        } 
       } else {
-        // In case of a partition, the key for temp storage is
-        // "tableName + partitionSpecs + taskID"
-        String keyPrefix = Utilities.getHashedStatsPrefix(
-            conf.getStatsAggPrefix() + pspecs, conf.getMaxStatsKeyPrefixLength());
-        key = keyPrefix + taskID;
+         if (statsPublisher instanceof CounterStatsPublisher) {
+         // key is of form : dbName.tblName/p1=v1/ 
+         key = Utilities.appendPathSeparator(conf.getStatsAggPrefix()+pspecs);
+    	 } else {
+             // In case of a partition, the key for temp storage is
+             // "tableName + partitionSpecs + taskID"
+             String keyPrefix = Utilities.getHashedStatsPrefix(
+               conf.getStatsAggPrefix() + pspecs, conf.getMaxStatsKeyPrefixLength());
+               key = keyPrefix + taskID;
+        }
       }
       for(String statType : stats.get(pspecs).getStoredStats()) {
         statsToPublish.put(statType, Long.toString(stats.get(pspecs).getStat(statType)));

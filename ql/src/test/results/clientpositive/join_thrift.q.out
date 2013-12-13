@@ -89,7 +89,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT s1.aint, s2.lintstring
 FROM src_thrift s1
 JOIN src_thrift s2

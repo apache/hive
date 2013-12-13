@@ -31,7 +31,6 @@ STAGE PLANS:
             Limit
               ListSink
 
-
 PREHOOK: query: SELECT x.* FROM SRCPART x WHERE ds = '2008-04-08' LIMIT 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart

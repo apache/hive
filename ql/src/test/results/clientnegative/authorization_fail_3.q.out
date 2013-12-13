@@ -36,4 +36,4 @@ PREHOOK: query: show grant user hive_test_user on table authorization_fail_3 par
 PREHOOK: type: SHOW_GRANT
 POSTHOOK: query: show grant user hive_test_user on table authorization_fail_3 partition (ds='2010')
 POSTHOOK: type: SHOW_GRANT
-Authorization failed:No privilege 'Select' found for inputs { database:default, table:authorization_fail_3, columnName:key}. Use show grant to get more details.
+Authorization failed:No privilege 'Select' found for inputs { database:default, table:authorization_fail_3, columnName:key}. Use SHOW GRANT to get more details.

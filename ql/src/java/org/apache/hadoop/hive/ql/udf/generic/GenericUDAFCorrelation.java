@@ -19,8 +19,6 @@ package org.apache.hadoop.hive.ql.udf.generic;
 
 import java.util.ArrayList;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
@@ -73,8 +71,6 @@ import org.apache.hadoop.io.LongWritable;
         + "COVAR_POP is the population covariance,\n"
         + "and STDDEV_POP is the population standard deviation.")
 public class GenericUDAFCorrelation extends AbstractGenericUDAFResolver {
-
-  static final Log LOG = LogFactory.getLog(GenericUDAFCorrelation.class.getName());
 
   @Override
   public GenericUDAFEvaluator getEvaluator(TypeInfo[] parameters) throws SemanticException {
@@ -289,15 +285,15 @@ public class GenericUDAFCorrelation extends AbstractGenericUDAFResolver {
         StdAgg myagg = (StdAgg) agg;
         double vx = PrimitiveObjectInspectorUtils.getDouble(px, xInputOI);
         double vy = PrimitiveObjectInspectorUtils.getDouble(py, yInputOI);
-        double xavgOld = myagg.xavg;
-        double yavgOld = myagg.yavg;
+        double deltaX = vx - myagg.xavg;
+        double deltaY = vy - myagg.yavg;
         myagg.count++;
-        myagg.xavg += (vx - xavgOld) / myagg.count;
-        myagg.yavg += (vy - yavgOld) / myagg.count;
+        myagg.xavg += deltaX / myagg.count;
+        myagg.yavg += deltaY / myagg.count;
         if (myagg.count > 1) {
-            myagg.covar += (vx - xavgOld) * (vy - myagg.yavg);
-            myagg.xvar += (vx - xavgOld) * (vx - myagg.xavg);
-            myagg.yvar += (vy - yavgOld) * (vy - myagg.yavg);
+          myagg.covar += deltaX * (vy - myagg.yavg);
+          myagg.xvar += deltaX * (vx - myagg.xavg);
+          myagg.yvar += deltaY * (vy - myagg.yavg);
         }
       }
     }
@@ -352,8 +348,8 @@ public class GenericUDAFCorrelation extends AbstractGenericUDAFResolver {
           myagg.count += nB;
           myagg.xavg = (xavgA * nA + xavgB * nB) / myagg.count;
           myagg.yavg = (yavgA * nA + yavgB * nB) / myagg.count;
-          myagg.xvar += xvarB + (xavgA - xavgB) * (xavgA - xavgB) * myagg.count;
-          myagg.yvar += yvarB + (yavgA - yavgB) * (yavgA - yavgB) * myagg.count;
+          myagg.xvar += xvarB + (xavgA - xavgB) * (xavgA - xavgB) * nA * nB / myagg.count;
+          myagg.yvar += yvarB + (yavgA - yavgB) * (yavgA - yavgB) * nA * nB / myagg.count;
           myagg.covar +=
               covarB + (xavgA - xavgB) * (yavgA - yavgB) * ((double) (nA * nB) / myagg.count);
         }

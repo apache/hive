@@ -73,7 +73,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT example_min_n(substr(value,5),10),
        example_min_n(IF(substr(value,5) < 250, NULL, substr(value,5)),10)
 FROM src

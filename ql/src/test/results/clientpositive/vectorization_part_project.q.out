@@ -118,7 +118,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 10
 
-
 PREHOOK: query: select (cdouble+2) from alltypesorc_part limit 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypesorc_part

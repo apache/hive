@@ -25,7 +25,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SHOW COLUMNS from shcol_test
 PREHOOK: type: SHOWCOLUMNS
 PREHOOK: Input: default@shcol_test

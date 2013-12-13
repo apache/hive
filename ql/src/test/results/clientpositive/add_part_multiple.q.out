@@ -50,7 +50,6 @@ STAGE PLANS:
 #### A masked pattern was here ####
           Spec: {ds=2010-04-01}
 
-
 PREHOOK: query: ALTER TABLE add_part_test ADD IF NOT EXISTS
 PARTITION (ds='2010-01-01') location 'A'
 PARTITION (ds='2010-02-01') location 'B'

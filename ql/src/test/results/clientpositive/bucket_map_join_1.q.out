@@ -99,10 +99,10 @@ STAGE PLANS:
                 1 [Column[key], Column[value]]
               Position of Big Table: 0
               Statistics:
-                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                  numRows: 0 dataSize: 22 basicStatsState: PARTIAL colStatsState: NONE
               Select Operator
                 Statistics:
-                    numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                    numRows: 0 dataSize: 22 basicStatsState: PARTIAL colStatsState: NONE
                 Group By Operator
                   aggregations:
                         expr: count()
@@ -215,7 +215,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select /*+ mapjoin(b) */ count(*) from table1 a join table2 b on a.key=b.key and a.value=b.value
 PREHOOK: type: QUERY

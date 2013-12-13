@@ -107,7 +107,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select key, row_sequence() as r
 from (select key from src order by key) x
 order by r

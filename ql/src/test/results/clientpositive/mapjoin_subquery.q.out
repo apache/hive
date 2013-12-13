@@ -378,7 +378,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT subq.key1, z.value
 FROM
 (SELECT x.key as key1, x.value as value1, y.key as key2, y.value as value2  

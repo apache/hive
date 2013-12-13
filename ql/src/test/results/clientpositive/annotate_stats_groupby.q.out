@@ -85,7 +85,6 @@ STAGE PLANS:
                 numRows: 8 dataSize: 796 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
 
-
 PREHOOK: query: -- partial column stats
 analyze table loc_orc compute statistics for columns state
 PREHOOK: type: QUERY
@@ -388,7 +387,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: analyze table loc_orc compute statistics for columns state,locid,zip,year
 PREHOOK: type: QUERY
 PREHOOK: Input: default@loc_orc
@@ -553,7 +551,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- map-side GBY: numRows: 8
 -- reduce-side GBY: numRows: 4
 explain extended select state,locid from loc_orc group by state,locid
@@ -715,7 +712,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- map-side GBY numRows: 32 reduce-side GBY numRows: 16
 explain extended select state,locid from loc_orc group by state,locid with cube
@@ -884,7 +880,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- map-side GBY numRows: 24 reduce-side GBY numRows: 12
 explain extended select state,locid from loc_orc group by state,locid with rollup
@@ -1054,7 +1049,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- map-side GBY numRows: 8 reduce-side GBY numRows: 4
 explain extended select state,locid from loc_orc group by state,locid grouping sets((state))
 PREHOOK: type: QUERY
@@ -1222,7 +1216,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- map-side GBY numRows: 16 reduce-side GBY numRows: 8
 explain extended select state,locid from loc_orc group by state,locid grouping sets((state),(locid))
@@ -1392,7 +1385,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- map-side GBY numRows: 24 reduce-side GBY numRows: 12
 explain extended select state,locid from loc_orc group by state,locid grouping sets((state),(locid),())
 PREHOOK: type: QUERY
@@ -1560,7 +1552,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- map-side GBY numRows: 32 reduce-side GBY numRows: 16
 explain extended select state,locid from loc_orc group by state,locid grouping sets((state,locid),(state),(locid),())
@@ -1730,7 +1721,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- map-side GBY: numRows: 80 (map-side will not do any reduction)
 -- reduce-side GBY: numRows: 2 Reason: numDistinct of year is 2. numRows = min(80/2, 2)
 explain extended select year from loc_orc group by year
@@ -1880,7 +1870,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- map-side GBY numRows: 320 reduce-side GBY numRows: 42 Reason: numDistinct of state and locid are 6,7 resp. numRows = min(320/2, 6*7)
 explain extended select state,locid from loc_orc group by state,locid with cube
@@ -2049,5 +2038,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 

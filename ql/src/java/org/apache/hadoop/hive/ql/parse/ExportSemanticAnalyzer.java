@@ -101,10 +101,12 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
               .getMsg("Exception while writing out the local file"), e);
     }
 
+    Path parentPath = new Path(toURI);
+
     if (ts.tableHandle.isPartitioned()) {
       for (Partition partition : partitions) {
         URI fromURI = partition.getDataLocation();
-        Path toPartPath = new Path(toURI.toString(), partition.getName());
+        Path toPartPath = new Path(parentPath, partition.getName());
         Task<? extends Serializable> rTask = TaskFactory.get(
             new CopyWork(fromURI.toString(), toPartPath.toString(), false),
             conf);
@@ -113,13 +115,12 @@ public class ExportSemanticAnalyzer extends BaseSemanticAnalyzer {
       }
     } else {
       URI fromURI = ts.tableHandle.getDataLocation();
-      Path toDataPath = new Path(toURI.toString(), "data");
+      Path toDataPath = new Path(parentPath, "data");
       Task<? extends Serializable> rTask = TaskFactory.get(new CopyWork(
           fromURI.toString(), toDataPath.toString(), false), conf);
       rootTasks.add(rTask);
       inputs.add(new ReadEntity(ts.tableHandle));
     }
-    outputs.add(new WriteEntity(toURI.toString(),
-        toURI.getScheme().equals("hdfs") ? true : false));
+    outputs.add(new WriteEntity(parentPath, toURI.getScheme().equals("hdfs")));
   }
 }

@@ -234,7 +234,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select count(*) from 
   (
   select * from
@@ -440,7 +439,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select count(*) from 
   (select a.key as key, count(*) as value from tbl1 a where key < 6 group by a.key) subq1 

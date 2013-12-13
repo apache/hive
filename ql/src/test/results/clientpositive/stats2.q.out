@@ -56,7 +56,6 @@ STAGE PLANS:
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.analyze_t1
 
-
 PREHOOK: query: insert overwrite table analyze_t1 partition (ds, hr) select * from srcpart where ds is not null
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpart
@@ -156,7 +155,6 @@ STAGE PLANS:
 
   Stage: Stage-1
     Stats-Aggr Operator
-
 
 PREHOOK: query: analyze table analyze_t1 partition (ds, hr) compute statistics
 PREHOOK: type: QUERY

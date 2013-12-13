@@ -46,6 +46,7 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.TableType;
 import org.apache.hadoop.hive.metastore.Warehouse;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.Index;
 import org.apache.hadoop.hive.metastore.api.MetaException;
@@ -95,6 +96,7 @@ import org.apache.hadoop.hive.ql.plan.GrantDesc;
 import org.apache.hadoop.hive.ql.plan.GrantRevokeRoleDDL;
 import org.apache.hadoop.hive.ql.plan.ListBucketingCtx;
 import org.apache.hadoop.hive.ql.plan.LoadTableDesc;
+import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.MoveWork;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
@@ -121,6 +123,7 @@ import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
 import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
+import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
 import org.apache.hadoop.hive.ql.security.authorization.PrivilegeRegistry;
@@ -298,6 +301,10 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeShowLocks(ast);
       break;
+    case HiveParser.TOK_SHOWDBLOCKS:
+      ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
+      analyzeShowDbLocks(ast);
+      break;
     case HiveParser.TOK_DESCFUNCTION:
       ctx.setResFile(new Path(ctx.getLocalTmpFileURI()));
       analyzeDescFunction(ast);
@@ -393,6 +400,12 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
       break;
     case HiveParser.TOK_UNLOCKTABLE:
       analyzeUnlockTable(ast);
+      break;
+    case HiveParser.TOK_LOCKDB:
+      analyzeLockDatabase(ast);
+      break;
+    case HiveParser.TOK_UNLOCKDB:
+      analyzeUnlockDatabase(ast);
       break;
     case HiveParser.TOK_CREATEDATABASE:
       analyzeCreateDatabase(ast);
@@ -808,6 +821,14 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     if (null != ast.getFirstChildWithType(HiveParser.TOK_CASCADE)) {
       ifCascade = true;
     }
+
+    Database database = getDatabase(dbName, !ifExists);
+    if (database == null) {
+      return;
+    }
+
+    inputs.add(new ReadEntity(database));
+    outputs.add(new WriteEntity(database));
 
     DropDatabaseDesc dropDatabaseDesc = new DropDatabaseDesc(dbName, ifExists, ifCascade);
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(), dropDatabaseDesc), conf));
@@ -2274,6 +2295,29 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     ctx.setNeedLockMgr(true);
   }
 
+   /**
+    * Add the task according to the parsed command tree. This is used for the CLI
+   * command "SHOW LOCKS DATABASE database [extended];".
+   *
+   * @param ast
+   *          The parsed command tree.
+   * @throws SemanticException
+   *           Parsing failed
+   */
+  private void analyzeShowDbLocks(ASTNode ast) throws SemanticException {
+    boolean isExtended = (ast.getChildCount() > 1);
+    String dbName = stripQuotes(ast.getChild(0).getText());
+
+    ShowLocksDesc showLocksDesc = new ShowLocksDesc(ctx.getResFile(), dbName,
+                                                    isExtended);
+    rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
+        showLocksDesc), conf));
+    setFetchTask(createFetchTask(showLocksDesc.getSchema()));
+
+    // Need to initialize the lock manager
+    ctx.setNeedLockMgr(true);
+  }
+
   /**
    * Add the task according to the parsed command tree. This is used for the CLI
    * command "LOCK TABLE ..;".
@@ -2331,6 +2375,30 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     rootTasks.add(TaskFactory.get(new DDLWork(getInputs(), getOutputs(),
         unlockTblDesc), conf));
 
+    // Need to initialize the lock manager
+    ctx.setNeedLockMgr(true);
+  }
+
+  private void analyzeLockDatabase(ASTNode ast) throws SemanticException {
+    String dbName = unescapeIdentifier(ast.getChild(0).getText());
+    String mode  = unescapeIdentifier(ast.getChild(1).getText().toUpperCase());
+
+    //inputs.add(new ReadEntity(dbName));
+    //outputs.add(new WriteEntity(dbName));
+    LockDatabaseDesc lockDatabaseDesc = new LockDatabaseDesc(dbName, mode,
+                        HiveConf.getVar(conf, ConfVars.HIVEQUERYID));
+    lockDatabaseDesc.setQueryStr(ctx.getCmd());
+    DDLWork work = new DDLWork(getInputs(), getOutputs(), lockDatabaseDesc);
+    rootTasks.add(TaskFactory.get(work, conf));
+    ctx.setNeedLockMgr(true);
+  }
+
+  private void analyzeUnlockDatabase(ASTNode ast) throws SemanticException {
+    String dbName = unescapeIdentifier(ast.getChild(0).getText());
+
+    UnlockDatabaseDesc unlockDatabaseDesc = new UnlockDatabaseDesc(dbName);
+    DDLWork work = new DDLWork(getInputs(), getOutputs(), unlockDatabaseDesc);
+    rootTasks.add(TaskFactory.get(work, conf));
     // Need to initialize the lock manager
     ctx.setNeedLockMgr(true);
   }
@@ -2531,7 +2599,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
 
     // check if table exists.
     try {
-      tab = db.getTable(SessionState.get().getCurrentDatabase(), tblName, true);
+      tab = getTable(tblName, true);
       inputs.add(new ReadEntity(tab));
     } catch (HiveException e) {
       throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName));
@@ -3279,58 +3347,5 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
     } catch (URISyntaxException e) {
       throw new SemanticException(e);
     }
-  }
-
-  private Table getTable(String tblName) throws SemanticException {
-    return getTable(null, tblName, true);
-  }
-
-  private Table getTable(String tblName, boolean throwException) throws SemanticException {
-    return getTable(SessionState.get().getCurrentDatabase(), tblName, throwException);
-  }
-
-  private Table getTable(String database, String tblName, boolean throwException)
-      throws SemanticException {
-    try {
-      Table tab = database == null ? db.getTable(tblName, false)
-          : db.getTable(database, tblName, false);
-      if (tab == null && throwException) {
-        throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName));
-      }
-      return tab;
-    } catch (HiveException e) {
-      throw new SemanticException(ErrorMsg.INVALID_TABLE.getMsg(tblName));
-    }
-  }
-
-  private Partition getPartition(Table table, Map<String, String> partSpec, boolean throwException)
-      throws SemanticException {
-    try {
-      Partition partition = db.getPartition(table, partSpec, false);
-      if (partition == null && throwException) {
-        throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, partSpec));
-      }
-      return partition;
-    } catch (HiveException e) {
-      throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, partSpec), e);
-    }
-  }
-
-  private List<Partition> getPartitions(Table table, Map<String, String> partSpec,
-      boolean throwException) throws SemanticException {
-    try {
-      List<Partition> partitions = partSpec == null ? db.getPartitions(table) :
-          db.getPartitions(table, partSpec);
-      if (partitions.isEmpty() && throwException) {
-        throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, partSpec));
-      }
-      return partitions;
-    } catch (HiveException e) {
-      throw new SemanticException(toMessage(ErrorMsg.INVALID_PARTITION, partSpec), e);
-    }
-  }
-
-  private String toMessage(ErrorMsg message, Object detail) {
-    return detail == null ? message.getMsg() : message.getMsg(detail.toString());
   }
 }

@@ -105,7 +105,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: FROM 
   src a
  LEFT OUTER JOIN 
@@ -238,7 +237,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: FROM 
   src a

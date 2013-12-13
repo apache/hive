@@ -64,7 +64,6 @@ STAGE PLANS:
             outputColumnNames: _col0
             ListSink
 
-
 PREHOOK: query: SELECT get_json_object(src_json.json, '$') FROM src_json
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src_json

@@ -84,7 +84,7 @@ STAGE PLANS:
                   expr: (key < 5)
                   type: boolean
               Statistics:
-                  numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 13 dataSize: 104 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -95,7 +95,7 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1, _col2
                 Statistics:
-                    numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 13 dataSize: 104 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -104,7 +104,7 @@ STAGE PLANS:
                         type: string
                   sort order: ++
                   Statistics:
-                      numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 13 dataSize: 104 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -205,14 +205,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 13 dataSize: 104 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 13 dataSize: 104 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -232,7 +232,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select key, value, ds from pcr_t1 where ds<='2000-04-09' and key<5 order by key, ds
 PREHOOK: type: QUERY
@@ -295,7 +294,7 @@ STAGE PLANS:
                   expr: ((ds <= '2000-04-09') or (key < 5))
                   type: boolean
               Statistics:
-                  numRows: 30 dataSize: 240 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 40 dataSize: 320 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -304,14 +303,14 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 30 dataSize: 240 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 40 dataSize: 320 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
                         type: int
                   sort order: +
                   Statistics:
-                      numRows: 30 dataSize: 240 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 40 dataSize: 320 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -452,14 +451,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 30 dataSize: 240 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 40 dataSize: 320 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 30 dataSize: 240 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 40 dataSize: 320 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -479,7 +478,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select key, value from pcr_t1 where ds<='2000-04-09' or key<5 order by key
 PREHOOK: type: QUERY
@@ -579,7 +577,7 @@ STAGE PLANS:
                   expr: ((key < 5) and (value <> 'val_2'))
                   type: boolean
               Statistics:
-                  numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 13 dataSize: 104 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -590,7 +588,7 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1, _col2
                 Statistics:
-                    numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 13 dataSize: 104 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -599,7 +597,7 @@ STAGE PLANS:
                         type: string
                   sort order: ++
                   Statistics:
-                      numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 13 dataSize: 104 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -700,14 +698,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 13 dataSize: 104 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 13 dataSize: 104 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -727,7 +725,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select key, value, ds from pcr_t1 where ds<='2000-04-09' and key<5 and value != 'val_2' order by key, ds
 PREHOOK: type: QUERY
@@ -792,7 +789,7 @@ STAGE PLANS:
                   expr: (((ds < '2000-04-09') and (key < 5)) or ((ds > '2000-04-09') and (value = 'val_5')))
                   type: boolean
               Statistics:
-                  numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 10 dataSize: 80 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -803,7 +800,7 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1, _col2
                 Statistics:
-                    numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 10 dataSize: 80 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -812,7 +809,7 @@ STAGE PLANS:
                         type: string
                   sort order: ++
                   Statistics:
-                      numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 10 dataSize: 80 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -913,14 +910,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 10 dataSize: 80 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 10 dataSize: 80 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -940,7 +937,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select key, value, ds from pcr_t1
 where (ds < '2000-04-09' and key < 5) or (ds > '2000-04-09' and value == 'val_5') order by key, ds
@@ -1007,7 +1003,7 @@ STAGE PLANS:
                   expr: (((ds < '2000-04-10') and (key < 5)) or ((ds > '2000-04-08') and (value = 'val_5')))
                   type: boolean
               Statistics:
-                  numRows: 30 dataSize: 240 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 16 dataSize: 128 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -1018,7 +1014,7 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1, _col2
                 Statistics:
-                    numRows: 30 dataSize: 240 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 16 dataSize: 128 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -1027,7 +1023,7 @@ STAGE PLANS:
                         type: string
                   sort order: ++
                   Statistics:
-                      numRows: 30 dataSize: 240 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 16 dataSize: 128 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -1170,14 +1166,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 30 dataSize: 240 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 16 dataSize: 128 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 30 dataSize: 240 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 16 dataSize: 128 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1197,7 +1193,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select key, value, ds from pcr_t1
 where (ds < '2000-04-10' and key < 5) or (ds > '2000-04-08' and value == 'val_5') order by key, ds
@@ -1274,7 +1269,7 @@ STAGE PLANS:
                   expr: (((ds < '2000-04-10') or (key < 5)) and ((ds > '2000-04-08') or (value = 'val_5')))
                   type: boolean
               Statistics:
-                  numRows: 30 dataSize: 240 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 33 dataSize: 264 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -1285,7 +1280,7 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1, _col2
                 Statistics:
-                    numRows: 30 dataSize: 240 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 33 dataSize: 264 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -1294,7 +1289,7 @@ STAGE PLANS:
                         type: string
                   sort order: ++
                   Statistics:
-                      numRows: 30 dataSize: 240 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 33 dataSize: 264 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -1437,14 +1432,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 30 dataSize: 240 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 33 dataSize: 264 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 30 dataSize: 240 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 33 dataSize: 264 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1464,7 +1459,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select key, value, ds from pcr_t1
 where (ds < '2000-04-10' or key < 5) and (ds > '2000-04-08' or value == 'val_5') order by key, ds
@@ -1694,7 +1688,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select key, value from pcr_t1 where (ds='2000-04-08' or ds='2000-04-09') and key=14 order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pcr_t1
@@ -1883,7 +1876,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select key, value from pcr_t1 where ds='2000-04-08' or ds='2000-04-09' order by key, value
 PREHOOK: type: QUERY
@@ -2156,7 +2148,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select key, value from pcr_t1 where ds>='2000-04-08' or ds<'2000-04-10' order by key, value
 PREHOOK: type: QUERY
 PREHOOK: Input: default@pcr_t1
@@ -2270,7 +2261,7 @@ STAGE PLANS:
                   expr: (((ds = '2000-04-08') and (key = 1)) or ((ds = '2000-04-09') and (key = 2)))
                   type: boolean
               Statistics:
-                  numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 40 dataSize: 320 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -2281,7 +2272,7 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1, _col2
                 Statistics:
-                    numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 40 dataSize: 320 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -2292,7 +2283,7 @@ STAGE PLANS:
                         type: string
                   sort order: +++
                   Statistics:
-                      numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 40 dataSize: 320 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -2393,14 +2384,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 40 dataSize: 320 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 40 dataSize: 320 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2420,7 +2411,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select key, value, ds from pcr_t1 where (ds='2000-04-08' and key=1) or (ds='2000-04-09' and key=2) order by key, value, ds
 PREHOOK: type: QUERY
@@ -2568,7 +2558,7 @@ STAGE PLANS:
           handleSkewJoin: false
           outputColumnNames: _col0, _col1, _col2, _col5, _col6, _col7
           Statistics:
-              numRows: 200 dataSize: 3200 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 22 dataSize: 176 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col0
@@ -2585,7 +2575,7 @@ STAGE PLANS:
                   type: string
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
             Statistics:
-                numRows: 200 dataSize: 3200 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 22 dataSize: 176 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -2616,7 +2606,7 @@ STAGE PLANS:
                     type: int
               sort order: +
               Statistics:
-                  numRows: 200 dataSize: 3200 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 22 dataSize: 176 basicStatsState: COMPLETE colStatsState: NONE
               tag: -1
               value expressions:
                     expr: _col0
@@ -2660,14 +2650,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 200 dataSize: 3200 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 22 dataSize: 176 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 200 dataSize: 3200 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 22 dataSize: 176 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -2687,7 +2677,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select * from pcr_t1 t1 join pcr_t1 t2 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-08' order by t1.key
 PREHOOK: type: QUERY
@@ -2912,7 +2901,7 @@ STAGE PLANS:
           handleSkewJoin: false
           outputColumnNames: _col0, _col1, _col2, _col5, _col6, _col7
           Statistics:
-              numRows: 200 dataSize: 3200 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 22 dataSize: 176 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col0
@@ -2929,7 +2918,7 @@ STAGE PLANS:
                   type: string
             outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5
             Statistics:
-                numRows: 200 dataSize: 3200 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 22 dataSize: 176 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -2960,7 +2949,7 @@ STAGE PLANS:
                     type: int
               sort order: +
               Statistics:
-                  numRows: 200 dataSize: 3200 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 22 dataSize: 176 basicStatsState: COMPLETE colStatsState: NONE
               tag: -1
               value expressions:
                     expr: _col0
@@ -3004,14 +2993,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 200 dataSize: 3200 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 22 dataSize: 176 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 200 dataSize: 3200 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 22 dataSize: 176 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3031,7 +3020,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select * from pcr_t1 t1 join pcr_t1 t2 on t1.key=t2.key and t1.ds='2000-04-08' and t2.ds='2000-04-09' order by t1.key
 PREHOOK: type: QUERY
@@ -3140,7 +3128,7 @@ STAGE PLANS:
                   expr: (((ds > '2000-04-08') and (ds < '2000-04-11')) or (key = 2))
                   type: boolean
               Statistics:
-                  numRows: 40 dataSize: 320 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 48 dataSize: 384 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -3151,7 +3139,7 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1, _col2
                 Statistics:
-                    numRows: 40 dataSize: 320 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 48 dataSize: 384 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -3162,7 +3150,7 @@ STAGE PLANS:
                         type: string
                   sort order: +++
                   Statistics:
-                      numRows: 40 dataSize: 320 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 48 dataSize: 384 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -3347,14 +3335,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 40 dataSize: 320 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 48 dataSize: 384 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 40 dataSize: 320 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 48 dataSize: 384 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -3374,7 +3362,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select key, value, ds from pcr_t1 where (ds>'2000-04-08' and ds<'2000-04-11') or (ds>='2000-04-08' and ds<='2000-04-11' and key=2) order by key, value, ds
 PREHOOK: type: QUERY
@@ -3669,7 +3656,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select key, value, ds from pcr_t1 where (ds>'2000-04-08' and ds<'2000-04-11') or (ds<='2000-04-09' and key=2) order by key, value, ds
 PREHOOK: type: QUERY
@@ -4274,7 +4260,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: from pcr_t1
 insert overwrite table pcr_t2 select key, value where ds='2000-04-08'
@@ -4917,7 +4902,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: from pcr_t1
 insert overwrite table pcr_t2 select key, value where ds='2000-04-08' and key=2
 insert overwrite table pcr_t3 select key, value where ds='2000-04-08' and key=3
@@ -4985,7 +4969,7 @@ STAGE PLANS:
           TableScan
             alias: srcpart
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
@@ -4995,14 +4979,14 @@ STAGE PLANS:
                     type: string
               outputColumnNames: _col0, _col1
               Statistics:
-                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: _col0
                       type: string
                 sort order: +
                 Statistics:
-                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
                 tag: -1
                 value expressions:
                       expr: _col0
@@ -5060,17 +5044,17 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+              numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
           Limit
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 10 dataSize: 2000 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
               Statistics:
-                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 10 dataSize: 2000 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5090,7 +5074,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
-
 
 PREHOOK: query: select key, value from srcpart where ds='2008-04-04' and hr=11 order by key limit 10
 PREHOOK: type: QUERY
@@ -5151,7 +5134,7 @@ STAGE PLANS:
           TableScan
             alias: srcpart
             Statistics:
-                numRows: 0 dataSize: 11624 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 58 dataSize: 11624 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
@@ -5159,7 +5142,7 @@ STAGE PLANS:
                   expr: (key = 11)
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -5172,7 +5155,7 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics:
-                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -5183,7 +5166,7 @@ STAGE PLANS:
                         type: string
                   sort order: +++
                   Statistics:
-                      numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                      numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -5288,14 +5271,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+              numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5315,7 +5298,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select key, value, ds, hr from srcpart where ds='2008-04-08' and (hr='11' or hr='12') and key=11 order by key, ds, hr
 PREHOOK: type: QUERY
@@ -5382,7 +5364,7 @@ STAGE PLANS:
           TableScan
             alias: srcpart
             Statistics:
-                numRows: 0 dataSize: 11624 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 58 dataSize: 11624 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
@@ -5390,7 +5372,7 @@ STAGE PLANS:
                   expr: (key = 11)
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -5403,7 +5385,7 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1, _col2, _col3
                 Statistics:
-                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -5414,7 +5396,7 @@ STAGE PLANS:
                         type: string
                   sort order: +++
                   Statistics:
-                      numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                      numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -5519,14 +5501,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+              numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -5546,7 +5528,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select key, value, ds, hr from srcpart where hr='11' and key=11 order by key, ds, hr
 PREHOOK: type: QUERY

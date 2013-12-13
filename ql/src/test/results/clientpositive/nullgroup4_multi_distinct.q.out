@@ -85,7 +85,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select count(1), count(distinct x.value), count(distinct substr(x.value, 5)) from src x where x.key = 9999
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -164,7 +163,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select count(1), count(distinct x.value), count(distinct substr(x.value, 5)) from src x where x.key = 9999
 PREHOOK: type: QUERY

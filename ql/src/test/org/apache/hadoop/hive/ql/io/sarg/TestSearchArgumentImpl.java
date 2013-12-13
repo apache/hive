@@ -147,6 +147,31 @@ public class TestSearchArgumentImpl {
   }
 
   @Test
+  public void testFoldMaybe() throws Exception {
+    assertEquals("(and leaf-1)",
+        ExpressionBuilder.foldMaybe(and(leaf(1),
+            constant(TruthValue.YES_NO_NULL))).toString());
+    assertEquals("(and leaf-1 leaf-2)",
+        ExpressionBuilder.foldMaybe(and(leaf(1),
+            constant(TruthValue.YES_NO_NULL), leaf(2))).toString());
+    assertEquals("(and leaf-1 leaf-2)",
+        ExpressionBuilder.foldMaybe(and(constant(TruthValue.YES_NO_NULL),
+            leaf(1), leaf(2), constant(TruthValue.YES_NO_NULL))).toString());
+    assertEquals("YES_NO_NULL",
+        ExpressionBuilder.foldMaybe(and(constant(TruthValue.YES_NO_NULL),
+            constant(TruthValue.YES_NO_NULL))).toString());
+    assertEquals("YES_NO_NULL",
+        ExpressionBuilder.foldMaybe(or(leaf(1),
+            constant(TruthValue.YES_NO_NULL))).toString());
+    assertEquals("(or leaf-1 (and leaf-2))",
+        ExpressionBuilder.foldMaybe(or(leaf(1),
+            and(leaf(2), constant(TruthValue.YES_NO_NULL)))).toString());
+    assertEquals("(and leaf-1)",
+        ExpressionBuilder.foldMaybe(and(or(leaf(2),
+            constant(TruthValue.YES_NO_NULL)), leaf(1))).toString());
+  }
+
+  @Test
   public void testCNF() throws Exception {
     assertEquals("leaf-1", ExpressionBuilder.convertToCNF(leaf(1)).toString());
     assertEquals("NO", ExpressionBuilder.convertToCNF(

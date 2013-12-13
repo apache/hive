@@ -80,7 +80,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 1
 
-
 PREHOOK: query: FROM src 
 
 SELECT dboutput ( 'jdbc:derby:../build/test_dboutput_db;create=true','','',
@@ -160,7 +159,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT
 

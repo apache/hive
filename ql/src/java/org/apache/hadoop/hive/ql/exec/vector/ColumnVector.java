@@ -49,6 +49,11 @@ public abstract class ColumnVector {
    * If so, vector[0] holds the repeating value.
    */
   public boolean isRepeating;
+
+  // Variables to hold state from before flattening so it can be easily restored.
+  private boolean preFlattenIsRepeating;
+  private boolean preFlattenNoNulls;
+
   public abstract Writable getWritableObject(int index);
 
   /**
@@ -75,6 +80,67 @@ public abstract class ColumnVector {
       }
       noNulls = true;
       isRepeating = false;
+    }
+
+    abstract public void flatten(boolean selectedInUse, int[] sel, int size);
+
+    // Simplify vector by brute-force flattening noNulls if isRepeating
+    // This can be used to reduce combinatorial explosion of code paths in VectorExpressions
+    // with many arguments.
+    public void flattenRepeatingNulls(boolean selectedInUse, int[] sel, int size) {
+
+      boolean nullFillValue;
+
+      if (noNulls) {
+        nullFillValue = false;
+      } else {
+        nullFillValue = isNull[0];
+      }
+
+      if (selectedInUse) {
+        for (int j = 0; j < size; j++) {
+          int i = sel[j];
+          isNull[i] = nullFillValue;
+        }
+      } else {
+        Arrays.fill(isNull, 0, size, nullFillValue);
+      }
+
+      // all nulls are now explicit
+      noNulls = false;
+    }
+
+    public void flattenNoNulls(boolean selectedInUse, int[] sel, int size) {
+      if (noNulls) {
+        noNulls = false;
+        if (selectedInUse) {
+          for (int j = 0; j < size; j++) {
+            int i = sel[j];
+            isNull[i] = false;
+          }
+        } else {
+          Arrays.fill(isNull, 0, size, false);
+        }
+      }
+    }
+
+    /**
+     * Restore the state of isRepeating and noNulls to what it was
+     * before flattening. This must only be called just after flattening
+     * and then evaluating a VectorExpression on the column vector.
+     * It is an optimization that allows other operations on the same
+     * column to continue to benefit from the isRepeating and noNulls
+     * indicators.
+     */
+    public void unFlatten() {
+      isRepeating = preFlattenIsRepeating;
+      noNulls = preFlattenNoNulls;
+    }
+
+    // Record repeating and no nulls state to be restored later.
+    protected void flattenPush() {
+      preFlattenIsRepeating = isRepeating;
+      preFlattenNoNulls = noNulls;
     }
   }
 

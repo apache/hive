@@ -26,7 +26,6 @@ STAGE PLANS:
             outputColumnNames: _col0, _col1
             ListSink
 
-
 PREHOOK: query: SELECT * FROM src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src

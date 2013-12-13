@@ -82,7 +82,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: FROM (
   FROM src
   SELECT TRANSFORM(src.key, src.value)
@@ -270,7 +269,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: FROM (
   FROM src

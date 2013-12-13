@@ -89,7 +89,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: create table total_ordered as select * from src5 order by key, value
 PREHOOK: type: CREATETABLE_AS_SELECT
 PREHOOK: Input: default@src5

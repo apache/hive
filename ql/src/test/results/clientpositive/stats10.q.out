@@ -77,7 +77,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: insert overwrite table bucket3_1 partition (ds='1')
 select * from src
 PREHOOK: type: QUERY
@@ -410,7 +409,6 @@ STAGE PLANS:
 
   Stage: Stage-1
     Stats-Aggr Operator
-
 
 PREHOOK: query: analyze table bucket3_1 partition (ds) compute statistics
 PREHOOK: type: QUERY

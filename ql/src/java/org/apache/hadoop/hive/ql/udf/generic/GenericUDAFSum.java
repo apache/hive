@@ -24,6 +24,7 @@ import org.apache.hadoop.hive.ql.exec.Description;
 import org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.parse.SemanticException;
+import org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator.Mode;
 import org.apache.hadoop.hive.ql.util.JavaDataModel;
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.hive.serde2.io.HiveDecimalWritable;
@@ -31,8 +32,10 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory;
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfo;
+import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.util.StringUtils;
 
@@ -94,7 +97,16 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
       super.init(m, parameters);
       result = new HiveDecimalWritable(HiveDecimal.ZERO);
       inputOI = (PrimitiveObjectInspector) parameters[0];
-      return PrimitiveObjectInspectorFactory.writableHiveDecimalObjectInspector;
+      // The output precision is 10 greater than the input which should cover at least
+      // 10b rows. The scale is the same as the input.
+      DecimalTypeInfo outputTypeInfo = null;
+      if (mode == Mode.PARTIAL1 || mode == Mode.COMPLETE) {
+        int precision = Math.min(HiveDecimal.MAX_PRECISION, inputOI.precision() + 10);
+        outputTypeInfo = TypeInfoFactory.getDecimalTypeInfo(precision, inputOI.scale());
+      } else {
+        outputTypeInfo = (DecimalTypeInfo) inputOI.getTypeInfo();
+      }
+      return PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(outputTypeInfo);
     }
 
     /** class for storing decimal sum value. */

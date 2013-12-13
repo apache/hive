@@ -307,8 +307,12 @@ public class CombineHiveInputFormat<K extends WritableComparable, V extends Writ
       Class inputFormatClass = part.getInputFileFormatClass();
       String inputFormatClassName = inputFormatClass.getName();
       InputFormat inputFormat = getInputFormatFromCache(inputFormatClass, job);
-      String deserializerClassName = part.getDeserializer(job) == null ? null
-          : part.getDeserializer(job).getClass().getName();
+      String deserializerClassName = null;
+      try {
+        deserializerClassName = part.getDeserializer(job).getClass().getName();
+      } catch (Exception e) {
+        // ignore
+      }
 
       // Since there is no easy way of knowing whether MAPREDUCE-1597 is present in the tree or not,
       // we use a configuration variable for the same

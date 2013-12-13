@@ -92,6 +92,15 @@ SET hive.optimize.index.filter=true;
 -- test predicate push down with partition pruning
 SELECT COUNT(*) FROM orc_create_people where id < 10 and state = 'Ca';
 
+-- test predicate push down
+SELECT COUNT(*) FROM orc_create_people where id = 50;
+SELECT COUNT(*) FROM orc_create_people where id between 10 and 20;
+SELECT COUNT(*) FROM orc_create_people where id > 10 and id < 100;
+SELECT COUNT(*) FROM orc_create_people where (id + 1) = 20;
+SELECT COUNT(*) FROM orc_create_people where (id + 10) < 200;
+SELECT COUNT(*) FROM orc_create_people where id < 30  or first_name = "Rafael";
+SELECT COUNT(*) FROM orc_create_people where length(substr(first_name, 1, 2)) <= 2 and last_name like '%';
+
 -- test predicate push down with no column projection
 SELECT id, first_name, last_name, address
   FROM orc_create_people WHERE id > 90;

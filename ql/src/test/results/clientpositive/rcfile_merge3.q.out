@@ -124,7 +124,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE rcfile_merge3b
     SELECT key, value FROM rcfile_merge3a
 PREHOOK: type: QUERY

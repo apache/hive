@@ -29,8 +29,10 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileStatus;
+import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
+import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.Warehouse;
 import org.apache.hadoop.hive.ql.DriverContext;
 import org.apache.hadoop.hive.ql.ErrorMsg;
@@ -173,9 +175,8 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
     try {
       // Stats setup:
       Warehouse wh = new Warehouse(conf);
-
+      String statsImplementationClass = HiveConf.getVar(conf, HiveConf.ConfVars.HIVESTATSDBCLASS);
       if (!this.getWork().getNoStatsAggregator()) {
-        String statsImplementationClass = HiveConf.getVar(conf, HiveConf.ConfVars.HIVESTATSDBCLASS);
         StatsFactory factory = StatsFactory.newFactory(statsImplementationClass, conf);
         if (factory != null && work.isNoScanAnalyzeCommand()){
           // initialize stats publishing table for noscan which has only stats task
@@ -214,17 +215,24 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
       boolean atomic = HiveConf.getBoolVar(conf, HiveConf.ConfVars.HIVE_STATS_ATOMIC);
       int maxPrefixLength = HiveConf.getIntVar(conf,
           HiveConf.ConfVars.HIVE_STATS_KEY_PREFIX_MAX_LENGTH);
-
+      String tableFullName = table.getDbName() + "." + table.getTableName();
       if (partitions == null) {
         // non-partitioned tables:
         if (!tableStatsExist && atomic) {
           return 0;
         }
-        // In case of a non-partitioned table, the key for stats temporary store is "rootDir"
+
         if (statsAggregator != null) {
-          String aggKey = Utilities.getHashedStatsPrefix(work.getAggKey(), maxPrefixLength);
+          String aggKey;
+          if (statsImplementationClass.equals("counter")) {
+            // Key is of the form dbName.tblName/
+            aggKey = tableFullName+Path.SEPARATOR;
+            } else {
+             // In case of a non-partitioned table, the key for stats temporary store is "rootDir"
+             aggKey = Utilities.getHashedStatsPrefix(work.getAggKey(), maxPrefixLength);
+            }
           updateStats(StatsSetupConst.statsRequireCompute, tblStats, statsAggregator, parameters,
-              aggKey, atomic);
+            aggKey, atomic);
           statsAggregator.cleanUp(aggKey);
         }
         // The collectable stats for the aggregator needs to be cleared.
@@ -244,9 +252,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
         }
         parameters.put(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK, StatsSetupConst.TRUE);
         tTable.setParameters(parameters);
-
-        String tableFullName = table.getDbName() + "." + table.getTableName();
-
         db.alterTable(tableFullName, new Table(tTable));
 
         console.printInfo("Table " + tableFullName + " stats: [" + tblStats.toString() + ']');
@@ -277,12 +282,20 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
           // get the new partition stats
           //
           Statistics newPartStats = new Statistics();
+          String partitionID;
 
-          // In that case of a partition, the key for stats temporary store is
-          // "rootDir/[dynamic_partition_specs/]%"
-          String partitionID = Utilities.getHashedStatsPrefix(
-              work.getAggKey() + Warehouse.makePartPath(partn.getSpec()), maxPrefixLength);
-
+          if (statsImplementationClass.equals("counter")) {
+            // stat-Agg-key is of form : dbName.tblName/p1=v1/p2=val2/
+        	partitionID = Utilities.appendPathSeparator(tableFullName + Path.SEPARATOR + 
+              Warehouse.makePartPath(partn.getSpec()));
+            // there is no need to aggregate stats in this case, but this should also work.
+            // also check non-partitioned code path.
+          } else {
+              // In that case of a partition, the key for stats temporary store is
+              // "rootDir/[dynamic_partition_specs/]%"
+             partitionID = Utilities.getHashedStatsPrefix(
+             work.getAggKey() + Warehouse.makePartPath(partn.getSpec()), maxPrefixLength);
+          }
           LOG.info("Stats aggregator : " + partitionID);
 
           if (statsAggregator != null) {
@@ -303,7 +316,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
               }
             }
           }
-
           /**
            * calculate fast statistics
            */
@@ -327,7 +339,6 @@ public class StatsTask extends Task<StatsWork> implements Serializable {
 
           parameters.put(StatsSetupConst.STATS_GENERATED_VIA_STATS_TASK, StatsSetupConst.TRUE);
           tPart.setParameters(parameters);
-          String tableFullName = table.getDbName() + "." + table.getTableName();
           db.alterPartition(tableFullName, new Partition(table, tPart));
 
           console.printInfo("Partition " + tableFullName + partn.getSpec() +

@@ -48,6 +48,7 @@ public class HiveStatement implements java.sql.Statement {
   private final TSessionHandle sessHandle;
   Map<String,String> sessConf = new HashMap<String,String>();
   private int fetchSize = 50;
+  private boolean isScrollableResultset = false;
   /**
    * We need to keep a reference to the result set to support the following:
    * <code>
@@ -79,9 +80,15 @@ public class HiveStatement implements java.sql.Statement {
    */
   public HiveStatement(HiveConnection connection, TCLIService.Iface client,
       TSessionHandle sessHandle) {
+    this(connection, client, sessHandle, false);
+  }
+
+  public HiveStatement(HiveConnection connection, TCLIService.Iface client,
+        TSessionHandle sessHandle, boolean isScrollableResultset) {
     this.connection = connection;
     this.client = client;
     this.sessHandle = sessHandle;
+    this.isScrollableResultset = isScrollableResultset;
   }
 
   /*
@@ -249,6 +256,7 @@ public class HiveStatement implements java.sql.Statement {
     }
     resultSet =  new HiveQueryResultSet.Builder(this).setClient(client).setSessionHandle(sessHandle)
         .setStmtHandle(stmtHandle).setMaxRows(maxRows).setFetchSize(fetchSize)
+        .setScrollable(isScrollableResultset)
         .build();
     return true;
   }

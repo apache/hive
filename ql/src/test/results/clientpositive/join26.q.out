@@ -44,7 +44,7 @@ STAGE PLANS:
           TableScan
             alias: x
             Statistics:
-                numRows: 0 dataSize: 216 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 2 dataSize: 216 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -61,7 +61,7 @@ STAGE PLANS:
           TableScan
             alias: y
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -82,7 +82,7 @@ STAGE PLANS:
           TableScan
             alias: z
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -100,7 +100,7 @@ STAGE PLANS:
               outputColumnNames: _col0, _col5, _col9
               Position of Big Table: 2
               Statistics:
-                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                  numRows: 63 dataSize: 12786 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: _col0
@@ -111,14 +111,14 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1, _col2
                 Statistics:
-                    numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                    numRows: 63 dataSize: 12786 basicStatsState: COMPLETE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 1
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
                   Statistics:
-                      numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                      numRows: 63 dataSize: 12786 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -362,7 +362,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE dest_j1
 SELECT /*+ MAPJOIN(x,y) */ x.key, z.value, y.value
