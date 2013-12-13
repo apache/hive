@@ -178,5 +178,9 @@ POSTHOOK: Output: importer@exim_employee
 #### A masked pattern was here ####
 PREHOOK: query: drop database importer
 PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:importer
+PREHOOK: Output: database:importer
 POSTHOOK: query: drop database importer
 POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:importer
+POSTHOOK: Output: database:importer

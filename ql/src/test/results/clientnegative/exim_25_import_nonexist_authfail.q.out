@@ -34,4 +34,4 @@ PREHOOK: query: use importer
 PREHOOK: type: SWITCHDATABASE
 POSTHOOK: query: use importer
 POSTHOOK: type: SWITCHDATABASE
-Authorization failed:No privilege 'Create' found for outputs { database:importer}. Use show grant to get more details.
+Authorization failed:No privilege 'Create' found for outputs { database:importer}. Use SHOW GRANT to get more details.

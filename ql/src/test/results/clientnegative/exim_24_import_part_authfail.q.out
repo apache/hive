@@ -58,4 +58,4 @@ POSTHOOK: query: create table exim_employee ( emp_id int comment "employee id")
 	tblproperties("creator"="krishna")
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: importer@exim_employee
-Authorization failed:No privilege 'Alter' found for outputs { database:importer, table:exim_employee}. Use show grant to get more details.
+Authorization failed:No privilege 'Alter' found for outputs { database:importer, table:exim_employee}. Use SHOW GRANT to get more details.

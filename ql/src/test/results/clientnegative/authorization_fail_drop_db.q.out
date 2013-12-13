@@ -1,0 +1,5 @@
+PREHOOK: query: create database db_fail_to_drop
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: create database db_fail_to_drop
+POSTHOOK: type: CREATEDATABASE
+Authorization failed:No privilege 'Drop' found for outputs { database:db_fail_to_drop}. Use SHOW GRANT to get more details.

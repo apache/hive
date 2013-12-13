@@ -68,6 +68,7 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_SHOWINDEXES, HiveOperation.SHOWINDEXES);
     commandType.put(HiveParser.TOK_SHOWPARTITIONS, HiveOperation.SHOWPARTITIONS);
     commandType.put(HiveParser.TOK_SHOWLOCKS, HiveOperation.SHOWLOCKS);
+    commandType.put(HiveParser.TOK_SHOWDBLOCKS, HiveOperation.SHOWLOCKS);
     commandType.put(HiveParser.TOK_CREATEFUNCTION, HiveOperation.CREATEFUNCTION);
     commandType.put(HiveParser.TOK_DROPFUNCTION, HiveOperation.DROPFUNCTION);
     commandType.put(HiveParser.TOK_CREATEMACRO, HiveOperation.CREATEMACRO);
@@ -85,6 +86,8 @@ public final class SemanticAnalyzerFactory {
     commandType.put(HiveParser.TOK_QUERY, HiveOperation.QUERY);
     commandType.put(HiveParser.TOK_LOCKTABLE, HiveOperation.LOCKTABLE);
     commandType.put(HiveParser.TOK_UNLOCKTABLE, HiveOperation.UNLOCKTABLE);
+    commandType.put(HiveParser.TOK_LOCKDB, HiveOperation.LOCKDB);
+    commandType.put(HiveParser.TOK_UNLOCKDB, HiveOperation.UNLOCKDB);
     commandType.put(HiveParser.TOK_CREATEROLE, HiveOperation.CREATEROLE);
     commandType.put(HiveParser.TOK_DROPROLE, HiveOperation.DROPROLE);
     commandType.put(HiveParser.TOK_GRANT, HiveOperation.GRANT_PRIVILEGE);
@@ -185,6 +188,7 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_SHOWPARTITIONS:
       case HiveParser.TOK_SHOWINDEXES:
       case HiveParser.TOK_SHOWLOCKS:
+      case HiveParser.TOK_SHOWDBLOCKS:
       case HiveParser.TOK_CREATEINDEX:
       case HiveParser.TOK_DROPINDEX:
       case HiveParser.TOK_ALTERTABLE_CLUSTER_SORT:
@@ -194,6 +198,8 @@ public final class SemanticAnalyzerFactory {
       case HiveParser.TOK_ALTERTABLE_ALTERPARTS:
       case HiveParser.TOK_LOCKTABLE:
       case HiveParser.TOK_UNLOCKTABLE:
+      case HiveParser.TOK_LOCKDB:
+      case HiveParser.TOK_UNLOCKDB:
       case HiveParser.TOK_CREATEROLE:
       case HiveParser.TOK_DROPROLE:
       case HiveParser.TOK_GRANT:

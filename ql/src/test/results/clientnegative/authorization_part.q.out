@@ -274,4 +274,4 @@ POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2010).key EXPRESSION [(s
 POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2010).value SIMPLE [(src_auth)src_auth.FieldSchema(name:value, type:string, comment:null), ]
 POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2011).key EXPRESSION [(src_auth)src_auth.FieldSchema(name:key, type:string, comment:null), ]
 POSTHOOK: Lineage: authorization_part_fail PARTITION(ds=2011).value SIMPLE [(src_auth)src_auth.FieldSchema(name:value, type:string, comment:null), ]
-Authorization failed:No privilege 'Select' found for inputs { database:default, table:authorization_part_fail, partitionName:ds=2010, columnName:value}. Use show grant to get more details.
+Authorization failed:No privilege 'Select' found for inputs { database:default, table:authorization_part_fail, partitionName:ds=2010, columnName:value}. Use SHOW GRANT to get more details.

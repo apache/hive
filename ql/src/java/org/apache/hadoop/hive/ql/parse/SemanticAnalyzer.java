@@ -5564,7 +5564,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         table_desc = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
       }
 
-      if (!outputs.add(new WriteEntity(destStr, !isDfsDir))) {
+      if (!outputs.add(new WriteEntity(dest_path, !isDfsDir))) {
         throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
             .getMsg(destStr));
       }
@@ -8544,7 +8544,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       tsDesc.setStatsAggPrefix(tab.getDbName()+"."+k);
 
       // set up WritenEntity for replication
-      outputs.add(new WriteEntity(tab, true));
+      outputs.add(new WriteEntity(tab));
 
       // add WriteEntity for each matching partition
       if (tab.isPartitioned()) {
@@ -8555,7 +8555,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (partitions != null) {
           for (Partition partn : partitions) {
             // inputs.add(new ReadEntity(partn)); // is this needed at all?
-            outputs.add(new WriteEntity(partn, true));
+            outputs.add(new WriteEntity(partn));
           }
         }
       }
@@ -9542,9 +9542,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // check for existence of table
     if (ifNotExists) {
       try {
-        Table table = db.getTable(tableName, false); // use getTable(final String tableName, boolean
-                                                     // throwException) which doesn't throw
-                                                     // exception but null if table doesn't exist
+        Table table = getTableWithQN(tableName, false);
         if (table != null) { // table exists
           return null;
         }
@@ -9698,7 +9696,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private void validateCreateView(CreateViewDesc createVwDesc)
     throws SemanticException {
     try {
-      Table oldView = db.getTable(createVwDesc.getViewName(), false);
+      Table oldView = getTableWithQN(createVwDesc.getViewName(), false);
 
       // ALTER VIEW AS SELECT requires the view must exist
       if (createVwDesc.getIsAlterViewAs() && oldView == null) {

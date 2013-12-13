@@ -109,8 +109,12 @@ POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: DROP DATABASE alter4_db
 PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:alter4_db
+PREHOOK: Output: database:alter4_db
 POSTHOOK: query: DROP DATABASE alter4_db
 POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:alter4_db
+POSTHOOK: Output: database:alter4_db
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES

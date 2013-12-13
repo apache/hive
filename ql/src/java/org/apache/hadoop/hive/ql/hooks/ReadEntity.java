@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.Table;
 
@@ -46,13 +47,20 @@ public class ReadEntity extends Entity implements Serializable {
   }
 
   /**
+   * Constructor for a database.
+   */
+  public ReadEntity(Database database) {
+    super(database, true);
+  }
+
+  /**
    * Constructor.
    *
    * @param t
    *          The Table that the query reads from.
    */
   public ReadEntity(Table t) {
-    super(t);
+    super(t, true);
   }
 
   private void initParent(ReadEntity parent) {
@@ -62,7 +70,7 @@ public class ReadEntity extends Entity implements Serializable {
   }
 
   public ReadEntity(Table t, ReadEntity parent) {
-    super(t);
+    super(t, true);
     initParent(parent);
   }
 
@@ -73,11 +81,11 @@ public class ReadEntity extends Entity implements Serializable {
    *          The partition that the query reads from.
    */
   public ReadEntity(Partition p) {
-    super(p);
+    super(p, true);
   }
 
   public ReadEntity(Partition p, ReadEntity parent) {
-    super(p);
+    super(p, true);
     initParent(parent);
   }
 

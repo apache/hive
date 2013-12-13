@@ -127,4 +127,4 @@ principalType	USER
 privilege	Create	
 #### A masked pattern was here ####
 grantor	hive_test_user	
-Authorization failed:No privilege 'Select' found for inputs { database:default, table:authorization_fail, partitionName:ds=2010, columnName:key}. Use show grant to get more details.
+Authorization failed:No privilege 'Select' found for inputs { database:default, table:authorization_fail, partitionName:ds=2010, columnName:key}. Use SHOW GRANT to get more details.

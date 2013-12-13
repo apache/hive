@@ -20,6 +20,8 @@ package org.apache.hadoop.hive.ql.hooks;
 
 import java.io.Serializable;
 
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Table;
@@ -37,6 +39,10 @@ public class WriteEntity extends Entity implements Serializable {
     super();
   }
 
+  public WriteEntity(Database database) {
+    super(database, true);
+  }
+
   /**
    * Constructor for a table.
    *
@@ -44,7 +50,7 @@ public class WriteEntity extends Entity implements Serializable {
    *          Table that is written to.
    */
   public WriteEntity(Table t) {
-    this(t, true);
+    super(t, true);
   }
 
   public WriteEntity(Table t, boolean complete) {
@@ -58,11 +64,7 @@ public class WriteEntity extends Entity implements Serializable {
    *          Partition that is written to.
    */
   public WriteEntity(Partition p) {
-    this(p, true);
-  }
-
-  public WriteEntity(Partition p, boolean complete) {
-    super(p, complete);
+    super(p, true);
   }
 
   public WriteEntity(DummyPartition p, boolean complete) {
@@ -77,12 +79,8 @@ public class WriteEntity extends Entity implements Serializable {
    * @param islocal
    *          Flag to decide whether this directory is local or in dfs.
    */
-  public WriteEntity(String d, boolean islocal) {
-    this(d, islocal, true);
-  }
-
-  public WriteEntity(String d, boolean islocal, boolean complete) {
-    super(d, islocal, complete);
+  public WriteEntity(Path d, boolean islocal) {
+    super(d.toString(), islocal, true);
   }
 
   /**

@@ -38,9 +38,13 @@ test_db
 PREHOOK: query: -- DROP
 DROP DATABASE test_db
 PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:test_db
+PREHOOK: Output: database:test_db
 POSTHOOK: query: -- DROP
 DROP DATABASE test_db
 POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:test_db
+POSTHOOK: Output: database:test_db
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
@@ -61,9 +65,13 @@ test_db
 PREHOOK: query: -- DROP IE exists
 DROP DATABASE IF EXISTS test_db
 PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:test_db
+PREHOOK: Output: database:test_db
 POSTHOOK: query: -- DROP IE exists
 DROP DATABASE IF EXISTS test_db
 POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:test_db
+POSTHOOK: Output: database:test_db
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
@@ -305,8 +313,12 @@ POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: DROP DATABASE test_db
 PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:test_db
+PREHOOK: Output: database:test_db
 POSTHOOK: query: DROP DATABASE test_db
 POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:test_db
+POSTHOOK: Output: database:test_db
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
@@ -330,8 +342,12 @@ POSTHOOK: query: USE default
 POSTHOOK: type: SWITCHDATABASE
 PREHOOK: query: DROP DATABASE to_drop_db1 CASCADE
 PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:to_drop_db1
+PREHOOK: Output: database:to_drop_db1
 POSTHOOK: query: DROP DATABASE to_drop_db1 CASCADE
 POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:to_drop_db1
+POSTHOOK: Output: database:to_drop_db1
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
 POSTHOOK: query: SHOW DATABASES
@@ -379,8 +395,12 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: DROP DATABASE to_drop_db2 CASCADE
 PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:to_drop_db2
+PREHOOK: Output: database:to_drop_db2
 POSTHOOK: query: DROP DATABASE to_drop_db2 CASCADE
 POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:to_drop_db2
+POSTHOOK: Output: database:to_drop_db2
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
@@ -420,8 +440,12 @@ POSTHOOK: type: SWITCHDATABASE
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: DROP DATABASE IF EXISTS to_drop_db3 CASCADE
 PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:to_drop_db3
+PREHOOK: Output: database:to_drop_db3
 POSTHOOK: query: DROP DATABASE IF EXISTS to_drop_db3 CASCADE
 POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:to_drop_db3
+POSTHOOK: Output: database:to_drop_db3
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
@@ -465,8 +489,12 @@ default
 to_drop_db4
 PREHOOK: query: DROP DATABASE to_drop_db4 RESTRICT
 PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:to_drop_db4
+PREHOOK: Output: database:to_drop_db4
 POSTHOOK: query: DROP DATABASE to_drop_db4 RESTRICT
 POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:to_drop_db4
+POSTHOOK: Output: database:to_drop_db4
 POSTHOOK: Lineage: temp_tbl2.c EXPRESSION [(temp_tbl)temp_tbl.null, ]
 PREHOOK: query: SHOW DATABASES
 PREHOOK: type: SHOWDATABASES
