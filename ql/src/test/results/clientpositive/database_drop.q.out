@@ -564,9 +564,13 @@ POSTHOOK: Lineage: db5__temp_tbl_idx1__.id SIMPLE [(temp_tbl)temp_tbl.FieldSchem
 PREHOOK: query: -- drop the database with cascade
 DROP DATABASE db5 CASCADE
 PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:db5
+PREHOOK: Output: database:db5
 POSTHOOK: query: -- drop the database with cascade
 DROP DATABASE db5 CASCADE
 POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:db5
+POSTHOOK: Output: database:db5
 POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._bucketname SIMPLE [(part_tab2)part_tab2.FieldSchema(name:INPUT__FILE__NAME, type:string, comment:), ]
 POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09)._offsets EXPRESSION [(part_tab2)part_tab2.FieldSchema(name:BLOCK__OFFSET__INSIDE__FILE, type:bigint, comment:), ]
 POSTHOOK: Lineage: db5__part_tab2_idx4__ PARTITION(ds=2008-04-09).id SIMPLE [(part_tab2)part_tab2.FieldSchema(name:id, type:int, comment:null), ]

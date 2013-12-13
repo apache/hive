@@ -118,10 +118,14 @@ public class TestClientSideAuthorizationProvider extends TestCase {
 
     String userName = ugi.getUserName();
 
+    allowCreateDatabase(userName);
+
     CommandProcessorResponse ret = driver.run("create database " + dbName);
     assertEquals(0,ret.getResponseCode());
     Database db = msc.getDatabase(dbName);
     String dbLocn = db.getLocationUri();
+
+    disallowCreateDatabase(userName);
 
     validateCreateDb(db,dbName);
     disallowCreateInDb(dbName, userName, dbLocn);
@@ -183,6 +187,15 @@ public class TestClientSideAuthorizationProvider extends TestCase {
     // nothing needed here by default
   }
 
+  protected void allowCreateDatabase(String userName)
+      throws Exception {
+    driver.run("grant create to user "+userName);
+  }
+
+  protected void disallowCreateDatabase(String userName)
+      throws Exception {
+    driver.run("revoke create from user "+userName);
+  }
 
   protected void allowCreateInDb(String dbName, String userName, String location)
       throws Exception {

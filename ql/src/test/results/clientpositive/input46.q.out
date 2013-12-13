@@ -28,5 +28,9 @@ POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: table_in_database_creation@test4
 PREHOOK: query: drop database table_in_database_creation cascade
 PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:table_in_database_creation
+PREHOOK: Output: database:table_in_database_creation
 POSTHOOK: query: drop database table_in_database_creation cascade
 POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:table_in_database_creation
+POSTHOOK: Output: database:table_in_database_creation

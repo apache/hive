@@ -1,0 +1,44 @@
+PREHOOK: query: create database lockneg2
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: create database lockneg2
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: use lockneg2
+PREHOOK: type: SWITCHDATABASE
+POSTHOOK: query: use lockneg2
+POSTHOOK: type: SWITCHDATABASE
+PREHOOK: query: create table tstsrcpart like default.srcpart
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table tstsrcpart like default.srcpart
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: lockneg2@tstsrcpart
+PREHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-08', hr='11')
+select key, value from default.srcpart where ds='2008-04-08' and hr='11'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@srcpart
+PREHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+PREHOOK: Output: lockneg2@tstsrcpart@ds=2008-04-08/hr=11
+POSTHOOK: query: insert overwrite table tstsrcpart partition (ds='2008-04-08', hr='11')
+select key, value from default.srcpart where ds='2008-04-08' and hr='11'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@srcpart
+POSTHOOK: Input: default@srcpart@ds=2008-04-08/hr=11
+POSTHOOK: Output: lockneg2@tstsrcpart@ds=2008-04-08/hr=11
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: lock table tstsrcpart shared
+PREHOOK: type: LOCKTABLE
+POSTHOOK: query: lock table tstsrcpart shared
+POSTHOOK: type: LOCKTABLE
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show locks
+PREHOOK: type: SHOWLOCKS
+POSTHOOK: query: show locks
+POSTHOOK: type: SHOWLOCKS
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).key SIMPLE [(srcpart)srcpart.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: tstsrcpart PARTITION(ds=2008-04-08,hr=11).value SIMPLE [(srcpart)srcpart.FieldSchema(name:value, type:string, comment:default), ]
+lockneg2@tstsrcpart	SHARED
+PREHOOK: query: lock database lockneg2 exclusive
+PREHOOK: type: LOCKDATABASE
+conflicting lock present for lockneg2 mode EXCLUSIVE
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

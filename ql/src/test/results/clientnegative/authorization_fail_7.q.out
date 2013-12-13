@@ -42,4 +42,4 @@ PREHOOK: query: drop role hive_test_role_fail
 PREHOOK: type: DROPROLE
 POSTHOOK: query: drop role hive_test_role_fail
 POSTHOOK: type: DROPROLE
-Authorization failed:No privilege 'Select' found for inputs { database:default, table:authorization_fail, columnName:key}. Use show grant to get more details.
+Authorization failed:No privilege 'Select' found for inputs { database:default, table:authorization_fail, columnName:key}. Use SHOW GRANT to get more details.

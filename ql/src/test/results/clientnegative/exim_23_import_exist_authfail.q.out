@@ -39,4 +39,4 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table exim_department ( dep_id int) stored as textfile
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: importer@exim_department
-Authorization failed:No privilege 'Alter' found for outputs { database:importer, table:exim_department}. Use show grant to get more details.
+Authorization failed:No privilege 'Alter' found for outputs { database:importer, table:exim_department}. Use SHOW GRANT to get more details.
