@@ -35,8 +35,6 @@ import org.apache.hadoop.hive.serde2.io.DoubleWritable;
     + "  > SELECT _FUNC_(10) FROM src LIMIT 1;\n" + "  1")
 @VectorizedExpressions({FuncLog10LongToDouble.class, FuncLog10DoubleToDouble.class})
 public class UDFLog10 extends UDF {
-  private static double log10 = Math.log(10.0);
-
   private final DoubleWritable result = new DoubleWritable();
 
   public UDFLog10() {
@@ -49,9 +47,8 @@ public class UDFLog10 extends UDF {
     if (a == null || a.get() <= 0.0) {
       return null;
     } else {
-      result.set(Math.log(a.get()) / log10);
+      result.set(Math.log10(a.get()));
       return result;
     }
   }
-
 }
