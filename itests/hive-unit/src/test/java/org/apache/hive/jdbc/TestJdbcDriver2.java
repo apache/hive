@@ -1304,7 +1304,7 @@ public class TestJdbcDriver2 {
   public void testDatabaseMetaData() throws SQLException {
     DatabaseMetaData meta = con.getMetaData();
 
-    assertEquals("Hive", meta.getDatabaseProductName());
+    assertEquals("Apache Hive", meta.getDatabaseProductName());
     assertEquals(HiveVersionInfo.getVersion(), meta.getDatabaseProductVersion());
     assertEquals(System.getProperty("hive.version"), meta.getDatabaseProductVersion());
     assertTrue("verifying hive version pattern. got " + meta.getDatabaseProductVersion(),
