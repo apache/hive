@@ -146,7 +146,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain select * from t1 join t2 on (t1.id=t2.id) left outer join t3 on (t2.id=t3.id) where t2.id=20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 join t2 on (t1.id=t2.id) left outer join t3 on (t2.id=t3.id) where t2.id=20
@@ -275,7 +274,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain select * from t1 join t2 on (t1.id=t2.id) left outer join t3 on (t1.id=t3.id) where t2.id=20
 PREHOOK: type: QUERY
 POSTHOOK: query: explain select * from t1 join t2 on (t1.id=t2.id) left outer join t3 on (t1.id=t3.id) where t2.id=20
@@ -403,7 +401,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: drop table t1
 PREHOOK: type: DROPTABLE

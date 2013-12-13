@@ -57,7 +57,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -190,7 +189,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -258,7 +256,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT * FROM SRC x where x.key = 10 CLUSTER BY x.key
 PREHOOK: type: QUERY
@@ -387,7 +384,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key) where x.key = 20 CLUSTER BY v1
 PREHOOK: type: QUERY

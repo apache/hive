@@ -839,9 +839,6 @@
     <!-- hadoop profiles in the root pom are only used for dependency management -->
     <profile>
       <id>hadoop-1</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
       <dependencyManagement>
         <dependencies>
           <dependency>

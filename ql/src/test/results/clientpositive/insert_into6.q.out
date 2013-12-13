@@ -87,7 +87,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: INSERT INTO TABLE insert_into6a PARTITION (ds='1') SELECT * FROM src LIMIT 150
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -236,7 +235,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: INSERT INTO TABLE insert_into6b PARTITION (ds) SELECT * FROM insert_into6a
 PREHOOK: type: QUERY

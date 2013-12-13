@@ -93,7 +93,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT count(*) FROM npe_test WHERE ds > 2012-11-31 AND ds < 2012-12-15
 PREHOOK: type: QUERY
 PREHOOK: Input: default@npe_test

@@ -410,7 +410,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: FROM
 (SELECT src.* FROM src sort by key) x
 RIGHT OUTER JOIN

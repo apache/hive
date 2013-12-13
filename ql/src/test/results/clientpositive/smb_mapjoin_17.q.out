@@ -305,7 +305,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT /*+ mapjoin(b, c, d, e, f, g) */ count(*)
 FROM test_table1 a JOIN test_table2 b ON a.key = b.key
 JOIN test_table3 c ON a.key = c.key
@@ -469,7 +468,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT count(*)
 FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
@@ -635,7 +633,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT count(*)
 FROM test_table1 a LEFT OUTER JOIN test_table2 b ON a.key = b.key
@@ -917,5 +914,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 

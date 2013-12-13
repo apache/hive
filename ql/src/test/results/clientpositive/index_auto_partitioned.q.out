@@ -172,7 +172,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT key, value FROM srcpart WHERE key=86 AND ds='2008-04-09' ORDER BY key
 PREHOOK: type: QUERY
 PREHOOK: Input: default@default__srcpart_src_part_index__

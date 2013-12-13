@@ -120,7 +120,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select /*+ mapjoin(b) */ count(*) from table_desc1 a join table_desc2 b on a.key=b.key where a.key < 10
 PREHOOK: type: QUERY
 PREHOOK: Input: default@table_desc1

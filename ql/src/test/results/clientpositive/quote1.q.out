@@ -109,7 +109,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: EXPLAIN
 SELECT `int`.`location`, `int`.`type`, `int`.`table` FROM dest1 `int` WHERE `int`.`table` = '2008-04-08'
 PREHOOK: type: QUERY
@@ -154,7 +153,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: FROM src
 INSERT OVERWRITE TABLE dest1 PARTITION(`table`='2008-04-08') SELECT src.key as `partition`, src.value as `from` WHERE src.key >= 200 and src.key < 300

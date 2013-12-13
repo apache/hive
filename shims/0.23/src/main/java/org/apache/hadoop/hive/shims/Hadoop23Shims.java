@@ -37,13 +37,11 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.PathFilter;
 import org.apache.hadoop.fs.ProxyFileSystem;
 import org.apache.hadoop.fs.RemoteIterator;
-import org.apache.hadoop.fs.LocatedFileStatus;
-import org.apache.hadoop.fs.RemoteIterator;
 import org.apache.hadoop.fs.Trash;
 import org.apache.hadoop.hdfs.MiniDFSCluster;
-import org.apache.hadoop.mapred.MiniMRCluster;
 import org.apache.hadoop.mapred.ClusterStatus;
 import org.apache.hadoop.mapred.JobConf;
+import org.apache.hadoop.mapred.MiniMRCluster;
 import org.apache.hadoop.mapred.Reporter;
 import org.apache.hadoop.mapred.WebHCatJTShim23;
 import org.apache.hadoop.mapreduce.Job;
@@ -437,10 +435,12 @@ public class Hadoop23Shims extends HadoopShimsSecure {
           fs.listLocatedStatus(path);
       private FileStatus next;
       {
-        if (inner.hasNext()) {
+        next = null;
+        while (inner.hasNext() && next == null) {
           next = inner.next();
-        } else {
-          next = null;
+          if (filter != null && !filter.accept(next.getPath())) {
+            next = null;
+          }
         }
       }
 

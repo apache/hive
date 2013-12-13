@@ -47,5 +47,9 @@ POSTHOOK: type: DROPTABLE
 POSTHOOK: Output: tmp_feng@tmp_showcrt
 PREHOOK: query: DROP DATABASE tmp_feng
 PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:tmp_feng
+PREHOOK: Output: database:tmp_feng
 POSTHOOK: query: DROP DATABASE tmp_feng
 POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:tmp_feng
+POSTHOOK: Output: database:tmp_feng

@@ -60,7 +60,7 @@ STAGE PLANS:
                   expr: ((ds = '2000-04-09') or (key = 5))
                   type: boolean
               Statistics:
-                  numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 40 dataSize: 320 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -71,7 +71,7 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1, _col2
                 Statistics:
-                    numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 40 dataSize: 320 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -80,7 +80,7 @@ STAGE PLANS:
                         type: string
                   sort order: ++
                   Statistics:
-                      numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 40 dataSize: 320 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -181,14 +181,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 40 dataSize: 320 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 20 dataSize: 160 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 40 dataSize: 320 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -208,7 +208,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select key, value, ds from push_or where ds='2000-04-09' or key=5 order by key, ds
 PREHOOK: type: QUERY

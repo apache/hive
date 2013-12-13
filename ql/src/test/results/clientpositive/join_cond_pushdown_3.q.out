@@ -231,7 +231,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain select *
 from part p1 join part p2 join part p3 
 where p2.p_name = p1.p_name and p3.p_name = p2.p_name
@@ -427,7 +426,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: explain select *
 from part p1 join part p2 join part p3 
@@ -684,7 +682,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain select *
 from part p1 join part p2 join part p3 
 where p2.p_partkey = 1 and p3.p_name = p2.p_name
@@ -939,5 +936,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 

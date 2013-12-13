@@ -13,7 +13,6 @@ STAGE DEPENDENCIES:
 STAGE PLANS:
   Stage: Stage-0
 
-
 PREHOOK: query: CREATE TEMPORARY FUNCTION test_udf_get_java_boolean AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaBoolean'
 PREHOOK: type: CREATEFUNCTION
 POSTHOOK: query: CREATE TEMPORARY FUNCTION test_udf_get_java_boolean AS 'org.apache.hadoop.hive.ql.udf.generic.GenericUDFTestGetJavaBoolean'

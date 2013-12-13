@@ -172,7 +172,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT a, b, count(*) FROM
 (SELECT a, b, count(1) from T1 group by a, b) subq1 group by a, b with cube
 PREHOOK: type: QUERY
@@ -398,7 +397,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT a, b, count(*) FROM
 (SELECT a, b, count(1) from T1 group by a, b) subq1 group by a, b with cube

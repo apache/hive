@@ -100,7 +100,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'HOST'), 
 parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'PATH'), 
 parse_url('http://facebook.com/path1/p.php?k1=v1&k2=v2#Ref1', 'QUERY') ,

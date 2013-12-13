@@ -129,7 +129,6 @@ STAGE PLANS:
   Stage: Stage-3
     Stats-Aggr Operator
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE tmptable
 SELECT unionsrc.key, unionsrc.value 
 FROM (SELECT 'tst1' AS key, cast(count(1) AS string) AS value FROM src s1

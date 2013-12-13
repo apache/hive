@@ -225,7 +225,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2 x JOIN T1 y ON (x.key = y.key) JOIN T3 z ON (y.key = z.key)
@@ -396,7 +395,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
@@ -600,7 +598,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
@@ -811,7 +808,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
       FROM T2 x LEFT OUTER JOIN T1 y ON (x.key = y.key) LEFT OUTER JOIN T3 z ON (y.key = z.key)
@@ -982,7 +978,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT x.key AS key, count(1) AS cnt
@@ -1195,7 +1190,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2 x LEFT OUTER JOIN T1 y ON (x.key = y.key) LEFT OUTER JOIN T3 z ON (y.key = z.key)
@@ -1405,7 +1399,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT z.key AS key, count(1) AS cnt
       FROM T2 x RIGHT OUTER JOIN T1 y ON (x.key = y.key) RIGHT OUTER JOIN T3 z ON (y.key = z.key)
@@ -1576,7 +1569,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT z.key AS key, count(1) AS cnt
@@ -1789,7 +1781,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2 x RIGHT OUTER JOIN T1 y ON (x.key = y.key) RIGHT OUTER JOIN T3 z ON (y.key = z.key)
@@ -1999,7 +1990,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt
       FROM T2 x FULL OUTER JOIN T1 y ON (x.key = y.key) FULL OUTER JOIN T3 z ON (y.key = z.key)
@@ -2204,7 +2194,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt))
 FROM (SELECT y.key AS key, count(1) AS cnt

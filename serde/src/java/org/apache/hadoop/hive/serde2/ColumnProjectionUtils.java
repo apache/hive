@@ -58,7 +58,7 @@ public final class ColumnProjectionUtils {
    * @deprecated for backwards compatibility with <= 0.12, use appendReadColumns
    */
   @Deprecated
-  public static void appendReadColumnID(Configuration conf, List<Integer> ids) {
+  public static void appendReadColumnIDs(Configuration conf, List<Integer> ids) {
     appendReadColumns(conf, ids);
   }
 

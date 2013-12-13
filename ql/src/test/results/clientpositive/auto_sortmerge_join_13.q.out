@@ -167,7 +167,6 @@ STAGE PLANS:
   Stage: Stage-4
     Stats-Aggr Operator
 
-
 PREHOOK: query: from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
   FROM tbl1 a JOIN tbl2 b 
@@ -397,7 +396,6 @@ STAGE PLANS:
   Stage: Stage-4
     Stats-Aggr Operator
 
-
 PREHOOK: query: from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 
   FROM tbl1 a JOIN tbl2 b 
@@ -642,7 +640,6 @@ STAGE PLANS:
 
   Stage: Stage-4
     Stats-Aggr Operator
-
 
 PREHOOK: query: from (
   SELECT a.key key1, a.value value1, b.key key2, b.value value2 

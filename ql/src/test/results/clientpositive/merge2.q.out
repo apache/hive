@@ -139,7 +139,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: insert overwrite table test1
 select key, count(1) from src group by key
 PREHOOK: type: QUERY
@@ -623,7 +622,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: insert overwrite table test1 select key from test_src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@test_src
@@ -745,7 +743,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: insert overwrite table test1 select key from test_src
 PREHOOK: type: QUERY

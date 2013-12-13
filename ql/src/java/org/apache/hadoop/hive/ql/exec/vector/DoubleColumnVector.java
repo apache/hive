@@ -17,6 +17,8 @@
  */
 package org.apache.hadoop.hive.ql.exec.vector;
 
+import java.util.Arrays;
+
 import org.apache.hadoop.hive.serde2.io.DoubleWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
@@ -66,5 +68,77 @@ public class DoubleColumnVector extends ColumnVector {
       writableObj.set(vector[index]);
       return writableObj;
     }
+  }
+
+  // Copy the current object contents into the output. Only copy selected entries,
+  // as indicated by selectedInUse and the sel array.
+  public void copySelected(
+      boolean selectedInUse, int[] sel, int size, DoubleColumnVector output) {
+
+    // Output has nulls if and only if input has nulls.
+    output.noNulls = noNulls;
+    output.isRepeating = false;
+
+    // Handle repeating case
+    if (isRepeating) {
+      output.vector[0] = vector[0];
+      output.isNull[0] = isNull[0];
+      output.isRepeating = true;
+      return;
+    }
+
+    // Handle normal case
+
+    // Copy data values over
+    if (selectedInUse) {
+      for (int j = 0; j < size; j++) {
+        int i = sel[j];
+        output.vector[i] = vector[i];
+      }
+    }
+    else {
+      System.arraycopy(vector, 0, output.vector, 0, size);
+    }
+
+    // Copy nulls over if needed
+    if (!noNulls) {
+      if (selectedInUse) {
+        for (int j = 0; j < size; j++) {
+          int i = sel[j];
+          output.isNull[i] = isNull[i];
+        }
+      }
+      else {
+        System.arraycopy(isNull, 0, output.isNull, 0, size);
+      }
+    }
+  }
+
+  // Fill the column vector with the provided value
+  public void fill(double value) {
+    noNulls = true;
+    isRepeating = true;
+    vector[0] = value;
+  }
+
+  // Simplify vector by brute-force flattening noNulls and isRepeating
+  // This can be used to reduce combinatorial explosion of code paths in VectorExpressions
+  // with many arguments.
+  public void flatten(boolean selectedInUse, int[] sel, int size) {
+    flattenPush();
+    if (isRepeating) {
+      isRepeating = false;
+      double repeatVal = vector[0];
+      if (selectedInUse) {
+        for (int j = 0; j < size; j++) {
+          int i = sel[j];
+          vector[i] = repeatVal;
+        }
+      } else {
+        Arrays.fill(vector, 0, size, repeatVal);
+      }
+      flattenRepeatingNulls(selectedInUse, sel, size);
+    }
+    flattenNoNulls(selectedInUse, sel, size);
   }
 }

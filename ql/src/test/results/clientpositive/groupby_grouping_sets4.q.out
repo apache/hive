@@ -317,7 +317,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT * FROM
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1
 join
@@ -736,7 +735,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT * FROM
 (SELECT a, b, count(*) from T1 where a < 3 group by a, b with cube) subq1

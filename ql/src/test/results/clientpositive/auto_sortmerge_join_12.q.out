@@ -265,7 +265,7 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics:
-                numRows: 0 dataSize: 114 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 1 dataSize: 114 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -282,7 +282,7 @@ STAGE PLANS:
           TableScan
             alias: b
             Statistics:
-                numRows: 0 dataSize: 170 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 1 dataSize: 170 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -318,7 +318,7 @@ STAGE PLANS:
           TableScan
             alias: c
             Statistics:
-                numRows: 0 dataSize: 11624 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 116 dataSize: 11624 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -347,7 +347,7 @@ STAGE PLANS:
                 Position of Big Table: 0
                 Select Operator
                   Statistics:
-                      numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                      numRows: 280 dataSize: 28129 basicStatsState: COMPLETE colStatsState: NONE
                   Group By Operator
                     aggregations:
                           expr: count()
@@ -591,7 +591,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select count(*) FROM bucket_small a JOIN bucket_medium b ON a.key = b.key JOIN bucket_big c ON c.key = b.key JOIN bucket_medium d ON c.key = b.key
 PREHOOK: type: QUERY

@@ -276,7 +276,6 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-
 PREHOOK: query: insert overwrite table nzhang_part14 partition(value) 
 select key, value from (
   select 'k1' as key, cast(null as string) as value from src limit 2

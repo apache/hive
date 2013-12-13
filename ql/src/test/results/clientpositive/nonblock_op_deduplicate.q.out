@@ -42,7 +42,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- This test query is introduced for HIVE-4968.
 -- First, we do not convert the join to MapJoin.
 EXPLAIN
@@ -206,7 +205,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT tmp4.key as key, tmp4.value as value, tmp4.count as count
 FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count
@@ -411,7 +409,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT tmp4.key as key, tmp4.value as value, tmp4.count as count
 FROM (SELECT tmp2.key as key, tmp2.value as value, tmp3.count as count

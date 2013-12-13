@@ -81,7 +81,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT
   sum('a'),
   avg('a'),

@@ -108,7 +108,6 @@ STAGE PLANS:
     Fetch Operator
       limit: 10
 
-
 PREHOOK: query: SELECT CASE a.key
         WHEN '1' THEN 2
         WHEN '3' THEN 4

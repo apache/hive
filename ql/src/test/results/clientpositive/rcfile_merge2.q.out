@@ -99,7 +99,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE rcfile_merge2a PARTITION (one='1', two, three)
     SELECT key, value, PMOD(HASH(key), 10) as two, 
         PMOD(HASH(value), 10) as three

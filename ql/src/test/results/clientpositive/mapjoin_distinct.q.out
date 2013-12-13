@@ -136,7 +136,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: FROM srcpart c
 JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
@@ -271,7 +270,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: FROM srcpart c
 JOIN srcpart d
@@ -432,7 +430,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: FROM srcpart c
 JOIN srcpart d
 ON ( c.key=d.key AND c.ds='2008-04-08' AND d.ds='2008-04-08')
@@ -560,7 +557,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: FROM srcpart c
 JOIN srcpart d

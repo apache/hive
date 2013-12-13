@@ -697,7 +697,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT count(1) FROM (
   SELECT key, value FROM src UNION ALL
   SELECT key, value FROM src UNION ALL

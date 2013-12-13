@@ -110,7 +110,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select b.key,b.cc
 from (
   select a.*
@@ -345,7 +344,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: EXPLAIN 
 SELECT x.key, x.value as v1, y.key  FROM SRC x JOIN SRC y ON (x.key = y.key)  where x.key = 20 CLUSTER BY v1
 PREHOOK: type: QUERY
@@ -465,7 +463,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: explain
 select b.key,b.cc
 from (
@@ -581,7 +578,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select b.key,b.cc
 from (

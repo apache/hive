@@ -177,7 +177,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT /*+ STREAMTABLE(a) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key
           JOIN T3 c ON b.key = c.key
@@ -415,7 +414,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT /*+ STREAMTABLE(a) */ *
 FROM T1 a JOIN T2 b ON a.key = b.key

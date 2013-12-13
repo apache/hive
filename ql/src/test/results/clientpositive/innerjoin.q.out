@@ -127,7 +127,6 @@ STAGE PLANS:
   Stage: Stage-3
     Stats-Aggr Operator
 
-
 PREHOOK: query: FROM src src1 INNER JOIN src src2 ON (src1.key = src2.key)
 INSERT OVERWRITE TABLE dest_j1 SELECT src1.key, src2.value ORDER BY src1.key, src2.value
 PREHOOK: type: QUERY
@@ -1305,5 +1304,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 

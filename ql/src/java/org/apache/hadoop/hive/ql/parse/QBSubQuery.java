@@ -10,14 +10,15 @@ import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.lib.Node;
 import org.apache.hadoop.hive.ql.lib.NodeProcessor;
+import org.apache.hadoop.hive.ql.parse.SubQueryUtils.ISubQueryJoinInfo;
 import org.apache.hadoop.hive.ql.parse.TypeCheckProcFactory.DefaultExprProcessor;
 import org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeConstantDesc;
 import org.apache.hadoop.hive.ql.plan.ExprNodeDesc;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 
-public class QBSubQuery {
-
+public class QBSubQuery implements ISubQueryJoinInfo {
+  
   public static enum SubQueryType {
     EXISTS,
     NOT_EXISTS,
@@ -332,6 +333,83 @@ public class QBSubQuery {
 
   }
 
+  /*
+   * When transforming a Not In SubQuery we need to check for nulls in the 
+   * Joining expressions of the SubQuery. If there are nulls then the SubQuery always
+   * return false. For more details see 
+   * https://issues.apache.org/jira/secure/attachment/12614003/SubQuerySpec.pdf
+   * 
+   * Basically, SQL semantics say that:
+   * - R1.A not in (null, 1, 2, ...)
+   *   is always false. 
+   *   A 'not in' operator is equivalent to a '<> all'. Since a not equal check with null 
+   *   returns false, a not in predicate against aset with a 'null' value always returns false.
+   *   
+   * So for not in SubQuery predicates:
+   * - we join in a null count predicate.
+   * - And the joining condition is that the 'Null Count' query has a count of 0.
+   *   
+   */
+  class NotInCheck implements ISubQueryJoinInfo {
+    
+    private static final String CNT_ALIAS = "c1";
+    
+    /*
+     * expressions in SubQ that are joined to the Outer Query.
+     */
+    List<ASTNode> subQryCorrExprs;
+    
+    /*
+     * row resolver of the SubQuery.
+     * Set by the SemanticAnalyzer after the Plan for the SubQuery is genned.
+     * This is neede in case the SubQuery select list contains a TOK_ALLCOLREF
+     */
+    RowResolver sqRR;
+    
+    NotInCheck() {
+      subQryCorrExprs = new ArrayList<ASTNode>();
+    }
+    
+    void addCorrExpr(ASTNode corrExpr) {
+      subQryCorrExprs.add(corrExpr);
+    }
+    
+    public ASTNode getSubQueryAST() {
+      return SubQueryUtils.buildNotInNullCheckQuery(
+          QBSubQuery.this.getSubQueryAST(), 
+          QBSubQuery.this.getAlias(), 
+          CNT_ALIAS, 
+          subQryCorrExprs,
+          sqRR);
+    }
+    
+    public String getAlias() {
+      return QBSubQuery.this.getAlias() + "_notin_nullcheck";
+    }
+    
+    public JoinType getJoinType() {
+      return JoinType.LEFTSEMI;
+    }
+    
+    public ASTNode getJoinConditionAST() {
+      return 
+          SubQueryUtils.buildNotInNullJoinCond(getAlias(), CNT_ALIAS);
+    }
+    
+    public QBSubQuery getSubQuery() {
+      return QBSubQuery.this;
+    }
+    
+    public String getOuterQueryId() {
+      return QBSubQuery.this.getOuterQueryId();
+    }
+    
+    void setSQRR(RowResolver sqRR) {
+      this.sqRR = sqRR;
+    }
+        
+  }
+  
   private final String outerQueryId;
   private final int sqIdx;
   private final String alias;
@@ -355,6 +433,8 @@ public class QBSubQuery {
   private boolean groupbyAddedToSQ;
   
   private int numOuterCorrExprsForHaving;
+  
+  private NotInCheck notInCheck;
 
   public QBSubQuery(String outerQueryId,
       int sqIdx,
@@ -377,6 +457,10 @@ public class QBSubQuery {
     originalSQASTOrigin = new ASTNodeOrigin("SubQuery", alias, s, alias, originalSQAST);
     numOfCorrelationExprsAddedToSQSelect = 0;
     groupbyAddedToSQ = false;
+    
+    if ( operator.getType() == SubQueryType.NOT_IN ) {
+      notInCheck = new NotInCheck();
+    }
   }
 
   public ASTNode getSubQueryAST() {
@@ -655,6 +739,9 @@ public class QBSubQuery {
             ASTNode gBy = getSubQueryGroupByAST();
             SubQueryUtils.addGroupExpressionToFront(gBy, conjunct.getLeftExpr());
           }
+          if ( notInCheck != null ) {
+            notInCheck.addCorrExpr((ASTNode)conjunctAST.getChild(0));
+          }
         } else {
           if ( forHavingClause && conjunct.getLeftOuterColInfo() != null ) {
             rewriteCorrConjunctForHaving(conjunctAST, true, outerQueryAlias, 
@@ -670,6 +757,9 @@ public class QBSubQuery {
           if ( containsAggregationExprs ) {
             ASTNode gBy = getSubQueryGroupByAST();
             SubQueryUtils.addGroupExpressionToFront(gBy, conjunct.getRightExpr());
+          }
+          if ( notInCheck != null ) {
+            notInCheck.addCorrExpr((ASTNode)conjunctAST.getChild(1));
           }
         }
       } else {
@@ -744,6 +834,14 @@ public class QBSubQuery {
 
   public int getNumOfCorrelationExprsAddedToSQSelect() {
     return numOfCorrelationExprsAddedToSQSelect;
+  }
+  
+  public QBSubQuery getSubQuery() {
+    return this;
+  }
+  
+  NotInCheck getNotInCheck() {
+    return notInCheck;
   }
   
   private void rewriteCorrConjunctForHaving(ASTNode conjunctASTNode,

@@ -23,12 +23,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.ColumnInfo;
 import org.apache.hadoop.hive.ql.exec.CommonJoinOperator;
-import org.apache.hadoop.hive.ql.exec.DemuxOperator;
 import org.apache.hadoop.hive.ql.exec.FilterOperator;
 import org.apache.hadoop.hive.ql.exec.GroupByOperator;
 import org.apache.hadoop.hive.ql.exec.LimitOperator;
@@ -53,7 +53,6 @@ import org.apache.hadoop.hive.ql.plan.ExprNodeGenericFuncDesc;
 import org.apache.hadoop.hive.ql.plan.JoinDesc;
 import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.Statistics;
-import org.apache.hadoop.hive.ql.plan.Statistics.State;
 import org.apache.hadoop.hive.ql.stats.StatsUtils;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDF;
 import org.apache.hadoop.hive.ql.udf.generic.GenericUDFOPAnd;
@@ -75,13 +74,16 @@ import com.google.common.collect.Maps;
 
 public class StatsRulesProcFactory {
 
+  private static final Log LOG = LogFactory.getLog(StatsRulesProcFactory.class.getName());
+
   /**
-   * Collect basic statistics like number of rows, data size and column level
-   * statistics from the table. Also sets the state of the available statistics.
-   * Basic and column statistics can have one of the following states
-   * COMPLETE, PARTIAL, NONE. In case of partitioned table, the basic and column
-   * stats are aggregated together to table level statistics.
-   *
+   * Collect basic statistics like number of rows, data size and column level statistics from the
+   * table. Also sets the state of the available statistics. Basic and column statistics can have
+   * one of the following states COMPLETE, PARTIAL, NONE. In case of partitioned table, the basic
+   * and column stats are aggregated together to table level statistics. Column statistics will not
+   * be collected if hive.stats.fetch.column.stats is set to false. If basic statistics is not
+   * available then number of rows will be estimated from file size and average row size (computed
+   * from schema).
    */
   public static class TableScanStatsRule extends DefaultStatsRule implements NodeProcessor {
 
@@ -102,6 +104,10 @@ public class StatsRulesProcFactory {
       Statistics stats = StatsUtils.collectStatistics(aspCtx.getConf(), partList, table, tsop);
       try {
         tsop.setStatistics(stats.clone());
+
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("[0] STATS-" + tsop.toString() + ": " + stats.extendedToString());
+        }
       } catch (CloneNotSupportedException e) {
         throw new SemanticException(ErrorMsg.STATISTICS_CLONING_FAILED.getMsg());
       }
@@ -110,23 +116,19 @@ public class StatsRulesProcFactory {
   }
 
   /**
-   * SELECT operator doesn't change the number of rows emitted from the parent
-   * operator. It changes the size of each tuple emitted. In a typical case,
-   * where only subset of columns are selected the average row size will
-   * reduce as some of the columns will be pruned. In order to accurately
-   * compute the average row size, column level statistics is required.
-   * Column level statistics stores average size of values in column which
-   * can be used to more reliably estimate the reduction in size of each
-   * tuple. In the absence of column level statistics, size of columns will be
-   * based on data type. For primitive data types size from
-   * {@link org.apache.hadoop.hive.ql.util.JavaDataModel} will be
-   * used and for variable length data types worst case will be assumed.
-   *
+   * SELECT operator doesn't change the number of rows emitted from the parent operator. It changes
+   * the size of each tuple emitted. In a typical case, where only subset of columns are selected
+   * the average row size will reduce as some of the columns will be pruned. In order to accurately
+   * compute the average row size, column level statistics is required. Column level statistics
+   * stores average size of values in column which can be used to more reliably estimate the
+   * reduction in size of each tuple. In the absence of column level statistics, size of columns
+   * will be based on data type. For primitive data types size from
+   * {@link org.apache.hadoop.hive.ql.util.JavaDataModel} will be used and for variable length data
+   * types worst case will be assumed.
    * <p>
    * <i>For more information, refer 'Estimating The Cost Of Operations' chapter in
    * "Database Systems: The Complete Book" by Garcia-Molina et. al.</i>
    * </p>
-   *
    */
   public static class SelectStatsRule extends DefaultStatsRule implements NodeProcessor {
 
@@ -155,15 +157,24 @@ public class StatsRulesProcFactory {
       try {
         if (satisfyPrecondition(parentStats)) {
           Statistics stats = parentStats.clone();
-          List<ColStatistics> colStats = StatsUtils.getColStatisticsFromExprMap(conf, parentStats,
-              sop.getColumnExprMap(), sop.getSchema());
+          List<ColStatistics> colStats =
+              StatsUtils.getColStatisticsFromExprMap(conf, parentStats, sop.getColumnExprMap(),
+                  sop.getSchema());
           long dataSize = StatsUtils.getDataSizeFromColumnStats(stats.getNumRows(), colStats);
           stats.setColumnStats(colStats);
           stats.setDataSize(dataSize);
           sop.setStatistics(stats);
+
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("[0] STATS-" + sop.toString() + ": " + stats.extendedToString());
+          }
         } else {
           if (parentStats != null) {
             sop.setStatistics(parentStats.clone());
+
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("[1] STATS-" + sop.toString() + ": " + parentStats.extendedToString());
+            }
           }
         }
       } catch (CloneNotSupportedException e) {
@@ -175,16 +186,13 @@ public class StatsRulesProcFactory {
   }
 
   /**
-   * FILTER operator does not change the average row size but it does change
-   * the number of rows emitted. The reduction in the number of rows emitted
-   * is dependent on the filter expression.
-   *
+   * FILTER operator does not change the average row size but it does change the number of rows
+   * emitted. The reduction in the number of rows emitted is dependent on the filter expression.
    * <ul>
    * <i>Notations:</i>
    * <li>T(S) - Number of tuples in relations S</li>
    * <li>V(S,A) - Number of distinct values of attribute A in relation S</li>
    * </ul>
-   *
    * <ul>
    * <i>Rules:</i> <b>
    * <li>Column equals a constant</li></b> T(S) = T(R) / V(R,A)
@@ -207,20 +215,18 @@ public class StatsRulesProcFactory {
    * <li>Multiple OR conditions</li></b> - Simple formula is to evaluate conditions independently
    * and sum the results T(S) = m1 + m2
    * <p>
-   *
    * - Alternate formula T(S) = T(R) * ( 1 - ( 1 - m1/T(R) ) * ( 1 - m2/T(R) ))
    * <p>
    * where, m1 is the number of tuples that satisfy condition1 and m2 is the number of tuples that
    * satisfy condition2
    * </ul>
    * <p>
-   * <i>Worst case:</i> If no column statistics are available, then T(R) = T(R)/2 will be
-   * used as heuristics.
+   * <i>Worst case:</i> If no column statistics are available, then evaluation of predicate
+   * expression will assume worst case (i.e; half the input rows) for each of predicate expression.
    * <p>
    * <i>For more information, refer 'Estimating The Cost Of Operations' chapter in
    * "Database Systems: The Complete Book" by Garcia-Molina et. al.</i>
    * </p>
-   *
    */
   public static class FilterStatsRule extends DefaultStatsRule implements NodeProcessor {
 
@@ -231,26 +237,47 @@ public class StatsRulesProcFactory {
       FilterOperator fop = (FilterOperator) nd;
       Operator<? extends OperatorDesc> parent = fop.getParentOperators().get(0);
       Statistics parentStats = parent.getStatistics();
+      List<String> neededCols = null;
+      if (parent instanceof TableScanOperator) {
+        TableScanOperator tsop = (TableScanOperator) parent;
+        neededCols = tsop.getNeededColumns();
+      }
 
       try {
-        if (satisfyPrecondition(parentStats)) {
+        if (parentStats != null) {
           ExprNodeDesc pred = fop.getConf().getPredicate();
 
           // evaluate filter expression and update statistics
-          long newNumRows = evaluateExpression(parentStats, pred, aspCtx);
+          long newNumRows = evaluateExpression(parentStats, pred, aspCtx, neededCols);
           Statistics st = parentStats.clone();
-          updateStats(st, newNumRows);
-          fop.setStatistics(st);
-        } else {
-          if (parentStats != null) {
 
-            // worst case, in the absence of column statistics assume half the rows are emitted
-            Statistics wcStats = getWorstCaseStats(parentStats.clone());
-            fop.setStatistics(wcStats);
+          if (satisfyPrecondition(parentStats)) {
+
+            // update statistics based on column statistics.
+            // OR conditions keeps adding the stats independently, this may
+            // result in number of rows getting more than the input rows in
+            // which case stats need not be updated
+            if (newNumRows <= parentStats.getNumRows()) {
+              updateStats(st, newNumRows, true);
+            }
+
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("[0] STATS-" + fop.toString() + ": " + st.extendedToString());
+            }
+          } else {
+
+            // update only the basic statistics in the absence of column statistics
+            if (newNumRows <= parentStats.getNumRows()) {
+              updateStats(st, newNumRows, false);
+            }
+
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("[1] STATS-" + fop.toString() + ": " + st.extendedToString());
+            }
           }
+          fop.setStatistics(st);
+          aspCtx.setAndExprStats(null);
         }
-
-        aspCtx.setAndExprStats(null);
       } catch (CloneNotSupportedException e) {
         throw new SemanticException(ErrorMsg.STATISTICS_CLONING_FAILED.getMsg());
       }
@@ -258,7 +285,7 @@ public class StatsRulesProcFactory {
     }
 
     private long evaluateExpression(Statistics stats, ExprNodeDesc pred,
-        AnnotateStatsProcCtx aspCtx) throws CloneNotSupportedException {
+        AnnotateStatsProcCtx aspCtx, List<String> neededCols) throws CloneNotSupportedException {
       long newNumRows = 0;
       Statistics andStats = null;
       if (pred instanceof ExprNodeGenericFuncDesc) {
@@ -272,28 +299,24 @@ public class StatsRulesProcFactory {
 
           // evaluate children
           for (ExprNodeDesc child : genFunc.getChildren()) {
-            newNumRows = evaluateChildExpr(aspCtx.getAndExprStats(), child, aspCtx);
-            updateStats(aspCtx.getAndExprStats(), newNumRows);
+            newNumRows = evaluateChildExpr(aspCtx.getAndExprStats(), child, aspCtx, neededCols);
+            if (satisfyPrecondition(aspCtx.getAndExprStats())) {
+              updateStats(aspCtx.getAndExprStats(), newNumRows, true);
+            } else {
+              updateStats(aspCtx.getAndExprStats(), newNumRows, false);
+            }
           }
+        } else if (udf instanceof GenericUDFOPOr) {
+          // for OR condition independently compute and update stats
+          for (ExprNodeDesc child : genFunc.getChildren()) {
+            newNumRows += evaluateChildExpr(stats, child, aspCtx, neededCols);
+          }
+        } else if (udf instanceof GenericUDFOPNot) {
+          newNumRows = evaluateNotExpr(stats, pred, aspCtx, neededCols);
         } else {
 
-          // for OR condition independently compute and update stats
-          if (udf instanceof GenericUDFOPOr) {
-            for (ExprNodeDesc child : genFunc.getChildren()) {
-              newNumRows += evaluateChildExpr(stats, child, aspCtx);
-            }
-          } else if (udf instanceof GenericUDFOPNot) {
-            newNumRows = evaluateNotExpr(stats, pred, aspCtx);
-          } else if (udf instanceof GenericUDFOPNotNull) {
-            newNumRows = evaluateColEqualsNullExpr(stats, pred, aspCtx);
-            newNumRows = stats.getNumRows() - newNumRows;
-          } else if (udf instanceof GenericUDFOPNull) {
-            newNumRows = evaluateColEqualsNullExpr(stats, pred, aspCtx);
-          } else {
-
-            // single predicate condition
-            newNumRows = evaluateChildExpr(stats, pred, aspCtx);
-          }
+          // single predicate condition
+          newNumRows = evaluateChildExpr(stats, pred, aspCtx, neededCols);
         }
       } else if (pred instanceof ExprNodeColumnDesc) {
 
@@ -304,19 +327,20 @@ public class StatsRulesProcFactory {
         String colType = encd.getTypeString();
         if (colType.equalsIgnoreCase(serdeConstants.BOOLEAN_TYPE_NAME)) {
           ColStatistics cs = stats.getColumnStatisticsForColumn(tabAlias, colName);
-          return cs.getNumTrues();
-        } else {
-
-          // if not boolean column return half the number of rows
-          return stats.getNumRows() / 2;
+          if (cs != null) {
+            return cs.getNumTrues();
+          }
         }
+
+        // if not boolean column return half the number of rows
+        return stats.getNumRows() / 2;
       }
 
       return newNumRows;
     }
 
-    private long evaluateNotExpr(Statistics stats, ExprNodeDesc pred, AnnotateStatsProcCtx aspCtx)
-        throws CloneNotSupportedException {
+    private long evaluateNotExpr(Statistics stats, ExprNodeDesc pred, AnnotateStatsProcCtx aspCtx,
+        List<String> neededCols) throws CloneNotSupportedException {
 
       long numRows = stats.getNumRows();
 
@@ -329,7 +353,7 @@ public class StatsRulesProcFactory {
             // GenericUDF
             long newNumRows = 0;
             for (ExprNodeDesc child : ((ExprNodeGenericFuncDesc) pred).getChildren()) {
-              newNumRows = evaluateChildExpr(stats, child, aspCtx);
+              newNumRows = evaluateChildExpr(stats, child, aspCtx, neededCols);
             }
             return numRows - newNumRows;
           } else if (leaf instanceof ExprNodeConstantDesc) {
@@ -348,18 +372,18 @@ public class StatsRulesProcFactory {
             String colType = encd.getTypeString();
             if (colType.equalsIgnoreCase(serdeConstants.BOOLEAN_TYPE_NAME)) {
               ColStatistics cs = stats.getColumnStatisticsForColumn(tabAlias, colName);
-              return cs.getNumFalses();
-            } else {
-
-              // if not boolean column return half the number of rows
-              return numRows / 2;
+              if (cs != null) {
+                return cs.getNumFalses();
+              }
             }
+            // if not boolean column return half the number of rows
+            return numRows / 2;
           }
         }
       }
 
       // worst case
-      return numRows;
+      return numRows / 2;
     }
 
     private long evaluateColEqualsNullExpr(Statistics stats, ExprNodeDesc pred,
@@ -380,26 +404,19 @@ public class StatsRulesProcFactory {
             ColStatistics cs = stats.getColumnStatisticsForColumn(tabAlias, colName);
             if (cs != null) {
               long dvs = cs.getCountDistint();
-              // if NULLs exists, add 1 to distinct count
-              if (cs.getNumNulls() > 0) {
-                dvs += 1;
-              }
-              if (dvs != 0) {
-                return numRows / dvs;
-              } else {
-                return numRows;
-              }
+              numRows = dvs == 0 ? numRows / 2 : numRows / dvs;
+              return numRows;
             }
           }
         }
       }
 
       // worst case
-      return numRows;
+      return numRows / 2;
     }
 
-    private long evaluateChildExpr(Statistics stats, ExprNodeDesc child, AnnotateStatsProcCtx aspCtx)
-        throws CloneNotSupportedException {
+    private long evaluateChildExpr(Statistics stats, ExprNodeDesc child,
+        AnnotateStatsProcCtx aspCtx, List<String> neededCols) throws CloneNotSupportedException {
 
       long numRows = stats.getNumRows();
 
@@ -421,19 +438,19 @@ public class StatsRulesProcFactory {
                 isConst = true;
                 continue;
               }
+
+              // if column name is not contained in needed column list then it
+              // is a partition column. We do not need to evaluate partition columns
+              // in filter expression since it will be taken care by partitio pruner
+              if (neededCols != null && !neededCols.contains(colName)) {
+                return numRows;
+              }
+
               ColStatistics cs = stats.getColumnStatisticsForColumn(tabAlias, colName);
               if (cs != null) {
                 long dvs = cs.getCountDistint();
-                // if NULLs exists, add 1 to distinct count
-                if (cs.getNumNulls() > 0) {
-                  dvs += 1;
-                }
-
-                if (dvs != 0) {
-                  return numRows / dvs;
-                } else {
-                  return numRows;
-                }
+                numRows = dvs == 0 ? numRows / 2 : numRows / dvs;
+                return numRows;
               }
             } else if (leaf instanceof ExprNodeColumnDesc) {
               ExprNodeColumnDesc colDesc = (ExprNodeColumnDesc) leaf;
@@ -442,53 +459,56 @@ public class StatsRulesProcFactory {
 
               // if const is first argument then evaluate the result
               if (isConst) {
+
+                // if column name is not contained in needed column list then it
+                // is a partition column. We do not need to evaluate partition columns
+                // in filter expression since it will be taken care by partitio pruner
+                if (neededCols != null && neededCols.indexOf(colName) == -1) {
+                  return numRows;
+                }
+
                 ColStatistics cs = stats.getColumnStatisticsForColumn(tabAlias, colName);
                 if (cs != null) {
                   long dvs = cs.getCountDistint();
-                  // if NULLs exists, add 1 to distinct count
-                  if (cs.getNumNulls() > 0) {
-                    dvs += 1;
-                  }
-
-                  if (dvs != 0) {
-                    return numRows / dvs;
-                  } else {
-                    return numRows;
-                  }
+                  numRows = dvs == 0 ? numRows / 2 : numRows / dvs;
+                  return numRows;
                 }
               }
             }
           }
         } else if (udf instanceof GenericUDFOPNotEqual) {
           return numRows;
-        } else if (udf instanceof GenericUDFOPEqualOrGreaterThan ||
-            udf instanceof GenericUDFOPEqualOrLessThan ||
-            udf instanceof GenericUDFOPGreaterThan ||
-            udf instanceof GenericUDFOPLessThan) {
+        } else if (udf instanceof GenericUDFOPEqualOrGreaterThan
+            || udf instanceof GenericUDFOPEqualOrLessThan || udf instanceof GenericUDFOPGreaterThan
+            || udf instanceof GenericUDFOPLessThan) {
           return numRows / 3;
-        } else {
-          return evaluateExpression(stats, genFunc, aspCtx);
+        } else if (udf instanceof GenericUDFOPNotNull) {
+          long newNumRows = evaluateColEqualsNullExpr(stats, genFunc, aspCtx);
+          return stats.getNumRows() - newNumRows;
+        } else if (udf instanceof GenericUDFOPNull) {
+          return evaluateColEqualsNullExpr(stats, genFunc, aspCtx);
+        } else if (udf instanceof GenericUDFOPAnd || udf instanceof GenericUDFOPOr
+            || udf instanceof GenericUDFOPNot) {
+          return evaluateExpression(stats, genFunc, aspCtx, neededCols);
         }
       }
 
       // worst case
-      return numRows;
+      return numRows / 2;
     }
 
   }
 
   /**
-   * GROUPBY operator changes the number of rows. The number of rows emitted
-   * by GBY operator will be atleast 1 or utmost T(R) (number of rows in relation T)
-   * based on the aggregation. A better estimate can be found if we have column statistics
-   * on the columns that we are grouping on.
+   * GROUPBY operator changes the number of rows. The number of rows emitted by GBY operator will be
+   * atleast 1 or utmost T(R) (number of rows in relation T) based on the aggregation. A better
+   * estimate can be found if we have column statistics on the columns that we are grouping on.
    * <p>
    * Suppose if we are grouping by attributes A,B,C and if statistics for columns A,B,C are
    * available then a better estimate can be found by taking the smaller of product of V(R,[A,B,C])
    * (product of distinct cardinalities of A,B,C) and T(R)/2.
    * <p>
    * T(R) = min (T(R)/2 , V(R,[A,B,C]) ---> [1]
-   *
    * <p>
    * In the presence of grouping sets, map-side GBY will emit more rows depending on the size of
    * grouping set (input rows * size of grouping set). These rows will get reduced because of
@@ -503,27 +523,23 @@ public class StatsRulesProcFactory {
    * T(R) = min(T(R)/2, T(R, GBY(A,B)) + T(R, GBY(A)) + T(R, GBY(B)) + 1))
    * <p>
    * where, GBY(A,B), GBY(B), GBY(B) are the GBY rules mentioned above [1]
-   *
    * <p>
    * If <b>hash-aggregation is disabled</b>, apply the GBY rule [1] and then multiply the result by
    * number of elements in grouping set T(R) = T(R) * length_of_grouping_set. Since we do not know
    * if hash-aggregation is enabled or disabled during compile time, we will assume worst-case i.e,
    * hash-aggregation is disabled
-   *
    * <p>
    * NOTE: The number of rows from map-side GBY operator is dependent on map-side parallelism i.e,
    * number of mappers. The map-side parallelism is expected from hive config
    * "hive.stats.map.parallelism". If the config is not set then default parallelism of 1 will be
    * assumed.
-   *
    * <p>
-   * <i>Worst case:</i> If no column statistics are available, then T(R) = T(R)/2 will be
-   * used as heuristics.
+   * <i>Worst case:</i> If no column statistics are available, then T(R) = T(R)/2 will be used as
+   * heuristics.
    * <p>
    * <i>For more information, refer 'Estimating The Cost Of Operations' chapter in
    * "Database Systems: The Complete Book" by Garcia-Molina et. al.</i>
    * </p>
-   *
    */
   public static class GroupByStatsRule extends DefaultStatsRule implements NodeProcessor {
 
@@ -535,8 +551,8 @@ public class StatsRulesProcFactory {
       Statistics parentStats = parent.getStatistics();
       AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
       HiveConf conf = aspCtx.getConf();
-      int mapSideParallelism = HiveConf.getIntVar(conf,
-          HiveConf.ConfVars.HIVE_STATS_MAP_SIDE_PARALLELISM);
+      int mapSideParallelism =
+          HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_STATS_MAP_SIDE_PARALLELISM);
       List<AggregationDesc> aggDesc = gop.getConf().getAggregators();
       Map<String, ExprNodeDesc> colExprMap = gop.getColumnExprMap();
       RowSchema rs = gop.getSchema();
@@ -546,8 +562,8 @@ public class StatsRulesProcFactory {
         if (satisfyPrecondition(parentStats)) {
           stats = parentStats.clone();
 
-          List<ColStatistics> colStats = StatsUtils.getColStatisticsFromExprMap(conf, parentStats,
-              colExprMap, rs);
+          List<ColStatistics> colStats =
+              StatsUtils.getColStatisticsFromExprMap(conf, parentStats, colExprMap, rs);
           stats.setColumnStats(colStats);
           long dvProd = 1;
           long newNumRows = 0;
@@ -563,7 +579,8 @@ public class StatsRulesProcFactory {
             } else {
 
               // partial column statistics on grouping attributes case.
-              // if column statistics on grouping attribute is missing, then assume worst case.
+              // if column statistics on grouping attribute is missing, then
+              // assume worst case.
               // GBY rule will emit half the number of rows if dvProd is 0
               dvProd = 0;
               break;
@@ -574,8 +591,8 @@ public class StatsRulesProcFactory {
           if (gop.getChildOperators().get(0) instanceof ReduceSinkOperator) {
 
             // since we do not know if hash-aggregation will be enabled or disabled
-            // at runtime we will assume that map-side group by does not do any reduction.
-            // hence no group by rule will be applied
+            // at runtime we will assume that map-side group by does not do any
+            // reduction.hence no group by rule will be applied
 
             // map-side grouping set present. if grouping set is present then
             // multiply the number of rows by number of elements in grouping set
@@ -599,13 +616,13 @@ public class StatsRulesProcFactory {
 
               // map side no grouping set
               newNumRows = stats.getNumRows() * mapSideParallelism;
-              updateStats(stats, newNumRows);
+              updateStats(stats, newNumRows, true);
             }
           } else {
 
             // reduce side
             newNumRows = applyGBYRule(stats.getNumRows(), dvProd);
-            updateStats(stats, newNumRows);
+            updateStats(stats, newNumRows, true);
           }
         } else {
           if (parentStats != null) {
@@ -618,7 +635,9 @@ public class StatsRulesProcFactory {
             } else {
 
               // reduce side
-              stats = getWorstCaseStats(parentStats);
+              stats = parentStats.clone();
+              long newNumRows = parentStats.getNumRows() / 2;
+              updateStats(stats, newNumRows, false);
             }
           }
         }
@@ -647,14 +666,19 @@ public class StatsRulesProcFactory {
           stats.addToColumnStats(aggColStats);
 
           // if UDAF present and if column expression map is empty then it must
-          // be full aggregation query like count(*) in which case number of rows will be 1
+          // be full aggregation query like count(*) in which case number of
+          // rows will be 1
           if (colExprMap.isEmpty()) {
             stats.setNumRows(1);
-            updateStats(stats, 1);
+            updateStats(stats, 1, true);
           }
         }
 
         gop.setStatistics(stats);
+
+        if (LOG.isDebugEnabled() && stats != null) {
+          LOG.debug("[0] STATS-" + gop.toString() + ": " + stats.extendedToString());
+        }
       } catch (CloneNotSupportedException e) {
         throw new SemanticException(ErrorMsg.STATISTICS_CLONING_FAILED.getMsg());
       }
@@ -683,7 +707,6 @@ public class StatsRulesProcFactory {
    * will have a tuple in R T(RXS) = T(S) (we need histograms for this)</li> <li>Both R & S relation
    * have same value for join-key. Ex: bool column with all true values T(RXS) = T(R) * T(S) (we
    * need histograms for this. counDistinct = 1 and same value)</li>
-   *
    * <p>
    * In the absence of histograms, we can use the following general case
    * <p>
@@ -695,10 +718,11 @@ public class StatsRulesProcFactory {
    * <p>
    * T(RXS) = T(R)*T(S)/max(V(R,y1), V(S,y1)) * max(V(R,y2), V(S,y2)), where y1 and y2 are the join
    * attributes
-   *
    * <p>
-   * <i>Worst case:</i> If no column statistics are available, then T(RXS) = T(R)*T(S)/2 will be
-   * used as heuristics.
+   * <i>Worst case:</i> If no column statistics are available, then T(RXS) = joinFactor * max(T(R),
+   * T(S)) * (numParents - 1) will be used as heuristics. joinFactor is from hive.stats.join.factor
+   * hive config. In the worst case, since we do not know any information about join keys (and hence
+   * which of the 3 cases to use), we let it to the user to provide the join factor.
    * <p>
    * <i>For more information, refer 'Estimating The Cost Of Operations' chapter in
    * "Database Systems: The Complete Book" by Garcia-Molina et. al.</i>
@@ -730,15 +754,14 @@ public class StatsRulesProcFactory {
           }
         }
 
-        try {
         if (allSatisfyPreCondition) {
 
-          // statistics object that is combination of statistics from all relations involved in JOIN
+          // statistics object that is combination of statistics from all
+          // relations involved in JOIN
           Statistics stats = new Statistics();
           long prodRows = 1;
           List<Long> distinctVals = Lists.newArrayList();
           boolean multiAttr = false;
-
 
           Map<String, ColStatistics> joinedColStats = Maps.newHashMap();
           Map<Integer, List<String>> joinKeys = Maps.newHashMap();
@@ -756,33 +779,34 @@ public class StatsRulesProcFactory {
               multiAttr = true;
             }
 
-            // compute fully qualified join key column names. this name will be used to
-            // quickly look-up for column statistics of join key.
-            // TODO: expressions in join condition will be ignored. assign internal name
-            // for expressions and estimate column statistics for expression.
-            List<String> fqCols = StatsUtils.getFullQualifedColNameFromExprs(keyExprs,
-                parent.getColumnExprMap());
+            // compute fully qualified join key column names. this name will be
+            // used to quickly look-up for column statistics of join key.
+            // TODO: expressions in join condition will be ignored. assign
+            // internal name for expressions and estimate column statistics for expression.
+            List<String> fqCols =
+                StatsUtils.getFullQualifedColNameFromExprs(keyExprs, parent.getColumnExprMap());
             joinKeys.put(pos, fqCols);
 
             Map<String, ExprNodeDesc> colExprMap = parent.getColumnExprMap();
             RowSchema rs = parent.getSchema();
 
             // get column statistics for all output columns
-            List<ColStatistics> cs = StatsUtils.getColStatisticsFromExprMap(conf, parentStats,
-                colExprMap, rs);
+            List<ColStatistics> cs =
+                StatsUtils.getColStatisticsFromExprMap(conf, parentStats, colExprMap, rs);
             for (ColStatistics c : cs) {
               if (c != null) {
                 joinedColStats.put(c.getFullyQualifiedColName(), c);
               }
             }
 
-            // since new statistics is derived from all relations involved in JOIN,
-            // we need to update the state information accordingly
+            // since new statistics is derived from all relations involved in
+            // JOIN, we need to update the state information accordingly
             stats.updateColumnStatsState(parentStats.getColumnStatsState());
           }
 
-          // compute denominator i.e, max(V(R,Y), V(S,Y)) in case of single attribute join.
-          // else max(V(R,y1), V(S,y1)) * max(V(R,y2), V(S,y2)) in case of multi-attribute join
+          // compute denominator i.e, max(V(R,Y), V(S,Y)) in case of single
+          // attribute join, else max(V(R,y1), V(S,y1)) * max(V(R,y2), V(S,y2))
+          // in case of multi-attribute join
           long denom = 1;
           if (multiAttr) {
             List<Long> perAttrDVs = Lists.newArrayList();
@@ -845,28 +869,45 @@ public class StatsRulesProcFactory {
           stats.setNumRows(newRowCount);
           stats.setDataSize(StatsUtils.getDataSizeFromColumnStats(newRowCount, outColStats));
           jop.setStatistics(stats);
-          } else {
 
-            // worst case, when no column statistics are available
-            if (parents.size() > 1) {
-              Statistics wcStats = new Statistics();
-              Statistics stp1 = parents.get(0).getStatistics();
-              long numRows = stp1.getNumRows();
-              long avgRowSize = stp1.getAvgRowSize();
-              for (int i = 1; i < parents.size(); i++) {
-                stp1 = parents.get(i).getStatistics();
-                numRows = (numRows * stp1.getNumRows()) / 2;
-                avgRowSize += stp1.getAvgRowSize();
-              }
-              wcStats.setNumRows(numRows);
-              wcStats.setDataSize(numRows * avgRowSize);
-              jop.setStatistics(wcStats);
-            } else {
-              jop.setStatistics(parents.get(0).getStatistics().clone());
-            }
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("[0] STATS-" + jop.toString() + ": " + stats.extendedToString());
           }
-        } catch (CloneNotSupportedException e) {
-          throw new SemanticException(ErrorMsg.STATISTICS_CLONING_FAILED.getMsg());
+        } else {
+
+          // worst case when there are no column statistics
+          float joinFactor = HiveConf.getFloatVar(conf, HiveConf.ConfVars.HIVE_STATS_JOIN_FACTOR);
+          int numParents = parents.size();
+          List<Long> parentRows = Lists.newArrayList();
+          List<Long> parentSizes = Lists.newArrayList();
+          int maxRowIdx = 0;
+          long maxRowCount = 0;
+          int idx = 0;
+
+          for (Operator<? extends OperatorDesc> op : parents) {
+            Statistics ps = op.getStatistics();
+            long rowCount = ps.getNumRows();
+            if (rowCount > maxRowCount) {
+              maxRowCount = rowCount;
+              maxRowIdx = idx;
+            }
+            parentRows.add(rowCount);
+            parentSizes.add(ps.getDataSize());
+            idx++;
+          }
+
+          long maxDataSize = parentSizes.get(maxRowIdx);
+          long newNumRows = (long) (joinFactor * maxRowCount * (numParents - 1));
+          long newDataSize = (long) (joinFactor * maxDataSize * (numParents - 1));
+
+          Statistics wcStats = new Statistics();
+          wcStats.setNumRows(newNumRows);
+          wcStats.setDataSize(newDataSize);
+          jop.setStatistics(wcStats);
+
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("[1] STATS-" + jop.toString() + ": " + wcStats.extendedToString());
+          }
         }
       }
       return null;
@@ -874,22 +915,22 @@ public class StatsRulesProcFactory {
 
     private long getDenominator(List<Long> distinctVals) {
 
-      if(distinctVals.isEmpty()) {
+      if (distinctVals.isEmpty()) {
 
-        // TODO: in union20.q the tab alias is not properly propagated down the operator
-        // tree. This happens when UNION ALL is used as sub query. Hence, even if column
-        // statistics are available, the tab alias will be null which will fail to get
-        // proper column statistics. For now assume, worst case in which denominator is 2.
+        // TODO: in union20.q the tab alias is not properly propagated down the
+        // operator tree. This happens when UNION ALL is used as sub query. Hence, even
+        // if column statistics are available, the tab alias will be null which will fail
+        // to get proper column statistics. For now assume, worst case in which
+        // denominator is 2.
         return 2;
       }
 
-      // simple join from 2 relations
-      // denom = max(v1, v2)
+      // simple join from 2 relations: denom = max(v1, v2)
       if (distinctVals.size() <= 2) {
         return Collections.max(distinctVals);
       } else {
 
-        // join from multiple relations
+        // join from multiple relations:
         // denom = max(v1, v2) * max(v2, v3) * max(v3, v4)
         long denom = 1;
         for (int i = 0; i < distinctVals.size() - 1; i++) {
@@ -909,7 +950,6 @@ public class StatsRulesProcFactory {
 
   /**
    * LIMIT operator changes the number of rows and thereby the data size.
-   *
    */
   public static class LimitStatsRule extends DefaultStatsRule implements NodeProcessor {
 
@@ -919,6 +959,8 @@ public class StatsRulesProcFactory {
       LimitOperator lop = (LimitOperator) nd;
       Operator<? extends OperatorDesc> parent = lop.getParentOperators().get(0);
       Statistics parentStats = parent.getStatistics();
+      AnnotateStatsProcCtx aspCtx = (AnnotateStatsProcCtx) procCtx;
+      HiveConf conf = aspCtx.getConf();
 
       try {
         long limit = -1;
@@ -927,25 +969,37 @@ public class StatsRulesProcFactory {
         if (satisfyPrecondition(parentStats)) {
           Statistics stats = parentStats.clone();
 
-          // if limit is greater than available rows then do not update statistics
+          // if limit is greater than available rows then do not update
+          // statistics
           if (limit <= parentStats.getNumRows()) {
-            updateStats(stats, limit);
+            updateStats(stats, limit, true);
           }
           lop.setStatistics(stats);
+
+          if (LOG.isDebugEnabled()) {
+            LOG.debug("[0] STATS-" + lop.toString() + ": " + stats.extendedToString());
+          }
         } else {
           if (parentStats != null) {
 
-            // in the absence of column statistics, compute data size based on based
-            // on average row size
+            // in the absence of column statistics, compute data size based on
+            // based on average row size
             Statistics wcStats = parentStats.clone();
             if (limit <= parentStats.getNumRows()) {
               long numRows = limit;
               long avgRowSize = parentStats.getAvgRowSize();
+              if (avgRowSize <= 0) {
+                avgRowSize = HiveConf.getIntVar(conf, HiveConf.ConfVars.HIVE_STATS_AVG_ROW_SIZE);
+              }
               long dataSize = avgRowSize * limit;
               wcStats.setNumRows(numRows);
               wcStats.setDataSize(dataSize);
             }
             lop.setStatistics(wcStats);
+
+            if (LOG.isDebugEnabled()) {
+              LOG.debug("[1] STATS-" + lop.toString() + ": " + wcStats.extendedToString());
+            }
           }
         }
       } catch (CloneNotSupportedException e) {
@@ -958,7 +1012,6 @@ public class StatsRulesProcFactory {
 
   /**
    * Default rule is to aggregate the statistics from all its parent operators.
-   *
    */
   public static class DefaultStatsRule implements NodeProcessor {
 
@@ -973,8 +1026,8 @@ public class StatsRulesProcFactory {
         if (stats == null) {
           if (op.getParentOperators() != null) {
 
-            // if parent statistics is null then that branch of the tree is not walked yet.
-            // don't update the stats until all branches are walked
+            // if parent statistics is null then that branch of the tree is not
+            // walked yet. don't update the stats until all branches are walked
             if (isAllParentsContainStatistics(op)) {
               stats = new Statistics();
               for (Operator<? extends OperatorDesc> parent : op.getParentOperators()) {
@@ -985,6 +1038,10 @@ public class StatsRulesProcFactory {
                   stats.updateColumnStatsState(parentStats.getColumnStatsState());
                   stats.addToColumnStats(parentStats.getColumnStats());
                   op.getConf().setStatistics(stats);
+
+                  if (LOG.isDebugEnabled()) {
+                    LOG.debug("[0] STATS-" + op.toString() + ": " + stats.extendedToString());
+                  }
                 }
               }
             }
@@ -1036,37 +1093,43 @@ public class StatsRulesProcFactory {
 
   /**
    * Update the basic statistics of the statistics object based on the row number
-   *
    * @param stats
    *          - statistics to be updated
    * @param newNumRows
    *          - new number of rows
+   * @param useColStats
+   *          - use column statistics to compute data size
    */
-  static void updateStats(Statistics stats, long newNumRows) {
+  static void updateStats(Statistics stats, long newNumRows, boolean useColStats) {
     long oldRowCount = stats.getNumRows();
     double ratio = (double) newNumRows / (double) oldRowCount;
     stats.setNumRows(newNumRows);
 
-    List<ColStatistics> colStats = stats.getColumnStats();
-    for (ColStatistics cs : colStats) {
-      long oldNumNulls = cs.getNumNulls();
-      long oldDV = cs.getCountDistint();
-      long newNumNulls = Math.round(ratio * oldNumNulls);
-      long newDV = oldDV;
+    if (useColStats) {
+      List<ColStatistics> colStats = stats.getColumnStats();
+      for (ColStatistics cs : colStats) {
+        long oldNumNulls = cs.getNumNulls();
+        long oldDV = cs.getCountDistint();
+        long newNumNulls = Math.round(ratio * oldNumNulls);
+        long newDV = oldDV;
 
-      // if ratio is greater than 1, then number of rows increases. This can happen
-      // when some operators like GROUPBY duplicates the input rows in which case
-      // number of distincts should not change. Update the distinct count only when
-      // the output number of rows is less than input number of rows.
-      if (ratio <= 1.0) {
-        newDV = Math.round(ratio * oldDV);
+        // if ratio is greater than 1, then number of rows increases. This can happen
+        // when some operators like GROUPBY duplicates the input rows in which case
+        // number of distincts should not change. Update the distinct count only when
+        // the output number of rows is less than input number of rows.
+        if (ratio <= 1.0) {
+          newDV = Math.round(ratio * oldDV);
+        }
+        cs.setNumNulls(newNumNulls);
+        cs.setCountDistint(newDV);
       }
-      cs.setNumNulls(newNumNulls);
-      cs.setCountDistint(newDV);
+      stats.setColumnStats(colStats);
+      long newDataSize = StatsUtils.getDataSizeFromColumnStats(newNumRows, colStats);
+      stats.setDataSize(newDataSize);
+    } else {
+      long newDataSize = (long) (ratio * stats.getDataSize());
+      stats.setDataSize(newDataSize);
     }
-    stats.setColumnStats(colStats);
-    long newDataSize = StatsUtils.getDataSizeFromColumnStats(newNumRows, colStats);
-    stats.setDataSize(newDataSize);
   }
 
   static boolean satisfyPrecondition(Statistics stats) {
@@ -1074,16 +1137,4 @@ public class StatsRulesProcFactory {
         && !stats.getColumnStatsState().equals(Statistics.State.NONE);
   }
 
-  static Statistics getWorstCaseStats(Statistics stats) throws CloneNotSupportedException {
-    Statistics wcClone = stats.clone();
-    long numRows = wcClone.getNumRows() / 2;
-    long dataSize = wcClone.getDataSize() / 2;
-    long avgRowSize = wcClone.getAvgRowSize();
-    if (numRows > 0) {
-      dataSize = avgRowSize * numRows;
-    }
-    wcClone.setNumRows(numRows);
-    wcClone.setDataSize(dataSize);
-    return wcClone;
-  }
 }

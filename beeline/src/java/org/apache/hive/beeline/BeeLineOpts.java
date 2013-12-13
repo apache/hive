@@ -138,7 +138,8 @@ class BeeLineOpts implements Completor {
   public int complete(String buf, int pos, List cand) {
     try {
       return new SimpleCompletor(propertyNames()).complete(buf, pos, cand);
-    } catch (Throwable t) {
+    } catch (Exception e) {
+      beeLine.handleException(e);
       return -1;
     }
   }

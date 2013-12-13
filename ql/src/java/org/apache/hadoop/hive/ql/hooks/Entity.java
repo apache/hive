@@ -22,11 +22,10 @@ import java.io.Serializable;
 import java.net.URI;
 import java.util.Map;
 
+import org.apache.hadoop.hive.metastore.api.Database;
 import org.apache.hadoop.hive.ql.metadata.Partition;
 import org.apache.hadoop.hive.ql.metadata.DummyPartition;
 import org.apache.hadoop.hive.ql.metadata.Table;
-import org.apache.hadoop.hive.ql.session.SessionState;
-import org.apache.hadoop.hive.conf.HiveConf;
 
 /**
  * This class encapsulates an object that is being read or written to by the
@@ -40,8 +39,13 @@ public class Entity implements Serializable {
    * The type of the entity.
    */
   public static enum Type {
-    TABLE, PARTITION, DUMMYPARTITION, DFS_DIR, LOCAL_DIR
-  };
+    DATABASE, TABLE, PARTITION, DUMMYPARTITION, DFS_DIR, LOCAL_DIR
+  }
+
+  /**
+   * The database if this is a database.
+   */
+  private Database database;
 
   /**
    * The type.
@@ -80,7 +84,7 @@ public class Entity implements Serializable {
   }
 
   public void setComplete(boolean complete) {
-    this.complete = complete;;
+    this.complete = complete;
   }
 
   public String getName() {
@@ -89,6 +93,14 @@ public class Entity implements Serializable {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  public Database getDatabase() {
+    return database;
+  }
+
+  public void setDatabase(Database database) {
+    this.database = database;
   }
 
   public Type getTyp() {
@@ -130,15 +142,26 @@ public class Entity implements Serializable {
   }
 
   /**
+   * Constructor for a database.
+   *
+   * @param database
+   *          Database that is read or written to.
+   * @param complete
+   *          Means the database is target, not for table or partition, etc.
+   */
+  public Entity(Database database, boolean complete) {
+    this.database = database;
+    this.typ = Type.DATABASE;
+    this.name = computeName();
+    this.complete = complete;
+  }
+
+  /**
    * Constructor for a table.
    *
    * @param t
    *          Table that is read or written to.
    */
-  public Entity(Table t) {
-    this(t, true);
-  }
-
   public Entity(Table t, boolean complete) {
     d = null;
     p = null;
@@ -154,10 +177,6 @@ public class Entity implements Serializable {
    * @param p
    *          Partition that is read or written to.
    */
-  public Entity(Partition p) {
-    this(p, true);
-  }
-
   public Entity(Partition p, boolean complete) {
     d = null;
     this.p = p;
@@ -174,18 +193,6 @@ public class Entity implements Serializable {
     typ = Type.DUMMYPARTITION;
     name = computeName();
     this.complete = complete;
-  }
-
-  /**
-   * Constructor for a file.
-   *
-   * @param d
-   *          The name of the directory that is being read or written to.
-   * @param islocal
-   *          Flag to decide whether this directory is local or in dfs.
-   */
-  public Entity(String d, boolean islocal) {
-    this(d, islocal, true);
   }
 
   public Entity(String d, boolean islocal, boolean complete) {
@@ -223,6 +230,11 @@ public class Entity implements Serializable {
    * Get the location of the entity.
    */
   public URI getLocation() throws Exception {
+    if (typ == Type.DATABASE) {
+      String location = database.getLocationUri();
+      return location == null ? null : new URI(location);
+    }
+
     if (typ == Type.TABLE) {
       return t.getDataLocation();
     }
@@ -262,6 +274,8 @@ public class Entity implements Serializable {
 
   private String computeName() {
     switch (typ) {
+    case DATABASE:
+      return "database:" + database.getName();
     case TABLE:
       return t.getDbName() + "@" + t.getTableName();
     case PARTITION:

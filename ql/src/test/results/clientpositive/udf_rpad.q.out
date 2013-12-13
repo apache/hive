@@ -50,7 +50,6 @@ STAGE PLANS:
             outputColumnNames: _col0, _col1, _col2
             ListSink
 
-
 PREHOOK: query: SELECT
   rpad('hi', 1, '?'),
   rpad('hi', 5, '.'),

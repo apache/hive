@@ -30,7 +30,6 @@ STAGE PLANS:
             outputColumnNames: _col0, _col1, _col2, _col3
             ListSink
 
-
 PREHOOK: query: EXPLAIN
 SELECT `..` FROM srcpart
 PREHOOK: type: QUERY
@@ -70,7 +69,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: EXPLAIN
 SELECT srcpart.`..` FROM srcpart
 PREHOOK: type: QUERY
@@ -109,7 +107,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: EXPLAIN
 SELECT `..` FROM srcpart a JOIN srcpart b
@@ -203,7 +200,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: EXPLAIN
 SELECT b.`..` FROM srcpart a JOIN srcpart b
@@ -336,7 +332,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT b.`..` FROM srcpart a JOIN srcpart b
 ON a.key = b.key AND a.hr = b.hr AND a.ds = b.ds AND a.key = 103
 ORDER BY ds, hr
@@ -410,7 +405,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: EXPLAIN
 SELECT `d.*` FROM srcpart
 PREHOOK: type: QUERY
@@ -447,7 +441,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: EXPLAIN
 SELECT `(ds)?+.+` FROM srcpart
@@ -489,7 +482,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: EXPLAIN
 SELECT `(ds|hr)?+.+` FROM srcpart ORDER BY key, value LIMIT 10
@@ -545,7 +537,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: 10
-
 
 PREHOOK: query: SELECT `(ds|hr)?+.+` FROM srcpart ORDER BY key, value LIMIT 10
 PREHOOK: type: QUERY

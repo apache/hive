@@ -223,7 +223,7 @@ STAGE PLANS:
           TableScan
             alias: b
             Statistics:
-                numRows: 0 dataSize: 8562 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 2140 dataSize: 8562 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -249,7 +249,7 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics:
-                numRows: 0 dataSize: 8562 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 2140 dataSize: 8562 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -263,11 +263,11 @@ STAGE PLANS:
                 1 [Column[key]]
               Position of Big Table: 0
               Statistics:
-                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                  numRows: 2354 dataSize: 9418 basicStatsState: COMPLETE colStatsState: NONE
               BucketMapJoin: true
               Select Operator
                 Statistics:
-                    numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                    numRows: 2354 dataSize: 9418 basicStatsState: COMPLETE colStatsState: NONE
                 Group By Operator
                   aggregations:
                         expr: count()
@@ -421,7 +421,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b
@@ -559,7 +558,7 @@ STAGE PLANS:
           TableScan
             alias: b
             Statistics:
-                numRows: 0 dataSize: 8562 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 2140 dataSize: 8562 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             HashTable Sink Operator
               condition expressions:
@@ -585,7 +584,7 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics:
-                numRows: 0 dataSize: 8562 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 2140 dataSize: 8562 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Map Join Operator
               condition map:
@@ -599,11 +598,11 @@ STAGE PLANS:
                 1 [Column[key], Column[part]]
               Position of Big Table: 0
               Statistics:
-                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                  numRows: 2354 dataSize: 9418 basicStatsState: COMPLETE colStatsState: NONE
               BucketMapJoin: true
               Select Operator
                 Statistics:
-                    numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                    numRows: 2354 dataSize: 9418 basicStatsState: COMPLETE colStatsState: NONE
                 Group By Operator
                   aggregations:
                         expr: count()
@@ -757,7 +756,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b

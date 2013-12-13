@@ -112,7 +112,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select count(*) from (
   select /*+mapjoin(a)*/ a.key as key, a.value as val1, b.value as val2 from tbl1 a join tbl2 b on a.key = b.key
 ) subq1
@@ -263,7 +262,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select key, count(*) from 
 (
@@ -434,7 +432,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select count(*) from
 (
   select key, count(*) from 
@@ -557,7 +554,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select /*+mapjoin(subq1)*/ count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
     join
@@ -674,7 +670,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select /*+mapjoin(subq2)*/ count(*) from 
   (
@@ -826,7 +821,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select /*+mapjoin(subq2)*/ count(*) from 
   (
   select * from
@@ -966,7 +960,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select /*+mapjoin(subq1)*/ count(*) from 
   (select a.key as key, concat(a.value, a.value) as value from tbl1 a where key < 8) subq1 
@@ -1108,7 +1101,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select /*+mapjoin(subq1)*/ count(*) from 
   (select a.key +1 as key, concat(a.value, a.value) as value from tbl1 a) subq1 
     join
@@ -1211,7 +1203,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select /*+mapjoin(subq1)*/ count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
@@ -1320,7 +1311,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select /*+mapjoin(a)*/ count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
@@ -1442,7 +1432,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select /*+mapjoin(subq1, subq2)*/ count(*) from 
   (select a.key as key, a.value as value from tbl1 a where key < 6) subq1 
@@ -1568,7 +1557,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select count(*) from (
   select /*+mapjoin(subq2)*/ subq2.key as key, subq2.value as value1, b.value as value2 from

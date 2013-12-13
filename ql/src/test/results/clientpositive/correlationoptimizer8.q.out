@@ -273,7 +273,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT x.key, x.value, subq1.cnt
 FROM 
 ( SELECT x.key as key, count(1) as cnt from src x where x.key < 20 group by x.key
@@ -569,7 +568,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT x.key, x.value, subq1.cnt
 FROM 
@@ -890,7 +888,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT subq1.key, subq1.cnt, x.key, x.value
 FROM 
@@ -1217,7 +1214,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT subq1.key, subq1.cnt, x.key, x.value
 FROM 
@@ -1553,7 +1549,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- When the Correlation Optimizer is turned on, because a input of UnionOperator is
 -- not correlated, we cannot handle this case right now. So, this query will not be
 -- optimized. 
@@ -1832,5 +1827,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 

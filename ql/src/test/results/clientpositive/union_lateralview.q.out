@@ -264,7 +264,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE test_union_lateral_view
 SELECT b.key, d.arr_ele, d.value
 FROM (

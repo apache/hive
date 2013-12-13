@@ -387,7 +387,6 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-
 PREHOOK: query: insert overwrite table union_subq_union 
 select * from (
 

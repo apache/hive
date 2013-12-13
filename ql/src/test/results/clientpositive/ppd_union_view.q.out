@@ -347,7 +347,7 @@ STAGE PLANS:
           handleSkewJoin: false
           outputColumnNames: _col1, _col2, _col5
           Statistics:
-              numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+              numRows: 1 dataSize: 15 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col5
@@ -358,7 +358,7 @@ STAGE PLANS:
                   type: string
             outputColumnNames: _col0, _col1, _col2
             Statistics:
-                numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                numRows: 1 dataSize: 15 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -385,7 +385,7 @@ STAGE PLANS:
             GatherStats: false
             Union
               Statistics:
-                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                  numRows: 1 dataSize: 15 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: _col0
@@ -396,14 +396,14 @@ STAGE PLANS:
                       type: string
                 outputColumnNames: _col0, _col1, _col2
                 Statistics:
-                    numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                    numRows: 1 dataSize: 15 basicStatsState: COMPLETE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
                   Statistics:
-                      numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                      numRows: 1 dataSize: 15 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -445,7 +445,7 @@ STAGE PLANS:
                     numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
                 Union
                   Statistics:
-                      numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                      numRows: 1 dataSize: 15 basicStatsState: COMPLETE colStatsState: NONE
                   Select Operator
                     expressions:
                           expr: _col0
@@ -456,14 +456,14 @@ STAGE PLANS:
                           type: string
                     outputColumnNames: _col0, _col1, _col2
                     Statistics:
-                        numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                        numRows: 1 dataSize: 15 basicStatsState: COMPLETE colStatsState: NONE
                     File Output Operator
                       compressed: false
                       GlobalTableId: 0
 #### A masked pattern was here ####
                       NumFilesPerFileSink: 1
                       Statistics:
-                          numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                          numRows: 1 dataSize: 15 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                       table:
                           input format: org.apache.hadoop.mapred.TextInputFormat
@@ -508,7 +508,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select * from t1 where ds = '2011-10-13'
 PREHOOK: type: QUERY
@@ -873,7 +872,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select * from t1 where ds = '2011-10-15'
 PREHOOK: type: QUERY

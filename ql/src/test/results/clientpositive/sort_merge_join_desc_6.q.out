@@ -168,11 +168,11 @@ STAGE PLANS:
                 1 [Column[key]]
               Position of Big Table: 0
               Statistics:
-                  numRows: 125000 dataSize: 2500000 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 550 dataSize: 5843 basicStatsState: COMPLETE colStatsState: NONE
               BucketMapJoin: true
               Select Operator
                 Statistics:
-                    numRows: 125000 dataSize: 2500000 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 550 dataSize: 5843 basicStatsState: COMPLETE colStatsState: NONE
                 Group By Operator
                   aggregations:
                         expr: count()
@@ -283,7 +283,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT /*+ MAPJOIN(b) */ count(*)
 FROM srcbucket_mapjoin_part_1 a JOIN srcbucket_mapjoin_part_2 b

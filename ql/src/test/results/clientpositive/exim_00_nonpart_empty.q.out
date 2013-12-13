@@ -80,5 +80,9 @@ POSTHOOK: Input: importer@exim_department
 POSTHOOK: Output: importer@exim_department
 PREHOOK: query: drop database importer
 PREHOOK: type: DROPDATABASE
+PREHOOK: Input: database:importer
+PREHOOK: Output: database:importer
 POSTHOOK: query: drop database importer
 POSTHOOK: type: DROPDATABASE
+POSTHOOK: Input: database:importer
+POSTHOOK: Output: database:importer

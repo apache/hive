@@ -68,7 +68,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: SELECT AVG(cbigint) FROM alltypesorc WHERE cbigint < cdouble
 PREHOOK: type: QUERY

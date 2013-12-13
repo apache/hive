@@ -112,7 +112,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select * 
 from src b 
 where not exists 
@@ -408,7 +407,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select * 
 from src b 

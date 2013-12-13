@@ -58,7 +58,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select transform(key) using 'cat' as key1 from nullscript
 PREHOOK: type: QUERY
 PREHOOK: Input: default@nullscript

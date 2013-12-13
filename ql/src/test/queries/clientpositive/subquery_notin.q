@@ -127,3 +127,17 @@ from src
 where not src.key in  ( select key from src s1 where s1.key > '2')
 order by key
 ;
+
+-- null check
+create view T1_v as 
+select key from src where key <'11';
+
+create view T2_v as 
+select case when key > '104' then null else key end as key from T1_v;
+
+explain
+select * 
+from T1_v where T1_v.key not in (select T2_v.key from T2_v);
+
+select * 
+from T1_v where T1_v.key not in (select T2_v.key from T2_v);

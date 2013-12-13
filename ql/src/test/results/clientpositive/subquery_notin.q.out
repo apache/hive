@@ -107,12 +107,120 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-3 depends on stages: Stage-2
   Stage-0 is a root stage
 
 STAGE PLANS:
   Stage: Stage-1
     Map Reduce
       Alias -> Map Operator Tree:
+        sq_1_notin_nullcheck:sq_1:s1 
+          TableScan
+            alias: s1
+            Filter Operator
+              predicate:
+                  expr: ((key > '2') and key is null)
+                  type: boolean
+              Select Operator
+                Group By Operator
+                  aggregations:
+                        expr: count()
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  Reduce Output Operator
+                    sort order: 
+                    tag: -1
+                    value expressions:
+                          expr: _col0
+                          type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Filter Operator
+            predicate:
+                expr: (_col0 = 0)
+                type: boolean
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: bigint
+              outputColumnNames: _col0
+              Group By Operator
+                bucketGroup: false
+                keys:
+                      expr: _col0
+                      type: bigint
+                mode: hash
+                outputColumnNames: _col0
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        $INTNAME 
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              tag: 1
+        src 
+          TableScan
+            alias: src
+            Reduce Output Operator
+              sort order: 
+              tag: 0
+              value expressions:
+                    expr: key
+                    type: string
+                    expr: value
+                    type: string
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Left Semi Join 0 to 1
+          condition expressions:
+            0 {VALUE._col0} {VALUE._col1}
+            1 
+          handleSkewJoin: false
+          outputColumnNames: _col0, _col1
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        $INTNAME 
+          TableScan
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: _col0
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: _col0
+                    type: string
+                    expr: _col1
+                    type: string
         sq_1:s1 
           TableScan
             alias: s1
@@ -137,23 +245,6 @@ STAGE PLANS:
                   value expressions:
                         expr: _col0
                         type: string
-        src 
-          TableScan
-            alias: src
-            Reduce Output Operator
-              key expressions:
-                    expr: key
-                    type: string
-              sort order: +
-              Map-reduce partition columns:
-                    expr: key
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: key
-                    type: string
-                    expr: value
-                    type: string
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -185,7 +276,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select * 
 from src 
@@ -344,12 +434,15 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME part) b)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL p_mfgr)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL b) p_name)) (TOK_SELEXPR (TOK_TABLE_OR_COL p_size))) (TOK_WHERE (not (TOK_SUBQUERY_EXPR (TOK_SUBQUERY_OP in) (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME part))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL p_mfgr)) (TOK_SELEXPR (TOK_TABLE_OR_COL p_name)) (TOK_SELEXPR (TOK_TABLE_OR_COL p_size)) (TOK_SELEXPR (TOK_FUNCTION rank (TOK_WINDOWSPEC (TOK_PARTITIONINGSPEC (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL p_mfgr)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL p_size)))))) r)))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL p_name))) (TOK_WHERE (and (<= (TOK_TABLE_OR_COL r) 2) (= (. (TOK_TABLE_OR_COL b) p_mfgr) (. (TOK_TABLE_OR_COL a) p_mfgr)))))) (. (TOK_TABLE_OR_COL b) p_name))))))
 
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-1 depends on stages: Stage-2
+  Stage-3 is a root stage
+  Stage-2 depends on stages: Stage-1, Stage-3
+  Stage-4 is a root stage
+  Stage-5 depends on stages: Stage-4
+  Stage-1 depends on stages: Stage-5
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
         sq_1:a:part 
@@ -395,10 +488,32 @@ STAGE PLANS:
                       output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                       serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
+            Reduce Output Operator
+              key expressions:
+                    expr: _col1
+                    type: string
+                    expr: _col2
+                    type: string
+              sort order: ++
+              Map-reduce partition columns:
+                    expr: _col1
+                    type: string
+                    expr: _col2
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: _col1
+                    type: string
+                    expr: _col2
+                    type: string
+                    expr: _col5
+                    type: int
+        $INTNAME1 
           TableScan
             Reduce Output Operator
               key expressions:
@@ -416,29 +531,6 @@ STAGE PLANS:
               value expressions:
                     expr: _col0
                     type: string
-        b 
-          TableScan
-            alias: b
-            Reduce Output Operator
-              key expressions:
-                    expr: p_name
-                    type: string
-                    expr: p_mfgr
-                    type: string
-              sort order: ++
-              Map-reduce partition columns:
-                    expr: p_name
-                    type: string
-                    expr: p_mfgr
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: p_name
-                    type: string
-                    expr: p_mfgr
-                    type: string
-                    expr: p_size
-                    type: int
       Reduce Operator Tree:
         Join Operator
           condition map:
@@ -469,10 +561,135 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
+  Stage: Stage-4
+    Map Reduce
+      Alias -> Map Operator Tree:
+        sq_1_notin_nullcheck:sq_1:a:part 
+          TableScan
+            alias: part
+            Reduce Output Operator
+              key expressions:
+                    expr: p_mfgr
+                    type: string
+                    expr: p_size
+                    type: int
+              sort order: ++
+              Map-reduce partition columns:
+                    expr: p_mfgr
+                    type: string
+              tag: -1
+              value expressions:
+                    expr: p_name
+                    type: string
+                    expr: p_mfgr
+                    type: string
+                    expr: p_size
+                    type: int
+      Reduce Operator Tree:
+        Extract
+          PTF Operator
+            Filter Operator
+              predicate:
+                  expr: ((_wcol0 <= 2) and (_col1 is null or _col2 is null))
+                  type: boolean
+              Select Operator
+                Group By Operator
+                  aggregations:
+                        expr: count()
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-5
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Filter Operator
+            predicate:
+                expr: (_col0 = 0)
+                type: boolean
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: bigint
+              outputColumnNames: _col0
+              Group By Operator
+                bucketGroup: false
+                keys:
+                      expr: _col0
+                      type: bigint
+                mode: hash
+                outputColumnNames: _col0
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        $INTNAME 
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              tag: 1
+        b 
+          TableScan
+            alias: b
+            Reduce Output Operator
+              sort order: 
+              tag: 0
+              value expressions:
+                    expr: p_name
+                    type: string
+                    expr: p_mfgr
+                    type: string
+                    expr: p_size
+                    type: int
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Left Semi Join 0 to 1
+          condition expressions:
+            0 {VALUE._col1} {VALUE._col2} {VALUE._col5}
+            1 
+          handleSkewJoin: false
+          outputColumnNames: _col1, _col2, _col5
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select p_mfgr, b.p_name, p_size 
 from part b 
@@ -538,7 +755,10 @@ ABSTRACT SYNTAX TREE:
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-2 depends on stages: Stage-1
-  Stage-3 depends on stages: Stage-2
+  Stage-3 depends on stages: Stage-2, Stage-6
+  Stage-4 is a root stage
+  Stage-5 depends on stages: Stage-4
+  Stage-6 depends on stages: Stage-5
   Stage-0 is a root stage
 
 STAGE PLANS:
@@ -638,22 +858,21 @@ STAGE PLANS:
               value expressions:
                     expr: _col0
                     type: double
-        part 
+        $INTNAME1 
           TableScan
-            alias: part
             Reduce Output Operator
               key expressions:
-                    expr: UDFToDouble(p_size)
+                    expr: UDFToDouble(_col5)
                     type: double
               sort order: +
               Map-reduce partition columns:
-                    expr: UDFToDouble(p_size)
+                    expr: UDFToDouble(_col5)
                     type: double
               tag: 0
               value expressions:
-                    expr: p_name
+                    expr: _col1
                     type: string
-                    expr: p_size
+                    expr: _col5
                     type: int
       Reduce Operator Tree:
         Join Operator
@@ -683,10 +902,146 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
+  Stage: Stage-4
+    Map Reduce
+      Alias -> Map Operator Tree:
+        sq_1_notin_nullcheck:sq_1:a:part 
+          TableScan
+            alias: part
+            Reduce Output Operator
+              key expressions:
+                    expr: p_mfgr
+                    type: string
+                    expr: p_size
+                    type: int
+              sort order: ++
+              Map-reduce partition columns:
+                    expr: p_mfgr
+                    type: string
+              tag: -1
+              value expressions:
+                    expr: p_mfgr
+                    type: string
+                    expr: p_size
+                    type: int
+      Reduce Operator Tree:
+        Extract
+          PTF Operator
+            Filter Operator
+              predicate:
+                  expr: (_wcol0 <= 2)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: _col5
+                      type: int
+                outputColumnNames: _col0
+                Group By Operator
+                  aggregations:
+                        expr: avg(_col0)
+                  bucketGroup: false
+                  mode: hash
+                  outputColumnNames: _col0
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-5
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: struct<count:bigint,sum:double>
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: avg(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Filter Operator
+            predicate:
+                expr: _col0 is null
+                type: boolean
+            Select Operator
+              Group By Operator
+                aggregations:
+                      expr: count()
+                bucketGroup: false
+                mode: complete
+                outputColumnNames: _col0
+                Filter Operator
+                  predicate:
+                      expr: (_col0 = 0)
+                      type: boolean
+                  Select Operator
+                    expressions:
+                          expr: _col0
+                          type: bigint
+                    outputColumnNames: _col0
+                    Group By Operator
+                      bucketGroup: false
+                      keys:
+                            expr: _col0
+                            type: bigint
+                      mode: hash
+                      outputColumnNames: _col0
+                      File Output Operator
+                        compressed: false
+                        GlobalTableId: 0
+                        table:
+                            input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                            output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                            serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-6
+    Map Reduce
+      Alias -> Map Operator Tree:
+        $INTNAME 
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              tag: 1
+        part 
+          TableScan
+            alias: part
+            Reduce Output Operator
+              sort order: 
+              tag: 0
+              value expressions:
+                    expr: p_name
+                    type: string
+                    expr: p_size
+                    type: int
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Left Semi Join 0 to 1
+          condition expressions:
+            0 {VALUE._col1} {VALUE._col5}
+            1 
+          handleSkewJoin: false
+          outputColumnNames: _col1, _col5
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select p_name, p_size 
 from 
@@ -756,13 +1111,17 @@ ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME part) b)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL p_mfgr)) (TOK_SELEXPR (TOK_TABLE_OR_COL p_name)) (TOK_SELEXPR (TOK_TABLE_OR_COL p_size))) (TOK_WHERE (not (TOK_SUBQUERY_EXPR (TOK_SUBQUERY_OP in) (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME part))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL p_mfgr)) (TOK_SELEXPR (TOK_TABLE_OR_COL p_size)) (TOK_SELEXPR (TOK_FUNCTION rank (TOK_WINDOWSPEC (TOK_PARTITIONINGSPEC (TOK_DISTRIBUTEBY (TOK_TABLE_OR_COL p_mfgr)) (TOK_ORDERBY (TOK_TABSORTCOLNAMEASC (TOK_TABLE_OR_COL p_size)))))) r)))) a)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION min (TOK_TABLE_OR_COL p_size)))) (TOK_WHERE (and (<= (TOK_TABLE_OR_COL r) 2) (= (. (TOK_TABLE_OR_COL b) p_mfgr) (. (TOK_TABLE_OR_COL a) p_mfgr)))))) (. (TOK_TABLE_OR_COL b) p_size))))))
 
 STAGE DEPENDENCIES:
-  Stage-2 is a root stage
-  Stage-3 depends on stages: Stage-2
-  Stage-1 depends on stages: Stage-3
+  Stage-3 is a root stage
+  Stage-4 depends on stages: Stage-3
+  Stage-2 depends on stages: Stage-1, Stage-4
+  Stage-5 is a root stage
+  Stage-6 depends on stages: Stage-5
+  Stage-7 depends on stages: Stage-6
+  Stage-1 depends on stages: Stage-7
   Stage-0 is a root stage
 
 STAGE PLANS:
-  Stage: Stage-2
+  Stage: Stage-3
     Map Reduce
       Alias -> Map Operator Tree:
         sq_1:a:part 
@@ -815,7 +1174,7 @@ STAGE PLANS:
                         output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                         serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-3
+  Stage: Stage-4
     Map Reduce
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
@@ -857,10 +1216,32 @@ STAGE PLANS:
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
 
-  Stage: Stage-1
+  Stage: Stage-2
     Map Reduce
       Alias -> Map Operator Tree:
         $INTNAME 
+          TableScan
+            Reduce Output Operator
+              key expressions:
+                    expr: _col5
+                    type: int
+                    expr: _col2
+                    type: string
+              sort order: ++
+              Map-reduce partition columns:
+                    expr: _col5
+                    type: int
+                    expr: _col2
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: _col1
+                    type: string
+                    expr: _col2
+                    type: string
+                    expr: _col5
+                    type: int
+        $INTNAME1 
           TableScan
             Reduce Output Operator
               key expressions:
@@ -877,29 +1258,6 @@ STAGE PLANS:
               tag: 1
               value expressions:
                     expr: _col0
-                    type: int
-        b 
-          TableScan
-            alias: b
-            Reduce Output Operator
-              key expressions:
-                    expr: p_size
-                    type: int
-                    expr: p_mfgr
-                    type: string
-              sort order: ++
-              Map-reduce partition columns:
-                    expr: p_size
-                    type: int
-                    expr: p_mfgr
-                    type: string
-              tag: 0
-              value expressions:
-                    expr: p_name
-                    type: string
-                    expr: p_mfgr
-                    type: string
-                    expr: p_size
                     type: int
       Reduce Operator Tree:
         Join Operator
@@ -931,10 +1289,188 @@ STAGE PLANS:
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
 
+  Stage: Stage-5
+    Map Reduce
+      Alias -> Map Operator Tree:
+        sq_1_notin_nullcheck:sq_1:a:part 
+          TableScan
+            alias: part
+            Reduce Output Operator
+              key expressions:
+                    expr: p_mfgr
+                    type: string
+                    expr: p_size
+                    type: int
+              sort order: ++
+              Map-reduce partition columns:
+                    expr: p_mfgr
+                    type: string
+              tag: -1
+              value expressions:
+                    expr: p_mfgr
+                    type: string
+                    expr: p_size
+                    type: int
+      Reduce Operator Tree:
+        Extract
+          PTF Operator
+            Filter Operator
+              predicate:
+                  expr: (_wcol0 <= 2)
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: _col2
+                      type: string
+                      expr: _col5
+                      type: int
+                outputColumnNames: _col0, _col1
+                Group By Operator
+                  aggregations:
+                        expr: min(_col1)
+                  bucketGroup: false
+                  keys:
+                        expr: _col0
+                        type: string
+                  mode: hash
+                  outputColumnNames: _col0, _col1
+                  File Output Operator
+                    compressed: false
+                    GlobalTableId: 0
+                    table:
+                        input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                        output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                        serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-6
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+          TableScan
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: _col0
+                    type: string
+              tag: -1
+              value expressions:
+                    expr: _col1
+                    type: int
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: min(VALUE._col0)
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Filter Operator
+            predicate:
+                expr: (_col1 is null or _col0 is null)
+                type: boolean
+            Select Operator
+              Group By Operator
+                aggregations:
+                      expr: count()
+                bucketGroup: false
+                mode: hash
+                outputColumnNames: _col0
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-7
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              tag: -1
+              value expressions:
+                    expr: _col0
+                    type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Filter Operator
+            predicate:
+                expr: (_col0 = 0)
+                type: boolean
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: bigint
+              outputColumnNames: _col0
+              Group By Operator
+                bucketGroup: false
+                keys:
+                      expr: _col0
+                      type: bigint
+                mode: hash
+                outputColumnNames: _col0
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        $INTNAME 
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              tag: 1
+        b 
+          TableScan
+            alias: b
+            Reduce Output Operator
+              sort order: 
+              tag: 0
+              value expressions:
+                    expr: p_name
+                    type: string
+                    expr: p_mfgr
+                    type: string
+                    expr: p_size
+                    type: int
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Left Semi Join 0 to 1
+          condition expressions:
+            0 {VALUE._col1} {VALUE._col2} {VALUE._col5}
+            1 
+          handleSkewJoin: false
+          outputColumnNames: _col1, _col2, _col5
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select p_mfgr, p_name, p_size 
 from part b where b.p_size not in 
@@ -1145,3 +1681,230 @@ POSTHOOK: Input: default@src
 199	val_199
 199	val_199
 2	val_2
+PREHOOK: query: -- null check
+create view T1_v as 
+select key from src where key <'11'
+PREHOOK: type: CREATEVIEW
+POSTHOOK: query: -- null check
+create view T1_v as 
+select key from src where key <'11'
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Output: default@T1_v
+PREHOOK: query: create view T2_v as 
+select case when key > '104' then null else key end as key from T1_v
+PREHOOK: type: CREATEVIEW
+PREHOOK: Input: default@t1_v
+POSTHOOK: query: create view T2_v as 
+select case when key > '104' then null else key end as key from T1_v
+POSTHOOK: type: CREATEVIEW
+POSTHOOK: Input: default@t1_v
+POSTHOOK: Output: default@T2_v
+PREHOOK: query: explain
+select * 
+from T1_v where T1_v.key not in (select T2_v.key from T2_v)
+PREHOOK: type: QUERY
+POSTHOOK: query: explain
+select * 
+from T1_v where T1_v.key not in (select T2_v.key from T2_v)
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME T1_v))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF)) (TOK_WHERE (not (TOK_SUBQUERY_EXPR (TOK_SUBQUERY_OP in) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME T2_v))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL T2_v) key))))) (. (TOK_TABLE_OR_COL T1_v) key))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-2 depends on stages: Stage-1
+  Stage-3 depends on stages: Stage-2
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        sq_1_notin_nullcheck:sq_1:t2_v:t1_v:src 
+          TableScan
+            alias: src
+            Filter Operator
+              predicate:
+                  expr: (key < '11')
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: CASE WHEN ((key > '104')) THEN (null) ELSE (key) END
+                      type: string
+                outputColumnNames: _col0
+                Filter Operator
+                  predicate:
+                      expr: _col0 is null
+                      type: boolean
+                  Select Operator
+                    Group By Operator
+                      aggregations:
+                            expr: count()
+                      bucketGroup: false
+                      mode: hash
+                      outputColumnNames: _col0
+                      Reduce Output Operator
+                        sort order: 
+                        tag: -1
+                        value expressions:
+                              expr: _col0
+                              type: bigint
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: count(VALUE._col0)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0
+          Filter Operator
+            predicate:
+                expr: (_col0 = 0)
+                type: boolean
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: bigint
+              outputColumnNames: _col0
+              Group By Operator
+                bucketGroup: false
+                keys:
+                      expr: _col0
+                      type: bigint
+                mode: hash
+                outputColumnNames: _col0
+                File Output Operator
+                  compressed: false
+                  GlobalTableId: 0
+                  table:
+                      input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                      output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                      serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-2
+    Map Reduce
+      Alias -> Map Operator Tree:
+        $INTNAME 
+          TableScan
+            Reduce Output Operator
+              sort order: 
+              tag: 1
+        t1_v:src 
+          TableScan
+            alias: src
+            Filter Operator
+              predicate:
+                  expr: (key < '11')
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: key
+                      type: string
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  sort order: 
+                  tag: 0
+                  value expressions:
+                        expr: _col0
+                        type: string
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Left Semi Join 0 to 1
+          condition expressions:
+            0 {VALUE._col0}
+            1 
+          handleSkewJoin: false
+          outputColumnNames: _col0
+          File Output Operator
+            compressed: false
+            GlobalTableId: 0
+            table:
+                input format: org.apache.hadoop.mapred.SequenceFileInputFormat
+                output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
+                serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+        $INTNAME 
+          TableScan
+            Reduce Output Operator
+              key expressions:
+                    expr: _col0
+                    type: string
+              sort order: +
+              Map-reduce partition columns:
+                    expr: _col0
+                    type: string
+              tag: 0
+              value expressions:
+                    expr: _col0
+                    type: string
+        sq_1:t2_v:t1_v:src 
+          TableScan
+            alias: src
+            Filter Operator
+              predicate:
+                  expr: (key < '11')
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: CASE WHEN ((key > '104')) THEN (null) ELSE (key) END
+                      type: string
+                outputColumnNames: _col0
+                Reduce Output Operator
+                  key expressions:
+                        expr: _col0
+                        type: string
+                  sort order: +
+                  Map-reduce partition columns:
+                        expr: _col0
+                        type: string
+                  tag: 1
+                  value expressions:
+                        expr: _col0
+                        type: string
+      Reduce Operator Tree:
+        Join Operator
+          condition map:
+               Left Outer Join0 to 1
+          condition expressions:
+            0 {VALUE._col0}
+            1 {VALUE._col0}
+          handleSkewJoin: false
+          outputColumnNames: _col0, _col1
+          Filter Operator
+            predicate:
+                expr: ((1 = 1) and _col1 is null)
+                type: boolean
+            Select Operator
+              expressions:
+                    expr: _col0
+                    type: string
+              outputColumnNames: _col0
+              File Output Operator
+                compressed: false
+                GlobalTableId: 0
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+PREHOOK: query: select * 
+from T1_v where T1_v.key not in (select T2_v.key from T2_v)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Input: default@t1_v
+PREHOOK: Input: default@t2_v
+#### A masked pattern was here ####
+POSTHOOK: query: select * 
+from T1_v where T1_v.key not in (select T2_v.key from T2_v)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Input: default@t1_v
+POSTHOOK: Input: default@t2_v
+#### A masked pattern was here ####

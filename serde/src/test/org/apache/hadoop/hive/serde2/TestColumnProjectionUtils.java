@@ -105,7 +105,7 @@ public class TestColumnProjectionUtils {
     Collections.sort(actual);
     assertEquals(columnIds, actual);
     columnIds.add(2);
-    ColumnProjectionUtils.appendReadColumnID(conf, Collections.singletonList(2));
+    ColumnProjectionUtils.appendReadColumnIDs(conf, Collections.singletonList(2));
     actual = ColumnProjectionUtils.getReadColumnIDs(conf);
     Collections.sort(actual);
     assertEquals(columnIds, actual);

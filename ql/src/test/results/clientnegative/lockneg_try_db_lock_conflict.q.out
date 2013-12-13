@@ -1,0 +1,12 @@
+PREHOOK: query: create database lockneg4
+PREHOOK: type: CREATEDATABASE
+POSTHOOK: query: create database lockneg4
+POSTHOOK: type: CREATEDATABASE
+PREHOOK: query: lock database lockneg4 exclusive
+PREHOOK: type: LOCKDATABASE
+POSTHOOK: query: lock database lockneg4 exclusive
+POSTHOOK: type: LOCKDATABASE
+PREHOOK: query: lock database lockneg4 shared
+PREHOOK: type: LOCKDATABASE
+conflicting lock present for lockneg4 mode SHARED
+FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask

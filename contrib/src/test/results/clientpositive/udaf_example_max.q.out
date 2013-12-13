@@ -78,7 +78,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT example_max(substr(value,5)),
        example_max(IF(substr(value,5) > 250, NULL, substr(value,5)))
 FROM src

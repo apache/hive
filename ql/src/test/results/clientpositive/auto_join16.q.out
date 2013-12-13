@@ -121,7 +121,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT sum(hash(subq.key, tab.value)) 
 FROM 
 (select a.key, a.value from src a where a.key > 10 ) subq 

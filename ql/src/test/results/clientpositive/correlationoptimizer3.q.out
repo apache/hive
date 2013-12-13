@@ -309,7 +309,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt)), SUM(HASH(tmp.value))
 FROM (SELECT b.key AS key, b.cnt AS cnt, d.value AS value
       FROM (SELECT x.key, count(1) AS cnt FROM src1 x JOIN src y ON (x.key = y.key) group by x.key) b
@@ -569,7 +568,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt)), SUM(HASH(tmp.value))
 FROM (SELECT b.key AS key, b.cnt AS cnt, d.value AS value
@@ -860,7 +858,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt)), SUM(HASH(tmp.value))
 FROM (SELECT b.key AS key, b.cnt AS cnt, d.value AS value
@@ -1178,7 +1175,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt)), SUM(HASH(tmp.value))
 FROM (SELECT d.key AS key, d.cnt AS cnt, b.value as value
       FROM (SELECT x.key, x.value FROM src1 x JOIN src y ON (x.key = y.key)) b
@@ -1438,7 +1434,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt)), SUM(HASH(tmp.value))
 FROM (SELECT d.key AS key, d.cnt AS cnt, b.value as value
@@ -1729,7 +1724,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT SUM(HASH(tmp.key)), SUM(HASH(tmp.cnt)), SUM(HASH(tmp.value))
 FROM (SELECT d.key AS key, d.cnt AS cnt, b.value as value

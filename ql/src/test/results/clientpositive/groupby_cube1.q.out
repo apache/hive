@@ -104,7 +104,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube
 ORDER BY key, val
 PREHOOK: type: QUERY
@@ -221,7 +220,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT key, count(distinct val) FROM T1 GROUP BY key with cube
 ORDER BY key
@@ -376,7 +374,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT key, val, count(1) FROM T1 GROUP BY key, val with cube
 ORDER BY key, val
 PREHOOK: type: QUERY
@@ -491,7 +488,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT key, count(distinct val) FROM T1 GROUP BY key with cube
 ORDER BY key
@@ -812,7 +808,6 @@ STAGE PLANS:
 
   Stage: Stage-7
     Stats-Aggr Operator
-
 
 PREHOOK: query: FROM T1
 INSERT OVERWRITE TABLE T2 SELECT key, val, count(1) group by key, val with cube

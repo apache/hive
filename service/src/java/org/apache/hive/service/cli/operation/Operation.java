@@ -17,6 +17,8 @@
  */
 package org.apache.hive.service.cli.operation;
 
+import java.util.EnumSet;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.conf.HiveConf;
@@ -40,6 +42,9 @@ public abstract class Operation {
   public static final long DEFAULT_FETCH_MAX_ROWS = 100;
   protected boolean hasResultSet;
 
+  protected static final EnumSet<FetchOrientation> DEFAULT_FETCH_ORIENTATION_SET =
+      EnumSet.of(FetchOrientation.FETCH_NEXT,FetchOrientation.FETCH_FIRST);
+  
   protected Operation(HiveSession parentSession, OperationType opType) {
     super();
     this.parentSession = parentSession;
@@ -123,5 +128,29 @@ public abstract class Operation {
 
   public RowSet getNextRowSet() throws HiveSQLException {
     return getNextRowSet(FetchOrientation.FETCH_NEXT, DEFAULT_FETCH_MAX_ROWS);
+  }
+
+  /**
+   * Verify if the given fetch orientation is part of the default orientation types.
+   * @param orientation
+   * @throws HiveSQLException
+   */
+  protected void validateDefaultFetchOrientation(FetchOrientation orientation)
+      throws HiveSQLException {
+    validateFetchOrientation(orientation, DEFAULT_FETCH_ORIENTATION_SET);
+  }
+
+  /**
+   * Verify if the given fetch orientation is part of the supported orientation types.
+   * @param orientation
+   * @param supportedOrientations
+   * @throws HiveSQLException
+   */
+  protected void validateFetchOrientation(FetchOrientation orientation,
+      EnumSet<FetchOrientation> supportedOrientations) throws HiveSQLException {
+    if (!supportedOrientations.contains(orientation)) {
+      throw new HiveSQLException("The fetch type " + orientation.toString() +
+        " is not supported for this resultset", "HY106");
+    }
   }
 }

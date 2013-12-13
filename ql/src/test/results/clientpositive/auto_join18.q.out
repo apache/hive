@@ -261,7 +261,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT sum(hash(a.key, a.value, b.key, b.value))
  FROM 
   (

@@ -48,7 +48,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT ARRAY(NULL, 0), 
        ARRAY(NULL, ARRAY()),
        ARRAY(NULL, MAP()),

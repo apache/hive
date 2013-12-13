@@ -56,7 +56,6 @@ STAGE PLANS:
           new columns: x double
           old name: TEST3b
 
-
 PREHOOK: query: ALTER TABLE TEST3b ADD COLUMNS (X DOUBLE)
 PREHOOK: type: ALTERTABLE_ADDCOLS
 PREHOOK: Input: default@test3b
@@ -92,7 +91,6 @@ STAGE PLANS:
           type: rename
           new name: TEST3c
           old name: TEST3b
-
 
 PREHOOK: query: ALTER TABLE TEST3b RENAME TO TEST3c
 PREHOOK: type: ALTERTABLE_RENAME
@@ -145,7 +143,6 @@ STAGE PLANS:
           type: replace columns
           new columns: r1 int, r2 double
           old name: TEST3c
-
 
 PREHOOK: query: ALTER TABLE TEST3c REPLACE COLUMNS (R1 INT, R2 DOUBLE)
 PREHOOK: type: ALTERTABLE_REPLACECOLS

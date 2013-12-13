@@ -155,7 +155,6 @@ STAGE PLANS:
   Stage: Stage-5
     Stats-Aggr Operator
 
-
 PREHOOK: query: FROM (select key, cast(key as double) as value from src order by key) a
 INSERT OVERWRITE TABLE e1
     SELECT COUNT(*)

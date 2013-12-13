@@ -31,6 +31,7 @@ import org.apache.hadoop.fs.Path;
 public class ShowLocksDesc extends DDLDesc implements Serializable {
   private static final long serialVersionUID = 1L;
   String resFile;
+  String dbName;
   String tableName;
   HashMap<String, String> partSpec;
   boolean isExt;
@@ -43,6 +44,10 @@ public class ShowLocksDesc extends DDLDesc implements Serializable {
    * thrift ddl for the result of show locks.
    */
   private static final String schema = "tab_name,mode#string:string";
+
+  public String getDatabase() {
+    return dbName;
+  }
 
   public String getTable() {
     return table;
@@ -58,12 +63,31 @@ public class ShowLocksDesc extends DDLDesc implements Serializable {
   /**
    * @param resFile
    */
+  public ShowLocksDesc(Path resFile, String dbName, boolean isExt) {
+    this.resFile   = resFile.toString();
+    this.partSpec  = null;
+    this.tableName = null;
+    this.isExt     = isExt;
+    this.dbName = dbName;
+  }
+
+  /**
+   * @param resFile
+   */
   public ShowLocksDesc(Path resFile, String tableName,
                        HashMap<String, String> partSpec, boolean isExt) {
     this.resFile   = resFile.toString();
     this.partSpec  = partSpec;
     this.tableName = tableName;
     this.isExt     = isExt;
+  }
+
+  public String getDbName() {
+    return dbName;
+  }
+
+  public void setDbName(String dbName) {
+    this.dbName = dbName;
   }
 
   /**

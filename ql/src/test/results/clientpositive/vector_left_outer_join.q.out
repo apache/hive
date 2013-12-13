@@ -132,7 +132,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select count(*) from (select c.ctinyint
 from alltypesorc c
 left outer join alltypesorc cd

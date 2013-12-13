@@ -90,7 +90,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: FROM src_thrift
 INSERT OVERWRITE TABLE input_columnarserde SELECT src_thrift.lint, src_thrift.lstring, src_thrift.mstringstring, src_thrift.aint, src_thrift.astring DISTRIBUTE BY 1
 PREHOOK: type: QUERY

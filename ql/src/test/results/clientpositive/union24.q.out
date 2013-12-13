@@ -74,14 +74,14 @@ STAGE PLANS:
                   expr: (key < 10)
                   type: boolean
               Statistics:
-                  numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
                       type: string
                 outputColumnNames: key
                 Statistics:
-                    numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
                 Group By Operator
                   aggregations:
                         expr: count(1)
@@ -92,7 +92,7 @@ STAGE PLANS:
                   mode: hash
                   outputColumnNames: _col0, _col1
                   Statistics:
-                      numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
                   Reduce Output Operator
                     key expressions:
                           expr: _col0
@@ -102,7 +102,7 @@ STAGE PLANS:
                           expr: _col0
                           type: string
                     Statistics:
-                        numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
                     tag: -1
                     value expressions:
                           expr: _col1
@@ -166,7 +166,7 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics:
-              numRows: 77 dataSize: 308 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 51 dataSize: 244 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col0
@@ -175,7 +175,7 @@ STAGE PLANS:
                   type: bigint
             outputColumnNames: _col0, _col1
             Statistics:
-                numRows: 77 dataSize: 308 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 51 dataSize: 244 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -202,7 +202,7 @@ STAGE PLANS:
             GatherStats: false
             Union
               Statistics:
-                  numRows: 539 dataSize: 2156 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 360 dataSize: 1726 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: _col0
@@ -211,7 +211,7 @@ STAGE PLANS:
                       type: bigint
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 539 dataSize: 2156 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 360 dataSize: 1726 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -220,7 +220,7 @@ STAGE PLANS:
                         type: bigint
                   sort order: ++
                   Statistics:
-                      numRows: 539 dataSize: 2156 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 360 dataSize: 1726 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -239,7 +239,7 @@ STAGE PLANS:
                   expr: (key < 10)
                   type: boolean
               Statistics:
-                  numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -248,10 +248,10 @@ STAGE PLANS:
                       type: bigint
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
                 Union
                   Statistics:
-                      numRows: 539 dataSize: 2156 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 360 dataSize: 1726 basicStatsState: COMPLETE colStatsState: NONE
                   Select Operator
                     expressions:
                           expr: _col0
@@ -260,7 +260,7 @@ STAGE PLANS:
                           type: bigint
                     outputColumnNames: _col0, _col1
                     Statistics:
-                        numRows: 539 dataSize: 2156 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 360 dataSize: 1726 basicStatsState: COMPLETE colStatsState: NONE
                     Reduce Output Operator
                       key expressions:
                             expr: _col0
@@ -269,7 +269,7 @@ STAGE PLANS:
                             type: bigint
                       sort order: ++
                       Statistics:
-                          numRows: 539 dataSize: 2156 basicStatsState: COMPLETE colStatsState: NONE
+                          numRows: 360 dataSize: 1726 basicStatsState: COMPLETE colStatsState: NONE
                       tag: -1
                       value expressions:
                             expr: _col0
@@ -288,7 +288,7 @@ STAGE PLANS:
                   expr: (key < 10)
                   type: boolean
               Statistics:
-                  numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -297,10 +297,10 @@ STAGE PLANS:
                       type: bigint
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
                 Union
                   Statistics:
-                      numRows: 539 dataSize: 2156 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 360 dataSize: 1726 basicStatsState: COMPLETE colStatsState: NONE
                   Select Operator
                     expressions:
                           expr: _col0
@@ -309,7 +309,7 @@ STAGE PLANS:
                           type: bigint
                     outputColumnNames: _col0, _col1
                     Statistics:
-                        numRows: 539 dataSize: 2156 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 360 dataSize: 1726 basicStatsState: COMPLETE colStatsState: NONE
                     Reduce Output Operator
                       key expressions:
                             expr: _col0
@@ -318,7 +318,7 @@ STAGE PLANS:
                             type: bigint
                       sort order: ++
                       Statistics:
-                          numRows: 539 dataSize: 2156 basicStatsState: COMPLETE colStatsState: NONE
+                          numRows: 360 dataSize: 1726 basicStatsState: COMPLETE colStatsState: NONE
                       tag: -1
                       value expressions:
                             expr: _col0
@@ -337,7 +337,7 @@ STAGE PLANS:
                   expr: (key < 10)
                   type: boolean
               Statistics:
-                  numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -346,10 +346,10 @@ STAGE PLANS:
                       type: bigint
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
                 Union
                   Statistics:
-                      numRows: 539 dataSize: 2156 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 360 dataSize: 1726 basicStatsState: COMPLETE colStatsState: NONE
                   Select Operator
                     expressions:
                           expr: _col0
@@ -358,7 +358,7 @@ STAGE PLANS:
                           type: bigint
                     outputColumnNames: _col0, _col1
                     Statistics:
-                        numRows: 539 dataSize: 2156 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 360 dataSize: 1726 basicStatsState: COMPLETE colStatsState: NONE
                     Reduce Output Operator
                       key expressions:
                             expr: _col0
@@ -367,7 +367,7 @@ STAGE PLANS:
                             type: bigint
                       sort order: ++
                       Statistics:
-                          numRows: 539 dataSize: 2156 basicStatsState: COMPLETE colStatsState: NONE
+                          numRows: 360 dataSize: 1726 basicStatsState: COMPLETE colStatsState: NONE
                       tag: -1
                       value expressions:
                             expr: _col0
@@ -532,14 +532,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 539 dataSize: 2156 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 360 dataSize: 1726 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 539 dataSize: 2156 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 360 dataSize: 1726 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -559,7 +559,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select s.key, s.count from (
   select key, count from src2  where key < 10
@@ -661,7 +660,7 @@ STAGE PLANS:
                   expr: (key < 10)
                   type: boolean
               Statistics:
-                  numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -671,7 +670,7 @@ STAGE PLANS:
                       expr: key
                       type: string
                 Statistics:
-                    numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
                 tag: 0
                 value expressions:
                       expr: key
@@ -688,7 +687,7 @@ STAGE PLANS:
                   expr: (key < 10)
                   type: boolean
               Statistics:
-                  numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -698,7 +697,7 @@ STAGE PLANS:
                       expr: key
                       type: string
                 Statistics:
-                    numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
                 tag: 1
                 value expressions:
                       expr: count
@@ -804,7 +803,7 @@ STAGE PLANS:
           handleSkewJoin: false
           outputColumnNames: _col0, _col5
           Statistics:
-              numRows: 11858 dataSize: 94864 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 113 dataSize: 543 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col0
@@ -813,7 +812,7 @@ STAGE PLANS:
                   type: bigint
             outputColumnNames: _col0, _col1
             Statistics:
-                numRows: 11858 dataSize: 94864 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 113 dataSize: 543 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -840,7 +839,7 @@ STAGE PLANS:
             GatherStats: false
             Union
               Statistics:
-                  numRows: 12166 dataSize: 96096 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 319 dataSize: 1531 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: _col0
@@ -849,7 +848,7 @@ STAGE PLANS:
                       type: bigint
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 12166 dataSize: 96096 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 319 dataSize: 1531 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -858,7 +857,7 @@ STAGE PLANS:
                         type: bigint
                   sort order: ++
                   Statistics:
-                      numRows: 12166 dataSize: 96096 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 319 dataSize: 1531 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -877,7 +876,7 @@ STAGE PLANS:
                   expr: (key < 10)
                   type: boolean
               Statistics:
-                  numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -886,10 +885,10 @@ STAGE PLANS:
                       type: bigint
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
                 Union
                   Statistics:
-                      numRows: 12166 dataSize: 96096 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 319 dataSize: 1531 basicStatsState: COMPLETE colStatsState: NONE
                   Select Operator
                     expressions:
                           expr: _col0
@@ -898,7 +897,7 @@ STAGE PLANS:
                           type: bigint
                     outputColumnNames: _col0, _col1
                     Statistics:
-                        numRows: 12166 dataSize: 96096 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 319 dataSize: 1531 basicStatsState: COMPLETE colStatsState: NONE
                     Reduce Output Operator
                       key expressions:
                             expr: _col0
@@ -907,7 +906,7 @@ STAGE PLANS:
                             type: bigint
                       sort order: ++
                       Statistics:
-                          numRows: 12166 dataSize: 96096 basicStatsState: COMPLETE colStatsState: NONE
+                          numRows: 319 dataSize: 1531 basicStatsState: COMPLETE colStatsState: NONE
                       tag: -1
                       value expressions:
                             expr: _col0
@@ -926,7 +925,7 @@ STAGE PLANS:
                   expr: (key < 10)
                   type: boolean
               Statistics:
-                  numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -935,10 +934,10 @@ STAGE PLANS:
                       type: bigint
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
                 Union
                   Statistics:
-                      numRows: 12166 dataSize: 96096 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 319 dataSize: 1531 basicStatsState: COMPLETE colStatsState: NONE
                   Select Operator
                     expressions:
                           expr: _col0
@@ -947,7 +946,7 @@ STAGE PLANS:
                           type: bigint
                     outputColumnNames: _col0, _col1
                     Statistics:
-                        numRows: 12166 dataSize: 96096 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 319 dataSize: 1531 basicStatsState: COMPLETE colStatsState: NONE
                     Reduce Output Operator
                       key expressions:
                             expr: _col0
@@ -956,7 +955,7 @@ STAGE PLANS:
                             type: bigint
                       sort order: ++
                       Statistics:
-                          numRows: 12166 dataSize: 96096 basicStatsState: COMPLETE colStatsState: NONE
+                          numRows: 319 dataSize: 1531 basicStatsState: COMPLETE colStatsState: NONE
                       tag: -1
                       value expressions:
                             expr: _col0
@@ -1078,14 +1077,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 12166 dataSize: 96096 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 319 dataSize: 1531 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 12166 dataSize: 96096 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 319 dataSize: 1531 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1105,7 +1104,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select s.key, s.count from (
   select key, count from src2  where key < 10
@@ -1198,7 +1196,7 @@ STAGE PLANS:
                   expr: (key < 10)
                   type: boolean
               Statistics:
-                  numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -1208,7 +1206,7 @@ STAGE PLANS:
                       expr: key
                       type: string
                 Statistics:
-                    numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
                 tag: 0
                 value expressions:
                       expr: key
@@ -1225,7 +1223,7 @@ STAGE PLANS:
                   expr: (key < 10)
                   type: boolean
               Statistics:
-                  numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -1235,7 +1233,7 @@ STAGE PLANS:
                       expr: key
                       type: string
                 Statistics:
-                    numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
                 tag: 1
       Path -> Alias:
 #### A masked pattern was here ####
@@ -1338,14 +1336,14 @@ STAGE PLANS:
           handleSkewJoin: false
           outputColumnNames: _col0
           Statistics:
-              numRows: 11858 dataSize: 94864 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 113 dataSize: 543 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col0
                   type: string
             outputColumnNames: _col0
             Statistics:
-                numRows: 11858 dataSize: 94864 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 113 dataSize: 543 basicStatsState: COMPLETE colStatsState: NONE
             Group By Operator
               aggregations:
                     expr: count(1)
@@ -1356,7 +1354,7 @@ STAGE PLANS:
               mode: hash
               outputColumnNames: _col0, _col1
               Statistics:
-                  numRows: 11858 dataSize: 94864 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 113 dataSize: 543 basicStatsState: COMPLETE colStatsState: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
@@ -1390,7 +1388,7 @@ STAGE PLANS:
                     expr: _col0
                     type: string
               Statistics:
-                  numRows: 11858 dataSize: 94864 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 113 dataSize: 543 basicStatsState: COMPLETE colStatsState: NONE
               tag: -1
               value expressions:
                     expr: _col1
@@ -1432,7 +1430,7 @@ STAGE PLANS:
           mode: mergepartial
           outputColumnNames: _col0, _col1
           Statistics:
-              numRows: 5929 dataSize: 47432 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 56 dataSize: 269 basicStatsState: COMPLETE colStatsState: NONE
           Select Operator
             expressions:
                   expr: _col0
@@ -1441,7 +1439,7 @@ STAGE PLANS:
                   type: bigint
             outputColumnNames: _col0, _col1
             Statistics:
-                numRows: 5929 dataSize: 47432 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 56 dataSize: 269 basicStatsState: COMPLETE colStatsState: NONE
             File Output Operator
               compressed: false
               GlobalTableId: 0
@@ -1468,7 +1466,7 @@ STAGE PLANS:
             GatherStats: false
             Union
               Statistics:
-                  numRows: 6237 dataSize: 48664 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 262 dataSize: 1257 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: _col0
@@ -1477,7 +1475,7 @@ STAGE PLANS:
                       type: bigint
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 6237 dataSize: 48664 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 262 dataSize: 1257 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -1486,7 +1484,7 @@ STAGE PLANS:
                         type: bigint
                   sort order: ++
                   Statistics:
-                      numRows: 6237 dataSize: 48664 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 262 dataSize: 1257 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -1505,7 +1503,7 @@ STAGE PLANS:
                   expr: (key < 10)
                   type: boolean
               Statistics:
-                  numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -1514,10 +1512,10 @@ STAGE PLANS:
                       type: bigint
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
                 Union
                   Statistics:
-                      numRows: 6237 dataSize: 48664 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 262 dataSize: 1257 basicStatsState: COMPLETE colStatsState: NONE
                   Select Operator
                     expressions:
                           expr: _col0
@@ -1526,7 +1524,7 @@ STAGE PLANS:
                           type: bigint
                     outputColumnNames: _col0, _col1
                     Statistics:
-                        numRows: 6237 dataSize: 48664 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 262 dataSize: 1257 basicStatsState: COMPLETE colStatsState: NONE
                     Reduce Output Operator
                       key expressions:
                             expr: _col0
@@ -1535,7 +1533,7 @@ STAGE PLANS:
                             type: bigint
                       sort order: ++
                       Statistics:
-                          numRows: 6237 dataSize: 48664 basicStatsState: COMPLETE colStatsState: NONE
+                          numRows: 262 dataSize: 1257 basicStatsState: COMPLETE colStatsState: NONE
                       tag: -1
                       value expressions:
                             expr: _col0
@@ -1554,7 +1552,7 @@ STAGE PLANS:
                   expr: (key < 10)
                   type: boolean
               Statistics:
-                  numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -1563,10 +1561,10 @@ STAGE PLANS:
                       type: bigint
                 outputColumnNames: _col0, _col1
                 Statistics:
-                    numRows: 154 dataSize: 616 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 103 dataSize: 494 basicStatsState: COMPLETE colStatsState: NONE
                 Union
                   Statistics:
-                      numRows: 6237 dataSize: 48664 basicStatsState: COMPLETE colStatsState: NONE
+                      numRows: 262 dataSize: 1257 basicStatsState: COMPLETE colStatsState: NONE
                   Select Operator
                     expressions:
                           expr: _col0
@@ -1575,7 +1573,7 @@ STAGE PLANS:
                           type: bigint
                     outputColumnNames: _col0, _col1
                     Statistics:
-                        numRows: 6237 dataSize: 48664 basicStatsState: COMPLETE colStatsState: NONE
+                        numRows: 262 dataSize: 1257 basicStatsState: COMPLETE colStatsState: NONE
                     Reduce Output Operator
                       key expressions:
                             expr: _col0
@@ -1584,7 +1582,7 @@ STAGE PLANS:
                             type: bigint
                       sort order: ++
                       Statistics:
-                          numRows: 6237 dataSize: 48664 basicStatsState: COMPLETE colStatsState: NONE
+                          numRows: 262 dataSize: 1257 basicStatsState: COMPLETE colStatsState: NONE
                       tag: -1
                       value expressions:
                             expr: _col0
@@ -1706,14 +1704,14 @@ STAGE PLANS:
       Reduce Operator Tree:
         Extract
           Statistics:
-              numRows: 6237 dataSize: 48664 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 262 dataSize: 1257 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
             Statistics:
-                numRows: 6237 dataSize: 48664 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 262 dataSize: 1257 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -1733,7 +1731,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select s.key, s.count from (
   select key, count from src2  where key < 10

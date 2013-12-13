@@ -51,7 +51,6 @@ STAGE PLANS:
             Limit
               ListSink
 
-
 PREHOOK: query: SELECT 'face''book', 'face' 'book', 'face'
                                     'book',
        "face""book", "face" "book", "face"

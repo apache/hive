@@ -1864,6 +1864,8 @@ class WriterImpl implements Writer, MemoryManager.Callback {
     case DOUBLE:
       return numVals * JavaDataModel.get().primitive2();
     case STRING:
+    case VARCHAR:
+    case CHAR:
       // ORC strings are converted to java Strings. so use JavaDataModel to
       // compute the overall size of strings
       child = (StringTreeWriter) child;

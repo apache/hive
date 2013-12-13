@@ -278,7 +278,6 @@ STAGE PLANS:
   Stage: Stage-5
     Stats-Aggr Operator
 
-
 PREHOOK: query: from
 (select * from t1
  union all
@@ -643,7 +642,6 @@ STAGE PLANS:
                   input format: org.apache.hadoop.mapred.SequenceFileInputFormat
                   output format: org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat
                   serde: org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe
-
 
 PREHOOK: query: from
 (
@@ -1043,7 +1041,6 @@ STAGE PLANS:
 
   Stage: Stage-5
     Stats-Aggr Operator
-
 
 PREHOOK: query: from
 (

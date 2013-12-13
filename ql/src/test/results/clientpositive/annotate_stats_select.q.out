@@ -10,6 +10,7 @@ PREHOOK: query: create table if not exists alltypes (
  ts1 timestamp,
  da1 timestamp,
  s1 string,
+ vc1 varchar(5),
  m1 map<string, string>,
  l1 array<int>,
  st1 struct<c1:int, c2:string>
@@ -29,6 +30,7 @@ POSTHOOK: query: create table if not exists alltypes (
  ts1 timestamp,
  da1 timestamp,
  s1 string,
+ vc1 varchar(5),
  m1 map<string, string>,
  l1 array<int>,
  st1 struct<c1:int, c2:string>
@@ -78,6 +80,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 PREHOOK: query: -- basicStatState: COMPLETE colStatState: NONE numRows: 2 rawDataSize: 1514
 explain extended select * from alltypes_orc
 PREHOOK: type: QUERY
@@ -98,6 +101,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
 
@@ -112,7 +116,7 @@ STAGE PLANS:
         TableScan
           alias: alltypes_orc
           Statistics:
-              numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: NONE
+              numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: NONE
           GatherStats: false
           Select Operator
             expressions:
@@ -138,25 +142,26 @@ STAGE PLANS:
                   type: timestamp
                   expr: s1
                   type: string
+                  expr: vc1
+                  type: varchar(5)
                   expr: m1
                   type: map<string,string>
                   expr: l1
                   type: array<int>
                   expr: st1
                   type: struct<c1:int,c2:string>
-            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: NONE
             ListSink
 
-
 PREHOOK: query: -- statistics for complex types are not supported yet
-analyze table alltypes_orc compute statistics for columns bo1, ti1, si1, i1, bi1, f1, d1,s1
+analyze table alltypes_orc compute statistics for columns bo1, ti1, si1, i1, bi1, f1, d1, s1, vc1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alltypes_orc
 #### A masked pattern was here ####
 POSTHOOK: query: -- statistics for complex types are not supported yet
-analyze table alltypes_orc compute statistics for columns bo1, ti1, si1, i1, bi1, f1, d1,s1
+analyze table alltypes_orc compute statistics for columns bo1, ti1, si1, i1, bi1, f1, d1, s1, vc1
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alltypes_orc
 #### A masked pattern was here ####
@@ -174,6 +179,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 PREHOOK: query: -- numRows: 2 rawDataSize: 1514
 explain extended select * from alltypes_orc
 PREHOOK: type: QUERY
@@ -194,6 +200,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF))))
 
@@ -208,7 +215,7 @@ STAGE PLANS:
         TableScan
           alias: alltypes_orc
           Statistics:
-              numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: PARTIAL
+              numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: PARTIAL
           GatherStats: false
           Select Operator
             expressions:
@@ -234,17 +241,18 @@ STAGE PLANS:
                   type: timestamp
                   expr: s1
                   type: string
+                  expr: vc1
+                  type: varchar(5)
                   expr: m1
                   type: map<string,string>
                   expr: l1
                   type: array<int>
                   expr: st1
                   type: struct<c1:int,c2:string>
-            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13
+            outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: PARTIAL
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: PARTIAL
             ListSink
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 8
 explain extended select bo1 from alltypes_orc
@@ -266,6 +274,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL bo1)))))
 
@@ -281,7 +290,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -324,19 +333,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -346,19 +355,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -369,7 +378,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- col alias renaming
 -- numRows: 2 rawDataSize: 8
@@ -393,6 +401,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL i1) int1))))
 
@@ -408,7 +417,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -451,19 +460,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -473,19 +482,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -496,7 +505,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 174
 explain extended select s1 from alltypes_orc
@@ -518,6 +526,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL s1)))))
 
@@ -533,7 +542,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -576,19 +585,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -598,19 +607,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -621,7 +630,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- column statistics for complex types unsupported and so statistics will not be updated
 -- numRows: 2 rawDataSize: 1514
@@ -645,6 +653,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL m1)))))
 
@@ -660,7 +669,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: NONE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
@@ -668,14 +677,14 @@ STAGE PLANS:
                     type: map<string,string>
               outputColumnNames: _col0
               Statistics:
-                  numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: NONE
+                  numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
                 Statistics:
-                    numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: NONE
+                    numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -703,19 +712,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -725,19 +734,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -748,7 +757,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 246
 explain extended select bo1, ti1, si1, i1, bi1, f1, d1,s1 from alltypes_orc
@@ -770,6 +778,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL bo1)) (TOK_SELEXPR (TOK_TABLE_OR_COL ti1)) (TOK_SELEXPR (TOK_TABLE_OR_COL si1)) (TOK_SELEXPR (TOK_TABLE_OR_COL i1)) (TOK_SELEXPR (TOK_TABLE_OR_COL bi1)) (TOK_SELEXPR (TOK_TABLE_OR_COL f1)) (TOK_SELEXPR (TOK_TABLE_OR_COL d1)) (TOK_SELEXPR (TOK_TABLE_OR_COL s1)))))
 
@@ -785,7 +794,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -842,19 +851,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -864,19 +873,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -887,7 +896,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 0
 explain extended select null from alltypes_orc
@@ -909,6 +917,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_NULL))))
 
@@ -924,7 +933,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -967,19 +976,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -989,19 +998,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -1012,7 +1021,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 8
 explain extended select 11 from alltypes_orc
@@ -1034,6 +1042,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 11))))
 
@@ -1049,7 +1058,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -1092,19 +1101,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -1114,19 +1123,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -1137,7 +1146,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 16
 explain extended select 11L from alltypes_orc
@@ -1159,6 +1167,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 11L))))
 
@@ -1174,7 +1183,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -1217,19 +1226,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -1239,19 +1248,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -1262,7 +1271,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 16
 explain extended select 11.0 from alltypes_orc
@@ -1284,6 +1292,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR 11.0))))
 
@@ -1299,7 +1308,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -1342,19 +1351,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -1364,19 +1373,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -1387,7 +1396,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 178
 explain extended select "hello" from alltypes_orc
@@ -1409,6 +1417,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR "hello"))))
 
@@ -1424,7 +1433,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -1467,19 +1476,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -1489,19 +1498,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -1512,7 +1521,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: explain extended select cast("hello" as char(5)) from alltypes_orc
 PREHOOK: type: QUERY
@@ -1532,6 +1540,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION (TOK_CHAR 5) "hello")))))
 
@@ -1547,7 +1556,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -1590,19 +1599,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -1612,19 +1621,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -1635,7 +1644,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: explain extended select cast("hello" as varchar(5)) from alltypes_orc
 PREHOOK: type: QUERY
@@ -1655,6 +1663,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION (TOK_VARCHAR 5) "hello")))))
 
@@ -1670,7 +1679,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -1713,19 +1722,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -1735,19 +1744,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -1758,7 +1767,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 96
 explain extended select unbase64("0xe23") from alltypes_orc
@@ -1780,6 +1788,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION unbase64 "0xe23")))))
 
@@ -1795,7 +1804,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -1838,19 +1847,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -1860,19 +1869,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -1883,7 +1892,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 16
 explain extended select cast("1" as TINYINT), cast("20" as SMALLINT) from alltypes_orc
@@ -1905,6 +1913,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_TINYINT "1")) (TOK_SELEXPR (TOK_FUNCTION TOK_SMALLINT "20")))))
 
@@ -1920,7 +1929,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -1965,19 +1974,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -1987,19 +1996,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -2010,7 +2019,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 80
 explain extended select cast("1970-12-31 15:59:58.174" as TIMESTAMP) from alltypes_orc
@@ -2032,6 +2040,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_TIMESTAMP "1970-12-31 15:59:58.174")))))
 
@@ -2047,7 +2056,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -2090,19 +2099,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -2112,19 +2121,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -2135,7 +2144,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 112
 explain extended select cast("1970-12-31 15:59:58.174" as DATE) from alltypes_orc
@@ -2157,6 +2165,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_DATE "1970-12-31 15:59:58.174")))))
 
@@ -2172,7 +2181,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -2215,19 +2224,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -2237,19 +2246,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -2260,7 +2269,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 224
 explain extended select cast("58.174" as DECIMAL) from alltypes_orc
@@ -2282,6 +2290,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION TOK_DECIMAL "58.174")))))
 
@@ -2297,7 +2306,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -2340,19 +2349,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -2362,19 +2371,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -2385,7 +2394,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 112
 explain extended select array(1,2,3) from alltypes_orc
@@ -2407,6 +2415,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION array 1 2 3)))))
 
@@ -2422,7 +2431,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -2465,19 +2474,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -2487,19 +2496,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -2510,7 +2519,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 1508
 explain extended select str_to_map("a=1 b=2 c=3", " ", "=") from alltypes_orc
@@ -2532,6 +2540,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION str_to_map "a=1 b=2 c=3" " " "=")))))
 
@@ -2547,7 +2556,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -2590,19 +2599,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -2612,19 +2621,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -2635,7 +2644,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 112
 explain extended select NAMED_STRUCT("a", 11, "b", 11) from alltypes_orc
@@ -2657,6 +2665,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION NAMED_STRUCT "a" 11 "b" 11)))))
 
@@ -2672,7 +2681,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -2715,19 +2724,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -2737,19 +2746,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -2760,7 +2769,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 2 rawDataSize: 250
 explain extended select CREATE_UNION(0, "hello") from alltypes_orc
@@ -2782,6 +2790,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION CREATE_UNION 0 "hello")))))
 
@@ -2797,7 +2806,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -2840,19 +2849,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -2862,19 +2871,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -2885,7 +2894,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- COUNT(*) is projected as new column. It is not projected as GenericUDF and so datasize estimate will be based on number of rows
 -- numRows: 1 rawDataSize: 8
@@ -2909,6 +2917,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTIONSTAR count)))))
 
@@ -2924,11 +2933,11 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               Statistics:
-                  numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
               Group By Operator
                 aggregations:
                       expr: count()
@@ -2957,19 +2966,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -2979,19 +2988,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -3042,7 +3051,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- COUNT(1) is projected as new column. It is not projected as GenericUDF and so datasize estimate will be based on number of rows
 -- numRows: 1 rawDataSize: 8
 explain extended select count(1) from alltypes_orc
@@ -3065,6 +3073,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION count 1)))))
 
@@ -3080,11 +3089,11 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               Statistics:
-                  numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                  numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
               Group By Operator
                 aggregations:
                       expr: count(1)
@@ -3113,19 +3122,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -3135,19 +3144,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -3198,7 +3207,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- column statistics for complex column types will be missing. data size will be calculated from available column statistics
 -- numRows: 2 rawDataSize: 254
 explain extended select *,11 from alltypes_orc
@@ -3221,6 +3229,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR TOK_ALLCOLREF) (TOK_SELEXPR 11))))
 
@@ -3236,7 +3245,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: PARTIAL
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: PARTIAL
             GatherStats: false
             Select Operator
               expressions:
@@ -3262,6 +3271,8 @@ STAGE PLANS:
                     type: timestamp
                     expr: s1
                     type: string
+                    expr: vc1
+                    type: varchar(5)
                     expr: m1
                     type: map<string,string>
                     expr: l1
@@ -3270,23 +3281,23 @@ STAGE PLANS:
                     type: struct<c1:int,c2:string>
                     expr: 11
                     type: int
-              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14
+              outputColumnNames: _col0, _col1, _col2, _col3, _col4, _col5, _col6, _col7, _col8, _col9, _col10, _col11, _col12, _col13, _col14, _col15
               Statistics:
-                  numRows: 2 dataSize: 254 basicStatsState: COMPLETE colStatsState: PARTIAL
+                  numRows: 2 dataSize: 428 basicStatsState: COMPLETE colStatsState: PARTIAL
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
                 Statistics:
-                    numRows: 2 dataSize: 254 basicStatsState: COMPLETE colStatsState: PARTIAL
+                    numRows: 2 dataSize: 428 basicStatsState: COMPLETE colStatsState: PARTIAL
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
                     output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
                     properties:
-                      columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8,_col9,_col10,_col11,_col12,_col13,_col14
-                      columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>:int
+                      columns _col0,_col1,_col2,_col3,_col4,_col5,_col6,_col7,_col8,_col9,_col10,_col11,_col12,_col13,_col14,_col15
+                      columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>:int
                       escape.delim \
                       hive.serialization.extend.nesting.levels true
                       serialization.format 1
@@ -3307,19 +3318,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -3329,19 +3340,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -3352,7 +3363,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- subquery selects
 -- inner select - numRows: 2 rawDataSize: 8
@@ -3378,6 +3388,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL i1))) (TOK_LIMIT 10))) temp)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL i1)))))
 
@@ -3393,7 +3404,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -3425,19 +3436,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -3447,19 +3458,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -3508,7 +3519,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- inner select - numRows: 2 rawDataSize: 16
 -- outer select - numRows: 2 rawDataSize: 8
 explain extended select i1 from (select i1,11 from alltypes_orc limit 10) temp
@@ -3531,6 +3541,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL i1)) (TOK_SELEXPR 11)) (TOK_LIMIT 10))) temp)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL i1)))))
 
@@ -3546,7 +3557,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -3582,19 +3593,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -3604,19 +3615,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -3665,7 +3676,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- inner select - numRows: 2 rawDataSize: 16
 -- outer select - numRows: 2 rawDataSize: 186
 explain extended select i1,"hello" from (select i1,11 from alltypes_orc limit 10) temp
@@ -3688,6 +3698,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL i1)) (TOK_SELEXPR 11)) (TOK_LIMIT 10))) temp)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL i1)) (TOK_SELEXPR "hello"))))
 
@@ -3703,7 +3714,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -3739,19 +3750,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -3761,19 +3772,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -3824,7 +3835,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- inner select - numRows: 2 rawDataSize: 24
 -- outer select - numRows: 2 rawDataSize: 16
 explain extended select x from (select i1,11.0 as x from alltypes_orc limit 10) temp
@@ -3847,6 +3857,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL i1)) (TOK_SELEXPR 11.0 x)) (TOK_LIMIT 10))) temp)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL x)))))
 
@@ -3862,7 +3873,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -3898,19 +3909,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -3920,19 +3931,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -3981,7 +3992,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- inner select - numRows: 2 rawDataSize: 104
 -- outer select - numRows: 2 rawDataSize: 186
 explain extended select x,"hello" from (select i1 as x, unbase64("0xe23") as ub from alltypes_orc limit 10) temp
@@ -4004,6 +4014,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL i1) x) (TOK_SELEXPR (TOK_FUNCTION unbase64 "0xe23") ub)) (TOK_LIMIT 10))) temp)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL x)) (TOK_SELEXPR "hello"))))
 
@@ -4019,7 +4030,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -4055,19 +4066,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -4077,19 +4088,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -4140,7 +4151,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- inner select -  numRows: 2 rawDataSize: 186
 -- middle select - numRows: 2 rawDataSize: 178
 -- outer select -  numRows: 2 rawDataSize: 194
@@ -4165,6 +4175,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_SUBQUERY (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL i1)) (TOK_SELEXPR "hello" hell)) (TOK_LIMIT 10))) in1)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL hell) h)) (TOK_LIMIT 10))) in2)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL h)) (TOK_SELEXPR 11.0))))
 
@@ -4181,7 +4192,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
               expressions:
@@ -4217,19 +4228,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -4239,19 +4250,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -4377,7 +4388,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- This test is for FILTER operator where filter expression is a boolean column
 -- numRows: 2 rawDataSize: 8
 explain extended select bo1 from alltypes_orc where bo1
@@ -4400,6 +4410,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL bo1))) (TOK_WHERE (TOK_TABLE_OR_COL bo1))))
 
@@ -4415,7 +4426,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
@@ -4465,19 +4476,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -4487,19 +4498,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -4510,7 +4521,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- numRows: 0 rawDataSize: 0
 explain extended select bo1 from alltypes_orc where !bo1
@@ -4532,6 +4542,7 @@ POSTHOOK: Lineage: alltypes_orc.si1 SIMPLE [(alltypes)alltypes.FieldSchema(name:
 POSTHOOK: Lineage: alltypes_orc.st1 SIMPLE [(alltypes)alltypes.FieldSchema(name:st1, type:struct<c1:int,c2:string>, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ti1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ti1, type:tinyint, comment:null), ]
 POSTHOOK: Lineage: alltypes_orc.ts1 SIMPLE [(alltypes)alltypes.FieldSchema(name:ts1, type:timestamp, comment:null), ]
+POSTHOOK: Lineage: alltypes_orc.vc1 SIMPLE [(alltypes)alltypes.FieldSchema(name:vc1, type:varchar(5), comment:null), ]
 ABSTRACT SYNTAX TREE:
   (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME alltypes_orc))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL bo1))) (TOK_WHERE (! (TOK_TABLE_OR_COL bo1)))))
 
@@ -4547,7 +4558,7 @@ STAGE PLANS:
           TableScan
             alias: alltypes_orc
             Statistics:
-                numRows: 2 dataSize: 1514 basicStatsState: COMPLETE colStatsState: COMPLETE
+                numRows: 2 dataSize: 1686 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
@@ -4597,19 +4608,19 @@ STAGE PLANS:
               COLUMN_STATS_ACCURATE true
               bucket_count -1
               colelction.delim ,
-              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+              columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+              columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
               field.delim |
 #### A masked pattern was here ####
               mapkey.delim :
               name default.alltypes_orc
               numFiles 1
               numRows 2
-              rawDataSize 1514
-              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+              rawDataSize 1686
+              serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
               serialization.format |
               serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-              totalSize 1409
+              totalSize 1475
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
           
@@ -4619,19 +4630,19 @@ STAGE PLANS:
                 COLUMN_STATS_ACCURATE true
                 bucket_count -1
                 colelction.delim ,
-                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,m1,l1,st1
-                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:map<string,string>:array<int>:struct<c1:int,c2:string>
+                columns bo1,ti1,si1,i1,bi1,f1,d1,de1,ts1,da1,s1,vc1,m1,l1,st1
+                columns.types boolean:tinyint:smallint:int:bigint:float:double:decimal(10,0):timestamp:timestamp:string:varchar(5):map<string,string>:array<int>:struct<c1:int,c2:string>
                 field.delim |
 #### A masked pattern was here ####
                 mapkey.delim :
                 name default.alltypes_orc
                 numFiles 1
                 numRows 2
-                rawDataSize 1514
-                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
+                rawDataSize 1686
+                serialization.ddl struct alltypes_orc { bool bo1, byte ti1, i16 si1, i32 i1, i64 bi1, float f1, double d1, decimal(10,0) de1, timestamp ts1, timestamp da1, string s1, varchar(5) vc1, map<string,string> m1, list<i32> l1, struct<c1:i32,c2:string> st1}
                 serialization.format |
                 serialization.lib org.apache.hadoop.hive.ql.io.orc.OrcSerde
-                totalSize 1409
+                totalSize 1475
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.ql.io.orc.OrcSerde
               name: default.alltypes_orc
@@ -4642,5 +4653,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 

@@ -109,7 +109,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE dest1
 SELECT trim(trim(trim(trim(trim(trim(trim(trim(trim(trim( '  abc  '))))))))))
 FROM src

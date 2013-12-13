@@ -12,6 +12,7 @@ create table if not exists alltypes (
  ts1 timestamp,
  da1 timestamp,
  s1 string,
+ vc1 varchar(5),
  m1 map<string, string>,
  l1 array<int>,
  st1 struct<c1:int, c2:string>
@@ -30,7 +31,7 @@ insert overwrite table alltypes_orc select * from alltypes;
 explain extended select * from alltypes_orc;
 
 -- statistics for complex types are not supported yet
-analyze table alltypes_orc compute statistics for columns bo1, ti1, si1, i1, bi1, f1, d1,s1;
+analyze table alltypes_orc compute statistics for columns bo1, ti1, si1, i1, bi1, f1, d1, s1, vc1;
 
 -- numRows: 2 rawDataSize: 1514
 explain extended select * from alltypes_orc;

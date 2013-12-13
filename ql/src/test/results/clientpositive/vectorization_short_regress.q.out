@@ -281,7 +281,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: SELECT AVG(cint),
        (AVG(cint) + -3728),
@@ -582,7 +581,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT MAX(cint),
        (MAX(cint) / -3728),
        (MAX(cint) * -3728),
@@ -868,7 +866,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT VAR_POP(cbigint),
        (-(VAR_POP(cbigint))),
        (VAR_POP(cbigint) - (-(VAR_POP(cbigint)))),
@@ -1107,7 +1104,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: SELECT AVG(ctinyint),
        (AVG(ctinyint) + 6981),
@@ -1314,7 +1310,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT cint,
        cdouble,
@@ -2778,7 +2773,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT cint,
        cbigint,
        cstring1,
@@ -3084,7 +3078,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: SELECT   cint,
@@ -3914,7 +3907,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: SELECT   ctimestamp1,
@@ -4844,7 +4836,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT   csmallint,
          (csmallint % -75),
@@ -6586,7 +6577,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: SELECT   cdouble,
@@ -6980,7 +6970,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT   ctimestamp1,
          cstring1,
@@ -7667,7 +7656,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 WARNING: Comparing a bigint and a double may result in a loss of precision.
 PREHOOK: query: SELECT   cboolean1,

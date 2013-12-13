@@ -161,7 +161,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select * from (
   select * from tst x where x.d='2009-01-01' limit 10
     union all

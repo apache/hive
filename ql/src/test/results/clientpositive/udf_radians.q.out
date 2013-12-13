@@ -25,7 +25,6 @@ STAGE PLANS:
             outputColumnNames: _col0
             ListSink
 
-
 PREHOOK: query: select radians(57.2958) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
@@ -84,7 +83,6 @@ STAGE PLANS:
                   type: double
             outputColumnNames: _col0
             ListSink
-
 
 PREHOOK: query: select radians(57.2958) FROM src tablesample (1 rows)
 PREHOOK: type: QUERY

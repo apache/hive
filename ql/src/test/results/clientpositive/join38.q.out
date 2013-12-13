@@ -193,7 +193,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: FROM src a JOIN tmp b ON (a.key = b.col11)
 SELECT /*+ MAPJOIN(a) */ a.value, b.col5, count(1) as count
 where b.col11 = 111

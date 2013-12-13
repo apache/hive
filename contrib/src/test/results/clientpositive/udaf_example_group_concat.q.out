@@ -83,7 +83,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT substr(value,5,1), example_group_concat("(", key, ":", value, ")")
 FROM src
 GROUP BY substr(value,5,1)

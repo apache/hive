@@ -177,7 +177,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- Sort by will not be optimized because sort by does not introduce partitioning columns
 EXPLAIN
 SELECT xx.key, xx.value, yy.key, yy.value
@@ -340,7 +339,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- Distribute by and sort by on the same key(s) should be optimized
 EXPLAIN
@@ -510,7 +508,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT xx.key, xx.value, yy.key, yy.value
 FROM
@@ -706,7 +703,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT xx.key, xx.value, yy.key, yy.value
 FROM
@@ -936,7 +932,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: -- Even if hive.optimize.reducededuplication.min.reducer=1, order by will not be optimized
 -- because order by does not introduce partitioning columns
 EXPLAIN
@@ -1101,7 +1096,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- Cluster by will be optimized
 EXPLAIN
@@ -1271,7 +1265,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT xx.key, xx.value, yy.key, yy.value
 FROM
@@ -1467,7 +1460,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT xx.key, xx.value, yy.key, yy.value
 FROM
@@ -1717,7 +1709,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT xx.key, xx.value, yy.key, yy.value
 FROM
 (SELECT x.key as key, x.value as value FROM src x CLUSTER BY key) xx
@@ -1932,7 +1923,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT xx.key, xx.value, yy.key, yy.value
 FROM

@@ -130,6 +130,7 @@ import org.apache.hadoop.hive.ql.plan.DropIndexDesc;
 import org.apache.hadoop.hive.ql.plan.DropTableDesc;
 import org.apache.hadoop.hive.ql.plan.GrantDesc;
 import org.apache.hadoop.hive.ql.plan.GrantRevokeRoleDDL;
+import org.apache.hadoop.hive.ql.plan.LockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.LockTableDesc;
 import org.apache.hadoop.hive.ql.plan.MsckDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionSpec;
@@ -152,6 +153,7 @@ import org.apache.hadoop.hive.ql.plan.ShowTablesDesc;
 import org.apache.hadoop.hive.ql.plan.ShowTblPropertiesDesc;
 import org.apache.hadoop.hive.ql.plan.SwitchDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.TruncateTableDesc;
+import org.apache.hadoop.hive.ql.plan.UnlockDatabaseDesc;
 import org.apache.hadoop.hive.ql.plan.UnlockTableDesc;
 import org.apache.hadoop.hive.ql.plan.api.StageType;
 import org.apache.hadoop.hive.ql.security.authorization.Privilege;
@@ -231,6 +233,16 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
       DropDatabaseDesc dropDatabaseDesc = work.getDropDatabaseDesc();
       if (dropDatabaseDesc != null) {
         return dropDatabase(db, dropDatabaseDesc);
+      }
+
+      LockDatabaseDesc lockDatabaseDesc = work.getLockDatabaseDesc();
+      if (lockDatabaseDesc != null) {
+        return lockDatabase(lockDatabaseDesc);
+      }
+
+      UnlockDatabaseDesc unlockDatabaseDesc = work.getUnlockDatabaseDesc();
+      if (unlockDatabaseDesc != null) {
+        return unlockDatabase(unlockDatabaseDesc);
       }
 
       SwitchDatabaseDesc switchDatabaseDesc = work.getSwitchDatabaseDesc();
@@ -2468,7 +2480,7 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
 
     HiveLockMode mode = HiveLockMode.valueOf(lockTbl.getMode());
     String tabName = lockTbl.getTableName();
-    Table  tbl = db.getTable(MetaStoreUtils.DEFAULT_DATABASE_NAME, tabName);
+    Table  tbl = db.getTable(tabName);
     if (tbl == null) {
       throw new HiveException("Table " + tabName + " does not exist ");
     }
@@ -2495,6 +2507,78 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     HiveLock lck = lockMgr.lock(new HiveLockObject(par, lockData), mode, true);
     if (lck == null) {
       return 1;
+    }
+    return 0;
+  }
+
+  /**
+   * Lock the database
+   *
+   * @param lockDb
+   *          the database to be locked along with the mode
+   * @return Returns 0 when execution succeeds and above 0 if it fails.
+   * @throws HiveException
+   *           Throws this exception if an unexpected error occurs.
+   */
+  private int lockDatabase(LockDatabaseDesc lockDb) throws HiveException {
+    Context ctx = driverContext.getCtx();
+    HiveLockManager lockMgr = ctx.getHiveLockMgr();
+    if (lockMgr == null) {
+      throw new HiveException("lock Database LockManager not specified");
+    }
+
+    HiveLockMode mode = HiveLockMode.valueOf(lockDb.getMode());
+    String dbName = lockDb.getDatabaseName();
+
+    Database dbObj = db.getDatabase(dbName);
+    if (dbObj == null) {
+      throw new HiveException("Database " + dbName + " does not exist ");
+    }
+
+    HiveLockObjectData lockData =
+      new HiveLockObjectData(lockDb.getQueryId(),
+                             String.valueOf(System.currentTimeMillis()),
+                             "EXPLICIT", lockDb.getQueryStr());
+
+    HiveLock lck = lockMgr.lock(new HiveLockObject(dbObj.getName(), lockData), mode, true);
+    if (lck == null) {
+      return 1;
+    }
+    return 0;
+  }
+
+  /**
+   * Unlock the database specified
+   *
+   * @param unlockDb
+   *          the database to be unlocked
+   * @return Returns 0 when execution succeeds and above 0 if it fails.
+   * @throws HiveException
+   *           Throws this exception if an unexpected error occurs.
+   */
+  private int unlockDatabase(UnlockDatabaseDesc unlockDb) throws HiveException {
+    Context ctx = driverContext.getCtx();
+    HiveLockManager lockMgr = ctx.getHiveLockMgr();
+    if (lockMgr == null) {
+      throw new HiveException("unlock Database LockManager not specified");
+    }
+
+    String dbName = unlockDb.getDatabaseName();
+
+    Database dbObj = db.getDatabase(dbName);
+    if (dbObj == null) {
+      throw new HiveException("Database " + dbName + " does not exist ");
+    }
+    HiveLockObject obj = new HiveLockObject(dbObj.getName(), null);
+
+    List<HiveLock> locks = lockMgr.getLocks(obj, false, false);
+    if ((locks == null) || (locks.isEmpty())) {
+      throw new HiveException("Database " + dbName + " is not locked ");
+    }
+
+    for (HiveLock lock: locks) {
+      lockMgr.unlock(lock);
+
     }
     return 0;
   }

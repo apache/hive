@@ -31,7 +31,7 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
@@ -39,7 +39,7 @@ STAGE PLANS:
                   expr: ((key > 10) and (key < 20))
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 3 dataSize: 601 basicStatsState: COMPLETE colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -49,7 +49,7 @@ STAGE PLANS:
                       expr: key
                       type: string
                 Statistics:
-                    numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 3 dataSize: 601 basicStatsState: COMPLETE colStatsState: NONE
                 tag: 0
                 value expressions:
                       expr: key
@@ -60,7 +60,7 @@ STAGE PLANS:
           TableScan
             alias: b
             Statistics:
-                numRows: 0 dataSize: 11624 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 58 dataSize: 11624 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
@@ -68,7 +68,7 @@ STAGE PLANS:
                   expr: ((key > 10) and (key < 20))
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 6 dataSize: 1202 basicStatsState: COMPLETE colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -78,7 +78,7 @@ STAGE PLANS:
                       expr: key
                       type: string
                 Statistics:
-                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 6 dataSize: 1202 basicStatsState: COMPLETE colStatsState: NONE
                 tag: 1
                 value expressions:
                       expr: key
@@ -229,7 +229,7 @@ STAGE PLANS:
           handleSkewJoin: false
           outputColumnNames: _col0, _col1, _col4, _col5
           Statistics:
-              numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+              numRows: 6 dataSize: 1322 basicStatsState: COMPLETE colStatsState: NONE
           Filter Operator
             isSamplingPred: false
             predicate:
@@ -276,7 +276,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: FROM 
   src a
@@ -349,7 +348,7 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics:
-                numRows: 0 dataSize: 23248 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 116 dataSize: 23248 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
@@ -357,7 +356,7 @@ STAGE PLANS:
                   expr: ((key > 10) and (key < 20))
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 11624 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 12 dataSize: 2404 basicStatsState: COMPLETE colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -367,7 +366,7 @@ STAGE PLANS:
                       expr: key
                       type: string
                 Statistics:
-                    numRows: 0 dataSize: 11624 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 12 dataSize: 2404 basicStatsState: COMPLETE colStatsState: NONE
                 tag: 0
                 value expressions:
                       expr: key
@@ -380,7 +379,7 @@ STAGE PLANS:
           TableScan
             alias: b
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
@@ -388,7 +387,7 @@ STAGE PLANS:
                   expr: ((key > 10) and (key < 20))
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 3 dataSize: 601 basicStatsState: COMPLETE colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -398,7 +397,7 @@ STAGE PLANS:
                       expr: key
                       type: string
                 Statistics:
-                    numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 3 dataSize: 601 basicStatsState: COMPLETE colStatsState: NONE
                 tag: 1
                 value expressions:
                       expr: key
@@ -640,14 +639,14 @@ STAGE PLANS:
           handleSkewJoin: false
           outputColumnNames: _col0, _col1, _col6, _col7
           Statistics:
-              numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+              numRows: 13 dataSize: 2644 basicStatsState: COMPLETE colStatsState: NONE
           Filter Operator
             isSamplingPred: false
             predicate:
                 expr: ((_col6 > 15) and (_col6 < 25))
                 type: boolean
             Statistics:
-                numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                numRows: 1 dataSize: 203 basicStatsState: COMPLETE colStatsState: NONE
             Select Operator
               expressions:
                     expr: _col0
@@ -660,14 +659,14 @@ STAGE PLANS:
                     type: string
               outputColumnNames: _col0, _col1, _col2, _col3
               Statistics:
-                  numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                  numRows: 1 dataSize: 203 basicStatsState: COMPLETE colStatsState: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 0
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
                 Statistics:
-                    numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+                    numRows: 1 dataSize: 203 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.mapred.TextInputFormat
@@ -687,7 +686,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: FROM 
   srcpart a
@@ -764,7 +762,7 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
@@ -772,7 +770,7 @@ STAGE PLANS:
                   expr: ((key > 10) and (key < 20))
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 3 dataSize: 601 basicStatsState: COMPLETE colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -782,7 +780,7 @@ STAGE PLANS:
                       expr: key
                       type: string
                 Statistics:
-                    numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 3 dataSize: 601 basicStatsState: COMPLETE colStatsState: NONE
                 tag: 0
                 value expressions:
                       expr: key
@@ -793,7 +791,7 @@ STAGE PLANS:
           TableScan
             alias: b
             Statistics:
-                numRows: 0 dataSize: 23248 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 116 dataSize: 23248 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
@@ -801,7 +799,7 @@ STAGE PLANS:
                   expr: ((key > 10) and (key < 20))
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 11624 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 12 dataSize: 2404 basicStatsState: COMPLETE colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -811,7 +809,7 @@ STAGE PLANS:
                       expr: key
                       type: string
                 Statistics:
-                    numRows: 0 dataSize: 11624 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 12 dataSize: 2404 basicStatsState: COMPLETE colStatsState: NONE
                 tag: 1
                 value expressions:
                       expr: key
@@ -1050,7 +1048,7 @@ STAGE PLANS:
           handleSkewJoin: false
           outputColumnNames: _col0, _col1, _col4, _col5, _col6
           Statistics:
-              numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+              numRows: 13 dataSize: 2644 basicStatsState: COMPLETE colStatsState: NONE
           Filter Operator
             isSamplingPred: false
             predicate:
@@ -1097,7 +1095,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: FROM 
   src a
@@ -1174,7 +1171,7 @@ STAGE PLANS:
           TableScan
             alias: a
             Statistics:
-                numRows: 0 dataSize: 11624 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 58 dataSize: 11624 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
@@ -1182,7 +1179,7 @@ STAGE PLANS:
                   expr: ((key > 10) and (key < 20))
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 6 dataSize: 1202 basicStatsState: COMPLETE colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -1192,7 +1189,7 @@ STAGE PLANS:
                       expr: key
                       type: string
                 Statistics:
-                    numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 6 dataSize: 1202 basicStatsState: COMPLETE colStatsState: NONE
                 tag: 0
                 value expressions:
                       expr: key
@@ -1203,7 +1200,7 @@ STAGE PLANS:
           TableScan
             alias: b
             Statistics:
-                numRows: 0 dataSize: 5812 basicStatsState: PARTIAL colStatsState: NONE
+                numRows: 29 dataSize: 5812 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
@@ -1211,7 +1208,7 @@ STAGE PLANS:
                   expr: ((key > 10) and (key < 20))
                   type: boolean
               Statistics:
-                  numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                  numRows: 3 dataSize: 601 basicStatsState: COMPLETE colStatsState: NONE
               Reduce Output Operator
                 key expressions:
                       expr: key
@@ -1221,7 +1218,7 @@ STAGE PLANS:
                       expr: key
                       type: string
                 Statistics:
-                    numRows: 0 dataSize: 2906 basicStatsState: PARTIAL colStatsState: NONE
+                    numRows: 3 dataSize: 601 basicStatsState: COMPLETE colStatsState: NONE
                 tag: 1
                 value expressions:
                       expr: key
@@ -1372,7 +1369,7 @@ STAGE PLANS:
           handleSkewJoin: false
           outputColumnNames: _col0, _col1, _col6, _col7
           Statistics:
-              numRows: 0 dataSize: 0 basicStatsState: NONE colStatsState: NONE
+              numRows: 6 dataSize: 1322 basicStatsState: COMPLETE colStatsState: NONE
           Filter Operator
             isSamplingPred: false
             predicate:
@@ -1419,7 +1416,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: FROM 
   srcpart a

@@ -27,6 +27,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.NClob;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLClientInfoException;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
@@ -452,8 +453,16 @@ public class HiveConnection implements java.sql.Connection {
 
   public Statement createStatement(int resultSetType, int resultSetConcurrency)
       throws SQLException {
-    // TODO Auto-generated method stub
-    throw new SQLException("Method not supported");
+    if (resultSetConcurrency != ResultSet.CONCUR_READ_ONLY) {
+      throw new SQLException("Statement with resultset concurrency " +
+          resultSetConcurrency + " is not supported", "HYC00"); // Optional feature not implemented
+    }
+    if (resultSetType == ResultSet.TYPE_SCROLL_SENSITIVE) {
+      throw new SQLException("Statement with resultset type " + resultSetType +
+          " is not supported", "HYC00"); // Optional feature not implemented
+    }
+    return new HiveStatement(this, client, sessHandle,
+        resultSetType == ResultSet.TYPE_SCROLL_INSENSITIVE);
   }
 
   /*
@@ -540,6 +549,9 @@ public class HiveConnection implements java.sql.Connection {
    */
 
   public DatabaseMetaData getMetaData() throws SQLException {
+    if (isClosed) {
+      throw new SQLException("Connection is closed");
+    }
     return new HiveDatabaseMetaData(this, client, sessHandle);
   }
 

@@ -105,7 +105,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: EXPLAIN
 SELECT src1.c1, src2.c4 
 FROM
@@ -212,5 +211,4 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 

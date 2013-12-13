@@ -101,6 +101,7 @@ import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitionedTableFunctionSpec;
 import org.apache.hadoop.hive.ql.parse.PTFInvocationSpec.PartitioningSpec;
 import org.apache.hadoop.hive.ql.parse.QBSubQuery.SubQueryType;
+import org.apache.hadoop.hive.ql.parse.SubQueryUtils.ISubQueryJoinInfo;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.BoundarySpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.CurrentRowSpec;
 import org.apache.hadoop.hive.ql.parse.WindowingSpec.Direction;
@@ -1922,6 +1923,17 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     output = putOpInsertMap(output, inputRR);
     return output;
   }
+  
+  private Operator genPlanForSubQueryPredicate(
+      QB qbSQ,
+      ISubQueryJoinInfo subQueryPredicate) throws SemanticException {
+    qbSQ.setSubQueryDef(subQueryPredicate.getSubQuery());
+    Phase1Ctx ctx_1 = initPhase1Ctx();
+    doPhase1(subQueryPredicate.getSubQueryAST(), qbSQ, ctx_1);
+    getMetaData(qbSQ);
+    Operator op = genPlan(qbSQ);
+    return op;
+  }
 
   @SuppressWarnings("nls")
   private Operator genFilterPlan(ASTNode searchCond, QB qb, Operator input,
@@ -2010,11 +2022,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         subQuery.validateAndRewriteAST(inputRR, forHavingClause, havingInputAlias);
 
         QB qbSQ = new QB(subQuery.getOuterQueryId(), subQuery.getAlias(), true);
-        qbSQ.setSubQueryDef(subQuery);
-        Phase1Ctx ctx_1 = initPhase1Ctx();
-        doPhase1(subQuery.getSubQueryAST(), qbSQ, ctx_1);
-        getMetaData(qbSQ);
-        Operator sqPlanTopOp = genPlan(qbSQ);
+        Operator sqPlanTopOp = genPlanForSubQueryPredicate(qbSQ, subQuery);
         aliasToOpInfo.put(subQuery.getAlias(), sqPlanTopOp);
         RowResolver sqRR = opParseCtx.get(sqPlanTopOp).getRowResolver();
 
@@ -2028,6 +2036,27 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                subQuery.getNumOfCorrelationExprsAddedToSQSelect() > 1 ) {
           throw new SemanticException(ErrorMsg.INVALID_SUBQUERY_EXPRESSION.getMsg(
               subQueryAST, "SubQuery can contain only 1 item in Select List."));
+        }
+        
+        /*
+         * If this is a Not In SubQuery Predicate then Join in the Null Check SubQuery.
+         * See QBSubQuery.NotInCheck for details on why and how this is constructed.
+         */
+        if ( subQuery.getNotInCheck() != null ) {
+          QBSubQuery.NotInCheck notInCheck = subQuery.getNotInCheck();
+          notInCheck.setSQRR(sqRR);
+          QB qbSQ_nic = new QB(subQuery.getOuterQueryId(), notInCheck.getAlias(), true);
+          Operator sqnicPlanTopOp = genPlanForSubQueryPredicate(qbSQ_nic, notInCheck);
+          aliasToOpInfo.put(notInCheck.getAlias(), sqnicPlanTopOp);
+          QBJoinTree joinTree_nic = genSQJoinTree(qb, notInCheck,
+              input,
+              aliasToOpInfo);
+          pushJoinFilters(qb, joinTree_nic, aliasToOpInfo, false);
+          input = genJoinOperator(qbSQ_nic, joinTree_nic, aliasToOpInfo, input);
+          inputRR = opParseCtx.get(input).getRowResolver();
+          if ( forHavingClause ) {
+            aliasToOpInfo.put(havingInputAlias, input);
+          }
         }
 
         /*
@@ -5267,7 +5296,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         }
         dpCtx = qbm.getDPCtx(dest);
         if (dpCtx == null) {
-          Utilities.validatePartSpec(dest_tab, partSpec);
+          Utilities.validatePartSpecColumnNames(dest_tab, partSpec);
           dpCtx = new DynamicPartitionCtx(dest_tab, partSpec,
               conf.getVar(HiveConf.ConfVars.DEFAULTPARTITIONNAME),
               conf.getIntVar(HiveConf.ConfVars.DYNAMICPARTITIONMAXPARTSPERNODE));
@@ -5535,7 +5564,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         table_desc = PlanUtils.getTableDesc(tblDesc, cols, colTypes);
       }
 
-      if (!outputs.add(new WriteEntity(destStr, !isDfsDir))) {
+      if (!outputs.add(new WriteEntity(dest_path, !isDfsDir))) {
         throw new SemanticException(ErrorMsg.OUTPUT_SPECIFIED_MULTIPLE_TIMES
             .getMsg(destStr));
       }
@@ -6760,7 +6789,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Given this information, once we initialize the QBJoinTree, we call the 'parseJoinCondition'
    * method to validate and parse Join conditions.
    */
-  private QBJoinTree genSQJoinTree(QB qb, QBSubQuery subQuery,
+  private QBJoinTree genSQJoinTree(QB qb, ISubQueryJoinInfo subQuery,
       Operator joiningOp,
       Map<String, Operator> aliasToOpInfo)
           throws SemanticException {
@@ -8513,14 +8542,14 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       // Theoretically the key prefix could be any unique string shared
       // between TableScanOperator (when publishing) and StatsTask (when aggregating).
       // Here we use
-      // table_name + partitionSec
+      // db_name.table_name + partitionSec
       // as the prefix for easy of read during explain and debugging.
       // Currently, partition spec can only be static partition.
       String k = tblName + Path.SEPARATOR;
-      tsDesc.setStatsAggPrefix(k);
+      tsDesc.setStatsAggPrefix(tab.getDbName()+"."+k);
 
       // set up WritenEntity for replication
-      outputs.add(new WriteEntity(tab, true));
+      outputs.add(new WriteEntity(tab));
 
       // add WriteEntity for each matching partition
       if (tab.isPartitioned()) {
@@ -8531,7 +8560,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         if (partitions != null) {
           for (Partition partn : partitions) {
             // inputs.add(new ReadEntity(partn)); // is this needed at all?
-            outputs.add(new WriteEntity(partn, true));
+            outputs.add(new WriteEntity(partn));
           }
         }
       }
@@ -9518,9 +9547,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     // check for existence of table
     if (ifNotExists) {
       try {
-        Table table = db.getTable(tableName, false); // use getTable(final String tableName, boolean
-                                                     // throwException) which doesn't throw
-                                                     // exception but null if table doesn't exist
+        Table table = getTableWithQN(tableName, false);
         if (table != null) { // table exists
           return null;
         }
@@ -9674,7 +9701,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
   private void validateCreateView(CreateViewDesc createVwDesc)
     throws SemanticException {
     try {
-      Table oldView = db.getTable(createVwDesc.getViewName(), false);
+      Table oldView = getTableWithQN(createVwDesc.getViewName(), false);
 
       // ALTER VIEW AS SELECT requires the view must exist
       if (createVwDesc.getIsAlterViewAs() && oldView == null) {

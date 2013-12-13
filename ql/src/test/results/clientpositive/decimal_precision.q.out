@@ -517,6 +517,71 @@ NULL	NULL
 123456789.0123456789	15241578753238836.75019051998750190521
 1234567890.123456	NULL
 1234567890.123456789	NULL
+PREHOOK: query: EXPLAIN SELECT avg(dec), sum(dec) FROM DECIMAL_PRECISION
+PREHOOK: type: QUERY
+POSTHOOK: query: EXPLAIN SELECT avg(dec), sum(dec) FROM DECIMAL_PRECISION
+POSTHOOK: type: QUERY
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME DECIMAL_PRECISION))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_FUNCTION avg (TOK_TABLE_OR_COL dec))) (TOK_SELEXPR (TOK_FUNCTION sum (TOK_TABLE_OR_COL dec))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        decimal_precision 
+          TableScan
+            alias: decimal_precision
+            Select Operator
+              expressions:
+                    expr: dec
+                    type: decimal(20,10)
+              outputColumnNames: dec
+              Group By Operator
+                aggregations:
+                      expr: avg(dec)
+                      expr: sum(dec)
+                bucketGroup: false
+                mode: hash
+                outputColumnNames: _col0, _col1
+                Reduce Output Operator
+                  sort order: 
+                  tag: -1
+                  value expressions:
+                        expr: _col0
+                        type: struct<count:bigint,sum:decimal(24,14)>
+                        expr: _col1
+                        type: decimal(30,10)
+      Reduce Operator Tree:
+        Group By Operator
+          aggregations:
+                expr: avg(VALUE._col0)
+                expr: sum(VALUE._col1)
+          bucketGroup: false
+          mode: mergepartial
+          outputColumnNames: _col0, _col1
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: decimal(24,14)
+                  expr: _col1
+                  type: decimal(30,10)
+            outputColumnNames: _col0, _col1
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
 PREHOOK: query: SELECT avg(dec), sum(dec) FROM DECIMAL_PRECISION
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_precision
@@ -525,7 +590,7 @@ POSTHOOK: query: SELECT avg(dec), sum(dec) FROM DECIMAL_PRECISION
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@decimal_precision
 #### A masked pattern was here ####
-88499534.575865762206451613	2743485571.8518386284
+88499534.57586576220645	2743485571.8518386284
 PREHOOK: query: SELECT dec * cast('12345678901234567890.12345678' as decimal(38,18)) FROM DECIMAL_PRECISION LIMIT 1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@decimal_precision

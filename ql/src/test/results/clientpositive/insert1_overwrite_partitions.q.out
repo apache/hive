@@ -91,7 +91,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
 SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY
@@ -136,7 +135,6 @@ ABSTRACT SYNTAX TREE:
 
 STAGE DEPENDENCIES:
 
-STAGE PLANS:
 STAGE PLANS:
 PREHOOK: query: INSERT OVERWRITE TABLE destinTable PARTITION (ds='2011-11-11', hr='11') if not exists
 SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='12' order by one desc, two desc limit 5
@@ -245,7 +243,6 @@ STAGE PLANS:
 
   Stage: Stage-2
     Stats-Aggr Operator
-
 
 PREHOOK: query: INSERT OVERWRITE TABLE destinTable SELECT one,two FROM sourceTable WHERE ds='2011-11-11' AND hr='11' order by one desc, two desc limit 5
 PREHOOK: type: QUERY

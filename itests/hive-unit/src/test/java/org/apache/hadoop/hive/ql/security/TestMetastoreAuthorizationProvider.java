@@ -137,6 +137,8 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     String tblName = getTestTableName();
     String userName = ugi.getUserName();
 
+    allowCreateDatabase(userName);
+
     CommandProcessorResponse ret = driver.run("create database " + dbName);
     assertEquals(0,ret.getResponseCode());
     Database db = msc.getDatabase(dbName);
@@ -144,6 +146,8 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
 
     validateCreateDb(db,dbName);
     disallowCreateInDb(dbName, userName, dbLocn);
+
+    disallowCreateDatabase(userName);
 
     driver.run("use " + dbName);
     ret = driver.run(
@@ -246,6 +250,16 @@ public class TestMetastoreAuthorizationProvider extends TestCase {
     allowDropOnDb(dbName,userName,db.getLocationUri());
     driver.run("drop database if exists "+getTestDbName()+" cascade");
 
+  }
+
+  protected void allowCreateDatabase(String userName)
+      throws Exception {
+    driver.run("grant create to user "+userName);
+  }
+
+  protected void disallowCreateDatabase(String userName)
+      throws Exception {
+    driver.run("revoke create from user "+userName);
   }
 
   protected void allowCreateInTbl(String tableName, String userName, String location)

@@ -39,8 +39,6 @@
       <useStrictFiltering>true</useStrictFiltering>
       <useTransitiveFiltering>true</useTransitiveFiltering>
       <excludes>
-        <exclude>org.apache.hadoop:*</exclude>
-        <exclude>org.apache.hbase:*</exclude>
         <exclude>org.apache.hive.hcatalog:*</exclude>
       </excludes>
     </dependencySet>

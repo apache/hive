@@ -97,7 +97,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: SELECT avg(c1), sum(c1), count(c1) FROM dest1
 PREHOOK: type: QUERY
 PREHOOK: Input: default@dest1

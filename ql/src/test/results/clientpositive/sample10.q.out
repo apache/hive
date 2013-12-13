@@ -405,7 +405,6 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-
 PREHOOK: query: select ds, count(1) from srcpartbucket tablesample (bucket 1 out of 4 on key) where ds is not null group by ds ORDER BY ds ASC
 PREHOOK: type: QUERY
 PREHOOK: Input: default@srcpartbucket

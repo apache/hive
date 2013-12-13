@@ -302,7 +302,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: create table merge_src2 as 
 select key, value from merge_src
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -2722,7 +2721,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: insert overwrite table merge_src_part2 partition(ds)
 select key, value, ds from merge_src_part
@@ -5194,7 +5192,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: from (select * from merge_src_part where ds is not null distribute by ds) s
 insert overwrite table merge_src_part2 partition(ds)

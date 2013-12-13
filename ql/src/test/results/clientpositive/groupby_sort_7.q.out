@@ -161,7 +161,6 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-
 PREHOOK: query: INSERT OVERWRITE TABLE outputTbl1
 SELECT key, val, count(1) FROM T1 where ds = '1' GROUP BY key, val
 PREHOOK: type: QUERY
