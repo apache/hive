@@ -58,6 +58,7 @@ public class TezSessionState {
   private LocalResource appJarLr;
   private TezSession session;
   private String sessionId;
+  private DagUtils utils;
 
   private static List<TezSessionState> openSessions
     = Collections.synchronizedList(new LinkedList<TezSessionState>());
@@ -66,7 +67,16 @@ public class TezSessionState {
    * Constructor. We do not automatically connect, because we only want to
    * load tez classes when the user has tez installed.
    */
-  public void TezSessionContext() {
+  public TezSessionState(DagUtils utils) {
+    this.utils = utils;
+  }
+
+  /**
+   * Constructor. We do not automatically connect, because we only want to
+   * load tez classes when the user has tez installed.
+   */
+  public TezSessionState() {
+    this(DagUtils.getInstance());
   }
 
   /**
@@ -112,7 +122,7 @@ public class TezSessionState {
 
     // configuration for the application master
     Map<String, LocalResource> commonLocalResources = new HashMap<String, LocalResource>();
-    commonLocalResources.put(DagUtils.getBaseName(appJarLr), appJarLr);
+    commonLocalResources.put(utils.getBaseName(appJarLr), appJarLr);
 
     AMConfiguration amConfig = new AMConfiguration(null, commonLocalResources,
          tezConfig, null);
@@ -211,8 +221,8 @@ public class TezSessionState {
   private LocalResource createHiveExecLocalResource()
       throws IOException, LoginException, URISyntaxException {
     String hiveJarDir = conf.getVar(HiveConf.ConfVars.HIVE_JAR_DIRECTORY);
-    String currentVersionPathStr = DagUtils.getExecJarPathLocal();
-    String currentJarName = DagUtils.getResourceBaseName(currentVersionPathStr);
+    String currentVersionPathStr = utils.getExecJarPathLocal();
+    String currentJarName = utils.getResourceBaseName(currentVersionPathStr);
     FileSystem fs = null;
     Path jarPath = null;
     FileStatus dirStatus = null;
@@ -234,18 +244,18 @@ public class TezSessionState {
       if ((dirStatus != null) && (dirStatus.isDir())) {
         FileStatus[] listFileStatus = fs.listStatus(hiveJarDirPath);
         for (FileStatus fstatus : listFileStatus) {
-          String jarName = DagUtils.getResourceBaseName(fstatus.getPath().toString());
+          String jarName = utils.getResourceBaseName(fstatus.getPath().toString());
           if (jarName.equals(currentJarName)) {
             // we have found the jar we need.
             jarPath = fstatus.getPath();
-            return DagUtils.localizeResource(null, jarPath, conf);
+            return utils.localizeResource(null, jarPath, conf);
           }
         }
 
         // jar wasn't in the directory, copy the one in current use
         if (jarPath == null) {
           Path dest = new Path(hiveJarDir + "/" + currentJarName);
-          return DagUtils.localizeResource(new Path(currentVersionPathStr), dest, conf);
+          return utils.localizeResource(new Path(currentVersionPathStr), dest, conf);
         }
       }
     }
@@ -258,12 +268,12 @@ public class TezSessionState {
      */
     if ((hiveJarDir == null) || (dirStatus == null) ||
         ((dirStatus != null) && (!dirStatus.isDir()))) {
-      Path dest = DagUtils.getDefaultDestDir(conf);
+      Path dest = utils.getDefaultDestDir(conf);
       String destPathStr = dest.toString();
       String jarPathStr = destPathStr + "/" + currentJarName;
       dirStatus = fs.getFileStatus(dest);
       if (dirStatus.isDir()) {
-        return DagUtils.localizeResource(new Path(currentVersionPathStr), new Path(jarPathStr), conf);
+        return utils.localizeResource(new Path(currentVersionPathStr), new Path(jarPathStr), conf);
       } else {
         throw new IOException(ErrorMsg.INVALID_DIR.format(dest.toString()));
       }
