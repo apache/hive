@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.plan;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -87,6 +88,24 @@ public class TezWork extends AbstractOperatorDesc {
     }
 
     result.add(child);
+  }
+
+  /**
+   * add all nodes in the collection without any connections
+   */
+  public void addAll(Collection<BaseWork> c) {
+    for (BaseWork w: c) {
+      this.add(w);
+    }
+  }
+
+  /**
+   * add all nodes in the collection without any connections
+   */
+  public void addAll(BaseWork[] bws) {
+    for (BaseWork w: bws) {
+      this.add(w);
+    }
   }
 
   /**

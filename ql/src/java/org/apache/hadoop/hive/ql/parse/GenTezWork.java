@@ -34,6 +34,7 @@ import org.apache.hadoop.hive.ql.lib.NodeProcessorCtx;
 import org.apache.hadoop.hive.ql.optimizer.GenMapRedUtils;
 import org.apache.hadoop.hive.ql.plan.BaseWork;
 import org.apache.hadoop.hive.ql.plan.MapWork;
+import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.ReduceWork;
 import org.apache.hadoop.hive.ql.plan.TezWork;
 import org.apache.hadoop.hive.ql.plan.TezWork.EdgeType;
@@ -57,6 +58,9 @@ public class GenTezWork implements NodeProcessor {
       throws SemanticException {
 
     GenTezProcContext context = (GenTezProcContext) procContext;
+
+    assert context != null && context.currentTask != null
+        && context.currentRootOperator != null;
 
     // Operator is a file sink or reduce sink. Something that forces
     // a new vertex.
@@ -183,7 +187,7 @@ public class GenTezWork implements NodeProcessor {
     return null;
   }
 
-  private ReduceWork createReduceWork(GenTezProcContext context, Operator<?> root,
+  protected ReduceWork createReduceWork(GenTezProcContext context, Operator<?> root,
       TezWork tezWork) {
     assert !root.getParentOperators().isEmpty();
     ReduceWork reduceWork = new ReduceWork("Reducer "+ (++sequenceNumber));
@@ -210,7 +214,7 @@ public class GenTezWork implements NodeProcessor {
     return reduceWork;
   }
 
-  private void setupReduceSink(GenTezProcContext context, ReduceWork reduceWork,
+  protected void setupReduceSink(GenTezProcContext context, ReduceWork reduceWork,
       ReduceSinkOperator reduceSink) {
 
     LOG.debug("Setting up reduce sink: " + reduceSink
@@ -227,7 +231,7 @@ public class GenTezWork implements NodeProcessor {
     reduceSink.getConf().setOutputName(reduceWork.getName());
   }
 
-  private MapWork createMapWork(GenTezProcContext context, Operator<?> root,
+  protected MapWork createMapWork(GenTezProcContext context, Operator<?> root,
       TezWork tezWork) throws SemanticException {
     assert root.getParentOperators().isEmpty();
     MapWork mapWork = new MapWork("Map "+ (++sequenceNumber));
@@ -237,11 +241,19 @@ public class GenTezWork implements NodeProcessor {
     assert root instanceof TableScanOperator;
     String alias = ((TableScanOperator)root).getConf().getAlias();
 
-    GenMapRedUtils.setMapWork(mapWork, context.parseContext,
-        context.inputs, null, root, alias, context.conf, false);
+    setupMapWork(mapWork, context, root, alias);
+
+    // add new item to the tez work
     tezWork.add(mapWork);
 
     return mapWork;
   }
 
+  // this method's main use is to help unit testing this class
+  protected void setupMapWork(MapWork mapWork, GenTezProcContext context,
+      Operator<? extends OperatorDesc> root, String alias) throws SemanticException {
+    // All the setup is done in GenMapRedUtils
+    GenMapRedUtils.setMapWork(mapWork, context.parseContext,
+        context.inputs, null, root, alias, context.conf, false);
+  }
 }

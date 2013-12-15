@@ -97,12 +97,13 @@ import org.apache.tez.runtime.library.output.OnFileUnorderedKVOutput;
 public class DagUtils {
 
   private static final String TEZ_DIR = "_tez_scratch_dir";
+  private static DagUtils instance;
 
   /*
    * Creates the configuration object necessary to run a specific vertex from
    * map work. This includes input formats, input processor, etc.
    */
-  private static JobConf initializeVertexConf(JobConf baseConf, MapWork mapWork) {
+  private JobConf initializeVertexConf(JobConf baseConf, MapWork mapWork) {
     JobConf conf = new JobConf(baseConf);
 
     if (mapWork.getNumMapTasks() != null) {
@@ -157,7 +158,7 @@ public class DagUtils {
    * @param w The second vertex (sink)
    * @return
    */
-  public static Edge createEdge(JobConf vConf, Vertex v, JobConf wConf, Vertex w,
+  public Edge createEdge(JobConf vConf, Vertex v, JobConf wConf, Vertex w,
       EdgeType edgeType)
       throws IOException {
 
@@ -199,7 +200,7 @@ public class DagUtils {
   /*
    * Helper function to create Vertex from MapWork.
    */
-  private static Vertex createVertex(JobConf conf, MapWork mapWork,
+  private Vertex createVertex(JobConf conf, MapWork mapWork,
       LocalResource appJarLr, List<LocalResource> additionalLr, FileSystem fs,
       Path mrScratchDir, Context ctx) throws Exception {
 
@@ -295,7 +296,7 @@ public class DagUtils {
   /*
    * Helper function to create JobConf for specific ReduceWork.
    */
-  private static JobConf initializeVertexConf(JobConf baseConf, ReduceWork reduceWork) {
+  private JobConf initializeVertexConf(JobConf baseConf, ReduceWork reduceWork) {
     JobConf conf = new JobConf(baseConf);
 
     conf.set("mapred.reducer.class", ExecReducer.class.getName());
@@ -311,7 +312,7 @@ public class DagUtils {
   /*
    * Helper function to create Vertex for given ReduceWork.
    */
-  private static Vertex createVertex(JobConf conf, ReduceWork reduceWork,
+  private Vertex createVertex(JobConf conf, ReduceWork reduceWork,
       LocalResource appJarLr, List<LocalResource> additionalLr, FileSystem fs,
       Path mrScratchDir, Context ctx) throws Exception {
 
@@ -351,7 +352,7 @@ public class DagUtils {
   /*
    * Helper method to create a yarn local resource.
    */
-  private static LocalResource createLocalResource(FileSystem remoteFs, Path file,
+  private LocalResource createLocalResource(FileSystem remoteFs, Path file,
       LocalResourceType type, LocalResourceVisibility visibility) {
 
     FileStatus fstat = null;
@@ -381,7 +382,7 @@ public class DagUtils {
    * @throws LoginException if we are unable to figure user information
    * @throws IOException when any dfs operation fails.
    */
-  public static Path getDefaultDestDir(Configuration conf) throws LoginException, IOException {
+  public Path getDefaultDestDir(Configuration conf) throws LoginException, IOException {
     UserGroupInformation ugi = ShimLoader.getHadoopShims().getUGIForConf(conf);
     String userName = ShimLoader.getHadoopShims().getShortUserName(ugi);
     String userPathStr = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_USER_INSTALL_DIR);
@@ -415,7 +416,7 @@ public class DagUtils {
    * @throws IOException when hdfs operation fails
    * @throws LoginException when getDefaultDestDir fails with the same exception
    */
-  public static List<LocalResource> localizeTempFiles(Configuration conf) throws IOException, LoginException {
+  public List<LocalResource> localizeTempFiles(Configuration conf) throws IOException, LoginException {
     List<LocalResource> tmpResources = new ArrayList<LocalResource>();
 
     String addedFiles = Utilities.getResourceFiles(conf, SessionState.ResourceType.FILE);
@@ -471,7 +472,7 @@ public class DagUtils {
   }
 
   // the api that finds the jar being used by this class on disk
-  public static String getExecJarPathLocal () throws URISyntaxException {
+  public String getExecJarPathLocal () throws URISyntaxException {
       // returns the location on disc of the jar of this class.
     return DagUtils.class.getProtectionDomain().getCodeSource().getLocation().toURI().toString();
   }
@@ -479,7 +480,7 @@ public class DagUtils {
   /*
    * Helper function to retrieve the basename of a local resource
    */
-  public static String getBaseName(LocalResource lr) {
+  public String getBaseName(LocalResource lr) {
     return FilenameUtils.getName(lr.getResource().getFile());
   }
 
@@ -487,7 +488,7 @@ public class DagUtils {
    * @param pathStr - the string from which we try to determine the resource base name
    * @return the name of the resource from a given path string.
    */
-  public static String getResourceBaseName(String pathStr) {
+  public String getResourceBaseName(String pathStr) {
     String[] splits = pathStr.split("/");
     return splits[splits.length - 1];
   }
@@ -499,7 +500,7 @@ public class DagUtils {
    * @return true if the file names match else returns false.
    * @throws IOException when any file system related call fails
    */
-  private static boolean checkPreExisting(Path src, Path dest, Configuration conf)
+  private boolean checkPreExisting(Path src, Path dest, Configuration conf)
       throws IOException {
     FileSystem destFS = dest.getFileSystem(conf);
 
@@ -528,7 +529,7 @@ public class DagUtils {
    * @return localresource from tez localization.
    * @throws IOException when any file system related calls fails.
    */
-  public static LocalResource localizeResource(Path src, Path dest, Configuration conf)
+  public LocalResource localizeResource(Path src, Path dest, Configuration conf)
       throws IOException {
     FileSystem destFS = dest.getFileSystem(conf);
     if (!(destFS instanceof DistributedFileSystem)) {
@@ -557,7 +558,7 @@ public class DagUtils {
    * @return JobConf base configuration for job execution
    * @throws IOException
    */
-  public static JobConf createConfiguration(HiveConf hiveConf) throws IOException {
+  public JobConf createConfiguration(HiveConf hiveConf) throws IOException {
     hiveConf.setBoolean("mapred.mapper.new-api", false);
 
     JobConf conf = (JobConf) MRHelpers.getBaseMRConfiguration(hiveConf);
@@ -585,7 +586,7 @@ public class DagUtils {
    * @param work BaseWork will be used to populate the configuration object.
    * @return JobConf new configuration object
    */
-  public static JobConf initializeVertexConf(JobConf conf, BaseWork work) {
+  public JobConf initializeVertexConf(JobConf conf, BaseWork work) {
 
     // simply dispatch the call to the right method for the actual (sub-) type of
     // BaseWork.
@@ -612,7 +613,7 @@ public class DagUtils {
    * @param ctx This query's context
    * @return Vertex
    */
-  public static Vertex createVertex(JobConf conf, BaseWork work,
+  public Vertex createVertex(JobConf conf, BaseWork work,
       Path scratchDir, LocalResource appJarLr, List<LocalResource> additionalLr,
       FileSystem fileSystem, Context ctx, boolean hasChildren) throws Exception {
 
@@ -626,8 +627,8 @@ public class DagUtils {
       v = createVertex(conf, (ReduceWork) work, appJarLr,
           additionalLr, fileSystem, scratchDir, ctx);
     } else {
-      assert false;
-      return null;
+      // something is seriously wrong if this is happening
+      throw new HiveException(ErrorMsg.GENERIC_ERROR.getErrorCodedMsg());
     }
 
     // initialize stats publisher if necessary
@@ -660,7 +661,7 @@ public class DagUtils {
    * createTezDir creates a temporary directory in the scratchDir folder to
    * be used with Tez. Assumes scratchDir exists.
    */
-  public static Path createTezDir(Path scratchDir, Configuration conf)
+  public Path createTezDir(Path scratchDir, Configuration conf)
       throws IOException {
     Path tezDir = getTezDir(scratchDir);
     FileSystem fs = tezDir.getFileSystem(conf);
@@ -671,8 +672,19 @@ public class DagUtils {
   /**
    * Gets the tez dir that belongs to the hive scratch dir
    */
-  public static Path getTezDir(Path scratchDir) {
+  public Path getTezDir(Path scratchDir) {
     return new Path(scratchDir, TEZ_DIR);
+  }
+
+  /**
+   * Singleton
+   * @return instance of this class
+   */
+  public static DagUtils getInstance() {
+    if (instance == null) {
+      instance = new DagUtils();
+    }
+    return instance;
   }
 
   private DagUtils() {

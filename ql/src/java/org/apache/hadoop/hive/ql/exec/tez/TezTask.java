@@ -72,8 +72,15 @@ public class TezTask extends Task<TezWork> {
 
   private TezCounters counters;
 
+  private DagUtils utils;
+
   public TezTask() {
+    this(DagUtils.getInstance());
+  }
+
+  public TezTask(DagUtils utils) {
     super();
+    this.utils = utils;
   }
 
   public TezCounters getTezCounters() {
@@ -116,10 +123,10 @@ public class TezTask extends Task<TezWork> {
       Path scratchDir = new Path(ctx.getMRScratchDir());
 
       // create the tez tmp dir
-      DagUtils.createTezDir(scratchDir, conf);
+      utils.createTezDir(scratchDir, conf);
 
       // jobConf will hold all the configuration for hadoop, tez, and hive
-      JobConf jobConf = DagUtils.createConfiguration(conf);
+      JobConf jobConf = utils.createConfiguration(conf);
 
       // unless already installed on all the cluster nodes, we'll have to
       // localize hive-exec.jar as well.
@@ -129,7 +136,7 @@ public class TezTask extends Task<TezWork> {
       DAG dag = build(jobConf, work, scratchDir, appJarLr, ctx);
 
       // submit will send the job to the cluster and start executing
-      client = submit(jobConf, dag, scratchDir, appJarLr, session.getSession());
+      client = submit(jobConf, dag, scratchDir, appJarLr, session);
 
       // finally monitor will print progress until the job is done
       TezJobMonitor monitor = new TezJobMonitor();
@@ -161,7 +168,7 @@ public class TezTask extends Task<TezWork> {
     return rc;
   }
 
-  private DAG build(JobConf conf, TezWork work, Path scratchDir,
+  DAG build(JobConf conf, TezWork work, Path scratchDir,
       LocalResource appJarLr, Context ctx)
       throws Exception {
 
@@ -170,14 +177,14 @@ public class TezTask extends Task<TezWork> {
     Map<BaseWork, JobConf> workToConf = new HashMap<BaseWork, JobConf>();
 
     // we need to get the user specified local resources for this dag
-    List<LocalResource> additionalLr = DagUtils.localizeTempFiles(conf);
+    List<LocalResource> additionalLr = utils.localizeTempFiles(conf);
 
     // getAllWork returns a topologically sorted list, which we use to make
     // sure that vertices are created before they are used in edges.
     List<BaseWork> ws = work.getAllWork();
     Collections.reverse(ws);
 
-    Path tezDir = DagUtils.getTezDir(scratchDir);
+    Path tezDir = utils.getTezDir(scratchDir);
     FileSystem fs = tezDir.getFileSystem(conf);
 
     // the name of the dag is what is displayed in the AM/Job UI
@@ -191,8 +198,8 @@ public class TezTask extends Task<TezWork> {
 
       // translate work to vertex
       perfLogger.PerfLogBegin(CLASS_NAME, PerfLogger.TEZ_CREATE_VERTEX + w.getName());
-      JobConf wxConf = DagUtils.initializeVertexConf(conf, w);
-      Vertex wx = DagUtils.createVertex(wxConf, w, tezDir,
+      JobConf wxConf = utils.initializeVertexConf(conf, w);
+      Vertex wx = utils.createVertex(wxConf, w, tezDir,
          appJarLr, additionalLr, fs, ctx, !isFinal);
       dag.addVertex(wx);
       perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_CREATE_VERTEX + w.getName());
@@ -206,7 +213,7 @@ public class TezTask extends Task<TezWork> {
 
         EdgeType edgeType = work.getEdgeProperty(w, v);
 
-        e = DagUtils.createEdge(wxConf, wx, workToConf.get(v), workToVertex.get(v), edgeType);
+        e = utils.createEdge(wxConf, wx, workToConf.get(v), workToVertex.get(v), edgeType);
         dag.addEdge(e);
       }
     }
@@ -214,8 +221,8 @@ public class TezTask extends Task<TezWork> {
     return dag;
   }
 
-  private DAGClient submit(JobConf conf, DAG dag, Path scratchDir,
-      LocalResource appJarLr, TezSession session)
+  DAGClient submit(JobConf conf, DAG dag, Path scratchDir,
+      LocalResource appJarLr, TezSessionState sessionState)
       throws IOException, TezException, InterruptedException,
       LoginException, URISyntaxException, HiveException {
 
@@ -224,25 +231,19 @@ public class TezTask extends Task<TezWork> {
 
     try {
       // ready to start execution on the cluster
-      dagClient = session.submitDAG(dag);
+      dagClient = sessionState.getSession().submitDAG(dag);
     } catch (SessionNotRunning nr) {
       console.printInfo("Tez session was closed. Reopening...");
 
-      // Need to remove this static hack. But this is the way currently to
-      // get a session.
-      SessionState ss = SessionState.get();
-      TezSessionState tezSession = ss.getTezSession();
-
       // close the old one, but keep the tmp files around
-      tezSession.close(true);
+      sessionState.close(true);
 
       // (re)open the session
-      tezSession.open(ss.getSessionId(), this.conf);
-      session = tezSession.getSession();
+      sessionState.open(sessionState.getSessionId(), this.conf);
 
       console.printInfo("Session re-established.");
 
-      dagClient = session.submitDAG(dag);
+      dagClient = sessionState.getSession().submitDAG(dag);
     }
 
     perfLogger.PerfLogEnd(CLASS_NAME, PerfLogger.TEZ_SUBMIT_DAG);
@@ -253,7 +254,7 @@ public class TezTask extends Task<TezWork> {
    * close will move the temp files into the right place for the fetch
    * task. If the job has failed it will clean up the files.
    */
-  private int close(TezWork work, int rc) {
+  int close(TezWork work, int rc) {
     try {
       List<BaseWork> ws = work.getAllWork();
       for (BaseWork w: ws) {

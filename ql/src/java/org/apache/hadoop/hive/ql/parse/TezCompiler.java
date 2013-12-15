@@ -91,6 +91,7 @@ public class TezCompiler extends TaskCompiler {
     opRules.put(new RuleRegExp(new String("Set parallelism - ReduceSink"),
         ReduceSinkOperator.getOperatorName() + "%"),
         new SetReducerParallelism());
+
     opRules.put(new RuleRegExp(new String("Convert Join to Map-join"),
         JoinOperator.getOperatorName() + "%"), new ConvertJoinMapJoin());
 
