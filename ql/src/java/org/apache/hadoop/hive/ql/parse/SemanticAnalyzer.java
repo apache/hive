@@ -1297,6 +1297,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
                   localDirectoryDesc.setCollItemDelim(rowFormatParams.collItemDelim);
                   localDirectoryDesc.setMapKeyDelim(rowFormatParams.mapKeyDelim);
                   localDirectoryDesc.setFieldEscape(rowFormatParams.fieldEscape);
+                  localDirectoryDesc.setNullFormat(rowFormatParams.nullFormat);
                   localDirectoryDescIsSet=true;
                   break;
                 case HiveParser.TOK_TABLESERIALIZER:
@@ -2304,6 +2305,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
             throw new SemanticException(generateErrorMessage(rowChild,
                 ErrorMsg.LINES_TERMINATED_BY_NON_NEWLINE.getMsg()));
           }
+        case HiveParser.TOK_TABLEROWFORMATNULL:
+          String nullFormat = unescapeSQLString(rowChild.getChild(0).getText());
+          tblDesc.getProperties().setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT,
+              nullFormat);
           break;
         default:
           assert false;
@@ -9567,6 +9572,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           storageFormat.storageHandler, shared.serdeProps, tblProps, ifNotExists, skewedColNames,
           skewedValues);
       crtTblDesc.setStoredAsSubDirectories(storedAsDirs);
+      crtTblDesc.setNullFormat(rowFormatParams.nullFormat);
 
       crtTblDesc.validate();
       // outputs is empty, which means this create table happens in the current
@@ -9615,6 +9621,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           shared.serdeProps,
           tblProps, ifNotExists, skewedColNames, skewedValues);
       crtTblDesc.setStoredAsSubDirectories(storedAsDirs);
+      crtTblDesc.setNullFormat(rowFormatParams.nullFormat);
       qb.setTableDesc(crtTblDesc);
 
       SessionState.get().setCommandType(HiveOperation.CREATETABLE_AS_SELECT);
