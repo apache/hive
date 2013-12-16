@@ -80,12 +80,17 @@ public class TestTezTask {
   JobConf conf;
   LocalResource appLr;
   Operator<?> op;
+  Path path;
+  FileSystem fs;
 
   @SuppressWarnings("unchecked")
   @Before
   public void setUp() throws Exception {
     utils = mock(DagUtils.class);
-    when(utils.getTezDir(any(Path.class))).thenReturn(new Path("hdfs://localhost:9000/tez/"));
+    fs = mock(FileSystem.class);
+    path = mock(Path.class);
+    when(path.getFileSystem(any(Configuration.class))).thenReturn(fs);
+    when(utils.getTezDir(any(Path.class))).thenReturn(path);
     when(utils.createVertex(any(JobConf.class), any(BaseWork.class), any(Path.class), any(LocalResource.class),
         any(List.class), any(FileSystem.class), any(Context.class), anyBoolean())).thenAnswer(new Answer<Vertex>() {
 
@@ -163,11 +168,13 @@ public class TestTezTask {
     utils = null;
     work = null;
     task = null;
+    path = null;
+    fs = null;
   }
 
   @Test
   public void testBuildDag() throws IllegalArgumentException, IOException, Exception {
-    DAG dag = task.build(conf, work, new Path("hdfs:///"), appLr, new Context(conf));
+    DAG dag = task.build(conf, work, path, appLr, new Context(conf));
     for (BaseWork w: work.getAllWork()) {
       Vertex v = dag.getVertex(w.getName());
       assertNotNull(v);
@@ -187,7 +194,7 @@ public class TestTezTask {
 
   @Test
   public void testEmptyWork() throws IllegalArgumentException, IOException, Exception {
-    DAG dag = task.build(conf, new TezWork(), new Path("hdfs:///"), appLr, new Context(conf));
+    DAG dag = task.build(conf, new TezWork(), path, appLr, new Context(conf));
     assertEquals(dag.getVertices().size(), 0);
   }
 
@@ -195,7 +202,7 @@ public class TestTezTask {
   public void testSubmit() throws LoginException, IllegalArgumentException,
   IOException, TezException, InterruptedException, URISyntaxException, HiveException {
     DAG dag = new DAG("test");
-    task.submit(conf, dag, new Path("hdfs:///"), appLr, sessionState);
+    task.submit(conf, dag, path, appLr, sessionState);
     // validate close/reopen
     verify(sessionState, times(1)).open(any(String.class), any(HiveConf.class));
     verify(sessionState, times(1)).close(eq(true));
