@@ -11,9 +11,10 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
   Stage-5
-  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
-  Stage-9 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-5, Stage-4, Stage-7
+  Stage-9 depends on stages: Stage-2, Stage-0
   Stage-3 depends on stages: Stage-9
+  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
   Stage-4
   Stage-6
   Stage-7 depends on stages: Stage-6
@@ -99,11 +100,8 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-  Stage: Stage-0
-    Move Operator
-      files:
-          hdfs directory: true
-#### A masked pattern was here ####
+  Stage: Stage-2
+    Dependency Collection
 
   Stage: Stage-9
       Create Table Operator:
@@ -119,8 +117,14 @@ STAGE PLANS:
   Stage: Stage-3
     Stats-Aggr Operator
 
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
   Stage: Stage-4
-    Map Reduce
+    Tez
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
           TableScan
@@ -134,7 +138,7 @@ STAGE PLANS:
                   name: default.tmp_src
 
   Stage: Stage-6
-    Map Reduce
+    Tez
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
           TableScan
@@ -152,7 +156,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: CREATE TABLE tmp_src AS SELECT * FROM (SELECT value, count(value) AS cnt FROM src GROUP BY value) f1 ORDER BY cnt
 PREHOOK: type: CREATETABLE_AS_SELECT
@@ -496,7 +499,8 @@ STAGE DEPENDENCIES:
   Stage-1 is a root stage
   Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
   Stage-5
-  Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
+  Stage-2 depends on stages: Stage-5, Stage-4, Stage-7
+  Stage-0 depends on stages: Stage-2
   Stage-3 depends on stages: Stage-0
   Stage-4
   Stage-6
@@ -534,6 +538,9 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
+  Stage: Stage-2
+    Dependency Collection
+
   Stage: Stage-0
     Move Operator
       tables:
@@ -550,7 +557,7 @@ STAGE PLANS:
     Stats-Aggr Operator
 
   Stage: Stage-4
-    Map Reduce
+    Tez
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
           TableScan
@@ -564,7 +571,7 @@ STAGE PLANS:
                   name: default.tmp_src_part
 
   Stage: Stage-6
-    Map Reduce
+    Tez
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
           TableScan
@@ -582,7 +589,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: INSERT INTO TABLE tmp_src_part PARTITION (d) SELECT * FROM tmp_src
 PREHOOK: type: QUERY
@@ -977,15 +983,16 @@ STAGE DEPENDENCIES:
   Stage-2 is a root stage
   Stage-9 depends on stages: Stage-2 , consists of Stage-6, Stage-5, Stage-7
   Stage-6
-  Stage-0 depends on stages: Stage-6, Stage-5, Stage-8
+  Stage-3 depends on stages: Stage-6, Stage-5, Stage-8, Stage-12, Stage-11, Stage-14
+  Stage-0 depends on stages: Stage-3
   Stage-4 depends on stages: Stage-0
+  Stage-1 depends on stages: Stage-3
+  Stage-10 depends on stages: Stage-1
   Stage-5
   Stage-7
   Stage-8 depends on stages: Stage-7
   Stage-15 depends on stages: Stage-2 , consists of Stage-12, Stage-11, Stage-13
   Stage-12
-  Stage-1 depends on stages: Stage-12, Stage-11, Stage-14
-  Stage-10 depends on stages: Stage-1
   Stage-11
   Stage-13
   Stage-14 depends on stages: Stage-13
@@ -1045,6 +1052,9 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
+  Stage: Stage-3
+    Dependency Collection
+
   Stage: Stage-0
     Move Operator
       tables:
@@ -1058,8 +1068,21 @@ STAGE PLANS:
   Stage: Stage-4
     Stats-Aggr Operator
 
+  Stage: Stage-1
+    Move Operator
+      tables:
+          replace: false
+          table:
+              input format: org.apache.hadoop.mapred.TextInputFormat
+              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              name: default.odd
+
+  Stage: Stage-10
+    Stats-Aggr Operator
+
   Stage: Stage-5
-    Map Reduce
+    Tez
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
           TableScan
@@ -1073,7 +1096,7 @@ STAGE PLANS:
                   name: default.even
 
   Stage: Stage-7
-    Map Reduce
+    Tez
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
           TableScan
@@ -1101,21 +1124,8 @@ STAGE PLANS:
           hdfs directory: true
 #### A masked pattern was here ####
 
-  Stage: Stage-1
-    Move Operator
-      tables:
-          replace: false
-          table:
-              input format: org.apache.hadoop.mapred.TextInputFormat
-              output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
-              serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-              name: default.odd
-
-  Stage: Stage-10
-    Stats-Aggr Operator
-
   Stage: Stage-11
-    Map Reduce
+    Tez
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
           TableScan
@@ -1129,7 +1139,7 @@ STAGE PLANS:
                   name: default.odd
 
   Stage: Stage-13
-    Map Reduce
+    Tez
       Alias -> Map Operator Tree:
 #### A masked pattern was here ####
           TableScan
@@ -1147,7 +1157,6 @@ STAGE PLANS:
       files:
           hdfs directory: true
 #### A masked pattern was here ####
-
 
 PREHOOK: query: FROM src
 INSERT INTO TABLE even SELECT key, value WHERE key % 2 = 0 

@@ -93,6 +93,7 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+import org.junit.Assume;
 
 /**
  * QTestUtil.
@@ -327,6 +328,12 @@ public class QTestUtil {
     this.clusterType = clusterType;
 
     HadoopShims shims = ShimLoader.getHadoopShims();
+
+    // can run tez tests only on hadoop 2
+    if (clusterType == MiniClusterType.tez) {
+      Assume.assumeTrue(ShimLoader.getMajorVersion().equals("0.23"));
+    }
+
     if (clusterType != MiniClusterType.none) {
       dfs = shims.getMiniDfs(conf, 4, true, null);
       FileSystem fs = dfs.getFileSystem();

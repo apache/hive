@@ -215,6 +215,21 @@
       <version>${mockito-all.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency> 
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-api</artifactId>
+      <version>${tez.version}</version>
+    </dependency>
+    <dependency> 
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-runtime-library</artifactId>
+      <version>${tez.version}</version>
+    </dependency>
+    <dependency> 
+      <groupId>org.apache.tez</groupId>
+      <artifactId>tez-mapreduce</artifactId>
+      <version>${tez.version}</version>
+    </dependency>
   </dependencies>
 
   <profiles>
@@ -246,11 +261,6 @@
         </dependency>
         <dependency> 
           <groupId>org.apache.tez</groupId>
-          <artifactId>tez-api</artifactId>
-          <version>${tez.version}</version>
-        </dependency>
-        <dependency> 
-          <groupId>org.apache.tez</groupId>
           <artifactId>tez-dag</artifactId>
           <version>${tez.version}</version>
         </dependency>
@@ -258,16 +268,6 @@
            <groupId>org.apache.tez</groupId>
            <artifactId>tez-common</artifactId>
            <version>${tez.version}</version>
-        </dependency>
-        <dependency> 
-          <groupId>org.apache.tez</groupId>
-          <artifactId>tez-runtime-library</artifactId>
-          <version>${tez.version}</version>
-        </dependency>
-        <dependency> 
-          <groupId>org.apache.tez</groupId>
-          <artifactId>tez-mapreduce</artifactId>
-          <version>${tez.version}</version>
         </dependency>
         <dependency>
            <groupId>org.apache.tez</groupId>
