@@ -3,4 +3,4 @@ PREHOOK: type: CREATETABLE
 POSTHOOK: query: create table nzhang_part4 (key string) partitioned by (ds string, hr string, value string)
 POSTHOOK: type: CREATETABLE
 POSTHOOK: Output: default@nzhang_part4
-FAILED: SemanticException [Error 10125]: Partition columns in partition specification are not the same as that defined in the table schema. The names and orders have to be exactly the same. Partition columns in the table schema are: (ds, hr, value), while the partitions specified in the query are: (value, ds, hr).
+FAILED: SemanticException [Error 10094]: Line 3:46 Dynamic partition cannot be the parent of a static partition 'hr'
