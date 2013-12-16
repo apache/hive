@@ -143,6 +143,7 @@ public abstract class BaseSemanticAnalyzer {
     String collItemDelim = null;
     String mapKeyDelim = null;
     String lineDelim = null;
+    String nullFormat = null;
 
     protected void analyzeRowFormat(AnalyzeCreateCommonVars shared, ASTNode child) throws SemanticException {
       child = (ASTNode) child.getChild(0);
@@ -174,6 +175,10 @@ public abstract class BaseSemanticAnalyzer {
             throw new SemanticException(SemanticAnalyzer.generateErrorMessage(rowChild,
                 ErrorMsg.LINES_TERMINATED_BY_NON_NEWLINE.getMsg()));
           }
+          break;
+        case HiveParser.TOK_TABLEROWFORMATNULL:
+          nullFormat = unescapeSQLString(rowChild.getChild(0)
+                    .getText());
           break;
         default:
           assert false;

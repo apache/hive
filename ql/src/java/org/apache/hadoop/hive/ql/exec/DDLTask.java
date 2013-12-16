@@ -2071,6 +2071,11 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
                 escapeHiveCommand(StringEscapeUtils.escapeJava(delims.get(
                 serdeConstants.LINE_DELIM))) + "' \n";
           }
+          if (delims.containsKey(serdeConstants.SERIALIZATION_NULL_FORMAT)) {
+            tbl_row_format += "  NULL DEFINED AS '" +
+                escapeHiveCommand(StringEscapeUtils.escapeJava(delims.get(
+                serdeConstants.SERIALIZATION_NULL_FORMAT))) + "' \n";
+          }
         }
         else {
           tbl_row_format += " SERDE \n  '" +
@@ -3684,7 +3689,9 @@ public class DDLTask extends Task<DDLWork> implements Serializable {
     if (crtTbl.getLineDelim() != null) {
       tbl.setSerdeParam(serdeConstants.LINE_DELIM, crtTbl.getLineDelim());
     }
-
+    if (crtTbl.getNullFormat() != null) {
+      tbl.setSerdeParam(serdeConstants.SERIALIZATION_NULL_FORMAT, crtTbl.getNullFormat());
+    }
     if (crtTbl.getSerdeProps() != null) {
       Iterator<Entry<String, String>> iter = crtTbl.getSerdeProps().entrySet()
         .iterator();
