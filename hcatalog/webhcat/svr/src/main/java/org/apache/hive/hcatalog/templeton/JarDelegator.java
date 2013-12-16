@@ -94,12 +94,13 @@ public class JarDelegator extends LauncherDelegator {
         args.add("-files");
         args.add(TempletonUtils.quoteForWindows(filesListAsString));
       }
-      //the token file location comes after mainClass, as a -Dprop=val
-      args.add("-D" + TempletonControllerJob.TOKEN_FILE_ARG_PLACEHOLDER);
+      //the token file location comes after mainClass, as a -D prop=val
+      args.add("-D");
+      args.add(TempletonControllerJob.TOKEN_FILE_ARG_PLACEHOLDER);
 
       for (String d : defines) {
         args.add("-D");
-        TempletonUtils.quoteForWindows(d);
+        args.add(TempletonUtils.quoteForWindows(d));
       }
       for (String arg : jarArgs) {
         args.add(TempletonUtils.quoteForWindows(arg));
