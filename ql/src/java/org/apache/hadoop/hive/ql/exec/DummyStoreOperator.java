@@ -25,6 +25,8 @@ import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.plan.DummyStoreDesc;
 import org.apache.hadoop.hive.ql.plan.api.OperatorType;
 import org.apache.hadoop.hive.serde2.objectinspector.InspectableObject;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils;
+import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils.ObjectInspectorCopyOption;
 
 /**
  * For SortMerge joins, this is a dummy operator, which stores the row for the
@@ -71,15 +73,28 @@ public class DummyStoreOperator extends Operator<DummyStoreDesc> implements Seri
 
   @Override
   protected void initializeOp(Configuration hconf) throws HiveException {
-    outputObjInspector = inputObjInspectors[0];
+    /*
+     * The conversion to standard object inspector was necessitated by HIVE-5973. The issue 
+     * happens when a select operator preceeds this operator as in the case of a subquery. The 
+     * select operator does not allocate a new object to hold the deserialized row. This affects 
+     * the operation of the SMB join which puts the object in a priority queue. Since all elements
+     * of the priority queue point to the same object, the join was resulting in incorrect 
+     * results.
+     *
+     * So the fix is to make a copy of the object as done in the processOp phase below. This
+     * however necessitates a change in the object inspector that can be used in processing the
+     * row downstream.
+     */
+    outputObjInspector = ObjectInspectorUtils.getStandardObjectInspector(inputObjInspectors[0]);
     result = new InspectableObject(null, outputObjInspector);
     initializeChildren(hconf);
   }
 
   @Override
   public void processOp(Object row, int tag) throws HiveException {
-    // Store the row
-    result.o = row;
+    // Store the row. See comments above for why we need a new copy of the row.
+    result.o = ObjectInspectorUtils.copyToStandardObject(row, inputObjInspectors[0],
+        ObjectInspectorCopyOption.WRITABLE);
   }
 
   @Override
