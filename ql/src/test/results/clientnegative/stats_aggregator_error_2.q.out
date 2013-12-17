@@ -17,6 +17,7 @@ PREHOOK: query: INSERT OVERWRITE TABLE tmptable select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@tmptable
+[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30000]: StatsPublisher cannot be obtained. There was a error to retrieve the StatsPublisher, and retrying might help. If you dont want the query to fail because accurate statistics could not be collected, set hive.stats.reliable=false
 POSTHOOK: query: INSERT OVERWRITE TABLE tmptable select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src

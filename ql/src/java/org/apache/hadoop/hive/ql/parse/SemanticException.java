@@ -18,6 +18,7 @@
 
 package org.apache.hadoop.hive.ql.parse;
 
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 
 /**
@@ -44,4 +45,7 @@ public class SemanticException extends HiveException {
     super(message, cause);
   }
 
+  public SemanticException(ErrorMsg errorMsg, String... msgArgs) {
+    super(errorMsg, msgArgs);
+  }
 }

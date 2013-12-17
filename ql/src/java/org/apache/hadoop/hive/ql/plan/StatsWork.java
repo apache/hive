@@ -20,7 +20,7 @@ package org.apache.hadoop.hive.ql.plan;
 
 import java.io.Serializable;
 
-import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.parse.BaseSemanticAnalyzer.tableSpec;
 
 /**
@@ -50,7 +50,7 @@ public class StatsWork implements Serializable {
 
   private boolean isPartialScanAnalyzeCommand = false;
 
-  private transient MapRedTask sourceTask;
+  private transient Task sourceTask;
 
   public StatsWork() {
   }
@@ -144,11 +144,11 @@ public class StatsWork implements Serializable {
     this.isPartialScanAnalyzeCommand = isPartialScanAnalyzeCommand;
   }
 
-  public MapRedTask getSourceTask() {
+  public Task getSourceTask() {
     return sourceTask;
   }
 
-  public void setSourceTask(MapRedTask sourceTask) {
+  public void setSourceTask(Task sourceTask) {
     this.sourceTask = sourceTask;
   }
 }

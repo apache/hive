@@ -39,6 +39,12 @@ public class TestMTQueries extends BaseTestQueries {
     File[] qfiles = setupQFiles(testNames);
 
     QTestUtil[] qts = QTestUtil.queryListRunnerSetup(qfiles, resDir, logDir);
+    for (QTestUtil util : qts) {
+      // derby fails creating multiple stats aggregator concurrently
+      util.getConf().set("hive.stats.dbclass", "custom");
+      util.getConf().set("hive.stats.default.aggregator", "org.apache.hadoop.hive.ql.stats.DummyStatsAggregator");
+      util.getConf().set("hive.stats.default.publisher", "org.apache.hadoop.hive.ql.stats.DummyStatsPublisher");
+    }
     boolean success = QTestUtil.queryListRunnerMultiThreaded(qfiles, qts);
     if (!success) {
       fail("One or more queries failed");

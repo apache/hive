@@ -28,8 +28,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.common.StatsSetupConst;
-import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
 import org.apache.hadoop.hive.ql.metadata.VirtualColumn;
@@ -286,34 +284,21 @@ public class TableScanOperator extends Operator<TableScanDesc> implements
       return;
     }
 
-    String key;
     String taskID = Utilities.getTaskIdFromFilename(Utilities.getTaskId(hconf));
     Map<String, String> statsToPublish = new HashMap<String, String>();
 
     for (String pspecs : stats.keySet()) {
       statsToPublish.clear();
-      if (pspecs.isEmpty()) {
-        if (statsPublisher instanceof CounterStatsPublisher) {
-          // key is of form : dbName.TblName/
-          key = conf.getStatsAggPrefix();
-       	 } else { 
-        // In case of a non-partitioned table, the key for temp storage is just
-        // "tableName + taskID"
-        String keyPrefix = Utilities.getHashedStatsPrefix(
-          conf.getStatsAggPrefix(), conf.getMaxStatsKeyPrefixLength());
-        key = keyPrefix + taskID;
-        } 
+      String prefix = Utilities.join(conf.getStatsAggPrefix(), pspecs);
+
+      String key;
+      int maxKeyLength = conf.getMaxStatsKeyPrefixLength();
+      if (statsPublisher instanceof CounterStatsPublisher) {
+        key = Utilities.getHashedStatsPrefix(prefix, maxKeyLength, 0);
       } else {
-         if (statsPublisher instanceof CounterStatsPublisher) {
-         // key is of form : dbName.tblName/p1=v1/ 
-         key = Utilities.appendPathSeparator(conf.getStatsAggPrefix()+pspecs);
-    	 } else {
-             // In case of a partition, the key for temp storage is
-             // "tableName + partitionSpecs + taskID"
-             String keyPrefix = Utilities.getHashedStatsPrefix(
-               conf.getStatsAggPrefix() + pspecs, conf.getMaxStatsKeyPrefixLength());
-               key = keyPrefix + taskID;
-        }
+        // stats publisher except counter type needs postfix 'taskID'
+        prefix = Utilities.getHashedStatsPrefix(prefix, maxKeyLength, taskID.length());
+        key = prefix + taskID;
       }
       for(String statType : stats.get(pspecs).getStoredStats()) {
         statsToPublish.put(statType, Long.toString(stats.get(pspecs).getStat(statType)));
