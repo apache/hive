@@ -1337,7 +1337,11 @@ public class HiveConf extends Configuration {
     return hiveDefaultURL;
   }
 
-  public URL getHiveSiteLocation() {
+  public static void setHiveSiteLocation(URL location) {
+    hiveSiteURL = location;
+  }
+
+  public static URL getHiveSiteLocation() {
     return hiveSiteURL;
   }
 

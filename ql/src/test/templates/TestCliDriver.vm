@@ -36,9 +36,10 @@ public class $className extends TestCase {
   static {
 
     MiniClusterType miniMR = MiniClusterType.valueForString("$clusterMode");
+    String hiveConfDir = "$hiveConfDir";
     try {
       String hadoopVer = "$hadoopVersion";
-      qt = new QTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR, hadoopVer);
+      qt = new QTestUtil((HIVE_ROOT + "$resultsDir"), (HIVE_ROOT + "$logDir"), miniMR, hiveConfDir, hadoopVer);
 
       // do a one time initialization
       qt.cleanUp();

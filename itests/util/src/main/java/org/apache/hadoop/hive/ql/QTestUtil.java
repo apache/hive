@@ -35,6 +35,7 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -207,7 +208,7 @@ public class QTestUtil {
   }
 
   public QTestUtil(String outDir, String logDir) throws Exception {
-    this(outDir, logDir, MiniClusterType.none, "0.20");
+    this(outDir, logDir, MiniClusterType.none, null, "0.20");
   }
 
   public String getOutputDirectory() {
@@ -315,10 +316,20 @@ public class QTestUtil {
     }
   }
 
-  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType, String hadoopVer)
+  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType, String hadoopVer) 
+    throws Exception {
+    this(outDir, logDir, clusterType, null, hadoopVer);
+  }
+
+  public QTestUtil(String outDir, String logDir, MiniClusterType clusterType, 
+      String confDir, String hadoopVer)
     throws Exception {
     this.outDir = outDir;
     this.logDir = logDir;
+    if (confDir != null && !confDir.isEmpty()) {
+      HiveConf.setHiveSiteLocation(new URL("file://"+confDir+"/hive-site.xml"));
+      System.out.println("Setting hive-site: "+HiveConf.getHiveSiteLocation());
+    }
     conf = new HiveConf(Driver.class);
     this.miniMr = (clusterType == MiniClusterType.mr);
     this.hadoopVer = getHadoopMainVersion(hadoopVer);
@@ -328,14 +339,18 @@ public class QTestUtil {
     this.clusterType = clusterType;
 
     HadoopShims shims = ShimLoader.getHadoopShims();
+    int numberOfDataNodes = 4;
 
     // can run tez tests only on hadoop 2
     if (clusterType == MiniClusterType.tez) {
       Assume.assumeTrue(ShimLoader.getMajorVersion().equals("0.23"));
+      // this is necessary temporarily - there's a probem with multi datanodes on MiniTezCluster
+      // will be fixed in 0.3
+      numberOfDataNodes = 1;
     }
 
     if (clusterType != MiniClusterType.none) {
-      dfs = shims.getMiniDfs(conf, 4, true, null);
+      dfs = shims.getMiniDfs(conf, numberOfDataNodes, true, null);
       FileSystem fs = dfs.getFileSystem();
       if (clusterType == MiniClusterType.tez) {
         if (!(shims instanceof Hadoop23Shims)) {
@@ -1480,7 +1495,7 @@ public class QTestUtil {
   {
     QTestUtil[] qt = new QTestUtil[qfiles.length];
     for (int i = 0; i < qfiles.length; i++) {
-      qt[i] = new QTestUtil(resDir, logDir, MiniClusterType.none, "0.20");
+      qt[i] = new QTestUtil(resDir, logDir, MiniClusterType.none, null, "0.20");
       qt[i].addFile(qfiles[i]);
       qt[i].clearTestSideEffects();
     }
