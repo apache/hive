@@ -325,19 +325,19 @@ public class GenVectorCode extends Task {
       {"ColumnUnaryFunc", "FuncExp", "double", "double", "Math.exp", "", "", ""},
       {"ColumnUnaryFunc", "FuncExp", "double", "long", "Math.exp", "(double)", "", ""},
       {"ColumnUnaryFunc", "FuncLn", "double", "double", "Math.log", "", "",
-        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);"},
       {"ColumnUnaryFunc", "FuncLn", "double", "long", "Math.log", "(double)", "",
-        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);"},
       {"ColumnUnaryFunc", "FuncLog10", "double", "double", "Math.log10", "", "",
-        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);"},
       {"ColumnUnaryFunc", "FuncLog10", "double", "long", "Math.log10", "(double)", "",
-        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);"},
       // The MathExpr class contains helper functions for cases when existing library
       // routines can't be used directly.
       {"ColumnUnaryFunc", "FuncLog2", "double", "double", "MathExpr.log2", "", "",
-        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);"},
       {"ColumnUnaryFunc", "FuncLog2", "double", "long", "MathExpr.log2", "(double)", "",
-        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n);"},
+        "MathExpr.NaNToNull(outputColVector, sel, batch.selectedInUse, n, true);"},
       // Log(base, Col) is a special case and will be implemented separately from this template
       // Pow(col, P) and Power(col, P) are special cases implemented separately from this template
       {"ColumnUnaryFunc", "FuncSqrt", "double", "double", "Math.sqrt", "", "",
