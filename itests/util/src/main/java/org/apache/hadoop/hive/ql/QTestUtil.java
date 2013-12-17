@@ -36,7 +36,6 @@ import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
@@ -67,7 +66,6 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.exec.Utilities.StreamPrinter;
 import org.apache.hadoop.hive.ql.exec.vector.util.AllVectorTypesRecord;
-import org.apache.hadoop.hive.ql.exec.vector.util.OrcFileGenerator;
 import org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat;
 import org.apache.hadoop.hive.ql.lockmgr.zookeeper.ZooKeeperHiveLockManager;
 import org.apache.hadoop.hive.ql.metadata.Hive;
@@ -135,6 +133,10 @@ public class QTestUtil {
     if (srcTables.isEmpty()) {
       throw new AssertionError("Source tables cannot be empty");
     }
+  }
+
+  public HiveConf getConf() {
+    return conf;
   }
 
   public boolean deleteDirectory(File path) {

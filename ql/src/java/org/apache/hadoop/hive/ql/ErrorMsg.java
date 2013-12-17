@@ -413,7 +413,15 @@ public enum ErrorMsg {
       + "for partition columns"),
 
   STATISTICS_CLONING_FAILED(30013, "Cloning of statistics failed"),
-    ;
+
+  STATSAGGREGATOR_SOURCETASK_NULL(30014, "SourceTask of StatsTask should not be null"),
+  STATSAGGREGATOR_CONNECTION_ERROR(30015,
+      "Stats aggregator of type {0} cannot be connected to", true),
+  STATSAGGREGATOR_MISSED_SOMESTATS(30016,
+      "Stats type {0} is missing from stats aggregator. If you don't want the query " +
+      "to fail because of this, set hive.stats.atomic=false", true),
+  STATS_SKIPPING_BY_ERROR(30017, "Skipping stats aggregation by error {0}", true);
+  ;
 
   private int errorCode;
   private String mesg;
@@ -666,6 +674,10 @@ public enum ErrorMsg {
 
   public String getErrorCodedMsg() {
     return "[Error " + errorCode + "]: " + mesg;
+  }
+
+  public String getErrorCodedMsg(String... reasons) {
+    return "[Error " + errorCode + "]: " + format(reasons);
   }
 
   public static Pattern getErrorCodePattern() {

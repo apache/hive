@@ -44,7 +44,6 @@ import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.TaskFactory;
 import org.apache.hadoop.hive.ql.exec.UnionOperator;
 import org.apache.hadoop.hive.ql.exec.Utilities;
-import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.hive.ql.io.RCFileInputFormat;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.MergeWork;
 import org.apache.hadoop.hive.ql.lib.Node;
@@ -65,6 +64,7 @@ import org.apache.hadoop.hive.ql.plan.OperatorDesc;
 import org.apache.hadoop.hive.ql.plan.PartitionDesc;
 import org.apache.hadoop.hive.ql.plan.StatsWork;
 import org.apache.hadoop.hive.ql.plan.TableDesc;
+import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.serde2.typeinfo.TypeInfoFactory;
 import org.apache.hadoop.mapred.InputFormat;
 
@@ -231,7 +231,7 @@ public class GenMRFileSink1 implements NodeProcessor {
     }
     assert statsWork != null : "Error when genereting StatsTask";
 
-    statsWork.setSourceTask((MapRedTask)currTask);
+    statsWork.setSourceTask(currTask);
     statsWork.setStatsReliable(hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE));
     MapredWork mrWork = (MapredWork) currTask.getWork();
 
@@ -247,8 +247,7 @@ public class GenMRFileSink1 implements NodeProcessor {
       mrWork.getReduceWork().setGatheringStats(true);
     }
     nd.getConf().setStatsReliable(hconf.getBoolVar(ConfVars.HIVE_STATS_RELIABLE));
-    nd.getConf().setMaxStatsKeyPrefixLength(
-        hconf.getIntVar(ConfVars.HIVE_STATS_KEY_PREFIX_MAX_LENGTH));
+    nd.getConf().setMaxStatsKeyPrefixLength(StatsFactory.getMaxPrefixLength(hconf));
     // mrWork.addDestinationTable(nd.getConf().getTableInfo().getTableName());
 
     // subscribe feeds from the MoveTask so that MoveTask can forward the list

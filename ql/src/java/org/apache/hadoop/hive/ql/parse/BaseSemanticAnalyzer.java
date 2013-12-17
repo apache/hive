@@ -1222,8 +1222,8 @@ public abstract class BaseSemanticAnalyzer {
       Object convertedValue =
         ObjectInspectorConverters.getConverter(inputOI, outputOI).convert(value);
       if (convertedValue == null) {
-        throw new SemanticException(ErrorMsg.PARTITION_SPEC_TYPE_MISMATCH.format(astKeyName,
-            inputOI.getTypeName(), outputOI.getTypeName()));
+        throw new SemanticException(ErrorMsg.PARTITION_SPEC_TYPE_MISMATCH, astKeyName,
+            inputOI.getTypeName(), outputOI.getTypeName());
       }
 
       normalizeColSpec(partSpec, astKeyName, colType, colSpec, convertedValue);

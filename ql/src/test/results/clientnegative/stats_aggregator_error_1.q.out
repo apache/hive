@@ -19,6 +19,7 @@ PREHOOK: query: INSERT OVERWRITE TABLE tmptable select * from src
 PREHOOK: type: QUERY
 PREHOOK: Input: default@src
 PREHOOK: Output: default@tmptable
+[Error 30017]: Skipping stats aggregation by error org.apache.hadoop.hive.ql.metadata.HiveException: [Error 30015]: Stats aggregator of type custom cannot be connected to
 POSTHOOK: query: INSERT OVERWRITE TABLE tmptable select * from src
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@src

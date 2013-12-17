@@ -19,6 +19,7 @@
 package org.apache.hadoop.hive.ql.stats;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 
 /**
@@ -35,7 +36,7 @@ public interface StatsAggregator {
    * @param sourceTask
    * @return true if connection is successful, false otherwise.
    */
-  public boolean connect(Configuration hconf, MapRedTask sourceTask);
+  public boolean connect(Configuration hconf, Task sourceTask);
 
   /**
    * This method aggregates a given statistic from all tasks (partial stats).

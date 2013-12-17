@@ -108,8 +108,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
+	numRows             	0                   
+	rawDataSize         	0                   
 	totalSize           	150                 
 #### A masked pattern was here ####
 	 	 
@@ -194,8 +194,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
+	numRows             	0                   
+	rawDataSize         	0                   
 	totalSize           	75                  
 #### A masked pattern was here ####
 	 	 
@@ -270,8 +270,8 @@ Table Type:         	MANAGED_TABLE
 Table Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
+	numRows             	0                   
+	rawDataSize         	0                   
 	totalSize           	75                  
 #### A masked pattern was here ####
 	 	 
@@ -444,8 +444,8 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	true                
 #### A masked pattern was here ####
 	numFiles            	1                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
+	numRows             	0                   
+	rawDataSize         	0                   
 	totalSize           	150                 
 #### A masked pattern was here ####
 	 	 
@@ -527,8 +527,8 @@ Table Parameters:
 	COLUMN_STATS_ACCURATE	true                
 #### A masked pattern was here ####
 	numFiles            	1                   
-	numRows             	-1                  
-	rawDataSize         	-1                  
+	numRows             	0                   
+	rawDataSize         	0                   
 	totalSize           	75                  
 #### A masked pattern was here ####
 	 	 
@@ -720,8 +720,8 @@ Protect Mode:       	None
 Partition Parameters:	 	 
 	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
-	numRows             	10                  
-	rawDataSize         	94                  
+	numRows             	0                   
+	rawDataSize         	0                   
 	totalSize           	150                 
 #### A masked pattern was here ####
 	 	 

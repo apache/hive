@@ -26,13 +26,13 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.hive.common.StatsSetupConst;
 import org.apache.hadoop.hive.conf.HiveConf;
-import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hadoop.hive.ql.exec.Utilities;
 import org.apache.hadoop.hive.ql.io.RCFile.KeyBuffer;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileKeyBufferWrapper;
 import org.apache.hadoop.hive.ql.io.rcfile.merge.RCFileValueBufferWrapper;
 import org.apache.hadoop.hive.ql.metadata.HiveException;
+import org.apache.hadoop.hive.ql.stats.StatsFactory;
 import org.apache.hadoop.hive.ql.stats.StatsPublisher;
 import org.apache.hadoop.hive.shims.CombineHiveKey;
 import org.apache.hadoop.mapred.JobConf;
@@ -142,7 +142,7 @@ public class PartialScanMapper extends MapReduceBase implements
     // construct key used to store stats in intermediate db
     String taskID = Utilities.getTaskIdFromFilename(Utilities.getTaskId(jc));
     String keyPrefix = Utilities.getHashedStatsPrefix(
-        statsAggKeyPrefix, HiveConf.getIntVar(jc, ConfVars.HIVE_STATS_KEY_PREFIX_MAX_LENGTH));
+        statsAggKeyPrefix, StatsFactory.getMaxPrefixLength(jc), taskID.length());
     String key = keyPrefix + taskID;
 
     // construct statistics to be stored
