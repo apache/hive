@@ -33,6 +33,11 @@
 </property>
 
 <property>
+  <name>mapred.child.java.opts</name>
+  <value>-Xmx200m</value>
+</property>
+
+<property>
   <name>hive.exec.scratchdir</name>
   <value>${test.tmp.dir}/scratchdir</value>
   <description>Scratch space for Hive jobs</description>
@@ -158,6 +163,11 @@
   <name>hive.ignore.mapjoin.hint</name>
   <value>true</value>
   <description>Whether Hive ignores the mapjoin hint</description>
+</property>
+
+<property>
+  <name>io.sort.mb</name>
+  <value>10</value>
 </property>
 
 <property>
