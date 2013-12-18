@@ -38,6 +38,7 @@ import org.apache.hive.service.cli.thrift.TGetFunctionsReq;
 import org.apache.hive.service.cli.thrift.TGetFunctionsResp;
 import org.apache.hive.service.cli.thrift.TGetInfoReq;
 import org.apache.hive.service.cli.thrift.TGetInfoResp;
+import org.apache.hive.service.cli.thrift.TGetInfoType;
 import org.apache.hive.service.cli.thrift.TGetSchemasReq;
 import org.apache.hive.service.cli.thrift.TGetSchemasResp;
 import org.apache.hive.service.cli.thrift.TGetTableTypesReq;
@@ -265,7 +266,8 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
   }
 
   public String getDatabaseProductName() throws SQLException {
-    return "Hive";
+    TGetInfoResp resp = getServerInfo(GetInfoType.CLI_DBMS_NAME.toTGetInfoType());
+    return resp.getInfoValue().getStringValue();
   }
 
   public String getDatabaseProductVersion() throws SQLException {
@@ -273,15 +275,7 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
       return dbVersion;
     }
 
-    TGetInfoReq req = new TGetInfoReq(sessHandle, GetInfoType.CLI_DBMS_VER.toTGetInfoType());
-    TGetInfoResp resp;
-    try {
-      resp = client.GetInfo(req);
-    } catch (TException e) {
-      throw new SQLException(e.getMessage(), "08S01", e);
-    }
-    Utils.verifySuccess(resp.getStatus());
-
+    TGetInfoResp resp = getServerInfo(GetInfoType.CLI_DBMS_VER.toTGetInfoType());
     this.dbVersion = resp.getInfoValue().getStringValue();
     return dbVersion;
   }
@@ -1136,5 +1130,17 @@ public class HiveDatabaseMetaData implements DatabaseMetaData {
     HiveDatabaseMetaData meta = new HiveDatabaseMetaData(null, null, null);
     System.out.println("DriverName: " + meta.getDriverName());
     System.out.println("DriverVersion: " + meta.getDriverVersion());
+  }
+
+  private TGetInfoResp getServerInfo(TGetInfoType type) throws SQLException {
+    TGetInfoReq req = new TGetInfoReq(sessHandle, type);
+    TGetInfoResp resp;
+    try {
+      resp = client.GetInfo(req);
+    } catch (TException e) {
+      throw new SQLException(e.getMessage(), "08S01", e);
+    }
+    Utils.verifySuccess(resp.getStatus());
+    return resp;
   }
 }

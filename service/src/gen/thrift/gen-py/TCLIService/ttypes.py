@@ -21,12 +21,14 @@ class TProtocolVersion:
   HIVE_CLI_SERVICE_PROTOCOL_V2 = 1
   HIVE_CLI_SERVICE_PROTOCOL_V3 = 2
   HIVE_CLI_SERVICE_PROTOCOL_V4 = 3
+  HIVE_CLI_SERVICE_PROTOCOL_V5 = 4
 
   _VALUES_TO_NAMES = {
     0: "HIVE_CLI_SERVICE_PROTOCOL_V1",
     1: "HIVE_CLI_SERVICE_PROTOCOL_V2",
     2: "HIVE_CLI_SERVICE_PROTOCOL_V3",
     3: "HIVE_CLI_SERVICE_PROTOCOL_V4",
+    4: "HIVE_CLI_SERVICE_PROTOCOL_V5",
   }
 
   _NAMES_TO_VALUES = {
@@ -34,6 +36,7 @@ class TProtocolVersion:
     "HIVE_CLI_SERVICE_PROTOCOL_V2": 1,
     "HIVE_CLI_SERVICE_PROTOCOL_V3": 2,
     "HIVE_CLI_SERVICE_PROTOCOL_V4": 3,
+    "HIVE_CLI_SERVICE_PROTOCOL_V5": 4,
   }
 
 class TTypeId:
@@ -2607,7 +2610,7 @@ class TOpenSessionReq:
 
   thrift_spec = (
     None, # 0
-    (1, TType.I32, 'client_protocol', None,     2, ), # 1
+    (1, TType.I32, 'client_protocol', None,     4, ), # 1
     (2, TType.STRING, 'username', None, None, ), # 2
     (3, TType.STRING, 'password', None, None, ), # 3
     (4, TType.MAP, 'configuration', (TType.STRING,None,TType.STRING,None), None, ), # 4
@@ -2716,7 +2719,7 @@ class TOpenSessionResp:
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'status', (TStatus, TStatus.thrift_spec), None, ), # 1
-    (2, TType.I32, 'serverProtocolVersion', None,     3, ), # 2
+    (2, TType.I32, 'serverProtocolVersion', None,     4, ), # 2
     (3, TType.STRUCT, 'sessionHandle', (TSessionHandle, TSessionHandle.thrift_spec), None, ), # 3
     (4, TType.MAP, 'configuration', (TType.STRING,None,TType.STRING,None), None, ), # 4
   )
@@ -4611,17 +4614,26 @@ class TGetOperationStatusResp:
   Attributes:
    - status
    - operationState
+   - sqlState
+   - errorCode
+   - errorMessage
   """
 
   thrift_spec = (
     None, # 0
     (1, TType.STRUCT, 'status', (TStatus, TStatus.thrift_spec), None, ), # 1
     (2, TType.I32, 'operationState', None, None, ), # 2
+    (3, TType.STRING, 'sqlState', None, None, ), # 3
+    (4, TType.I32, 'errorCode', None, None, ), # 4
+    (5, TType.STRING, 'errorMessage', None, None, ), # 5
   )
 
-  def __init__(self, status=None, operationState=None,):
+  def __init__(self, status=None, operationState=None, sqlState=None, errorCode=None, errorMessage=None,):
     self.status = status
     self.operationState = operationState
+    self.sqlState = sqlState
+    self.errorCode = errorCode
+    self.errorMessage = errorMessage
 
   def read(self, iprot):
     if iprot.__class__ == TBinaryProtocol.TBinaryProtocolAccelerated and isinstance(iprot.trans, TTransport.CReadableTransport) and self.thrift_spec is not None and fastbinary is not None:
@@ -4643,6 +4655,21 @@ class TGetOperationStatusResp:
           self.operationState = iprot.readI32();
         else:
           iprot.skip(ftype)
+      elif fid == 3:
+        if ftype == TType.STRING:
+          self.sqlState = iprot.readString();
+        else:
+          iprot.skip(ftype)
+      elif fid == 4:
+        if ftype == TType.I32:
+          self.errorCode = iprot.readI32();
+        else:
+          iprot.skip(ftype)
+      elif fid == 5:
+        if ftype == TType.STRING:
+          self.errorMessage = iprot.readString();
+        else:
+          iprot.skip(ftype)
       else:
         iprot.skip(ftype)
       iprot.readFieldEnd()
@@ -4660,6 +4687,18 @@ class TGetOperationStatusResp:
     if self.operationState is not None:
       oprot.writeFieldBegin('operationState', TType.I32, 2)
       oprot.writeI32(self.operationState)
+      oprot.writeFieldEnd()
+    if self.sqlState is not None:
+      oprot.writeFieldBegin('sqlState', TType.STRING, 3)
+      oprot.writeString(self.sqlState)
+      oprot.writeFieldEnd()
+    if self.errorCode is not None:
+      oprot.writeFieldBegin('errorCode', TType.I32, 4)
+      oprot.writeI32(self.errorCode)
+      oprot.writeFieldEnd()
+    if self.errorMessage is not None:
+      oprot.writeFieldBegin('errorMessage', TType.STRING, 5)
+      oprot.writeString(self.errorMessage)
       oprot.writeFieldEnd()
     oprot.writeFieldStop()
     oprot.writeStructEnd()

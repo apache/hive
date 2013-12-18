@@ -2345,25 +2345,35 @@ public final class Utilities {
    * @param maxPrefixLength
    * @return
    */
-  public static String getHashedStatsPrefix(String statsPrefix, int maxPrefixLength) {
-    String ret = appendPathSeparator(statsPrefix);
-    if (maxPrefixLength >= 0 && statsPrefix.length() > maxPrefixLength) {
+  public static String getHashedStatsPrefix(String statsPrefix,
+      int maxPrefixLength, int postfixLength) {
+    // todo: this might return possibly longer prefix than
+    // maxPrefixLength (if set) when maxPrefixLength - postfixLength < 17,
+    // which would make stat values invalid (especially for 'counter' type)
+    if (maxPrefixLength >= 0 && statsPrefix.length() > maxPrefixLength - postfixLength) {
       try {
         MessageDigest digester = MessageDigest.getInstance("MD5");
-        digester.update(ret.getBytes());
-        ret = new String(digester.digest()) + Path.SEPARATOR;
+        digester.update(statsPrefix.getBytes());
+        return new String(digester.digest()) + Path.SEPARATOR;  // 17 byte
       } catch (NoSuchAlgorithmException e) {
         throw new RuntimeException(e);
       }
     }
-    return ret;
+    return statsPrefix.endsWith(Path.SEPARATOR) ? statsPrefix : statsPrefix + Path.SEPARATOR;
   }
 
-  public static String appendPathSeparator(String path) {
-    if (!path.endsWith(Path.SEPARATOR)) {
-      path = path + Path.SEPARATOR;
+  public static String join(String... elements) {
+    StringBuilder builder = new StringBuilder();
+    for (String element : elements) {
+      if (element == null || element.isEmpty()) {
+        continue;
+      }
+      builder.append(element);
+      if (!element.endsWith(Path.SEPARATOR)) {
+        builder.append(Path.SEPARATOR);
+      }
     }
-    return path;
+    return builder.toString();
   }
 
   public static void setColumnNameList(JobConf jobConf, Operator op) {

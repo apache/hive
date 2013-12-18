@@ -20,7 +20,6 @@ package org.apache.hadoop.hive.ql.exec;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.logging.Log;
@@ -122,14 +121,13 @@ public class FetchTask extends Task<FetchWork> implements Serializable {
     this.maxRows = maxRows;
   }
 
-  @Override
-  public boolean fetch(ArrayList<String> res) throws IOException, CommandNeedRetryException {
+  public boolean fetch(List res) throws IOException, CommandNeedRetryException {
     sink.reset(res);
+    int rowsRet = work.getLeastNumRows();
+    if (rowsRet <= 0) {
+      rowsRet = work.getLimit() >= 0 ? Math.min(work.getLimit() - totalRows, maxRows) : maxRows;
+    }
     try {
-      int rowsRet = work.getLeastNumRows();
-      if (rowsRet <= 0) {
-        rowsRet = work.getLimit() >= 0 ? Math.min(work.getLimit() - totalRows, maxRows) : maxRows;
-      }
       if (rowsRet <= 0) {
         fetch.clearFetchContext();
         return false;

@@ -1,0 +1,248 @@
+PREHOOK: query: CREATE TABLE stage_bucket_big
+(
+key BIGINT,
+value STRING
+)
+PARTITIONED BY (file_tag STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE stage_bucket_big
+(
+key BIGINT,
+value STRING
+)
+PARTITIONED BY (file_tag STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@stage_bucket_big
+PREHOOK: query: CREATE TABLE bucket_big
+(
+key BIGINT,
+value STRING
+)
+PARTITIONED BY (day STRING, pri bigint)
+clustered by (key) sorted by (key) into 12 buckets
+stored as RCFile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE bucket_big
+(
+key BIGINT,
+value STRING
+)
+PARTITIONED BY (day STRING, pri bigint)
+clustered by (key) sorted by (key) into 12 buckets
+stored as RCFile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@bucket_big
+PREHOOK: query: CREATE TABLE stage_bucket_small
+(
+key BIGINT,
+value string
+)
+PARTITIONED BY (file_tag STRING)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE stage_bucket_small
+(
+key BIGINT,
+value string
+)
+PARTITIONED BY (file_tag STRING)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@stage_bucket_small
+PREHOOK: query: CREATE TABLE bucket_small
+(
+key BIGINT,
+value string
+)
+PARTITIONED BY (pri bigint)
+clustered by (key) sorted by (key) into 12 buckets
+stored as RCFile
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE bucket_small
+(
+key BIGINT,
+value string
+)
+PARTITIONED BY (pri bigint)
+clustered by (key) sorted by (key) into 12 buckets
+stored as RCFile
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@bucket_small
+PREHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' overwrite into table stage_bucket_small partition (file_tag='1')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@stage_bucket_small
+POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' overwrite into table stage_bucket_small partition (file_tag='1')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@stage_bucket_small
+POSTHOOK: Output: default@stage_bucket_small@file_tag=1
+PREHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' overwrite into table stage_bucket_small partition (file_tag='2')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@stage_bucket_small
+POSTHOOK: query: load data local inpath '../../data/files/srcsortbucket1outof4.txt' overwrite into table stage_bucket_small partition (file_tag='2')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@stage_bucket_small
+POSTHOOK: Output: default@stage_bucket_small@file_tag=2
+PREHOOK: query: insert overwrite table bucket_small partition(pri) 
+select 
+key, 
+value, 
+file_tag as pri 
+from 
+stage_bucket_small 
+where file_tag between 1 and 2
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stage_bucket_small
+PREHOOK: Input: default@stage_bucket_small@file_tag=1
+PREHOOK: Input: default@stage_bucket_small@file_tag=2
+PREHOOK: Output: default@bucket_small
+POSTHOOK: query: insert overwrite table bucket_small partition(pri) 
+select 
+key, 
+value, 
+file_tag as pri 
+from 
+stage_bucket_small 
+where file_tag between 1 and 2
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stage_bucket_small
+POSTHOOK: Input: default@stage_bucket_small@file_tag=1
+POSTHOOK: Input: default@stage_bucket_small@file_tag=2
+POSTHOOK: Output: default@bucket_small@pri=1
+POSTHOOK: Output: default@bucket_small@pri=2
+POSTHOOK: Lineage: bucket_small PARTITION(pri=1).key SIMPLE [(stage_bucket_small)stage_bucket_small.FieldSchema(name:key, type:bigint, comment:null), ]
+POSTHOOK: Lineage: bucket_small PARTITION(pri=1).value SIMPLE [(stage_bucket_small)stage_bucket_small.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: bucket_small PARTITION(pri=2).key SIMPLE [(stage_bucket_small)stage_bucket_small.FieldSchema(name:key, type:bigint, comment:null), ]
+POSTHOOK: Lineage: bucket_small PARTITION(pri=2).value SIMPLE [(stage_bucket_small)stage_bucket_small.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: load data local inpath '../../data/files/smallsrcsortbucket1outof4.txt' overwrite into table stage_bucket_big partition (file_tag='1')
+PREHOOK: type: LOAD
+PREHOOK: Output: default@stage_bucket_big
+POSTHOOK: query: load data local inpath '../../data/files/smallsrcsortbucket1outof4.txt' overwrite into table stage_bucket_big partition (file_tag='1')
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@stage_bucket_big
+POSTHOOK: Output: default@stage_bucket_big@file_tag=1
+POSTHOOK: Lineage: bucket_small PARTITION(pri=1).key SIMPLE [(stage_bucket_small)stage_bucket_small.FieldSchema(name:key, type:bigint, comment:null), ]
+POSTHOOK: Lineage: bucket_small PARTITION(pri=1).value SIMPLE [(stage_bucket_small)stage_bucket_small.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: bucket_small PARTITION(pri=2).key SIMPLE [(stage_bucket_small)stage_bucket_small.FieldSchema(name:key, type:bigint, comment:null), ]
+POSTHOOK: Lineage: bucket_small PARTITION(pri=2).value SIMPLE [(stage_bucket_small)stage_bucket_small.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: insert overwrite table bucket_big partition(day,pri) 
+select 
+key, 
+value, 
+'day1' as day, 
+1 as pri 
+from 
+stage_bucket_big 
+where 
+file_tag='1'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@stage_bucket_big
+PREHOOK: Input: default@stage_bucket_big@file_tag=1
+PREHOOK: Output: default@bucket_big
+POSTHOOK: query: insert overwrite table bucket_big partition(day,pri) 
+select 
+key, 
+value, 
+'day1' as day, 
+1 as pri 
+from 
+stage_bucket_big 
+where 
+file_tag='1'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@stage_bucket_big
+POSTHOOK: Input: default@stage_bucket_big@file_tag=1
+POSTHOOK: Output: default@bucket_big@day=day1/pri=1
+POSTHOOK: Lineage: bucket_big PARTITION(day=day1,pri=1).key SIMPLE [(stage_bucket_big)stage_bucket_big.FieldSchema(name:key, type:bigint, comment:null), ]
+POSTHOOK: Lineage: bucket_big PARTITION(day=day1,pri=1).value SIMPLE [(stage_bucket_big)stage_bucket_big.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: bucket_small PARTITION(pri=1).key SIMPLE [(stage_bucket_small)stage_bucket_small.FieldSchema(name:key, type:bigint, comment:null), ]
+POSTHOOK: Lineage: bucket_small PARTITION(pri=1).value SIMPLE [(stage_bucket_small)stage_bucket_small.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: bucket_small PARTITION(pri=2).key SIMPLE [(stage_bucket_small)stage_bucket_small.FieldSchema(name:key, type:bigint, comment:null), ]
+POSTHOOK: Lineage: bucket_small PARTITION(pri=2).value SIMPLE [(stage_bucket_small)stage_bucket_small.FieldSchema(name:value, type:string, comment:null), ]
+PREHOOK: query: select 
+a.key , 
+a.value , 
+b.value , 
+'day1' as day, 
+1 as pri 
+from 
+( 
+select 
+key, 
+value 
+from bucket_big where day='day1'
+) a 
+left outer join 
+( 
+select 
+key, 
+value
+from bucket_small 
+where pri between 1 and 2
+) b 
+on 
+(a.key = b.key)
+PREHOOK: type: QUERY
+PREHOOK: Input: default@bucket_big
+PREHOOK: Input: default@bucket_big@day=day1/pri=1
+PREHOOK: Input: default@bucket_small
+PREHOOK: Input: default@bucket_small@pri=1
+PREHOOK: Input: default@bucket_small@pri=2
+#### A masked pattern was here ####
+POSTHOOK: query: select 
+a.key , 
+a.value , 
+b.value , 
+'day1' as day, 
+1 as pri 
+from 
+( 
+select 
+key, 
+value 
+from bucket_big where day='day1'
+) a 
+left outer join 
+( 
+select 
+key, 
+value
+from bucket_small 
+where pri between 1 and 2
+) b 
+on 
+(a.key = b.key)
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@bucket_big
+POSTHOOK: Input: default@bucket_big@day=day1/pri=1
+POSTHOOK: Input: default@bucket_small
+POSTHOOK: Input: default@bucket_small@pri=1
+POSTHOOK: Input: default@bucket_small@pri=2
+#### A masked pattern was here ####
+POSTHOOK: Lineage: bucket_big PARTITION(day=day1,pri=1).key SIMPLE [(stage_bucket_big)stage_bucket_big.FieldSchema(name:key, type:bigint, comment:null), ]
+POSTHOOK: Lineage: bucket_big PARTITION(day=day1,pri=1).value SIMPLE [(stage_bucket_big)stage_bucket_big.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: bucket_small PARTITION(pri=1).key SIMPLE [(stage_bucket_small)stage_bucket_small.FieldSchema(name:key, type:bigint, comment:null), ]
+POSTHOOK: Lineage: bucket_small PARTITION(pri=1).value SIMPLE [(stage_bucket_small)stage_bucket_small.FieldSchema(name:value, type:string, comment:null), ]
+POSTHOOK: Lineage: bucket_small PARTITION(pri=2).key SIMPLE [(stage_bucket_small)stage_bucket_small.FieldSchema(name:key, type:bigint, comment:null), ]
+POSTHOOK: Lineage: bucket_small PARTITION(pri=2).value SIMPLE [(stage_bucket_small)stage_bucket_small.FieldSchema(name:value, type:string, comment:null), ]
+0	val_0	val_0	day1	1
+0	val_0	val_0	day1	1
+0	val_0	val_0	day1	1
+0	val_0	val_0	day1	1
+0	val_0	val_0	day1	1
+0	val_0	val_0	day1	1
+169	val_169	val_169	day1	1
+169	val_169	val_169	day1	1
+169	val_169	val_169	day1	1
+169	val_169	val_169	day1	1
+169	val_169	val_169	day1	1
+169	val_169	val_169	day1	1
+169	val_169	val_169	day1	1
+169	val_169	val_169	day1	1
+374	val_374	val_374	day1	1
+374	val_374	val_374	day1	1
+172	val_172	val_172	day1	1
+172	val_172	val_172	day1	1
+172	val_172	val_172	day1	1
+172	val_172	val_172	day1	1
+103	val_103	val_103	day1	1
+103	val_103	val_103	day1	1
+103	val_103	val_103	day1	1
+103	val_103	val_103	day1	1

@@ -201,6 +201,12 @@ Table:              	fact_daily
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
+#### A masked pattern was here ####
+	numFiles            	3                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
+	totalSize           	117                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -272,22 +278,30 @@ STAGE PLANS:
         fact_daily 
           TableScan
             alias: fact_daily
+            Statistics:
+                numRows: 29 dataSize: 117 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
                   expr: (not (x = 86))
                   type: boolean
+              Statistics:
+                  numRows: 15 dataSize: 60 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: x
                       type: int
                 outputColumnNames: _col0
+                Statistics:
+                    numRows: 15 dataSize: 60 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
                         type: int
                   sort order: +
+                  Statistics:
+                      numRows: 15 dataSize: 60 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -303,15 +317,20 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
+              COLUMN_STATS_ACCURATE false
               bucket_count -1
               columns x,y,z
               columns.types int:string:string
 #### A masked pattern was here ####
               name default.fact_daily
+              numFiles 3
+              numRows -1
               partition_columns ds
+              rawDataSize -1
               serialization.ddl struct fact_daily { i32 x, string y, string z}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 117
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -340,15 +359,20 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
+              COLUMN_STATS_ACCURATE false
               bucket_count -1
               columns x,y,z
               columns.types int:string:string
 #### A masked pattern was here ####
               name default.fact_daily
+              numFiles 3
+              numRows -1
               partition_columns ds
+              rawDataSize -1
               serialization.ddl struct fact_daily { i32 x, string y, string z}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 117
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -377,15 +401,20 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
+              COLUMN_STATS_ACCURATE false
               bucket_count -1
               columns x,y,z
               columns.types int:string:string
 #### A masked pattern was here ####
               name default.fact_daily
+              numFiles 3
+              numRows -1
               partition_columns ds
+              rawDataSize -1
               serialization.ddl struct fact_daily { i32 x, string y, string z}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 117
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -413,11 +442,15 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Extract
+          Statistics:
+              numRows: 15 dataSize: 60 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
+            Statistics:
+                numRows: 15 dataSize: 60 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -437,7 +470,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: -- List Bucketing Query
 SELECT x FROM fact_daily WHERE ds='1' and not (x = 86) ORDER BY x

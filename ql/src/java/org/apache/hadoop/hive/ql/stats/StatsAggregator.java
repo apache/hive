@@ -35,7 +35,7 @@ public interface StatsAggregator {
    * @param sourceTask
    * @return true if connection is successful, false otherwise.
    */
-  public boolean connect(Configuration hconf, Task<?> sourceTask);
+  public boolean connect(Configuration hconf, Task sourceTask);
 
   /**
    * This method aggregates a given statistic from all tasks (partial stats).

@@ -195,8 +195,13 @@ public class HiveAuthFactory {
         new TSSLTransportFactory.TSSLTransportParameters();
     params.setKeyStore(keyStorePath, keyStorePassWord);
 
-    return TSSLTransportFactory.getServerSocket(portNum, 10000,
-        InetAddress.getByName(hiveHost), params);
+    InetAddress serverAddress;
+    if (hiveHost == null || hiveHost.isEmpty()) {
+      serverAddress = InetAddress.getLocalHost();
+    } else {
+      serverAddress = InetAddress.getByName(hiveHost);
+    }
+    return TSSLTransportFactory.getServerSocket(portNum, 10000, serverAddress, params);
   }
 
 }

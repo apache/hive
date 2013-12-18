@@ -324,7 +324,7 @@ public class QTestGenTask extends Task {
       includeOnly = new HashSet<String>(Arrays.asList(includeQueryFile.split(",")));
     }
 
-    List<File> qFiles = new ArrayList<File>();
+    List<File> qFiles;
     HashMap<String, String> qFilesMap = new HashMap<String, String>();
     File hiveRootDir = null;
     File queryDir = null;
@@ -333,38 +333,41 @@ public class QTestGenTask extends Task {
     File logDir = null;
     
     try {
-      if (queryDirectory != null) {
-        queryDir = new File(queryDirectory);
-      }
+      // queryDirectory should not be null
+      queryDir = new File(queryDirectory);
 
+      // dedup file list
+      Set<File> testFiles = new HashSet<File>();
       if (queryFile != null && !queryFile.equals("")) {
-        // The user may have passed a list of files - comma seperated
+        // The user may have passed a list of files - comma separated
         for (String qFile : queryFile.split(",")) {
           if (includeOnly != null && !includeOnly.contains(qFile)) {
             continue;
           }
           if (null != queryDir) {
-            qFiles.add(new File(queryDir, qFile));
+            testFiles.add(new File(queryDir, qFile));
           } else {
-            qFiles.add(new File(qFile));
+            testFiles.add(new File(qFile));
           }
         }
       } else if (queryFileRegex != null && !queryFileRegex.equals("")) {
-        qFiles.addAll(Arrays.asList(queryDir.listFiles(
-            new QFileRegexFilter(queryFileRegex, includeOnly))));
+        for (String regex : queryFileRegex.split(",")) {
+          testFiles.addAll(Arrays.asList(queryDir.listFiles(
+              new QFileRegexFilter(regex, includeOnly))));
+        }
       } else if (runDisabled != null && runDisabled.equals("true")) {
-        qFiles.addAll(Arrays.asList(queryDir.listFiles(new DisabledQFileFilter(includeOnly))));
+        testFiles.addAll(Arrays.asList(queryDir.listFiles(new DisabledQFileFilter(includeOnly))));
       } else {
-        qFiles.addAll(Arrays.asList(queryDir.listFiles(new QFileFilter(includeOnly))));
+        testFiles.addAll(Arrays.asList(queryDir.listFiles(new QFileFilter(includeOnly))));
       }
 
       if (excludeQueryFile != null && !excludeQueryFile.equals("")) {
         // Exclude specified query files, comma separated
         for (String qFile : excludeQueryFile.split(",")) {
           if (null != queryDir) {
-            qFiles.remove(new File(queryDir, qFile));
+            testFiles.remove(new File(queryDir, qFile));
           } else {
-            qFiles.remove(new File(qFile));
+            testFiles.remove(new File(qFile));
           }
         }
       }
@@ -374,7 +377,8 @@ public class QTestGenTask extends Task {
         throw new BuildException("Hive Root Directory "
             + hiveRootDir.getCanonicalPath() + " does not exist");
       }
-      
+
+      qFiles = new ArrayList<File>(testFiles);
       Collections.sort(qFiles);
       for (File qFile : qFiles) {
         qFilesMap.put(qFile.getName(), relativePath(hiveRootDir, qFile));
@@ -419,7 +423,7 @@ public class QTestGenTask extends Task {
       Template t = ve.getTemplate(template);
 
       if (clusterMode == null) {
-        clusterMode = new String("");
+        clusterMode = "";
       }
       if (hadoopVersion == null) {
         hadoopVersion = "";

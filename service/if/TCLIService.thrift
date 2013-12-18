@@ -48,6 +48,9 @@ enum TProtocolVersion {
 
   // V4 add decimal precision/scale, char type
   HIVE_CLI_SERVICE_PROTOCOL_V4
+
+  // V5 adds error details when GetOperationStatus returns in error state
+  HIVE_CLI_SERVICE_PROTOCOL_V5
 }
 
 enum TTypeId {
@@ -389,11 +392,10 @@ enum TOperationState {
 
   // The operation is in an unrecognized state
   UKNOWN_STATE,
-  
+
   // The operation is in an pending state
   PENDING_STATE,
 }
-
 
 // A string identifier. This is interpreted literally.
 typedef string TIdentifier
@@ -485,11 +487,11 @@ struct TOperationHandle {
 // OpenSession()
 //
 // Open a session (connection) on the server against
-// which operations may be executed. 
+// which operations may be executed.
 struct TOpenSessionReq {
   // The version of the HiveServer2 protocol that the client is using.
-  1: required TProtocolVersion client_protocol = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V3
-  
+  1: required TProtocolVersion client_protocol = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V5
+
   // Username and password for authentication.
   // Depending on the authentication scheme being used,
   // this information may instead be provided by a lower
@@ -507,7 +509,7 @@ struct TOpenSessionResp {
   1: required TStatus status
 
   // The protocol version that the server is using.
-  2: required TProtocolVersion serverProtocolVersion = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V4
+  2: required TProtocolVersion serverProtocolVersion = TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V5
 
   // Session Handle
   3: optional TSessionHandle sessionHandle
@@ -904,6 +906,16 @@ struct TGetOperationStatusReq {
 struct TGetOperationStatusResp {
   1: required TStatus status
   2: optional TOperationState operationState
+
+  // If operationState is ERROR_STATE, then the following fields may be set
+  // sqlState as defined in the ISO/IEF CLI specification
+  3: optional string sqlState
+
+  // Internal error code
+  4: optional i32 errorCode
+
+  // Error message
+  5: optional string errorMessage
 }
 
 

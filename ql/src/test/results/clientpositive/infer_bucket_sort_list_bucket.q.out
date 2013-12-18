@@ -59,6 +59,7 @@ Table:              	list_bucketing_table
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
 	numRows             	309                 
 	rawDataSize         	1482                
@@ -137,10 +138,11 @@ Table:              	list_bucketing_table2
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	309                 
 	rawDataSize         	1482                
-	totalSize           	1791                
+	totalSize           	136                 
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 

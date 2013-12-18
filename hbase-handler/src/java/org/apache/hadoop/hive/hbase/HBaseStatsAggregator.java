@@ -47,7 +47,7 @@ public class HBaseStatsAggregator implements StatsAggregator {
   /**
    * Does the necessary HBase initializations.
    */
-  public boolean connect(Configuration hiveconf, Task<?> sourceTask) {
+  public boolean connect(Configuration hiveconf, Task sourceTask) {
 
     try {
       htable = new HTable(HBaseConfiguration.create(hiveconf),

@@ -30,7 +30,7 @@ import org.apache.hadoop.hive.ql.session.SessionState;
 
 public class KeyVerifyingStatsAggregator implements StatsAggregator {
 
-  public boolean connect(Configuration hconf, Task<?> sourceTask) {
+  public boolean connect(Configuration hconf, Task sourceTask) {
     return true;
   }
 

@@ -180,6 +180,7 @@ TOK_TABLEROWFORMATFIELD;
 TOK_TABLEROWFORMATCOLLITEMS;
 TOK_TABLEROWFORMATMAPKEYS;
 TOK_TABLEROWFORMATLINES;
+TOK_TABLEROWFORMATNULL;
 TOK_TBLORCFILE;
 TOK_TBLSEQUENCEFILE;
 TOK_TBLTEXTFILE;
@@ -442,6 +443,7 @@ import java.util.HashMap;
     xlateMap.put("KW_PROPERTIES", "TBLPROPERTIES");
     xlateMap.put("KW_VALUE_TYPE", "\$VALUE\$");
     xlateMap.put("KW_ELEM_TYPE", "\$ELEM\$");
+    xlateMap.put("KW_DEFINED", "DEFINED");
 
     // Operators
     xlateMap.put("DOT", ".");
@@ -1538,8 +1540,8 @@ rowFormatDelimited
 @init { msgs.push("serde properties specification"); }
 @after { msgs.pop(); }
     :
-      KW_ROW KW_FORMAT KW_DELIMITED tableRowFormatFieldIdentifier? tableRowFormatCollItemsIdentifier? tableRowFormatMapKeysIdentifier? tableRowFormatLinesIdentifier?
-    -> ^(TOK_SERDEPROPS tableRowFormatFieldIdentifier? tableRowFormatCollItemsIdentifier? tableRowFormatMapKeysIdentifier? tableRowFormatLinesIdentifier?)
+      KW_ROW KW_FORMAT KW_DELIMITED tableRowFormatFieldIdentifier? tableRowFormatCollItemsIdentifier? tableRowFormatMapKeysIdentifier? tableRowFormatLinesIdentifier? tableRowNullFormat?
+    -> ^(TOK_SERDEPROPS tableRowFormatFieldIdentifier? tableRowFormatCollItemsIdentifier? tableRowFormatMapKeysIdentifier? tableRowFormatLinesIdentifier? tableRowNullFormat?)
     ;
 
 tableRowFormat
@@ -1621,6 +1623,13 @@ tableRowFormatLinesIdentifier
     -> ^(TOK_TABLEROWFORMATLINES $linesIdnt)
     ;
 
+tableRowNullFormat
+@init { msgs.push("table row format's null specifier"); }
+@after { msgs.pop(); }
+    :
+      KW_NULL KW_DEFINED KW_AS nullIdnt=StringLiteral
+    -> ^(TOK_TABLEROWFORMATNULL $nullIdnt)
+    ;
 tableFileFormat
 @init { msgs.push("table file format specification"); }
 @after { msgs.pop(); }

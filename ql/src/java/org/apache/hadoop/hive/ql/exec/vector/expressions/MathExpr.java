@@ -120,13 +120,20 @@ public class MathExpr {
 
     return current;
   }
-
+  
   // Convert all NaN values in vector v to NULL. Should only be used if n > 0.
   public static void NaNToNull(DoubleColumnVector v, int[] sel, boolean selectedInUse, int n) {
+    NaNToNull(v, sel, selectedInUse, n, false);
+  }
 
+  // Convert all NaN, and optionally infinity values in vector v to NULL.
+  // Should only be used if n > 0.
+  public static void NaNToNull(
+      DoubleColumnVector v, int[] sel, boolean selectedInUse, int n, boolean convertInfinity) {
     // handle repeating case
     if (v.isRepeating) {
-      if (Double.isNaN(v.vector[0])){
+      if ((convertInfinity && Double.isInfinite(v.vector[0])) || Double.isNaN(v.vector[0])){
+        v.vector[0] = DoubleColumnVector.NULL_VALUE;
         v.isNull[0] = true;
         v.noNulls = false;
       }
@@ -137,11 +144,11 @@ public class MathExpr {
       if (selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
-          if (Double.isNaN(v.vector[i])) {
+          if ((convertInfinity && Double.isInfinite(v.vector[i])) || Double.isNaN(v.vector[i])) {
+            v.vector[i] = DoubleColumnVector.NULL_VALUE;
             v.isNull[i] = true;
             v.noNulls = false;
           } else {
-
             // Must set isNull[i] to false to make sure
             // it gets initialized, in case we set noNulls to true.
             v.isNull[i] = false;
@@ -149,7 +156,8 @@ public class MathExpr {
         }
       } else {
         for(int i = 0; i != n; i++) {
-          if (Double.isNaN(v.vector[i])) {
+          if ((convertInfinity && Double.isInfinite(v.vector[i])) || Double.isNaN(v.vector[i])) {
+            v.vector[i] = DoubleColumnVector.NULL_VALUE;
             v.isNull[i] = true;
             v.noNulls = false;
           } else {
@@ -161,13 +169,15 @@ public class MathExpr {
       if (selectedInUse) {
         for (int j = 0; j != n; j++) {
           int i = sel[j];
-          if(Double.isNaN(v.vector[i])) {
+          if((convertInfinity && Double.isInfinite(v.vector[i])) || Double.isNaN(v.vector[i])) {
+            v.vector[i] = DoubleColumnVector.NULL_VALUE;
             v.isNull[i] = true;
           }
         }
       } else {
         for (int i = 0; i != n; i++) {
-          if(Double.isNaN(v.vector[i])) {
+          if((convertInfinity && Double.isInfinite(v.vector[i])) || Double.isNaN(v.vector[i])) {
+            v.vector[i] = DoubleColumnVector.NULL_VALUE;
             v.isNull[i] = true;
           }
         }

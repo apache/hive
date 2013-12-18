@@ -259,7 +259,7 @@ public class TColumn extends org.apache.thrift.TUnion<TColumn, TColumn._Fields> 
               boolColumn = new ArrayList<TBoolValue>(_list46.size);
               for (int _i47 = 0; _i47 < _list46.size; ++_i47)
               {
-                TBoolValue _elem48; // optional
+                TBoolValue _elem48; // required
                 _elem48 = new TBoolValue();
                 _elem48.read(iprot);
                 boolColumn.add(_elem48);
@@ -279,7 +279,7 @@ public class TColumn extends org.apache.thrift.TUnion<TColumn, TColumn._Fields> 
               byteColumn = new ArrayList<TByteValue>(_list49.size);
               for (int _i50 = 0; _i50 < _list49.size; ++_i50)
               {
-                TByteValue _elem51; // optional
+                TByteValue _elem51; // required
                 _elem51 = new TByteValue();
                 _elem51.read(iprot);
                 byteColumn.add(_elem51);
@@ -299,7 +299,7 @@ public class TColumn extends org.apache.thrift.TUnion<TColumn, TColumn._Fields> 
               i16Column = new ArrayList<TI16Value>(_list52.size);
               for (int _i53 = 0; _i53 < _list52.size; ++_i53)
               {
-                TI16Value _elem54; // optional
+                TI16Value _elem54; // required
                 _elem54 = new TI16Value();
                 _elem54.read(iprot);
                 i16Column.add(_elem54);
@@ -319,7 +319,7 @@ public class TColumn extends org.apache.thrift.TUnion<TColumn, TColumn._Fields> 
               i32Column = new ArrayList<TI32Value>(_list55.size);
               for (int _i56 = 0; _i56 < _list55.size; ++_i56)
               {
-                TI32Value _elem57; // optional
+                TI32Value _elem57; // required
                 _elem57 = new TI32Value();
                 _elem57.read(iprot);
                 i32Column.add(_elem57);
@@ -339,7 +339,7 @@ public class TColumn extends org.apache.thrift.TUnion<TColumn, TColumn._Fields> 
               i64Column = new ArrayList<TI64Value>(_list58.size);
               for (int _i59 = 0; _i59 < _list58.size; ++_i59)
               {
-                TI64Value _elem60; // optional
+                TI64Value _elem60; // required
                 _elem60 = new TI64Value();
                 _elem60.read(iprot);
                 i64Column.add(_elem60);
@@ -359,7 +359,7 @@ public class TColumn extends org.apache.thrift.TUnion<TColumn, TColumn._Fields> 
               doubleColumn = new ArrayList<TDoubleValue>(_list61.size);
               for (int _i62 = 0; _i62 < _list61.size; ++_i62)
               {
-                TDoubleValue _elem63; // optional
+                TDoubleValue _elem63; // required
                 _elem63 = new TDoubleValue();
                 _elem63.read(iprot);
                 doubleColumn.add(_elem63);
@@ -379,7 +379,7 @@ public class TColumn extends org.apache.thrift.TUnion<TColumn, TColumn._Fields> 
               stringColumn = new ArrayList<TStringValue>(_list64.size);
               for (int _i65 = 0; _i65 < _list64.size; ++_i65)
               {
-                TStringValue _elem66; // optional
+                TStringValue _elem66; // required
                 _elem66 = new TStringValue();
                 _elem66.read(iprot);
                 stringColumn.add(_elem66);
@@ -496,7 +496,7 @@ public class TColumn extends org.apache.thrift.TUnion<TColumn, TColumn._Fields> 
             boolColumn = new ArrayList<TBoolValue>(_list74.size);
             for (int _i75 = 0; _i75 < _list74.size; ++_i75)
             {
-              TBoolValue _elem76; // optional
+              TBoolValue _elem76; // required
               _elem76 = new TBoolValue();
               _elem76.read(iprot);
               boolColumn.add(_elem76);
@@ -511,7 +511,7 @@ public class TColumn extends org.apache.thrift.TUnion<TColumn, TColumn._Fields> 
             byteColumn = new ArrayList<TByteValue>(_list77.size);
             for (int _i78 = 0; _i78 < _list77.size; ++_i78)
             {
-              TByteValue _elem79; // optional
+              TByteValue _elem79; // required
               _elem79 = new TByteValue();
               _elem79.read(iprot);
               byteColumn.add(_elem79);
@@ -526,7 +526,7 @@ public class TColumn extends org.apache.thrift.TUnion<TColumn, TColumn._Fields> 
             i16Column = new ArrayList<TI16Value>(_list80.size);
             for (int _i81 = 0; _i81 < _list80.size; ++_i81)
             {
-              TI16Value _elem82; // optional
+              TI16Value _elem82; // required
               _elem82 = new TI16Value();
               _elem82.read(iprot);
               i16Column.add(_elem82);
@@ -541,7 +541,7 @@ public class TColumn extends org.apache.thrift.TUnion<TColumn, TColumn._Fields> 
             i32Column = new ArrayList<TI32Value>(_list83.size);
             for (int _i84 = 0; _i84 < _list83.size; ++_i84)
             {
-              TI32Value _elem85; // optional
+              TI32Value _elem85; // required
               _elem85 = new TI32Value();
               _elem85.read(iprot);
               i32Column.add(_elem85);
@@ -556,7 +556,7 @@ public class TColumn extends org.apache.thrift.TUnion<TColumn, TColumn._Fields> 
             i64Column = new ArrayList<TI64Value>(_list86.size);
             for (int _i87 = 0; _i87 < _list86.size; ++_i87)
             {
-              TI64Value _elem88; // optional
+              TI64Value _elem88; // required
               _elem88 = new TI64Value();
               _elem88.read(iprot);
               i64Column.add(_elem88);
@@ -571,7 +571,7 @@ public class TColumn extends org.apache.thrift.TUnion<TColumn, TColumn._Fields> 
             doubleColumn = new ArrayList<TDoubleValue>(_list89.size);
             for (int _i90 = 0; _i90 < _list89.size; ++_i90)
             {
-              TDoubleValue _elem91; // optional
+              TDoubleValue _elem91; // required
               _elem91 = new TDoubleValue();
               _elem91.read(iprot);
               doubleColumn.add(_elem91);
@@ -586,7 +586,7 @@ public class TColumn extends org.apache.thrift.TUnion<TColumn, TColumn._Fields> 
             stringColumn = new ArrayList<TStringValue>(_list92.size);
             for (int _i93 = 0; _i93 < _list92.size; ++_i93)
             {
-              TStringValue _elem94; // optional
+              TStringValue _elem94; // required
               _elem94 = new TStringValue();
               _elem94.read(iprot);
               stringColumn.add(_elem94);

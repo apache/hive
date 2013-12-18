@@ -37,7 +37,7 @@ import org.apache.hive.service.cli.GetInfoType;
 import org.apache.hive.service.cli.GetInfoValue;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
-import org.apache.hive.service.cli.OperationState;
+import org.apache.hive.service.cli.OperationStatus;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.TableSchema;
@@ -114,6 +114,7 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
 
   @Override
   public TOpenSessionResp OpenSession(TOpenSessionReq req) throws TException {
+    LOG.info("Client protocol version: " + req.getClient_protocol());
     TOpenSessionResp resp = new TOpenSessionResp();
     try {
       SessionHandle sessionHandle = getSessionHandle(req);
@@ -210,8 +211,8 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
           resp.setOperationHandle(operationHandle.toTOperationHandle());
           resp.setStatus(OK_STATUS);
     } catch (Exception e) {
-       LOG.warn("Error executing statement: ", e);
-       resp.setStatus(HiveSQLException.toTStatus(e));
+      LOG.warn("Error executing statement: ", e);
+      resp.setStatus(HiveSQLException.toTStatus(e));
     }
     return resp;
   }
@@ -328,8 +329,15 @@ public abstract class ThriftCLIService extends AbstractService implements TCLISe
   public TGetOperationStatusResp GetOperationStatus(TGetOperationStatusReq req) throws TException {
     TGetOperationStatusResp resp = new TGetOperationStatusResp();
     try {
-      OperationState operationState = cliService.getOperationStatus(new OperationHandle(req.getOperationHandle()));
-      resp.setOperationState(operationState.toTOperationState());
+      OperationStatus operationStatus = cliService.getOperationStatus(
+          new OperationHandle(req.getOperationHandle()));
+      resp.setOperationState(operationStatus.getState().toTOperationState());
+      HiveSQLException opException = operationStatus.getOperationException();
+      if (opException != null) {
+        resp.setSqlState(opException.getSQLState());
+        resp.setErrorCode(opException.getErrorCode());
+        resp.setErrorMessage(opException.getMessage());
+      }
       resp.setStatus(OK_STATUS);
     } catch (Exception e) {
       LOG.warn("Error getting operation status: ", e);

@@ -32,6 +32,8 @@ import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.HiveMetaStoreClient;
 import org.apache.hadoop.hive.metastore.IMetaStoreClient;
 import org.apache.hadoop.hive.metastore.api.MetaException;
+import org.apache.hadoop.hive.ql.exec.FetchFormatter;
+import org.apache.hadoop.hive.ql.exec.ListSinkOperator;
 import org.apache.hadoop.hive.ql.history.HiveHistory;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hive.common.util.HiveVersionInfo;
@@ -88,6 +90,9 @@ public class HiveSessionImpl implements HiveSession {
     // set an explicit session name to control the download directory name
     hiveConf.set(ConfVars.HIVESESSIONID.varname,
         sessionHandle.getHandleIdentifier().toString());
+    // use thrift transportable formatter
+    hiveConf.set(ListSinkOperator.OUTPUT_FORMATTER,
+        FetchFormatter.ThriftFormatter.class.getName());
     sessionState = new SessionState(hiveConf);
     SessionState.start(sessionState);
   }
@@ -197,7 +202,11 @@ public class HiveSessionImpl implements HiveSession {
       opHandleSet.add(opHandle);
       return opHandle;
     } catch (HiveSQLException e) {
-      operationManager.closeOperation(opHandle);
+      // Cleanup opHandle in case the query is synchronous
+      // Async query needs to retain and pass back the opHandle for error reporting
+      if (!runAsync) {
+        operationManager.closeOperation(opHandle);
+      }
       throw e;
     } finally {
       release();
