@@ -155,7 +155,7 @@ public class PartitionPruner implements Transform {
    *         pruner condition.
    * @throws HiveException
    */
-  public static PrunedPartitionList prune(Table tab, ExprNodeDesc prunerExpr,
+  private static PrunedPartitionList prune(Table tab, ExprNodeDesc prunerExpr,
       HiveConf conf, String alias, Map<String, PrunedPartitionList> prunedPartitionsMap)
           throws HiveException {
     LOG.trace("Started pruning partiton");

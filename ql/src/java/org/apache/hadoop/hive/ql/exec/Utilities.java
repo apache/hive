@@ -3163,59 +3163,6 @@ public final class Utilities {
     }
   }
 
-  public static long getSize(String alias, Table table, HiveConf conf,
-      TableScanOperator topOp, ExprNodeDesc expr) throws HiveException {
-    long result = 0;
-    int numPartitions = 0;
-    Map<String, PrunedPartitionList> prunedPartitionsMap
-      = new HashMap<String, PrunedPartitionList>();
-
-    if (!table.isPartitioned()) {
-      result = getSize(conf, table);
-    }
-    else {
-      // For partitioned tables, get the size of all the partitions
-      PrunedPartitionList partsList = PartitionPruner.prune(table, expr, conf,
-          alias, prunedPartitionsMap);
-      numPartitions = partsList.getNotDeniedPartns().size();
-      for (Partition part : partsList.getNotDeniedPartns()) {
-        result += getSize(conf, part);
-      }
-    }
-    return result;
-  }
-
-  private static long getSize(HiveConf conf, String size, Path path) {
-    // If the size is present in the metastore, use it
-    if (size != null) {
-      try {
-        return Long.valueOf(size);
-      } catch (NumberFormatException e) {
-        return -1;
-      }
-    }
-
-    try {
-      FileSystem fs = path.getFileSystem(conf);
-      return fs.getContentSummary(path).getLength();
-    } catch (Exception e) {
-      return -1;
-    }
-  }
-
-  private static long getSize(HiveConf conf, Table table) {
-    Path path = table.getPath();
-    String size = table.getProperty("totalSize");
-    return getSize(conf, size, path);
-  }
-
-  private static long getSize(HiveConf conf, Partition partition) {
-    Path path = partition.getPartitionPath();
-    String size = partition.getParameters().get("totalSize");
-
-    return getSize(conf, size, path);
-  }
-
   public static void clearWorkMap() {
     gWorkMap.clear();
   }
