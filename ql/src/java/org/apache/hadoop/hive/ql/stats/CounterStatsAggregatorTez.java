@@ -40,7 +40,7 @@ public class CounterStatsAggregatorTez implements StatsAggregator {
   }
 
   @Override
-  public boolean connect(Configuration hconf, Task<?> sourceTask) {
+  public boolean connect(Configuration hconf, Task sourceTask) {
     if (!(sourceTask instanceof TezTask)) {
       delegate = true;
       return mrAggregator.connect(hconf, sourceTask);

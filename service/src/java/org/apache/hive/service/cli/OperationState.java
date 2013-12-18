@@ -94,7 +94,7 @@ public enum OperationState {
   }
 
   public void validateTransition(OperationState newState)
-  throws HiveSQLException {
+      throws HiveSQLException {
     validateTransition(this, newState);
   }
 

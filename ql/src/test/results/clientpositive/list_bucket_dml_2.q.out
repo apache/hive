@@ -64,6 +64,8 @@ STAGE PLANS:
         srcpart 
           TableScan
             alias: srcpart
+            Statistics:
+                numRows: 58 dataSize: 11624 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Select Operator
               expressions:
@@ -72,12 +74,16 @@ STAGE PLANS:
                     expr: value
                     type: string
               outputColumnNames: _col0, _col1
+              Statistics:
+                  numRows: 58 dataSize: 11624 basicStatsState: COMPLETE colStatsState: NONE
               File Output Operator
                 compressed: false
                 GlobalTableId: 1
 #### A masked pattern was here ####
                 NumFilesPerFileSink: 1
                 Static Partition Specification: ds=2008-04-08/hr=11/
+                Statistics:
+                    numRows: 58 dataSize: 11624 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                 table:
                     input format: org.apache.hadoop.hive.ql.io.RCFileInputFormat
@@ -110,6 +116,7 @@ STAGE PLANS:
               ds 2008-04-08
               hr 11
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -134,15 +141,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.srcpart
-                numFiles 4
-                numPartitions 4
-                numRows 0
                 partition_columns ds/hr
-                rawDataSize 0
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 23248
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
@@ -156,6 +158,7 @@ STAGE PLANS:
               ds 2008-04-08
               hr 12
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -180,15 +183,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.srcpart
-                numFiles 4
-                numPartitions 4
-                numRows 0
                 partition_columns ds/hr
-                rawDataSize 0
                 serialization.ddl struct srcpart { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 23248
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.srcpart
@@ -226,7 +224,6 @@ STAGE PLANS:
   Stage: Stage-2
     Stats-Aggr Operator
 #### A masked pattern was here ####
-
 
 PREHOOK: query: insert overwrite table list_bucketing_static_part partition (ds = '2008-04-08', hr = '11')
 select key, value from srcpart where ds = '2008-04-08'
@@ -278,6 +275,7 @@ Table:              	list_bucketing_static_part
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	6                   
 	numRows             	1000                
 	rawDataSize         	9624                
@@ -349,12 +347,16 @@ STAGE PLANS:
         list_bucketing_static_part 
           TableScan
             alias: list_bucketing_static_part
+            Statistics:
+                numRows: 1000 dataSize: 9624 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
                   expr: ((key = '484') and (value = 'val_484'))
                   type: boolean
+              Statistics:
+                  numRows: 250 dataSize: 2406 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -366,6 +368,8 @@ STAGE PLANS:
                       expr: hr
                       type: string
                 outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics:
+                    numRows: 250 dataSize: 2406 basicStatsState: COMPLETE colStatsState: NONE
                 Reduce Output Operator
                   key expressions:
                         expr: _col0
@@ -377,6 +381,8 @@ STAGE PLANS:
                         expr: _col3
                         type: string
                   sort order: ++++
+                  Statistics:
+                      numRows: 250 dataSize: 2406 basicStatsState: COMPLETE colStatsState: NONE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -399,6 +405,7 @@ STAGE PLANS:
               ds 2008-04-08
               hr 11
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -423,15 +430,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.list_bucketing_static_part
-                numFiles 6
-                numPartitions 1
-                numRows 1000
                 partition_columns ds/hr
-                rawDataSize 9624
                 serialization.ddl struct list_bucketing_static_part { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
-                totalSize 10898
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe
               name: default.list_bucketing_static_part
@@ -441,11 +443,15 @@ STAGE PLANS:
       Needs Tagging: false
       Reduce Operator Tree:
         Extract
+          Statistics:
+              numRows: 250 dataSize: 2406 basicStatsState: COMPLETE colStatsState: NONE
           File Output Operator
             compressed: false
             GlobalTableId: 0
 #### A masked pattern was here ####
             NumFilesPerFileSink: 1
+            Statistics:
+                numRows: 250 dataSize: 2406 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
             table:
                 input format: org.apache.hadoop.mapred.TextInputFormat
@@ -465,7 +471,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select * from list_bucketing_static_part where ds = '2008-04-08' and  hr = '11' and key = '484' and value = 'val_484' ORDER BY key, value, ds, hr
 PREHOOK: type: QUERY

@@ -19,16 +19,15 @@
 package org.apache.hadoop.hive.ql.stats;
 
 import java.io.IOException;
-import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.mr.ExecDriver;
 import org.apache.hadoop.hive.ql.exec.Task;
 import org.apache.hadoop.hive.ql.exec.mr.MapRedTask;
 import org.apache.hadoop.mapred.Counters;
-import org.apache.hadoop.mapred.Counters.Counter;
 import org.apache.hadoop.mapred.JobClient;
 import org.apache.hadoop.mapred.JobConf;
 import org.apache.hadoop.mapred.RunningJob;
@@ -41,7 +40,7 @@ public class CounterStatsAggregator implements StatsAggregator {
   private JobClient jc;
 
   @Override
-  public boolean connect(Configuration hconf, Task<?> sourceTask) {
+  public boolean connect(Configuration hconf, Task sourceTask) {
     try {
       jc = new JobClient(toJobConf(hconf));
       RunningJob job = jc.getJob(((MapRedTask)sourceTask).getJobID());

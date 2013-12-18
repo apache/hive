@@ -75,7 +75,7 @@ public class GenMRTableScan1 implements NodeProcessor {
 
     // create a dummy MapReduce task
     MapredWork currWork = GenMapRedUtils.getMapRedWork(parseCtx);
-    Task<? extends Serializable> currTask = TaskFactory.get(currWork, parseCtx.getConf());
+    MapRedTask currTask = (MapRedTask) TaskFactory.get(currWork, parseCtx.getConf());
     Operator<? extends OperatorDesc> currTopOp = op;
     ctx.setCurrTask(currTask);
     ctx.setCurrTopOp(currTopOp);
@@ -96,7 +96,7 @@ public class GenMRTableScan1 implements NodeProcessor {
 
           StatsWork statsWork = new StatsWork(parseCtx.getQB().getParseInfo().getTableSpec());
           statsWork.setAggKey(op.getConf().getStatsAggPrefix());
-          statsWork.setSourceTask((MapRedTask)currTask);
+          statsWork.setSourceTask(currTask);
           statsWork.setStatsReliable(
             parseCtx.getConf().getBoolVar(HiveConf.ConfVars.HIVE_STATS_RELIABLE));
           Task<StatsWork> statsTask = TaskFactory.get(statsWork, parseCtx.getConf());

@@ -26,6 +26,7 @@ import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.OperationState;
+import org.apache.hive.service.cli.OperationStatus;
 import org.apache.hive.service.cli.OperationType;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.TableSchema;
@@ -41,6 +42,7 @@ public abstract class Operation {
   public static final Log LOG = LogFactory.getLog(Operation.class.getName());
   public static final long DEFAULT_FETCH_MAX_ROWS = 100;
   protected boolean hasResultSet;
+  protected volatile HiveSQLException operationException;
 
   protected static final EnumSet<FetchOrientation> DEFAULT_FETCH_ORIENTATION_SET =
       EnumSet.of(FetchOrientation.FETCH_NEXT,FetchOrientation.FETCH_FIRST);
@@ -71,8 +73,8 @@ public abstract class Operation {
     return opHandle.getOperationType();
   }
 
-  public OperationState getState() {
-    return state;
+  public OperationStatus getStatus() {
+    return new OperationStatus(state, operationException);
   }
 
   public boolean hasResultSet() {
@@ -90,6 +92,10 @@ public abstract class Operation {
     return this.state;
   }
 
+  protected void setOperationException(HiveSQLException operationException) {
+    this.operationException = operationException;
+  }
+
   protected final void assertState(OperationState state) throws HiveSQLException {
     if (this.state != state) {
       throw new HiveSQLException("Expected state " + state + ", but found " + this.state);
@@ -97,19 +103,19 @@ public abstract class Operation {
   }
 
   public boolean isRunning() {
-    return OperationState.RUNNING.equals(getState());
+    return OperationState.RUNNING.equals(state);
   }
 
   public boolean isFinished() {
-    return OperationState.FINISHED.equals(getState());
+    return OperationState.FINISHED.equals(state);
   }
 
   public boolean isCanceled() {
-    return OperationState.CANCELED.equals(getState());
+    return OperationState.CANCELED.equals(state);
   }
 
   public boolean isFailed() {
-    return OperationState.ERROR.equals(getState());
+    return OperationState.ERROR.equals(state);
   }
 
   public abstract void run() throws HiveSQLException;

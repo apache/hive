@@ -33,7 +33,7 @@ public class DummyStatsAggregator implements StatsAggregator {
 
   // This is a test. The parameter hive.test.dummystats.aggregator's value
   // denotes the method which needs to throw an error.
-  public boolean connect(Configuration hconf, Task<?> sourceTask) {
+  public boolean connect(Configuration hconf, Task sourceTask) {
     errorMethod = hconf.get("hive.test.dummystats.aggregator", "");
     if (errorMethod.equalsIgnoreCase("connect")) {
       return false;

@@ -74,6 +74,7 @@ Table:              	fact_daily
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	1                   
 	numRows             	500                 
 	rawDataSize         	5312                
@@ -143,6 +144,7 @@ Table:              	fact_daily
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	3                   
 	numRows             	500                 
 	rawDataSize         	5312                
@@ -223,6 +225,7 @@ Table:              	fact_daily
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	true                
 	numFiles            	2                   
 	numRows             	500                 
 	rawDataSize         	5312                
@@ -272,12 +275,16 @@ STAGE PLANS:
         fact_daily 
           TableScan
             alias: fact_daily
+            Statistics:
+                numRows: 500 dataSize: 5312 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
                   expr: (key = '145')
                   type: boolean
+              Statistics:
+                  numRows: 250 dataSize: 2656 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -289,11 +296,15 @@ STAGE PLANS:
                       expr: hr
                       type: string
                 outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics:
+                    numRows: 250 dataSize: 2656 basicStatsState: COMPLETE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
+                  Statistics:
+                      numRows: 250 dataSize: 2656 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -321,6 +332,7 @@ STAGE PLANS:
               ds 1
               hr 1
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -345,15 +357,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
-                numFiles 6
-                numPartitions 3
-                numRows 1500
                 partition_columns ds/hr
-                rawDataSize 15936
                 serialization.ddl struct fact_daily { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 17436
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.fact_daily
@@ -364,7 +371,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select * from fact_daily where ds = '1' and  hr='1' and key='145'
 PREHOOK: type: QUERY
@@ -409,16 +415,24 @@ STAGE PLANS:
         fact_daily 
           TableScan
             alias: fact_daily
+            Statistics:
+                numRows: 500 dataSize: 5312 basicStatsState: COMPLETE colStatsState: COMPLETE
             GatherStats: false
             Select Operator
+              Statistics:
+                  numRows: 500 dataSize: 5312 basicStatsState: COMPLETE colStatsState: COMPLETE
               Group By Operator
                 aggregations:
                       expr: count()
                 bucketGroup: false
                 mode: hash
                 outputColumnNames: _col0
+                Statistics:
+                    numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
                 Reduce Output Operator
                   sort order: 
+                  Statistics:
+                      numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
                   tag: -1
                   value expressions:
                         expr: _col0
@@ -435,6 +449,7 @@ STAGE PLANS:
               ds 1
               hr 1
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -459,15 +474,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
-                numFiles 6
-                numPartitions 3
-                numRows 1500
                 partition_columns ds/hr
-                rawDataSize 15936
                 serialization.ddl struct fact_daily { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 17436
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.fact_daily
@@ -482,16 +492,22 @@ STAGE PLANS:
           bucketGroup: false
           mode: mergepartial
           outputColumnNames: _col0
+          Statistics:
+              numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
           Select Operator
             expressions:
                   expr: _col0
                   type: bigint
             outputColumnNames: _col0
+            Statistics:
+                numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
             File Output Operator
               compressed: false
               GlobalTableId: 0
 #### A masked pattern was here ####
               NumFilesPerFileSink: 1
+              Statistics:
+                  numRows: 1 dataSize: 8 basicStatsState: COMPLETE colStatsState: COMPLETE
 #### A masked pattern was here ####
               table:
                   input format: org.apache.hadoop.mapred.TextInputFormat
@@ -511,7 +527,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: select count(*) from fact_daily where ds = '1' and  hr='1'
 PREHOOK: type: QUERY
@@ -558,12 +573,16 @@ STAGE PLANS:
         fact_daily 
           TableScan
             alias: fact_daily
+            Statistics:
+                numRows: 500 dataSize: 5312 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
                   expr: ((key = '484') and (value = 'val_484'))
                   type: boolean
+              Statistics:
+                  numRows: 125 dataSize: 1328 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -575,11 +594,15 @@ STAGE PLANS:
                       expr: hr
                       type: string
                 outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics:
+                    numRows: 125 dataSize: 1328 basicStatsState: COMPLETE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
+                  Statistics:
+                      numRows: 125 dataSize: 1328 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -607,6 +630,7 @@ STAGE PLANS:
               ds 1
               hr 2
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -631,15 +655,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
-                numFiles 6
-                numPartitions 3
-                numRows 1500
                 partition_columns ds/hr
-                rawDataSize 15936
                 serialization.ddl struct fact_daily { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 17436
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.fact_daily
@@ -650,7 +669,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT * FROM fact_daily WHERE ds='1' and hr='2' and (key='484' and value='val_484')
 PREHOOK: type: QUERY
@@ -697,12 +715,16 @@ STAGE PLANS:
         fact_daily 
           TableScan
             alias: fact_daily
+            Statistics:
+                numRows: 500 dataSize: 5312 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
                   expr: ((key = '327') and (value = 'val_327'))
                   type: boolean
+              Statistics:
+                  numRows: 125 dataSize: 1328 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: key
@@ -714,11 +736,15 @@ STAGE PLANS:
                       expr: hr
                       type: string
                 outputColumnNames: _col0, _col1, _col2, _col3
+                Statistics:
+                    numRows: 125 dataSize: 1328 basicStatsState: COMPLETE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
+                  Statistics:
+                      numRows: 125 dataSize: 1328 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -746,6 +772,7 @@ STAGE PLANS:
               ds 1
               hr 3
             properties:
+              COLUMN_STATS_ACCURATE true
               bucket_count -1
               columns key,value
               columns.types string:string
@@ -770,15 +797,10 @@ STAGE PLANS:
                 columns.types string:string
 #### A masked pattern was here ####
                 name default.fact_daily
-                numFiles 6
-                numPartitions 3
-                numRows 1500
                 partition_columns ds/hr
-                rawDataSize 15936
                 serialization.ddl struct fact_daily { string key, string value}
                 serialization.format 1
                 serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
-                totalSize 17436
 #### A masked pattern was here ####
               serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
               name: default.fact_daily
@@ -789,7 +811,6 @@ STAGE PLANS:
   Stage: Stage-0
     Fetch Operator
       limit: -1
-
 
 PREHOOK: query: SELECT * FROM fact_daily WHERE ds='1' and hr='3' and (key='327' and value='val_327')
 PREHOOK: type: QUERY

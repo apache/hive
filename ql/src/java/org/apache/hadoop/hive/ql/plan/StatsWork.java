@@ -50,7 +50,7 @@ public class StatsWork implements Serializable {
 
   private boolean isPartialScanAnalyzeCommand = false;
 
-  private transient Task<?> sourceTask;
+  private transient Task sourceTask;
 
   public StatsWork() {
   }
@@ -144,11 +144,11 @@ public class StatsWork implements Serializable {
     this.isPartialScanAnalyzeCommand = isPartialScanAnalyzeCommand;
   }
 
-  public Task<?> getSourceTask() {
+  public Task getSourceTask() {
     return sourceTask;
   }
 
-  public void setSourceTask(Task<?> sourceTask) {
+  public void setSourceTask(Task sourceTask) {
     this.sourceTask = sourceTask;
   }
 }

@@ -143,6 +143,7 @@ public abstract class BaseSemanticAnalyzer {
     String collItemDelim = null;
     String mapKeyDelim = null;
     String lineDelim = null;
+    String nullFormat = null;
 
     protected void analyzeRowFormat(AnalyzeCreateCommonVars shared, ASTNode child) throws SemanticException {
       child = (ASTNode) child.getChild(0);
@@ -174,6 +175,10 @@ public abstract class BaseSemanticAnalyzer {
             throw new SemanticException(SemanticAnalyzer.generateErrorMessage(rowChild,
                 ErrorMsg.LINES_TERMINATED_BY_NON_NEWLINE.getMsg()));
           }
+          break;
+        case HiveParser.TOK_TABLEROWFORMATNULL:
+          nullFormat = unescapeSQLString(rowChild.getChild(0)
+                    .getText());
           break;
         default:
           assert false;
@@ -750,7 +755,7 @@ public abstract class BaseSemanticAnalyzer {
         ASTNode partspec = (ASTNode) ast.getChild(1);
         partitions = new ArrayList<Partition>();
         // partSpec is a mapping from partition column name to its value.
-        partSpec = new LinkedHashMap<String, String>(partspec.getChildCount());
+        Map<String, String> tmpPartSpec = new HashMap<String, String>(partspec.getChildCount());
         for (int i = 0; i < partspec.getChildCount(); ++i) {
           ASTNode partspec_val = (ASTNode) partspec.getChild(i);
           String val = null;
@@ -765,15 +770,21 @@ public abstract class BaseSemanticAnalyzer {
           } else { // in the form of T partition (ds="2010-03-03")
             val = stripQuotes(partspec_val.getChild(1).getText());
           }
-          partSpec.put(colName, val);
+          tmpPartSpec.put(colName, val);
         }
 
         // check if the columns, as well as value types in the partition() clause are valid
-        validatePartSpec(tableHandle, partSpec, ast, conf);
+        validatePartSpec(tableHandle, tmpPartSpec, ast, conf);
+
+        List<FieldSchema> parts = tableHandle.getPartitionKeys();
+        partSpec = new LinkedHashMap<String, String>(partspec.getChildCount());
+        for (FieldSchema fs : parts) {
+          String partKey = fs.getName();
+          partSpec.put(partKey, tmpPartSpec.get(partKey));
+        }
 
         // check if the partition spec is valid
         if (numDynParts > 0) {
-          List<FieldSchema> parts = tableHandle.getPartitionKeys();
           int numStaPart = parts.size() - numDynParts;
           if (numStaPart == 0 &&
               conf.getVar(HiveConf.ConfVars.DYNAMICPARTITIONINGMODE).equalsIgnoreCase("strict")) {
@@ -1211,8 +1222,8 @@ public abstract class BaseSemanticAnalyzer {
       Object convertedValue =
         ObjectInspectorConverters.getConverter(inputOI, outputOI).convert(value);
       if (convertedValue == null) {
-        throw new SemanticException(ErrorMsg.PARTITION_SPEC_TYPE_MISMATCH.format(astKeyName,
-            inputOI.getTypeName(), outputOI.getTypeName()));
+        throw new SemanticException(ErrorMsg.PARTITION_SPEC_TYPE_MISMATCH, astKeyName,
+            inputOI.getTypeName(), outputOI.getTypeName());
       }
 
       normalizeColSpec(partSpec, astKeyName, colType, colSpec, convertedValue);

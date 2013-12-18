@@ -16,6 +16,8 @@ select
   ,Log10(cdouble)
   -- Use log2 as a representative function to test all input types.
   ,Log2(cdouble)
+  -- Use 15601.0 to test zero handling, as there are no zeroes in the table
+  ,Log2(cdouble - 15601.0)
   ,Log2(cfloat)
   ,Log2(cbigint)
   ,Log2(cint)
@@ -66,6 +68,8 @@ select
   ,Log10(cdouble)
   -- Use log2 as a representative function to test all input types.
   ,Log2(cdouble)
+  -- Use 15601.0 to test zero handling, as there are no zeroes in the table
+  ,Log2(cdouble - 15601.0)
   ,Log2(cfloat)
   ,Log2(cbigint)
   ,Log2(cint)

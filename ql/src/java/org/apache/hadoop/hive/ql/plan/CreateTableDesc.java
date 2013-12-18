@@ -62,6 +62,7 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   String collItemDelim;
   String mapKeyDelim;
   String lineDelim;
+  String nullFormat;
   String comment;
   String inputFormat;
   String outputFormat;
@@ -508,4 +509,20 @@ public class CreateTableDesc extends DDLDesc implements Serializable {
   public void setStoredAsSubDirectories(boolean isStoredAsSubDirectories) {
     this.isStoredAsSubDirectories = isStoredAsSubDirectories;
   }
+
+  /**
+   * @return the nullFormat
+   */
+  public String getNullFormat() {
+    return nullFormat;
+  }
+
+  /**
+   * Set null format string
+   * @param nullFormat
+   */
+  public void setNullFormat(String nullFormat) {
+    this.nullFormat = nullFormat;
+  }
+
 }

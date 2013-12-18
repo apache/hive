@@ -354,7 +354,7 @@ public class TTableSchema implements org.apache.thrift.TBase<TTableSchema, TTabl
                 struct.columns = new ArrayList<TColumnDesc>(_list38.size);
                 for (int _i39 = 0; _i39 < _list38.size; ++_i39)
                 {
-                  TColumnDesc _elem40; // optional
+                  TColumnDesc _elem40; // required
                   _elem40 = new TColumnDesc();
                   _elem40.read(iprot);
                   struct.columns.add(_elem40);
@@ -425,7 +425,7 @@ public class TTableSchema implements org.apache.thrift.TBase<TTableSchema, TTabl
         struct.columns = new ArrayList<TColumnDesc>(_list43.size);
         for (int _i44 = 0; _i44 < _list43.size; ++_i44)
         {
-          TColumnDesc _elem45; // optional
+          TColumnDesc _elem45; // required
           _elem45 = new TColumnDesc();
           _elem45.read(iprot);
           struct.columns.add(_elem45);

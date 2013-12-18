@@ -135,6 +135,12 @@ Table:              	fact_daily
 Protect Mode:       	None                	 
 #### A masked pattern was here ####
 Partition Parameters:	 	 
+	COLUMN_STATS_ACCURATE	false               
+#### A masked pattern was here ####
+	numFiles            	2                   
+	numRows             	-1                  
+	rawDataSize         	-1                  
+	totalSize           	8                   
 #### A masked pattern was here ####
 	 	 
 # Storage Information	 	 
@@ -188,22 +194,30 @@ STAGE PLANS:
         fact_daily 
           TableScan
             alias: fact_daily
+            Statistics:
+                numRows: 2 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
                   expr: (x = 484)
                   type: boolean
+              Statistics:
+                  numRows: 1 dataSize: 4 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: x
                       type: int
                 outputColumnNames: _col0
+                Statistics:
+                    numRows: 1 dataSize: 4 basicStatsState: COMPLETE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
+                  Statistics:
+                      numRows: 1 dataSize: 4 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -230,15 +244,20 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
+              COLUMN_STATS_ACCURATE false
               bucket_count -1
               columns x
               columns.types int
 #### A masked pattern was here ####
               name default.fact_daily
+              numFiles 2
+              numRows -1
               partition_columns ds
+              rawDataSize -1
               serialization.ddl struct fact_daily { i32 x}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 8
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -305,22 +324,30 @@ STAGE PLANS:
         fact_daily 
           TableScan
             alias: fact_daily
+            Statistics:
+                numRows: 2 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
                   expr: (x = 495)
                   type: boolean
+              Statistics:
+                  numRows: 1 dataSize: 4 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: x
                       type: int
                 outputColumnNames: _col0
+                Statistics:
+                    numRows: 1 dataSize: 4 basicStatsState: COMPLETE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
+                  Statistics:
+                      numRows: 1 dataSize: 4 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -347,15 +374,20 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
+              COLUMN_STATS_ACCURATE false
               bucket_count -1
               columns x
               columns.types int
 #### A masked pattern was here ####
               name default.fact_daily
+              numFiles 2
+              numRows -1
               partition_columns ds
+              rawDataSize -1
               serialization.ddl struct fact_daily { i32 x}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 8
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           
@@ -418,22 +450,30 @@ STAGE PLANS:
         fact_daily 
           TableScan
             alias: fact_daily
+            Statistics:
+                numRows: 2 dataSize: 8 basicStatsState: COMPLETE colStatsState: NONE
             GatherStats: false
             Filter Operator
               isSamplingPred: false
               predicate:
                   expr: (x = 1)
                   type: boolean
+              Statistics:
+                  numRows: 1 dataSize: 4 basicStatsState: COMPLETE colStatsState: NONE
               Select Operator
                 expressions:
                       expr: x
                       type: int
                 outputColumnNames: _col0
+                Statistics:
+                    numRows: 1 dataSize: 4 basicStatsState: COMPLETE colStatsState: NONE
                 File Output Operator
                   compressed: false
                   GlobalTableId: 0
 #### A masked pattern was here ####
                   NumFilesPerFileSink: 1
+                  Statistics:
+                      numRows: 1 dataSize: 4 basicStatsState: COMPLETE colStatsState: NONE
 #### A masked pattern was here ####
                   table:
                       input format: org.apache.hadoop.mapred.TextInputFormat
@@ -460,15 +500,20 @@ STAGE PLANS:
             partition values:
               ds 1
             properties:
+              COLUMN_STATS_ACCURATE false
               bucket_count -1
               columns x
               columns.types int
 #### A masked pattern was here ####
               name default.fact_daily
+              numFiles 2
+              numRows -1
               partition_columns ds
+              rawDataSize -1
               serialization.ddl struct fact_daily { i32 x}
               serialization.format 1
               serialization.lib org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+              totalSize 8
 #### A masked pattern was here ####
             serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
           

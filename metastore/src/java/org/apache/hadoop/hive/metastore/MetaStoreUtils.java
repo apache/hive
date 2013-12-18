@@ -282,7 +282,7 @@ public class MetaStoreUtils {
         // The partitition location already existed and may contain data. Lets try to
         // populate those statistics that don't require a full scan of the data.
         LOG.warn("Updating partition stats fast for: " + part.getTableName());
-        FileStatus[] fileStatus = wh.getFileStatusesForPartition(part);
+        FileStatus[] fileStatus = wh.getFileStatusesForSD(part.getSd());
         params.put(StatsSetupConst.NUM_FILES, Integer.toString(fileStatus.length));
         long partSize = 0L;
         for (int i = 0; i < fileStatus.length; i++) {

@@ -111,6 +111,7 @@ public class JDBCStatsPublisher implements StatsPublisher {
       } catch (SQLException e) {
         // for SQLTransientException (maxRetries already achieved at Utilities retry functions
         // or SQLNonTransientException, declare a real failure
+        LOG.error("Error during JDBC connection to " + connectionString + ". ", e);
         return false;
       }
     }

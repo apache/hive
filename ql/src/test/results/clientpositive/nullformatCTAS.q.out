@@ -1,0 +1,252 @@
+PREHOOK: query: -- base table with null data
+DROP TABLE IF EXISTS base_tab
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- base table with null data
+DROP TABLE IF EXISTS base_tab
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE base_tab(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE base_tab(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@base_tab
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE base_tab
+PREHOOK: type: LOAD
+PREHOOK: Output: default@base_tab
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE base_tab
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@base_tab
+PREHOOK: query: DESCRIBE EXTENDED base_tab
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED base_tab
+POSTHOOK: type: DESCTABLE
+a                   	string              	None                
+b                   	string              	None                
+c                   	string              	None                
+d                   	string              	None                
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: -- table with non-default null format
+DROP TABLE IF EXISTS null_tab3
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- table with non-default null format
+DROP TABLE IF EXISTS null_tab3
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: EXPLAIN CREATE TABLE null_tab3 ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
+   AS SELECT a, b FROM base_tab
+PREHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: query: EXPLAIN CREATE TABLE null_tab3 ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
+   AS SELECT a, b FROM base_tab
+POSTHOOK: type: CREATETABLE_AS_SELECT
+ABSTRACT SYNTAX TREE:
+  (TOK_CREATETABLE (TOK_TABNAME null_tab3) TOK_LIKETABLE (TOK_TABLEROWFORMAT (TOK_SERDEPROPS (TOK_TABLEROWFORMATNULL 'fooNull'))) (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME base_tab))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL a)) (TOK_SELEXPR (TOK_TABLE_OR_COL b))))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-7 depends on stages: Stage-1 , consists of Stage-4, Stage-3, Stage-5
+  Stage-4
+  Stage-0 depends on stages: Stage-4, Stage-3, Stage-6
+  Stage-8 depends on stages: Stage-0
+  Stage-2 depends on stages: Stage-8
+  Stage-3
+  Stage-5
+  Stage-6 depends on stages: Stage-5
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        base_tab 
+          TableScan
+            alias: base_tab
+            Select Operator
+              expressions:
+                    expr: a
+                    type: string
+                    expr: b
+                    type: string
+              outputColumnNames: _col0, _col1
+              File Output Operator
+                compressed: false
+                GlobalTableId: 1
+                table:
+                    input format: org.apache.hadoop.mapred.TextInputFormat
+                    output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                    serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                    name: default.null_tab3
+
+  Stage: Stage-7
+    Conditional Operator
+
+  Stage: Stage-4
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-0
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+  Stage: Stage-8
+      Create Table Operator:
+        Create Table
+          columns: a string, b string
+          if not exists: false
+          input format: org.apache.hadoop.mapred.TextInputFormat
+          # buckets: -1
+          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          name: null_tab3
+          isExternal: false
+
+  Stage: Stage-2
+    Stats-Aggr Operator
+
+  Stage: Stage-3
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+          TableScan
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.null_tab3
+
+  Stage: Stage-5
+    Map Reduce
+      Alias -> Map Operator Tree:
+#### A masked pattern was here ####
+          TableScan
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+                  name: default.null_tab3
+
+  Stage: Stage-6
+    Move Operator
+      files:
+          hdfs directory: true
+#### A masked pattern was here ####
+
+PREHOOK: query: CREATE TABLE null_tab3 ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
+   AS SELECT a, b FROM base_tab
+PREHOOK: type: CREATETABLE_AS_SELECT
+PREHOOK: Input: default@base_tab
+POSTHOOK: query: CREATE TABLE null_tab3 ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
+   AS SELECT a, b FROM base_tab
+POSTHOOK: type: CREATETABLE_AS_SELECT
+POSTHOOK: Input: default@base_tab
+POSTHOOK: Output: default@null_tab3
+PREHOOK: query: DESCRIBE EXTENDED null_tab3
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED null_tab3
+POSTHOOK: type: DESCTABLE
+a                   	string              	None                
+b                   	string              	None                
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SHOW CREATE TABLE null_tab3
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@null_tab3
+POSTHOOK: query: SHOW CREATE TABLE null_tab3
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@null_tab3
+CREATE  TABLE `null_tab3`(
+  `a` string, 
+  `b` string)
+ROW FORMAT DELIMITED 
+  NULL DEFINED AS 'fooNull' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+  'numFiles'='1', 
+  'COLUMN_STATS_ACCURATE'='true', 
+#### A masked pattern was here ####
+  'numRows'='10', 
+  'totalSize'='80', 
+  'rawDataSize'='70')
+1.01
+1.01
+1.01
+1.01
+1.01
+fooNull1
+fooNullfooNull
+1.0fooNull
+1.01
+1.01
+PREHOOK: query: SELECT * FROM null_tab3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@null_tab3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM null_tab3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@null_tab3
+#### A masked pattern was here ####
+1.0	1
+1.0	1
+1.0	1
+1.0	1
+1.0	1
+NULL	1
+NULL	NULL
+1.0	NULL
+1.0	1
+1.0	1
+PREHOOK: query: -- alter the null format and verify that the old null format is no longer in effect
+ALTER TABLE null_tab3 SET SERDEPROPERTIES ( 'serialization.null.format'='foo')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@null_tab3
+PREHOOK: Output: default@null_tab3
+POSTHOOK: query: -- alter the null format and verify that the old null format is no longer in effect
+ALTER TABLE null_tab3 SET SERDEPROPERTIES ( 'serialization.null.format'='foo')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@null_tab3
+POSTHOOK: Output: default@null_tab3
+PREHOOK: query: SELECT * FROM null_tab3
+PREHOOK: type: QUERY
+PREHOOK: Input: default@null_tab3
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM null_tab3
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@null_tab3
+#### A masked pattern was here ####
+1.0	1
+1.0	1
+1.0	1
+1.0	1
+1.0	1
+fooNull	1
+fooNull	fooNull
+1.0	fooNull
+1.0	1
+1.0	1
+PREHOOK: query: DROP TABLE null_tab3
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@null_tab3
+PREHOOK: Output: default@null_tab3
+POSTHOOK: query: DROP TABLE null_tab3
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@null_tab3
+POSTHOOK: Output: default@null_tab3
+PREHOOK: query: DROP TABLE base_tab
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@base_tab
+PREHOOK: Output: default@base_tab
+POSTHOOK: query: DROP TABLE base_tab
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@base_tab
+POSTHOOK: Output: default@base_tab

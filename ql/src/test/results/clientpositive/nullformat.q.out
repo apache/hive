@@ -1,0 +1,181 @@
+PREHOOK: query: -- base table with null data
+DROP TABLE IF EXISTS base_tab
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- base table with null data
+DROP TABLE IF EXISTS base_tab
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: CREATE TABLE base_tab(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE base_tab(a STRING, b STRING, c STRING, d STRING) STORED AS TEXTFILE
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@base_tab
+PREHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE base_tab
+PREHOOK: type: LOAD
+PREHOOK: Output: default@base_tab
+POSTHOOK: query: LOAD DATA LOCAL INPATH '../../data/files/null.txt' INTO TABLE base_tab
+POSTHOOK: type: LOAD
+POSTHOOK: Output: default@base_tab
+PREHOOK: query: DESCRIBE EXTENDED base_tab
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED base_tab
+POSTHOOK: type: DESCTABLE
+a                   	string              	None                
+b                   	string              	None                
+c                   	string              	None                
+d                   	string              	None                
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: -- table with non-default null format
+DROP TABLE IF EXISTS null_tab1
+PREHOOK: type: DROPTABLE
+POSTHOOK: query: -- table with non-default null format
+DROP TABLE IF EXISTS null_tab1
+POSTHOOK: type: DROPTABLE
+PREHOOK: query: EXPLAIN CREATE TABLE null_tab1(a STRING, b STRING) ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: EXPLAIN CREATE TABLE null_tab1(a STRING, b STRING) ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
+POSTHOOK: type: CREATETABLE
+ABSTRACT SYNTAX TREE:
+  (TOK_CREATETABLE (TOK_TABNAME null_tab1) TOK_LIKETABLE (TOK_TABCOLLIST (TOK_TABCOL a TOK_STRING) (TOK_TABCOL b TOK_STRING)) (TOK_TABLEROWFORMAT (TOK_SERDEPROPS (TOK_TABLEROWFORMATNULL 'fooNull'))))
+
+STAGE DEPENDENCIES:
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-0
+      Create Table Operator:
+        Create Table
+          columns: a string, b string
+          if not exists: false
+          input format: org.apache.hadoop.mapred.TextInputFormat
+          # buckets: -1
+          output format: org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat
+          name: null_tab1
+          isExternal: false
+
+PREHOOK: query: CREATE TABLE null_tab1(a STRING, b STRING) ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE null_tab1(a STRING, b STRING) ROW FORMAT DELIMITED NULL DEFINED AS 'fooNull'
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@null_tab1
+PREHOOK: query: DESCRIBE EXTENDED null_tab1
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: DESCRIBE EXTENDED null_tab1
+POSTHOOK: type: DESCTABLE
+a                   	string              	None                
+b                   	string              	None                
+	 	 
+#### A masked pattern was here ####
+PREHOOK: query: SHOW CREATE TABLE null_tab1
+PREHOOK: type: SHOW_CREATETABLE
+PREHOOK: Input: default@null_tab1
+POSTHOOK: query: SHOW CREATE TABLE null_tab1
+POSTHOOK: type: SHOW_CREATETABLE
+POSTHOOK: Input: default@null_tab1
+CREATE  TABLE `null_tab1`(
+  `a` string, 
+  `b` string)
+ROW FORMAT DELIMITED 
+  NULL DEFINED AS 'fooNull' 
+STORED AS INPUTFORMAT 
+  'org.apache.hadoop.mapred.TextInputFormat' 
+OUTPUTFORMAT 
+  'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat'
+LOCATION
+#### A masked pattern was here ####
+TBLPROPERTIES (
+#### A masked pattern was here ####
+PREHOOK: query: -- load null data from another table and verify that the null is stored in the expected format
+INSERT OVERWRITE TABLE null_tab1 SELECT a,b FROM base_tab
+PREHOOK: type: QUERY
+PREHOOK: Input: default@base_tab
+PREHOOK: Output: default@null_tab1
+POSTHOOK: query: -- load null data from another table and verify that the null is stored in the expected format
+INSERT OVERWRITE TABLE null_tab1 SELECT a,b FROM base_tab
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@base_tab
+POSTHOOK: Output: default@null_tab1
+POSTHOOK: Lineage: null_tab1.a SIMPLE [(base_tab)base_tab.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: null_tab1.b SIMPLE [(base_tab)base_tab.FieldSchema(name:b, type:string, comment:null), ]
+1.01
+1.01
+1.01
+1.01
+1.01
+fooNull1
+fooNullfooNull
+1.0fooNull
+1.01
+1.01
+PREHOOK: query: SELECT * FROM null_tab1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@null_tab1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM null_tab1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@null_tab1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: null_tab1.a SIMPLE [(base_tab)base_tab.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: null_tab1.b SIMPLE [(base_tab)base_tab.FieldSchema(name:b, type:string, comment:null), ]
+1.0	1
+1.0	1
+1.0	1
+1.0	1
+1.0	1
+NULL	1
+NULL	NULL
+1.0	NULL
+1.0	1
+1.0	1
+PREHOOK: query: -- alter the null format and verify that the old null format is no longer in effect
+ALTER TABLE null_tab1 SET SERDEPROPERTIES ( 'serialization.null.format'='foo')
+PREHOOK: type: ALTERTABLE_SERDEPROPERTIES
+PREHOOK: Input: default@null_tab1
+PREHOOK: Output: default@null_tab1
+POSTHOOK: query: -- alter the null format and verify that the old null format is no longer in effect
+ALTER TABLE null_tab1 SET SERDEPROPERTIES ( 'serialization.null.format'='foo')
+POSTHOOK: type: ALTERTABLE_SERDEPROPERTIES
+POSTHOOK: Input: default@null_tab1
+POSTHOOK: Output: default@null_tab1
+POSTHOOK: Lineage: null_tab1.a SIMPLE [(base_tab)base_tab.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: null_tab1.b SIMPLE [(base_tab)base_tab.FieldSchema(name:b, type:string, comment:null), ]
+PREHOOK: query: SELECT * FROM null_tab1
+PREHOOK: type: QUERY
+PREHOOK: Input: default@null_tab1
+#### A masked pattern was here ####
+POSTHOOK: query: SELECT * FROM null_tab1
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@null_tab1
+#### A masked pattern was here ####
+POSTHOOK: Lineage: null_tab1.a SIMPLE [(base_tab)base_tab.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: null_tab1.b SIMPLE [(base_tab)base_tab.FieldSchema(name:b, type:string, comment:null), ]
+1.0	1
+1.0	1
+1.0	1
+1.0	1
+1.0	1
+fooNull	1
+fooNull	fooNull
+1.0	fooNull
+1.0	1
+1.0	1
+PREHOOK: query: DROP TABLE null_tab1
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@null_tab1
+PREHOOK: Output: default@null_tab1
+POSTHOOK: query: DROP TABLE null_tab1
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@null_tab1
+POSTHOOK: Output: default@null_tab1
+POSTHOOK: Lineage: null_tab1.a SIMPLE [(base_tab)base_tab.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: null_tab1.b SIMPLE [(base_tab)base_tab.FieldSchema(name:b, type:string, comment:null), ]
+PREHOOK: query: DROP TABLE base_tab
+PREHOOK: type: DROPTABLE
+PREHOOK: Input: default@base_tab
+PREHOOK: Output: default@base_tab
+POSTHOOK: query: DROP TABLE base_tab
+POSTHOOK: type: DROPTABLE
+POSTHOOK: Input: default@base_tab
+POSTHOOK: Output: default@base_tab
+POSTHOOK: Lineage: null_tab1.a SIMPLE [(base_tab)base_tab.FieldSchema(name:a, type:string, comment:null), ]
+POSTHOOK: Lineage: null_tab1.b SIMPLE [(base_tab)base_tab.FieldSchema(name:b, type:string, comment:null), ]

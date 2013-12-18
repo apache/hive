@@ -14,15 +14,17 @@ int _kTProtocolVersionValues[] = {
   TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V1,
   TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V2,
   TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V3,
-  TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V4
+  TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V4,
+  TProtocolVersion::HIVE_CLI_SERVICE_PROTOCOL_V5
 };
 const char* _kTProtocolVersionNames[] = {
   "HIVE_CLI_SERVICE_PROTOCOL_V1",
   "HIVE_CLI_SERVICE_PROTOCOL_V2",
   "HIVE_CLI_SERVICE_PROTOCOL_V3",
-  "HIVE_CLI_SERVICE_PROTOCOL_V4"
+  "HIVE_CLI_SERVICE_PROTOCOL_V4",
+  "HIVE_CLI_SERVICE_PROTOCOL_V5"
 };
-const std::map<int, const char*> _TProtocolVersion_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(4, _kTProtocolVersionValues, _kTProtocolVersionNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
+const std::map<int, const char*> _TProtocolVersion_VALUES_TO_NAMES(::apache::thrift::TEnumIterator(5, _kTProtocolVersionValues, _kTProtocolVersionNames), ::apache::thrift::TEnumIterator(-1, NULL, NULL));
 
 int _kTTypeIdValues[] = {
   TTypeId::BOOLEAN_TYPE,
@@ -4936,8 +4938,8 @@ void swap(TGetOperationStatusReq &a, TGetOperationStatusReq &b) {
   swap(a.operationHandle, b.operationHandle);
 }
 
-const char* TGetOperationStatusResp::ascii_fingerprint = "4F27EC6715D9B6D702A4842459E6587B";
-const uint8_t TGetOperationStatusResp::binary_fingerprint[16] = {0x4F,0x27,0xEC,0x67,0x15,0xD9,0xB6,0xD7,0x02,0xA4,0x84,0x24,0x59,0xE6,0x58,0x7B};
+const char* TGetOperationStatusResp::ascii_fingerprint = "BD124DB87A5A2E7D11945BD1B17F013D";
+const uint8_t TGetOperationStatusResp::binary_fingerprint[16] = {0xBD,0x12,0x4D,0xB8,0x7A,0x5A,0x2E,0x7D,0x11,0x94,0x5B,0xD1,0xB1,0x7F,0x01,0x3D};
 
 uint32_t TGetOperationStatusResp::read(::apache::thrift::protocol::TProtocol* iprot) {
 
@@ -4978,6 +4980,30 @@ uint32_t TGetOperationStatusResp::read(::apache::thrift::protocol::TProtocol* ip
           xfer += iprot->skip(ftype);
         }
         break;
+      case 3:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->sqlState);
+          this->__isset.sqlState = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 4:
+        if (ftype == ::apache::thrift::protocol::T_I32) {
+          xfer += iprot->readI32(this->errorCode);
+          this->__isset.errorCode = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
+      case 5:
+        if (ftype == ::apache::thrift::protocol::T_STRING) {
+          xfer += iprot->readString(this->errorMessage);
+          this->__isset.errorMessage = true;
+        } else {
+          xfer += iprot->skip(ftype);
+        }
+        break;
       default:
         xfer += iprot->skip(ftype);
         break;
@@ -5005,6 +5031,21 @@ uint32_t TGetOperationStatusResp::write(::apache::thrift::protocol::TProtocol* o
     xfer += oprot->writeI32((int32_t)this->operationState);
     xfer += oprot->writeFieldEnd();
   }
+  if (this->__isset.sqlState) {
+    xfer += oprot->writeFieldBegin("sqlState", ::apache::thrift::protocol::T_STRING, 3);
+    xfer += oprot->writeString(this->sqlState);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.errorCode) {
+    xfer += oprot->writeFieldBegin("errorCode", ::apache::thrift::protocol::T_I32, 4);
+    xfer += oprot->writeI32(this->errorCode);
+    xfer += oprot->writeFieldEnd();
+  }
+  if (this->__isset.errorMessage) {
+    xfer += oprot->writeFieldBegin("errorMessage", ::apache::thrift::protocol::T_STRING, 5);
+    xfer += oprot->writeString(this->errorMessage);
+    xfer += oprot->writeFieldEnd();
+  }
   xfer += oprot->writeFieldStop();
   xfer += oprot->writeStructEnd();
   return xfer;
@@ -5014,6 +5055,9 @@ void swap(TGetOperationStatusResp &a, TGetOperationStatusResp &b) {
   using ::std::swap;
   swap(a.status, b.status);
   swap(a.operationState, b.operationState);
+  swap(a.sqlState, b.sqlState);
+  swap(a.errorCode, b.errorCode);
+  swap(a.errorMessage, b.errorMessage);
   swap(a.__isset, b.__isset);
 }
 

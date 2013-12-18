@@ -900,35 +900,36 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
     }
 
     String taskID = Utilities.getTaskIdFromFilename(Utilities.getTaskId(hconf));
-    String spSpec = conf.getStaticSpec() != null ? conf.getStaticSpec() : "";
+    String spSpec = conf.getStaticSpec();
 
-    for (String fspKey : valToPaths.keySet()) {
-      FSPaths fspValue = valToPaths.get(fspKey);
-      String key;
+    int maxKeyLength = conf.getMaxStatsKeyPrefixLength();
+    boolean counterStats = statsPublisher instanceof CounterStatsPublisher;
 
-      // construct the key(fileID) to insert into the intermediate stats table
-      if (fspKey == "") {
-        if (statsPublisher instanceof CounterStatsPublisher) {
-          // key is of form either of dbName.TblName/ or dbName.TblName/p1=v1/
-          key = Utilities.appendPathSeparator(conf.getTableInfo().getTableName() + Path.SEPARATOR + spSpec);
-          } else {
-        // for non-partitioned/static partitioned table, the key for temp storage is
-        // common key prefix + static partition spec + taskID
-        String keyPrefix = Utilities.getHashedStatsPrefix(
-            conf.getStatsAggPrefix() + spSpec, conf.getMaxStatsKeyPrefixLength());
-        key = keyPrefix + taskID;
-          }
+    for (Map.Entry<String, FSPaths> entry : valToPaths.entrySet()) {
+      String fspKey = entry.getKey();     // DP/LB
+      FSPaths fspValue = entry.getValue();
+
+      // split[0] = DP, split[1] = LB
+      String[] split = splitKey(fspKey);
+      String dpSpec = split[0];
+      String lbSpec = split[1];
+
+      String prefix;
+      String postfix;
+      if (counterStats) {
+        // key = "database.table/SP/DP/"LB/
+        prefix = conf.getTableInfo().getTableName();
+        postfix = Utilities.join(lbSpec);
       } else {
-          if (statsPublisher instanceof CounterStatsPublisher) {
-          // key is of form either of dbName.TblName/p1=v1/
-            key = Utilities.appendPathSeparator(Utilities.appendPathSeparator(
-              conf.getTableInfo().getTableName() + Path.SEPARATOR + spSpec) + fspKey);
-          } else {
-              // for partitioned table, the key is
-              // common key prefix + static partition spec + DynamicPartSpec + taskID
-              key = createKeyForStatsPublisher(taskID, spSpec, fspKey);
-          }
+        // key = "prefix/SP/DP/"LB/taskID/
+        prefix = conf.getStatsAggPrefix();
+        postfix = Utilities.join(lbSpec, taskID);
       }
+      prefix = Utilities.join(prefix, spSpec, dpSpec);
+      prefix = Utilities.getHashedStatsPrefix(prefix, maxKeyLength, postfix.length());
+
+      String key = Utilities.join(prefix, postfix);
+
       Map<String, String> statsToPublish = new HashMap<String, String>();
       for (String statType : fspValue.stat.getStoredStats()) {
         statsToPublish.put(statType, Long.toString(fspValue.stat.getStat(statType)));
@@ -984,29 +985,20 @@ public class FileSinkOperator extends TerminalOperator<FileSinkDesc> implements
    * key=484/value=val_484 or
    * HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME/HIVE_LIST_BUCKETING_DEFAULT_DIR_NAME
    * so, at the end, "keyPrefix" doesn't have subdir information from skewed but "key" has
-   * @param taskID
-   * @param spSpec
-   * @param fspKey
-   * @return
+   *
+   * In a word, fspKey is consists of DP(dynamic partition spec) + LB(list bucketing spec)
+   * In stats publishing, full partition spec consists of prefix part of stat key
+   * but list bucketing spec is regarded as a postfix of stat key. So we split it here.
    */
-  private String createKeyForStatsPublisher(String taskID, String spSpec, String fspKey) {
-    String key;
-    String newFspKey = fspKey;
-    String storedAsDirPostFix = "";
-    if (isSkewedStoredAsSubDirectories) {
-      List<String> skewedValueDirList = this.lbCtx.getSkewedValuesDirNames();
-      for (String dir : skewedValueDirList) {
-        newFspKey = newFspKey.replace(dir, "");
-        if (!newFspKey.equals(fspKey)) {
-          storedAsDirPostFix = dir;
-          break;
+  private String[] splitKey(String fspKey) {
+    if (!fspKey.isEmpty() && isSkewedStoredAsSubDirectories) {
+      for (String dir : lbCtx.getSkewedValuesDirNames()) {
+        int index = fspKey.indexOf(dir);
+        if (index >= 0) {
+          return new String[] {fspKey.substring(0, index), fspKey.substring(index + 1)};
         }
       }
     }
-    String keyPrefix = Utilities.getHashedStatsPrefix(
-        conf.getStatsAggPrefix() + spSpec + newFspKey,
-        conf.getMaxStatsKeyPrefixLength());
-    key = keyPrefix + storedAsDirPostFix + taskID;
-    return key;
+    return new String[] {fspKey, null};
   }
 }

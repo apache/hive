@@ -55,7 +55,7 @@ public class JDBCStatsAggregator implements StatsAggregator {
   }
 
   @Override
-  public boolean connect(Configuration hiveconf, Task<?> sourceTask) {
+  public boolean connect(Configuration hiveconf, Task sourceTask) {
     this.hiveconf = hiveconf;
     timeout = HiveConf.getIntVar(hiveconf, HiveConf.ConfVars.HIVE_STATS_JDBC_TIMEOUT);
     connectionString = HiveConf.getVar(hiveconf, HiveConf.ConfVars.HIVESTATSDBCONNECTIONSTRING);

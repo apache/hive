@@ -53,6 +53,7 @@ import org.apache.hadoop.hive.metastore.api.FieldSchema;
 import org.apache.hadoop.hive.metastore.api.MetaException;
 import org.apache.hadoop.hive.metastore.api.Partition;
 import org.apache.hadoop.hive.metastore.api.SkewedInfo;
+import org.apache.hadoop.hive.metastore.api.StorageDescriptor;
 import org.apache.hadoop.hive.metastore.api.Table;
 import org.apache.hadoop.hive.shims.ShimLoader;
 import org.apache.hadoop.security.UserGroupInformation;
@@ -500,16 +501,17 @@ public class Warehouse {
   }
 
   /**
-   * @param partn
-   * @return array of FileStatus objects corresponding to the files making up the passed partition
+   * @param desc
+   * @return array of FileStatus objects corresponding to the files
+   * making up the passed storage description
    */
-  public FileStatus[] getFileStatusesForPartition(Partition partn)
+  public FileStatus[] getFileStatusesForSD(StorageDescriptor desc)
       throws MetaException {
     try {
-      Path path = new Path(partn.getSd().getLocation());
+      Path path = new Path(desc.getLocation());
       FileSystem fileSys = path.getFileSystem(conf);
       /* consider sub-directory created from list bucketing. */
-      int listBucketingDepth = calculateListBucketingDMLDepth(partn);
+      int listBucketingDepth = calculateListBucketingDMLDepth(desc);
       return HiveStatsUtils.getFileStatusRecurse(path, (1 + listBucketingDepth), fileSys);
     } catch (IOException ioe) {
       MetaStoreUtils.logAndThrowMetaException(ioe);
@@ -521,13 +523,13 @@ public class Warehouse {
    * List bucketing will introduce sub-directories.
    * calculate it here in order to go to the leaf directory
    * so that we can count right number of files.
-   * @param partn
+   * @param desc
    * @return
    */
-  private static int calculateListBucketingDMLDepth(Partition partn) {
+  private static int calculateListBucketingDMLDepth(StorageDescriptor desc) {
     // list bucketing will introduce more files
     int listBucketingDepth = 0;
-    SkewedInfo skewedInfo = partn.getSd().getSkewedInfo();
+    SkewedInfo skewedInfo = desc.getSkewedInfo();
     if ((skewedInfo != null) && (skewedInfo.getSkewedColNames() != null)
         && (skewedInfo.getSkewedColNames().size() > 0)
         && (skewedInfo.getSkewedColValues() != null)

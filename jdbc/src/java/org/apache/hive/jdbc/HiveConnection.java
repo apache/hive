@@ -42,6 +42,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
 import javax.security.sasl.Sasl;
 import javax.security.sasl.SaslException;
@@ -100,7 +101,7 @@ public class HiveConnection implements java.sql.Connection {
   private int loginTimeout = 0;
 
   public HiveConnection(String uri, Properties info) throws SQLException {
-    loginTimeout = DriverManager.getLoginTimeout();
+    setupLoginTimeout();
     jdbcURI = uri;
     // parse the connection uri
     Utils.JdbcConnectionParams connParams = Utils.parseURL(jdbcURI);
@@ -136,6 +137,7 @@ public class HiveConnection implements java.sql.Connection {
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V2);
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V3);
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V4);
+    supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V5);
 
     // open client session
     openSession();
@@ -144,9 +146,7 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   private void openTransport() throws SQLException {
-    transport = isHttpTransportMode() ?
-        createHttpTransport() :
-          createBinaryTransport();
+    transport = isHttpTransportMode() ? createHttpTransport() : createBinaryTransport();
     TProtocol protocol = new TBinaryProtocol(transport);
     client = new TCLIService.Client(protocol);
     try {
@@ -324,6 +324,16 @@ public class HiveConnection implements java.sql.Connection {
       varValue = varDefault;
     }
     return varValue;
+  }
+
+  // copy loginTimeout from driver manager. Thrift timeout needs to be in millis
+  private void setupLoginTimeout() {
+    long timeOut = TimeUnit.SECONDS.toMillis(DriverManager.getLoginTimeout());
+    if (timeOut > Integer.MAX_VALUE) {
+      loginTimeout = Integer.MAX_VALUE;
+    } else {
+      loginTimeout = (int) timeOut;
+    }
   }
 
   public void abort(Executor executor) throws SQLException {

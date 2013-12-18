@@ -238,6 +238,7 @@ public class HiveStatement implements java.sql.Statement {
             case UKNOWN_STATE:
               throw new SQLException("Unknown query", "HY000");
             case INITIALIZED_STATE:
+            case PENDING_STATE:
             case RUNNING_STATE:
               break;
             }

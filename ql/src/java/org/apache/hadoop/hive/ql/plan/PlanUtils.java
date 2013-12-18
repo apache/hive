@@ -135,10 +135,15 @@ public final class PlanUtils {
       if (localDirectoryDesc.getSerName() != null) {
         tableDesc.getProperties().setProperty(
             serdeConstants.SERIALIZATION_LIB, localDirectoryDesc.getSerName());
-        }
+      }
       if (localDirectoryDesc.getOutputFormat() != null){
           tableDesc.setOutputFileFormatClass(Class.forName(localDirectoryDesc.getOutputFormat()));
       }
+      if (localDirectoryDesc.getNullFormat() != null) {
+        tableDesc.getProperties().setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT,
+              localDirectoryDesc.getNullFormat());
+      }
+
     } catch (ClassNotFoundException e) {
       // mimicking behaviour in CreateTableDesc tableDesc creation
       // returning null table description for output.
@@ -323,6 +328,11 @@ public final class PlanUtils {
 
       if (crtTblDesc.getLineDelim() != null) {
         properties.setProperty(serdeConstants.LINE_DELIM, crtTblDesc.getLineDelim());
+      }
+
+      if (crtTblDesc.getNullFormat() != null) {
+        properties.setProperty(serdeConstants.SERIALIZATION_NULL_FORMAT,
+              crtTblDesc.getNullFormat());
       }
 
       if (crtTblDesc.getTableName() != null && crtTblDesc.getDatabaseName() != null) {
