@@ -18,27 +18,26 @@
 
 package org.apache.hive.service.cli;
 
-import java.util.Collections;
-
-
 /**
- * CLIServiceClient.
+ * OperationStatus
  *
  */
-public abstract class CLIServiceClient implements ICLIService {
+public class OperationStatus {
 
-  public SessionHandle openSession(String username, String password)
-      throws HiveSQLException {
-    return openSession(username, password, Collections.<String, String>emptyMap());
+  private final OperationState state;
+  private final HiveSQLException operationException;
+
+  public OperationStatus(OperationState state, HiveSQLException operationException) {
+    this.state = state;
+    this.operationException = operationException;
   }
 
-  /* (non-Javadoc)
-   * @see org.apache.hive.service.cli.ICLIService#fetchResults(org.apache.hive.service.cli.OperationHandle)
-   */
-  @Override
-  public RowSet fetchResults(OperationHandle opHandle) throws HiveSQLException {
-    // TODO: provide STATIC default value
-    return fetchResults(opHandle, FetchOrientation.FETCH_NEXT, 1000);
+  public OperationState getState() {
+    return state;
+  }
+
+  public HiveSQLException getOperationException() {
+    return operationException;
   }
 
 }

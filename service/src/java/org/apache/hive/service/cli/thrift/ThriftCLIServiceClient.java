@@ -28,6 +28,7 @@ import org.apache.hive.service.cli.GetInfoValue;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
 import org.apache.hive.service.cli.OperationState;
+import org.apache.hive.service.cli.OperationStatus;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.TableSchema;
@@ -295,12 +296,18 @@ public class ThriftCLIServiceClient extends CLIServiceClient {
    * @see org.apache.hive.service.cli.ICLIService#getOperationStatus(org.apache.hive.service.cli.OperationHandle)
    */
   @Override
-  public OperationState getOperationStatus(OperationHandle opHandle) throws HiveSQLException {
+  public OperationStatus getOperationStatus(OperationHandle opHandle) throws HiveSQLException {
     try {
       TGetOperationStatusReq req = new TGetOperationStatusReq(opHandle.toTOperationHandle());
       TGetOperationStatusResp resp = cliService.GetOperationStatus(req);
+      // Checks the status of the RPC call, throws an exception in case of error
       checkStatus(resp.getStatus());
-      return OperationState.getOperationState(resp.getOperationState());
+      OperationState opState = OperationState.getOperationState(resp.getOperationState());
+      HiveSQLException opException = null;
+      if (opState == OperationState.ERROR) {
+        opException = new HiveSQLException(resp.getErrorMessage(), resp.getSqlState(), resp.getErrorCode());
+      }
+      return new OperationStatus(opState, opException);
     } catch (HiveSQLException e) {
       throw e;
     } catch (Exception e) {

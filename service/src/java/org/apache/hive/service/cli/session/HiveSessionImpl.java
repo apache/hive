@@ -202,7 +202,11 @@ public class HiveSessionImpl implements HiveSession {
       opHandleSet.add(opHandle);
       return opHandle;
     } catch (HiveSQLException e) {
-      operationManager.closeOperation(opHandle);
+      // Cleanup opHandle in case the query is synchronous
+      // Async query needs to retain and pass back the opHandle for error reporting
+      if (!runAsync) {
+        operationManager.closeOperation(opHandle);
+      }
       throw e;
     } finally {
       release();

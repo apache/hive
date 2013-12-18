@@ -31,12 +31,12 @@ import javax.security.auth.login.LoginException;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.conf.HiveConf.ConfVars;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
+import org.apache.hadoop.hive.ql.ErrorMsg;
 import org.apache.hive.service.Service;
 import org.apache.hive.service.auth.HiveAuthFactory;
 import org.apache.hive.service.auth.PlainSaslHelper;
 import org.apache.hive.service.cli.CLIService;
 import org.apache.hive.service.cli.HiveSQLException;
-import org.apache.hive.service.cli.OperationState;
 import org.apache.hive.service.cli.SessionHandle;
 import org.apache.hive.service.cli.session.HiveSession;
 import org.apache.hive.service.cli.session.SessionManager;
@@ -66,8 +66,6 @@ public abstract class ThriftCLIServiceTest {
   protected static HiveConf hiveConf;
   protected static String anonymousUser = "anonymous";
   protected static String anonymousPasswd = "anonymous";
-
-
 
   /**
    * @throws java.lang.Exception
@@ -162,6 +160,10 @@ public abstract class ThriftCLIServiceTest {
     client.CloseSession(closeReq);
   }
 
+  /**
+   * Test synchronous query execution
+   * @throws Exception
+   */
   @Test
   public void testExecuteStatement() throws Exception {
     // Create a new request object
@@ -172,19 +174,19 @@ public abstract class ThriftCLIServiceTest {
     // Change lock manager to embedded mode
     String queryString = "SET hive.lock.manager=" +
         "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager";
-    executeQuerySync(queryString, sessHandle);
+    executeQuery(queryString, sessHandle, false);
 
     // Drop the table if it exists
     queryString = "DROP TABLE IF EXISTS TEST_EXEC_THRIFT";
-    executeQuerySync(queryString, sessHandle);
+    executeQuery(queryString, sessHandle, false);
 
     // Create a test table
     queryString = "CREATE TABLE TEST_EXEC_THRIFT(ID STRING)";
-    executeQuerySync(queryString, sessHandle);
+    executeQuery(queryString, sessHandle, false);
 
-    // Execute another query to test
+    // Execute another query
     queryString = "SELECT ID FROM TEST_EXEC_THRIFT";
-    TExecuteStatementResp execResp = executeQuerySync(queryString, sessHandle);
+    TExecuteStatementResp execResp = executeQuery(queryString, sessHandle, false);
     TOperationHandle operationHandle = execResp.getOperationHandle();
     assertNotNull(operationHandle);
 
@@ -192,28 +194,133 @@ public abstract class ThriftCLIServiceTest {
     opStatusReq.setOperationHandle(operationHandle);
     assertNotNull(opStatusReq);
     TGetOperationStatusResp opStatusResp = client.GetOperationStatus(opStatusReq);
-
+    TOperationState state = opStatusResp.getOperationState();
     // Expect query to be completed now
-    assertEquals("Query should be finished",
-        OperationState.FINISHED, OperationState.getOperationState(opStatusResp.getOperationState()));
+    assertEquals("Query should be finished", TOperationState.FINISHED_STATE, state);
 
+    // Cleanup
     queryString = "DROP TABLE TEST_EXEC_THRIFT";
-    executeQuerySync(queryString, sessHandle);
+    executeQuery(queryString, sessHandle, false);
 
     // Close the session; ignore exception if any
     TCloseSessionReq closeReq = new TCloseSessionReq(sessHandle);
     client.CloseSession(closeReq);
   }
 
-  private TExecuteStatementResp executeQuerySync(String queryString, TSessionHandle sessHandle)
+  /**
+   * Test asynchronous query execution and error message reporting to the client
+   * @throws Exception
+   */
+  @Test
+  public void testExecuteStatementAsync() throws Exception {
+    // Create a new request object
+    TOpenSessionReq openReq = new TOpenSessionReq();
+    TSessionHandle sessHandle = client.OpenSession(openReq).getSessionHandle();
+    assertNotNull(sessHandle);
+
+    // Change lock manager to embedded mode
+    String queryString = "SET hive.lock.manager=" +
+        "org.apache.hadoop.hive.ql.lockmgr.EmbeddedLockManager";
+    executeQuery(queryString, sessHandle, false);
+
+    // Drop the table if it exists
+    queryString = "DROP TABLE IF EXISTS TEST_EXEC_ASYNC_THRIFT";
+    executeQuery(queryString, sessHandle, false);
+
+    // Create a test table
+    queryString = "CREATE TABLE TEST_EXEC_ASYNC_THRIFT(ID STRING)";
+    executeQuery(queryString, sessHandle, false);
+
+    // Execute another query
+    queryString = "SELECT ID FROM TEST_EXEC_ASYNC_THRIFT";
+    System.out.println("Will attempt to execute: " + queryString);
+    TExecuteStatementResp execResp = executeQuery(queryString, sessHandle, true);
+    TOperationHandle operationHandle = execResp.getOperationHandle();
+    assertNotNull(operationHandle);
+
+    // Poll on the operation status till the query is completed
+    boolean isQueryRunning = true;
+    TGetOperationStatusReq opStatusReq;
+    TGetOperationStatusResp opStatusResp = null;
+    TOperationState state = null;
+    long pollTimeout = System.currentTimeMillis() + 100000;
+
+    while(isQueryRunning) {
+      // Break if polling times out
+      if (System.currentTimeMillis() > pollTimeout) {
+        System.out.println("Polling timed out");
+        break;
+      }
+      opStatusReq = new TGetOperationStatusReq();
+      opStatusReq.setOperationHandle(operationHandle);
+      assertNotNull(opStatusReq);
+      opStatusResp = client.GetOperationStatus(opStatusReq);
+      state = opStatusResp.getOperationState();
+      System.out.println("Current state: " + state);
+
+      if (state == TOperationState.CANCELED_STATE || state == TOperationState.CLOSED_STATE
+          || state == TOperationState.FINISHED_STATE || state == TOperationState.ERROR_STATE) {
+        isQueryRunning = false;
+      }
+      Thread.sleep(1000);
+    }
+
+    // Expect query to be successfully completed now
+    assertEquals("Query should be finished",
+        TOperationState.FINISHED_STATE, state);
+
+    // Execute a malformed query
+    // This query will give a runtime error
+    queryString = "CREATE TABLE NON_EXISTING_TAB (ID STRING) location 'hdfs://fooNN:10000/a/b/c'";
+    System.out.println("Will attempt to execute: " + queryString);
+    execResp = executeQuery(queryString, sessHandle, true);
+    operationHandle = execResp.getOperationHandle();
+    assertNotNull(operationHandle);
+    isQueryRunning = true;
+    while(isQueryRunning) {
+      // Break if polling times out
+      if (System.currentTimeMillis() > pollTimeout) {
+        System.out.println("Polling timed out");
+        break;
+      }
+      opStatusReq = new TGetOperationStatusReq();
+      opStatusReq.setOperationHandle(operationHandle);
+      assertNotNull(opStatusReq);
+      opStatusResp = client.GetOperationStatus(opStatusReq);
+      state = opStatusResp.getOperationState();
+      System.out.println("Current state: " + state);
+
+      if (state == TOperationState.CANCELED_STATE || state == TOperationState.CLOSED_STATE
+          || state == TOperationState.FINISHED_STATE || state == TOperationState.ERROR_STATE) {
+        isQueryRunning = false;
+      }
+      Thread.sleep(1000);
+    }
+
+    // Expect query to return an error state
+    assertEquals("Operation should be in error state", TOperationState.ERROR_STATE, state);
+
+    // sqlState, errorCode should be set to appropriate values
+    assertEquals(opStatusResp.getSqlState(), "08S01");
+    assertEquals(opStatusResp.getErrorCode(), 1);
+
+    // Cleanup
+    queryString = "DROP TABLE TEST_EXEC_ASYNC_THRIFT";
+    executeQuery(queryString, sessHandle, false);
+
+    // Close the session; ignore exception if any
+    TCloseSessionReq closeReq = new TCloseSessionReq(sessHandle);
+    client.CloseSession(closeReq);
+  }
+
+  private TExecuteStatementResp executeQuery(String queryString, TSessionHandle sessHandle, boolean runAsync)
       throws Exception {
     TExecuteStatementReq execReq = new TExecuteStatementReq();
     execReq.setSessionHandle(sessHandle);
     execReq.setStatement(queryString);
-    execReq.setRunAsync(false);
+    execReq.setRunAsync(runAsync);
     TExecuteStatementResp execResp = client.ExecuteStatement(execReq);
     assertNotNull(execResp);
-    assertFalse(execResp.getStatus().getStatusCode() == TStatusCode.ERROR_STATUS);
     return execResp;
   }
 

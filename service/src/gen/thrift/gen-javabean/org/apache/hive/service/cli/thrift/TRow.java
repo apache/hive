@@ -354,7 +354,7 @@ public class TRow implements org.apache.thrift.TBase<TRow, TRow._Fields>, java.i
                 struct.colVals = new ArrayList<TColumnValue>(_list102.size);
                 for (int _i103 = 0; _i103 < _list102.size; ++_i103)
                 {
-                  TColumnValue _elem104; // optional
+                  TColumnValue _elem104; // required
                   _elem104 = new TColumnValue();
                   _elem104.read(iprot);
                   struct.colVals.add(_elem104);
@@ -425,7 +425,7 @@ public class TRow implements org.apache.thrift.TBase<TRow, TRow._Fields>, java.i
         struct.colVals = new ArrayList<TColumnValue>(_list107.size);
         for (int _i108 = 0; _i108 < _list107.size; ++_i108)
         {
-          TColumnValue _elem109; // optional
+          TColumnValue _elem109; // required
           _elem109 = new TColumnValue();
           _elem109.read(iprot);
           struct.colVals.add(_elem109);
