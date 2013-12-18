@@ -27,7 +27,7 @@ STAGE DEPENDENCIES:
   Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
   Stage-5
   Stage-2 depends on stages: Stage-5, Stage-4, Stage-7
-  Stage-9 depends on stages: Stage-2, Stage-0
+  Stage-9 depends on stages: Stage-0, Stage-2
   Stage-3 depends on stages: Stage-9
   Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
   Stage-4
@@ -226,7 +226,7 @@ STAGE DEPENDENCIES:
   Stage-8 depends on stages: Stage-1 , consists of Stage-5, Stage-4, Stage-6
   Stage-5
   Stage-2 depends on stages: Stage-5, Stage-4, Stage-7
-  Stage-9 depends on stages: Stage-0, Stage-2
+  Stage-9 depends on stages: Stage-2, Stage-0
   Stage-3 depends on stages: Stage-9
   Stage-0 depends on stages: Stage-5, Stage-4, Stage-7
   Stage-4
