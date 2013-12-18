@@ -27,7 +27,7 @@ import org.apache.hive.service.AbstractService;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationHandle;
-import org.apache.hive.service.cli.OperationState;
+import org.apache.hive.service.cli.OperationStatus;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
@@ -67,7 +67,7 @@ public class OperationManager extends AbstractService {
 
   public ExecuteStatementOperation newExecuteStatementOperation(HiveSession parentSession,
       String statement, Map<String, String> confOverlay, boolean runAsync)
-    throws HiveSQLException {
+          throws HiveSQLException {
     ExecuteStatementOperation executeStatementOperation = ExecuteStatementOperation
         .newExecuteStatementOperation(parentSession, statement, confOverlay, runAsync);
     addOperation(executeStatementOperation);
@@ -140,8 +140,8 @@ public class OperationManager extends AbstractService {
     return handleToOperation.remove(opHandle);
   }
 
-  public OperationState getOperationState(OperationHandle opHandle) throws HiveSQLException {
-    return getOperation(opHandle).getState();
+  public OperationStatus getOperationStatus(OperationHandle opHandle) throws HiveSQLException {
+    return getOperation(opHandle).getStatus();
   }
 
   public void cancelOperation(OperationHandle opHandle) throws HiveSQLException {
@@ -167,7 +167,7 @@ public class OperationManager extends AbstractService {
 
   public RowSet getOperationNextRowSet(OperationHandle opHandle,
       FetchOrientation orientation, long maxRows)
-      throws HiveSQLException {
+          throws HiveSQLException {
     return getOperation(opHandle).getNextRowSet(orientation, maxRows);
   }
 }

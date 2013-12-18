@@ -549,7 +549,7 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
                 struct.rows = new ArrayList<TRow>(_list110.size);
                 for (int _i111 = 0; _i111 < _list110.size; ++_i111)
                 {
-                  TRow _elem112; // optional
+                  TRow _elem112; // required
                   _elem112 = new TRow();
                   _elem112.read(iprot);
                   struct.rows.add(_elem112);
@@ -568,7 +568,7 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
                 struct.columns = new ArrayList<TColumn>(_list113.size);
                 for (int _i114 = 0; _i114 < _list113.size; ++_i114)
                 {
-                  TColumn _elem115; // optional
+                  TColumn _elem115; // required
                   _elem115 = new TColumn();
                   _elem115.read(iprot);
                   struct.columns.add(_elem115);
@@ -673,7 +673,7 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
         struct.rows = new ArrayList<TRow>(_list120.size);
         for (int _i121 = 0; _i121 < _list120.size; ++_i121)
         {
-          TRow _elem122; // optional
+          TRow _elem122; // required
           _elem122 = new TRow();
           _elem122.read(iprot);
           struct.rows.add(_elem122);
@@ -687,7 +687,7 @@ public class TRowSet implements org.apache.thrift.TBase<TRowSet, TRowSet._Fields
           struct.columns = new ArrayList<TColumn>(_list123.size);
           for (int _i124 = 0; _i124 < _list123.size; ++_i124)
           {
-            TColumn _elem125; // optional
+            TColumn _elem125; // required
             _elem125 = new TColumn();
             _elem125.read(iprot);
             struct.columns.add(_elem125);

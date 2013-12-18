@@ -137,6 +137,7 @@ public class HiveConnection implements java.sql.Connection {
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V2);
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V3);
     supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V4);
+    supportedProtocols.add(TProtocolVersion.HIVE_CLI_SERVICE_PROTOCOL_V5);
 
     // open client session
     openSession();
@@ -145,9 +146,7 @@ public class HiveConnection implements java.sql.Connection {
   }
 
   private void openTransport() throws SQLException {
-    transport = isHttpTransportMode() ?
-        createHttpTransport() :
-          createBinaryTransport();
+    transport = isHttpTransportMode() ? createHttpTransport() : createBinaryTransport();
     TProtocol protocol = new TBinaryProtocol(transport);
     client = new TCLIService.Client(protocol);
     try {

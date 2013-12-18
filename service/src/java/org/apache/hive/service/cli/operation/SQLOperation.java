@@ -50,6 +50,7 @@ import org.apache.hadoop.io.BytesWritable;
 import org.apache.hive.service.cli.FetchOrientation;
 import org.apache.hive.service.cli.HiveSQLException;
 import org.apache.hive.service.cli.OperationState;
+import org.apache.hive.service.cli.OperationStatus;
 import org.apache.hive.service.cli.RowSet;
 import org.apache.hive.service.cli.TableSchema;
 import org.apache.hive.service.cli.session.HiveSession;
@@ -66,7 +67,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   private Schema mResultSchema = null;
   private SerDe serde = null;
   private final boolean runAsync;
-  private Future<?> backgroundHandle;
+  private volatile Future<?> backgroundHandle;
   private boolean fetchStarted = false;
 
   public SQLOperation(HiveSession parentSession, String statement, Map<String,
@@ -158,7 +159,7 @@ public class SQLOperation extends ExecuteStatementOperation {
   public void run() throws HiveSQLException {
     setState(OperationState.PENDING);
     prepare(getConfigForOperation());
-    if (!shouldRunAsync()) {
+    if (!runAsync) {
       runInternal(getConfigForOperation());
     } else {
       Runnable backgroundOperation = new Runnable() {
@@ -169,16 +170,15 @@ public class SQLOperation extends ExecuteStatementOperation {
           try {
             runInternal(getConfigForOperation());
           } catch (HiveSQLException e) {
+            setOperationException(e);
             LOG.error("Error: ", e);
-            // TODO: Return a more detailed error to the client,
-            // currently the async thread only writes to the log and sets the OperationState
           }
         }
       };
       try {
         // This submit blocks if no background threads are available to run this operation
         backgroundHandle =
-          getParentSession().getSessionManager().submitBackgroundOperation(backgroundOperation);
+            getParentSession().getSessionManager().submitBackgroundOperation(backgroundOperation);
       } catch (RejectedExecutionException rejected) {
         setState(OperationState.ERROR);
         throw new HiveSQLException("All the asynchronous threads are currently busy, " +
@@ -189,7 +189,7 @@ public class SQLOperation extends ExecuteStatementOperation {
 
   private void cleanup(OperationState state) throws HiveSQLException {
     setState(state);
-    if (shouldRunAsync()) {
+    if (runAsync) {
       if (backgroundHandle != null) {
         backgroundHandle.cancel(true);
       }
@@ -335,10 +335,6 @@ public class SQLOperation extends ExecuteStatementOperation {
     return serde;
   }
 
-  private boolean shouldRunAsync() {
-    return runAsync;
-  }
-
   /**
    * If there are query specific settings to overlay, then create a copy of config
    * There are two cases we need to clone the session config that's being passed to hive driver
@@ -351,7 +347,7 @@ public class SQLOperation extends ExecuteStatementOperation {
    */
   private HiveConf getConfigForOperation() throws HiveSQLException {
     HiveConf sqlOperationConf = getParentSession().getHiveConf();
-    if (!getConfOverlay().isEmpty() || shouldRunAsync()) {
+    if (!getConfOverlay().isEmpty() || runAsync) {
       // clone the partent session config for this query
       sqlOperationConf = new HiveConf(sqlOperationConf);
 
