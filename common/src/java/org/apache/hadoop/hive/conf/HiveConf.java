@@ -872,7 +872,7 @@ public class HiveConf extends Configuration {
     HIVE_RPC_QUERY_PLAN("hive.rpc.query.plan", false),
 
     // Whether to generate the splits locally or in the AM (tez only)
-      HIVE_AM_SPLIT_GENERATION("hive.compute.splits.in.am", true),
+    HIVE_AM_SPLIT_GENERATION("hive.compute.splits.in.am", true),
 
     // none, idonly, traverse, execution
     HIVESTAGEIDREARRANGE("hive.stageid.rearrange", "none"),
