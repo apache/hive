@@ -2760,7 +2760,7 @@ public class DDLSemanticAnalyzer extends BaseSemanticAnalyzer {
           } else {
             cmd.append(" AND ");
           }
-          cmd.append(HiveUtils.unparseIdentifier(entry.getKey()));
+          cmd.append(HiveUtils.unparseIdentifier(entry.getKey(), conf));
           cmd.append(" = '");
           cmd.append(HiveUtils.escapeString(entry.getValue()));
           cmd.append("'");

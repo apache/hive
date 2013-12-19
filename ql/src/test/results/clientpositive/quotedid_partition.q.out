@@ -1,0 +1,440 @@
+PREHOOK: query: create table src_p(`x+1` string, `y&y` string) partitioned by (`!@#$%^&*()_q` string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table src_p(`x+1` string, `y&y` string) partitioned by (`!@#$%^&*()_q` string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@src_p
+PREHOOK: query: insert overwrite table src_p partition(`!@#$%^&*()_q`='a') select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_p@!@%23$%25%5E&%2A()_q=a
+POSTHOOK: query: insert overwrite table src_p partition(`!@#$%^&*()_q`='a') select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_p@!@%23$%25%5E&%2A()_q=a
+POSTHOOK: Lineage: src_p PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show partitions src_p
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions src_p
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Lineage: src_p PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+!@%23$%25%5E&%2A()_q=a
+PREHOOK: query: explain select `x+1`, `y&y`, `!@#$%^&*()_q` 
+from src_p where `!@#$%^&*()_q` = 'a' and `x+1`='10'
+group by `x+1`, `y&y`, `!@#$%^&*()_q` having `!@#$%^&*()_q` = 'a'
+PREHOOK: type: QUERY
+POSTHOOK: query: explain select `x+1`, `y&y`, `!@#$%^&*()_q` 
+from src_p where `!@#$%^&*()_q` = 'a' and `x+1`='10'
+group by `x+1`, `y&y`, `!@#$%^&*()_q` having `!@#$%^&*()_q` = 'a'
+POSTHOOK: type: QUERY
+POSTHOOK: Lineage: src_p PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+ABSTRACT SYNTAX TREE:
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src_p))) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (TOK_TABLE_OR_COL x+1)) (TOK_SELEXPR (TOK_TABLE_OR_COL y&y)) (TOK_SELEXPR (TOK_TABLE_OR_COL !@#$%^&*()_q))) (TOK_WHERE (and (= (TOK_TABLE_OR_COL !@#$%^&*()_q) 'a') (= (TOK_TABLE_OR_COL x+1) '10'))) (TOK_GROUPBY (TOK_TABLE_OR_COL x+1) (TOK_TABLE_OR_COL y&y) (TOK_TABLE_OR_COL !@#$%^&*()_q)) (TOK_HAVING (= (TOK_TABLE_OR_COL !@#$%^&*()_q) 'a'))))
+
+STAGE DEPENDENCIES:
+  Stage-1 is a root stage
+  Stage-0 is a root stage
+
+STAGE PLANS:
+  Stage: Stage-1
+    Map Reduce
+      Alias -> Map Operator Tree:
+        src_p 
+          TableScan
+            alias: src_p
+            Filter Operator
+              predicate:
+                  expr: (x+1 = '10')
+                  type: boolean
+              Select Operator
+                expressions:
+                      expr: x+1
+                      type: string
+                      expr: y&y
+                      type: string
+                      expr: !@#$%^&*()_q
+                      type: string
+                outputColumnNames: x+1, y&y, !@#$%^&*()_q
+                Group By Operator
+                  bucketGroup: false
+                  keys:
+                        expr: x+1
+                        type: string
+                        expr: y&y
+                        type: string
+                        expr: !@#$%^&*()_q
+                        type: string
+                  mode: hash
+                  outputColumnNames: _col0, _col1, _col2
+                  Reduce Output Operator
+                    key expressions:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
+                          expr: _col2
+                          type: string
+                    sort order: +++
+                    Map-reduce partition columns:
+                          expr: _col0
+                          type: string
+                          expr: _col1
+                          type: string
+                          expr: _col2
+                          type: string
+                    tag: -1
+      Reduce Operator Tree:
+        Group By Operator
+          bucketGroup: false
+          keys:
+                expr: KEY._col0
+                type: string
+                expr: KEY._col1
+                type: string
+                expr: KEY._col2
+                type: string
+          mode: mergepartial
+          outputColumnNames: _col0, _col1, _col2
+          Select Operator
+            expressions:
+                  expr: _col0
+                  type: string
+                  expr: _col1
+                  type: string
+                  expr: _col2
+                  type: string
+            outputColumnNames: _col0, _col1, _col2
+            File Output Operator
+              compressed: false
+              GlobalTableId: 0
+              table:
+                  input format: org.apache.hadoop.mapred.TextInputFormat
+                  output format: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+                  serde: org.apache.hadoop.hive.serde2.lazy.LazySimpleSerDe
+
+  Stage: Stage-0
+    Fetch Operator
+      limit: -1
+
+PREHOOK: query: create table src_p2(`x+1` string) partitioned by (`!@#$%^&*()_q` string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table src_p2(`x+1` string) partitioned by (`!@#$%^&*()_q` string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@src_p2
+POSTHOOK: Lineage: src_p PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: insert overwrite table src_p2 partition(`!@#$%^&*()_q`)
+select key, value as `!@#$%^&*()_q` from src where key < '200'
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_p2
+POSTHOOK: query: insert overwrite table src_p2 partition(`!@#$%^&*()_q`)
+select key, value as `!@#$%^&*()_q` from src where key < '200'
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_0
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_10
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_100
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_103
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_104
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_105
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_11
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_111
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_113
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_114
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_116
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_118
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_119
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_12
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_120
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_125
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_126
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_128
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_129
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_131
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_133
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_134
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_136
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_137
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_138
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_143
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_145
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_146
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_149
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_15
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_150
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_152
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_153
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_155
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_156
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_157
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_158
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_160
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_162
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_163
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_164
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_165
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_166
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_167
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_168
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_169
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_17
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_170
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_172
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_174
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_175
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_176
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_177
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_178
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_179
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_18
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_180
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_181
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_183
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_186
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_187
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_189
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_19
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_190
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_191
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_192
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_193
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_194
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_195
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_196
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_197
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_199
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_2
+POSTHOOK: Output: default@src_p2@!@%23$%25%5E&%2A()_q=val_20
+POSTHOOK: Lineage: src_p PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_0).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_100).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_103).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_104).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_105).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_10).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_111).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_113).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_114).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_116).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_118).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_119).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_11).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_120).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_125).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_126).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_128).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_129).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_12).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_131).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_133).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_134).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_136).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_137).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_138).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_143).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_145).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_146).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_149).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_150).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_152).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_153).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_155).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_156).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_157).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_158).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_15).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_160).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_162).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_163).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_164).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_165).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_166).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_167).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_168).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_169).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_170).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_172).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_174).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_175).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_176).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_177).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_178).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_179).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_17).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_180).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_181).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_183).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_186).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_187).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_189).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_18).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_190).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_191).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_192).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_193).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_194).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_195).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_196).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_197).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_199).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_19).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_20).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_2).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+PREHOOK: query: show partitions src_p2
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions src_p2
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Lineage: src_p PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_0).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_100).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_103).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_104).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_105).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_10).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_111).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_113).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_114).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_116).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_118).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_119).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_11).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_120).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_125).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_126).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_128).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_129).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_12).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_131).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_133).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_134).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_136).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_137).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_138).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_143).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_145).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_146).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_149).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_150).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_152).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_153).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_155).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_156).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_157).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_158).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_15).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_160).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_162).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_163).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_164).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_165).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_166).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_167).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_168).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_169).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_170).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_172).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_174).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_175).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_176).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_177).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_178).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_179).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_17).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_180).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_181).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_183).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_186).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_187).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_189).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_18).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_190).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_191).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_192).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_193).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_194).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_195).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_196).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_197).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_199).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_19).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_20).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p2 PARTITION(!@#$%^&*()_q=val_2).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+!@%23$%25%5E&%2A()_q=val_0
+!@%23$%25%5E&%2A()_q=val_10
+!@%23$%25%5E&%2A()_q=val_100
+!@%23$%25%5E&%2A()_q=val_103
+!@%23$%25%5E&%2A()_q=val_104
+!@%23$%25%5E&%2A()_q=val_105
+!@%23$%25%5E&%2A()_q=val_11
+!@%23$%25%5E&%2A()_q=val_111
+!@%23$%25%5E&%2A()_q=val_113
+!@%23$%25%5E&%2A()_q=val_114
+!@%23$%25%5E&%2A()_q=val_116
+!@%23$%25%5E&%2A()_q=val_118
+!@%23$%25%5E&%2A()_q=val_119
+!@%23$%25%5E&%2A()_q=val_12
+!@%23$%25%5E&%2A()_q=val_120
+!@%23$%25%5E&%2A()_q=val_125
+!@%23$%25%5E&%2A()_q=val_126
+!@%23$%25%5E&%2A()_q=val_128
+!@%23$%25%5E&%2A()_q=val_129
+!@%23$%25%5E&%2A()_q=val_131
+!@%23$%25%5E&%2A()_q=val_133
+!@%23$%25%5E&%2A()_q=val_134
+!@%23$%25%5E&%2A()_q=val_136
+!@%23$%25%5E&%2A()_q=val_137
+!@%23$%25%5E&%2A()_q=val_138
+!@%23$%25%5E&%2A()_q=val_143
+!@%23$%25%5E&%2A()_q=val_145
+!@%23$%25%5E&%2A()_q=val_146
+!@%23$%25%5E&%2A()_q=val_149
+!@%23$%25%5E&%2A()_q=val_15
+!@%23$%25%5E&%2A()_q=val_150
+!@%23$%25%5E&%2A()_q=val_152
+!@%23$%25%5E&%2A()_q=val_153
+!@%23$%25%5E&%2A()_q=val_155
+!@%23$%25%5E&%2A()_q=val_156
+!@%23$%25%5E&%2A()_q=val_157
+!@%23$%25%5E&%2A()_q=val_158
+!@%23$%25%5E&%2A()_q=val_160
+!@%23$%25%5E&%2A()_q=val_162
+!@%23$%25%5E&%2A()_q=val_163
+!@%23$%25%5E&%2A()_q=val_164
+!@%23$%25%5E&%2A()_q=val_165
+!@%23$%25%5E&%2A()_q=val_166
+!@%23$%25%5E&%2A()_q=val_167
+!@%23$%25%5E&%2A()_q=val_168
+!@%23$%25%5E&%2A()_q=val_169
+!@%23$%25%5E&%2A()_q=val_17
+!@%23$%25%5E&%2A()_q=val_170
+!@%23$%25%5E&%2A()_q=val_172
+!@%23$%25%5E&%2A()_q=val_174
+!@%23$%25%5E&%2A()_q=val_175
+!@%23$%25%5E&%2A()_q=val_176
+!@%23$%25%5E&%2A()_q=val_177
+!@%23$%25%5E&%2A()_q=val_178
+!@%23$%25%5E&%2A()_q=val_179
+!@%23$%25%5E&%2A()_q=val_18
+!@%23$%25%5E&%2A()_q=val_180
+!@%23$%25%5E&%2A()_q=val_181
+!@%23$%25%5E&%2A()_q=val_183
+!@%23$%25%5E&%2A()_q=val_186
+!@%23$%25%5E&%2A()_q=val_187
+!@%23$%25%5E&%2A()_q=val_189
+!@%23$%25%5E&%2A()_q=val_19
+!@%23$%25%5E&%2A()_q=val_190
+!@%23$%25%5E&%2A()_q=val_191
+!@%23$%25%5E&%2A()_q=val_192
+!@%23$%25%5E&%2A()_q=val_193
+!@%23$%25%5E&%2A()_q=val_194
+!@%23$%25%5E&%2A()_q=val_195
+!@%23$%25%5E&%2A()_q=val_196
+!@%23$%25%5E&%2A()_q=val_197
+!@%23$%25%5E&%2A()_q=val_199
+!@%23$%25%5E&%2A()_q=val_2
+!@%23$%25%5E&%2A()_q=val_20

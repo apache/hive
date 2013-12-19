@@ -37,7 +37,7 @@ POSTHOOK: query: ALTER TABLE xxx10 REPLACE COLUMNS (key int)
 POSTHOOK: type: ALTERTABLE_REPLACECOLS
 POSTHOOK: Input: default@xxx10
 POSTHOOK: Output: default@xxx10
-FAILED: SemanticException Line 1:30 Invalid column reference '`value`' in definition of VIEW xxx9 [
+FAILED: SemanticException Line 1:30 Invalid column reference 'value' in definition of VIEW xxx9 [
 SELECT `xxx10`.`key`, `xxx10`.`value` FROM `default`.`xxx10`
 ] used as xxx at Line 1:39 in definition of VIEW xxx8 [
 SELECT `xxx`.`key`, `xxx`.`value` FROM `default`.`xxx9` `xxx`

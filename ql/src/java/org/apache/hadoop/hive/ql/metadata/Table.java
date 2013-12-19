@@ -36,6 +36,7 @@ import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hive.common.JavaUtils;
+import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.MetaStoreUtils;
 import org.apache.hadoop.hive.metastore.ProtectMode;
 import org.apache.hadoop.hive.metastore.TableType;
@@ -195,7 +196,7 @@ public class Table implements Serializable {
     List<String> colNames = new ArrayList<String>();
     while (iterCols.hasNext()) {
       String colName = iterCols.next().getName();
-      if (!MetaStoreUtils.validateName(colName)) {
+      if (!MetaStoreUtils.validateColumnName(colName)) {
         throw new HiveException("Invalid column name '" + colName
             + "' in the table definition");
       }

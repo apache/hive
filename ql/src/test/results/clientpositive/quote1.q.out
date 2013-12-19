@@ -12,7 +12,7 @@ FROM src
 INSERT OVERWRITE TABLE dest1 PARTITION(`table`='2008-04-08') SELECT src.key as `partition`, src.value as `from` WHERE src.key >= 200 and src.key < 300
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest1) (TOK_PARTSPEC (TOK_PARTVAL `table` '2008-04-08')))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) `partition`) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) `from`)) (TOK_WHERE (and (>= (. (TOK_TABLE_OR_COL src) key) 200) (< (. (TOK_TABLE_OR_COL src) key) 300)))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME src))) (TOK_INSERT (TOK_DESTINATION (TOK_TAB (TOK_TABNAME dest1) (TOK_PARTSPEC (TOK_PARTVAL table '2008-04-08')))) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) key) partition) (TOK_SELEXPR (. (TOK_TABLE_OR_COL src) value) from)) (TOK_WHERE (and (>= (. (TOK_TABLE_OR_COL src) key) 200) (< (. (TOK_TABLE_OR_COL src) key) 300)))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
@@ -116,7 +116,7 @@ POSTHOOK: query: EXPLAIN
 SELECT `int`.`location`, `int`.`type`, `int`.`table` FROM dest1 `int` WHERE `int`.`table` = '2008-04-08'
 POSTHOOK: type: QUERY
 ABSTRACT SYNTAX TREE:
-  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME dest1) `int`)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL `int`) `location`)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL `int`) `type`)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL `int`) `table`))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL `int`) `table`) '2008-04-08'))))
+  (TOK_QUERY (TOK_FROM (TOK_TABREF (TOK_TABNAME dest1) int)) (TOK_INSERT (TOK_DESTINATION (TOK_DIR TOK_TMP_FILE)) (TOK_SELECT (TOK_SELEXPR (. (TOK_TABLE_OR_COL int) location)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL int) type)) (TOK_SELEXPR (. (TOK_TABLE_OR_COL int) table))) (TOK_WHERE (= (. (TOK_TABLE_OR_COL int) table) '2008-04-08'))))
 
 STAGE DEPENDENCIES:
   Stage-1 is a root stage
