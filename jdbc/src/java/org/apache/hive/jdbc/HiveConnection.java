@@ -142,7 +142,7 @@ public class HiveConnection implements java.sql.Connection {
     // open client session
     openSession();
 
-    configureConnection();
+    configureConnection(connParams.getDbName());
   }
 
   private void openTransport() throws SQLException {
@@ -276,7 +276,7 @@ public class HiveConnection implements java.sql.Connection {
     isClosed = false;
   }
 
-  private void configureConnection() throws SQLException {
+  private void configureConnection(String dbName) throws SQLException {
     // set the hive variable in session state for local mode
     if (isEmbeddedMode) {
       if (!hiveVarMap.isEmpty()) {
@@ -293,6 +293,8 @@ public class HiveConnection implements java.sql.Connection {
       for (Entry<String, String> hiveVar : hiveVarMap.entrySet()) {
         stmt.execute("set hivevar:" + hiveVar.getKey() + "=" + hiveVar.getValue());
       }
+      if(dbName!=null)
+        stmt.execute("use "+dbName);
       stmt.close();
     }
   }
