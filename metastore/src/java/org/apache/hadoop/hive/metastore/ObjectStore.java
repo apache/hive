@@ -2199,7 +2199,7 @@ public class ObjectStore implements RawStore, Configurable {
       params.put("dbName", dbName);
     }
 
-    tree.generateJDOFilterFragment(table, params, queryBuilder);
+    tree.generateJDOFilterFragment(getConf(), table, params, queryBuilder);
     if (queryBuilder.hasError()) {
       assert !isValidatedFilter;
       LOG.info("JDO filter pushdown cannot be used: " + queryBuilder.getErrorMessage());
