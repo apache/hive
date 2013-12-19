@@ -867,7 +867,13 @@ public class HiveConf extends Configuration {
     HIVESTAGEIDREARRANGE("hive.stageid.rearrange", "none"),
     HIVEEXPLAINDEPENDENCYAPPENDTASKTYPES("hive.explain.dependency.append.tasktype", false),
 
-    HIVECOUNTERGROUP("hive.counters.group.name", "HIVE")
+    HIVECOUNTERGROUP("hive.counters.group.name", "HIVE"),
+    
+    // none, column
+    // none is the default(past) behavior. Implies only alphaNumeric and underscore are valid characters in identifiers.
+    // column: implies column names can contain any character.
+    HIVE_QUOTEDID_SUPPORT("hive.support.quoted.identifiers", "column",
+        new PatternValidator("none", "column"))
     ;
 
     public final String varname;

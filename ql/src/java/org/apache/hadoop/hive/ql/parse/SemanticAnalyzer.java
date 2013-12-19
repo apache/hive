@@ -266,7 +266,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
     listMapJoinOpsNoReducer = new ArrayList<AbstractMapJoinOperator<? extends MapJoinDesc>>();
     groupOpToInputTables = new HashMap<GroupByOperator, Set<String>>();
     prunedPartitions = new HashMap<String, PrunedPartitionList>();
-    unparseTranslator = new UnparseTranslator();
+    unparseTranslator = new UnparseTranslator(conf);
     autogenColAliasPrfxLbl = HiveConf.getVar(conf,
         HiveConf.ConfVars.HIVE_AUTOGEN_COLUMNALIAS_PREFIX_LABEL);
     autogenColAliasPrfxIncludeFuncName = HiveConf.getBoolVar(conf,
@@ -1350,7 +1350,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       String viewText = tab.getViewExpandedText();
       // Reparse text, passing null for context to avoid clobbering
       // the top-level token stream.
-      ASTNode tree = pd.parse(viewText, null);
+      ASTNode tree = pd.parse(viewText, ctx, false);
       tree = ParseUtils.findRootNonNullToken(tree);
       viewTree = tree;
       Dispatcher nodeOriginDispatcher = new Dispatcher() {
@@ -2190,9 +2190,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           if (replacementText.length() > 0) {
             replacementText.append(", ");
           }
-          replacementText.append(HiveUtils.unparseIdentifier(tmp[0]));
+          replacementText.append(HiveUtils.unparseIdentifier(tmp[0], conf));
           replacementText.append(".");
-          replacementText.append(HiveUtils.unparseIdentifier(tmp[1]));
+          replacementText.append(HiveUtils.unparseIdentifier(tmp[1], conf));
         }
       }
     }
@@ -2748,7 +2748,11 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
    * Returns whether the pattern is a regex expression (instead of a normal
    * string). Normal string is a string with all alphabets/digits and "_".
    */
-  private static boolean isRegex(String pattern) {
+  private static boolean isRegex(String pattern, HiveConf conf) {
+    String qIdSupport = HiveConf.getVar(conf, HiveConf.ConfVars.HIVE_QUOTEDID_SUPPORT);
+    if ( "column".equals(qIdSupport)) {
+      return false;
+    }    
     for (int i = 0; i < pattern.length(); i++) {
       if (!Character.isLetterOrDigit(pattern.charAt(i))
           && pattern.charAt(i) != '_') {
@@ -2942,7 +2946,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         selectStar = true;
       } else if (expr.getType() == HiveParser.TOK_TABLE_OR_COL && !hasAsClause
           && !inputRR.getIsExprResolver()
-          && isRegex(unescapeIdentifier(expr.getChild(0).getText()))) {
+          && isRegex(unescapeIdentifier(expr.getChild(0).getText()), conf)) {
         // In case the expression is a regex COL.
         // This can only happen without AS clause
         // We don't allow this for ExprResolver - the Group By case
@@ -2953,7 +2957,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
           && inputRR.hasTableAlias(unescapeIdentifier(expr.getChild(0)
               .getChild(0).getText().toLowerCase())) && !hasAsClause
           && !inputRR.getIsExprResolver()
-          && isRegex(unescapeIdentifier(expr.getChild(1).getText()))) {
+          && isRegex(unescapeIdentifier(expr.getChild(1).getText()), conf)) {
         // In case the expression is TABLE.COL (col can be regex).
         // This can only happen without AS clause
         // We don't allow this for ExprResolver - the Group By case
@@ -9017,10 +9021,10 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
         // Modify a copy, not the original
         fieldSchema = new FieldSchema(fieldSchema);
         derivedSchema.set(i, fieldSchema);
-        sb.append(HiveUtils.unparseIdentifier(fieldSchema.getName()));
+        sb.append(HiveUtils.unparseIdentifier(fieldSchema.getName(), conf));
         sb.append(" AS ");
         String imposedName = imposedSchema.get(i).getName();
-        sb.append(HiveUtils.unparseIdentifier(imposedName));
+        sb.append(HiveUtils.unparseIdentifier(imposedName, conf));
         fieldSchema.setName(imposedName);
         // We don't currently allow imposition of a type
         fieldSchema.setComment(imposedSchema.get(i).getComment());
@@ -9028,7 +9032,7 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       sb.append(" FROM (");
       sb.append(expandedText);
       sb.append(") ");
-      sb.append(HiveUtils.unparseIdentifier(createVwDesc.getViewName()));
+      sb.append(HiveUtils.unparseIdentifier(createVwDesc.getViewName(), conf));
       expandedText = sb.toString();
     }
 
@@ -9209,9 +9213,9 @@ public class SemanticAnalyzer extends BaseSemanticAnalyzer {
       }
       String[] tmp = input.reverseLookup(columnDesc.getColumn());
       StringBuilder replacementText = new StringBuilder();
-      replacementText.append(HiveUtils.unparseIdentifier(tmp[0]));
+      replacementText.append(HiveUtils.unparseIdentifier(tmp[0], conf));
       replacementText.append(".");
-      replacementText.append(HiveUtils.unparseIdentifier(tmp[1]));
+      replacementText.append(HiveUtils.unparseIdentifier(tmp[1], conf));
       unparseTranslator.addTranslation(node, replacementText.toString());
     }
 

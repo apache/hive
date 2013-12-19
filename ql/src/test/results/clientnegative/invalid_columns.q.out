@@ -1,5 +1,0 @@
-PREHOOK: query: CREATE TABLE DELETEJAR(KEY STRING, VALUE STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.TestSerDe' 
-STORED AS TEXTFILE
-TBLPROPERTIES('columns'='valid_colname,invalid.colname')
-PREHOOK: type: CREATETABLE
-FAILED: Execution Error, return code 1 from org.apache.hadoop.hive.ql.exec.DDLTask. org.apache.hadoop.hive.ql.metadata.HiveException: Invalid column name 'invalid.colname' in the table definition
