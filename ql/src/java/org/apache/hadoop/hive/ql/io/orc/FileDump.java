@@ -82,6 +82,7 @@ public final class FileDump {
           System.out.println(buf);
         }
       }
+      rows.close();
     }
   }
 }
