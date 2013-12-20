@@ -439,218 +439,214 @@
        <string>src2</string> 
        <object id="TableScanOperator0" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
         <void property="childOperators"> 
-         <object class="java.util.ArrayList"> 
-          <void method="add"> 
-           <object id="ReduceSinkOperator0" class="org.apache.hadoop.hive.ql.exec.ReduceSinkOperator"> 
-            <void property="columnExprMap"> 
-             <object class="java.util.HashMap"> 
-              <void method="put"> 
-               <string>VALUE._col1</string> 
-               <object id="ExprNodeColumnDesc0" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                <void property="column"> 
-                 <string>value</string> 
-                </void> 
-                <void property="tabAlias"> 
-                 <string>src2</string> 
-                </void> 
-                <void property="typeInfo"> 
-                 <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
-                  <void property="typeName"> 
-                   <string>string</string> 
-                  </void> 
-                 </object> 
-                </void> 
-               </object> 
-              </void> 
-              <void method="put"> 
-               <string>VALUE._col0</string> 
-               <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                <void property="column"> 
-                 <string>key</string> 
-                </void> 
-                <void property="tabAlias"> 
-                 <string>src2</string> 
-                </void> 
-                <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo0"/> 
-                </void> 
-               </object> 
-              </void> 
-             </object> 
+         <void method="add"> 
+          <object id="ReduceSinkOperator0" class="org.apache.hadoop.hive.ql.exec.ReduceSinkOperator"> 
+           <void property="columnExprMap"> 
+            <object class="java.util.HashMap"> 
+             <void method="put"> 
+              <string>VALUE._col1</string> 
+              <object id="ExprNodeColumnDesc0" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+               <void property="column"> 
+                <string>value</string> 
+               </void> 
+               <void property="tabAlias"> 
+                <string>src2</string> 
+               </void> 
+               <void property="typeInfo"> 
+                <object id="PrimitiveTypeInfo0" class="org.apache.hadoop.hive.serde2.typeinfo.PrimitiveTypeInfo"> 
+                 <void property="typeName"> 
+                  <string>string</string> 
+                 </void> 
+                </object> 
+               </void> 
+              </object> 
+             </void> 
+             <void method="put"> 
+              <string>VALUE._col0</string> 
+              <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+               <void property="column"> 
+                <string>key</string> 
+               </void> 
+               <void property="tabAlias"> 
+                <string>src2</string> 
+               </void> 
+               <void property="typeInfo"> 
+                <object idref="PrimitiveTypeInfo0"/> 
+               </void> 
+              </object> 
+             </void> 
+            </object> 
+           </void> 
+           <void property="conf"> 
+            <object class="org.apache.hadoop.hive.ql.plan.ReduceSinkDesc"> 
+             <void property="distinctColumnIndices"> 
+              <object class="java.util.ArrayList"/> 
+             </void> 
+             <void property="keyCols"> 
+              <object id="ArrayList0" class="java.util.ArrayList"> 
+               <void method="add"> 
+                <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                 <void property="column"> 
+                  <string>key</string> 
+                 </void> 
+                 <void property="tabAlias"> 
+                  <string>src2</string> 
+                 </void> 
+                 <void property="typeInfo"> 
+                  <object idref="PrimitiveTypeInfo0"/> 
+                 </void> 
+                </object> 
+               </void> 
+              </object> 
+             </void> 
+             <void property="keySerializeInfo"> 
+              <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
+               <void property="inputFileFormatClass"> 
+                <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
+               </void> 
+               <void property="outputFileFormatClass"> 
+                <class>org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat</class> 
+               </void> 
+               <void property="properties"> 
+                <object class="java.util.Properties"> 
+                 <void method="put"> 
+                  <string>columns</string> 
+                  <string>joinkey0</string> 
+                 </void> 
+                 <void method="put"> 
+                  <string>serialization.lib</string> 
+                  <string>org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe</string> 
+                 </void> 
+                 <void method="put"> 
+                  <string>serialization.sort.order</string> 
+                  <string>+</string> 
+                 </void> 
+                 <void method="put"> 
+                  <string>columns.types</string> 
+                  <string>string</string> 
+                 </void> 
+                </object> 
+               </void> 
+              </object> 
+             </void> 
+             <void property="numDistributionKeys"> 
+              <int>1</int> 
+             </void> 
+             <void property="numReducers"> 
+              <int>-1</int> 
+             </void> 
+             <void property="outputKeyColumnNames"> 
+              <object class="java.util.ArrayList"> 
+               <void method="add"> 
+                <string>reducesinkkey0</string> 
+               </void> 
+              </object> 
+             </void> 
+             <void property="outputValueColumnNames"> 
+              <object class="java.util.ArrayList"> 
+               <void method="add"> 
+                <string>_col1</string> 
+               </void> 
+              </object> 
+             </void> 
+             <void property="partitionCols"> 
+              <object idref="ArrayList0"/> 
+             </void> 
+             <void property="tag"> 
+              <int>1</int> 
+             </void> 
+             <void property="valueCols"> 
+              <object class="java.util.ArrayList"> 
+               <void method="add"> 
+                <object idref="ExprNodeColumnDesc0"/> 
+               </void> 
+              </object> 
+             </void> 
+             <void property="valueSerializeInfo"> 
+              <object id="TableDesc1" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
+               <void property="inputFileFormatClass"> 
+                <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
+               </void> 
+               <void property="outputFileFormatClass"> 
+                <class>org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat</class> 
+               </void> 
+               <void property="properties"> 
+                <object class="java.util.Properties"> 
+                 <void method="put"> 
+                  <string>columns</string> 
+                  <string>_col1</string> 
+                 </void> 
+                 <void method="put"> 
+                  <string>serialization.lib</string> 
+                  <string>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</string> 
+                 </void> 
+                 <void method="put"> 
+                  <string>columns.types</string> 
+                  <string>string</string> 
+                 </void> 
+                 <void method="put"> 
+                  <string>escape.delim</string> 
+                  <string>\</string> 
+                 </void> 
+                </object> 
+               </void> 
+              </object> 
+             </void> 
+            </object> 
+           </void> 
+           <void property="inputAlias"> 
+            <string>src2</string> 
+           </void> 
+           <void property="operatorId"> 
+            <string>RS_3</string> 
+           </void> 
+           <void property="parentOperators"> 
+            <void method="add"> 
+             <object idref="TableScanOperator0"/> 
             </void> 
-            <void property="conf"> 
-             <object class="org.apache.hadoop.hive.ql.plan.ReduceSinkDesc"> 
-              <void property="distinctColumnIndices"> 
-               <object class="java.util.ArrayList"/> 
-              </void> 
-              <void property="keyCols"> 
-               <object id="ArrayList0" class="java.util.ArrayList"> 
-                <void method="add"> 
-                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                  <void property="column"> 
-                   <string>key</string> 
-                  </void> 
-                  <void property="tabAlias"> 
-                   <string>src2</string> 
-                  </void> 
-                  <void property="typeInfo"> 
-                   <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                 </object> 
-                </void> 
-               </object> 
-              </void> 
-              <void property="keySerializeInfo"> 
-               <object class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-                <void property="inputFileFormatClass"> 
-                 <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
-                </void> 
-                <void property="outputFileFormatClass"> 
-                 <class>org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat</class> 
-                </void> 
-                <void property="properties"> 
-                 <object class="java.util.Properties"> 
-                  <void method="put"> 
-                   <string>columns</string> 
-                   <string>joinkey0</string> 
-                  </void> 
-                  <void method="put"> 
-                   <string>serialization.lib</string> 
-                   <string>org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe</string> 
-                  </void> 
-                  <void method="put"> 
-                   <string>serialization.sort.order</string> 
-                   <string>+</string> 
-                  </void> 
-                  <void method="put"> 
-                   <string>columns.types</string> 
-                   <string>string</string> 
-                  </void> 
-                 </object> 
-                </void> 
-               </object> 
-              </void> 
-              <void property="numDistributionKeys"> 
-               <int>1</int> 
-              </void> 
-              <void property="numReducers"> 
-               <int>-1</int> 
-              </void> 
-              <void property="outputKeyColumnNames"> 
-               <object class="java.util.ArrayList"> 
-                <void method="add"> 
-                 <string>reducesinkkey0</string> 
-                </void> 
-               </object> 
-              </void> 
-              <void property="outputValueColumnNames"> 
-               <object class="java.util.ArrayList"> 
-                <void method="add"> 
-                 <string>_col1</string> 
-                </void> 
-               </object> 
-              </void> 
-              <void property="partitionCols"> 
-               <object idref="ArrayList0"/> 
-              </void> 
-              <void property="tag"> 
-               <int>1</int> 
-              </void> 
-              <void property="valueCols"> 
-               <object class="java.util.ArrayList"> 
-                <void method="add"> 
-                 <object idref="ExprNodeColumnDesc0"/> 
-                </void> 
-               </object> 
-              </void> 
-              <void property="valueSerializeInfo"> 
-               <object id="TableDesc1" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-                <void property="inputFileFormatClass"> 
-                 <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
-                </void> 
-                <void property="outputFileFormatClass"> 
-                 <class>org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat</class> 
-                </void> 
-                <void property="properties"> 
-                 <object class="java.util.Properties"> 
-                  <void method="put"> 
-                   <string>columns</string> 
-                   <string>_col1</string> 
-                  </void> 
-                  <void method="put"> 
-                   <string>serialization.lib</string> 
-                   <string>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</string> 
-                  </void> 
-                  <void method="put"> 
-                   <string>columns.types</string> 
-                   <string>string</string> 
-                  </void> 
-                  <void method="put"> 
-                   <string>escape.delim</string> 
-                   <string>\</string> 
-                  </void> 
-                 </object> 
-                </void> 
-               </object> 
-              </void> 
-             </object> 
-            </void> 
-            <void property="inputAlias"> 
-             <string>src2</string> 
-            </void> 
-            <void property="operatorId"> 
-             <string>RS_3</string> 
-            </void> 
-            <void property="parentOperators"> 
-             <object class="java.util.ArrayList"> 
-              <void method="add"> 
-               <object idref="TableScanOperator0"/> 
-              </void> 
-             </object> 
-            </void> 
-            <void property="schema"> 
-             <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
-              <void property="signature"> 
-               <object class="java.util.ArrayList"> 
-                <void method="add"> 
-                 <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                  <void property="internalName"> 
-                   <string>VALUE._col0</string> 
-                  </void> 
-                  <void property="tabAlias"> 
-                   <string>src2</string> 
-                  </void> 
-                  <void property="type"> 
-                   <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                  <void property="typeName"> 
-                   <string>string</string> 
-                  </void> 
-                 </object> 
-                </void> 
-                <void method="add"> 
-                 <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                  <void property="internalName"> 
-                   <string>VALUE._col1</string> 
-                  </void> 
-                  <void property="tabAlias"> 
-                   <string>src2</string> 
-                  </void> 
-                  <void property="type"> 
-                   <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                  <void property="typeName"> 
-                   <string>string</string> 
-                  </void> 
-                 </object> 
-                </void> 
-               </object> 
-              </void> 
-             </object> 
-            </void> 
-           </object> 
-          </void> 
-         </object> 
+           </void> 
+           <void property="schema"> 
+            <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
+             <void property="signature"> 
+              <object class="java.util.ArrayList"> 
+               <void method="add"> 
+                <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                 <void property="internalName"> 
+                  <string>VALUE._col0</string> 
+                 </void> 
+                 <void property="tabAlias"> 
+                  <string>src2</string> 
+                 </void> 
+                 <void property="type"> 
+                  <object idref="PrimitiveTypeInfo0"/> 
+                 </void> 
+                 <void property="typeName"> 
+                  <string>string</string> 
+                 </void> 
+                </object> 
+               </void> 
+               <void method="add"> 
+                <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                 <void property="internalName"> 
+                  <string>VALUE._col1</string> 
+                 </void> 
+                 <void property="tabAlias"> 
+                  <string>src2</string> 
+                 </void> 
+                 <void property="type"> 
+                  <object idref="PrimitiveTypeInfo0"/> 
+                 </void> 
+                 <void property="typeName"> 
+                  <string>string</string> 
+                 </void> 
+                </object> 
+               </void> 
+              </object> 
+             </void> 
+            </object> 
+           </void> 
+          </object> 
+         </void> 
         </void> 
         <void property="conf"> 
          <object class="org.apache.hadoop.hive.ql.plan.TableScanDesc"> 
@@ -773,181 +769,177 @@
        <string>src1</string> 
        <object id="TableScanOperator1" class="org.apache.hadoop.hive.ql.exec.TableScanOperator"> 
         <void property="childOperators"> 
-         <object class="java.util.ArrayList"> 
-          <void method="add"> 
-           <object id="ReduceSinkOperator1" class="org.apache.hadoop.hive.ql.exec.ReduceSinkOperator"> 
-            <void property="columnExprMap"> 
-             <object class="java.util.HashMap"> 
-              <void method="put"> 
-               <string>VALUE._col0</string> 
-               <object id="ExprNodeColumnDesc1" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                <void property="column"> 
-                 <string>key</string> 
-                </void> 
-                <void property="tabAlias"> 
-                 <string>src1</string> 
-                </void> 
-                <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo0"/> 
-                </void> 
-               </object> 
-              </void> 
-             </object> 
+         <void method="add"> 
+          <object id="ReduceSinkOperator1" class="org.apache.hadoop.hive.ql.exec.ReduceSinkOperator"> 
+           <void property="columnExprMap"> 
+            <object class="java.util.HashMap"> 
+             <void method="put"> 
+              <string>VALUE._col0</string> 
+              <object id="ExprNodeColumnDesc1" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+               <void property="column"> 
+                <string>key</string> 
+               </void> 
+               <void property="tabAlias"> 
+                <string>src1</string> 
+               </void> 
+               <void property="typeInfo"> 
+                <object idref="PrimitiveTypeInfo0"/> 
+               </void> 
+              </object> 
+             </void> 
+            </object> 
+           </void> 
+           <void property="conf"> 
+            <object class="org.apache.hadoop.hive.ql.plan.ReduceSinkDesc"> 
+             <void property="distinctColumnIndices"> 
+              <object class="java.util.ArrayList"/> 
+             </void> 
+             <void property="keyCols"> 
+              <object id="ArrayList1" class="java.util.ArrayList"> 
+               <void method="add"> 
+                <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+                 <void property="column"> 
+                  <string>key</string> 
+                 </void> 
+                 <void property="tabAlias"> 
+                  <string>src1</string> 
+                 </void> 
+                 <void property="typeInfo"> 
+                  <object idref="PrimitiveTypeInfo0"/> 
+                 </void> 
+                </object> 
+               </void> 
+              </object> 
+             </void> 
+             <void property="keySerializeInfo"> 
+              <object id="TableDesc2" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
+               <void property="inputFileFormatClass"> 
+                <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
+               </void> 
+               <void property="outputFileFormatClass"> 
+                <class>org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat</class> 
+               </void> 
+               <void property="properties"> 
+                <object class="java.util.Properties"> 
+                 <void method="put"> 
+                  <string>columns</string> 
+                  <string>joinkey0</string> 
+                 </void> 
+                 <void method="put"> 
+                  <string>serialization.lib</string> 
+                  <string>org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe</string> 
+                 </void> 
+                 <void method="put"> 
+                  <string>serialization.sort.order</string> 
+                  <string>+</string> 
+                 </void> 
+                 <void method="put"> 
+                  <string>columns.types</string> 
+                  <string>string</string> 
+                 </void> 
+                </object> 
+               </void> 
+              </object> 
+             </void> 
+             <void property="numDistributionKeys"> 
+              <int>1</int> 
+             </void> 
+             <void property="numReducers"> 
+              <int>-1</int> 
+             </void> 
+             <void property="outputKeyColumnNames"> 
+              <object class="java.util.ArrayList"> 
+               <void method="add"> 
+                <string>reducesinkkey0</string> 
+               </void> 
+              </object> 
+             </void> 
+             <void property="outputValueColumnNames"> 
+              <object class="java.util.ArrayList"> 
+               <void method="add"> 
+                <string>_col0</string> 
+               </void> 
+              </object> 
+             </void> 
+             <void property="partitionCols"> 
+              <object idref="ArrayList1"/> 
+             </void> 
+             <void property="valueCols"> 
+              <object class="java.util.ArrayList"> 
+               <void method="add"> 
+                <object idref="ExprNodeColumnDesc1"/> 
+               </void> 
+              </object> 
+             </void> 
+             <void property="valueSerializeInfo"> 
+              <object id="TableDesc3" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
+               <void property="inputFileFormatClass"> 
+                <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
+               </void> 
+               <void property="outputFileFormatClass"> 
+                <class>org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat</class> 
+               </void> 
+               <void property="properties"> 
+                <object class="java.util.Properties"> 
+                 <void method="put"> 
+                  <string>columns</string> 
+                  <string>_col0</string> 
+                 </void> 
+                 <void method="put"> 
+                  <string>serialization.lib</string> 
+                  <string>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</string> 
+                 </void> 
+                 <void method="put"> 
+                  <string>columns.types</string> 
+                  <string>string</string> 
+                 </void> 
+                 <void method="put"> 
+                  <string>escape.delim</string> 
+                  <string>\</string> 
+                 </void> 
+                </object> 
+               </void> 
+              </object> 
+             </void> 
+            </object> 
+           </void> 
+           <void property="inputAlias"> 
+            <string>src1</string> 
+           </void> 
+           <void property="operatorId"> 
+            <string>RS_2</string> 
+           </void> 
+           <void property="parentOperators"> 
+            <void method="add"> 
+             <object idref="TableScanOperator1"/> 
             </void> 
-            <void property="conf"> 
-             <object class="org.apache.hadoop.hive.ql.plan.ReduceSinkDesc"> 
-              <void property="distinctColumnIndices"> 
-               <object class="java.util.ArrayList"/> 
-              </void> 
-              <void property="keyCols"> 
-               <object id="ArrayList1" class="java.util.ArrayList"> 
-                <void method="add"> 
-                 <object class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                  <void property="column"> 
-                   <string>key</string> 
-                  </void> 
-                  <void property="tabAlias"> 
-                   <string>src1</string> 
-                  </void> 
-                  <void property="typeInfo"> 
-                   <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                 </object> 
-                </void> 
-               </object> 
-              </void> 
-              <void property="keySerializeInfo"> 
-               <object id="TableDesc2" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-                <void property="inputFileFormatClass"> 
-                 <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
-                </void> 
-                <void property="outputFileFormatClass"> 
-                 <class>org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat</class> 
-                </void> 
-                <void property="properties"> 
-                 <object class="java.util.Properties"> 
-                  <void method="put"> 
-                   <string>columns</string> 
-                   <string>joinkey0</string> 
-                  </void> 
-                  <void method="put"> 
-                   <string>serialization.lib</string> 
-                   <string>org.apache.hadoop.hive.serde2.binarysortable.BinarySortableSerDe</string> 
-                  </void> 
-                  <void method="put"> 
-                   <string>serialization.sort.order</string> 
-                   <string>+</string> 
-                  </void> 
-                  <void method="put"> 
-                   <string>columns.types</string> 
-                   <string>string</string> 
-                  </void> 
-                 </object> 
-                </void> 
-               </object> 
-              </void> 
-              <void property="numDistributionKeys"> 
-               <int>1</int> 
-              </void> 
-              <void property="numReducers"> 
-               <int>-1</int> 
-              </void> 
-              <void property="outputKeyColumnNames"> 
-               <object class="java.util.ArrayList"> 
-                <void method="add"> 
-                 <string>reducesinkkey0</string> 
-                </void> 
-               </object> 
-              </void> 
-              <void property="outputValueColumnNames"> 
-               <object class="java.util.ArrayList"> 
-                <void method="add"> 
-                 <string>_col0</string> 
-                </void> 
-               </object> 
-              </void> 
-              <void property="partitionCols"> 
-               <object idref="ArrayList1"/> 
-              </void> 
-              <void property="valueCols"> 
-               <object class="java.util.ArrayList"> 
-                <void method="add"> 
-                 <object idref="ExprNodeColumnDesc1"/> 
-                </void> 
-               </object> 
-              </void> 
-              <void property="valueSerializeInfo"> 
-               <object id="TableDesc3" class="org.apache.hadoop.hive.ql.plan.TableDesc"> 
-                <void property="inputFileFormatClass"> 
-                 <class>org.apache.hadoop.mapred.SequenceFileInputFormat</class> 
-                </void> 
-                <void property="outputFileFormatClass"> 
-                 <class>org.apache.hadoop.hive.ql.io.HiveSequenceFileOutputFormat</class> 
-                </void> 
-                <void property="properties"> 
-                 <object class="java.util.Properties"> 
-                  <void method="put"> 
-                   <string>columns</string> 
-                   <string>_col0</string> 
-                  </void> 
-                  <void method="put"> 
-                   <string>serialization.lib</string> 
-                   <string>org.apache.hadoop.hive.serde2.lazybinary.LazyBinarySerDe</string> 
-                  </void> 
-                  <void method="put"> 
-                   <string>columns.types</string> 
-                   <string>string</string> 
-                  </void> 
-                  <void method="put"> 
-                   <string>escape.delim</string> 
-                   <string>\</string> 
-                  </void> 
-                 </object> 
-                </void> 
-               </object> 
-              </void> 
-             </object> 
-            </void> 
-            <void property="inputAlias"> 
-             <string>src1</string> 
-            </void> 
-            <void property="operatorId"> 
-             <string>RS_2</string> 
-            </void> 
-            <void property="parentOperators"> 
-             <object class="java.util.ArrayList"> 
-              <void method="add"> 
-               <object idref="TableScanOperator1"/> 
-              </void> 
-             </object> 
-            </void> 
-            <void property="schema"> 
-             <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
-              <void property="signature"> 
-               <object class="java.util.ArrayList"> 
-                <void method="add"> 
-                 <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                  <void property="internalName"> 
-                   <string>VALUE._col0</string> 
-                  </void> 
-                  <void property="tabAlias"> 
-                   <string>src1</string> 
-                  </void> 
-                  <void property="type"> 
-                   <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                  <void property="typeName"> 
-                   <string>string</string> 
-                  </void> 
-                 </object> 
-                </void> 
-               </object> 
-              </void> 
-             </object> 
-            </void> 
-           </object> 
-          </void> 
-         </object> 
+           </void> 
+           <void property="schema"> 
+            <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
+             <void property="signature"> 
+              <object class="java.util.ArrayList"> 
+               <void method="add"> 
+                <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                 <void property="internalName"> 
+                  <string>VALUE._col0</string> 
+                 </void> 
+                 <void property="tabAlias"> 
+                  <string>src1</string> 
+                 </void> 
+                 <void property="type"> 
+                  <object idref="PrimitiveTypeInfo0"/> 
+                 </void> 
+                 <void property="typeName"> 
+                  <string>string</string> 
+                 </void> 
+                </object> 
+               </void> 
+              </object> 
+             </void> 
+            </object> 
+           </void> 
+          </object> 
+         </void> 
         </void> 
         <void property="conf"> 
          <object class="org.apache.hadoop.hive.ql.plan.TableScanDesc"> 
@@ -1256,92 +1248,86 @@
       <void property="reducer"> 
        <object id="JoinOperator0" class="org.apache.hadoop.hive.ql.exec.JoinOperator"> 
         <void property="childOperators"> 
-         <object class="java.util.ArrayList"> 
-          <void method="add"> 
-           <object id="SelectOperator0" class="org.apache.hadoop.hive.ql.exec.SelectOperator"> 
-            <void property="childOperators"> 
-             <object class="java.util.ArrayList"> 
-              <void method="add"> 
-               <object class="org.apache.hadoop.hive.ql.exec.FileSinkOperator"> 
-                <void property="conf"> 
-                 <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
-                  <void property="destTableId"> 
-                   <int>1</int> 
-                  </void> 
-                  <void property="dirName"> 
-                   #### A masked pattern was here #### 
-                  </void> 
-                  <void property="gatherStats"> 
-                   <boolean>true</boolean> 
-                  </void> 
-                  <void property="lbCtx"> 
-                   <object idref="ListBucketingCtx0"/> 
-                  </void> 
-                  <void property="maxStatsKeyPrefixLength"> 
-                   <int>150</int> 
-                  </void> 
-                  <void property="numFiles"> 
-                   <int>1</int> 
-                  </void> 
-                  <void property="statsAggPrefix"> 
-                   #### A masked pattern was here #### 
-                  </void> 
-                  <void property="statsCollectRawDataSize"> 
-                   <boolean>true</boolean> 
-                  </void> 
-                  <void property="tableInfo"> 
-                   <object idref="TableDesc0"/> 
-                  </void> 
-                  <void property="totalFiles"> 
-                   <int>1</int> 
-                  </void> 
-                 </object> 
+         <void method="add"> 
+          <object id="SelectOperator0" class="org.apache.hadoop.hive.ql.exec.SelectOperator"> 
+           <void property="childOperators"> 
+            <void method="add"> 
+             <object class="org.apache.hadoop.hive.ql.exec.FileSinkOperator"> 
+              <void property="conf"> 
+               <object class="org.apache.hadoop.hive.ql.plan.FileSinkDesc"> 
+                <void property="destTableId"> 
+                 <int>1</int> 
                 </void> 
-                <void property="operatorId"> 
-                 <string>FS_6</string> 
+                <void property="dirName"> 
+                 #### A masked pattern was here #### 
                 </void> 
-                <void property="parentOperators"> 
+                <void property="gatherStats"> 
+                 <boolean>true</boolean> 
+                </void> 
+                <void property="lbCtx"> 
+                 <object idref="ListBucketingCtx0"/> 
+                </void> 
+                <void property="maxStatsKeyPrefixLength"> 
+                 <int>150</int> 
+                </void> 
+                <void property="numFiles"> 
+                 <int>1</int> 
+                </void> 
+                <void property="statsAggPrefix"> 
+                 #### A masked pattern was here #### 
+                </void> 
+                <void property="statsCollectRawDataSize"> 
+                 <boolean>true</boolean> 
+                </void> 
+                <void property="tableInfo"> 
+                 <object idref="TableDesc0"/> 
+                </void> 
+                <void property="totalFiles"> 
+                 <int>1</int> 
+                </void> 
+               </object> 
+              </void> 
+              <void property="operatorId"> 
+               <string>FS_6</string> 
+              </void> 
+              <void property="parentOperators"> 
+               <void method="add"> 
+                <object idref="SelectOperator0"/> 
+               </void> 
+              </void> 
+              <void property="schema"> 
+               <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
+                <void property="signature"> 
                  <object class="java.util.ArrayList"> 
                   <void method="add"> 
-                   <object idref="SelectOperator0"/> 
-                  </void> 
-                 </object> 
-                </void> 
-                <void property="schema"> 
-                 <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
-                  <void property="signature"> 
-                   <object class="java.util.ArrayList"> 
-                    <void method="add"> 
-                     <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                      <void property="internalName"> 
-                       <string>key</string> 
-                      </void> 
-                      <void property="tabAlias"> 
-                       <string></string> 
-                      </void> 
-                      <void property="type"> 
-                       <object idref="PrimitiveTypeInfo0"/> 
-                      </void> 
-                      <void property="typeName"> 
-                       <string>string</string> 
-                      </void> 
-                     </object> 
+                   <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                    <void property="internalName"> 
+                     <string>key</string> 
                     </void> 
-                    <void method="add"> 
-                     <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                      <void property="internalName"> 
-                       <string>value</string> 
-                      </void> 
-                      <void property="tabAlias"> 
-                       <string></string> 
-                      </void> 
-                      <void property="type"> 
-                       <object idref="PrimitiveTypeInfo0"/> 
-                      </void> 
-                      <void property="typeName"> 
-                       <string>string</string> 
-                      </void> 
-                     </object> 
+                    <void property="tabAlias"> 
+                     <string></string> 
+                    </void> 
+                    <void property="type"> 
+                     <object idref="PrimitiveTypeInfo0"/> 
+                    </void> 
+                    <void property="typeName"> 
+                     <string>string</string> 
+                    </void> 
+                   </object> 
+                  </void> 
+                  <void method="add"> 
+                   <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                    <void property="internalName"> 
+                     <string>value</string> 
+                    </void> 
+                    <void property="tabAlias"> 
+                     <string></string> 
+                    </void> 
+                    <void property="type"> 
+                     <object idref="PrimitiveTypeInfo0"/> 
+                    </void> 
+                    <void property="typeName"> 
+                     <string>string</string> 
                     </void> 
                    </object> 
                   </void> 
@@ -1351,115 +1337,113 @@
               </void> 
              </object> 
             </void> 
-            <void property="columnExprMap"> 
-             <object class="java.util.HashMap"> 
-              <void method="put"> 
-               <string>_col1</string> 
-               <object id="ExprNodeColumnDesc2" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                <void property="column"> 
-                 <string>_col5</string> 
-                </void> 
-                <void property="tabAlias"> 
-                 <string>src2</string> 
-                </void> 
-                <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo0"/> 
-                </void> 
-               </object> 
-              </void> 
-              <void method="put"> 
-               <string>_col0</string> 
-               <object id="ExprNodeColumnDesc3" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
-                <void property="column"> 
-                 <string>_col0</string> 
-                </void> 
-                <void property="tabAlias"> 
-                 <string>src1</string> 
-                </void> 
-                <void property="typeInfo"> 
-                 <object idref="PrimitiveTypeInfo0"/> 
-                </void> 
-               </object> 
-              </void> 
-             </object> 
+           </void> 
+           <void property="columnExprMap"> 
+            <object class="java.util.HashMap"> 
+             <void method="put"> 
+              <string>_col1</string> 
+              <object id="ExprNodeColumnDesc2" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+               <void property="column"> 
+                <string>_col5</string> 
+               </void> 
+               <void property="tabAlias"> 
+                <string>src2</string> 
+               </void> 
+               <void property="typeInfo"> 
+                <object idref="PrimitiveTypeInfo0"/> 
+               </void> 
+              </object> 
+             </void> 
+             <void method="put"> 
+              <string>_col0</string> 
+              <object id="ExprNodeColumnDesc3" class="org.apache.hadoop.hive.ql.plan.ExprNodeColumnDesc"> 
+               <void property="column"> 
+                <string>_col0</string> 
+               </void> 
+               <void property="tabAlias"> 
+                <string>src1</string> 
+               </void> 
+               <void property="typeInfo"> 
+                <object idref="PrimitiveTypeInfo0"/> 
+               </void> 
+              </object> 
+             </void> 
+            </object> 
+           </void> 
+           <void property="conf"> 
+            <object class="org.apache.hadoop.hive.ql.plan.SelectDesc"> 
+             <void property="colList"> 
+              <object class="java.util.ArrayList"> 
+               <void method="add"> 
+                <object idref="ExprNodeColumnDesc3"/> 
+               </void> 
+               <void method="add"> 
+                <object idref="ExprNodeColumnDesc2"/> 
+               </void> 
+              </object> 
+             </void> 
+             <void property="outputColumnNames"> 
+              <object class="java.util.ArrayList"> 
+               <void method="add"> 
+                <string>_col0</string> 
+               </void> 
+               <void method="add"> 
+                <string>_col1</string> 
+               </void> 
+              </object> 
+             </void> 
+            </object> 
+           </void> 
+           <void property="operatorId"> 
+            <string>SEL_5</string> 
+           </void> 
+           <void property="parentOperators"> 
+            <void method="add"> 
+             <object idref="JoinOperator0"/> 
             </void> 
-            <void property="conf"> 
-             <object class="org.apache.hadoop.hive.ql.plan.SelectDesc"> 
-              <void property="colList"> 
-               <object class="java.util.ArrayList"> 
-                <void method="add"> 
-                 <object idref="ExprNodeColumnDesc3"/> 
-                </void> 
-                <void method="add"> 
-                 <object idref="ExprNodeColumnDesc2"/> 
-                </void> 
-               </object> 
-              </void> 
-              <void property="outputColumnNames"> 
-               <object class="java.util.ArrayList"> 
-                <void method="add"> 
-                 <string>_col0</string> 
-                </void> 
-                <void method="add"> 
-                 <string>_col1</string> 
-                </void> 
-               </object> 
-              </void> 
-             </object> 
-            </void> 
-            <void property="operatorId"> 
-             <string>SEL_5</string> 
-            </void> 
-            <void property="parentOperators"> 
-             <object class="java.util.ArrayList"> 
-              <void method="add"> 
-               <object idref="JoinOperator0"/> 
-              </void> 
-             </object> 
-            </void> 
-            <void property="schema"> 
-             <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
-              <void property="signature"> 
-               <object class="java.util.ArrayList"> 
-                <void method="add"> 
-                 <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                  <void property="internalName"> 
-                   <string>_col0</string> 
-                  </void> 
-                  <void property="tabAlias"> 
-                   <string>src1</string> 
-                  </void> 
-                  <void property="type"> 
-                   <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                  <void property="typeName"> 
-                   <string>string</string> 
-                  </void> 
-                 </object> 
-                </void> 
-                <void method="add"> 
-                 <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
-                  <void property="internalName"> 
-                   <string>_col1</string> 
-                  </void> 
-                  <void property="tabAlias"> 
-                   <string>src2</string> 
-                  </void> 
-                  <void property="type"> 
-                   <object idref="PrimitiveTypeInfo0"/> 
-                  </void> 
-                  <void property="typeName"> 
-                   <string>string</string> 
-                  </void> 
-                 </object> 
-                </void> 
-               </object> 
-              </void> 
-             </object> 
-            </void> 
-           </object> 
-          </void> 
-         </object> 
+           </void> 
+           <void property="schema"> 
+            <object class="org.apache.hadoop.hive.ql.exec.RowSchema"> 
+             <void property="signature"> 
+              <object class="java.util.ArrayList"> 
+               <void method="add"> 
+                <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                 <void property="internalName"> 
+                  <string>_col0</string> 
+                 </void> 
+                 <void property="tabAlias"> 
+                  <string>src1</string> 
+                 </void> 
+                 <void property="type"> 
+                  <object idref="PrimitiveTypeInfo0"/> 
+                 </void> 
+                 <void property="typeName"> 
+                  <string>string</string> 
+                 </void> 
+                </object> 
+               </void> 
+               <void method="add"> 
+                <object class="org.apache.hadoop.hive.ql.exec.ColumnInfo"> 
+                 <void property="internalName"> 
+                  <string>_col1</string> 
+                 </void> 
+                 <void property="tabAlias"> 
+                  <string>src2</string> 
+                 </void> 
+                 <void property="type"> 
+                  <object idref="PrimitiveTypeInfo0"/> 
+                 </void> 
+                 <void property="typeName"> 
+                  <string>string</string> 
+                 </void> 
+                </object> 
+               </void> 
+              </object> 
+             </void> 
+            </object> 
+           </void> 
+          </object> 
+         </void> 
         </void> 
         <void property="columnExprMap"> 
          <object class="java.util.HashMap"> 
@@ -1609,14 +1593,12 @@
          <string>JOIN_4</string> 
         </void> 
         <void property="parentOperators"> 
-         <object class="java.util.ArrayList"> 
-          <void method="add"> 
-           <object idref="ReduceSinkOperator1"/> 
-          </void> 
-          <void method="add"> 
-           <object idref="ReduceSinkOperator0"/> 
-          </void> 
-         </object> 
+         <void method="add"> 
+          <object idref="ReduceSinkOperator1"/> 
+         </void> 
+         <void method="add"> 
+          <object idref="ReduceSinkOperator0"/> 
+         </void> 
         </void> 
         <void property="posToAliasMap"> 
          <object class="java.util.HashMap"> 
