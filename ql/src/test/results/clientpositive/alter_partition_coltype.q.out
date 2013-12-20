@@ -225,11 +225,11 @@ STAGE PLANS:
     Fetch Operator
       limit: -1
 
-PREHOOK: query: select count(*) from alter_coltype where dt = 100
+PREHOOK: query: select count(*) from alter_coltype where dt = '100'
 PREHOOK: type: QUERY
 PREHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####
-POSTHOOK: query: select count(*) from alter_coltype where dt = 100
+POSTHOOK: query: select count(*) from alter_coltype where dt = '100'
 POSTHOOK: type: QUERY
 POSTHOOK: Input: default@alter_coltype
 #### A masked pattern was here ####

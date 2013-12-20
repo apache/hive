@@ -77,6 +77,8 @@ public class GenericUDAFAverage extends AbstractGenericUDAFResolver {
     case FLOAT:
     case DOUBLE:
     case STRING:
+    case VARCHAR:
+    case CHAR:
     case TIMESTAMP:
       return new GenericUDAFAverageEvaluatorDouble();
     case DECIMAL:

@@ -27,7 +27,7 @@ import org.apache.hadoop.hive.ql.exec.vector.ColumnVector;
  * Utility functions to handle null propagation.
  */
 public class NullUtil {
-  /*
+  /**
    * Set the data value for all NULL entries to the designated NULL_VALUE.
    */
   public static void setNullDataEntriesLong(
@@ -51,20 +51,19 @@ public class NullUtil {
       }
     }
   }
-  
+
   // for use by Column-Scalar and Scalar-Column arithmetic for null propagation
   public static void setNullOutputEntriesColScalar(
       ColumnVector v, boolean selectedInUse, int[] sel, int n) {
     if (v instanceof DoubleColumnVector) {
-      
       // No need to set null data entries because the input NaN values
       // will automatically propagate to the output.
       return;
     }
     setNullDataEntriesLong((LongColumnVector) v, selectedInUse, sel, n);
   }
-  
-  /*
+
+  /**
    * Set the data value for all NULL entries to NaN
    */
   public static void setNullDataEntriesDouble(
@@ -89,10 +88,9 @@ public class NullUtil {
     }
   }
 
-  /*
-   * Set the data value for all NULL entries, as well as those coming from division by zero,
-   * to NaN. Assumes there are entries coming from division by zero.
-   * We assume that infinities do not appear legally in the result, so we can replace all of them.
+  /**
+   * Set all the entries for which denoms array contains zeroes to NULL; sets all the data
+   * values for NULL entries for DoubleColumnVector.NULL_VALUE.
    */
   public static void setNullAndDivBy0DataEntriesDouble(
       DoubleColumnVector v, boolean selectedInUse, int[] sel, int n, LongColumnVector denoms) {
@@ -117,10 +115,9 @@ public class NullUtil {
     }
   }
 
-  /*
-   * Set the data value for all NULL entries, as well as those coming from division by zero,
-   * to NaN. Assumes there are entries coming from division by zero.
-   * We assume that infinities do not appear legally in the result, so we can replace all of them.
+  /**
+   * Set all the entries for which denoms array contains zeroes to NULL; sets all the data
+   * values for NULL entries for DoubleColumnVector.NULL_VALUE.
    */
   public static void setNullAndDivBy0DataEntriesDouble(
       DoubleColumnVector v, boolean selectedInUse, int[] sel, int n, DoubleColumnVector denoms) {
@@ -140,6 +137,60 @@ public class NullUtil {
       for (int i = 0; i != n; i++) {
         if (v.isNull[i] = (v.isNull[i] || vector[i] == 0)) {
           v.vector[i] = DoubleColumnVector.NULL_VALUE;
+        }
+      }
+    }
+  }
+
+  /**
+   * Set all the entries for which denoms array contains zeroes to NULL; sets all the data
+   * values for NULL entries for LongColumnVector.NULL_VALUE.
+   */
+  public static void setNullAndDivBy0DataEntriesLong(
+      LongColumnVector v, boolean selectedInUse, int[] sel, int n, LongColumnVector denoms) {
+    assert v.isRepeating || !denoms.isRepeating;
+    v.noNulls = false;
+    long[] vector = denoms.vector;
+    if (v.isRepeating && (v.isNull[0] = (v.isNull[0] || vector[0] == 0))) {
+      v.vector[0] = LongColumnVector.NULL_VALUE;
+    } else if (selectedInUse) {
+      for (int j = 0; j != n; j++) {
+        int i = sel[j];
+        if (v.isNull[i] = (v.isNull[i] || vector[i] == 0)) {
+          v.vector[i] = LongColumnVector.NULL_VALUE;
+        }
+      }
+    } else {
+      for (int i = 0; i != n; i++) {
+        if (v.isNull[i] = (v.isNull[i] || vector[i] == 0)) {
+          v.vector[i] = LongColumnVector.NULL_VALUE;
+        }
+      }
+    }
+  }
+
+  /**
+   * Set all the entries for which denoms array contains zeroes to NULL; sets all the data
+   * values for NULL entries for LongColumnVector.NULL_VALUE.
+   */
+  public static void setNullAndDivBy0DataEntriesLong(
+      LongColumnVector v, boolean selectedInUse, int[] sel, int n, DoubleColumnVector denoms) {
+    assert v.isRepeating || !denoms.isRepeating;
+    v.noNulls = false;
+    double[] vector = denoms.vector;
+    if (v.isRepeating && (v.isNull[0] = (v.isNull[0] || vector[0] == 0))) {
+      v.vector[0] = LongColumnVector.NULL_VALUE;
+    } else if (selectedInUse) {
+      for (int j = 0; j != n; j++) {
+        int i = sel[j];
+        if (v.isNull[i] = (v.isNull[i] || vector[i] == 0)) {
+          v.vector[i] = LongColumnVector.NULL_VALUE;
+        }
+      }
+    } else {
+      for (int i = 0; i != n; i++) {
+        if (v.isNull[i] = (v.isNull[i] || vector[i] == 0)) {
+          v.vector[i] = LongColumnVector.NULL_VALUE;
         }
       }
     }

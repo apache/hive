@@ -37,55 +37,31 @@
       <groupId>org.apache.hive.shims</groupId>
       <artifactId>hive-shims-common</artifactId>
       <version>${project.version}</version>
-      <optional>true</optional>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive.shims</groupId>
       <artifactId>hive-shims-0.20</artifactId>
       <version>${project.version}</version>
-      <optional>true</optional>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive.shims</groupId>
       <artifactId>hive-shims-common-secure</artifactId>
       <version>${project.version}</version>
-      <optional>true</optional>
+      <scope>compile</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive.shims</groupId>
       <artifactId>hive-shims-0.20S</artifactId>
       <version>${project.version}</version>
-      <optional>true</optional>
+      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.hive.shims</groupId>
       <artifactId>hive-shims-0.23</artifactId>
       <version>${project.version}</version>
-      <optional>true</optional>
+      <scope>runtime</scope>
     </dependency>
   </dependencies>
-
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <configuration>
-          <appendAssemblyId>false</appendAssemblyId>
-          <descriptors>
-            <descriptor>src/assemble/uberjar.xml</descriptor>
-          </descriptors>
-        </configuration>
-        <executions>
-          <execution>
-            <id>uberjar</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
 </project>

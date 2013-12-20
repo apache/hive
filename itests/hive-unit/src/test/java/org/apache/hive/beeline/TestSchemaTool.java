@@ -56,7 +56,7 @@ public class TestSchemaTool extends TestCase {
   protected void tearDown() throws Exception {
     File metaStoreDir = new File(testMetastoreDB);
     if (metaStoreDir.exists()) {
-      FileUtils.deleteDirectory(metaStoreDir);
+      FileUtils.forceDeleteOnExit(metaStoreDir);
     }
   }
 

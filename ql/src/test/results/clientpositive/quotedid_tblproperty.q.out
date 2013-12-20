@@ -1,0 +1,15 @@
+PREHOOK: query: CREATE TABLE xyz(KEY STRING, VALUE STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.TestSerDe' 
+STORED AS TEXTFILE
+TBLPROPERTIES('columns'='valid_colname,invalid.colname')
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: CREATE TABLE xyz(KEY STRING, VALUE STRING) ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.TestSerDe' 
+STORED AS TEXTFILE
+TBLPROPERTIES('columns'='valid_colname,invalid.colname')
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@xyz
+PREHOOK: query: describe xyz
+PREHOOK: type: DESCTABLE
+POSTHOOK: query: describe xyz
+POSTHOOK: type: DESCTABLE
+valid_colname       	string              	from deserializer   
+invalid.colname     	string              	from deserializer   

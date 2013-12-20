@@ -372,4 +372,15 @@ public class TestBeeLineWithArgs {
     testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
   }
 
+  @Test
+  public void testEmbeddedBeelineConnection() throws Throwable{
+    String embeddedJdbcURL = BeeLine.BEELINE_DEFAULT_JDBC_URL+"/Default";
+    List<String> argList = getBaseArgs(embeddedJdbcURL);
+	argList.add("--hivevar");
+    argList.add("DUMMY_TBL=embedded_table");
+    final String TEST_NAME = "testEmbeddedBeelineConnection";
+    final String SCRIPT_TEXT = "create table ${DUMMY_TBL} (d int);\nshow tables;\n";
+    final String EXPECTED_PATTERN = "embedded_table";
+    testScriptFile(TEST_NAME, SCRIPT_TEXT, EXPECTED_PATTERN, true, argList);
+  }
 }

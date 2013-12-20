@@ -37,6 +37,6 @@
     <module>common-secure</module>
     <module>0.20S</module>
     <module>0.23</module>
-    <module>assembly</module>
+    <module>aggregator</module>
   </modules>
 </project>

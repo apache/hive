@@ -719,6 +719,7 @@ public class TestRCFile {
       while (rr.next(key, value)) {
         readCount++;
       }
+      rr.close();
       System.out.println("The " + i + "th split read "
           + (readCount - previousReadCount));
     }

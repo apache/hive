@@ -1,0 +1,76 @@
+PREHOOK: query: create table src_b3(`x+1` string, `!@#$%^&*()_q` string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: create table src_b3(`x+1` string, `!@#$%^&*()_q` string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@src_b3
+PREHOOK: query: alter table src_b3 
+clustered by (`!@#$%^&*()_q`) sorted by (`!@#$%^&*()_q`) into 2 buckets
+PREHOOK: type: ALTERTABLE_CLUSTER_SORT
+PREHOOK: Input: default@src_b3
+PREHOOK: Output: default@src_b3
+POSTHOOK: query: alter table src_b3 
+clustered by (`!@#$%^&*()_q`) sorted by (`!@#$%^&*()_q`) into 2 buckets
+POSTHOOK: type: ALTERTABLE_CLUSTER_SORT
+POSTHOOK: Input: default@src_b3
+POSTHOOK: Output: default@src_b3
+PREHOOK: query: -- alter partition
+create table src_p3(`x+1` string, `y&y` string) partitioned by (`!@#$%^&*()_q` string)
+PREHOOK: type: CREATETABLE
+POSTHOOK: query: -- alter partition
+create table src_p3(`x+1` string, `y&y` string) partitioned by (`!@#$%^&*()_q` string)
+POSTHOOK: type: CREATETABLE
+POSTHOOK: Output: default@src_p3
+PREHOOK: query: insert overwrite table src_p3 partition(`!@#$%^&*()_q`='a') select * from src
+PREHOOK: type: QUERY
+PREHOOK: Input: default@src
+PREHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=a
+POSTHOOK: query: insert overwrite table src_p3 partition(`!@#$%^&*()_q`='a') select * from src
+POSTHOOK: type: QUERY
+POSTHOOK: Input: default@src
+POSTHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=a
+POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show partitions src_p3
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions src_p3
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+!@%23$%25%5E&%2A()_q=a
+PREHOOK: query: alter table src_p3 add if not exists partition(`!@#$%^&*()_q`='b')
+PREHOOK: type: ALTERTABLE_ADDPARTS
+PREHOOK: Input: default@src_p3
+POSTHOOK: query: alter table src_p3 add if not exists partition(`!@#$%^&*()_q`='b')
+POSTHOOK: type: ALTERTABLE_ADDPARTS
+POSTHOOK: Input: default@src_p3
+POSTHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=b
+POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show partitions src_p3
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions src_p3
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+!@%23$%25%5E&%2A()_q=a
+!@%23$%25%5E&%2A()_q=b
+PREHOOK: query: alter table src_p3 partition(`!@#$%^&*()_q`='b') rename to partition(`!@#$%^&*()_q`='c')
+PREHOOK: type: ALTERTABLE_RENAMEPART
+PREHOOK: Input: default@src_p3
+PREHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=b
+POSTHOOK: query: alter table src_p3 partition(`!@#$%^&*()_q`='b') rename to partition(`!@#$%^&*()_q`='c')
+POSTHOOK: type: ALTERTABLE_RENAMEPART
+POSTHOOK: Input: default@src_p3
+POSTHOOK: Input: default@src_p3@!@%23$%25%5E&%2A()_q=b
+POSTHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=b
+POSTHOOK: Output: default@src_p3@!@%23$%25%5E&%2A()_q=c
+POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+PREHOOK: query: show partitions src_p3
+PREHOOK: type: SHOWPARTITIONS
+POSTHOOK: query: show partitions src_p3
+POSTHOOK: type: SHOWPARTITIONS
+POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).x+1 SIMPLE [(src)src.FieldSchema(name:key, type:string, comment:default), ]
+POSTHOOK: Lineage: src_p3 PARTITION(!@#$%^&*()_q=a).y&y SIMPLE [(src)src.FieldSchema(name:value, type:string, comment:default), ]
+!@%23$%25%5E&%2A()_q=a
+!@%23$%25%5E&%2A()_q=c

@@ -160,6 +160,11 @@ public class ParseDriver {
   public ASTNode parse(String command) throws ParseException {
     return parse(command, null);
   }
+  
+  public ASTNode parse(String command, Context ctx) 
+      throws ParseException {
+    return parse(command, ctx, true);
+  }
 
   /**
    * Parses a command, optionally assigning the parser's token stream to the
@@ -175,13 +180,17 @@ public class ParseDriver {
    *
    * @return parsed AST
    */
-  public ASTNode parse(String command, Context ctx) throws ParseException {
+  public ASTNode parse(String command, Context ctx, boolean setTokenRewriteStream) 
+      throws ParseException {
     LOG.info("Parsing command: " + command);
 
     HiveLexerX lexer = new HiveLexerX(new ANTLRNoCaseStringStream(command));
     TokenRewriteStream tokens = new TokenRewriteStream(lexer);
     if (ctx != null) {
-      ctx.setTokenRewriteStream(tokens);
+      if ( setTokenRewriteStream) {
+        ctx.setTokenRewriteStream(tokens);
+      }
+      lexer.setHiveConf(ctx.getConf());
     }
     HiveParser parser = new HiveParser(tokens);
     parser.setTreeAdaptor(adaptor);

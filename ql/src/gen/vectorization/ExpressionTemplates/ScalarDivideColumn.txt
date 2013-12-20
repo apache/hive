@@ -126,8 +126,7 @@ public class <ClassName> extends VectorExpression {
     if (!hasDivBy0) {
       NullUtil.setNullOutputEntriesColScalar(outputColVector, batch.selectedInUse, sel, n);
     } else {
-      // Currently, the output from division is always double.
-      NullUtil.setNullAndDivBy0DataEntriesDouble(
+      NullUtil.setNullAndDivBy0DataEntries<CamelReturnType>(
           outputColVector, batch.selectedInUse, sel, n, inputColVector);
     }
   }

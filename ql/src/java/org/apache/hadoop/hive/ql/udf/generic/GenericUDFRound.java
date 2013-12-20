@@ -143,6 +143,7 @@ public class GenericUDFRound extends GenericUDF {
       break;
     case STRING:
     case VARCHAR:
+    case CHAR:
       outputOI = PrimitiveObjectInspectorFactory.getPrimitiveWritableObjectInspector(PrimitiveCategory.DOUBLE);
       converterFromString = ObjectInspectorConverters.getConverter(inputOI, outputOI);
       break;
@@ -228,7 +229,8 @@ public class GenericUDFRound extends GenericUDF {
      case DOUBLE:
        return round(((DoubleWritable)inputOI.getPrimitiveWritableObject(input)), scale);
     case STRING:
-     case VARCHAR:
+    case VARCHAR:
+    case CHAR:
        DoubleWritable doubleValue = (DoubleWritable) converterFromString.convert(input);
        if (doubleValue == null) {
          return null;

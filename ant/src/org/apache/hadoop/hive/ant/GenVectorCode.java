@@ -38,62 +38,51 @@ public class GenVectorCode extends Task {
       {"ColumnArithmeticScalar", "Add", "long", "long", "+"},
       {"ColumnArithmeticScalar", "Subtract", "long", "long", "-"},
       {"ColumnArithmeticScalar", "Multiply", "long", "long", "*"},
-      {"ColumnArithmeticScalar", "Modulo", "long", "long", "%"},
 
       {"ColumnArithmeticScalar", "Add", "long", "double", "+"},
       {"ColumnArithmeticScalar", "Subtract", "long", "double", "-"},
       {"ColumnArithmeticScalar", "Multiply", "long", "double", "*"},
-      {"ColumnArithmeticScalar", "Modulo", "long", "double", "%"},
 
       {"ColumnArithmeticScalar", "Add", "double", "long", "+"},
       {"ColumnArithmeticScalar", "Subtract", "double", "long", "-"},
       {"ColumnArithmeticScalar", "Multiply", "double", "long", "*"},
-      {"ColumnArithmeticScalar", "Modulo", "double", "long", "%"},
 
       {"ColumnArithmeticScalar", "Add", "double", "double", "+"},
       {"ColumnArithmeticScalar", "Subtract", "double", "double", "-"},
       {"ColumnArithmeticScalar", "Multiply", "double", "double", "*"},
-      {"ColumnArithmeticScalar", "Modulo", "double", "double", "%"},
 
       {"ScalarArithmeticColumn", "Add", "long", "long", "+"},
       {"ScalarArithmeticColumn", "Subtract", "long", "long", "-"},
       {"ScalarArithmeticColumn", "Multiply", "long", "long", "*"},
-      {"ScalarArithmeticColumn", "Modulo", "long", "long", "%"},
 
       {"ScalarArithmeticColumn", "Add", "long", "double", "+"},
       {"ScalarArithmeticColumn", "Subtract", "long", "double", "-"},
       {"ScalarArithmeticColumn", "Multiply", "long", "double", "*"},
-      {"ScalarArithmeticColumn", "Modulo", "long", "double", "%"},
 
       {"ScalarArithmeticColumn", "Add", "double", "long", "+"},
       {"ScalarArithmeticColumn", "Subtract", "double", "long", "-"},
       {"ScalarArithmeticColumn", "Multiply", "double", "long", "*"},
-      {"ScalarArithmeticColumn", "Modulo", "double", "long", "%"},
 
       {"ScalarArithmeticColumn", "Add", "double", "double", "+"},
       {"ScalarArithmeticColumn", "Subtract", "double", "double", "-"},
       {"ScalarArithmeticColumn", "Multiply", "double", "double", "*"},
-      {"ScalarArithmeticColumn", "Modulo", "double", "double", "%"},
 
       {"ColumnArithmeticColumn", "Add", "long", "long", "+"},
       {"ColumnArithmeticColumn", "Subtract", "long", "long", "-"},
       {"ColumnArithmeticColumn", "Multiply", "long", "long", "*"},
-      {"ColumnArithmeticColumn", "Modulo", "long", "long", "%"},
 
       {"ColumnArithmeticColumn", "Add", "long", "double", "+"},
       {"ColumnArithmeticColumn", "Subtract", "long", "double", "-"},
       {"ColumnArithmeticColumn", "Multiply", "long", "double", "*"},
-      {"ColumnArithmeticColumn", "Modulo", "long", "double", "%"},
 
       {"ColumnArithmeticColumn", "Add", "double", "long", "+"},
       {"ColumnArithmeticColumn", "Subtract", "double", "long", "-"},
       {"ColumnArithmeticColumn", "Multiply", "double", "long", "*"},
-      {"ColumnArithmeticColumn", "Modulo", "double", "long", "%"},
 
       {"ColumnArithmeticColumn", "Add", "double", "double", "+"},
       {"ColumnArithmeticColumn", "Subtract", "double", "double", "-"},
       {"ColumnArithmeticColumn", "Multiply", "double", "double", "*"},
-      {"ColumnArithmeticColumn", "Modulo", "double", "double", "%"},
+
 
       {"ColumnDivideScalar", "Divide", "long", "double", "/"},
       {"ColumnDivideScalar", "Divide", "double", "long", "/"},
@@ -104,6 +93,19 @@ public class GenVectorCode extends Task {
       {"ColumnDivideColumn", "Divide", "long", "double", "/"},
       {"ColumnDivideColumn", "Divide", "double", "long", "/"},
       {"ColumnDivideColumn", "Divide", "double", "double", "/"},
+
+      {"ColumnDivideScalar", "Modulo", "long", "long", "%"},
+      {"ColumnDivideScalar", "Modulo", "long", "double", "%"},
+      {"ColumnDivideScalar", "Modulo", "double", "long", "%"},
+      {"ColumnDivideScalar", "Modulo", "double", "double", "%"},
+      {"ScalarDivideColumn", "Modulo", "long", "long", "%"},
+      {"ScalarDivideColumn", "Modulo", "long", "double", "%"},
+      {"ScalarDivideColumn", "Modulo", "double", "long", "%"},
+      {"ScalarDivideColumn", "Modulo", "double", "double", "%"},
+      {"ColumnDivideColumn", "Modulo", "long", "long", "%"},
+      {"ColumnDivideColumn", "Modulo", "long", "double", "%"},
+      {"ColumnDivideColumn", "Modulo", "double", "long", "%"},
+      {"ColumnDivideColumn", "Modulo", "double", "double", "%"},
 
       {"ColumnCompareScalar", "Equal", "long", "double", "=="},
       {"ColumnCompareScalar", "Equal", "double", "double", "=="},
@@ -1082,6 +1084,7 @@ public class GenVectorCode extends Task {
      templateString = templateString.replaceAll("<OperandType1>", operandType1);
      templateString = templateString.replaceAll("<OperandType2>", operandType2);
      templateString = templateString.replaceAll("<ReturnType>", returnType);
+     templateString = templateString.replaceAll("<CamelReturnType>", getCamelCaseType(returnType));
      writeFile(templateFile.lastModified(), expressionOutputDirectory, expressionClassesDirectory,
         className, templateString);
 
