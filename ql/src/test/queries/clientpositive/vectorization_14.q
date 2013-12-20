@@ -29,5 +29,5 @@ WHERE    (((ctinyint <= cbigint)
               AND ((cbigint > -257)
                   OR (cfloat < cint))))
 GROUP BY ctimestamp1, cfloat, cstring1, cboolean1, cdouble
-ORDER BY cstring1, cfloat, cdouble;
+ORDER BY cstring1, cfloat, cdouble, ctimestamp1;
 

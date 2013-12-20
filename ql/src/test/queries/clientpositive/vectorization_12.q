@@ -28,5 +28,5 @@ WHERE    (((ctimestamp1 IS NULL)
               OR ((cboolean2 <= 1)
                   AND (cbigint >= csmallint))))
 GROUP BY cbigint, cboolean1, cstring1, ctimestamp1, cdouble
-ORDER BY ctimestamp1, cdouble;
+ORDER BY ctimestamp1, cdouble, cbigint, cstring1;
 

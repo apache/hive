@@ -83,20 +83,20 @@ public class <ClassName> extends VectorExpression {
     boolean hasDivBy0 = false;
     if (inputColVector1.isRepeating && inputColVector2.isRepeating) {
       <OperandType2> denom = vector2[0];
-      outputVector[0] = vector1[0] <OperatorSymbol> (double) denom;
+      outputVector[0] = vector1[0] <OperatorSymbol> denom;
       hasDivBy0 = hasDivBy0 || (denom == 0);
     } else if (inputColVector1.isRepeating) {
       if (batch.selectedInUse) {
         for(int j = 0; j != n; j++) {
           int i = sel[j];
           <OperandType2> denom = vector2[i];
-          outputVector[i] = vector1[0] <OperatorSymbol> (double) denom;
+          outputVector[i] = vector1[0] <OperatorSymbol> denom;
           hasDivBy0 = hasDivBy0 || (denom == 0);
         }
       } else {
         for(int i = 0; i != n; i++) {
           <OperandType2> denom = vector2[i];
-          outputVector[i] = vector1[0] <OperatorSymbol> (double) denom;
+          outputVector[i] = vector1[0] <OperatorSymbol> denom;
           hasDivBy0 = hasDivBy0 || (denom == 0);
         }
       }
@@ -142,8 +142,7 @@ public class <ClassName> extends VectorExpression {
     if (!hasDivBy0) {
       NullUtil.setNullDataEntries<CamelReturnType>(outputColVector, batch.selectedInUse, sel, n);
     } else {
-      // Currently, the output from division is always double.
-      NullUtil.setNullAndDivBy0DataEntriesDouble(
+      NullUtil.setNullAndDivBy0DataEntries<CamelReturnType>(
           outputColVector, batch.selectedInUse, sel, n, inputColVector2);
     }
   }
