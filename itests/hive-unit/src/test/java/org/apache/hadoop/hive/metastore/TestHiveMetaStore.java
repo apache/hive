@@ -37,6 +37,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.permission.FsPermission;
+import org.apache.hadoop.hive.common.FileUtils;
 import org.apache.hadoop.hive.conf.HiveConf;
 import org.apache.hadoop.hive.metastore.api.AlreadyExistsException;
 import org.apache.hadoop.hive.metastore.api.ColumnStatistics;
@@ -258,10 +259,10 @@ public abstract class TestHiveMetaStore extends TestCase {
       }
       assertTrue("Partitions are not same", part.equals(part_get));
 
-      String partName = "ds=2008-07-01 14%3A13%3A12/hr=14";
-      String part2Name = "ds=2008-07-01 14%3A13%3A12/hr=15";
-      String part3Name ="ds=2008-07-02 14%3A13%3A12/hr=15";
-      String part4Name ="ds=2008-07-03 14%3A13%3A12/hr=151";
+      String partName = "ds=" + FileUtils.escapePathName("2008-07-01 14:13:12") + "/hr=14";
+      String part2Name = "ds=" + FileUtils.escapePathName("2008-07-01 14:13:12") + "/hr=15";
+      String part3Name = "ds=" + FileUtils.escapePathName("2008-07-02 14:13:12") + "/hr=15";
+      String part4Name = "ds=" + FileUtils.escapePathName("2008-07-03 14:13:12") + "/hr=151";
 
       part_get = client.getPartition(dbName, tblName, partName);
       assertTrue("Partitions are not the same", part.equals(part_get));
