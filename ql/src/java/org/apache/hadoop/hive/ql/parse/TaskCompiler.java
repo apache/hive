@@ -21,6 +21,7 @@ package org.apache.hadoop.hive.ql.parse;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -229,7 +230,7 @@ public abstract class TaskCompiler {
 
       // find all leaf tasks and make the DDLTask as a dependent task of all of
       // them
-      HashSet<Task<? extends Serializable>> leaves = new HashSet<Task<? extends Serializable>>();
+      HashSet<Task<? extends Serializable>> leaves = new LinkedHashSet<Task<? extends Serializable>>();
       getLeafTasks(rootTasks, leaves);
       assert (leaves.size() > 0);
       for (Task<? extends Serializable> task : leaves) {
