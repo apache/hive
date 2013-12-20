@@ -71,6 +71,8 @@ public class GenericUDAFSum extends AbstractGenericUDAFResolver {
     case FLOAT:
     case DOUBLE:
     case STRING:
+    case VARCHAR:
+    case CHAR:
       return new GenericUDAFSumDouble();
     case DECIMAL:
       return new GenericUDAFSumHiveDecimal();
