@@ -1628,15 +1628,21 @@ public final class GenMapRedUtils {
           // There are separate configuration parameters to control whether to
           // merge for a map-only job
           // or for a map-reduce job
-          ReduceWork reduceWork = currTask.getWork() instanceof MapredWork
-              ? ((MapredWork) currTask.getWork()).getReduceWork() : null;
-          boolean mergeMapOnly =
-              hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) && reduceWork == null;
-          boolean mergeMapRed =
-              hconf.getBoolVar(ConfVars.HIVEMERGEMAPREDFILES) &&
-              reduceWork != null;
-          if (mergeMapOnly || mergeMapRed) {
-            return true;
+          if (currTask.getWork() instanceof TezWork) {
+            return hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) || 
+                hconf.getBoolVar(ConfVars.HIVEMERGEMAPREDFILES);
+          } else if (currTask.getWork() instanceof MapredWork) {
+            ReduceWork reduceWork = ((MapredWork) currTask.getWork()).getReduceWork();
+            boolean mergeMapOnly =
+                hconf.getBoolVar(ConfVars.HIVEMERGEMAPFILES) && reduceWork == null;
+            boolean mergeMapRed =
+                hconf.getBoolVar(ConfVars.HIVEMERGEMAPREDFILES) &&
+                reduceWork != null;
+            if (mergeMapOnly || mergeMapRed) {
+              return true;
+            }
+          } else {
+            return false;
           }
         }
       }
