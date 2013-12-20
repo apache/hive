@@ -330,6 +330,42 @@
           <version>${tez.version}</version>
           <type>test-jar</type>
         </dependency>
+        <dependency> 
+          <groupId>org.apache.tez</groupId>
+          <artifactId>tez-api</artifactId>
+          <version>${tez.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency> 
+          <groupId>org.apache.tez</groupId>
+          <artifactId>tez-runtime-library</artifactId>
+          <version>${tez.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency> 
+          <groupId>org.apache.tez</groupId>
+          <artifactId>tez-mapreduce</artifactId>
+          <version>${tez.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency> 
+          <groupId>org.apache.tez</groupId>
+          <artifactId>tez-dag</artifactId>
+          <version>${tez.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency >
+           <groupId>org.apache.tez</groupId>
+           <artifactId>tez-common</artifactId>
+           <version>${tez.version}</version>
+          <scope>test</scope>
+        </dependency>
+        <dependency>
+           <groupId>org.apache.tez</groupId>
+           <artifactId>tez-runtime-internals</artifactId>
+           <version>${tez.version}</version>
+          <scope>test</scope>
+        </dependency>
       </dependencies>
     </profile>
   </profiles>

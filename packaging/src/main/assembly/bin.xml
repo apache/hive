@@ -40,7 +40,6 @@
       <useTransitiveFiltering>true</useTransitiveFiltering>
       <excludes>
         <exclude>org.apache.hive.hcatalog:*</exclude>
-        <exclude>org.apache.tez:*</exclude>
       </excludes>
     </dependencySet>
     <dependencySet>
