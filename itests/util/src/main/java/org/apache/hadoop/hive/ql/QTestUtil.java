@@ -1357,9 +1357,12 @@ public class QTestUtil {
     public void preTest(HiveConf conf) throws Exception {
 
       if (zooKeeperCluster == null) {
-        String tmpdir =  System.getProperty("test.tmp.dir");
+        //create temp dir
+        String tmpBaseDir =  System.getProperty("test.tmp.dir");
+        File tmpDir = Utilities.createTempDir(tmpBaseDir);
+
         zooKeeperCluster = new MiniZooKeeperCluster();
-        zkPort = zooKeeperCluster.startup(new File(tmpdir, "zookeeper"));
+        zkPort = zooKeeperCluster.startup(tmpDir);
       }
 
       if (zooKeeper != null) {
