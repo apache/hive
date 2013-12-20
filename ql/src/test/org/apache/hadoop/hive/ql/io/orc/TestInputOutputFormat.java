@@ -19,6 +19,7 @@ package org.apache.hadoop.hive.ql.io.orc;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -562,7 +563,6 @@ public class TestInputOutputFormat {
     IntObjectInspector intInspector =
         (IntObjectInspector) fields.get(0).getFieldObjectInspector();
     assertEquals(0.0, reader.getProgress(), 0.00001);
-    assertEquals(3, reader.getPos());
     while (reader.next(key, value)) {
       assertEquals(++rowNum, intInspector.get(inspector.
           getStructFieldData(serde.deserialize(value), fields.get(0))));
@@ -697,7 +697,7 @@ public class TestInputOutputFormat {
     InputFormat<?,?> in = new OrcInputFormat();
     FileInputFormat.setInputPaths(conf, testFilePath.toString());
     InputSplit[] splits = in.getSplits(conf, 1);
-    assertEquals(0, splits.length);
+    assertTrue(1 == splits.length);
     assertEquals(null, serde.getSerDeStats());
   }
 
