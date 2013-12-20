@@ -141,12 +141,12 @@ No rows selected
 '1\	2',''
 5 rows selected 
 >>>  
->>>  SELECT key FROM (SELECT TRANSFORM ('a\tb', 'c') USING '/bin/cat' AS (key, value) FROM src limit 1)a ORDER BY key ASC;
+>>>  SELECT key FROM (SELECT TRANSFORM ('a\tb', 'c') USING 'cat' AS (key, value) FROM src limit 1)a ORDER BY key ASC;
 'key'
 'a	b'
 1 row selected 
 >>>  
->>>  SELECT value FROM (SELECT TRANSFORM ('a\tb', 'c') USING '/bin/cat' AS (key, value) FROM src limit 1)a ORDER BY value ASC;
+>>>  SELECT value FROM (SELECT TRANSFORM ('a\tb', 'c') USING 'cat' AS (key, value) FROM src limit 1)a ORDER BY value ASC;
 'value'
 'c'
 1 row selected 
