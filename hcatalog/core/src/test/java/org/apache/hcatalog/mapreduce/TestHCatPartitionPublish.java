@@ -79,12 +79,12 @@ public class TestHCatPartitionPublish {
 
   @BeforeClass
   public static void setup() throws Exception {
+    File workDir = org.apache.hive.hcatalog.mapreduce.TestHCatPartitionPublish.handleWorkDir();
     conf.set("yarn.scheduler.capacity.root.queues", "default");
     conf.set("yarn.scheduler.capacity.root.default.capacity", "100");
 
     fs = FileSystem.get(conf);
-    System.setProperty("hadoop.log.dir", new File(fs.getWorkingDirectory()
-        .toString(), "/logs").getAbsolutePath());
+    System.setProperty("hadoop.log.dir", new File(workDir, "/logs").getAbsolutePath());
     // LocalJobRunner does not work with mapreduce OutputCommitter. So need
     // to use MiniMRCluster. MAPREDUCE-2350
     mrCluster = new MiniMRCluster(1, fs.getUri().toString(), 1, null, null,
@@ -99,6 +99,7 @@ public class TestHCatPartitionPublish {
 
     MetaStoreUtils.startMetaStore(msPort, ShimLoader
         .getHadoopThriftAuthBridge());
+    Thread.sleep(10000);
     isServerRunning = true;
     securityManager = System.getSecurityManager();
     System.setSecurityManager(new NoExitSecurityManager());

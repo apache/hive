@@ -64,7 +64,7 @@ public class TestMultiOutputFormat {
 
   private static final Logger LOG = LoggerFactory.getLogger(TestMultiOutputFormat.class);
   private static File workDir;
-  private static Configuration mrConf = null;
+  private static JobConf mrConf = null;
   private static FileSystem fs = null;
   private static MiniMRCluster mrCluster = null;
 
@@ -79,9 +79,8 @@ public class TestMultiOutputFormat {
     System.setProperty("hadoop.log.dir", new File(workDir, "/logs").getAbsolutePath());
     // LocalJobRunner does not work with mapreduce OutputCommitter. So need
     // to use MiniMRCluster. MAPREDUCE-2350
-    mrCluster = new MiniMRCluster(1, fs.getUri().toString(), 1, null, null,
-      new JobConf(conf));
-    mrConf = mrCluster.createJobConf();
+    mrConf = new JobConf(conf);
+    mrCluster = new MiniMRCluster(1, fs.getUri().toString(), 1, null, null, mrConf);
   }
 
   private static void createWorkDir() throws IOException {

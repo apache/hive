@@ -53,6 +53,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertArrayEquals;
 
+import org.apache.hadoop.util.Shell;
+
 public class TestHCatClient {
   private static final Logger LOG = LoggerFactory.getLogger(TestHCatClient.class);
   private static final String msPort = "20101";
@@ -100,7 +102,16 @@ public class TestHCatClient {
     System.setProperty(HiveConf.ConfVars.PREEXECHOOKS.varname, " ");
     System.setProperty(HiveConf.ConfVars.POSTEXECHOOKS.varname, " ");
   }
-
+  public static String fixPath(String path) {
+    if(!Shell.WINDOWS) {
+      return path;
+    }
+    String expectedDir = path.replaceAll("\\\\", "/");
+    if (!expectedDir.startsWith("/")) {
+      expectedDir = "/" + expectedDir;
+    }
+    return expectedDir;
+  }
   @Test
   public void testBasicDDLCommands() throws Exception {
     String db = "testdb";
@@ -121,7 +132,7 @@ public class TestHCatClient {
     assertTrue(testDb.getProperties().size() == 0);
     String warehouseDir = System
       .getProperty("test.warehouse.dir", "/user/hive/warehouse");
-    String expectedDir = warehouseDir.replaceAll("\\\\", "/").replaceFirst("pfile:///", "pfile:/");
+    String expectedDir = fixPath(warehouseDir).replaceFirst("pfile:///", "pfile:/");
     assertEquals(expectedDir + "/" + db + ".db", testDb.getLocation());
     ArrayList<HCatFieldSchema> cols = new ArrayList<HCatFieldSchema>();
     cols.add(new HCatFieldSchema("id", Type.INT, "id comment"));

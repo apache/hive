@@ -41,8 +41,7 @@ import org.apache.pig.PigServer;
  * @deprecated Use/modify {@link org.apache.hive.hcatalog.pig.TestHCatStorerMulti} instead
  */
 public class TestHCatStorerMulti extends TestCase {
-  private static final String TEST_DATA_DIR = System.getProperty("user.dir") +
-    "/build/test/data/" + TestHCatStorerMulti.class.getCanonicalName();
+  private static final String TEST_DATA_DIR = org.apache.hive.hcatalog.pig.TestHCatStorerMulti.TEST_DATA_DIR;
   private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
   private static final String INPUT_FILE_NAME = TEST_DATA_DIR + "/input.data";
 
