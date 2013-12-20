@@ -31,6 +31,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.io.StringWriter;
@@ -47,6 +48,7 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -1097,17 +1099,12 @@ public class QTestUtil {
     BufferedReader in;
     BufferedWriter out;
 
-    in = new BufferedReader(new FileReader(fname));
-    out = new BufferedWriter(new FileWriter(fname + ".orig"));
-    while (null != (line = in.readLine())) {
-      out.write(line);
-      out.write('\n');
-    }
-    in.close();
-    out.close();
+    File file = new File(fname);
+    File fileOrig = new File(fname + ".orig");
+    FileUtils.copyFile(file, fileOrig);
 
-    in = new BufferedReader(new FileReader(fname + ".orig"));
-    out = new BufferedWriter(new FileWriter(fname));
+    in = new BufferedReader(new InputStreamReader(new FileInputStream(fileOrig), "UTF-8"));
+    out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"));
 
     boolean lastWasMasked = false;
     while (null != (line = in.readLine())) {
