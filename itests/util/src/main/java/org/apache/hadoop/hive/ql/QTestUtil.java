@@ -231,10 +231,6 @@ public class QTestUtil {
 
   public void initConf() throws Exception {
 
-    if (Shell.WINDOWS) {
-      convertPathsFromWindowsToHdfs();
-    }
-
     String vectorizationEnabled = System.getProperty("test.vectorization.enabled");
     if(vectorizationEnabled != null && vectorizationEnabled.equalsIgnoreCase("true")) {
       conf.setBoolVar(ConfVars.HIVE_VECTORIZATION_ENABLED, true);
@@ -257,6 +253,12 @@ public class QTestUtil {
       conf.setVar(HiveConf.ConfVars.METASTOREWAREHOUSE,
                   (new Path(dfsUriString,
                             "/build/ql/test/data/warehouse/")).toString());
+    }
+    
+    // Windows paths should be converted after MiniMrShim.setupConfiguration()
+    // since setupConfiguration may overwrite configuration values.
+    if (Shell.WINDOWS) {
+      convertPathsFromWindowsToHdfs();
     }
   }
 
