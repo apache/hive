@@ -703,6 +703,9 @@ public class SessionState {
     if (localSessionPath != null) {
       FileSystem.getLocal(conf).delete(localSessionPath, true);
     }
+    if (this.getTmpOutputFile().exists()) {
+      this.getTmpOutputFile().delete();
+    }
   }
 
   /**
