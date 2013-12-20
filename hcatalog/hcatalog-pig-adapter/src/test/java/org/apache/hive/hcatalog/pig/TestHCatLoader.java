@@ -43,6 +43,7 @@ import org.apache.hadoop.hive.ql.Driver;
 import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hive.hcatalog.HcatTestUtils;
+import org.apache.hive.hcatalog.common.HCatUtil;
 import org.apache.hive.hcatalog.common.HCatConstants;
 import org.apache.hive.hcatalog.data.Pair;
 import org.apache.pig.ExecType;
@@ -57,8 +58,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 public class TestHCatLoader {
-  private static final String TEST_DATA_DIR = System.getProperty("java.io.tmpdir") + File.separator
-      + TestHCatLoader.class.getCanonicalName() + "-" + System.currentTimeMillis();
+  private static final String TEST_DATA_DIR = HCatUtil.makePathASafeFileName(System.getProperty("java.io.tmpdir") +
+          File.separator + TestHCatLoader.class.getCanonicalName() + "-" + System.currentTimeMillis());
   private static final String TEST_WAREHOUSE_DIR = TEST_DATA_DIR + "/warehouse";
   private static final String BASIC_FILE_NAME = TEST_DATA_DIR + "/basic.input.data";
   private static final String COMPLEX_FILE_NAME = TEST_DATA_DIR + "/complex.input.data";
@@ -420,7 +421,7 @@ public class TestHCatLoader {
     assertEquals(0, driver.run("drop table if exists " + tbl).getResponseCode());
     assertEquals(0, driver.run("create external table " + tbl +
       " (a string, b boolean) row format delimited fields terminated by '\t'" +
-      " stored as textfile location 'file://" +
+      " stored as textfile location 'file:///" +
       inputDataDir.getPath().replaceAll("\\\\", "/") + "'").getResponseCode());
 
     Properties properties = new Properties();

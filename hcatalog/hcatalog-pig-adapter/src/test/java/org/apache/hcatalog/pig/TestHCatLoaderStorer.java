@@ -69,7 +69,7 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
       " (my_small_int smallint, my_tiny_int tinyint)" +
       " row format delimited fields terminated by '\t' stored as textfile").getResponseCode());
     Assert.assertEquals(0, driver.run("load data local inpath '" +
-      dataDir.getAbsolutePath() + "' into table " + readTblName).getResponseCode());
+      dataDir.getPath().replaceAll("\\\\", "/") + "' into table " + readTblName).getResponseCode());
 
     PigServer server = new PigServer(ExecType.LOCAL);
     server.registerQuery(
@@ -104,7 +104,7 @@ public class TestHCatLoaderStorer extends HCatBaseTest {
       String.format("%d\t%d", Short.MIN_VALUE, Byte.MIN_VALUE),
       String.format("%d\t%d", Short.MAX_VALUE, Byte.MAX_VALUE)
     });
-    smallTinyIntBoundsCheckHelper(writeDataFile.getAbsolutePath(), ExecJob.JOB_STATUS.COMPLETED);
+    smallTinyIntBoundsCheckHelper(writeDataFile.getPath().replaceAll("\\\\", "/"), ExecJob.JOB_STATUS.COMPLETED);
 
     // Values outside the column type bounds will fail at runtime.
     HcatTestUtils.createTestDataFile(TEST_DATA_DIR + "/shortTooSmall.tsv", new String[]{

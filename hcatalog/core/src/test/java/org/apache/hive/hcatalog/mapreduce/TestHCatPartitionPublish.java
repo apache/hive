@@ -76,13 +76,17 @@ public class TestHCatPartitionPublish {
   private static SecurityManager securityManager;
   private static Configuration conf = new Configuration(true);
 
-  @BeforeClass
-  public static void setup() throws Exception {
-    String testDir = System.getProperty("test.tmp.dir", "./");
+  public static File handleWorkDir() throws IOException {
+    String testDir = System.getProperty("test.data.dir", "./");
     testDir = testDir + "/test_hcat_partitionpublish_" + Math.abs(new Random().nextLong()) + "/";
     File workDir = new File(new File(testDir).getCanonicalPath());
     FileUtil.fullyDelete(workDir);
     workDir.mkdirs();
+    return workDir;
+  }
+  @BeforeClass
+  public static void setup() throws Exception {
+    File workDir = handleWorkDir();
     conf.set("yarn.scheduler.capacity.root.queues", "default");
     conf.set("yarn.scheduler.capacity.root.default.capacity", "100");
 
