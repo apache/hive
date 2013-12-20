@@ -137,7 +137,7 @@ public class SessionState {
 
   private Map<String, List<String>> localMapRedErrors;
 
-  private final TezSessionState tezSessionState;
+  private TezSessionState tezSessionState;
 
   private String currentDatabase;
 
@@ -199,7 +199,6 @@ public class SessionState {
     this.conf = conf;
     isSilent = conf.getBoolVar(HiveConf.ConfVars.HIVESESSIONSILENT);
     ls = new LineageState();
-    tezSessionState = new TezSessionState();
     overriddenConfigurations = new HashMap<String, String>();
     overriddenConfigurations.putAll(HiveConf.getConfSystemProperties());
     // if there isn't already a session name, go ahead and create it.
@@ -313,6 +312,9 @@ public class SessionState {
 
     if (HiveConf.getBoolVar(startSs.getConf(), HiveConf.ConfVars.HIVE_OPTIMIZE_TEZ)) {
       try {
+        if (startSs.tezSessionState == null) {
+          startSs.tezSessionState = new TezSessionState();
+        }
         startSs.tezSessionState.open(startSs.getSessionId(), startSs.conf);
       } catch (Exception e) {
         throw new RuntimeException(e);
@@ -859,4 +861,7 @@ public class SessionState {
     return tezSessionState;
   }
 
+  public void setTezSession(TezSessionState session) {
+    this.tezSessionState = session;
+  }
 }

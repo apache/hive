@@ -111,6 +111,13 @@ public class TezTask extends Task<TezWork> {
       // get a session.
       SessionState ss = SessionState.get();
       session = ss.getTezSession();
+
+      // if we don't have one yet create it.
+      if (session == null) {
+        ss.setTezSession(new TezSessionState());
+      }
+
+      // if it's not running start it.
       if (!session.isOpen()) {
         // can happen if the user sets the tez flag after the session was
         // established
